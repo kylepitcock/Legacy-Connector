@@ -19,11 +19,26 @@ public class WorldInfo {
         this.world = world;
     }
 
+    /** The level.dat data of a detached view (see {@link #WorldInfo(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound)}); null for a view of a world. */
+    private legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound mcc$nbt;
+
+    /** A standalone info read from level.dat style data (seed, name, times, spawn, flags): what mods build to inspect a saved world. */
+    public WorldInfo(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound nbt) {
+        this.world = null;
+        this.mcc$nbt = nbt;
+    }
+
+    /** The detached data when this is not a view of a world, else null. */
+    private legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound saved() {
+        return world == null ? mcc$nbt : null;
+    }
+
     private Level level() {
         return world == null ? null : world.mcc$fullLevel();
     }
 
     public long getSeed() {
+        if (saved() != null) return saved().getLong("RandomSeed");
         return world == null ? 0L : world.getSeed();
     }
 
@@ -47,16 +62,19 @@ public class WorldInfo {
     }
 
     public String getWorldName() {
+        if (saved() != null) return saved().hasKey("LevelName") ? saved().getString("LevelName") : "world";
         Level level = level();
         return level != null && level.getServer() != null ? level.getServer().getWorldData().getLevelName() : "world";
     }
 
     public long getWorldTime() {
+        if (saved() != null) return saved().getLong("DayTime");
         Level level = level();
         return level == null ? 0L : level.getDayTime();
     }
 
     public long getWorldTotalTime() {
+        if (saved() != null) return saved().getLong("Time");
         Level level = level();
         return level == null ? 0L : level.getGameTime();
     }
@@ -123,35 +141,42 @@ public class WorldInfo {
     }
 
     public boolean isHardcoreModeEnabled() {
+        if (saved() != null) return saved().getBoolean("hardcore");
         Level level = level();
         return level != null && level.getLevelData().isHardcore();
     }
 
     public boolean areCommandsAllowed() {
+        if (saved() != null) return !saved().hasKey("allowCommands") || saved().getBoolean("allowCommands");
         return true;
     }
 
     public boolean isMapFeaturesEnabled() {
+        if (saved() != null) return !saved().hasKey("MapFeatures") || saved().getBoolean("MapFeatures");
         Level level = level();
         return level == null || level.getServer() == null || level.getServer().getWorldData().worldGenOptions().generateStructures();
     }
 
     public int getSpawnX() {
+        if (saved() != null) return saved().getInteger("SpawnX");
         Level level = level();
         return level == null ? 0 : level.getSharedSpawnPos().getX();
     }
 
     public int getSpawnY() {
+        if (saved() != null) return saved().hasKey("SpawnY") ? saved().getInteger("SpawnY") : 64;
         Level level = level();
         return level == null ? 64 : level.getSharedSpawnPos().getY();
     }
 
     public int getSpawnZ() {
+        if (saved() != null) return saved().getInteger("SpawnZ");
         Level level = level();
         return level == null ? 0 : level.getSharedSpawnPos().getZ();
     }
 
     public legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType getGameType() {
+        if (saved() != null) return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(saved().getInteger("GameType"));
         var current = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (current != null) return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(current.getDefaultGameType().getId());
         return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.SURVIVAL;
@@ -166,6 +191,7 @@ public class WorldInfo {
 
     /** Whether the world finished its first setup (spawn chosen): a loaded level always has; a mod's own world once it says so. */
     public boolean isInitialized() {
+        if (saved() != null) return saved().getBoolean("initialized");
         return level() != null || mcc$initialized;
     }
 

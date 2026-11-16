@@ -166,6 +166,15 @@ public final class ForgeEvents1710 {
             });
         });
 
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerFlyableFallEvent e) -> {
+            if (!wants(legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerFlyableFallEvent.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p == null) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerFlyableFallEvent(p, e.getDistance());
+            forge().post(legacy);
+            e.setDistance(legacy.distance);
+        });
+
         game.addListener((net.neoforged.neoforge.event.entity.player.PlayerXpEvent.PickupXp e) -> {
             if (!wants(legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerPickupXpEvent.class)) return;
             EntityPlayer p = player(e.getEntity());

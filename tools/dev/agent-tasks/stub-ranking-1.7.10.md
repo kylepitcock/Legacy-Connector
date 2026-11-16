@@ -1,32 +1,13 @@
 # 1.7.10: stub ranking (synthesized members by number of jars)
 
-Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 640 jar(s) (502 links, 69 missing-dependency, 48 unresolved, 21 obsolete); 1582 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
+Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 641 jar(s) (503 links, 69 missing-dependency, 48 unresolved, 21 obsolete); 1522 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
-## server-side API (top 150 of 690)
+## server-side API (top 150 of 645)
 
 ```
-  8  net.minecraft.network.play.server.S2FPacketSetSlot.<init>(IILnet.minecraft.item.ItemStack;)V  # CustomNPC-Plus-1.11.1.jar, Eln-1.24.6.jar, Paradigm-forge-1.7.10-2.5.4.jar ...
-  7  net.minecraft.entity.player.EntityPlayer$EnumChatVisibility.HIDDEN:Lnet.minecraft.entity.player.EntityPlayer$EnumChatVisibility;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, CustomPlayerModels-1.7.10-0.6.27a.jar, Game of Thrones 24.08.29.jar ...
-  6  net.minecraft.server.management.ServerConfigurationManager.transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;I)V  # Additions to the Outer Rim-1.3.6-BETA (1).jar, ForgottenRelics-1.7.10-1.7.4.jar, HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar ...
-  4  net.minecraft.block.BlockChest.initMetadata(Lnet.minecraft.world.World;III)V  # Game of Thrones 24.08.29.jar, [1.7.10] SecurityCraft v1.8.13.jar, aether-1.7.10-v1.1.2.5.jar ...
   4  net.minecraft.block.BlockSign.<init>(Ljava.lang.Class;Z)V  # Floocraft-1.7.10-1.7.jar, Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar ...
   4  net.minecraft.command.CommandTime.<init>()V  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, Game of Thrones 24.08.29.jar, MineTradingCards-1.7.10-3.1.4.jar ...
-  4  net.minecraft.creativetab.CreativeTabs.func_111226_a(Lnet.minecraft.enchantment.EnumEnchantmentType;)Z  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, OpenComputers-MC1.7.10-1.8.10+667626d-universal.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar ...
-  4  net.minecraft.entity.EntityCreature.applyArmorCalculations(Lnet.minecraft.util.DamageSource;F)F  # Mekanism-1.7.10-9.1.1.1031.jar, Mekanism-Community-Edition-1.7.10-9.10.51-Core.jar, The Titans MC 1.7.10 version 0.45.jar ...
-  4  net.minecraft.entity.ai.EntityAIDoorInteract.<init>(Lnet.minecraft.entity.EntityLiving;)V  # CustomNPC-Plus-1.11.1.jar, MagiaNaturalis-0.5.0.jar, The Titans MC 1.7.10 version 0.45.jar ...
-  4  net.minecraft.entity.ai.EntityAIDoorInteract.doorBlock:Lnet.minecraft.block.BlockDoor;  # CustomNPC-Plus-1.11.1.jar, MagiaNaturalis-0.5.0.jar, The Titans MC 1.7.10 version 0.45.jar ...
-  4  net.minecraft.entity.ai.EntityAIDoorInteract.entityPosX:I  # CustomNPC-Plus-1.11.1.jar, MagiaNaturalis-0.5.0.jar, The Titans MC 1.7.10 version 0.45.jar ...
-  4  net.minecraft.entity.ai.EntityAIDoorInteract.entityPosY:I  # CustomNPC-Plus-1.11.1.jar, MagiaNaturalis-0.5.0.jar, The Titans MC 1.7.10 version 0.45.jar ...
-  4  net.minecraft.entity.ai.EntityAIDoorInteract.entityPosZ:I  # CustomNPC-Plus-1.11.1.jar, MagiaNaturalis-0.5.0.jar, The Titans MC 1.7.10 version 0.45.jar ...
-  4  net.minecraft.entity.ai.EntityAIDoorInteract.theEntity:Lnet.minecraft.entity.EntityLiving;  # CustomNPC-Plus-1.11.1.jar, MagiaNaturalis-0.5.0.jar, The Titans MC 1.7.10 version 0.45.jar ...
   4  net.minecraft.entity.ai.EntityAITasks.<init>(Lnet.minecraft.profiler.Profiler;)V -> ()V  # DragonMounts-r41-1.7.10.jar, Game of Thrones 24.08.29.jar, Invasion-1.7.10-1.2.1.jar ...
-  4  net.minecraft.entity.player.EntityPlayer.displayGUIEditSign(Lnet.minecraft.tileentity.TileEntity;)V  # [1.7.10] SecurityCraft v1.8.13.jar, forgeessentials-1.7.10-7.5.3-server.jar, hextext-1.3.jar ...
-  4  net.minecraft.item.ItemEnchantedBook.func_92113_a(Lnet.minecraft.enchantment.Enchantment;Ljava.util.List;)V  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar, bettersearch-forge-1.7.10-1.6.4.jar ...
-  4  net.minecraft.network.play.server.S22PacketMultiBlockChange.func_148920_c()Lnet.minecraft.world.ChunkCoordIntPair;  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, Xaeros_Minimap_21.10.44_Forge_1.7.10.jar, Xaeros_Minimap_FP21.10.40_Forge_1.7.10.jar ...
-  4  net.minecraft.network.play.server.S2DPacketOpenWindow.<init>(IILjava.lang.String;IZ)V  # NarutoDestinationMod-1.36.1.jar, Paradigm-forge-1.7.10-2.5.4.jar, forgeessentials-1.7.10-7.5.3-server.jar ...
-  4  net.minecraft.pathfinding.Path.<init>()V  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar, Pokecube Legacy 1.3.3.jar ...
-  4  net.minecraft.world.storage.WorldInfo.<init>(Lnet.minecraft.nbt.NBTTagCompound;)V -> ()V  # etfuturum-2.6.2.jar, forgeessentials-1.7.10-7.5.3-server.jar, mobsinfo-0.6.2.jar ...
-  4  net.minecraftforge.event.entity.player.PlayerFlyableFallEvent.distance:F  # 1.7.10-zeldaswordskills-2.5.3.jar, HBM-NTM-.1.0.27_X5853_H261.jar, MatterOverdrive-1.7.10-0.4.5.jar ...
   3  cpw.mods.fml.common.FMLCommonHandler.handleExit(I)V  # AM2PlayGround-Beta-0.12.1.jar, deathlyhallows-1.1.8.jar, optimizationsandtweaks-V1.18.0.jar
   3  cpw.mods.fml.common.StartupQuery.abort()V  # chunkapi-mc1.7.10-0.8.4.jar, gtnhlib-0.12.4.jar, optimizationsandtweaks-V1.18.0.jar
   3  cpw.mods.fml.common.discovery.ModCandidate.<init>(Ljava.io.File;Ljava.io.File;Lcpw.mods.fml.common.discovery.ContainerType;)V -> (Ljava.io.File;)V  # HandmadeGunsOverdrive-4.0.5.1.jar, Vale of Shadows - Stranger Things - The Upside Down[1.7.10].jar, jarjar-0.4.0-beta.jar
@@ -41,18 +22,14 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  net.minecraft.nbt.NBTTagEnd.<init>()V  # compatlib-1.7.10.jar, journeymap-forge-1.7.10-6.0.8.jar, optimizationsandtweaks-V1.18.0.jar
   3  net.minecraft.network.NetworkManager.provideLanClient(Ljava.net.InetAddress;I)Lnet.minecraft.network.NetworkManager;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, ServerUtilities-2.5.2.jar, tabfaces-1.0.16.jar
   3  net.minecraft.network.ServerStatusResponse.setServerDescription(Lnet.minecraft.util.IChatComponent;)V  # Paradigm-forge-1.7.10-2.5.4.jar, ServerUtilities-2.5.2.jar, forgeessentials-1.7.10-7.5.3-server.jar
-  3  net.minecraft.network.play.server.S04PacketEntityEquipment.<init>(IILnet.minecraft.item.ItemStack;)V  # AM2PlayGround-Beta-0.12.1.jar, CustomNPC-Plus-1.11.1.jar, hfr-1.0.2.2+mc1.7.10-forge.jar
-  3  net.minecraft.network.play.server.S0DPacketCollectItem.<init>(II)V  # Alfheim-67.jar, DangerRPG-1.7.10-1.1.4.9.jar, Game of Thrones 24.08.29.jar
   3  net.minecraft.network.play.server.S23PacketBlockChange.func_148877_f()I  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, Xaeros_Minimap_21.10.44_Forge_1.7.10.jar, Xaeros_Minimap_FP21.10.40_Forge_1.7.10.jar
   3  net.minecraft.network.play.server.S23PacketBlockChange.func_148879_d()I  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, Xaeros_Minimap_21.10.44_Forge_1.7.10.jar, Xaeros_Minimap_FP21.10.40_Forge_1.7.10.jar
   3  net.minecraft.network.play.server.S38PacketPlayerListItem.<init>(Ljava.lang.String;ZI)V  # Paradigm-forge-1.7.10-2.5.4.jar, ServerUtilities-2.5.2.jar, tabfaces-1.0.16.jar
   3  net.minecraft.potion.Potion.<init>(Lnet.minecraft.util.ResourceLocation;ZI)V -> (IZI)V  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, Xaeros_Minimap_21.10.44_Forge_1.7.10.jar, Xaeros_Minimap_FP21.10.40_Forge_1.7.10.jar
   3  net.minecraft.server.MinecraftServer.getNetworkSystem()Lnet.minecraft.network.NetworkSystem;  # EasyLAN-v1.5-[1.7.10].jar, MiddleEarth-Tweaks-1.6.21.jar, mcheli-d4e3692.jar
   3  net.minecraft.server.MinecraftServer.getServerStatusResponse()Lnet.minecraft.network.ServerStatusResponse;  # Paradigm-forge-1.7.10-2.5.4.jar, forgeessentials-1.7.10-7.5.3-server.jar, tabfaces-1.0.16.jar
-  3  net.minecraft.server.integrated.IntegratedServer.setOnlineMode(Z)V  # Cloudflared-7.10.3.jar, e4mc-retro_forge-1.0.2+1.7.x.jar, portalfriends-forge-1.1.1-1.7.10.jar
   3  net.minecraft.server.management.ServerConfigurationManager.respawnPlayer(Lnet.minecraft.entity.player.EntityPlayerMP;IZ)Lnet.minecraft.entity.player.EntityPlayerMP;  # 1.7.10-ASJCore-1.7.0.3.jar, HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, ThaumicConcilium-1.1.1.jar
   3  net.minecraft.util.Session.<init>(Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;)V -> (Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;)V  # InGameAccountSwitcher-Forge-1.7-8.0.1.jar, manametalmod-8.0.8-1.jar, mcheli-d4e3692.jar
-  3  net.minecraft.world.WorldProvider.getSunBrightnessFactor(F)F  # DynamicSurroundings-1.7.10-1.0.9.0.jar, RX-RNTM-[3.3_X1000].jar, personalspace-1.1.0.jar
   3  net.minecraft.world.chunk.Chunk.func_150804_b(Z)V  # Eln-1.24.6.jar, MiddleEarth-Tweaks-1.6.21.jar, optimizationsandtweaks-V1.18.0.jar
   3  net.minecraft.world.chunk.Chunk.func_150809_p()V  # AIImprovements-1.7.10-0.0.1b8.jar, HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, lumi-mc1.7.10-1.2.2.jar
   3  net.minecraft.world.chunk.storage.RegionFile.getChunkDataInputStream(II)Ljava.io.DataInputStream;  # ServerUtilities-2.5.2.jar, XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, manametalmod-8.0.8-1.jar
@@ -136,17 +113,10 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.network.ServerStatusResponse.getPlayerCountData()Lnet.minecraft.network.ServerStatusResponse$PlayerCountData;  # Paradigm-forge-1.7.10-2.5.4.jar, tabfaces-1.0.16.jar
   2  net.minecraft.network.ServerStatusResponse.getServerDescription()Lnet.minecraft.util.IChatComponent;  # Paradigm-forge-1.7.10-2.5.4.jar, tabfaces-1.0.16.jar
   2  net.minecraft.network.ServerStatusResponse.setPlayerCountData(Lnet.minecraft.network.ServerStatusResponse$PlayerCountData;)V  # Paradigm-forge-1.7.10-2.5.4.jar, tabfaces-1.0.16.jar
-  2  net.minecraft.network.play.server.S13PacketDestroyEntities.<init>([I)V  # MiddleEarth-Tweaks-1.6.21.jar, Paradigm-forge-1.7.10-2.5.4.jar
   2  net.minecraft.network.play.server.S1CPacketEntityMetadata.<init>(ILnet.minecraft.entity.DataWatcher;Z)V  # Paradigm-forge-1.7.10-2.5.4.jar, mcheli-d4e3692.jar
-  2  net.minecraft.pathfinding.Path.addPoint(Lnet.minecraft.pathfinding.PathPoint;)Lnet.minecraft.pathfinding.PathPoint;  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar
-  2  net.minecraft.pathfinding.Path.changeDistance(Lnet.minecraft.pathfinding.PathPoint;F)V  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar
-  2  net.minecraft.pathfinding.Path.clearPath()V  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar
-  2  net.minecraft.pathfinding.Path.dequeue()Lnet.minecraft.pathfinding.PathPoint;  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar
-  2  net.minecraft.pathfinding.Path.isPathEmpty()Z  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar
   2  net.minecraft.pathfinding.PathFinder.openPoint(III)Lnet.minecraft.pathfinding.PathPoint;  # etfuturum-2.6.2.jar, zombieplague2.jar
   2  net.minecraft.pathfinding.PathNavigate.canNavigate()Z  # ancientwarfare-3.0.1-beta-MC1.7.10-FULL.jar, etfuturum-2.6.2.jar
   2  net.minecraft.pathfinding.PathNavigate.isPositionClear(IIIIIILnet.minecraft.util.Vec3;DD)Z  # ancientwarfare-3.0.1-beta-MC1.7.10-FULL.jar, etfuturum-2.6.2.jar
-  2  net.minecraft.pathfinding.PathPoint.makeHash(III)I  # Alfheim-67.jar, NotEnoughPets-1.7.10-2.4.1.jar
   2  net.minecraft.potion.PotionHelper.func_77905_c(I)Ljava.lang.String;  # Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar
   2  net.minecraft.server.MinecraftServer.getServerProxy()Ljava.net.Proxy;  # OpenComputers-MC1.7.10-1.8.10+667626d-universal.jar, narutomod-0.5.2.jar
   2  net.minecraft.server.MinecraftServer.setAllowFlight(Z)V  # EasyLAN-v1.5-[1.7.10].jar, forgeessentials-1.7.10-7.5.3-server.jar
@@ -155,24 +125,51 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.server.management.ServerConfigurationManager.updatePlayerPertinentChunks(Lnet.minecraft.entity.player.EntityPlayerMP;)V  # Game of Thrones 24.08.29.jar, MiddleEarth-Tweaks-1.6.21.jar
   2  net.minecraft.tileentity.TileEntityChest.getChestType()I  # curvy_pipes-1.7.10-1.15.12.jar, zombieplague2.jar
   2  net.minecraft.util.JsonUtils.getJsonObjectBooleanFieldValue(Lcom.google.gson.JsonObject;Ljava.lang.String;)Z  # ServerUtilities-2.5.2.jar, campfirebackport-1.7.10-1.11.3.jar
+  2  net.minecraft.village.MerchantRecipeList.func_151391_a(Lnet.minecraft.network.PacketBuffer;)V  # CustomNPC-Plus-1.11.1.jar, MorePlayerModels-Plus-4.2.jar
+  2  net.minecraft.world.ChunkPosition.<init>(Lnet.minecraft.util.Vec3;)V -> (III)V  # ChocoCraft-4.1.5.jar, ChocoCraftPlus-1.7.10-4.5.10.jar
+  2  net.minecraft.world.WorldProvider.canCoordinateBeSpawn(II)Z  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar
+  2  net.minecraft.world.WorldProvider.canDoLightning(Lnet.minecraft.world.chunk.Chunk;)Z  # RX-RNTM-[3.3_X1000].jar, optimizationsandtweaks-V1.18.0.jar
+  2  net.minecraft.world.WorldProvider.canDoRainSnowIce(Lnet.minecraft.world.chunk.Chunk;)Z  # RX-RNTM-[3.3_X1000].jar, optimizationsandtweaks-V1.18.0.jar
+  2  net.minecraft.world.WorldProvider.getDepartMessage()Ljava.lang.String;  # [1.7.10]Futurepack+18.7.jar, eyesintheshadows-0.0.3.jar
+  2  net.minecraft.world.WorldServer.getDefaultTeleporter()Lnet.minecraft.world.Teleporter;  # ForgottenRelics-1.7.10-1.7.4.jar, enderutilities-1.7.10-0.5.3.jar
+  2  net.minecraft.world.chunk.Chunk.getEntitiesOfTypeWithinAAAB(Ljava.lang.Class;Lnet.minecraft.util.AxisAlignedBB;Ljava.util.List;Lnet.minecraft.command.IEntitySelector;)V  # ServerUtilities-2.5.2.jar, forgeessentials-1.7.10-7.5.3-server.jar
+  2  net.minecraft.world.chunk.IChunkProvider.findClosestStructure(Lnet.minecraft.world.World;Ljava.lang.String;III)Lnet.minecraft.world.ChunkPosition;  # AIImprovements-1.7.10-0.0.1b8.jar, structure-finder-1.7.10-forge-1.5.1.jar
+  2  net.minecraft.world.chunk.storage.RegionFile.<init>(Ljava.io.File;)V  # ServerUtilities-2.5.2.jar, manametalmod-8.0.8-1.jar
+  2  net.minecraft.world.chunk.storage.RegionFile.close()V  # ServerUtilities-2.5.2.jar, manametalmod-8.0.8-1.jar
+  2  net.minecraft.world.chunk.storage.RegionFile.getChunkDataOutputStream(II)Ljava.io.DataOutputStream;  # ServerUtilities-2.5.2.jar, manametalmod-8.0.8-1.jar
+  2  net.minecraft.world.chunk.storage.RegionFileCache.createOrLoadRegionFile(Ljava.io.File;II)Lnet.minecraft.world.chunk.storage.RegionFile;  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, forgeessentials-1.7.10-7.5.3-server.jar
+  2  net.minecraft.world.gen.ChunkProviderServer.loadChunk(IILjava.lang.Runnable;)Lnet.minecraft.world.chunk.Chunk;  # ServerUtilities-2.5.2.jar, optimizationsandtweaks-V1.18.0.jar
+  2  net.minecraft.world.gen.structure.StructureMineshaftStart.<init>(Lnet.minecraft.world.World;Ljava.util.Random;II)V  # bettercaves-1.0.jar, etfuturum-2.6.2.jar
+  2  net.minecraft.world.storage.ISaveHandler.saveWorldInfo(Lnet.minecraft.world.storage.WorldInfo;)V  # LoTAS1.7.10-2.0.0.jar, forgeessentials-1.7.10-7.5.3-server.jar
+  2  net.minecraft.world.storage.WorldInfo.<init>(Lnet.minecraft.world.WorldSettings;Ljava.lang.String;)V -> ()V  # AIImprovements-1.7.10-0.0.1b8.jar, LoTAS1.7.10-2.0.0.jar
+  2  net.minecraft.world.storage.WorldInfo.cloneNBTCompound(Lnet.minecraft.nbt.NBTTagCompound;)Lnet.minecraft.nbt.NBTTagCompound;  # forgeessentials-1.7.10-7.5.3-server.jar, personalspace-1.1.0.jar
+  2  net.minecraftforge.common.FishingHooks.removeFish(Lcom.google.common.base.Predicate;)V  # HBM-NTM-.1.0.27_X5853_H261.jar, RX-RNTM-[3.3_X1000].jar
+  2  net.minecraftforge.common.FishingHooks.removeJunk(Lcom.google.common.base.Predicate;)V  # HBM-NTM-.1.0.27_X5853_H261.jar, RX-RNTM-[3.3_X1000].jar
+  2  net.minecraftforge.common.FishingHooks.removeTreasure(Lcom.google.common.base.Predicate;)V  # HBM-NTM-.1.0.27_X5853_H261.jar, RX-RNTM-[3.3_X1000].jar
+  2  net.minecraftforge.common.ForgeVersion$Status.OUTDATED:Lnet.minecraftforge.common.ForgeVersion$Status;  # narutomod-0.5.2.jar, okcore-26.11.15.1.jar
+  2  net.minecraftforge.common.ForgeVersion$Status.UP_TO_DATE:Lnet.minecraftforge.common.ForgeVersion$Status;  # HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, okcore-26.11.15.1.jar
+  2  net.minecraftforge.common.config.Configuration.get(Ljava.lang.String;Ljava.lang.String;[Ljava.lang.String;Ljava.lang.String;Ljava.util.regex.Pattern;)Lnet.minecraftforge.common.config.Property;  # campfirebackport-1.7.10-1.11.3.jar, torchkey-mc1.7.10-1.0.1.jar
+  2  net.minecraftforge.common.network.ForgeMessage$DimensionRegisterMessage.<init>(II)V  # Pokecube Legacy 1.3.3.jar, forgeessentials-1.7.10-7.5.3-server.jar
+  2  net.minecraftforge.event.ForgeEventFactory.fireZombieSummonAid(Lnet.minecraft.entity.monster.EntityZombie;Lnet.minecraft.world.World;IIILnet.minecraft.entity.EntityLivingBase;D)Lnet.minecraftforge.event.entity.living.ZombieEvent$SummonAidEvent;  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar
+  2  net.minecraftforge.event.ForgeEventFactory.onPotionBrewed([Lnet.minecraft.item.ItemStack;)V  # etfuturum-2.6.2.jar, zombieplague2.jar
+  2  net.minecraftforge.event.terraingen.BiomeEvent$CreateDecorator.newBiomeDecorator:Lnet.minecraft.world.biome.BiomeDecorator;  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar
+  2  net.minecraftforge.event.terraingen.SaplingGrowTreeEvent.rand:Ljava.util.Random;  # Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar
+  1  cpw.mods.fml.common.DuplicateModsFoundException.<init>(Lcom.google.common.collect.SetMultimap;)V  # optimizationsandtweaks-V1.18.0.jar
 ```
 
-## client-side API (top 150 of 479)
+## client-side API (top 150 of 464)
 
 ```
   8  net.minecraft.client.renderer.entity.RenderPlayer.doRender(Lnet.minecraft.client.entity.AbstractClientPlayer;DDDFF)V  # AM2.5-LTS-1.6.7.jar, ApolloClient-v1.3.1.b21-2026-11-06.jar, MorePlayerModels-Plus-4.2.jar ...
-  7  net.minecraft.client.settings.GameSettings.chatVisibility:Lnet.minecraft.entity.player.EntityPlayer$EnumChatVisibility;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, CustomPlayerModels-1.7.10-0.6.27a.jar, Pokecube Legacy 1.3.3.jar ...
   6  net.minecraft.client.gui.ChatLine.getChatComponent()Lnet.minecraft.util.IChatComponent;  # Alfheim-67.jar, ApolloClient-v1.3.1.b21-2026-11-06.jar, CrossTie-1.0.0-Alpha17.jar ...
   6  org.lwjgl.input.Cursor.<init>(IIIIILjava.nio.IntBuffer;Ljava.nio.IntBuffer;)V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, CustomCursorMod1.2.2-1.7.10.jar, TailsLegacy-4.0.3+1.7.10-forge.jar ...
   6  org.lwjgl.input.Mouse.setNativeCursor(Lorg.lwjgl.input.Cursor;)Lorg.lwjgl.input.Cursor;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, CustomCursorMod1.2.2-1.7.10.jar, TailsLegacy-4.0.3+1.7.10-forge.jar ...
-  5  net.minecraft.client.Minecraft.isUnicode()Z  # Xaeros_Minimap_21.10.44_Forge_1.7.10.jar, Xaeros_Minimap_FP21.10.40_Forge_1.7.10.jar, manametalmod-8.0.8-1.jar ...
   5  net.minecraft.client.gui.GuiGameOver.<init>()V  # EnviroMine-1.3.132.jar, cinematic_respawn-1.7.10-forge-1.4.3.jar, enviromine-1.3.148-ESE-0x01.jar ...
   5  net.minecraft.client.gui.inventory.GuiChest.<init>(Lnet.minecraft.inventory.IInventory;Lnet.minecraft.inventory.IInventory;)V  # Game of Thrones 24.08.29.jar, backtonew-1.7.10-b1.0.jar, etfuturum-2.6.2.jar ...
   5  net.minecraft.network.handshake.client.C00Handshake.<init>(ILjava.lang.String;ILnet.minecraft.network.EnumConnectionState;)V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, LoTAS1.7.10-2.0.0.jar, ServerUtilities-2.5.2.jar ...
   4  net.minecraft.client.audio.SoundEventAccessorComposite.func_148720_g()Lnet.minecraft.client.audio.SoundPoolEntry;  # HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, OpenComputers-MC1.7.10-1.8.10+667626d-universal.jar, matmos-1.7.10-36.0.1.jar ...
   4  net.minecraft.client.audio.SoundHandler.getSound(Lnet.minecraft.util.ResourceLocation;)Lnet.minecraft.client.audio.SoundEventAccessorComposite;  # HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, OpenComputers-MC1.7.10-1.8.10+667626d-universal.jar, matmos-1.7.10-36.0.1.jar ...
   4  net.minecraft.client.audio.SoundHandler.sndRegistry:Lnet.minecraft.client.audio.SoundRegistry;  # DynamicSurroundings-1.7.10-1.0.9.0.jar, UniversalModCore-1.7.10-forge-1.3.1.jar, esm-legacy-1.7.10-1.1.1.jar ...
-  4  net.minecraft.client.entity.EntityPlayerSP.getFOVMultiplier()F  # ApolloClient-v1.3.1.b21-2026-11-06.jar, backhand-1.4.1.jar, mcheli-d4e3692.jar ...
   4  net.minecraft.client.gui.GuiNewChat.<init>(Lnet.minecraft.client.Minecraft;)V -> ()V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, Salutation-1.7.10-1.0.2.jar, tabbychat-1.12.2.jar ...
   4  net.minecraft.client.gui.GuiScreenBook.<init>(Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.item.ItemStack;Z)V  # AM2PlayGround-Beta-0.12.1.jar, Hardcore+Wither-1.7.10-1.1.3-21-universal.jar, HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar ...
   4  net.minecraft.client.multiplayer.GuiConnecting.<init>(Lnet.minecraft.client.gui.GuiScreen;Lnet.minecraft.client.Minecraft;Lnet.minecraft.client.multiplayer.ServerData;)V  # BHMenu-Forge-1.7.10-2.4.7.jar, CraftPresence-2.7.1+1.7.10-forge.jar, ServerRedirect-ForgeMC7-1.4.5.jar ...
@@ -185,13 +182,11 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   4  net.minecraft.client.renderer.entity.RenderPlayer.renderEquippedItems(Lnet.minecraft.client.entity.AbstractClientPlayer;F)V  # AM2.5-LTS-1.6.7.jar, NarutoDestinationMod-1.36.1.jar, etfuturum-2.6.2.jar ...
   4  net.minecraft.client.resources.data.IMetadataSerializer.registerMetadataSectionType(Lnet.minecraft.client.resources.data.IMetadataSectionSerializer;Ljava.lang.Class;)V  # Factorization-1.7.10-0.8.109.jar, MatterOverdrive-1.7.10-0.4.5.jar, immibis-core-59.1.4.jar ...
   4  net.minecraft.client.resources.data.PackMetadataSection.<init>(Lnet.minecraft.util.IChatComponent;I)V  # BetterFoliage-LegacyEdition-1.2.4.jar, CatFrame-0.10.10.jar, CatFrame-0.10.11.jar ...
-  4  net.minecraft.network.play.client.C12PacketUpdateSign.<init>(III[Ljava.lang.String;)V  # Floocraft-1.7.10-1.7.jar, etfuturum-2.6.2.jar, hextext-1.3.jar ...
   4  net.minecraft.util.ScreenShotHelper.saveScreenshot(Ljava.io.File;IILnet.minecraft.client.shader.Framebuffer;)Lnet.minecraft.util.IChatComponent;  # [1.7.10] SecurityCraft v1.8.13.jar, compatlib-1.7.10.jar, optimizationsandtweaks-V1.18.0.jar ...
   3  net.minecraft.client.Minecraft.getWorldProviderName()Ljava.lang.String;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, zombieplague2.jar, 永爱之剑0.1.jar
   3  net.minecraft.client.audio.SoundHandler.missing_sound:Lnet.minecraft.client.audio.SoundPoolEntry;  # HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, matmos-1.7.10-36.0.1.jar, okcore-26.11.15.1.jar
   3  net.minecraft.client.audio.SoundManager.sndSystem:Lnet.minecraft.client.audio.SoundManager$SoundSystemStarterThread;  # DynamicSurroundings-1.7.10-1.0.9.0.jar, OpenComputers-MC1.7.10-1.8.10+667626d-universal.jar, matmos-1.7.10-36.0.1.jar
   3  net.minecraft.client.audio.SoundPoolEntry.getSoundPoolEntryLocation()Lnet.minecraft.util.ResourceLocation;  # OpenComputers-MC1.7.10-1.8.10+667626d-universal.jar, matmos-1.7.10-36.0.1.jar, okcore-26.11.15.1.jar
-  3  net.minecraft.client.entity.EntityClientPlayerMP.getFOVMultiplier()F  # ApolloClient-v1.3.1.b21-2026-11-06.jar, backhand-1.4.1.jar, optimizationsandtweaks-V1.18.0.jar
   3  net.minecraft.client.entity.EntityClientPlayerMP.getHorseJumpPower()F  # ApolloClient-v1.3.1.b21-2026-11-06.jar, Game of Thrones 24.08.29.jar, 永爱之剑0.1.jar
   3  net.minecraft.client.entity.EntityClientPlayerMP.isRidingHorse()Z  # ApolloClient-v1.3.1.b21-2026-11-06.jar, theoffhandmod-1.1.4.jar, 永爱之剑0.1.jar
   3  net.minecraft.client.gui.ChatLine.<init>(ILnet.minecraft.util.IChatComponent;I)V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, mcheli-d4e3692.jar, tabbychat-1.12.2.jar
@@ -201,7 +196,6 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  net.minecraft.client.gui.GuiShareToLan.<init>(Lnet.minecraft.client.gui.GuiScreen;)V  # EasyLAN-v1.5-[1.7.10].jar, NarutoDestinationMod-1.36.1.jar, zombieplague2.jar
   3  net.minecraft.client.gui.GuiSleepMP.<init>()V  # Salutation-1.7.10-1.0.2.jar, manametalmod-8.0.8-1.jar, optimizationsandtweaks-V1.18.0.jar
   3  net.minecraft.client.gui.inventory.CreativeCrafting.<init>(Lnet.minecraft.client.Minecraft;)V  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar, inventorypets-1.7.10-1.5.2.jar
-  3  net.minecraft.client.multiplayer.PlayerControllerMP.interactWithEntitySendPacket(Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.entity.Entity;)Z  # backhand-1.4.1.jar, optimizationsandtweaks-V1.18.0.jar, theoffhandmod-1.1.4.jar
   3  net.minecraft.client.multiplayer.PlayerControllerMP.sendPacketDropItem(Lnet.minecraft.item.ItemStack;)V  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar, inventorypets-1.7.10-1.5.2.jar
   3  net.minecraft.client.multiplayer.ServerAddress.getIP()Ljava.lang.String;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, PingDisplay.jar, ServerUtilities-2.5.2.jar
   3  net.minecraft.client.multiplayer.ServerAddress.getPort()I  # ApolloClient-v1.3.1.b21-2026-11-06.jar, PingDisplay.jar, ServerUtilities-2.5.2.jar
@@ -222,7 +216,6 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  net.minecraft.network.login.client.C00PacketLoginStart.<init>(Lcom.mojang.authlib.GameProfile;)V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, LoTAS1.7.10-2.0.0.jar, steambridge-1.2-Forge-1.7.10.jar
   3  net.minecraft.network.play.client.C02PacketUseEntity$Action.ATTACK:Lnet.minecraft.network.play.client.C02PacketUseEntity$Action;  # Game of Thrones 24.08.29.jar, Paradigm-forge-1.7.10-2.5.4.jar, backhand-1.4.1.jar
   3  net.minecraft.network.play.client.C02PacketUseEntity.getAction()Lnet.minecraft.network.play.client.C02PacketUseEntity$Action;  # Game of Thrones 24.08.29.jar, Paradigm-forge-1.7.10-2.5.4.jar, backhand-1.4.1.jar
-  3  net.minecraft.network.play.client.C0BPacketEntityAction.<init>(Lnet.minecraft.entity.Entity;I)V  # Salutation-1.7.10-1.0.2.jar, schematica_plus-1.0.0-beta.4.jar, tabbychat-1.12.2.jar
   3  net.minecraft.util.MouseFilter.<init>()V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, optimizationsandtweaks-V1.18.0.jar, swansong-mc1.7.10-1.3.7.jar
   3  net.minecraftforge.client.ForgeHooksClient.renderMainMenu(Lnet.minecraft.client.gui.GuiMainMenu;Lnet.minecraft.client.gui.FontRenderer;II)V  # Game of Thrones 24.08.29.jar, aether-1.7.10-v1.1.2.5.jar, fossilsarcheology-7.3.2.jar
   3  net.minecraftforge.client.GuiIngameForge.<init>(Lnet.minecraft.client.Minecraft;)V -> ()V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, optimizationsandtweaks-V1.18.0.jar, 永爱之剑0.1.jar
@@ -310,6 +303,13 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.client.resources.data.FontMetadataSectionSerializer.<init>()V  # Factorization-1.7.10-0.8.109.jar, optimizationsandtweaks-V1.18.0.jar
   2  net.minecraft.client.resources.data.LanguageMetadataSectionSerializer.<init>()V  # Factorization-1.7.10-0.8.109.jar, optimizationsandtweaks-V1.18.0.jar
   2  net.minecraft.client.resources.data.PackMetadataSection.func_152805_a()Lnet.minecraft.util.IChatComponent;  # CatFrame-0.10.10.jar, CatFrame-0.10.11.jar
+  2  net.minecraft.client.resources.data.PackMetadataSection.getPackFormat()I  # CatFrame-0.10.10.jar, CatFrame-0.10.11.jar
+  2  net.minecraft.client.resources.data.PackMetadataSectionSerializer.<init>()V  # Factorization-1.7.10-0.8.109.jar, optimizationsandtweaks-V1.18.0.jar
+  2  net.minecraft.client.resources.data.TextureMetadataSectionSerializer.<init>()V  # Factorization-1.7.10-0.8.109.jar, optimizationsandtweaks-V1.18.0.jar
+  2  net.minecraft.network.NetHandlerPlayServer.processPlayerDigging(Lnet.minecraft.network.play.client.C07PacketPlayerDigging;)V  # Game of Thrones 24.08.29.jar, schematica_plus-1.0.0-beta.4.jar
+  2  net.minecraft.network.play.client.C02PacketUseEntity$Action.INTERACT:Lnet.minecraft.network.play.client.C02PacketUseEntity$Action;  # Game of Thrones 24.08.29.jar, backhand-1.4.1.jar
+  2  net.minecraft.network.play.client.C02PacketUseEntity.getEntityFromWorld(Lnet.minecraft.world.World;)Lnet.minecraft.entity.Entity;  # Game of Thrones 24.08.29.jar, backhand-1.4.1.jar
+  2  net.minecraft.network.play.client.C0EPacketClickWindow.getWindowId()I  # AM2.5-LTS-1.6.7.jar, Paradigm-forge-1.7.10-2.5.4.jar
 ```
 
 ## mod-side API (top 150 of 413)
