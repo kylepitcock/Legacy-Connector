@@ -1,0 +1,5 @@
+# 1.2.5 game members that 1.4.7 has under another readable (Feather) name, found by hand while ranking the unresolved references of the corpus (docs/wiki/Legacy-1.2.5-Corpus.md).
+# kind (m method, f field)  readable owner (1.2.5 = 1.4.7 name)  readable name 1.2.5  readable name 1.4.7 ; the descriptor must match up to class names
+m	net/minecraft/util/math/Box	fromPool	of
+m	net/minecraft/util/math/Vec3d	fromPool	of
+m	net/minecraft/client/gui/screen/Screen	isPauseScreen	shouldPauseGame

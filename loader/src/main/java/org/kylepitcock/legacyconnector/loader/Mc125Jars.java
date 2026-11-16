@@ -39,7 +39,75 @@ public final class Mc125Jars {
     /** Jars found to be 1.2.5, with the reason (reported by the locator; the jar is not hosted). */
     private static final Map<Path, String> UNSUPPORTED = new ConcurrentHashMap<>();
 
+    /** Jars that are the ModLoader / ModLoaderMP / Forge distribution itself: the layer provides that API, so they are skipped and reported. */
+    private static final Map<Path, String> API_DISTRIBUTIONS = new ConcurrentHashMap<>();
+    /** Default-package classes of the ModLoader and ModLoaderMP distributions (the shim provides them). */
+    public static final Set<String> MODLOADER_API = Set.of("BaseMod", "ModLoader", "MLProp", "ModTextureStatic", "ModTextureAnimation", "EntityRendererProxy",
+            "BaseModMp", "ModLoaderMp", "ISpawnable", "Packet230ModLoader", "NetClientHandlerEntity", "EntityTrackerEntry2");
+    /** The {@code mod_*} entry classes of the API distributions (Forge's and ModLoaderMP's own loader hooks): not mods. */
+    private static final Set<String> API_ENTRIES = Set.of("mod_MinecraftForge", "mod_ModLoaderMp");
+
     private Mc125Jars() {}
+
+    /**
+     * A CraftBukkit / MCPC build ({@code *_bukkit.zip}, {@code *-mcpc.jar}): it names the game by MCP names ({@code net/minecraft/server/World}) instead of 1.2.5's obfuscation, so the join
+     * table does not apply. At least five distinct {@code net/minecraft/server/} classes other than {@code MinecraftServer} (the one class a notch server jar names there) are referenced.
+     */
+    static boolean isMcpNamedServerBuild(ZipFile zip) {
+        Set<String> names = new HashSet<>();
+        Enumeration<? extends ZipEntry> en = zip.entries();
+        while (en.hasMoreElements()) {
+            ZipEntry entry = en.nextElement();
+            if (entry.isDirectory() || !entry.getName().endsWith(".class")) continue;
+            try (InputStream in = zip.getInputStream(entry)) {
+                new ClassReader(in).accept(new org.objectweb.asm.commons.ClassRemapper(new ClassVisitor(Opcodes.ASM9) {}, new org.objectweb.asm.commons.Remapper() {
+                    @Override
+                    public String map(String internalName) {
+                        if (internalName.startsWith("net/minecraft/server/") && !internalName.equals("net/minecraft/server/MinecraftServer")) names.add(internalName);
+                        return internalName;
+                    }
+                }), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            } catch (IOException | RuntimeException e) {
+                // an unreadable class does not count
+            }
+            if (names.size() >= 5) return true;
+        }
+        return false;
+    }
+
+    /** The reason a jar was recognised as an API distribution (taken once), or null. */
+    public static String takeApiDistribution(Path path) {
+        return API_DISTRIBUTIONS.remove(path);
+    }
+
+    /** The line the compatibility report shows for such a jar. */
+    public static String apiDistributionLine(String fileName, String what) {
+        return fileName + ": " + what + "; Legacy Connector provides this API itself, so the file is not loaded (remove it)";
+    }
+
+    static void recordApiDistribution(Path path, String what) {
+        API_DISTRIBUTIONS.put(path, what);
+    }
+
+    /**
+     * The ModLoader, ModLoaderMP or Forge distribution zip: it carries ModLoader's own default-package classes (and Forge's {@code forge/} package, ModLoaderMP's {@code BaseModMp}) and no
+     * mod of its own ({@code mod_MinecraftForge} and {@code mod_ModLoaderMp} are loader hooks). Null when the jar is something else; else a description.
+     */
+    static String apiDistribution(ZipFile zip) {
+        int api = 0, forge = 0;
+        Enumeration<? extends ZipEntry> en = zip.entries();
+        while (en.hasMoreElements()) {
+            String n = en.nextElement().getName();
+            if (!n.endsWith(".class")) continue;
+            String c = n.substring(0, n.length() - 6);
+            if (c.indexOf('/') < 0) {
+                if (MODLOADER_API.contains(c)) api++;
+                else if (c.startsWith("mod_") && c.indexOf('$') < 0 && !API_ENTRIES.contains(c)) return null; // a real mod
+            } else if (c.startsWith("forge/")) forge++;
+        }
+        if (api == 0) return null;
+        return forge > 0 ? "Minecraft Forge distribution (ModLoader + forge/*)" : "ModLoader / ModLoaderMP distribution";
+    }
 
     /** The reason a jar was recognised as 1.2.5 (taken once), or null. */
     public static String takeUnsupported(Path path) {
@@ -59,6 +127,8 @@ public final class Mc125Jars {
     static final class Side {
         final Set<String> classes = new HashSet<>();
         final Set<String> members = new HashSet<>();
+        /** {@code name desc} of every obfuscated member of any class: a reference through a subclass (javac names the receiver type, not the declaring class) matches here. */
+        final Set<String> loose = new HashSet<>();
     }
 
     private static volatile Side[] sides;
@@ -77,7 +147,10 @@ public final class Mc125Jars {
                         if (p.length < 3) continue;
                         Side side = p[0].equals("c") ? client : server;
                         if (p[1].equals("C")) side.classes.add(p[2]);
-                        else if (p.length >= 5) side.members.add(p[2] + "." + p[3] + " " + p[4]);
+                        else if (p.length >= 5) {
+                            side.members.add(p[2] + "." + p[3] + " " + p[4]);
+                            side.loose.add(p[3] + " " + p[4]);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -131,7 +204,10 @@ public final class Mc125Jars {
                                 if (owner.indexOf('/') >= 0 || own.contains(owner) || mname.length() > 3 || mname.startsWith("<")) return;
                                 total[0]++;
                                 String key = owner + "." + mname + " " + mdesc;
-                                for (int i = 0; i < 2; i++) if (s[i].members.contains(key)) hits[i]++;
+                                for (int i = 0; i < 2; i++) {
+                                    // a member inherited from a superclass is named through the receiver's class (EntityPlayer.posX is declared in Entity)
+                                    if (s[i].members.contains(key) || (s[i].classes.contains(owner) && s[i].loose.contains(mname + " " + mdesc))) hits[i]++;
+                                }
                             }
                         };
                     }

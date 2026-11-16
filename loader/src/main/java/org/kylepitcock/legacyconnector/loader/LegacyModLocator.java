@@ -131,7 +131,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
      * that inspect as legacy mods). One level only. The inner archives are copied to {@code nestedDir} as {@code <bundle>-<inner>} (content hash of
      * the copy keys the translation cache, so an updated bundle re-translates). Empty when the archive is not a bundle.
      */
-    static List<Path> bundledMods(Path archive, Path nestedDir) {
+    public static List<Path> bundledMods(Path archive, Path nestedDir) {
         List<Path> out = new ArrayList<>();
         try (ZipFile zip = new ZipFile(archive.toFile())) {
             List<ZipEntry> inner = new ArrayList<>();
@@ -315,6 +315,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             if (packaged == null) packaged = unwrapRootFolder(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
+                            String apiDist = jar == null ? Mc125Jars.takeApiDistribution(packaged != null ? packaged : p) : null;
+                            if (apiDist != null) {
+                                // the ModLoader / ModLoaderMP / Forge zip itself: the layer provides that API, loading a second copy would only shadow it
+                                context.addLocated(p);
+                                LOG.warn("Legacy Connector: {} is a {}; Legacy Connector provides that API, so it is not loaded", p.getFileName(), apiDist);
+                                notSupportedNotes.add(Mc125Jars.apiDistributionLine(p.getFileName().toString(), apiDist));
+                                continue;
+                            }
                             String unsupported = jar == null ? Mc125Jars.takeUnsupported(packaged != null ? packaged : p) : null;
                             if (unsupported != null) {
                                 // a Minecraft version this layer recognises but does not host yet: reported, never mis-hosted as another version
@@ -390,6 +398,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LIBRARY_SKIPS.putAll(libraries.unsupported());
             // b1.7.3 mods released as a client and a server build: the build for this side loads
             LIBRARY_SKIPS.putAll(BetaJars.selectBuilds(legacy, side()));
+            // Minecraft 1.2.5 mods (opt-in) come the same way
+            LIBRARY_SKIPS.putAll(Mc125Builds.select(legacy, side()));
             libraryNotes = libraries.notes();
             liteNotes = liteLoaderNotes(List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
