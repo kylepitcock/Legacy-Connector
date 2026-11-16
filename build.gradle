@@ -505,6 +505,10 @@ tasks.register('checkLegacyMod', JavaExec) {
     if (project.findProperty('keepDir')) systemProperty 'legacyconnector.check.keep', project.findProperty('keepDir').toString()
     // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
     if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
+    // -Pmappings125: host Minecraft 1.2.5 jars through the 1.4.7 chain (needs the generated join table, see docs/wiki/Legacy-1.2.5.md)
+    if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
+    // -Pmc125Unresolved=<file>: append the game members of 1.2.5 jars the join table could not name (diagnostics)
+    if (project.findProperty('mc125Unresolved')) systemProperty 'legacyconnector.mc125.unresolved', project.findProperty('mc125Unresolved').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }
 

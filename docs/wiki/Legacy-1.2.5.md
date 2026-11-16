@@ -1,13 +1,12 @@
 # Legacy 1.2.5 (ModLoader and early Forge): design
 
-Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **design**; the
-only code so far is version detection (stage 1, below). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
+Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an opt-in** (stages 1 to 3 below);
+the corpus measurements are in [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
 (the forward layer this note recommends hosting on), [Version roadmap](Version-Roadmap.md).
 
-No 1.2.5 mod was available locally when this note was written (`test-mods-mcarchive`, `test-mods-b173`, `test-mods-147` hold 1.4.7 to Beta jars only; the
-"1.2.5" hits in the file tree are mod versions of 1.7.10/1.12.2 jars). Everything below about mod internals is therefore from the API's history and from the
-mapping data, not from a measured corpus; the places that need a real jar to confirm are marked **verify**. The first thing to do when a sample arrives is a corpus
-page like [Legacy 1.4.7 corpus](Legacy-1.4.7-Corpus.md).
+The first draft of this note (2026-11-16 morning) was written without a 1.2.5 jar. Since then 91 real archives from MCArchive were measured
+([Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md), `tools/compat/scan_125.py`) and the real `ModLoader.class`, `BaseMod.class`, ModLoaderMP and Forge 3.3.7.135 were read with `javap`; what they
+changed is marked **measured** below, and the corrected statements replace the guesses. The member tables for the shim worker are in `tools/dev/agent-tasks/1.2.5-shim-requests.md`.
 
 ## What a 1.2.5 mod is
 
@@ -15,16 +14,26 @@ page like [Legacy 1.4.7 corpus](Legacy-1.4.7-Corpus.md).
   kept its name) and distributed as a zip to be merged into `minecraft.jar`, or as a jar for ModLoader's `mods/` folder (ModLoader scans it). The client and the server of 1.2.5 were
   obfuscated **separately** (`Block` has a different name in each), so a mod ships a client build and a ModLoaderMP/SMP server build with the same `mod_X` class, exactly like Beta.
   Client mods dominate; many are client-only (renderers, GUIs, key binds) and many SMP mods are one jar with server classes next to the client ones.
-- **`BaseMod` subclasses named `mod_*`** in the default package; ModLoader finds them by file name, constructs them and calls the hooks. Static `ModLoader` API (from the Beta layer's
-  shim and from memory of 1.2.5; **verify** capitalisation on a real jar): `AddName`, `AddRecipe`, `AddShapelessRecipe`, `AddSmelting`, `RegisterBlock`, `RegisterEntityID`, `AddSpawn`,
-  `RemoveSpawn`, `RegisterTileEntity`, `addOverride` (a texture file replaces or fills a slot of `terrain.png`/`items.png`), `getUniqueSpriteIndex`, `SetInGameHook`, `SetInGUIHook`,
-  `RegisterKey`, `OpenGUI`, `AddArmor`, `AddLocalization`, `AddAchievementDesc`, `addAnimation`, `getPrivateValue`/`setPrivateValue`, `getMinecraftInstance`. Instance hooks of
-  `BaseMod`: `load`, `modsLoaded`, `onTickInGame`, `onTickInGUI`, `keyboardEvent`, `generateSurface`, `generateNether`, `addRenderer`, `renderWorldBlock`, `renderInvBlock`,
-  `takenFromCrafting`, `takenFromFurnace`, `addFuel`, `registerAnimation`. 1.3.1 lower-cased the statics; the 1.4.7 shim has the lower-case form, the Beta shim the capitalised form. `@MLProp` fields are the config.
-- **ModLoaderMP** (`BaseModMp`, `ModLoaderMp`, `Packet230ModLoader`) for SMP; 1.2.5's ModLoaderMP was still the packet-230 model (Forge's custom payload packets arrive with 1.3).
-- **Early Forge (3.x).** Forge for 1.2.x ships as `net.minecraft.src.forge.*` in `minecraft.jar` (`MinecraftForge`, `ITextureProvider`, `IGuiHandler`, `IOreHandler`/`registerOre`,
-  `ISpecialArmor`..., `MinecraftForgeClient.preloadTexture`), no FML (FML starts with 1.3.2), no `@Mod`. **verify** the package: the Beta layer names `forge/*` as `net/minecraft/src/forge/*`
-  already, which is where 1.2.x had them. Forge-era mods use `ITextureProvider.getTextureFile()` for their own sprite sheets and `Block.blockID` numeric ids from a config file.
+- **`BaseMod` subclasses named `mod_*`** in the default package; ModLoader finds them by file name, constructs them and calls the hooks. **Measured** (real `ModLoader 1.2.5.zip`, 2012-04-02): the statics and the hooks are **lower case**, exactly the 1.4.7 spelling (the capitalised
+  `AddName`/`OnTickInGame` is Beta's only; no corpus jar uses it). Statics (all `public static`): `addAchievementDesc(Achievement,String,String)`, `addAllFuel`, `addAllRenderers`, `addAnimation(TextureFX)`, `addArmor`,
+  `addBiome`/`removeBiome`, `addLocalization` (2 overloads), `addName` (2), `addOverride(String,String)` returning the sprite index and `addOverride(String,String,int)`, `addRecipe`, `addShapelessRecipe`, `addSmelting`,
+  `addSpawn`/`removeSpawn` (Class or String, with or without biomes), `dispenseEntity`, `genericContainerRemoval`, `getLoadedMods`, `getLogger`, `getMinecraftInstance`, `getPrivateValue`/`setPrivateValue` (name or index),
+  `getUniqueBlockModelID`, `getUniqueEntityId`, `getUniqueSpriteIndex`, `isGUIOpen`, `isModLoaded`, `loadConfig`/`saveConfig`, `loadImage`, `onItemPickup`, `openGUI`, `registerBlock` (2), `registerEntityID` (2),
+  `registerKey`, `registerPacketChannel`, `registerTileEntity` (2, the second with a renderer), `renderBlockIsItemFull3D`, `sendPacket`, `serverChat`, `setInGameHook`, `setInGUIHook`, `takenFromCrafting`,
+  `takenFromFurnace`, `throwException`, plus the callbacks the patched game classes call (`onTick`, `populateChunk`, `receivePacket`, `registerAllKeys`, `registerAllTextureOverrides`, `renderInvBlock`,
+  `renderWorldBlock`, `serverConnect`, `serverDisconnect`); fields `DEBUG`, `VERSION`, `props`, `cfgLoggingLevel`. Instance hooks of `BaseMod`: abstract `getVersion()` and `load()`; `modsLoaded`, `onTickInGame(float, Minecraft)`
+  (client; the server build has `onTickInGame(MinecraftServer)`), `onTickInGUI(float, Minecraft, GuiScreen)`, `keyboardEvent`, `generateSurface`/`generateNether(World,Random,int,int)`, `addRenderer(Map)`,
+  `renderWorldBlock`, `renderInvBlock`, `takenFromCrafting`, `takenFromFurnace`, `addFuel`, `registerAnimation`, `onItemPickup`, `dispenseEntity`, `getName`, `getPriorities`, `receiveChatPacket(String)`,
+  `receiveCustomPacket(Packet250CustomPayload)`, `serverConnect(NetClientHandler)`, `serverDisconnect()`. `@MLProp` fields are the config. ModLoader 1.2.5 is itself a jar mod: it ships 13 patched game classes
+  (NetClientHandler, RenderBlocks, BlockDispenser, ...) plus `ModLoader`, `BaseMod`, `MLProp`, `ModTextureStatic`, `ModTextureAnimation`, `EntityRendererProxy` unobfuscated.
+- **ModLoaderMP** (`BaseModMp`, `ModLoaderMp`, `Packet230ModLoader`, `NetClientHandlerEntity`, `ISpawnable`) for SMP; **measured**: still the packet-230 model (`modId`, `packetType`, int/float/double/String arrays;
+  `BaseModMp.handlePacket`, `handleGUI(int)`, `handleTileEntityPacket`), 11 corpus units use it. ModLoader 1.2.5 itself already has the packet-250 channel API (`registerPacketChannel`, `sendPacket`, `receivePacket`);
+  Forge's `NetworkMod`/`IPacketHandler` ride the same packet 250.
+- **Early Forge (3.x).** **Measured** (Forge 3.3.7.135, 51 corpus units): the package is the top-level **`forge`** (`forge/MinecraftForge`, `forge/ITextureProvider`, `forge/IGuiHandler`,
+  `forge/IOreHandler`, `forge/ISpecialArmor`, `forge/MinecraftForgeClient.preloadTexture`, `forge/Configuration`, `forge/NetworkMod`, `forge/oredict/*`), not `net.minecraft.src.forge`. It is **not** FML-free:
+  Forge 3.3.x for 1.2.5 bundles FML 2.2.48 (`cpw/mods/fml`: `@Mod` with `Mod$PreInit/Init/PostInit`, `ITickHandler`, `IWorldGenerator`, `FMLCommonHandler`, ModLoader reimplemented as
+  `cpw.mods.fml.common.modloader`) and replaces the default-package `ModLoader`/`BaseMod` by FML's versions of the same API. Only IC2, Forestry, PortalGun and LogisticsPipes reference `cpw.mods.fml`, in
+  optional compat code. Forge-era mods use `ITextureProvider.getTextureFile()` for their own sprite sheets and `Block.blockID` numeric ids from a config file.
 - **Numeric ids and sheets.** Block ids 0 to 255 (Forge 3.x extended them to 4095, the on-disk Anvil format already stores 12 bits since 1.2.1), item ids 256 to 31999, 4-bit block metadata, item damage as
   subtype. Textures are indices into `terrain.png` (16x16 tiles of 16 px) and `items.png`, plus mod sheets; no `Icon`. This is the model the 1.4.7 layer already has (`SpriteSheets147`, `SheetCutter`).
 - **Base class edits (jar mods).** Many 1.2.5 mods ship modified vanilla classes (`Block.class`, `RenderBlocks.class`, ...) that had to be merged into `minecraft.jar`; they cannot be
@@ -112,8 +121,16 @@ existing `legacy/1.4.7/notch.txt`. All 1,699 joined classes, 5,101 of 5,103 join
 
 | | Classes joined | Members joined |
 |---|---|---|
-| client | 993 of 1032 (96%) | 6781 of 7384 (92%) |
-| server | 706 of 744 (95%) | 4657 of 5151 (90%) |
+| client | 1009 of 1032 (98%) | 6965 of 7384 (94%) |
+| server | 730 of 744 (98%) | 4870 of 5151 (95%) |
+
+(First version of the join, readable name and descriptor only: 993 / 6781 client, 706 / 4657 server. The real corpus showed what it missed, and four more tiers were added in the order the
+loader tries them: the same Calamus intermediary name in both versions (the member did not change, Feather only named it differently; +256 client members, but only when the descriptors
+agree up to class types: 91 joins with different primitives were wrong and are refused), the same name with the class types of the descriptor ignored (1.3 retyped `Minecraft.thePlayer` and
+`theWorld`), a field that is the only one of its name, and `loader/src/main/resources/legacyconnector/mappings/1.2.5/manual-aliases.tsv` for pure renames found by hand. A member that still has no
+counterpart is renamed to `mcc125$<obfuscated name>` instead of keeping its short name: the obfuscation is re-randomized every release, so `AxisAlignedBB.b(DDDDDD)` of 1.2.5 would have bound
+to an unrelated `b(DDDDDD)` of 1.4.7. The marker never exists, which the link report shows and the synthesizer stubs. `genMappings125` also lists "leftover candidates" (the one unjoined member and
+the one unclaimed member of a class with the same kind and descriptor shape): by hand they are mostly different members, so they are never joined.)
 
 What does not join is the real size of stage 3. Classes with no 1.4.7 counterpart (anonymous classes `Name__digits` are omitted here, they follow their outer class):
 `CreativeInteractionManager`, `SurvivalInteractionManager`, `MultiplayerInteractionManager` (1.3 reworked the client's game mode and integrated server: `client`); `MultiplayerWorld`, `MultiplayerChunkCache`
@@ -144,19 +161,50 @@ rewritten and at least 85% resolve in 1.4.7's table, and the inspector hosts the
 counterpart in the shim yet (they stay as they are and would be synthesized empty); a hook whose parameter list changed between 1.2.5 and 1.4.7 (for example `OnTickInGame(Minecraft)` against
 `onTickInGame(float, Minecraft)`) is renamed but not adapted; `ModLoaderMP` (`BaseModMp`, packet 230) is not mapped at all.
 
+### Offline link probe over the real corpus (2026-11-16)
+
+`python -I tools/compat/probe.py <dir> --mc 1.2.5 --dry-run --no-history` (passes `-Pmappings125` to `checkLegacyMod`; `-Pmc125Unresolved=<file>` also appends every game member the join could not name).
+91 archives, translated as one mod set, client builds loaded (server builds are left out by `Mc125Builds`, as on a client):
+
+| | links | unresolved | not a mod / skipped |
+|---|---|---|---|
+| first run (detection fixed for the inherited-member case only) | 19 | 18 | 52 not-legacy |
+| after: `BaseModMp` / Forge `NetworkMod` / in-jar base chains as entry points, FML-optional jars, API distributions skipped, client/server builds selected, the join tiers above | **30** | **8** | 31 not-legacy (API zips, patches, NEI plugins, wrappers of nested zips, 7 CraftBukkit builds), 21 server builds left out |
+
+The 8 unresolved: NEWTON gravity (a 1.2.3 jar, not 1.2.5), SDKs Mods, herobrine's installer, and five jars that call the static `Profiler.startSection/endSection` (IC2, Somnia, Zeppelin, TwilightForest,
+Tropicraft; static in 1.2.5, instance methods in the shim). "Links" includes calls to synthesized empty stubs: 1424 distinct stubbed members (1801 stubs) across the 38 translated client units,
+ranked in `tools/dev/agent-tasks/1.2.5-shim-requests.md`; 300 distinct 1.2.5 game members had no 1.4.7 counterpart. `verifyFailures` is 0 for all.
+
+**Largest open loader-side item: overridden hooks whose signature changed in 1.3.** A mod's override that has no 1.4.7 counterpart keeps an obfuscated name nothing calls, so the hook silently
+never runs (the stub list shows only the calls, not these). The corpus has `Item.onItemUse(stack, player, world, x, y, z, side)` (1.4.7 adds the hit position floats), `Block.onBlockActivated`
+(floats and the side), `Block.addCollidingBlockToList` (1.4.7: `List` and the colliding entity), `BlockContainer.getBlockEntity()` (1.4.7: `createNewTileEntity(World)`), `Block.onBlockPlacedBy`
+(`updateMetadataOnPlaced` in Feather 1.2.5 names), `Slot.onItemRemoved`, `Container.onClickSlot`, `EntityItem.item`, ... The mechanism for this exists (`forward/*/bridge-methods.tsv`: a method with the
+old shape gets a bridge with the new one), but it needs the join to rename the override first (an alias row whose descriptor may differ in arity) and one bridge row per hook; not done yet.
+
 ### What was checked against primary sources on disk
 
 - 1.4.7's `ModLoader.class` and `BaseMod.class` (`test-mods-mcarchive/1.4.7/ModLoader 1.4.7.zip`, read with `javap`): lower-case statics (`addName`, `registerBlock`, `addRecipe`, `addOverride`,
   `getUniqueSpriteIndex`, `setInGameHook`, ...) and lower-case `BaseMod` hooks with `getVersion()`, `load()`, `modsLoaded()`, `onTickInGame(float, Minecraft)`. No capitalised declaration.
 - The Beta ModLoader jars (`test-mods-mcarchive/b1.7.3`) call a mix: `AddName`, `AddRecipe`, `RegisterBlock`, `SetInGameHook`, `OnTickInGame` capitalised next to `addOverride`,
-  `getUniqueSpriteIndex` lower-case. 1.2.5 is between the two; **its own spelling is still unverified** (no 1.2.5 `ModLoader` class is on disk; Feather and Calamus do not contain the ModLoader
-  classes, they are not part of Minecraft). That is why the facade renames only what exists in capitalised form and passes lower-case calls through.
-- Still unverified and marked: the 1.2.5 `BaseMod` hook signatures; the Forge 3.x package (`net.minecraft.src.forge`); whether mods bundle their own ModLoader/Forge (bundled copies are not dropped
-  by `Notch125To147`; the Beta layer drops them); how many jars are base class edits.
+  `getUniqueSpriteIndex` lower-case.
+- **1.2.5 itself (2026-11-16, the real `ModLoader 1.2.5.zip`, `ModLoaderMP 1.2.5 v1.zip` (client and server), `forge-1.2.5-3.3.7.135-{client,server,src}.zip` and 87 mod units):**
+  every static and hook is **lower case** and identical to the 1.4.7 spelling; no corpus jar calls a capitalised static. The facade rename above is therefore not needed for real 1.2.5 jars
+  (it is kept for Beta-spelled ones). One bug of it was found on real data: Backpack, MagicWands, TooManyItems and ReiMinimap declare `getVersion()` and a helper `Version()`/`version()`, and renaming
+  `Version` onto `getVersion` made a duplicate method; a hook is now renamed only when its class does not already declare the target. Full member tables (`BaseMod`, `ModLoader`, `MLProp`,
+  `ModTextureStatic`, `ModTextureAnimation`, `EntityRendererProxy`, ModLoaderMP client and server, the server `ModLoader`) are in `tools/dev/agent-tasks/1.2.5-shim-requests.md`.
+  Differences to the 1.6.4 shim's `ModLoader`: missing there are `addAchievementDesc`, `addAllFuel`, `addAllRenderers`, `dispenseEntity`, `loadImage`, `onTick`, `openGUI`, `populateChunk`, `receivePacket`,
+  `registerAllKeys`, `registerAllTextureOverrides`, `removeBiome`, `renderBlockIsItemFull3D`, `renderInvBlock`, `renderWorldBlock`, `sendPacket`, `serverChat`, `serverConnect`, `serverDisconnect`; its
+  `BaseMod` lacks `dispenseEntity`, `receiveChatPacket`, `receiveCustomPacket(Packet250CustomPayload)`, `serverConnect`, `serverDisconnect`.
+- Client/server: the 1.2.5 server jars use the same `ModLoader`/`BaseMod` names with client types turned into `Object` and `BaseMod.onTickInGame(MinecraftServer)` (the server build's `ModLoader` ships inside
+  `ModLoaderMP Server 1.2.5 v1.zip` and the Forge server zip). A fourth, non-notch kind of build exists: CraftBukkit/MCPC jars (`*_bukkit.zip`, `*-mcpc.jar`, `net/minecraft/server/mod_X`, MCP names), 7 of 100 units.
 
-## Open questions (need a real 1.2.5 jar)
+## Answers to the open questions (all measured on the corpus, 2026-11-16)
 
-- Capitalisation of the 1.2.5 `BaseMod` hooks and of the `ModLoader` statics (the facade must accept whichever the jar uses; a case-insensitive hook lookup is the cheap safe form).
-- The Forge 3.x package (`net.minecraft.src.forge` vs `forge`) and whether common jars carry their own copy of ModLoader/Forge (the Beta layer drops bundled copies).
-- What share of the jars are mostly base class edits; the audit tool for the Beta archive (`tools/dev/audit_b173_archive.py`) is the model.
-- Server jars: 1.2.5 server mods typically bundle the ModLoaderMP server class `ModLoaderMp`; check the separate-obfuscation fingerprint on both sides.
+- **Capitalisation of the hooks and statics**: lower case (see above). Not a Beta-style mix.
+- **The Forge 3.x package**: top-level `forge` (`forge/MinecraftForge`, ...), not `net.minecraft.src.forge`. Forge 3.3.x for 1.2.5 also bundles FML 2.2.48 (`cpw/mods/fml`).
+- **Bundled ModLoader/Forge copies**: only the API distributions (ModLoader, ModLoaderMP server, Forge client/server, AudioMod, GuiAPI) carry them; no mod jar bundles its own `ModLoader`. The distributions
+  themselves must be recognised and skipped (`Mc125Jars.isApiDistribution`, below), the way the Beta layer skips its ModLoader jars.
+- **Base class edits**: 26 of 100 units contain a class with the name of a 1.2.5 game class, but only 4 are mostly such classes; 9 are pure patches (no `mod_*`), 8 are ordinary mods with 1 to 3 edited
+  classes. Dropping the copies and reporting them (`Notch125To147`) keeps the 8 mods usable, a pure patch has nothing left to load.
+- **Server jars**: separate obfuscation confirmed (`ModLoaderMP Server`, `forestry-server`, `industrialcraft-2-server`, ... fit the server table of the join and not the client one; 21 units); ModLoaderMP
+  needs `BaseModMp`/`ModLoaderMp`/`Packet230ModLoader` from its own zip (not bundled by the mods, 11 units use it).

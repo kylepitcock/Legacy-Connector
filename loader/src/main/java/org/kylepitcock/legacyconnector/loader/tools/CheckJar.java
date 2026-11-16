@@ -91,6 +91,13 @@ public final class CheckJar {
             records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
         }
         jars.removeAll(otherBuilds.keySet());
+        // Minecraft 1.2.5 client + server builds likewise
+        Map<LegacyJar, String> otherBuilds125 = org.kylepitcock.legacyconnector.loader.Mc125Builds.select(jars, "CLIENT");
+        for (var e : otherBuilds125.entrySet()) {
+            System.out.println(e.getKey().fileName() + " [1.2.5]: not loaded with this set: " + e.getValue());
+            records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
+        }
+        jars.removeAll(otherBuilds125.keySet());
         // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
         // (-Pbridges=false checks the legacy jars as plain mods instead).
         if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges"))) {

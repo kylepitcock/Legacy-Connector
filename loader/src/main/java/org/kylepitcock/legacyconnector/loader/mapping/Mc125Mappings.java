@@ -36,6 +36,11 @@ public final class Mc125Mappings {
         /** official class, official member name, official desc: readable ones, in file order, for iteration */
         final List<String[]> members = new ArrayList<>();
         final Map<String, String> officialDescToReadable = new HashMap<>();
+        /** official class to its Calamus intermediary name, and back: intermediary names are stable across versions for what did not change */
+        final Map<String, String> interOf = new HashMap<>();
+        final Map<String, String> officialByInter = new HashMap<>();
+        /** {@code kind|ownerInter|memberInter} to {officialOwner, officialName, officialDesc} */
+        final Map<String, String[]> byInter = new HashMap<>();
 
         String readableDesc(String desc) {
             return officialDescToReadable.computeIfAbsent(desc, d -> mapDesc(d, classes));
@@ -104,6 +109,8 @@ public final class Mc125Mappings {
         for (var e : cal.entrySet()) {
             Row c = e.getValue().get(0);
             officialToInter.put(c.from, c.to);
+            n.interOf.put(c.from, c.to);
+            n.officialByInter.put(c.to, c.from);
             n.classes.put(c.from, interToReadable.getOrDefault(c.to, c.to));
         }
         for (var e : cal.entrySet()) {
@@ -114,10 +121,21 @@ public final class Mc125Mappings {
                 String readable = interMembers.getOrDefault(r.kind + " " + ownerInter + "." + r.to + " " + interDesc, r.to);
                 String key = n.classes.get(e.getKey()) + "." + readable + " " + n.readableDesc(r.desc);
                 (r.kind.equals("m") ? n.methods : n.fields).putIfAbsent(key, new String[] {e.getKey(), r.from, r.desc});
-                n.members.add(new String[] {r.kind, e.getKey(), r.from, r.desc, key});
+                n.members.add(new String[] {r.kind, e.getKey(), r.from, r.desc, key, ownerInter, r.to});
+                n.byInter.putIfAbsent(r.kind + "|" + ownerInter + "|" + r.to, new String[] {e.getKey(), r.from, r.desc});
             }
         }
         return n;
+    }
+
+    /** The readable member name of a {@link Names#members} row (its key is {@code owner.name desc}). */
+    static String memberName(String[] row, String ownerReadable) {
+        return row[4].substring(ownerReadable.length() + 1, row[4].indexOf(' ', ownerReadable.length()));
+    }
+
+    /** A descriptor with every class type reduced to {@code L;}: two signatures that differ only in the classes (a field typed World in 1.2.5, WorldClient in 1.3). */
+    static String erase(String desc) {
+        return desc.replaceAll("L[^;]*;", "L;");
     }
 
     /** Area of a readable class name for the report: its package below net/minecraft, two levels deep. */
@@ -136,6 +154,21 @@ public final class Mc125Mappings {
         Names v147 = load(Path.of(args[4]), Path.of(args[5]));
         Map<String, String> readableTo147 = new HashMap<>();
         for (var e : v147.classes.entrySet()) readableTo147.put(e.getValue(), e.getKey());
+        // 1.4.7 members by owner, kind and readable name: the fallback for members whose descriptor changed in a game class type (see the join in main)
+        Map<String, String> aliases = new HashMap<>(); // "kind owner.name125" to name147 (manual-aliases.tsv)
+        try (InputStream in = Mc125Mappings.class.getResourceAsStream("/legacyconnector/mappings/1.2.5/manual-aliases.tsv")) {
+            if (in != null) {
+                for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
+                    String[] p = line.replace("\r", "").split("\t");
+                    if (p.length == 4 && !line.startsWith("#")) aliases.put(p[0] + " " + p[1] + "." + p[2], p[3]);
+                }
+            }
+        }
+        Map<String, List<String[]>> by147 = new HashMap<>();
+        for (String[] m : v147.members) {
+            String owner = v147.classes.get(m[1]);
+            by147.computeIfAbsent(m[0] + " " + owner + "." + memberName(m, owner), k -> new ArrayList<>()).add(m);
+        }
         Path out = Path.of(args[6]);
         Files.createDirectories(tableFile(out).getParent());
         StringBuilder report = new StringBuilder("1.2.5 to 1.4.7 join (class, member name and descriptor in Feather names)\n");
@@ -143,12 +176,14 @@ public final class Mc125Mappings {
             String[] sides = {"c", "s"};
             for (int s = 0; s < 2; s++) {
                 Names v125 = load(Path.of(args[s * 2]), Path.of(args[s * 2 + 1]));
-                int classesJoined = 0, membersJoined = 0, membersTotal = 0;
+                int classesJoined = 0, membersJoined = 0, membersTotal = 0, joinedByErasure = 0, joinedByName = 0, joinedByInter = 0, joinedByAlias = 0;
                 Map<String, int[]> areaClasses = new TreeMap<>(); // area -> {classes, joined, members, joined members}
                 Map<String, List<String>> lostClasses = new TreeMap<>();
+                Map<String, String> class147 = new HashMap<>();
                 for (var e : v125.classes.entrySet()) {
                     String readable = e.getValue();
                     String off147 = readableTo147.get(readable);
+                    if (off147 == null) off147 = v147.officialByInter.get(v125.interOf.get(e.getKey())); // same intermediary class, other readable name
                     int[] a = areaClasses.computeIfAbsent(area(readable), k -> new int[4]);
                     a[0]++;
                     if (off147 == null) {
@@ -157,8 +192,10 @@ public final class Mc125Mappings {
                     }
                     a[1]++;
                     classesJoined++;
+                    class147.put(e.getKey(), off147);
                     table.write("C\t" + sides[s] + "\t" + e.getKey() + "\t" + off147 + "\n");
                 }
+                java.util.Set<String> joinedKeys = new java.util.HashSet<>(), usedTargets = new java.util.HashSet<>();
                 for (String[] m : v125.members) {
                     membersTotal++;
                     String ownerReadable = v125.classes.get(m[1]);
@@ -166,13 +203,77 @@ public final class Mc125Mappings {
                     a[2]++;
                     boolean method = m[0].equals("m");
                     String[] to = (method ? v147.methods : v147.fields).get(m[4]);
+                    if (to == null && class147.containsKey(m[1])) {
+                        // the same member as in 1.4.7 under another readable name or with other class types: Calamus gave it the same intermediary name in both versions
+                        to = v147.byInter.get(m[0] + "|" + m[5] + "|" + m[6]);
+                        if (to != null && !erase(to[2]).equals(erase(m[3]))) to = null; // other primitives or array depth: not the same member
+                        if (to != null) joinedByInter++;
+                    }
+                    if (to == null && class147.containsKey(m[1])) {
+                        // a member 1.4.7 has under another name, curated by hand
+                        String alias = aliases.get(m[0] + " " + ownerReadable + "." + memberName(m, ownerReadable));
+                        List<String[]> cands = alias == null ? null : by147.get(m[0] + " " + ownerReadable + "." + alias);
+                        if (cands != null) {
+                            List<String[]> same = cands.stream().filter(c -> erase(c[3]).equals(erase(m[3]))).toList();
+                            if (same.size() == 1) {
+                                to = new String[] {same.get(0)[1], same.get(0)[2], same.get(0)[3]};
+                                joinedByAlias++;
+                            }
+                        }
+                    }
+                    if (to == null) {
+                        // the same member with other class types in its descriptor (1.3 retyped Minecraft.theWorld/thePlayer, the integrated server, entity and item classes):
+                        // same name and the descriptor equal up to class names, else the only member of that name in the owner
+                        List<String[]> cands = by147.get(m[0] + " " + ownerReadable + "." + memberName(m, ownerReadable));
+                        if (cands != null && class147.containsKey(m[1])) {
+                            String wanted = erase(m[3]);
+                            List<String[]> same = cands.stream().filter(c -> erase(c[3]).equals(wanted)).toList();
+                            String[] pick = same.size() == 1 ? same.get(0) : null;
+                            if (pick != null) joinedByErasure++;
+                            else if (cands.size() == 1 && !method) {
+                                pick = cands.get(0); // a field is unique by name in its class
+                                joinedByName++;
+                            }
+                            if (pick != null) to = new String[] {pick[1], pick[2], pick[3]};
+                        }
+                    }
                     if (to == null) continue;
                     a[3]++;
                     membersJoined++;
+                    joinedKeys.add(m[1] + "|" + m[0] + "|" + m[2] + "|" + m[3]);
+                    usedTargets.add(to[0] + "|" + m[0] + "|" + to[1] + "|" + to[2]);
                     table.write((method ? "M" : "F") + "\t" + sides[s] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\t" + to[0] + "\t" + to[1] + "\t" + to[2] + "\n");
                 }
+                // what is left of a joined class: the one unjoined 1.2.5 member and the one unclaimed 1.4.7 member of a kind and class-erased descriptor. Reported only: checked
+                // by hand on 1.2.5 they are mostly NOT the same member (stuckArrows/armSwingingTicks), so they are never joined
+                Map<String, List<String[]>> left125 = new TreeMap<>(), left147 = new TreeMap<>();
+                for (String[] m : v125.members) {
+                    String to147 = class147.get(m[1]);
+                    if (to147 == null || joinedKeys.contains(m[1] + "|" + m[0] + "|" + m[2] + "|" + m[3])) continue;
+                    left125.computeIfAbsent(m[1] + "|" + m[0] + "|" + erase(m[3]), k -> new ArrayList<>()).add(m);
+                }
+                for (String[] m : v147.members) {
+                    if (usedTargets.contains(m[1] + "|" + m[0] + "|" + m[2] + "|" + m[3])) continue;
+                    left147.computeIfAbsent(m[1] + "|" + m[0] + "|" + erase(m[3]), k -> new ArrayList<>()).add(m);
+                }
+                int joinedByLeftover = 0;
+                StringBuilder pairs = new StringBuilder();
+                for (var e : left125.entrySet()) {
+                    String[] k = e.getKey().split("\\|", 3);
+                    String to147 = class147.get(k[0]);
+                    List<String[]> cand = left147.get(to147 + "|" + k[1] + "|" + k[2]);
+                    if (e.getValue().size() != 1 || cand == null || cand.size() != 1) continue;
+                    String[] m = e.getValue().get(0), t = cand.get(0);
+                    if (m[2].length() > 3 && m[2].equals(t[2])) continue;
+                    joinedByLeftover++;
+                    pairs.append("  ").append(v125.classes.get(m[1])).append(": ").append(memberName(m, v125.classes.get(m[1]))).append(" ").append(m[3]).append(" -> ")
+                            .append(memberName(t, v147.classes.get(t[1]))).append("\n");
+                }
                 report.append("\n== ").append(s == 0 ? "client" : "server").append(": classes joined ").append(classesJoined).append(" of ").append(v125.classes.size())
-                        .append(", members joined ").append(membersJoined).append(" of ").append(membersTotal).append("\n");
+                        .append(", members joined ").append(membersJoined).append(" of ").append(membersTotal).append(" (").append(joinedByErasure)
+                        .append(" by name with the class types of the descriptor ignored, ").append(joinedByName).append(" fields by name only, ").append(joinedByInter)
+                        .append(" by the same intermediary name, ").append(joinedByLeftover).append(" leftover candidates, NOT joined: see the report, ").append(joinedByAlias).append(" by manual alias)\n");
+                report.append("leftover candidates (unique by kind and descriptor; not joined, mostly different members):\n").append(pairs);
                 report.append("area: classes (joined) members (joined)\n");
                 for (var e : areaClasses.entrySet()) {
                     int[] a = e.getValue();

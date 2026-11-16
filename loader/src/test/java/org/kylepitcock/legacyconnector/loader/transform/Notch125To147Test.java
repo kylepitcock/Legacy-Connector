@@ -152,6 +152,27 @@ class Notch125To147Test {
         assertEquals("BaseMod", new ClassReader(classes.get("mod_Test")).getSuperName(), "BaseMod stays the ModLoader class of the 1.4.7 chain");
     }
 
+    /** Real 1.2.5 mods (Backpack, TooManyItems, ReiMinimap) declare getVersion() and a helper Version(): renaming the helper would duplicate the method. */
+    @Test
+    void helperNamedLikeABetaHookIsNotRenamedOntoAnExistingMethod() throws IOException {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "mod_Both", null, "BaseMod", null);
+        for (String name : new String[] {"getVersion", "Version"}) {
+            MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, name, "()Ljava/lang/String;", null, null);
+            mv.visitCode();
+            mv.visitLdcInsn("1");
+            mv.visitInsn(Opcodes.ARETURN);
+            mv.visitMaxs(0, 0);
+            mv.visitEnd();
+        }
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("mod_Both", cw.toByteArray());
+        Notch125To147.apply(client(), NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("mod_Both"));
+        assertTrue(m.contains("decl getVersion()Ljava/lang/String;"), m.toString());
+        assertTrue(m.contains("decl Version()Ljava/lang/String;"), "helper kept as it is: " + m);
+    }
+
     @Test
     void subclassOverrideAndInheritedCallFollowTheGameMethod() throws IOException {
         Map<String, byte[]> classes = jar();

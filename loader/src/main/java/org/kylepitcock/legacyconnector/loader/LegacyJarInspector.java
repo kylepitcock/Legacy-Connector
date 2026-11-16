@@ -58,6 +58,10 @@ public final class LegacyJarInspector {
         return DERIVATIVES.remove(path);
     }
 
+    /** Classes a ModLoader mod's class chain ends in: BaseMod, ModLoaderMP's BaseModMp (an SMP mod) and Forge 3.x's NetworkMod (which extends BaseMod). */
+    private static final java.util.Set<String> MODLOADER_BASES = java.util.Set.of("BaseMod", "net/minecraft/src/BaseMod", "BaseModMp", "net/minecraft/src/BaseModMp",
+            "forge/NetworkMod", "net/minecraft/src/forge/NetworkMod");
+
     /**
      * Returns null if the jar is not a legacy Forge mod (e.g. it is a modern NeoForge/Forge/Fabric mod).
      */
@@ -100,7 +104,8 @@ public final class LegacyJarInspector {
             Markers markers = new Markers();
             List<LegacyModDecl> found = new ArrayList<>();
             List<String> modLoaderMods = new ArrayList<>();
-            java.util.Map<String, String> superOf = new java.util.HashMap<>();
+            Map<String, String> supers = new java.util.HashMap<>();
+            List<String> modClassCandidates = new ArrayList<>();
             String mc125Evidence = null;
 
             Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -126,10 +131,10 @@ public final class LegacyJarInspector {
                 // ModLoader (1.4.x): a mod is a class extending BaseMod (net.minecraft.src.BaseMod, or the bare name in a reobfuscated jar)
                 String superName = reader.getSuperName();
                 // (ModLoader only loads classes named mod_*; the others of a jar, such as MCreator's per-element mcreator_*, are helpers the mod_ class constructs)
-                superOf.put(reader.getClassName(), superName);
-                if (("BaseMod".equals(superName) || "net/minecraft/src/BaseMod".equals(superName))
-                        && reader.getClassName().substring(reader.getClassName().lastIndexOf('/') + 1).startsWith("mod_")) {
-                    modLoaderMods.add(reader.getClassName());
+                // (also through classes of the jar and the API bases that extend BaseMod: BaseModMp, Forge's NetworkMod, a mod's own SdkBaseModMp / Ic2 platform class)
+                supers.put(reader.getClassName(), superName);
+                if (reader.getClassName().substring(reader.getClassName().lastIndexOf('/') + 1).startsWith("mod_") && reader.getClassName().indexOf('$') < 0) {
+                    modClassCandidates.add(reader.getClassName());
                 }
 
                 if (pool.contains(MOD_1_7) || pool.contains(MOD_1_12)) {
@@ -145,21 +150,20 @@ public final class LegacyJarInspector {
                 }
             }
 
-            // Early-Forge / ModLoaderMP mods (1.2.x): the mod_ class extends ModLoaderMP's BaseModMp or Forge 3.x's NetworkMod (both extend BaseMod),
-            // directly or through a base class of the jar
-            for (String cls : superOf.keySet()) {
-                if (modLoaderMods.contains(cls) || !cls.substring(cls.lastIndexOf('/') + 1).startsWith("mod_")) continue;
-                String c = superOf.get(cls);
-                for (int i = 0; i < 16 && c != null; i++) {
-                    if (c.equals("BaseModMp") || c.equals("forge/NetworkMod")) {
-                        modLoaderMods.add(cls);
+            for (String cand : modClassCandidates) {
+                String c = cand;
+                for (int hop = 0; hop < 12 && c != null; hop++) {
+                    if (MODLOADER_BASES.contains(c)) {
+                        modLoaderMods.add(cand);
                         break;
                     }
-                    c = superOf.get(c);
+                    c = supers.get(c);
                 }
             }
-
-            if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
+            // 1.2.5 mods that touch FML's optional classes (IC2, Forestry, PortalGun, LogisticsPipes) have cpw/mods/fml references but no @Mod: ModLoader mods of 1.2.5 all the same
+            boolean bare = found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null;
+            boolean fml125Candidate = !bare && found.isEmpty() && refs112 == 0 && jar.coreModClass == null && !modLoaderMods.isEmpty();
+            if (bare || fml125Candidate) {
                 // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod (in mods/b1.7.3/, or linking to b1.7.3's names), else a 1.4.7
                 // ModLoader mod (BaseMod subclasses: decided below) or not a legacy mod; mods/1.4.7/ never holds b1.7.3 jars
                 Path folder = path.getParent() == null ? null : path.getParent().getFileName();
@@ -170,7 +174,17 @@ public final class LegacyJarInspector {
                 } else if (folder == null || !(folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER))) {
                     ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
                 }
+                if ((ev125 != null || !modLoaderMods.isEmpty()) && !(folder != null && folder.toString().equals("1.4.7")) && Mc125Jars.isMcpNamedServerBuild(zip)) {
+                    // a CraftBukkit / MCPC build of a 1.2.x mod: MCP names, neither 1.2.5's obfuscation nor a version this layer has names for
+                    Mc125Jars.record(path, "CraftBukkit/MCPC build (game classes named by MCP names in net/minecraft/server); use the client or server build of the mod");
+                    return null;
+                }
                 if (ev125 != null) {
+                    String apiDist = Mc125Jars.apiDistribution(zip);
+                    if (apiDist != null) {
+                        Mc125Jars.recordApiDistribution(path, apiDist + " for Minecraft 1.2.5");
+                        return null;
+                    }
                     if (!Mc125Jars.optedIn()) {
                         Mc125Jars.record(path, ev125);
                         return null;
@@ -183,7 +197,7 @@ public final class LegacyJarInspector {
                     mc125Evidence = ev125;
                     jar.notchSide = Mc125Jars.sideOf(zip);
                 }
-                if (mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {
+                if (bare && mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {
                     LegacyJar beta = BetaJars.inspect(zip, path, jar);
                     if (beta != null) return beta;
                 }

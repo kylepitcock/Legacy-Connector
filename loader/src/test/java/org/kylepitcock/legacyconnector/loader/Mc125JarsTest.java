@@ -181,4 +181,36 @@ class Mc125JarsTest {
         LegacyJarInspector.inspect(jar);
         assertNull(Mc125Jars.takeUnsupported(jar), "too few references to decide: no claim");
     }
+
+    private static Path namesOnly(Path dir, String file, String... entries) throws IOException {
+        Path jar = dir.resolve(file);
+        try (ZipOutputStream z = new ZipOutputStream(Files.newOutputStream(jar))) {
+            for (String e : entries) {
+                z.putNextEntry(new ZipEntry(e));
+                z.write(new byte[] {1});
+                z.closeEntry();
+            }
+        }
+        return jar;
+    }
+
+    /** The ModLoader / ModLoaderMP / Forge zips are API distributions (skipped); a mod that bundles a ModLoader copy next to its mod_ class is not. */
+    @Test
+    void apiDistributionsAreToldFromMods(@TempDir Path dir) throws IOException {
+        try (var z = new java.util.zip.ZipFile(namesOnly(dir, "ml.zip", "ModLoader.class", "BaseMod.class", "MLProp.class", "adl.class").toFile())) {
+            assertEquals("ModLoader / ModLoaderMP distribution", Mc125Jars.apiDistribution(z));
+        }
+        try (var z = new java.util.zip.ZipFile(namesOnly(dir, "forge.zip", "ModLoader.class", "BaseMod.class", "forge/MinecraftForge.class", "mod_MinecraftForge.class").toFile())) {
+            assertTrue(Mc125Jars.apiDistribution(z).startsWith("Minecraft Forge"));
+        }
+        try (var z = new java.util.zip.ZipFile(namesOnly(dir, "mp.zip", "BaseModMp.class", "ModLoaderMp.class", "mod_ModLoaderMp.class").toFile())) {
+            assertNotNull(Mc125Jars.apiDistribution(z));
+        }
+        try (var z = new java.util.zip.ZipFile(namesOnly(dir, "mod.zip", "ModLoader.class", "mod_Real.class").toFile())) {
+            assertNull(Mc125Jars.apiDistribution(z), "a real mod class means a mod");
+        }
+        try (var z = new java.util.zip.ZipFile(namesOnly(dir, "plain.zip", "mod_Real.class", "Helper.class").toFile())) {
+            assertNull(Mc125Jars.apiDistribution(z));
+        }
+    }
 }
