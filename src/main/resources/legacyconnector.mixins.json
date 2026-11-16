@@ -14,6 +14,7 @@
     "BlockEntityNullStateMixin",
     "RegistryLegacyNamesMixin",
     "StateHolderPropertyEqualsMixin",
+    "ItemStackOversizedResultMixin",
     "RecipeManagerContextMixin",
     "TreeGrowerLegacyMixin",
     "BetaAnimalAiStepMixin",
