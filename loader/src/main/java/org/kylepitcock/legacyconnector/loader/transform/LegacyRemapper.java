@@ -204,12 +204,20 @@ public final class LegacyRemapper extends Remapper {
 
     private String inheritedRename(String owner, String name, String desc) {
         String member = name + desc;
-        String declaring = declaringLocal(owner, member, 0);
-        if (declaring == null) return null;
+        String top = declaringLocal(owner, member, 0);
+        if (top == null) return null;
+        // the topmost local declaration: every class below it that declares the method overrides it, siblings included
+        for (int guard = 0; guard < 24; guard++) {
+            String above = null;
+            String[] up = notchLocals.get(top);
+            if (up != null) for (String s : up) if ((above = declaringLocal(s, member, 0)) != null) break;
+            if (above == null) break;
+            top = above;
+        }
         for (String candidate : notchLocals.keySet()) {
-            if (candidate.equals(declaring)) continue;
             java.util.Set<String> declared = localMethods.get(candidate);
-            if (declared == null || !declared.contains(member) || !isLocalSubtype(candidate, declaring, 0)) continue;
+            if (declared == null || !declared.contains(member)) continue;
+            if (!candidate.equals(top) && !isLocalSubtype(candidate, top, 0)) continue;
             String renamed = methodNameOf(candidate, name, desc);
             if (!renamed.equals(name)) return renamed;
         }

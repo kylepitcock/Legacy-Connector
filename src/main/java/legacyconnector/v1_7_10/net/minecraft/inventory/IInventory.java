@@ -16,7 +16,10 @@ public interface IInventory {
 
     String getInventoryName();
 
-    boolean hasCustomInventoryName();
+    /** Default for jars of older versions, whose inventories had no such method (1.4.7: Thermal Expansion's tiles). */
+    default boolean hasCustomInventoryName() {
+        return false;
+    }
 
     int getInventoryStackLimit();
 
@@ -28,5 +31,8 @@ public interface IInventory {
 
     void closeInventory();
 
-    boolean isItemValidForSlot(int slot, ItemStack stack);
+    /** Default for jars of versions before 1.5 (no per-slot validity: every stack fits, as their slots decided). */
+    default boolean isItemValidForSlot(int slot, ItemStack stack) {
+        return true;
+    }
 }
