@@ -86,6 +86,12 @@ public final class LegacyHosts {
             boolean velocityUpdates) {
         Info existing = BY_CLASS.get(cls);
         if (existing != null) return existing;
+        int[] override = trackingFor(cls);
+        if (override != null) {
+            trackingRange = override[0];
+            updateFrequency = override[1];
+            velocityUpdates = true;
+        }
         if (!Entity.class.isAssignableFrom(cls) || EntityPlayer.class.isAssignableFrom(cls)) {
             LOG.warn("Not registering {} ({}): not a legacy entity class", name, cls.getName());
             return null;
@@ -107,6 +113,43 @@ public final class LegacyHosts {
         BY_TYPE.put(type, info);
         LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE, id, type);
         return info;
+    }
+
+    private static final Map<Class<?>, int[]> TRACKING_OVERRIDES = new ConcurrentHashMap<>();
+
+    /** The override of the class itself, else of the first registered class it is an instance of ({@code handleEntityTrackers} used {@code isInstance}). */
+    private static int[] trackingFor(Class<?> cls) {
+        int[] own = TRACKING_OVERRIDES.get(cls);
+        if (own != null) return own;
+        for (Map.Entry<Class<?>, int[]> e : TRACKING_OVERRIDES.entrySet()) {
+            if (e.getKey().isAssignableFrom(cls)) return e.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * ModLoaderMP's {@code registerEntityTracker(class, updateRange, updateInterval)}: the tracker settings of an entity class and its subclasses (velocity
+     * updates on), which may arrive before or after the classes are registered. A type that exists already has its tracking fields rewritten (they are
+     * fixed at construction); a subclass with a setting of its own keeps it.
+     */
+    public static synchronized void setTracking(Class<?> cls, int trackingRange, int updateFrequency) {
+        TRACKING_OVERRIDES.put(cls, new int[] {trackingRange, updateFrequency});
+        for (Info info : BY_CLASS.values()) {
+            Class<?> c = info.legacyClass();
+            if (!cls.isAssignableFrom(c) || (c != cls && TRACKING_OVERRIDES.containsKey(c))) continue;
+            try {
+                patchInt(info.type(), "clientTrackingRange", Math.max(4, (trackingRange + 15) / 16));
+                patchInt(info.type(), "updateInterval", Math.max(1, updateFrequency));
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                LOG.warn("Could not change the tracker settings of {} after its registration: {}", c.getName(), e.toString());
+            }
+        }
+    }
+
+    private static void patchInt(EntityType<?> type, String field, int value) throws ReflectiveOperationException {
+        java.lang.reflect.Field f = EntityType.class.getDeclaredField(field);
+        f.setAccessible(true);
+        f.setInt(type, value);
     }
 
     /** Untracked types for legacy entity classes no mod registered (not saved with the world). */

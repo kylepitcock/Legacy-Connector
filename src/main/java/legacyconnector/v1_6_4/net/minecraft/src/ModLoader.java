@@ -285,6 +285,10 @@ public class ModLoader {
     /** Lists the key in the controls screen and calls {@code mod.keyboardEvent(key)} when it goes down (every tick while held if {@code allowRepeat}). */
     public static void registerKey(BaseMod mod, legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding key, boolean allowRepeat) {
         if (mod == null || key == null) return;
+        // ModLoader read the keyboard itself, also with a screen open, where the modern key mappings are released: poll the raw state for that case
+        Ticks.ensureClient();
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.add(new org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.Key(
+                () -> mod.keyboardEvent(key), allowRepeat, () -> org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.rawDown(key)));
         legacyconnector.v1_6_4.cpw.mods.fml.client.registry.KeyBindingRegistry.registerKeyBinding(
                 new legacyconnector.v1_6_4.cpw.mods.fml.client.registry.KeyBindingRegistry.KeyHandler(
                         new legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding[] {key}, new boolean[] {allowRepeat}) {
@@ -505,12 +509,41 @@ public class ModLoader {
         return legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.addNewArmourRendererPrefix(armor);
     }
 
+    /** The animations mods added; ModLoader's {@code registerAllTextureOverrides} cleared its list and had every mod register again for each texture pack. */
+    private static final List<Object> ANIMATIONS = new CopyOnWriteArrayList<>();
+    private static volatile List<String> lastPacks;
+
     public static void addAnimation(Object textureFx) {
+        ANIMATIONS.add(textureFx);
         org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.register(textureFx);
     }
 
     public static void addAnimation(legacyconnector.v1_6_4.net.minecraft.client.renderer.texturefx.TextureFX textureFx) {
-        org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.register(textureFx);
+        addAnimation((Object) textureFx);
+    }
+
+    /**
+     * {@code registerAllTextureOverrides} again, after the selected resource packs changed: the animations are dropped and every mod's
+     * {@code registerAnimation} runs once more (a mod builds its animations from the images of the pack in use). Client tick.
+     */
+    static void mcc$checkPacks() {
+        List<String> ids = List.copyOf(net.minecraft.client.Minecraft.getInstance().getResourcePackRepository().getSelectedIds());
+        List<String> before = lastPacks;
+        lastPacks = ids;
+        if (before == null || before.equals(ids)) return;
+        mcc$reloadAnimations();
+    }
+
+    static void mcc$reloadAnimations() {
+        for (Object fx : ANIMATIONS) org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.unregister(fx);
+        ANIMATIONS.clear();
+        for (BaseMod mod : MODS) {
+            try {
+                mod.registerAnimation(Minecraft.getMinecraft());
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warning("registerAnimation of " + mod.getClass().getName() + " failed after a resource pack change: " + e);
+            }
+        }
     }
 
     /** The name and description of an achievement (the 1.2.x constructor took no text; ModLoader added the lang entries). */
@@ -639,8 +672,8 @@ public class ModLoader {
     }
 
     /**
-     * The in-game tick hooks of the mods: server ticks to {@code onTickInGame(MinecraftServer)} (the 1.2.5 server declared it {@code void}; see
-     * {@link ModLoaderHooks125#callServerTick}), render ticks to {@code onTickInGame(float, Minecraft)}. {@code useClock} hooks run once per world
+     * The in-game tick hooks of the mods: server ticks to {@code onTickInGame(MinecraftServer)} (the 1.2.5 server declared it {@code void}: the loader adds the
+     * boolean method next to a mod's void override, {@code return-bridges.tsv}), render ticks to {@code onTickInGame(float, Minecraft)}. {@code useClock} hooks run once per world
      * tick, not once per frame, and a hook whose callback answers false is unregistered, as ModLoader's {@code onTick} did.
      */
     private static final class Ticks implements ITickHandler {
@@ -675,6 +708,14 @@ public class ModLoader {
             }
         }
 
+        /** The client tick also polls the mod keys, so it runs even for a mod that registered no tick hook. */
+        static synchronized void ensureClient() {
+            if (FMLCommonHandler.instance().getSide() == Side.CLIENT && !clientRegistered) {
+                clientRegistered = true;
+                TickRegistry.registerTickHandler(CLIENT, Side.CLIENT);
+            }
+        }
+
         static void remove(BaseMod mod, boolean gui) {
             if (!gui) SERVER.game.remove(mod);
             (gui ? CLIENT.gui : CLIENT.game).remove(mod);
@@ -688,7 +729,7 @@ public class ModLoader {
             try {
                 if (side == Side.SERVER) {
                     MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-                    game.run(true, m -> ModLoaderHooks125.callServerTick(m, BaseMod.class, MinecraftServer.class, server));
+                    game.run(true, m -> m.onTickInGame(server));
                 } else {
                     Minecraft mc = Minecraft.getMinecraft();
                     float partial = tickData.length > 0 && tickData[0] instanceof Float f ? f : 0F;
@@ -699,6 +740,8 @@ public class ModLoader {
                     GuiScreen screen = Minecraft.mcc$get$currentScreen(mc);
                     // ModLoader skips a useClock GUI hook only when the clock is unchanged AND a world exists (on the title screen it runs every frame)
                     if (screen != null) gui.run(changed || world == null, m -> m.onTickInGUI(partial, mc, screen));
+                    mcc$checkPacks();
+                    org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.poll(screen != null);
                     clock = now;
                 }
             } catch (RuntimeException e) {

@@ -63,6 +63,8 @@ R	net/minecraft/client/Minecraft	mcc125$isMultiplayer	()Z	static	org/kylepitcock
 R	net/minecraft/entity/player/EntityPlayer	mcc125$canUseItemOn	(III)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	canPlayerEdit	(Lnet/minecraft/entity/player/EntityPlayer;III)Z
 R	net/minecraft/entity/player/EntityPlayer	mcc125$swingArm	()V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	swingItem	(Lnet/minecraft/entity/player/EntityPlayer;)V
 R	net/minecraft/client/gui/GuiIngame	mcc125$addChatMessage	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	addChatMessage	(Lnet/minecraft/client/gui/GuiIngame;Ljava/lang/String;)V
+R	net/minecraft/client/gui/GuiIngame	mcc125$clearChat	()V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	clearChat	(Lnet/minecraft/client/gui/GuiIngame;)V
+R	net/minecraft/client/gui/GuiIngame	mcc125$translate	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	translate	(Lnet/minecraft/client/gui/GuiIngame;Ljava/lang/String;)V
 R	net/minecraft/world/World	mcc125$canPlace	(IIIIZI)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	canPlace	(Lnet/minecraft/world/World;IIIIZI)Z
 R	net/minecraft/world/World	mcc125$explode	(Lnet/minecraft/entity/Entity;DDDF)Lnet/minecraft/world/Explosion;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	explode	(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;DDDF)Lnet/minecraft/world/Explosion;
 R	net/minecraft/world/World	isBlockSolidOnSide	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	isBlockSolidOnSide	(Lnet/minecraft/world/World;IIII)Z

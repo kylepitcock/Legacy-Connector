@@ -207,6 +207,15 @@ final class ForgeEvents {
 
     private static final java.util.List<IChunkLoadHandler> CHUNK_HANDLERS = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static final java.util.Map<Object, java.util.Set<Long>> FORCED = new java.util.WeakHashMap<>();
+    /** Chunks a handler's {@code canUnloadChunk} refused to let go, per level: kept loaded with the forced chunks until every handler allows the unload. */
+    private static final java.util.Map<Object, java.util.Set<Long>> VETOED = new java.util.WeakHashMap<>();
+    private static boolean chunkEventsHooked;
+    private static int vetoRecheck;
+
+    private static boolean unloadAllowed(legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk) {
+        for (IChunkLoadHandler h : CHUNK_HANDLERS) if (!h.canUnloadChunk(chunk)) return false;
+        return true;
+    }
 
     /**
      * Chunks the handlers want ticked and loaded ({@code addActiveChunks}): ForgeHooks.addActiveChunks gave EVERY handler the same set each tick, so
@@ -215,6 +224,24 @@ final class ForgeEvents {
     static void chunkLoad(IChunkLoadHandler handler) {
         CHUNK_HANDLERS.add(handler);
         if (CHUNK_HANDLERS.size() > 1) return;
+        // canUnloadChunk (ChunkProvider.dropChunk: false keeps the chunk) has no native veto: a chunk is asked when it loads and again every 100 ticks while it is refused,
+        // and a refused chunk is kept with the forced chunks, the way a modern chunk-loading mod holds one.
+        // canUpdateEntity (World.updateEntityWithOptionalForce: true updates an entity next to an unloaded chunk) has no counterpart: entities only tick in loaded chunks.
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/Forge3").info("An IChunkLoadHandler is registered: canUnloadChunk is honoured by keeping refused chunks loaded; canUpdateEntity is not applied (no native hook).");
+        if (!chunkEventsHooked) {
+            chunkEventsHooked = true;
+            MinecraftForge.EVENT_BUS.register(new Object() {
+                @SubscribeEvent
+                public void onChunkLoaded(ChunkEvent.Load e) {
+                    if (e.world == null || e.world.isRemote || !(e.world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
+                    if (unloadAllowed(e.getChunk())) return;
+                    synchronized (VETOED) {
+                        VETOED.computeIfAbsent(level, k -> java.util.concurrent.ConcurrentHashMap.<Long>newKeySet())
+                                .add(org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.key(e.getChunk().xPosition, e.getChunk().zPosition));
+                    }
+                }
+            });
+        }
         legacyconnector.v1_6_4.cpw.mods.fml.common.registry.TickRegistry.registerTickHandler(new legacyconnector.v1_6_4.cpw.mods.fml.common.ITickHandler() {
             @Override
             public void tickStart(java.util.EnumSet<legacyconnector.v1_6_4.cpw.mods.fml.common.TickType> type, Object... tickData) {}
@@ -227,6 +254,16 @@ final class ForgeEvents {
                 for (IChunkLoadHandler h : CHUNK_HANDLERS) h.addActiveChunks(world, asked);
                 java.util.List<Long> wanted = new java.util.ArrayList<>();
                 for (legacyconnector.v1_7_10.net.minecraft.world.ChunkCoordIntPair c : asked) wanted.add(org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.key(c.chunkXPos, c.chunkZPos));
+                java.util.Set<Long> vetoed;
+                synchronized (VETOED) {
+                    vetoed = VETOED.computeIfAbsent(level, k -> java.util.concurrent.ConcurrentHashMap.<Long>newKeySet());
+                }
+                if (++vetoRecheck >= 100) {
+                    vetoRecheck = 0;
+                    vetoed.removeIf(k -> unloadAllowed(world.getChunkFromChunkCoords(org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.x(k),
+                            org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.z(k))));
+                }
+                wanted.addAll(vetoed);
                 java.util.Set<Long> held;
                 synchronized (FORCED) {
                     held = FORCED.computeIfAbsent(level, k -> new java.util.HashSet<>());
