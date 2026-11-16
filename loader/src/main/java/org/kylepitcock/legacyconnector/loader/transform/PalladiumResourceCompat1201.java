@@ -1601,6 +1601,16 @@ PlayerEvents.tick(e => {
      *
      * The initial nearest-target search and movement remain unchanged.
      */
+    /**
+     * The inspected AlienEvo motion-to-entity ability is shared by XLR8's
+     * Punch Barrage and Cannonbolt's multi-hit attack. Its legacy loop marks
+     * each reached mob as recently targeted, then immediately searches for
+     * another mob in the same area. On a held input that makes one activation
+     * sweep through every nearby living entity. Stop after the first reached
+     * target and reset the state when the ability is released.
+     *
+     * The initial nearest-target search and movement remain unchanged.
+     */
     private static int rewriteAlienEvoMotionToEntitySingleTarget(Map<String, byte[]> resources) {
         byte[] original = resources.get(ALIEN_EVO_MOTION_TO_ENTITY);
         if (original == null) return 0;
@@ -1619,29 +1629,29 @@ PlayerEvents.tick(e => {
         String cleanupLine = "                lastTargetTimes.delete(playerId);\n";
         String migratedCleanupLine = cleanupLine + "                completedPlayers.delete(playerId);\n";
 
-        String legacyRetargetBlock = """
-                        nearbyEntities.forEach(nearby => {
-                            if (nearby == null ||
-                                nearby.id === entity.id ||
-                                !nearby.isLiving() ||
-                                !nearby.isAlive() ||
-                                nearby.getHealth() <= 0 ||
-                                playerTargets.has(nearby.id) ||
-                                !hasLineOfSight(entity, nearby)) return;
-
-                            if (nearby instanceof ArmorStand || nearby instanceof EndCrystal) return;
-
-                            let dx = entity.x - nearby.x;
-                            let dy = entity.y - nearby.y;
-                            let dz = entity.z - nearby.z;
-                            let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-                            if (distance < nearestDistance) {
-                                nearestDistance = distance;
-                                nearestEntity = nearby;
-                            }
-                        });
-                """;
+        String legacyRetargetBlock = String.join("\n",
+                "                        nearbyEntities.forEach(nearby => {",
+                "                            if (nearby == null ||",
+                "                                nearby.id === entity.id ||",
+                "                                !nearby.isLiving() ||",
+                "                                !nearby.isAlive() ||",
+                "                                nearby.getHealth() <= 0 ||",
+                "                                playerTargets.has(nearby.id) ||",
+                "                                !hasLineOfSight(entity, nearby)) return;",
+                "",
+                "                            if (nearby instanceof ArmorStand || nearby instanceof EndCrystal) return;",
+                "",
+                "                            let dx = entity.x - nearby.x;",
+                "                            let dy = entity.y - nearby.y;",
+                "                            let dz = entity.z - nearby.z;",
+                "                            let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);",
+                "",
+                "                            if (distance < nearestDistance) {",
+                "                                nearestDistance = distance;",
+                "                                nearestEntity = nearby;",
+                "                            }",
+                "                        });",
+                "");
         String legacyContinuation = "                        nearestDistance = searchRadius + 1;\n"
                 + legacyRetargetBlock;
         String migratedContinuation = "                        nearestDistance = searchRadius + 1;\n"
