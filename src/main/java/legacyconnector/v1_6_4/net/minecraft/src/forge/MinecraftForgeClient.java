@@ -14,15 +14,21 @@ public class MinecraftForgeClient {
 
     private static final java.util.Map<Integer, IItemRenderer> RENDERERS = new java.util.concurrent.ConcurrentHashMap<>();
 
-    public static void registerHighlightHandler(IHighlightHandler handler) {}
+    public static void registerHighlightHandler(IHighlightHandler handler) {
+        ForgeClientEvents.highlight(handler);
+    }
 
     public static void registerRenderContextHandler(String texture, int subid, IRenderContextHandler handler) {}
 
     public static void registerTextureLoadHandler(ITextureLoadHandler handler) {}
 
-    public static void registerRenderLastHandler(IRenderWorldLastHandler handler) {}
+    public static void registerRenderLastHandler(IRenderWorldLastHandler handler) {
+        ForgeClientEvents.renderLast(handler);
+    }
 
-    public static void registerSoundHandler(ISoundHandler handler) {}
+    public static void registerSoundHandler(ISoundHandler handler) {
+        ForgeClientEvents.sound(handler);
+    }
 
     /** The sheets of a mod are cut from its jar when the mod loads, so there is nothing to upload ahead of use. */
     public static void preloadTexture(String texture) {}
