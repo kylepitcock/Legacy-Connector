@@ -143,7 +143,10 @@ public final class LegacyJarInspector {
                 }
             }
 
-            if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
+            // 1.2.5 mods that touch FML's optional classes (IC2, Forestry, PortalGun, LogisticsPipes) have cpw/mods/fml references but no @Mod: ModLoader mods of 1.2.5 all the same
+            boolean bare = found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null;
+            boolean fml125Candidate = !bare && found.isEmpty() && refs112 == 0 && jar.coreModClass == null && !modLoaderMods.isEmpty();
+            if (bare || fml125Candidate) {
                 // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod (in mods/b1.7.3/, or linking to b1.7.3's names), else a 1.4.7
                 // ModLoader mod (BaseMod subclasses: decided below) or not a legacy mod; mods/1.4.7/ never holds b1.7.3 jars
                 Path folder = path.getParent() == null ? null : path.getParent().getFileName();
@@ -155,6 +158,11 @@ public final class LegacyJarInspector {
                     ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
                 }
                 if (ev125 != null) {
+                    String apiDist = Mc125Jars.apiDistribution(zip);
+                    if (apiDist != null) {
+                        Mc125Jars.recordApiDistribution(path, apiDist + " for Minecraft 1.2.5");
+                        return null;
+                    }
                     if (!Mc125Jars.optedIn()) {
                         Mc125Jars.record(path, ev125);
                         return null;
@@ -167,7 +175,7 @@ public final class LegacyJarInspector {
                     mc125Evidence = ev125;
                     jar.notchSide = Mc125Jars.sideOf(zip);
                 }
-                if (mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {
+                if (bare && mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {
                     LegacyJar beta = BetaJars.inspect(zip, path, jar);
                     if (beta != null) return beta;
                 }

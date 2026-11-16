@@ -104,7 +104,7 @@ public final class Notch125To147 {
     }
 
     /** Local view of a class of the jar: supertypes. */
-    private record Local(String superName, String[] interfaces) {}
+    private record Local(String superName, String[] interfaces, Set<String> methods) {}
 
     /** Renames the classes of {@code jar} in place; returns the report notes. */
     public static List<String> apply(LegacyJar jar, Map<String, byte[]> classes) {
@@ -117,14 +117,29 @@ public final class Notch125To147 {
         List<String> notes = new ArrayList<>();
         TreeSet<String> baseEdits = new TreeSet<>();
         Map<String, Local> local = new HashMap<>();
+        TreeSet<String> bundledApi = new TreeSet<>();
         for (String name : List.copyOf(classes.keySet())) {
+            if (org.kylepitcock.legacyconnector.loader.Mc125Jars.MODLOADER_API.contains(name)) {
+                // a mod that ships its own copy of ModLoader / ModLoaderMP: the shim provides them (a copy would shadow it and name unrenamed game classes)
+                bundledApi.add(name);
+                classes.remove(name);
+                continue;
+            }
             if (table.classes.containsKey(name)) {
                 baseEdits.add(name);
                 classes.remove(name);
                 continue;
             }
             ClassReader r = new ClassReader(classes.get(name));
-            local.put(name, new Local(r.getSuperName(), r.getInterfaces()));
+            Set<String> declared = new HashSet<>();
+            r.accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+                @Override
+                public org.objectweb.asm.MethodVisitor visitMethod(int access, String mname, String mdesc, String sig, String[] ex) {
+                    declared.add(mname + mdesc);
+                    return null;
+                }
+            }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            local.put(name, new Local(r.getSuperName(), r.getInterfaces(), declared));
         }
         Resolver resolver = new Resolver(table, n147, local);
         int renamed = 0;
@@ -134,6 +149,9 @@ public final class Notch125To147 {
             new ClassReader(bytes).accept(new ClassRemapper(cw, resolver), 0);
             classes.put(name, cw.toByteArray());
             renamed++;
+        }
+        if (!bundledApi.isEmpty()) {
+            notes.add("Dropped " + bundledApi.size() + " bundled ModLoader/ModLoaderMP class(es) (" + String.join(", ", bundledApi) + "): the layer provides that API");
         }
         if (!baseEdits.isEmpty()) {
             notes.add("Dropped " + baseEdits.size() + " modified Minecraft class(es) (base class edits of a jar mod; the layer cannot apply them): "
@@ -168,7 +186,8 @@ public final class Notch125To147 {
             if (name.startsWith("<")) return name;
             if (MODLOADER_STATICS.contains(name) && isModLoader(owner)) return Character.toLowerCase(name.charAt(0)) + name.substring(1);
             String hook = BASEMOD_HOOKS.get(name);
-            if (hook != null && extendsBaseMod(owner)) return hook;
+            // a class that already declares the target (the real 1.2.5 spelling is lower case, and a mod may carry a helper called Version() next to getVersion()) keeps its names
+            if (hook != null && extendsBaseMod(owner) && !declaresTarget(owner, hook, descriptor)) return hook;
             return resolve("M", owner, name, descriptor);
         }
 
@@ -179,6 +198,11 @@ public final class Notch125To147 {
 
         private static boolean isModLoader(String owner) {
             return owner.equals("ModLoader") || owner.equals("net/minecraft/src/ModLoader");
+        }
+
+        private boolean declaresTarget(String owner, String hook, String descriptor) {
+            Local l = local.get(owner);
+            return l != null && l.methods().contains(hook + descriptor);
         }
 
         private boolean extendsBaseMod(String owner) {
