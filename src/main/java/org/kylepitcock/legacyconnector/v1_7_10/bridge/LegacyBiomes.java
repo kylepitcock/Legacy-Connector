@@ -287,10 +287,10 @@ public final class LegacyBiomes {
                 var entries = b.getSpawnableList(types[i]);
                 if (entries != null) {
                     for (var entry : entries) {
-                        net.minecraft.world.entity.EntityType<?> type = SpawnClasses.modernType(entry.entityClass);
-                        if (type == null || entry.itemWeight <= 0) continue;
+                        ResourceLocation typeId = SpawnClasses.modernId(entry.entityClass);
+                        if (typeId == null || entry.itemWeight <= 0) continue;
                         JsonObject o = new JsonObject();
-                        o.addProperty("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+                        o.addProperty("type", typeId.toString());
                         o.addProperty("weight", entry.itemWeight);
                         o.addProperty("minCount", Math.max(1, entry.minGroupCount));
                         o.addProperty("maxCount", Math.max(Math.max(1, entry.minGroupCount), entry.maxGroupCount));

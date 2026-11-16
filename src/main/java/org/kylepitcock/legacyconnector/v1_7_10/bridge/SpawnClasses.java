@@ -25,6 +25,18 @@ final class SpawnClasses {
     }
 
     /** The modern type of a legacy entity class, or null. */
+    /**
+     * The registry id of the entity a legacy class spawns as. A hosted mod entity's id comes from its host record: the biome data is written before
+     * the entity types are in the registry, where {@code getKey} would answer the registry's default (pig) for them.
+     */
+    static ResourceLocation modernId(Class<?> cls) {
+        if (cls == null) return null;
+        LegacyHosts.Info info = LegacyHosts.info(cls);
+        if (info != null) return info.id();
+        EntityType<?> type = modernType(cls);
+        return type == null ? null : BuiltInRegistries.ENTITY_TYPE.getKey(type);
+    }
+
     static EntityType<?> modernType(Class<?> cls) {
         if (cls == null) return null;
         LegacyHosts.Info info = LegacyHosts.info(cls);

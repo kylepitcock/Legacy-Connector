@@ -143,9 +143,20 @@ public class BiomeGenBase {
                 .filter(c -> !c.getName().startsWith("legacyconnector.") && !c.getName().startsWith("java.") && !c.getName().startsWith("jdk.")).findFirst()).orElse(null);
         if (caller == null) return null;
         Module module = caller.getModule();
+        String root = caller.getName().contains(".") ? caller.getName().substring(0, caller.getName().indexOf('.')) : "";
+        String best = null;
+        int bestScore = -1;
         for (var record : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
-            if (record.mainClass != null && record.mainClass.getModule() == module && org.kylepitcock.legacyconnector.core.LegacyMods.family(record.version).equals("1.7.10")) return record.modernId;
+            if (record.mainClass == null || record.mainClass.getModule() != module
+                    || !org.kylepitcock.legacyconnector.core.LegacyMods.family(record.version).equals("1.7.10")) continue;
+            // a jar can hold several mods: the one named like the package the biome class sits in (tropicraft.Tropicraft for tropicraft.world.biomes) owns it
+            int score = record.mainClass.getSimpleName().equalsIgnoreCase(root) ? 2 : record.mainClass.getName().startsWith(root + ".") ? 1 : 0;
+            if (score > bestScore) {
+                bestScore = score;
+                best = record.modernId;
+            }
         }
+        if (best != null) return best;
         return null;
     }
 
