@@ -194,6 +194,34 @@ public final class Round6Compat {
                 uses, maxUses, xp, priceMultiplier, demand);
     }
 
+    /** {@code CrossbowItem.setCharged(stack, charged)} (static): a crossbow is charged while it holds projectiles, so only discharging can be done here. */
+    public static void setCrossbowCharged(net.minecraft.world.item.ItemStack stack, boolean charged) {
+        if (!charged) stack.set(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES, net.minecraft.world.item.component.ChargedProjectiles.EMPTY);
+    }
+
+    /** {@code MobEffectInstance.getCurativeItems()} / {@code MobEffect.getCurativeItems()}: the effect is cured by milk unless it says otherwise (the cures are per instance now). */
+    public static java.util.List<net.minecraft.world.item.ItemStack> curativeItems(Object effect) {
+        if (effect instanceof net.minecraft.world.effect.MobEffectInstance instance && !instance.getCures().contains(net.neoforged.neoforge.common.EffectCures.MILK)) {
+            return new java.util.ArrayList<>();
+        }
+        java.util.List<net.minecraft.world.item.ItemStack> out = new java.util.ArrayList<>();
+        out.add(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.MILK_BUCKET));
+        return out;
+    }
+
+    /** {@code Arrow.setEffectsFromItem(stack)}: the potion contents of the stack become the arrow's. */
+    public static void arrowEffectsFromItem(net.minecraft.world.entity.projectile.Arrow arrow, net.minecraft.world.item.ItemStack stack) {
+        net.minecraft.world.item.alchemy.PotionContents contents = stack.get(net.minecraft.core.component.DataComponents.POTION_CONTENTS);
+        if (contents != null) arrow.setPotionContents(contents);
+    }
+
+    /** {@code ChiseledBookShelfBlock.getHitSlot(vec)} (static, 1.20.1's rule): two rows of three, the top row first. */
+    public static int bookshelfHitSlot(net.minecraft.world.phys.Vec2 hit) {
+        int row = hit.y >= 0.5F ? 0 : 1;
+        int column = hit.x < 0.375F ? 0 : hit.x < 0.6875F ? 1 : 2;
+        return column + row * 3;
+    }
+
     /** {@code MobCategory.byName(name)} (static). */
     public static net.minecraft.world.entity.MobCategory mobCategoryByName(String name) {
         for (net.minecraft.world.entity.MobCategory c : net.minecraft.world.entity.MobCategory.values()) if (c.getName().equals(name)) return c;
