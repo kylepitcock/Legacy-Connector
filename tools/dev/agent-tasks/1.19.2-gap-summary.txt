@@ -1,0 +1,67 @@
+Fabric-intermediary symbols dropped (multi-loader jars): 2176
+jars with code: 428 of 447; forge (mods.toml): 443; fabric/quilt marker: 54
+jar status: unresolved 378, links 35, no code 19, links but for other mods/libraries 15
+distinct Minecraft/Forge symbols: 2406; occurrences (jar x symbol): 13377
+by class (distinct/occurrences): F: 283/694, a: 165/1845, b: 992/8858, c: 737/1279, n: 33/264, u: 196/437
+
+shape x class (distinct symbols / occurrences / jars):
+  rendering (entity renderers/models/layers/shaders): F=30/127/76; a=135/1712/193; b=89/689/188; c=47/97/56; n=4/4/4; u=9/25/22
+  registry statics (Registry.X, BuiltinRegistries): a=2/5/4; b=162/1821/267; c=2/2/2; u=6/9/8
+  GUI rendering (PoseStack/GuiComponent/Button/Font): F=13/66/37; a=1/1/1; b=70/990/186; c=4/4/3; u=7/8/7
+  other Minecraft/server: F=72/78/11; a=5/14/13; b=69/545/204; c=109/170/65; n=9/47/39; u=52/68/18
+  damage sources: F=4/6/3; b=76/870/132; c=17/22/16
+  creative tabs: F=1/2/2; b=63/556/215; n=1/126/126; u=5/14/13
+  entities/attributes/AI: F=11/30/22; a=7/34/29; b=102/299/104; c=128/198/63; n=2/40/40; u=34/48/28
+  com.mojang.math (Vector3f/Matrix4f/Quaternion): b=21/632/209; n=1/2/2; u=1/2/2
+  block/item/state: F=9/16/13; a=1/6/6; b=44/345/113; c=75/120/55; n=5/30/26; u=35/89/51
+  client other (resources/keys/gui screens): F=11/21/14; a=2/5/5; b=68/322/126; c=78/154/65; u=5/22/17
+  loot: F=2/3/2; a=2/11/11; b=47/369/87; c=26/42/19; u=8/12/8
+  level/world/chunks/capabilities: F=3/5/5; a=3/29/27; b=32/198/95; c=35/76/48; n=2/2/2; u=18/80/65
+  sounds/particles: F=8/63/49; a=1/3/3; b=15/162/116; c=52/122/62; u=1/1/1
+  recipes/smithing: F=5/9/6; a=1/1/1; b=28/277/76; c=27/44/20; n=8/10/3; u=5/5/2
+  Material: a=2/13/11; b=3/302/203
+  worldgen (features/biomes/structures): F=7/22/13; a=2/5/5; b=36/170/64; c=7/21/19; u=3/18/17
+  data generators: b=29/72/35; c=95/131/25
+  other: F=61/183/82
+  network/packets: F=5/9/8; b=17/34/24; c=28/67/33; u=5/31/26
+  explosions: b=7/113/46; u=1/4/4
+  commands: F=1/1/1; a=1/6/6; b=9/83/73; c=5/7/5; n=1/3/3; u=1/1/1
+  Forge: config/fml/mods: F=17/22/17
+  Forge: other API: F=11/15/14
+  chat/messages: F=3/4/3; b=5/9/6; c=2/2/1
+  RegistryEvent / registries (Forge): F=9/12/8
+
+
+what-if (1.19.2 blockers only; c = 1.20.1 layer gaps, F = Forge API, u, n are NOT cleared by this work):
+  jars with no unresolved Minecraft/Forge symbol at all: 50 of 428
+  jars blocked ONLY by 1.19.2 deltas (a/b): 77; blocked by 1.19.2 deltas and by other classes: 296; only by other classes (c/F/u/n): 5
+  greedy order of shapes to fix (jars that then link fully / jars cleared of 1.19.2 blockers):
+    1. registry statics (Registry.X, BuiltinRegistries): cleared of 1.19.2 blockers 17, linking fully 62
+    2. other Minecraft/server: cleared of 1.19.2 blockers 28, linking fully 68
+    3. creative tabs: cleared of 1.19.2 blockers 38, linking fully 72
+    4. Material: cleared of 1.19.2 blockers 57, linking fully 79
+    5. block/item/state: cleared of 1.19.2 blockers 61, linking fully 80
+    6. com.mojang.math (Vector3f/Matrix4f/Quaternion): cleared of 1.19.2 blockers 65, linking fully 83
+    7. rendering (entity renderers/models/layers/shaders): cleared of 1.19.2 blockers 71, linking fully 87
+    8. damage sources: cleared of 1.19.2 blockers 79, linking fully 90
+    9. rename/SRG-table rows (a): cleared of 1.19.2 blockers 88, linking fully 95
+   10. GUI rendering (PoseStack/GuiComponent/Button/Font): cleared of 1.19.2 blockers 108, linking fully 103
+   11. client other (resources/keys/gui screens): cleared of 1.19.2 blockers 130, linking fully 105
+   12. sounds/particles: cleared of 1.19.2 blockers 144, linking fully 109
+   13. entities/attributes/AI: cleared of 1.19.2 blockers 161, linking fully 111
+   14. recipes/smithing: cleared of 1.19.2 blockers 180, linking fully 115
+   15. commands: cleared of 1.19.2 blockers 204, linking fully 118
+   16. loot: cleared of 1.19.2 blockers 228, linking fully 121
+   17. level/world/chunks/capabilities: cleared of 1.19.2 blockers 258, linking fully 122
+   18. worldgen (features/biomes/structures): cleared of 1.19.2 blockers 287, linking fully 127
+   19. explosions: cleared of 1.19.2 blockers 318, linking fully 127
+   20. data generators: cleared of 1.19.2 blockers 346, linking fully 127
+   21. network/packets: cleared of 1.19.2 blockers 367, linking fully 127
+   22. chat/messages: cleared of 1.19.2 blockers 373, linking fully 127
+  staged plan (cumulative, jars linking fully / jars cleared of 1.19.2 blockers):
+   stage 1 (tables: SRG overlay, registries, ctor/static rewrites): cleared 33, linking fully 72
+   stage 2 (stand-ins: creative tabs, Material, math, damage sources, entities, loot): cleared 107, linking fully 92
+   stage 3 (client: GUI, rendering, client other): cleared 245, linking fully 118
+   stage 4 (data and worldgen: smithing, recipes, worldgen, data generators): cleared 373, linking fully 127
+
+unresolved symbol occurrences by area: Other mod or library 31215, Minecraft common 7982, Minecraft client 4701, Forge API 693, Mixin/ASM 1

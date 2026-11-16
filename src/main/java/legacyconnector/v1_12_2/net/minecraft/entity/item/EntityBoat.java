@@ -177,6 +177,13 @@ public class EntityBoat extends Entity {
         mcc$paddles[1] = right;
     }
 
+    /** How far a paddle has turned, interpolated between ticks (0 when it is not rowing). */
+    public float getRowingTime(int paddle, float partialTicks) {
+        return getPaddleState(paddle)
+                ? (float) legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.clampedLerp(paddlePositions[paddle] - 0.39269909262657166D, paddlePositions[paddle], partialTicks)
+                : 0.0F;
+    }
+
     public boolean getPaddleState(int side) {
         var b = mcc$boat();
         return b != null ? b.getPaddleState(side) : mcc$paddles[side];

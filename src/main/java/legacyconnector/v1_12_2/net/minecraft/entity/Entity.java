@@ -1521,6 +1521,11 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         else if (mcc$entity != null) mcc$entity.handleEntityEvent(id);
     }
 
+    /** Burns the entity for {@code amount} damage unless it is immune to fire. */
+    protected void dealFireDamage(int amount) {
+        if (!mcc$get$isImmuneToFire(this)) attackEntityFrom(legacyconnector.v1_12_2.net.minecraft.util.DamageSource.IN_FIRE, amount);
+    }
+
     public void setFire(int seconds) {
         if (mcc$entity != null) mcc$entity.igniteForSeconds(seconds);
     }
