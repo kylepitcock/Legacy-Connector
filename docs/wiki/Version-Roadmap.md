@@ -10,7 +10,7 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 4 | 1.5.2 | Alpha (2026-11-07) | Same numeric-id and old packet model as 1.6.4, so a small delta while that work is fresh; the FTB Ultimate/Unleashed era with mods that exist only there (Thaumcraft 3, early Railcraft/Forestry/BuildCraft, Equivalent Exchange 2) | Delta over the 1.6.4 layer |
 | 5 | 1.4.7 | Alpha (2026-11-07) | Same model; the Hexxit era | Delta over 1.5.2 plus obfuscated/flat class names, ModLoader `BaseMod` mods and sprite-sheet textures ([estimate](Legacy-1.4.7-Estimate.md), [corpus](Legacy-1.4.7-Corpus.md)) |
 | 6 | 1.20.1 | Alpha (2026-11-08) | Largest Forge ecosystem; most popular mods have 1.21.1 ports, so the value is the abandoned set; its pipeline is the base of the next three | In-place bytecode migration onto NeoForge 1.21.1 ([estimate](Legacy-1.20.1-Estimate.md)) |
-| 7 | 1.19.2 | Planned | Big modpack base, many mods stopped here | 1.19.2 to 1.20.1 renames and diffs on top of the 1.20.1 pipeline |
+| 7 | 1.19.2 | Planned | Big modpack base, many mods stopped here | 1.19.2 to 1.20.1 renames and diffs on top of the 1.20.1 pipeline; measured 2026-11-16: mostly changed API, not renames ([estimate](Legacy-1.19.2-Estimate.md)) |
 | 8 | 1.18.2 | Planned | Same | Same, one step further back |
 | 9 | 1.16.5 | Planned | Many abandoned mods and packs; Forge 36 still used MCP names | Same pipeline plus the MCP to Mojang names step |
 | 10 | 1.2.5 | Planned | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Different layer: `ModLoader`/`BaseMod` emulation and flat names, no FML |
@@ -26,7 +26,8 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | **0.4.0 (1.6.4 + 1.5.2 + 1.4.7)** | about 4 to 5 days (range 3 to 6) |
 | 1.12.2 beta | done 2026-11-07 (declared by the maintainer; rendering issues #169 to #172 are still open) |
 | 1.20.1 | corpus 1 day; first mod 1 to 2 days; broad coverage 1 to 2 weeks |
-| 1.19.2, 1.18.2, 1.16.5 | 1 to 2 days each after the 1.20.1 pipeline |
+| 1.19.2 | measured 2026-11-16 ([estimate](Legacy-1.19.2-Estimate.md)): tables only 1.5 to 2 days; link parity with 1.20.1 6 to 8 days with five agents; Alpha 10 to 14 days |
+| 1.18.2, 1.16.5 | 1 to 2 days each after the 1.20.1 pipeline (not measured; 1.18.2 expected 4 to 5 days after 1.19.2) |
 | 1.2.5 | 2 to 3 days (a different layer) |
 | Fabric 1.20.1 via Sinytra Connector | 3 to 5 days after Forge 1.20.1 works, if the corpus justifies it |
 
