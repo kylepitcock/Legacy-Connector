@@ -30,10 +30,11 @@ first=1
 find_jar() {
   local frag="$1" dir="${2:-}" r f
   frag="${frag//\[/?}"; frag="${frag//\]/?}"   # glob brackets in a jar name match any character
-  for r in ${dir:+__dir__} $SEARCH __atm9__; do
+  for r in ${dir:+__dir__} $SEARCH __big1122__ __atm9__; do
     case "$r" in
       __dir__) r="$dir";;
       __atm9__) r="$ATM9_MODS";;
+      __big1122__) r="$JAR_ROOT/1.12.2 test mods";;
       *) r="$JAR_ROOT/$r";;
     esac
     [ -d "$r" ] || continue

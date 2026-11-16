@@ -1,0 +1,8 @@
+1.12.2 Forgelin-1.8
+1.12.2 CoFHCore-1.12.2
+1.12.2 RedstoneFlux
+1.12.2 CodeChickenLib-1.12.2
+1.12.2 ThermalFoundation
+1.12.2 ThermalExpansion
+1.12.2 ThermalDynamics
+1.12.2 CoFHWorld

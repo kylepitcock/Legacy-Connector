@@ -1,0 +1,2 @@
+1.12.2 Quark-r1.6
+1.12.2 AutoRegLib
