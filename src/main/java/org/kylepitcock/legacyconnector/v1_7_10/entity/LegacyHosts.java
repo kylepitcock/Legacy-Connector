@@ -86,7 +86,7 @@ public final class LegacyHosts {
             boolean velocityUpdates) {
         Info existing = BY_CLASS.get(cls);
         if (existing != null) return existing;
-        int[] override = TRACKING_OVERRIDES.get(cls);
+        int[] override = trackingFor(cls);
         if (override != null) {
             trackingRange = override[0];
             updateFrequency = override[1];
@@ -117,19 +117,32 @@ public final class LegacyHosts {
 
     private static final Map<Class<?>, int[]> TRACKING_OVERRIDES = new ConcurrentHashMap<>();
 
+    /** The override of the class itself, else of the first registered class it is an instance of ({@code handleEntityTrackers} used {@code isInstance}). */
+    private static int[] trackingFor(Class<?> cls) {
+        int[] own = TRACKING_OVERRIDES.get(cls);
+        if (own != null) return own;
+        for (Map.Entry<Class<?>, int[]> e : TRACKING_OVERRIDES.entrySet()) {
+            if (e.getKey().isAssignableFrom(cls)) return e.getValue();
+        }
+        return null;
+    }
+
     /**
-     * ModLoaderMP's {@code registerEntityTracker(class, updateRange, updateInterval)}: the tracker settings of an entity class (velocity updates on),
-     * which may arrive before or after the class is registered. A type that exists already has its tracking fields rewritten (they are fixed at construction).
+     * ModLoaderMP's {@code registerEntityTracker(class, updateRange, updateInterval)}: the tracker settings of an entity class and its subclasses (velocity
+     * updates on), which may arrive before or after the classes are registered. A type that exists already has its tracking fields rewritten (they are
+     * fixed at construction); a subclass with a setting of its own keeps it.
      */
     public static synchronized void setTracking(Class<?> cls, int trackingRange, int updateFrequency) {
         TRACKING_OVERRIDES.put(cls, new int[] {trackingRange, updateFrequency});
-        Info info = BY_CLASS.get(cls);
-        if (info == null) return;
-        try {
-            patchInt(info.type(), "clientTrackingRange", Math.max(4, (trackingRange + 15) / 16));
-            patchInt(info.type(), "updateInterval", Math.max(1, updateFrequency));
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            LOG.warn("Could not change the tracker settings of {} after its registration: {}", cls.getName(), e.toString());
+        for (Info info : BY_CLASS.values()) {
+            Class<?> c = info.legacyClass();
+            if (!cls.isAssignableFrom(c) || (c != cls && TRACKING_OVERRIDES.containsKey(c))) continue;
+            try {
+                patchInt(info.type(), "clientTrackingRange", Math.max(4, (trackingRange + 15) / 16));
+                patchInt(info.type(), "updateInterval", Math.max(1, updateFrequency));
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                LOG.warn("Could not change the tracker settings of {} after its registration: {}", c.getName(), e.toString());
+            }
         }
     }
 

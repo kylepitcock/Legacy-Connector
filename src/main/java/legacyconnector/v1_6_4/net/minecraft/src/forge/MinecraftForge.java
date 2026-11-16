@@ -304,7 +304,12 @@ public class MinecraftForge {
     // ---- achievements, minecarts
 
     public static void registerAchievementPage(AchievementPage page) {
+        if (getAchievementPage(page.getName()) != null) {
+            throw new RuntimeException("Duplicate achievement page name \"" + page.getName() + "\"!");
+        }
         PAGES.add(page);
+        // the achievements screen lists the shim's pages
+        legacyconnector.v1_7_10.net.minecraftforge.common.AchievementPage.registerAchievementPage(page);
     }
 
     public static AchievementPage getAchievementPage(int index) {

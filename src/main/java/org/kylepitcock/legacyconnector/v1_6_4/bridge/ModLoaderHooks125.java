@@ -1,7 +1,5 @@
 package org.kylepitcock.legacyconnector.v1_6_4.bridge;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,35 +69,5 @@ public final class ModLoaderHooks125 {
         long b = random.nextLong() / 2L * 2L + 1L;
         random.setSeed((long) chunkX * a + (long) chunkZ * b ^ worldSeed);
         return random;
-    }
-
-    /**
-     * Calls the mod's {@code onTickInGame(MinecraftServer)} whatever its return type: the 1.2.5 server's {@code BaseMod} declares it {@code void}, the
-     * client-era shim {@code boolean}, and a method is found by name and descriptor, so the mod's {@code void} override is a different method that the
-     * shim's calls never reach. Returns whether the hook stays: false only when the mod answered false (a mod that does not override it answers false).
-     */
-    public static boolean callServerTick(Object mod, Class<?> base, Class<?> serverType, Object server) {
-        Method m = serverTickMethod(mod.getClass(), base, serverType);
-        if (m == null) return false;
-        try {
-            Object result = m.invoke(mod, server);
-            return !(result instanceof Boolean b) || b;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException(e.getCause() != null ? e.getCause() : e);
-        }
-    }
-
-    /** The most derived {@code onTickInGame(server)} of a mod class that is not the shim's own default (declared in a class below {@code base}). */
-    static Method serverTickMethod(Class<?> modClass, Class<?> base, Class<?> serverType) {
-        for (Class<?> c = modClass; c != null && c != Object.class; c = c.getSuperclass()) {
-            if (c == base) return null;
-            for (Method m : c.getDeclaredMethods()) {
-                if (!m.getName().equals("onTickInGame") || m.getParameterCount() != 1 || m.isBridge() || m.isSynthetic()) continue;
-                if (Modifier.isStatic(m.getModifiers()) || !m.getParameterTypes()[0].isAssignableFrom(serverType)) continue;
-                m.setAccessible(true);
-                return m;
-            }
-        }
-        return null;
     }
 }
