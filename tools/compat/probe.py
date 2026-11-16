@@ -477,6 +477,7 @@ def history(records, mc, date, layer, source=""):
     if stub_counts:
         run["stubCounts"] = stub_counts
         run["stubMembers"] = sum(stub_counts.values())
+        run["stubDistinct"] = len({m for r in records if r.get("mc") == mc and r.get("mods") for m in r.get("stubbed", [])})
     if assets["checked"]:
         run["assets"] = assets
     if source:
@@ -518,6 +519,10 @@ def main():
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    if a.mc == "1.2.5":   # 1.2.5 jars are hosted through the 1.4.7 chain, so checkLegacyMod labels them 1.4.7: they are 1.2.5 results
+        for r in records:
+            if r.get("mc") == "1.4.7":
+                r["mc"] = "1.2.5"
     counts = {}
     for r in records:
         counts[r["result"]] = counts.get(r["result"], 0) + 1
