@@ -45,6 +45,15 @@ public final class HolderCompat {
         return BuiltInRegistries.GAME_EVENT.wrapAsHolder(g);
     }
 
+    /** The holder, or null while the data-driven registry is not there (a tags-updated handler of a mod reads enchantment levels while the data packs load: there is no level to read yet). */
+    private static Holder<Enchantment> holderOrNull(LegacyEnchantment e) {
+        try {
+            return e.holder();
+        } catch (IllegalStateException noRegistry) {
+            return null;
+        }
+    }
+
     public static Holder<Enchantment> holder(LegacyEnchantment e) {
         return e.holder();
     }
@@ -108,7 +117,8 @@ public final class HolderCompat {
     }
 
     public static int stackEnchantmentLevel(ItemStack stack, LegacyEnchantment e) {
-        return stack.getEnchantmentLevel(holder(e));
+        Holder<Enchantment> h = holderOrNull(e);
+        return h == null ? 0 : stack.getEnchantmentLevel(h);
     }
 
     /** Enchantments of a stack as the 1.20.1 map from enchantment to level. */
@@ -201,11 +211,13 @@ public final class HolderCompat {
     // ------------------------------------------------------------------ enchantments
 
     public static int getItemEnchantmentLevel(LegacyEnchantment e, ItemStack stack) {
-        return EnchantmentHelper.getItemEnchantmentLevel(holder(e), stack);
+        Holder<Enchantment> h = holderOrNull(e);
+        return h == null ? 0 : EnchantmentHelper.getItemEnchantmentLevel(h, stack);
     }
 
     public static int getEnchantmentLevel(LegacyEnchantment e, LivingEntity entity) {
-        return EnchantmentHelper.getEnchantmentLevel(holder(e), entity);
+        Holder<Enchantment> h = holderOrNull(e);
+        return h == null ? 0 : EnchantmentHelper.getEnchantmentLevel(h, entity);
     }
 
     /** The unwrapped {@code Enchantments.X} (a resource key in 1.21.1, the object in 1.20.1). */
