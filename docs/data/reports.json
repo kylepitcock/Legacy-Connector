@@ -875,6 +875,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/ic2-classic/files/8014397",
    "date": "2026-11-15",
    "open": true
+  },
+  {
+   "issue": 295,
+   "mod": "CustomOreGen-1.12-1.8.1",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "Appears to not load config, no worldgen added or removed. Command `/cogEnableDebugging` errors with `java.lang.NullPointerException: Cannot invoke \"java.io.File.toString()\" because \"cfg.dimensionDir\" is null`",
+   "lc": "0.4.14-nightly.56.1d01b86",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/customoregen/download/2568549",
+   "date": "2026-11-16",
+   "open": true
   }
  ]
 }
