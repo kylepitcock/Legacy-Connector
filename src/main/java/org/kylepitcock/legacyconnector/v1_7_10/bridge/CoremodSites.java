@@ -41,7 +41,7 @@ public final class CoremodSites {
     private static final String SYNTH = "legacyconnector_synth.v1_7_10.";
 
     /** A discovered hook call: where, and the static method. */
-    private record Listed(String site, String owner, String name, String desc) {}
+    private record Listed(String site, String owner, String name, String desc, String op) {}
 
     /** The same, keyed with the {@code @n} of repeats kept (the first occurrence has none): a place key written {@code =site@3} asks for that occurrence only. */
     private static final Map<String, List<Listed>> EXACT = new HashMap<>();
@@ -1078,6 +1078,9 @@ public final class CoremodSites {
                 if (combine != null) {
                     Object joined = call(combine, new Object[] {values[index], r});
                     if (joined != null) values[index] = joined;
+                } else if (!takes(b, index) && !b.op.isEmpty() && values[index] instanceof Number v && r instanceof Number n) {
+                    // the transformer joined the value and the hook's result with a bare instruction (fmul), not a helper
+                    values[index] = arithmetic(b.op, v, n);
                 } else {
                     values[index] = r;
                 }
@@ -1158,7 +1161,7 @@ public final class CoremodSites {
         }
     }
 
-    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, Object[] fixed, boolean combiner, ClassLoader mod, CoremodHookGuard guard) {}
+    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, Object[] fixed, boolean combiner, ClassLoader mod, CoremodHookGuard guard, String op) {}
 
     /** The guard of a hook on its entity parameter (the one the place fills from its entity value), or null. */
     private static CoremodHookGuard guardOf(Class<?> owner, Method method, int[] from, Class<?>[] offered) {
@@ -1171,6 +1174,22 @@ public final class CoremodSites {
     private static boolean takes(Bound b, int index) {
         for (int from : b.from) if (from == index) return true;
         return false;
+    }
+
+    /** {@code value op result} for the instruction a transformer put after a hook call (fmul, iadd, ddiv...). */
+    private static Object arithmetic(String op, Number a, Number b) {
+        char kind = op.charAt(0);
+        String what = op.substring(1);
+        if (kind == 'i') {
+            int x = a.intValue(), y = b.intValue();
+            return switch (what) { case "mul" -> x * y; case "div" -> y == 0 ? x : x / y; case "add" -> x + y; default -> x - y; };
+        }
+        if (kind == 'f') {
+            float x = a.floatValue(), y = b.floatValue();
+            return switch (what) { case "mul" -> x * y; case "div" -> x / y; case "add" -> x + y; default -> x - y; };
+        }
+        double x = a.doubleValue(), y = b.doubleValue();
+        return switch (what) { case "mul" -> x * y; case "div" -> x / y; case "add" -> x + y; default -> x - y; };
     }
 
     /** The helper of the same mod that joins a value with a hook's result. */
@@ -1415,7 +1434,7 @@ public final class CoremodSites {
             MethodHandle handle = MethodHandles.lookup().unreflect(method);
             handle = handle.asType(handle.type().generic().changeReturnType(Object.class)).asSpreader(Object[].class, types.length)
                     .asType(MethodType.methodType(Object.class, Object[].class));
-            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, fixed, combiner, owner.getClassLoader(), combiner ? null : guardOf(owner, method, from, offered));
+            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, fixed, combiner, owner.getClassLoader(), combiner ? null : guardOf(owner, method, from, offered), l.op);
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
             LOG.warn("Coremod hook {}.{} is not available: {}", className, l.name, e.toString());
             return null;
@@ -1462,7 +1481,7 @@ public final class CoremodSites {
                 String[] p = line.split("\t");
                 if (p.length < 4) continue;
                 String site = p[0].replaceFirst("@\\d+$", "");
-                Listed listed = new Listed(site, p[1], p[2], p[3]);
+                Listed listed = new Listed(site, p[1], p[2], p[3], p.length > 4 ? p[4] : "");
                 out.computeIfAbsent(site, k -> new ArrayList<>()).add(listed);
                 EXACT.computeIfAbsent(p[0], k -> new ArrayList<>()).add(listed);
             }
