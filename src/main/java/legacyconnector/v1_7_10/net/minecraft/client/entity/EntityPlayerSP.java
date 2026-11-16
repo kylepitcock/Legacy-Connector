@@ -91,4 +91,14 @@ public class EntityPlayerSP extends AbstractClientPlayer {
             movementInput.sneak = in.shiftKeyDown;
         }
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code ClientPlayerEntity.sendChat(text)}: sends a chat line (or, starting with a slash, a command) to the server. */
+    public void mcc125$sendChat(String text) {
+        var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
+        if (connection == null || text == null) return;
+        if (text.startsWith("/")) connection.sendCommand(text.substring(1));
+        else connection.sendChat(text);
+    }
 }

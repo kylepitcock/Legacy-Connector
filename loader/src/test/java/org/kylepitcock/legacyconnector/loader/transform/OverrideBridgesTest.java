@@ -30,7 +30,7 @@ class OverrideBridgesTest {
 
     @Test
     void parametersTheNewSignatureLacksAreDefaulted() {
-        OverrideBridges.Plan p = OverrideBridges.plan("(La;IIILb;)Z", "(La;III)Z", new String[1]);
+        OverrideBridges.Plan p = OverrideBridges.plan("(La;IIII)Z", "(La;III)Z", new String[1]);
         assertNotNull(p);
         assertEquals(1, p.defaults());
     }

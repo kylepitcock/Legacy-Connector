@@ -908,6 +908,13 @@ public class Block {
     public void onPostBlockPlaced(World world, int x, int y, int z, int meta) {
     }
 
+    /**
+     * Minecraft 1.2.5's {@code updateMetadataOnPlaced(world, x, y, z, side)}: called right after the block was set, with the side the item was used
+     * on (1.4.7 moved this into {@code onBlockPlaced}'s metadata). The loader names a mod's override {@code mcc125$updateMetadataOnPlaced}.
+     */
+    public void mcc125$updateMetadataOnPlaced(World world, int x, int y, int z, int side) {
+    }
+
     public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
     }
 
@@ -1404,5 +1411,24 @@ public class Block {
 
     public boolean isFlowerPot() {
         return false;
+    }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code Block.getMiningTime()} (Feather name; the hardness of the block, what {@code getHardness} returned). */
+    public float mcc125$getMiningTime() {
+        return this.blockHardness;
+    }
+
+    /** 1.2.5 {@code Block.getBlockTexture(world, x, y, z, side)}: the sprite index of a side at a position (default: the side's texture for the block's metadata). */
+    public int getBlockTexture(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int side) {
+        return getBlockTextureFromSideAndMetadata(side, world.getBlockMetadata(x, y, z));
+    }
+
+    // Members125 batch 2
+
+    /** Forge 3.x {@code Block.isBlockSolidOnSide(world, x, y, z, side)} (the int side; 1.7.10: {@code isSideSolid}). */
+    public boolean isBlockSolidOnSide(World world, int x, int y, int z, int side) {
+        return isSideSolid(world, x, y, z, legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(side));
     }
 }

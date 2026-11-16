@@ -56,16 +56,7 @@ public final class Liquids125 {
         }
 
         Object orientation(Direction side) {
-            String name = side == null ? "Unknown" : switch (side) {
-                case DOWN -> "YNeg";
-                case UP -> "YPos";
-                case NORTH -> "ZNeg";
-                case SOUTH -> "ZPos";
-                case WEST -> "XNeg";
-                case EAST -> "XPos";
-            };
-            for (Object c : orientation.getEnumConstants()) if (c.toString().equals(name)) return c;
-            return null;
+            return Orientations125.of(orientation, side);
         }
     }
 
