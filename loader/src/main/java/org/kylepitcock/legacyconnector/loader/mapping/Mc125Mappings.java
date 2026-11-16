@@ -269,6 +269,12 @@ public final class Mc125Mappings {
                     pairs.append("  ").append(v125.classes.get(m[1])).append(": ").append(memberName(m, v125.classes.get(m[1]))).append(" ").append(m[3]).append(" -> ")
                             .append(memberName(t, v147.classes.get(t[1]))).append("\n");
                 }
+                // U rows: every member that stayed unjoined, with its readable (Feather) name: the obfuscated letter differs between the client and the server of 1.2.5, the readable name does not
+                for (String[] m : v125.members) {
+                    if (joinedKeys.contains(m[1] + "|" + m[0] + "|" + m[2] + "|" + m[3])) continue;
+                    String ownerReadable = v125.classes.get(m[1]);
+                    table.write("U\t" + sides[s] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\t" + memberName(m, ownerReadable) + "\n");
+                }
                 // B rows: a method of a joined class that 1.4.7 has under the same readable name but another signature (1.3 added the hit position to onItemUse, ...). Not a rename of
                 // calls (the call sites cannot be given the new arguments); a mod class that DECLARES the old signature gets the 1.4.7 signature as a bridge method (OverrideBridges).
                 int bridgeRows = 0, bridgeSkipped = 0;

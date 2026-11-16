@@ -56,18 +56,18 @@ S	net/minecraft/tileentity/TileEntityMobSpawner	yaw	D	org/kylepitcock/legacyconn
 S	net/minecraft/tileentity/TileEntityMobSpawner	yaw2	D	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setSpawnerYaw2	(Lnet/minecraft/tileentity/TileEntityMobSpawner;D)V
 #
 # Minecraft 1.2.5 members the 1.2.5 to 1.4.7 join cannot name (mcc125$<obfuscated name>, see Notch125To147 / Redirects125) and Forge 3.x patches of game classes
-R	net/minecraft/client/gui/FontRenderer	mcc125$b	(Ljava/lang/String;III)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	drawString	(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;III)V
+R	net/minecraft/client/gui/FontRenderer	mcc125$draw	(Ljava/lang/String;III)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	drawString	(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;III)V
 R	net/minecraft/inventory/Container	a	(Lnet/minecraft/inventory/Slot;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	addSlot	(Lnet/minecraft/inventory/Container;Lnet/minecraft/inventory/Slot;)V
-R	net/minecraft/inventory/Container	mcc125$a	(IIZLnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	slotClick	(Lnet/minecraft/inventory/Container;IIZLnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;
-R	net/minecraft/client/Minecraft	mcc125$l	()Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	isMultiplayer	(Lnet/minecraft/client/Minecraft;)Z
-R	net/minecraft/entity/player/EntityPlayer	mcc125$e	(III)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	canPlayerEdit	(Lnet/minecraft/entity/player/EntityPlayer;III)Z
-R	net/minecraft/entity/player/EntityPlayer	mcc125$ax	()V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	swingItem	(Lnet/minecraft/entity/player/EntityPlayer;)V
-R	net/minecraft/client/gui/GuiIngame	mcc125$a	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	addChatMessage	(Lnet/minecraft/client/gui/GuiIngame;Ljava/lang/String;)V
-R	net/minecraft/world/World	mcc125$a	(IIIIZI)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	canPlace	(Lnet/minecraft/world/World;IIIIZI)Z
-R	net/minecraft/world/World	mcc125$a	(Lnet/minecraft/entity/Entity;DDDF)Lnet/minecraft/world/Explosion;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	explode	(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;DDDF)Lnet/minecraft/world/Explosion;
+R	net/minecraft/inventory/Container	mcc125$onClickSlot	(IIZLnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	slotClick	(Lnet/minecraft/inventory/Container;IIZLnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;
+R	net/minecraft/client/Minecraft	mcc125$isMultiplayer	()Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	isMultiplayer	(Lnet/minecraft/client/Minecraft;)Z
+R	net/minecraft/entity/player/EntityPlayer	mcc125$canUseItemOn	(III)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	canPlayerEdit	(Lnet/minecraft/entity/player/EntityPlayer;III)Z
+R	net/minecraft/entity/player/EntityPlayer	mcc125$swingArm	()V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	swingItem	(Lnet/minecraft/entity/player/EntityPlayer;)V
+R	net/minecraft/client/gui/GuiIngame	mcc125$addChatMessage	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	addChatMessage	(Lnet/minecraft/client/gui/GuiIngame;Ljava/lang/String;)V
+R	net/minecraft/world/World	mcc125$canPlace	(IIIIZI)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	canPlace	(Lnet/minecraft/world/World;IIIIZI)Z
+R	net/minecraft/world/World	mcc125$explode	(Lnet/minecraft/entity/Entity;DDDF)Lnet/minecraft/world/Explosion;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	explode	(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;DDDF)Lnet/minecraft/world/Explosion;
 R	net/minecraft/world/World	isBlockSolidOnSide	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	isBlockSolidOnSide	(Lnet/minecraft/world/World;IIII)Z
-R	net/minecraft/item/ItemStack	mcc125$q	()Ljava/util/List;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	tooltip	(Lnet/minecraft/item/ItemStack;)Ljava/util/List;
-R	net/minecraft/item/ItemStack	mcc125$c	(Lnet/minecraft/item/ItemStack;)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	isItemEqual	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z
+R	net/minecraft/item/ItemStack	mcc125$getTooltip	()Ljava/util/List;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	tooltip	(Lnet/minecraft/item/ItemStack;)Ljava/util/List;
+R	net/minecraft/item/ItemStack	mcc125$is	(Lnet/minecraft/item/ItemStack;)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	isItemEqual	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z
 R	net/minecraft/item/crafting/FurnaceRecipes	addSmelting	(IILnet/minecraft/item/ItemStack;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	addSmelting	(Lnet/minecraft/item/crafting/FurnaceRecipes;IILnet/minecraft/item/ItemStack;)V
 R	net/minecraft/client/Minecraft	installResource	(Ljava/lang/String;Ljava/io/File;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	installResource	(Lnet/minecraft/client/Minecraft;Ljava/lang/String;Ljava/io/File;)V
-G	net/minecraft/entity/item/EntityItem	mcc125$a	Lnet/minecraft/item/ItemStack;	=	getEntityItem	()Lnet/minecraft/item/ItemStack;
+G	net/minecraft/entity/item/EntityItem	mcc125$item	Lnet/minecraft/item/ItemStack;	=	getEntityItem	()Lnet/minecraft/item/ItemStack;

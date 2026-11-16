@@ -86,6 +86,7 @@ public final class Notch125To147 {
             };
             for (var e : members.entrySet()) {
                 String key = e.getKey(); // "F|M owner.name desc"
+                if (key.charAt(0) != 'F' && key.charAt(0) != 'M') continue; // U and B rows keep their own descriptors
                 int sp = key.lastIndexOf(' ');
                 String old = byClass.mapDesc(key.substring(sp + 1));
                 String[] to = e.getValue();
@@ -110,6 +111,8 @@ public final class Notch125To147 {
             if (p[0].equals("C")) {
                 t.classes.put(p[2], p[3]);
                 t.classesBack.put(p[3], p[2]);
+            } else if (p[0].equals("U")) {
+                if (p.length >= 6) t.members.put("U " + p[2] + "." + p[3] + " " + p[4], new String[] {p[2], p[5], p[4]});
             } else if (p.length >= 8) {
                 t.members.put(p[0] + " " + p[2] + "." + p[3] + " " + p[4], new String[] {p[5], p[6], p[7]});
             }
@@ -209,7 +212,11 @@ public final class Notch125To147 {
                             || mname.length() > 3 || self == null || self.superName() == null) return null;
                     String[] hit = resolver.lookup("M", self.superName(), mname, mdesc);
                     if (hit == null) hit = resolver.lookup("B", self.superName(), mname, mdesc);
-                    if (hit == null) return null;
+                    if (hit == null) {
+                        String[] u = resolver.lookup("U", self.superName(), mname, mdesc);
+                        if (u != null) unbridged.add(name + "." + mname + mdesc + ": no 1.4.7 method '" + u[1] + "'");
+                        return null;
+                    }
                     String oldDesc = byClass.mapDesc(mdesc);
                     if (oldDesc.equals(hit[2])) return null;
                     counts[0]++;
@@ -371,6 +378,9 @@ public final class Notch125To147 {
             if (hit != null) return hit[1];
             if (name.length() <= 3 && table.classes.containsKey(owner)) {
                 unresolved.add(owner + "." + name + desc);
+                // named by the readable name when the table has one (U rows): the client and the server of 1.2.5 use different letters for the same member
+                String[] named = lookup("U", owner, name, desc);
+                if (named != null) return UNJOINED_PREFIX + named[1];
                 // a 1.2.5 member 1.4.7 does not have: its short name could be ANOTHER member of 1.4.7 (the obfuscation is re-randomized every release), so it must not stay as it is;
                 // the marker never exists, which the link report shows and the synthesizer stubs, instead of calling the wrong method
                 return UNJOINED_PREFIX + name;

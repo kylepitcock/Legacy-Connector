@@ -199,11 +199,29 @@ The 8 unresolved: NEWTON gravity (a 1.2.3 jar, not 1.2.5), SDKs Mods, herobrine'
 Tropicraft; static in 1.2.5, instance methods in the shim). "Links" includes calls to synthesized empty stubs: 1424 distinct stubbed members (1801 stubs) across the 38 translated client units,
 ranked in `tools/dev/agent-tasks/1.2.5-shim-requests.md`; 300 distinct 1.2.5 game members had no 1.4.7 counterpart. `verifyFailures` is 0 for all.
 
-**Largest open loader-side item: overridden hooks whose signature changed in 1.3.** A mod's override that has no 1.4.7 counterpart keeps an obfuscated name nothing calls, so the hook silently
-never runs (the stub list shows only the calls, not these). The corpus has `Item.onItemUse(stack, player, world, x, y, z, side)` (1.4.7 adds the hit position floats), `Block.onBlockActivated`
-(floats and the side), `Block.addCollidingBlockToList` (1.4.7: `List` and the colliding entity), `BlockContainer.getBlockEntity()` (1.4.7: `createNewTileEntity(World)`), `Block.onBlockPlacedBy`
-(`updateMetadataOnPlaced` in Feather 1.2.5 names), `Slot.onItemRemoved`, `Container.onClickSlot`, `EntityItem.item`, ... The mechanism for this exists (`forward/*/bridge-methods.tsv`: a method with the
-old shape gets a bridge with the new one), but it needs the join to rename the override first (an alias row whose descriptor may differ in arity) and one bridge row per hook; not done yet.
+**Overridden hooks whose signature changed in 1.3 (done 2026-11-16, second round).** A mod's override of a game method whose 1.4.7 version has another signature (`Item.onItemUse` gets the hit
+position, `Block.onBlockActivated` the side and the hit position, `addCollidingBlockToList` a `List` and the entity, `BlockContainer.getBlockEntity()` becomes `createNewTileEntity(World)`,
+`Slot.onItemRemoved(stack)` gets the player, ...) was never called by the host. Now generic, from the join data and not from a list: `genMappings125` writes a `B` row for every method of a
+joined class that 1.4.7 has under the same Feather name but another descriptor and that no exact join claimed (client 72, server 57; `join-report.txt` lists them), choosing the candidate with the
+best parameter alignment (`OverrideBridges.align`: in order, by type, dropped arguments ignored, arguments the new signature lacks passed as zero or null; refused when a primitive or the result
+kind changed or more than half the parameters have no counterpart). `Notch125To147` looks for every method a mod class declares on top of such a row (the class's supertypes, jar classes first) and, after
+the rename, adds a `public` method with the 1.4.7 signature that casts and forwards to the original (`OverrideBridges.emit`); the rest of the 1.4.7 chain then sees an ordinary 1.4.7 override. The
+same covers methods the join found with other class types only (the descriptor fix for references applies to those through their declaring class). Calls of such a method from mod code keep the
+old arity and stay stubs. Count over the real corpus (`Mc125CorpusBridgesTest`, `-Pmappings125`, writes `loader/build/reports/mc125-bridges.txt`): **929 overrides of changed-signature methods in
+69 translated units, 929 bridged** (the bridges preserve primitives and result kinds, so none was refused). Not bridgeable because 1.4.7 has no method of that name (the mod keeps an override nothing calls,
+the stub list names it `mcc125$<Feather name>`): `updateMetadataOnPlaced` 35, `makeChild` 31, `isPauseScreen` 28 (now an alias row to `shouldPauseGame`), `takeDamage` 2, `findNetherPortal` 3,
+`generateNetherPortal` 3, `addRespawnParticles` 4, and single cases (`addChatMessage`, `clearChat`, `beforeRemove`, `onDimensionChanged`, `populateBlockLight`, `translate`, `fill`); each is a one-line row in
+`manual-aliases.tsv` once the 1.4.7 name is known (`updateMetadataOnPlaced` is 1.4.7's `onBlockPlacedBy`/`onPlaced`, `makeChild` its `createChild`), not done because they change the argument list too.
+
+**Side-independent names for unjoined members.** The client and the server of 1.2.5 are obfuscated separately, so `mcc125$b` meant different members on the two sides. `genMappings125` now writes
+a `U` row (side, owner, letter, descriptor, Feather name) for every member that stayed unjoined and the loader names it `mcc125$<Feather name>` (`mcc125$draw`, `mcc125$onClickSlot`, `mcc125$item`);
+the shim worker's call-redirect rows in `forward/1.4.7/member-manual.tsv` were re-keyed accordingly (11 rows), so server builds hit them too.
+
+**`.zip` in `mods/1.2.5/`.** The locator reads `.zip` and `.jar` from every legacy folder (`isModArchive`); a `BucketCraft_1-2-5.zip` in `mods/1.2.5/` was translated and constructed in the first server
+self test (13:52 log). The report that zips are ignored came from the offline tools: `checkLegacyMod` takes only the paths it is given, and `probe.py` adds `*.zip` for the 1.2 to 1.6 era only. No locator defect found.
+
+**Nested wrappers and install roots in the offline check.** `CheckJar` now expands an archive that only wraps mod archives (`LegacyModLocator.bundledMods`: Smart Moving, MineFactory Reloaded) and one with
+several install roots that each hold a `mod_*` class (ObsidianIngots' `SMP` and `SSP` folders; one jar per root). The locator itself does not split install roots.
 
 ### First server self test (2026-11-16)
 

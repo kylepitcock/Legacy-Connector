@@ -131,7 +131,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
      * that inspect as legacy mods). One level only. The inner archives are copied to {@code nestedDir} as {@code <bundle>-<inner>} (content hash of
      * the copy keys the translation cache, so an updated bundle re-translates). Empty when the archive is not a bundle.
      */
-    static List<Path> bundledMods(Path archive, Path nestedDir) {
+    public static List<Path> bundledMods(Path archive, Path nestedDir) {
         List<Path> out = new ArrayList<>();
         try (ZipFile zip = new ZipFile(archive.toFile())) {
             List<ZipEntry> inner = new ArrayList<>();

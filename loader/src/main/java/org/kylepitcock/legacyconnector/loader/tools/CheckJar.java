@@ -41,6 +41,56 @@ import org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer;
 public final class CheckJar {
     private CheckJar() {}
 
+    /** The archive itself, or the mod archives it wraps, or one jar per install root when its classes sit under several folders. */
+    static List<Path> expand(Path archive, Path dir) {
+        String low = archive.getFileName().toString().toLowerCase();
+        if (!low.endsWith(".zip") && !low.endsWith(".jar")) return List.of(archive);
+        try {
+            List<Path> bundled = org.kylepitcock.legacyconnector.loader.LegacyModLocator.bundledMods(archive, dir);
+            if (!bundled.isEmpty()) return bundled;
+            java.util.Map<String, List<String>> byRoot = new java.util.LinkedHashMap<>();
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive.toFile())) {
+                var en = zip.entries();
+                while (en.hasMoreElements()) {
+                    java.util.zip.ZipEntry e = en.nextElement();
+                    if (e.isDirectory() || !e.getName().endsWith(".class") || e.getName().startsWith("__MACOSX/")) continue;
+                    String cn;
+                    try (InputStream in = zip.getInputStream(e)) {
+                        cn = new org.objectweb.asm.ClassReader(in).getClassName();
+                    }
+                    String suffix = cn + ".class";
+                    if (!e.getName().endsWith(suffix)) continue;
+                    byRoot.computeIfAbsent(e.getName().substring(0, e.getName().length() - suffix.length()), k -> new ArrayList<>()).add(e.getName());
+                }
+                if (byRoot.size() < 2) return List.of(archive);
+                List<Path> out = new ArrayList<>();
+                int n = 0;
+                for (String r : byRoot.keySet()) {
+                    // only roots that hold a ModLoader entry class count as installs; helper folders of a mod stay with their root
+                    boolean mod = byRoot.get(r).stream().anyMatch(c -> c.substring(r.length()).matches("(.*/)?mod_[^/]*\\.class"));
+                    if (!mod) continue;
+                    Path target = dir.resolve(low.replaceAll("[.](zip|jar)$", "") + "-root" + (n++) + ".jar");
+                    try (java.util.zip.ZipOutputStream zo = new java.util.zip.ZipOutputStream(Files.newOutputStream(target))) {
+                        var en2 = zip.entries();
+                        while (en2.hasMoreElements()) {
+                            java.util.zip.ZipEntry e = en2.nextElement();
+                            if (e.isDirectory() || !e.getName().startsWith(r) || e.getName().startsWith("__MACOSX/")) continue;
+                            zo.putNextEntry(new java.util.zip.ZipEntry(e.getName().substring(r.length())));
+                            try (InputStream in = zip.getInputStream(e)) {
+                                in.transferTo(zo);
+                            }
+                            zo.closeEntry();
+                        }
+                    }
+                    out.add(target);
+                }
+                return out.size() > 1 ? out : List.of(archive);
+            }
+        } catch (IOException | RuntimeException e) {
+            return List.of(archive);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         // the bridges that need no modern mod (CoFH RF) are always active in the game: the shim replaces the shaded copies of their API
         LegacyVersion.setBridgedRoots(org.kylepitcock.legacyconnector.loader.LibraryBridges.KNOWN.stream().filter(b -> b.modernModId() == null)
@@ -60,7 +110,13 @@ public final class CheckJar {
             if (args[i].startsWith("@")) jarArgs.addAll(Files.readAllLines(Path.of(args[i].substring(1))).stream().filter(l -> !l.isBlank()).toList());
             else jarArgs.add(args[i]);
         }
+        // an archive that only wraps mod archives (Smart Moving, MineFactory Reloaded) or holds several install roots (an SMP and an SSP folder) is several mods, as the game would load it / a user would install it
+        Path expanded = Files.createTempDirectory("legacyconnector-check-expanded");
+        List<String> flat = new ArrayList<>();
         for (String jarArg : jarArgs) {
+            for (Path p : expand(Path.of(jarArg), expanded)) flat.add(p.toString());
+        }
+        for (String jarArg : flat) {
             Path jarPath = Path.of(jarArg);
             LegacyJar jar;
             try {

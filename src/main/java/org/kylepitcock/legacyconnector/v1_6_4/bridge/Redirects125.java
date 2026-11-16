@@ -18,7 +18,7 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 /**
  * Call-site redirects of Minecraft 1.2.5 (the {@code R} rows of {@code forward/1.4.7/member-manual.tsv} with a {@code mcc125$} name, and the
  * Forge 3.x patches of game classes): members of 1.2.5 whose 1.3 successor has another shape or whose Forge patch the shim has no counterpart of. The
- * 1.2.5 to 1.4.7 name join leaves such members as {@code mcc125$<obfuscated name>}; each is answered here with what the 1.2.5 method did, written against the
+ * 1.2.5 to 1.4.7 name join leaves such members as {@code mcc125$<Feather name>} (side independent: client and server use different letters); each is answered here with what the 1.2.5 method did, written against the
  * shim.
  */
 public final class Redirects125 {
