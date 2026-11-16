@@ -102,9 +102,11 @@ public final class WorldGenBridge1122 {
      */
     private static void generateOne(WorldGenLevel level, int chunkX, int chunkZ, IWorldGenerator g) {
         World world = WorldBridge1122.wrap(level);
+        legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$beginPopulating(chunkX, chunkZ);
         try {
             runOne(world, chunkX, chunkZ, g, new Random(chunkSeed(level.getSeed(), chunkX, chunkZ)), world.getChunkProvider());
         } finally {
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$endPopulating();
             WorldBridge1122.mcc$releaseRegion();
         }
     }
@@ -145,6 +147,7 @@ public final class WorldGenBridge1122 {
         boolean events = TerrainEvents1122.wanted();
         if (gens.isEmpty() && !events) return;
         World world = WorldBridge1122.wrap(level);
+        legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$beginPopulating(chunkX, chunkZ);
         try {
             // 1.12 populated the chunk (with its terrain events) before GameRegistry ran the mods' generators
             long t0 = TIMING ? System.nanoTime() : 0;
@@ -158,6 +161,7 @@ public final class WorldGenBridge1122 {
                 runOne(world, chunkX, chunkZ, g, fmlRandom, provider);
             }
         } finally {
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$endPopulating();
             WorldBridge1122.mcc$releaseRegion();
         }
     }
