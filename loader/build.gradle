@@ -770,6 +770,8 @@ if (project.hasProperty('mappings125')) {
         from(layout.buildDirectory.dir('generated/mappings125')) { include 'legacyconnector/**' }
     }
     sourceSets.test.runtimeClasspath += files(layout.buildDirectory.dir('generated/mappings125')).builtBy(tasks.named('genMappings125'))
+    // offline tools (checkLegacyMod, probe.py --mc 1.2.5) read the table from the classes directories, not the jar
+    sourceSets.main.runtimeClasspath += files(layout.buildDirectory.dir('generated/mappings125')).builtBy(tasks.named('genMappings125'))
 }
 sourceSets.main.runtimeClasspath += files(betaMappingsDir).builtBy(genBetaMappings)
 
