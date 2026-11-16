@@ -53,6 +53,17 @@ public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
         throw new IllegalStateException("The registry " + key.location() + " is data driven and no world is loaded yet");
     }
 
+    /** Handles of one registry are equal (mods key maps by registry handle: SuperMartijn642 corelib's {@code Registries.fromUnderlying}; RegisterEvent.getForgeRegistry creates a new handle per call). */
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ForgeRegistryWrapper<?> w && w.key.equals(key);
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
     private Registry<V> registryOrNull() {
         try {
             return mcc$registry();
