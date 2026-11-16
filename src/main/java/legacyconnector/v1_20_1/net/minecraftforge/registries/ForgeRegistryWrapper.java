@@ -175,6 +175,8 @@ public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
     @Override
     public void register(ResourceLocation k, V value) {
         if (mcc$registry() instanceof WritableRegistry<V> w) {
+            // Forge's registry ignores the same object registered twice under one name (AE2 registers the menu types its addons build, the addon registers them too)
+            if (w.containsKey(k) && w.get(k) == value) return;
             try {
                 Registry.register(w, k, value);
             } catch (IllegalStateException frozen) {
@@ -198,7 +200,10 @@ public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
         }
         if (list == null) return;
         event.register((ResourceKey) event.getRegistryKey(), helper -> {
-            for (Object[] e : list) helper.register((ResourceLocation) e[0], e[1]);
+            for (Object[] e : list) {
+                if (event.getRegistry().containsKey((ResourceLocation) e[0]) && event.getRegistry().get((ResourceLocation) e[0]) == e[1]) continue;
+                helper.register((ResourceLocation) e[0], e[1]);
+            }
         });
     }
 

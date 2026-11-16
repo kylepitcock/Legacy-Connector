@@ -411,6 +411,13 @@ public final class MiscCompat {
         return registerLate(registry, ResourceLocation.parse(name), value);
     }
 
+    /** {@code StructureType.register(name, codec)} (private in vanilla; mods open it with an access transformer): the codec becomes the type's MapCodec. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.level.levelgen.structure.StructureType registerStructureType(String name, com.mojang.serialization.Codec codec) {
+        net.minecraft.world.level.levelgen.structure.StructureType type = () -> EntityCompat.toMapCodec(codec);
+        return registerLate((net.minecraft.core.Registry) net.minecraft.core.registries.BuiltInRegistries.STRUCTURE_TYPE, name, type);
+    }
+
     /** {@code new ShapedRecipe(id, group, category, width, height, ingredients, result)}: the shape is a pattern object now. */
     public static net.minecraft.world.item.crafting.ShapedRecipePattern pattern(int width, int height, NonNullList<Ingredient> ingredients) {
         return new net.minecraft.world.item.crafting.ShapedRecipePattern(width, height, ingredients, java.util.Optional.empty());
