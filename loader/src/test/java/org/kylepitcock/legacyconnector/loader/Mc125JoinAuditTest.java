@@ -38,4 +38,11 @@ class Mc125JoinAuditTest {
             assertTrue(reviewed.contains(key), "joined with different Feather names and not reviewed: " + line);
         }
     }
+
+    @Test
+    void everyPlausibleClassPairWasReviewed() throws IOException {
+        Set<String> rejected = lines("/join-class-rejected.tsv");
+        assumeTrue(rejected != null, "built without -Pmappings125");
+        for (String line : rejected) assertTrue(!line.endsWith("unreviewed"), "class pair confirmed by its members but not reviewed (add it to reviewed-class-pairs.tsv): " + line);
+    }
 }

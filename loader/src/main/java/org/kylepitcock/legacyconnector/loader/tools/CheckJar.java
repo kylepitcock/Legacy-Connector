@@ -62,7 +62,7 @@ public final class CheckJar {
                     if (!e.getName().endsWith(suffix)) continue;
                     byRoot.computeIfAbsent(e.getName().substring(0, e.getName().length() - suffix.length()), k -> new ArrayList<>()).add(e.getName());
                 }
-                if (byRoot.size() < 2) return List.of(archive);
+                if (byRoot.isEmpty() || (byRoot.size() == 1 && byRoot.keySet().iterator().next().isEmpty())) return List.of(archive); // one root: a single folder is stripped (SDKs Mods: minecraft/mod_SdkFps.class)
                 List<Path> out = new ArrayList<>();
                 int n = 0;
                 for (String r : byRoot.keySet()) {
@@ -84,7 +84,7 @@ public final class CheckJar {
                     }
                     out.add(target);
                 }
-                return out.size() > 1 ? out : List.of(archive);
+                return out.isEmpty() ? List.of(archive) : out;
             }
         } catch (IOException | RuntimeException e) {
             return List.of(archive);
@@ -154,6 +154,7 @@ public final class CheckJar {
             records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
         }
         jars.removeAll(otherBuilds125.keySet());
+        org.kylepitcock.legacyconnector.loader.transform.Notch125To147.registerSet(jars);
         // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
         // (-Pbridges=false checks the legacy jars as plain mods instead).
         if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges"))) {
