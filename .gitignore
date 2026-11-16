@@ -57,3 +57,4 @@ test-mods-mcarchive/
 run-verify/
 test-mods-dantdm/
 tools/dev/verify/suites/zz-*
+.lwjgl/
