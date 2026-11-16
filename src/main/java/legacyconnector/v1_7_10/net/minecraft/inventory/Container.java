@@ -27,6 +27,11 @@ public abstract class Container {
     private int dragEvent;
     private final Set dragSlots = new HashSet();
 
+    /** Public form of {@link #addSlotToContainer} for call redirects of other versions (1.2.5's {@code a(slot)}). */
+    public Slot mcc$addSlot(Slot slot) {
+        return addSlotToContainer(slot);
+    }
+
     protected Slot addSlotToContainer(Slot slot) {
         slot.slotNumber = inventorySlots.size();
         inventorySlots.add(slot);
