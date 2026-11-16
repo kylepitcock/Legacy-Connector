@@ -1612,7 +1612,7 @@ PlayerEvents.tick(e => {
 
         String legacyRestore = "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');\n\n  // Restore glow props";
         String migratedRestore = """
-                  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');
+                  if (nbt.getBoolean('storedMastercontrol')) entity.tags.add('AlienEvo.MasterControl');
 
                   restoreOmnitrixLayoutScore('AlienEvo.BasePrimary', 'storedBasePrimaryScore', -1);
                   restoreOmnitrixLayoutScore('AlienEvo.BaseSecondary', 'storedBaseSecondaryScore', -1);
