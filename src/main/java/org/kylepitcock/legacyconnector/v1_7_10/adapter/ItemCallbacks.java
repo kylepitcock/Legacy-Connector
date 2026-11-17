@@ -42,6 +42,7 @@ public final class ItemCallbacks {
         net.minecraft.world.item.ItemStack modern = player.getItemInHand(hand);
         ItemStack view = ItemStack.mcc$wrap(modern);
         if (view == null) return InteractionResultHolder.pass(modern);
+        if (level.isClientSide && org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.singleWorld(legacy)) return InteractionResultHolder.pass(modern);
         int before = modern.getCount();
         ItemStack result = legacy.onItemRightClick(view, World.mcc$wrap(level), player(player));
         net.minecraft.world.item.ItemStack out = result == null ? net.minecraft.world.item.ItemStack.EMPTY : result.mcc$modern();
@@ -53,6 +54,8 @@ public final class ItemCallbacks {
     static InteractionResult useOn(Item legacy, UseOnContext ctx, boolean first) {
         ItemStack view = ItemStack.mcc$wrap(ctx.getItemInHand());
         if (view == null) return InteractionResult.PASS;
+        // Minecraft 1.2.5 single player had one world: the item's code runs once (on the server), not a second time on the client world
+        if (ctx.getLevel().isClientSide && org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.singleWorld(legacy)) return InteractionResult.PASS;
         BlockPos pos = ctx.getClickedPos();
         Vec3 h = ctx.getClickLocation();
         World world = World.mcc$wrap(ctx.getLevel());
