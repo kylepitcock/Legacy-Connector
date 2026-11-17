@@ -29,6 +29,8 @@ public final class ForgeRegistries {
     private ForgeRegistries() {
     }
 
+    /** Forge 1.20.1 registered the {@code ItemDisplayContext} constants; NeoForge 1.21.1 has an extensible enum instead, so this is a registry built over its constants (the ids are their serialized names). */
+    public static final IForgeRegistry<net.minecraft.world.item.ItemDisplayContext> DISPLAY_CONTEXTS = new ForgeRegistryWrapper<>(displayContexts());
     public static final IForgeRegistry<Block> BLOCKS = new ForgeRegistryWrapper<>(BuiltInRegistries.BLOCK);
     public static final IForgeRegistry<Fluid> FLUIDS = new ForgeRegistryWrapper<>(BuiltInRegistries.FLUID);
     public static final IForgeRegistry<Item> ITEMS = new ForgeRegistryWrapper<>(BuiltInRegistries.ITEM);
@@ -112,5 +114,18 @@ public final class ForgeRegistries {
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType<?>>> FOLIAGE_PLACER_TYPES = Registries.FOLIAGE_PLACER_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType<?>>> TREE_DECORATOR_TYPES = Registries.TREE_DECORATOR_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.registries.holdersets.HolderSetType>> HOLDER_SET_TYPES = NeoForgeRegistries.Keys.HOLDER_SET_TYPES;
+    }
+
+    private static net.minecraft.core.Registry<net.minecraft.world.item.ItemDisplayContext> displayContexts() {
+        net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.item.ItemDisplayContext>> key =
+                net.minecraft.resources.ResourceKey.createRegistryKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("forge", "display_contexts"));
+        net.minecraft.core.MappedRegistry<net.minecraft.world.item.ItemDisplayContext> registry =
+                new net.minecraft.core.MappedRegistry<>(key, com.mojang.serialization.Lifecycle.stable());
+        for (net.minecraft.world.item.ItemDisplayContext context : net.minecraft.world.item.ItemDisplayContext.values()) {
+            registry.register(net.minecraft.resources.ResourceKey.create(key, net.minecraft.resources.ResourceLocation.withDefaultNamespace(context.getSerializedName())),
+                    context, net.minecraft.core.RegistrationInfo.BUILT_IN);
+        }
+        registry.freeze();
+        return registry;
     }
 }

@@ -182,6 +182,18 @@ public final class Round9Compat {
         };
     }
 
+    /** A mod's own {@code CauldronInteraction} (1.20.1 return type) as the 1.21.1 interface wants it: the inverse of {@link #cauldronInteract}. PASS lets the block's default interaction run. */
+    public static ItemInteractionResult itemResult(InteractionResult result) {
+        if (result == null) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return switch (result) {
+            case SUCCESS -> ItemInteractionResult.SUCCESS;
+            case CONSUME -> ItemInteractionResult.CONSUME;
+            case CONSUME_PARTIAL -> ItemInteractionResult.CONSUME_PARTIAL;
+            case FAIL -> ItemInteractionResult.FAIL;
+            default -> ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        };
+    }
+
     // ---- effect blend data ------------------------------------------------------------------------------------------------------------------
 
     /** {@code MobEffectInstance.getFactorData()}: 1.21.1 blends through {@code getBlendFactor}; the 1.20.1 data object is not kept (empty). */

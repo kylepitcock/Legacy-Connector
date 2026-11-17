@@ -458,3 +458,5 @@ net/minecraft/world/entity/monster/Strider	FOOD_ITEMS	Lnet/minecraft/world/item/
 net/minecraft/world/entity/monster/Strider	TEMPT_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	AnimalFood1201.striderTempt
 net/minecraft/world/entity/animal/horse/AbstractHorse	FOOD_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	AnimalFood1201.horse
 net/minecraft/world/entity/animal/Parrot	TAME_FOOD	Ljava/util/Set;	-	none	AnimalFood1201.parrotTame
+com/mojang/blaze3d/vertex/DefaultVertexFormat	ELEMENT_PADDING	Lcom/mojang/blaze3d/vertex/VertexFormatElement;	-	none	Round10ClientCompat.elementPadding
+com/mojang/blaze3d/vertex/VertexFormatElement$Usage	PADDING	Lcom/mojang/blaze3d/vertex/VertexFormatElement$Usage;	-	none	Round10ClientCompat.usagePadding

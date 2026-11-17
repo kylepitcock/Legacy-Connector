@@ -90,3 +90,6 @@ net/minecraft/world/level/block/FlowerPotBlock	getContent	*	getPotted
 net/minecraft/server/MinecraftServer	tickTimes	:*	tickTimesNanos
 net/minecraft/advancements/Criterion	getTrigger	*	triggerInstance
 net/minecraft/world/level/storage/loot/functions/SetNbtFunction	setTag	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;	setCustomData
+net/minecraft/client/renderer/RenderType	translucentNoCrumbling	*	translucent
+net/minecraft/world/item/CreativeModeTab$Builder	withBackgroundLocation	*	backgroundTexture
+net/minecraft/client/gui/components/toasts/SystemToast$SystemToastId	TUTORIAL_HINT	:*	PERIODIC_NOTIFICATION

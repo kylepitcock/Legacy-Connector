@@ -216,7 +216,7 @@ public final class MiddleClientCompat {
     /** {@code new VertexFormat(ImmutableMap<String, VertexFormatElement>)}. */
     public static com.mojang.blaze3d.vertex.VertexFormat newVertexFormat(com.google.common.collect.ImmutableMap<String, VertexFormatElement> elements) {
         com.mojang.blaze3d.vertex.VertexFormat.Builder builder = com.mojang.blaze3d.vertex.VertexFormat.builder();
-        elements.forEach(builder::add);
+        elements.forEach((name, element) -> Round10ClientCompat.addTo(builder, name, element));
         return builder.build();
     }
 

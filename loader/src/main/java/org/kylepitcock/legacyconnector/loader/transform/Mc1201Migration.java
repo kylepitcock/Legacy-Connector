@@ -455,6 +455,7 @@ final class Mc1201Migration {
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
                 registryBufferLambda(d);
+                cauldronLambda(d, c);
                 redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
                 // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
@@ -522,6 +523,52 @@ final class Mc1201Migration {
             if (!(d.bsmArgs[i] instanceof Type t) || t.getSort() != Type.METHOD) continue;
             d.bsmArgs[i] = Type.getMethodType(t.getDescriptor().replace("Lnet/minecraft/network/FriendlyByteBuf;", "Lnet/minecraft/network/RegistryFriendlyByteBuf;"));
         }
+    }
+
+    private static final String CAULDRON_INTERACTION = "net/minecraft/core/cauldron/CauldronInteraction";
+    private static final String INTERACTION_RESULT = "Lnet/minecraft/world/InteractionResult;";
+    private static final String ITEM_INTERACTION_RESULT = "Lnet/minecraft/world/ItemInteractionResult;";
+
+    /**
+     * A lambda or method reference for {@code CauldronInteraction} written against 1.20.1 returns an {@code InteractionResult}; the interface method answers
+     * an {@code ItemInteractionResult} now, which the metafactory would not adapt. The handle goes to a generated static method that calls the mod's code and
+     * converts the result ({@code Round9Compat.itemResult}); the metafactory's method types change their return type.
+     */
+    private static void cauldronLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d, Counts c) {
+        if (c.current == null || d.bsmArgs == null || d.bsmArgs.length < 3 || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory")) return;
+        if (!Type.getReturnType(d.desc).getInternalName().equals(CAULDRON_INTERACTION)) return;
+        if (!(d.bsmArgs[0] instanceof Type sam) || sam.getSort() != Type.METHOD || !sam.getReturnType().getDescriptor().equals(INTERACTION_RESULT)) return;
+        if (!(d.bsmArgs[1] instanceof org.objectweb.asm.Handle impl) || !(d.bsmArgs[2] instanceof Type inst)) return;
+        int tag = impl.getTag();
+        if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_INVOKEINTERFACE) return;
+        ClassNode node = c.current;
+        boolean isStatic = tag == Opcodes.H_INVOKESTATIC;
+        Type[] args = Type.getArgumentTypes(impl.getDesc());
+        StringBuilder desc = new StringBuilder("(");
+        if (!isStatic) desc.append('L').append(impl.getOwner()).append(';');
+        for (Type a : args) desc.append(a.getDescriptor());
+        desc.append(')').append(ITEM_INTERACTION_RESULT);
+        String name = "lambda$mcc1201$" + (node.methods.size() + c.trampolines.size());
+        MethodNode m = new MethodNode(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, name, desc.toString(), null, null);
+        InsnList il = m.instructions;
+        int slot = 0;
+        if (!isStatic) il.add(new VarInsnNode(Opcodes.ALOAD, slot++));
+        for (Type a : args) {
+            il.add(new VarInsnNode(a.getOpcode(Opcodes.ILOAD), slot));
+            slot += a.getSize();
+        }
+        int op = isStatic ? Opcodes.INVOKESTATIC : tag == Opcodes.H_INVOKEINTERFACE ? Opcodes.INVOKEINTERFACE : tag == Opcodes.H_INVOKESPECIAL ? Opcodes.INVOKESPECIAL : Opcodes.INVOKEVIRTUAL;
+        il.add(new MethodInsnNode(op, impl.getOwner(), impl.getName(), impl.getDesc(), impl.isInterface()));
+        il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Mc1201Tables.HELPER_PACKAGE + "Round9Compat", "itemResult",
+                "(" + INTERACTION_RESULT + ")" + ITEM_INTERACTION_RESULT, false));
+        il.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = slot + 3;
+        m.maxLocals = slot;
+        c.trampolines.add(m);
+        d.bsmArgs[0] = Type.getMethodType(sam.getDescriptor().replace(")" + INTERACTION_RESULT, ")" + ITEM_INTERACTION_RESULT));
+        d.bsmArgs[1] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, node.name, name, desc.toString(), (node.access & Opcodes.ACC_INTERFACE) != 0);
+        d.bsmArgs[2] = Type.getMethodType(inst.getDescriptor().replace(")" + INTERACTION_RESULT, ")" + ITEM_INTERACTION_RESULT));
+        c.calls++;
     }
 
     /**
@@ -965,6 +1012,19 @@ final class Mc1201Migration {
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
             int i = Integer.parseInt(b.ret().substring(4));
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+        } else if (b.ret() != null && b.ret().startsWith("call:")) {
+            // the 1.21.1 method answers what the old (void) method left behind: a static helper of the migrate package takes new parameter N and returns the new result
+            // (ParticleRenderType.begin: the builder the mod's begin(builder, textureManager) started on the tesselator)
+            if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+            String spec = b.ret().substring(5);
+            int at = spec.indexOf('@');
+            int i = Integer.parseInt(spec.substring(at + 1));
+            String helper = spec.substring(0, at);
+            int dot = helper.lastIndexOf('.');
+            String cls = helper.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), "(" + newArgs[i].getDescriptor() + ")" + newRet.getDescriptor(), false));
         } else if (b.ret() != null && (b.ret().equals("const:true") || b.ret().equals("const:false"))) {
             // the 1.21.1 method returns a boolean the old (void or other) method had no answer for: the constant, after the old result is dropped
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));

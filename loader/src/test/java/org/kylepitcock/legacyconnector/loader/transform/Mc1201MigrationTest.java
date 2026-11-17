@@ -687,6 +687,126 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void hurtingProjectilePowerFieldsBecomeHelperCalls() {
+        String proj = "net/minecraft/world/entity/projectile/AbstractHurtingProjectile";
+        ClassNode c = cls("test/Fireball", proj);
+        MethodNode m = method(c, ACC_PUBLIC, "aim", "(D)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new FieldInsnNode(GETFIELD, "test/Fireball", "xPower", "D"));
+        m.instructions.add(new VarInsnNode(DLOAD, 1));
+        m.instructions.add(new InsnNode(DADD));
+        m.instructions.add(new FieldInsnNode(PUTFIELD, "test/Fireball", "xPower", "D"));
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(2, apply(c).fields);
+        MethodInsnNode get = find(m, MIGRATE + "Round10Compat", "getXPower");
+        MethodInsnNode set = find(m, MIGRATE + "Round10Compat", "setXPower");
+        assertNotNull(get);
+        assertNotNull(set);
+        assertEquals("(L" + proj + ";)D", get.desc);
+        assertEquals("(L" + proj + ";D)V", set.desc);
+    }
+
+    @Test
+    void particleRenderTypeImplementationGetsTheTesselatorBeginBridge() {
+        String type = "net/minecraft/client/particle/ParticleRenderType";
+        String builder = MIGRATE + "CompatBufferBuilder";
+        String tm = "net/minecraft/client/renderer/texture/TextureManager";
+        ClassNode c = cls("test/GlowType", "java/lang/Object");
+        c.interfaces.add(type);
+        method(c, ACC_PUBLIC, "begin", "(L" + builder + ";L" + tm + ";)V").instructions.add(new InsnNode(RETURN));
+        method(c, ACC_PUBLIC, "end", "(Lcom/mojang/blaze3d/vertex/Tesselator;)V").instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(c).bridges);
+        MethodNode bridge = findDeclared(c, "begin", "(Lcom/mojang/blaze3d/vertex/Tesselator;L" + tm + ";)Lcom/mojang/blaze3d/vertex/BufferBuilder;");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, builder, "of"));
+        assertNotNull(find(bridge, "test/GlowType", "begin"));
+        assertNotNull(find(bridge, builder, "startedOf"));
+        verify(c);
+    }
+
+    @Test
+    void particleRenderTypeCallsAndMaxZoomGoToHelpers() {
+        String type = "net/minecraft/client/particle/ParticleRenderType";
+        String builder = MIGRATE + "CompatBufferBuilder";
+        String tm = "net/minecraft/client/renderer/texture/TextureManager";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "go", "(L" + type + ";L" + builder + ";L" + tm + ";Lnet/minecraft/client/Camera;)D");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new MethodInsnNode(INVOKEINTERFACE, type, "begin", "(L" + builder + ";L" + tm + ";)V", true));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(4.0D));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraft/client/Camera", "getMaxZoom", "(D)D", false));
+        m.instructions.add(new InsnNode(DRETURN));
+        assertEquals(2, apply(c).calls);
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "particleBegin"));
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "cameraMaxZoom"));
+    }
+
+    @Test
+    void cauldronInteractionImplementationAndLambdaReturnTheItemResult() {
+        String cauldron = "net/minecraft/core/cauldron/CauldronInteraction";
+        String args = "(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;"
+                + "Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)";
+        ClassNode impl = cls("test/Fill", "java/lang/Object");
+        impl.interfaces.add(cauldron);
+        method(impl, ACC_PUBLIC, "interact", args + "Lnet/minecraft/world/InteractionResult;").instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(impl).bridges);
+        MethodNode bridge = findDeclared(impl, "interact", args + "Lnet/minecraft/world/ItemInteractionResult;");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, MIGRATE + "Round9Compat", "itemResult"));
+
+        // a lambda: the metafactory's types and the handle move to a generated adapter
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        method(c, ACC_PRIVATE | ACC_STATIC, "lambda$fill$0", args + "Lnet/minecraft/world/InteractionResult;").instructions.add(new InsnNode(RETURN));
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "()L" + cauldron + ";");
+        org.objectweb.asm.Handle bsm = new org.objectweb.asm.Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;"
+                        + "Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false);
+        org.objectweb.asm.Type sam = org.objectweb.asm.Type.getMethodType(args + "Lnet/minecraft/world/InteractionResult;");
+        m.instructions.add(new org.objectweb.asm.tree.InvokeDynamicInsnNode("interact", "()L" + cauldron + ";", bsm, sam,
+                new org.objectweb.asm.Handle(H_INVOKESTATIC, "test/Mod", "lambda$fill$0", sam.getDescriptor(), false), sam));
+        m.instructions.add(new InsnNode(ARETURN));
+        apply(c);
+        org.objectweb.asm.tree.InvokeDynamicInsnNode indy = null;
+        for (AbstractInsnNode in : m.instructions) if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) indy = d;
+        assertNotNull(indy);
+        assertTrue(((org.objectweb.asm.Type) indy.bsmArgs[0]).getDescriptor().endsWith(")Lnet/minecraft/world/ItemInteractionResult;"));
+        org.objectweb.asm.Handle adapted = (org.objectweb.asm.Handle) indy.bsmArgs[1];
+        assertTrue(adapted.getDesc().endsWith(")Lnet/minecraft/world/ItemInteractionResult;"));
+        MethodNode tramp = findDeclared(c, adapted.getName(), adapted.getDesc());
+        assertNotNull(tramp);
+        assertNotNull(find(tramp, MIGRATE + "Round9Compat", "itemResult"));
+    }
+
+    @Test
+    void paddingConstantsAndElementConstructorGoToHelpers() {
+        String dvf = "com/mojang/blaze3d/vertex/DefaultVertexFormat";
+        String vfe = "com/mojang/blaze3d/vertex/VertexFormatElement";
+        String usage = vfe + "$Usage";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "()L" + vfe + ";");
+        m.instructions.add(new FieldInsnNode(GETSTATIC, dvf, "ELEMENT_PADDING", "L" + vfe + ";"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new TypeInsnNode(NEW, vfe));
+        m.instructions.add(new InsnNode(DUP));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, vfe + "$Type", "BYTE", "L" + vfe + "$Type;"));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, usage, "PADDING", "L" + usage + ";"));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, vfe, "<init>", "(IL" + vfe + "$Type;L" + usage + ";I)V", false));
+        m.instructions.add(new InsnNode(ARETURN));
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(1, counts.constructors);
+        assertEquals(2, counts.fields);
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "elementPadding"));
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "usagePadding"));
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "newElement"));
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");
