@@ -1,0 +1,12 @@
+1.5.2 immibis-core-55
+1.5.2 immibis-microblocks-55
+1.5.2 immibis-peripherals-55
+1.5.2 redlogic
+1.5.2 tubestuff-55
+1.5.2 infinitubes-55
+1.5.2 liquid-xp-55
+1.5.2 adv-repulsion-systems-55
+1.5.2 advanced-machines-55
+1.5.2 dimensional-anchor-55
+1.5.2 miscperipherals-3.3
+1.5.2 ComputerCraft1.53
