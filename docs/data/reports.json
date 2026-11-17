@@ -947,6 +947,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-cultivation/download/5372746",
    "date": "2026-11-16",
    "open": true
+  },
+  {
+   "issue": 302,
+   "mod": "thermal_expansion-1.20.1-11.0.1.29",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "Attempting to open a machine interface (tested with a furnace) crashes the game. Using the creative tab for machines also crashes the game. Related issue: #298",
+   "lc": "0.4.15",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-expansion/download/5372749",
+   "date": "2026-11-17",
+   "open": true
   }
  ]
 }
