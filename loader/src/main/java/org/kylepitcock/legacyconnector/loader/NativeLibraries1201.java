@@ -71,6 +71,32 @@ public final class NativeLibraries1201 {
         return new LibraryBridges.Bridge(id, "", id.toLowerCase(Locale.ROOT), "native1201");
     }
 
+    /**
+     * Package roots of the libraries of the table whose 1.20.1 jar this launch translates and loads as the fallback (no native 1.21.1 build installed,
+     * not side by side): their own API is what the other translated jars link against ({@code Mc1201Tables.setFallbackRoots}).
+     */
+    public static Set<String> fallbackRoots(List<LegacyJar> jars, Set<String> modernIds) {
+        Set<String> roots = new java.util.TreeSet<>();
+        for (LegacyJar jar : jars) {
+            if (jar.version != LegacyVersion.V1_20_1 || jar.mods.isEmpty() || isolated.contains(jar) || replacing(jar, modernIds) != null) continue;
+            boolean library = true;
+            for (LegacyModDecl m : jar.mods) library &= table().containsKey(m.legacyId.toLowerCase(Locale.ROOT));
+            if (!library) continue;
+            // the first three package segments of every class (software/bernie/geckolib/, software/bernie/example/)
+            try (ZipFile zip = new ZipFile(jar.existing().toFile())) {
+                for (var en = zip.entries(); en.hasMoreElements();) {
+                    String n = en.nextElement().getName();
+                    if (!n.endsWith(".class") || n.startsWith("META-INF/")) continue;
+                    String[] parts = n.split("/");
+                    if (parts.length >= 4) roots.add(parts[0] + "/" + parts[1] + "/" + parts[2] + "/");
+                }
+            } catch (IOException | RuntimeException e) {
+                // an unreadable jar is FML's to report
+            }
+        }
+        return roots;
+    }
+
     private static final Pattern MOD_ID = Pattern.compile("modId\\s*=\\s*\"([^\"]+)\"");
 
     /**

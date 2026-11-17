@@ -402,6 +402,12 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 sideBySideNotes = sbs.notes();
                 for (String line : sbs.notes().values()) LOG.info("Legacy Connector:{}", line.stripTrailing());
             }
+            {
+                // a library jar translated as the fallback is the API its callers link against (not the native build's, see Mc1201Tables)
+                Set<String> roots = forge1201Enabled(modsDir) ? NativeLibraries1201.fallbackRoots(legacy, LibraryBridges.installedModernIds()) : Set.of();
+                org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.setFallbackRoots(roots);
+                if (!roots.isEmpty()) LOG.info("Legacy Connector: 1.20.1 library jar(s) loaded as the fallback, callers link their own API: {}", roots);
+            }
             if (forge1201Enabled(modsDir)) for (String missing : NativeLibraries1201.missing(legacy, LibraryBridges.installedModernIds())) LOG.warn("Legacy Connector: {}", missing);
             // Scala, trove, ... are handed to FML only when a legacy mod uses them and nothing else in the pack provides them.
             Set<Path> libraryKeep = new HashSet<>();
@@ -887,7 +893,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(jar.droppedClasses.toString().getBytes(StandardCharsets.UTF_8));
         }
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
-        byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds()) + "|" + SideBySide.current().fingerprint()).getBytes(StandardCharsets.UTF_8);
+        byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds()) + "|" + SideBySide.current().fingerprint()
+                + "|fallbackLibs=" + org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.fallbackRootsKey()).getBytes(StandardCharsets.UTF_8);
         digests.forEach((v, md) -> md.update(shared));
         // the classes of the other versions' jars decide which optional references are stubbed as absent
         digests.forEach((v, md) -> md.update(Integer.toString(bundledElsewhere.getOrDefault(v, Set.of()).hashCode()).getBytes(StandardCharsets.UTF_8)));
