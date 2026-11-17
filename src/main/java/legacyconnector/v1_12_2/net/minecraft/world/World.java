@@ -238,12 +238,39 @@ public class World implements IBlockAccess {
         w.mcc$provider = provider;
     }
 
+    // Per-tick snapshots of the entity, tile entity and player lists. Mods read these fields on every step of a loop or for every mob
+    // (Scape and Run Parasites scan loadedEntityList in each mob's AI), so building them per read cost entities squared per tick.
+    // A snapshot is a plain list, so a mob spawned while iterating cannot throw ConcurrentModificationException.
+    private List<Entity> mcc$entityList;
+    private long mcc$entityListKey = Long.MIN_VALUE;
+    private List<TileEntity> mcc$tileList;
+    private long mcc$tileListKey = Long.MIN_VALUE;
+    private List<EntityPlayer> mcc$playerList;
+    private long mcc$playerListKey = Long.MIN_VALUE;
+
+    /** Changes once per server tick (client: per game tick), identifying the snapshot generation; Long.MIN_VALUE when there is no level. */
+    private static long mcc$tickKey(Level level) {
+        if (level instanceof ServerLevel s) return s.getServer().getTickCount();
+        return level == null ? Long.MIN_VALUE : level.getGameTime();
+    }
+
+    /** Drops the cached lists so the next read rebuilds them (an entity was added or removed through this world). */
+    public void mcc$invalidateLists() {
+        mcc$entityListKey = Long.MIN_VALUE;
+        mcc$tileListKey = Long.MIN_VALUE;
+        mcc$playerListKey = Long.MIN_VALUE;
+    }
+
     public static List<EntityPlayer> mcc$get$playerEntities(World w) {
+        if (w.level == null) return new ArrayList<>();
+        long key = mcc$tickKey(w.level);
+        if (w.mcc$playerList != null && w.mcc$playerListKey == key) return w.mcc$playerList;
         List<EntityPlayer> out = new ArrayList<>();
-        if (w.level == null) return out;
         for (var p : w.level.players()) {
             if (EntityBridge1122.wrap(p) instanceof EntityPlayer legacy) out.add(legacy);
         }
+        w.mcc$playerList = out;
+        w.mcc$playerListKey = key;
         return out;
     }
 
@@ -266,19 +293,28 @@ public class World implements IBlockAccess {
     }
 
     public static List<Entity> mcc$get$loadedEntityList(World w) {
+        Level live = w.mcc$liveLevel();
+        long key = mcc$tickKey(live);
+        if (key != Long.MIN_VALUE && w.mcc$entityList != null && w.mcc$entityListKey == key) return w.mcc$entityList;
         List<Entity> out = new ArrayList<>();
-        if (w.mcc$liveLevel() instanceof ServerLevel s) {
+        if (live instanceof ServerLevel s) {
             for (var e : s.getAllEntities()) out.add(EntityBridge1122.wrap(e));
-        } else if (w.mcc$liveLevel() != null && w.mcc$liveLevel().isClientSide()) {
-            for (var e : org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldClient1122.entities(w.mcc$liveLevel())) out.add(EntityBridge1122.wrap(e));
+        } else if (live != null && live.isClientSide()) {
+            for (var e : org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldClient1122.entities(live)) out.add(EntityBridge1122.wrap(e));
+        } else {
+            return out;
         }
+        w.mcc$entityList = out;
+        w.mcc$entityListKey = key;
         return out;
     }
 
-    /** The legacy tile entities of the loaded chunks (a snapshot). */
+    /** The legacy tile entities of the loaded chunks (a snapshot, built once per tick). */
     public static List<TileEntity> mcc$get$loadedTileEntityList(World w) {
+        if (w.serverLevel() == null) return new ArrayList<>();
+        long key = mcc$tickKey(w.serverLevel());
+        if (w.mcc$tileList != null && w.mcc$tileListKey == key) return w.mcc$tileList;
         List<TileEntity> out = new ArrayList<>();
-        if (w.serverLevel() == null) return out;
         for (var holder : w.serverLevel().getChunkSource().chunkMap.getChunks()) {
             var chunk = holder.getTickingChunk();
             if (chunk == null) continue;
@@ -286,6 +322,8 @@ public class World implements IBlockAccess {
                 if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l && l.legacy() != null) out.add(l.legacy());
             }
         }
+        w.mcc$tileList = out;
+        w.mcc$tileListKey = key;
         return out;
     }
 
@@ -1140,6 +1178,7 @@ public class World implements IBlockAccess {
     public boolean addTileEntity(TileEntity tile) {
         if (tile == null || tile.getPos() == null) return false;
         setTileEntity(tile.getPos(), tile);
+        mcc$tileListKey = Long.MIN_VALUE;
         return true;
     }
 
@@ -1150,6 +1189,7 @@ public class World implements IBlockAccess {
     public void removeTileEntity(BlockPos pos) {
         var p = modern(pos);
         if (acc() == null || outsideRegion(p)) return;
+        mcc$tileListKey = Long.MIN_VALUE;
         Level live = mcc$liveLevel();
         if (live != null) live.removeBlockEntity(p);
         else acc().getChunk(p).removeBlockEntity(p);
@@ -1187,6 +1227,7 @@ public class World implements IBlockAccess {
             return false;
         }
         if (legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(entity) == null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$world(entity, this);
+        mcc$entityListKey = Long.MIN_VALUE;
         return acc().addFreshEntity(modern);
     }
 
@@ -1213,6 +1254,7 @@ public class World implements IBlockAccess {
         // a player is never discarded: legacy code removes it from one world to put it into another (Galacticraft planet travel), see mcc$moveToWorld
         if (modern instanceof net.minecraft.server.level.ServerPlayer) return;
         if (modern != null) modern.discard();
+        mcc$entityListKey = Long.MIN_VALUE;
         if (entity != null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$isDead(entity, true);
     }
 
@@ -1220,6 +1262,7 @@ public class World implements IBlockAccess {
         var modern = modernOf(entity);
         if (modern instanceof net.minecraft.server.level.ServerPlayer) return;
         if (modern != null) modern.discard();
+        mcc$entityListKey = Long.MIN_VALUE;
         if (entity != null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$isDead(entity, true);
     }
 
