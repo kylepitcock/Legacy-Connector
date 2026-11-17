@@ -329,7 +329,6 @@ final class Forge1201CallSiteAdapterTest {
         String helperOwner = "net/neoforged/fml/ModContainer";
         String targetBus = "net/neoforged/bus/api/IEventBus";
         String targetGlobalBus = "net/neoforged/neoforge/common/NeoForge";
-        String targetContainer = "net/neoforged/fml/ModContainer";
 
         Path profileFile = writeProfile("""
                 {
@@ -460,11 +459,13 @@ final class Forge1201CallSiteAdapterTest {
 
         MethodNode constructor = new MethodNode(
                 Opcodes.ASM9, Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        LabelNode methodStart = new LabelNode();
         LabelNode modBusStart = new LabelNode();
         LabelNode globalBusStart = new LabelNode();
         LabelNode curiosMerge = new LabelNode();
         LabelNode end = new LabelNode();
 
+        constructor.instructions.add(methodStart);
         constructor.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
         constructor.instructions.add(new MethodInsnNode(
                 Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
@@ -538,7 +539,7 @@ final class Forge1201CallSiteAdapterTest {
 
         constructor.localVariables = new ArrayList<>(List.of(
                 new LocalVariableNode("this", "L" + className + ";", null,
-                        constructor.instructions.getFirst() instanceof LabelNode first ? first : modBusStart, end, 0),
+                        methodStart, end, 0),
                 new LocalVariableNode("modBus", "L" + forgeBus + ";", null, modBusStart, end, 1),
                 new LocalVariableNode("forgeBus", "L" + forgeBus + ";", null, globalBusStart, end, 2)));
         constructor.maxStack = 4;
