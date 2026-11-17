@@ -1,8 +1,8 @@
 # 1.7.10: stub ranking (synthesized members by number of jars)
 
-Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 642 jar(s) (520 links, 69 missing-dependency, 32 unresolved, 21 obsolete); 1335 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
+Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 642 jar(s) (520 links, 69 missing-dependency, 32 unresolved, 21 obsolete); 1237 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
-## server-side API (top 150 of 462)
+## server-side API (top 150 of 364)
 
 ```
   3  net.minecraft.item.crafting.IRecipe.input:[Ljava.lang.Object;  # Factorization-1.7.10-0.8.109.jar, UniDict-1.7.10-2.9.2.jar, immibis-core-59.1.4.jar
@@ -36,11 +36,6 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.launchwrapper.IClassNameTransformer.unmapClassName(Ljava.lang.String;)Ljava.lang.String;  # forgeessentials-1.7.10-7.5.3-server.jar, optimizationsandtweaks-V1.18.0.jar
   2  net.minecraft.network.Packet.generatePacket(Lcom.google.common.collect.BiMap;I)Lnet.minecraft.network.Packet;  # Factorization-1.7.10-0.8.109.jar, hfr-1.0.2.2+mc1.7.10-forge.jar
   2  net.minecraft.potion.PotionHelper.func_77905_c(I)Ljava.lang.String;  # Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar
-  2  net.minecraft.server.integrated.IntegratedServer.shareToLAN(Lnet.minecraft.world.WorldSettings$GameType;Z)Ljava.lang.String;  # portalfriends-forge-1.1.1-1.7.10.jar, steambridge-1.2-Forge-1.7.10.jar
-  2  net.minecraft.world.storage.WorldInfo.<init>(Lnet.minecraft.world.WorldSettings;Ljava.lang.String;)V -> ()V  # AIImprovements-1.7.10-0.0.1b8.jar, LoTAS1.7.10-2.0.0.jar
-  2  net.minecraftforge.common.FishingHooks.removeFish(Lcom.google.common.base.Predicate;)V  # HBM-NTM-.1.0.27_X5853_H261.jar, RX-RNTM-[3.3_X1000].jar
-  2  net.minecraftforge.common.FishingHooks.removeJunk(Lcom.google.common.base.Predicate;)V  # HBM-NTM-.1.0.27_X5853_H261.jar, RX-RNTM-[3.3_X1000].jar
-  2  net.minecraftforge.common.FishingHooks.removeTreasure(Lcom.google.common.base.Predicate;)V  # HBM-NTM-.1.0.27_X5853_H261.jar, RX-RNTM-[3.3_X1000].jar
   2  net.minecraftforge.common.config.Configuration.get(Ljava.lang.String;Ljava.lang.String;[Ljava.lang.String;Ljava.lang.String;Ljava.util.regex.Pattern;)Lnet.minecraftforge.common.config.Property;  # campfirebackport-1.7.10-1.11.3.jar, torchkey-mc1.7.10-1.0.1.jar
   1  cpw.mods.fml.common.DuplicateModsFoundException.<init>(Lcom.google.common.collect.SetMultimap;)V  # optimizationsandtweaks-V1.18.0.jar
   1  cpw.mods.fml.common.FMLCommonHandler.computeBranding()V  # BetterTitleScreen-1.7.10-1.1.jar
@@ -151,10 +146,15 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  cpw.mods.fml.server.FMLServerHandler.getCurrentLanguage()Ljava.lang.String;  # 1.7.10-ASJCore-1.7.0.3.jar
   1  net.minecraft.block.Block.isAir(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.BlockPos;)Z  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
   1  net.minecraft.block.BlockButton.updateNeighbor(Lnet.minecraft.world.World;IIII)V  # Alfheim-67.jar
-  1  net.minecraft.block.BlockCompressedPowered.<init>(Lnet.minecraft.block.material.MapColor;)V  # CraftableCreatures-1.1.7.jar
   1  net.minecraft.block.BlockContainer.dropAvaritiaClusters(Lcom.jaquadro.minecraft.storagedrawers.block.tile.TileEntityDrawers;Lnet.minecraft.world.World;III)V  # StorageDrawers-2.3.0-GTNH.jar
   1  net.minecraft.block.BlockEnderChest.<init>()V  # manametalmod-8.0.9.jar
   1  net.minecraft.block.BlockEventData.func_151340_a()I  # manametalmod-8.0.9.jar
+  1  net.minecraft.block.BlockEventData.func_151341_c()I  # manametalmod-8.0.9.jar
+  1  net.minecraft.block.BlockEventData.func_151342_b()I  # manametalmod-8.0.9.jar
+  1  net.minecraft.block.BlockFire.func_149842_a(III)V  # mod_cobalt-1.7.10-1.5.7.1.jar
+  1  net.minecraft.block.BlockFire.rebuildFireInfo()V  # Improving Minecraft-1.7.10-v5.jar
+  1  net.minecraft.block.BlockOldLeaf.field_150131_O:[Ljava.lang.String;  # Game of Thrones 24.08.29.jar
+  1  net.minecraft.block.BlockQuartz.<init>()V  # [1.7.10] SecurityCraft v1.8.13.jar
 ```
 
 ## client-side API (top 150 of 457)
