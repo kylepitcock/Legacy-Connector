@@ -11,6 +11,8 @@ import net.minecraft.world.entity.PathfinderMob;
  * spot by getBlockPathWeight) on the host's navigation, and the home area (the host's restriction).
  */
 public abstract class EntityCreature extends EntityLiving {
+    /** The id of the speed modifier a fleeing creature gets (vanilla's). */
+    public static final java.util.UUID field_110179_h = java.util.UUID.fromString("E199AD21-BA8A-4C53-8D13-6182D5C69D3A");
     private PathEntity pathToEntity;
     protected Entity entityToAttack;
     protected boolean hasAttacked;

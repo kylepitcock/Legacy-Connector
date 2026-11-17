@@ -228,6 +228,40 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         return mcc$player().getScore();
     }
 
+    public void setScore(int score) {
+        mcc$player().setScore(score);
+    }
+
+    /** Whether the player respawns at their spawn point even without a bed or anchor there (a server player only). */
+    public boolean isSpawnForced(int dimension) {
+        return mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && sp.isRespawnForced();
+    }
+
+    /** The angle (degrees) the view is turned to while sleeping: the bed's side the head lies on (0 when not in bed). */
+    public float getBedOrientationInDegrees() {
+        var direction = mcc$player().getBedOrientation();
+        if (direction == null) return 0.0F;
+        return switch (direction) {
+            case SOUTH -> 90.0F;
+            case NORTH -> 270.0F;
+            case EAST -> 180.0F;
+            default -> 0.0F;
+        };
+    }
+
+    /** Opens the anvil window for the block at the position (a mod's own anvil block is accepted too). */
+    public void displayGUIAnvil(int x, int y, int z) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
+        sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, p) -> new net.minecraft.world.inventory.AnvilMenu(id, inventory,
+                net.minecraft.world.inventory.ContainerLevelAccess.create(sp.level(), pos)) {
+            @Override
+            public boolean stillValid(net.minecraft.world.entity.player.Player player) {
+                return true;
+            }
+        }, net.minecraft.network.chat.Component.translatable("container.repair")));
+    }
+
     public boolean canPlayerEdit(int x, int y, int z, int side, ItemStack stack) {
         Direction d = side >= 0 && side < 6 ? Direction.from3DDataValue(side) : Direction.UP;
         return mcc$player().mayUseItemAt(new BlockPos(x, y, z), d, ItemStack.mcc$toModern(stack));

@@ -334,8 +334,36 @@ public class EntityHorse extends EntityAnimal implements legacyconnector.v1_7_10
 
     /** Whether a rider is making the horse jump (the charge bar); a modern horse keeps it as its own flag. */
     public void setHorseJumping(boolean jumping) {
+        mcc$jumping = jumping;
         var h = mcc$horse();
         if (h != null) h.setIsJumping(jumping);
+    }
+
+    private boolean mcc$jumping;
+
+    /** Whether the horse is in the middle of a charged jump. */
+    public boolean isHorseJumping() {
+        return mcc$jumping;
+    }
+
+    /** The charge of the rider's jump (0 to 100): a modern horse jumps with it. */
+    public void setJumpPower(int power) {
+        var h = mcc$horse();
+        if (h != null) h.onPlayerJump(power);
+        else mcc$jumpPower = power;
+    }
+
+    private int mcc$jumpPower;
+
+    /** The type and variant a spawned horse is created with (the group the natural spawn carries). */
+    public static class GroupData implements legacyconnector.v1_7_10.net.minecraft.entity.IEntityLivingData {
+        public int field_111107_a;
+        public int field_111106_b;
+
+        public GroupData(int type, int variant) {
+            this.field_111107_a = type;
+            this.field_111106_b = variant;
+        }
     }
 
     /** Whether the horse has bred already: modern horses do not track it. */

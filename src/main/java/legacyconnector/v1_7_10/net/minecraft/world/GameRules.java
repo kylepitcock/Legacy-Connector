@@ -90,6 +90,19 @@ public class GameRules {
         return Boolean.parseBoolean(custom.get(name));
     }
 
+    /** Applies the rules saved as strings in a compound (a mod's own save of the rules, or an old level.dat's {@code GameRules}). */
+    public void readGameRulesFromNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        if (tag == null) return;
+        for (String name : tag.getKeySet()) setOrCreateGameRule(name, tag.getString(name));
+    }
+
+    /** Every rule and its value, as the strings 1.7.10 saved them. */
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound writeGameRulesToNBT() {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+        for (String name : getRules()) tag.setString(name, getGameRuleStringValue(name));
+        return tag;
+    }
+
     public boolean hasRule(String name) {
         return BOOLEANS.containsKey(name) || INTEGERS.containsKey(name) || custom.containsKey(name);
     }

@@ -110,6 +110,16 @@ public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         world.setBlockMetadataWithNotify(x, y, z, world.getBlockMetadata(x, y, z) | 8, 4);
     }
 
+    /** A leaf that decays drops what it would drop when broken, then goes. */
+    protected void removeLeaves(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+        world.setBlockToAir(x, y, z);
+    }
+
+    /** Hook for extra drops of a decaying leaf (the oak's apples): nothing by default. */
+    protected void func_150124_c(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int meta, int chance) {
+    }
+
     /** Breaking a leaf tells the leaves around it to check again. */
     @Override
     public void breakBlock(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.block.Block block, int meta) {

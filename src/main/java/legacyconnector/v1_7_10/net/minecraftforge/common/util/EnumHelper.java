@@ -45,6 +45,11 @@ public class EnumHelper {
                         peaceful ? net.minecraft.world.entity.MobCategory.CREATURE : net.minecraft.world.entity.MobCategory.MONSTER, typeClass, material});
     }
 
+    /** A new use animation (the held item's pose while used); the host plays no animation for it. */
+    public static legacyconnector.v1_7_10.net.minecraft.item.EnumAction addAction(String name) {
+        return addEnum(legacyconnector.v1_7_10.net.minecraft.item.EnumAction.class, name);
+    }
+
     public static EnumRarity addRarity(String name, EnumChatFormatting color, String displayName) {
         return addEnum(EnumRarity.class, name, new Object[] {color, displayName});
     }

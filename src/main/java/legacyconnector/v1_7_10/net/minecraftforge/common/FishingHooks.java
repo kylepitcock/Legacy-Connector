@@ -17,12 +17,25 @@ import legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomFishable;
  * added entry of the same category with the share of the category's weight the entry had in 1.7.10.
  */
 public class FishingHooks {
-    private static final List<WeightedRandomFishable> junk = new ArrayList<>();
-    private static final List<WeightedRandomFishable> treasure = new ArrayList<>();
-    private static final List<WeightedRandomFishable> fish = new ArrayList<>();
+    public static final ArrayList<WeightedRandomFishable> junk = new ArrayList<>();
+    public static final ArrayList<WeightedRandomFishable> treasure = new ArrayList<>();
+    public static final ArrayList<WeightedRandomFishable> fish = new ArrayList<>();
     private static boolean defaults;
     /** Forge's own entries (vanilla's catches, which the modern loot tables already give). */
     private static final java.util.Set<WeightedRandomFishable> DEFAULTS = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
+    static {
+        // mods read the lists themselves (they are public fields in Forge), so they hold Forge's entries from the start
+        try {
+            ensureDefaults();
+        } catch (Throwable t) {
+            junk.clear();
+            treasure.clear();
+            fish.clear();
+            DEFAULTS.clear();
+            defaults = false;
+        }
+    }
 
     private static synchronized void ensureDefaults() {
         if (defaults) return;
@@ -123,6 +136,26 @@ public class FishingHooks {
     public static synchronized void addFish(WeightedRandomFishable entry) {
         ensureDefaults();
         fish.add(entry);
+    }
+
+    /** Removes the catches whose stack the predicate accepts. */
+    public static synchronized void removeJunk(com.google.common.base.Predicate<ItemStack> filter) {
+        ensureDefaults();
+        removeIf(junk, filter);
+    }
+
+    public static synchronized void removeTreasure(com.google.common.base.Predicate<ItemStack> filter) {
+        ensureDefaults();
+        removeIf(treasure, filter);
+    }
+
+    public static synchronized void removeFish(com.google.common.base.Predicate<ItemStack> filter) {
+        ensureDefaults();
+        removeIf(fish, filter);
+    }
+
+    private static void removeIf(List<WeightedRandomFishable> list, com.google.common.base.Predicate<ItemStack> filter) {
+        list.removeIf(w -> filter.apply(w.getItemStack(new Random(0))));
     }
 
     private static void remove(List<WeightedRandomFishable> list, ItemStack stack) {
