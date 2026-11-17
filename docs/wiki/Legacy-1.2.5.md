@@ -1,6 +1,6 @@
 # Legacy 1.2.5 (ModLoader and early Forge): design
 
-Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an experimental toggle (`experimental.minecraft125`, off by default)** (stages 1 to 3 below);
+Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **alpha, on by default since 0.5.0 (`versions.minecraft125=false` turns it off)**: small mods register and draw their content in a real client, none has been played in survival (stages 1 to 3 below, first client runs at the end);
 the corpus measurements are in [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
 (the forward layer this note recommends hosting on), [Version roadmap](Version-Roadmap.md).
 
@@ -143,21 +143,23 @@ itself), `client/resource` (21 of 40: 1.3 reworked resource loading), `client/wo
 (37 of 1051). A mod that touches only blocks, items, recipes, tile entities, entities and worldgen sees less than 5% unjoined members; the unjoined ones are the networking, the client game mode, the
 resource layer and the 1.3 world/chunk access.
 
-## Stage 3 status (2026-11-16): hosted behind an experimental toggle
+## Stage 3 status (2026-11-16): hosting, and its toggle (on by default since 0.5.0)
 
-**User-facing toggle (since 2026-11-16):** `experimental.minecraft125=true` in `config/legacyconnector.properties` (default `false`; read by the loader through `Mc125Jars.enabled()`, the one
-method every caller uses; the system property `-Dlegacyconnector.mc125=true|false` wins when set and is what the test tooling uses). The release and nightly jars (`bundleJar`) carry the
+**User-facing toggle:** `versions.minecraft125` in `config/legacyconnector.properties` (default `true` since 0.5.0, when 1.2.5 left the experimental state; until then the key was `experimental.minecraft125`, default `false`, and it is still read when `versions.minecraft125` is absent: an explicit `false` there keeps 1.2.5 off, the new key wins when both are set). It is read by the loader through `Mc125Jars.enabled()`, the one
+method every caller uses; the system property `-Dlegacyconnector.mc125=true|false` wins when set and is what the test tooling uses. The release and nightly jars (`bundleJar`) carry the
 generated join table (`legacyconnector/mappings/1.2.5/notch-to-147.tsv`) by default; if maven.ornithemc.net cannot be reached the build still succeeds, prints one warning and the jar has no
-table (`-PnoMappings125` leaves it out on purpose; `verifyBundle125` fails the build when the table is missing and no warning was logged). Four cases: off, any build: 1.2.5 jars are reported
-as not supported yet with the key as the hint (also the ones in `mods/1.2.5/`); on with the table: hosted, one `EXPERIMENTAL` line in the log, every mod marked "experimental (Minecraft 1.2.5)"
-in `legacyconnector-report.txt`; on without the table: one error line, nothing hosted, jars reported. With the toggle off the run-time side stays inert: the loader sets the system property
-`legacyconnector.mc125.active` only when it hosts a 1.2.5 jar and the shared code that only 1.2.5 mods need asks `Mc125Host.active()`. For developers the opt-in below still applies:
+table (`-PnoMappings125` leaves it out on purpose; `verifyBundle125` fails the build when the table is missing and no warning was logged). Four cases: toggle on with the table (the default): hosted, one info line in the log, the report shows each mod's version evidence ("Minecraft 1.2.5, ... hosted as 1.4.7");
+off, any build: 1.2.5 jars are reported as "support is switched off" with the key as the hint (also the ones in `mods/1.2.5/`); on without the table (a developer build without `-Pmappings125`): one info line, nothing hosted, jars reported as "not supported in this build", never an error. A pack with no 1.2.5 jar costs nothing: the name
+tables are read only when a jar without FML annotations has to be told from another version, and the rest of the layer stays inert: the loader sets the system property
+`legacyconnector.mc125.active` only when it hosts a 1.2.5 jar and the shared code that only 1.2.5 mods need asks `Mc125Host.active()`. Because detection is always active, a jar that fits Beta 1.7.3's names
+(`BetaJars.betaShare`, about 100% for a Beta jar and below 10% for a 1.2.5 one) is never taken as 1.2.5, and `Mc125CorpusDetectionTest` checks the real archives: none of the 46 1.4.7, 33 1.5.2, 45 1.6.4 and 68 Beta 1.7.3 jars is claimed, 74 of 90 real 1.2.5 archives are recognised.
+For developers the opt-in below still applies:
 
 `-Dlegacyconnector.mc125=true` (and a build made with `-Pmappings125`): a detected 1.2.5 jar (or any jar in `mods/1.2.5/`) becomes a 1.4.7 jar for the rest of the pipeline.
 `LegacyVersion.V1_2_5` is a source version only (last in the enum, same prefixes and forward chain as 1.4.7); `LegacyJar.version` is `V1_4_7`, `sourceVersion` is `V1_2_5`, `notchSide` is the
 client or server obfuscation the jar uses. `transform/Notch125To147` runs first in `LegacyJarTransformer.readPatched` (right where `BetaDeobfuscator` runs for Beta jars): game classes, fields
 and methods to 1.4.7's names through the join table, resolved up the supertypes (jar classes first, then the 1.4.7 hierarchy of `notch.txt`) because obfuscated member names are unique only per class;
-overrides in mod classes are renamed with the game method; copies of game classes are dropped and reported. Without the opt-in, or in a build without the table, a 1.2.5 jar is only reported as before.
+overrides in mod classes are renamed with the game method; copies of game classes are dropped and reported. With the toggle off, or in a build without the table, a 1.2.5 jar is only reported.
 
 The capitalised `ModLoader`/`BaseMod` facade is a **rename**, not a second class: the 1.4.7 shim's `ModLoader` already has the lower-case statics (`addName`, `registerBlock`, `addRecipe`, ...), so the
 capitalised calls (only Beta mods spell them so; 1.2.5 itself is lower case, see above) (`AddName`, `RegisterBlock`, `AddRecipe`, `AddShapelessRecipe`, `AddSmelting`, `SetInGameHook`, ...; set `Notch125To147.MODLOADER_STATICS`, 34 names) are rewritten to them, and
@@ -393,7 +395,7 @@ Client builds only load on a client (their game classes fit the client names); a
 
 ## First client runs and a wider server sweep (2026-11-17)
 
-Toggle on (`-Pmappings125`, `experimental.minecraft125=true`), one mod per run, fresh config, world and cache, jars from the MCArchive corpus. Server runs: `tools/dev/run125.sh <label> <jar>`
+Toggle on (`-Pmappings125`, default on since 0.5.0), one mod per run, fresh config, world and cache, jars from the MCArchive corpus. Server runs: `tools/dev/run125.sh <label> <jar>`
 (`run125-batch.sh label=jar ...`, `RATE=1` also writes `docs/data/mods.json` through `tools/compat/from_client.py ... 1.2.5`). Client runs: `tools/dev/run125-client.sh label=jar ...`
 (`tools/dev/quick-shots.sh` on the Windows desktop, superflat world, perf mods off unless `PERF=1`; ObsidianHilt was also run with the perf mods and renders the same). Screenshots (full-colour JPEG)
 are in `docs/screenshots/old-versions/1.2.5/`. **These are the first 1.2.5 mods that ran in a real client.**
