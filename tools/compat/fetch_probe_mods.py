@@ -11,12 +11,22 @@ required dependency a download declares is fetched too (recursively, up to 3 lev
 Forge file for the Minecraft version): a mod that needs a library or parent mod would otherwise be reported as missing it,
 which is a failure of the corpus, not of the mod. The jars are only for the offline link probe: keep them in a gitignored or
 temporary folder, never commit or redistribute them. Jars already in the folder are skipped, so a re-run only fetches new ones.
+Projects listed in tools/compat/probe-exclude.txt are left out of the ranking download (not of --slug).
 """
 import argparse, hashlib, json, pathlib, sys, time, urllib.parse, urllib.request
 
 API = "https://api.modrinth.com/v2"
 UA = {"User-Agent": "kylepitcock/legacy-connector-linkprobe"}
 MAX_DEPTH = 3
+EXCLUDE_FILE = pathlib.Path(__file__).with_name("probe-exclude.txt")
+
+
+def excluded_slugs():
+    """Project slugs the ranking download leaves out (tools/compat/probe-exclude.txt); --slug still fetches them."""
+    if not EXCLUDE_FILE.exists():
+        return set()
+    lines = (line.split("#", 1)[0].strip().lower() for line in EXCLUDE_FILE.read_text(encoding="utf-8").splitlines())
+    return {line for line in lines if line}
 
 
 def get(url):
@@ -117,6 +127,9 @@ def main():
             hits += search([["categories!=optimization"], ["categories!=library"], ["server_side=unsupported"], ["client_side=required"]], a.client_extra)
     else:
         hits = search([], a.limit)
+    if not a.slug:
+        skip = excluded_slugs()
+        hits = [h for h in hits if h["slug"].lower() not in skip]
     for h in hits:
         try:
             seen_projects.add(h["project_id"])
