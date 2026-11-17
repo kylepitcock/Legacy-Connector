@@ -17,6 +17,8 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.event.level.block.CreateFluidSourceEvent;
+import net.neoforged.neoforge.event.level.block.CropGrowEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
@@ -26,7 +28,11 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  *   <li>{@code LivingAttackEvent} then {@code LivingHurtEvent} from {@code LivingIncomingDamageEvent} (NeoForge merged both into it);</li>
  *   <li>{@code LivingDamageEvent} (1.20.1: after armor) from {@code LivingDamageEvent.Pre};</li>
  *   <li>{@code LivingTickEvent} from {@code EntityTickEvent.Pre}; {@code ShieldBlockEvent} from {@code LivingShieldBlockEvent};</li>
- *   <li>{@code EntityItemPickupEvent} from {@code ItemEntityPickupEvent.Pre}; {@code PlayerSleepInBedEvent} from {@code CanPlayerSleepEvent}.</li>
+ *   <li>{@code EntityItemPickupEvent} from {@code ItemEntityPickupEvent.Pre}; {@code PlayerSleepInBedEvent} from {@code CanPlayerSleepEvent};</li>
+ *   <li>{@code EntityEvent.EyeHeight} from {@code EntityEvent.Size} (the eye height is part of the dimensions now);</li>
+ *   <li>{@code PotionColorCalculationEvent} from {@code EffectParticleModificationEvent} (per effect instead of per entity);</li>
+ *   <li>the result (ALLOW/DENY/DEFAULT) a mod set with Forge's {@code Event.setResult} on {@code CropGrowEvent.Pre} and {@code CreateFluidSourceEvent}
+ *   (classes renamed by {@code forge-curated-renames.tsv}) becomes the NeoForge result of the same event (a LOWEST listener, after the mods').</li>
  * </ul>
  */
 final class Forge1201Events {
@@ -41,6 +47,10 @@ final class Forge1201Events {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onItemPickup);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onCanSleep);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onSleepingTime);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOW, Forge1201Events::onEntitySize);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onEffectParticles);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, Forge1201Events::onCropGrowPre);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, Forge1201Events::onCreateFluidSource);
     }
 
     private static void onIncomingDamage(LivingIncomingDamageEvent e) {
@@ -106,5 +116,38 @@ final class Forge1201Events {
         NeoForge.EVENT_BUS.post(old);
         if (old.getResult() == Event$Result.ALLOW) e.setContinueSleeping(true);
         else if (old.getResult() == Event$Result.DENY) e.setContinueSleeping(false);
+    }
+
+    private static void onEntitySize(net.neoforged.neoforge.event.entity.EntityEvent.Size e) {
+        net.minecraft.world.entity.EntityDimensions size = e.getNewSize();
+        if (size == null) return;
+        legacyconnector.v1_20_1.net.minecraftforge.event.entity.EntityEvent$EyeHeight eye =
+                new legacyconnector.v1_20_1.net.minecraftforge.event.entity.EntityEvent$EyeHeight(e.getEntity(), e.getPose(), size, size.eyeHeight());
+        NeoForge.EVENT_BUS.post(eye);
+        if (eye.getNewHeight() != eye.getOldHeight()) e.setNewSize(size.withEyeHeight(eye.getNewHeight()));
+    }
+
+    /** 1.21.1 asks per effect (particle options + visibility); 1.20.1 asked per entity (one blended colour). The old event gets the one effect and its colour. */
+    private static void onEffectParticles(net.neoforged.neoforge.event.entity.living.EffectParticleModificationEvent e) {
+        var options = e.getParticleOptions();
+        if (!(options instanceof net.minecraft.core.particles.ColorParticleOption color)) return;
+        int rgb = (Math.round(color.getRed() * 255.0F) << 16) | (Math.round(color.getGreen() * 255.0F) << 8) | Math.round(color.getBlue() * 255.0F);
+        var old = new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.PotionColorCalculationEvent(
+                e.getEntity(), rgb, !e.isVisible(), java.util.List.of(e.getEffect()));
+        NeoForge.EVENT_BUS.post(old);
+        if (old.getColor() != rgb) e.setParticleOptions(net.minecraft.core.particles.ColorParticleOption.create(color.getType(), 0xFF000000 | old.getColor()));
+        if (old.areParticlesHidden() == e.isVisible()) e.setVisible(!old.areParticlesHidden());
+    }
+
+    private static void onCropGrowPre(CropGrowEvent.Pre e) {
+        Event$Result result = legacyconnector.v1_20_1.ForgeApi1201.eventGetResult(e);
+        if (result == Event$Result.ALLOW) e.setResult(CropGrowEvent.Pre.Result.GROW);
+        else if (result == Event$Result.DENY) e.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+    }
+
+    private static void onCreateFluidSource(CreateFluidSourceEvent e) {
+        Event$Result result = legacyconnector.v1_20_1.ForgeApi1201.eventGetResult(e);
+        if (result == Event$Result.ALLOW) e.setCanConvert(true);
+        else if (result == Event$Result.DENY) e.setCanConvert(false);
     }
 }
