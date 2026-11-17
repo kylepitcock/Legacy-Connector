@@ -31,12 +31,34 @@ public class Gui {
 
     public static void drawRect(int x1, int y1, int x2, int y2, int color) {
         var gui = RenderContext.gui();
-        if (gui != null) gui.fill(x1, y1, x2, y2, color);
+        if (gui != null) mcc$unmodulated(gui, () -> gui.fill(x1, y1, x2, y2, color));
+    }
+
+    /**
+     * 1.7.10's drawRect/drawGradientRect set their own GL colour, so a glColor4f left behind by earlier drawing never touched them.
+     * The modern fill is modulated by the shader colour at flush time: Mystcraft's pulsing panel (glColor4f(.5,.5,.5,alpha)) turned the
+     * black name field of the book binder translucent. The fill is drawn with a white modulator and flushed before the colour returns.
+     */
+    static void mcc$unmodulated(net.minecraft.client.gui.GuiGraphics gui, Runnable draw) {
+        float[] c = com.mojang.blaze3d.systems.RenderSystem.getShaderColor();
+        if (c[0] == 1f && c[1] == 1f && c[2] == 1f && c[3] == 1f) {
+            draw.run();
+            return;
+        }
+        float r = c[0], g = c[1], b = c[2], a = c[3];
+        gui.flush();
+        com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        try {
+            draw.run();
+            gui.flush();
+        } finally {
+            com.mojang.blaze3d.systems.RenderSystem.setShaderColor(r, g, b, a);
+        }
     }
 
     protected void drawGradientRect(int x1, int y1, int x2, int y2, int colorTop, int colorBottom) {
         var gui = RenderContext.gui();
-        if (gui != null) gui.fillGradient(x1, y1, x2, y2, colorTop, colorBottom);
+        if (gui != null) mcc$unmodulated(gui, () -> gui.fillGradient(x1, y1, x2, y2, colorTop, colorBottom));
     }
 
     public void drawCenteredString(FontRenderer font, String text, int x, int y, int color) {
