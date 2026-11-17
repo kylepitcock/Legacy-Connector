@@ -34,7 +34,7 @@ public final class ModLoader {
     }
 
     /** Whether no loading error has happened so far. */
-    public boolean isLoadingStateValid() {
+    public static boolean isLoadingStateValid() {
         return !net.neoforged.fml.ModLoader.hasErrors();
     }
 

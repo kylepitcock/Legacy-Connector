@@ -304,7 +304,8 @@ Minecraft/NeoForge client classes, the layer's runtime). It finds what the JVM r
 - The closing report groups over the whole set (the same type pair in several jars is one group, with the jars listed), then prints the number of
   distinct unknown types by package: those are the places the verifier is blind. The non-legacy jars of the set (Curios, GeckoLib...) are read into the
   hierarchy, so what remains unknown is mostly optional integrations with mods that are not in the set (JEI/REI/Jade/Waila/TOP APIs).
-- Negative control for the 1.20.1 `ModelResourceLocation` pass: `-PmodelLocation1201=false` leaves `ModelLocation1201` out of the translation. With it,
+- Negative control used when the verifier was validated (2026-11-16; the switch and the `ModelLocation1201` pass are gone since legacy model locations are a
+  `ResourceLocation` subclass again, see [1.20.1 client events](Legacy-1.20.1-Client-Events.md)): with the id() conversion pass left out,
   `checkLegacyMod` on ChemLib, SuperMartijn642 core lib and Wireless Chargers reports exactly one group `ModelResourceLocation is not assignable to
   ResourceLocation` (3 sites in 3 jars: `ChemLib ClientEventHandler.onModelRegister`, `ClientRegistrationHandler.registerModelOverwrite`,
   `WirelessChargersClient.register`); without the switch it is silent.

@@ -271,12 +271,14 @@ public final class LibraryBridges {
 
     static Set<String> modernModIds(Path modsDir) {
         Set<String> ids = new HashSet<>();
+        java.util.List<Path> nativeJars = new java.util.ArrayList<>();
         if (!Files.isDirectory(modsDir)) return ids;
         try (Stream<Path> files = Files.list(modsDir)) {
             for (Path p : files.filter(f -> f.toString().endsWith(".jar")).toList()) {
                 try (ZipFile zip = new ZipFile(p.toFile())) {
                     ZipEntry e = zip.getEntry("META-INF/neoforge.mods.toml");
                     if (e == null) continue;
+                    nativeJars.add(p);
                     try (InputStream in = zip.getInputStream(e)) {
                         Matcher m = MOD_ID.matcher(new String(in.readAllBytes(), StandardCharsets.UTF_8));
                         while (m.find()) ids.add(m.group(1));
@@ -288,6 +290,7 @@ public final class LibraryBridges {
         } catch (IOException ignored) {
             // no mods folder access
         }
+        org.kylepitcock.legacyconnector.loader.transform.NativeClasses1201.setJars(nativeJars);
         return ids;
     }
 

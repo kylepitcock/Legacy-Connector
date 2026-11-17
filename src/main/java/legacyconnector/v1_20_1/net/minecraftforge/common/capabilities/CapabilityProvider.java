@@ -53,6 +53,13 @@ public abstract class CapabilityProvider<B extends CapabilityProvider<B>> implem
         return true;
     }
 
+    /** Forge's capability NBT of a provider; attached capabilities are not persisted here, so there is none. */
+    protected final net.minecraft.nbt.CompoundTag serializeCaps() {
+        return null;
+    }
+
+    protected final void deserializeCaps(net.minecraft.nbt.CompoundTag tag) {}
+
     public void invalidateCaps() {
         valid = false;
     }

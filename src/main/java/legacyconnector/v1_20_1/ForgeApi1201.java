@@ -231,6 +231,35 @@ public final class ForgeApi1201 {
         }
     }
 
+    /** The entries of the module or jar a class comes from (the game's own jar is a union file system, which has no default-file-system path). */
+    private static java.util.List<String> classNames(Class<?> base) throws Exception {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        // the mod file of the module (the game's own jar is a union file system: no default-file-system path, no module listing)
+        try {
+            var file = net.neoforged.fml.ModList.get().getModFileById("neoforge");
+            if (file != null && base.getName().startsWith("net.neoforged.neoforge.")) {
+                java.nio.file.Path root = file.getFile().getSecureJar().getRootPath();
+                try (var walk = java.nio.file.Files.walk(root)) {
+                    walk.forEach(p -> {
+                        String n = root.relativize(p).toString().replace(java.io.File.separatorChar, '/');
+                        if (n.endsWith(".class")) names.add(n);
+                    });
+                }
+                return names;
+            }
+        } catch (RuntimeException | java.io.IOException ignored) {
+            // the jar path below
+        }
+        java.net.URL where = base.getProtectionDomain().getCodeSource() == null ? null : base.getProtectionDomain().getCodeSource().getLocation();
+        if (where != null) {
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(java.nio.file.Path.of(where.toURI()).toFile())) {
+                var entries = zip.entries();
+                while (entries.hasMoreElements()) names.add(entries.nextElement().getName());
+            }
+        }
+        return names;
+    }
+
     private static final java.util.Map<Class<?>, java.util.List<Class<? extends net.neoforged.bus.api.Event>>> CONCRETE = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
@@ -242,23 +271,14 @@ public final class ForgeApi1201 {
         return CONCRETE.computeIfAbsent(abstractType, base -> {
             java.util.List<Class<? extends net.neoforged.bus.api.Event>> out = new java.util.ArrayList<>();
             try {
-                java.net.URL where = base.getProtectionDomain().getCodeSource() == null ? null : base.getProtectionDomain().getCodeSource().getLocation();
-                String pkg = base.getName().substring(0, base.getName().lastIndexOf('.', base.getName().indexOf('$') > 0 ? base.getName().indexOf('$') : base.getName().length())).replace('.', '/');
-                if (where != null) {
-                    java.nio.file.Path path = java.nio.file.Path.of(where.toURI());
-                    try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(path.toFile())) {
-                        var entries = zip.entries();
-                        while (entries.hasMoreElements()) {
-                            String n = entries.nextElement().getName();
-                            if (!n.endsWith(".class") || !n.startsWith("net/neoforged/neoforge/event/") && !n.startsWith("net/neoforged/neoforge/client/event/")) continue;
-                            String cn = n.substring(0, n.length() - 6).replace('/', '.');
-                            try {
-                                Class<?> c = Class.forName(cn, false, base.getClassLoader());
-                                if (base.isAssignableFrom(c) && c != base && !java.lang.reflect.Modifier.isAbstract(c.getModifiers()) && !c.isInterface()) out.add((Class<? extends net.neoforged.bus.api.Event>) c);
-                            } catch (Throwable ignored) {
-                                // a client class on a server and the like: not an event this side can get
-                            }
-                        }
+                for (String n : classNames(base)) {
+                    if (!n.endsWith(".class") || !n.startsWith("net/neoforged/neoforge/event/") && !n.startsWith("net/neoforged/neoforge/client/event/")) continue;
+                    String cn = n.substring(0, n.length() - 6).replace('/', '.');
+                    try {
+                        Class<?> c = Class.forName(cn, false, base.getClassLoader());
+                        if (base.isAssignableFrom(c) && c != base && !java.lang.reflect.Modifier.isAbstract(c.getModifiers()) && !c.isInterface()) out.add((Class<? extends net.neoforged.bus.api.Event>) c);
+                    } catch (Throwable ignored) {
+                        // a client class on a server and the like: not an event this side can get
                     }
                 }
             } catch (Exception e) {
