@@ -258,6 +258,11 @@ public class StructureVillagePieces {
         protected void setStructureType(int type) {
             this.structureType = type;
         }
+
+        /** The ground height the component builds from (set when the village assembly already placed it on its street). */
+        public void mcc$setGroundLevel(int y) {
+            this.averageGroundLvl = y;
+        }
     }
 
     /** A village road (a path piece): turns grass into path, water into planks and sand into gravel on cobblestone along its length. */
@@ -664,6 +669,12 @@ public class StructureVillagePieces {
         public legacyconnector.v1_12_2.net.minecraft.world.biome.Biome biome;
 
         public Start() {
+        }
+
+        /** The village's style and biome, set directly (a village the layer added a building to knows its biome from the jigsaw village's type). */
+        public void mcc$setStyle(int style, legacyconnector.v1_12_2.net.minecraft.world.biome.Biome biome) {
+            this.setStructureType(style);
+            this.biome = biome;
         }
 
         public Start(legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider provider, int type, Random rand, int x, int z, List<PieceWeight> pieces,
