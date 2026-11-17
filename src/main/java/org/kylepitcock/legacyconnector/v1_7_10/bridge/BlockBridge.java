@@ -271,8 +271,8 @@ public final class BlockBridge {
             String unlocalized = block.getUnlocalizedName();
             name = unlocalized != null && !unlocalized.isEmpty() ? unlocalized.replaceFirst("^tile\\.", "") : block.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT);
             // a block that was never named (Applied Energistics 1 registers its multi-blocks with a null name): the id its mod gave it
-            if (name.equals("null")) name = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         }
+        if (name.equals("null") && legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block) >= 0) name = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
         // Immibis Core registers the blocks of every Immibis mod from its own code, so no mod is "active" then: the mod whose package holds the
         // block's class owns it (otherwise RedLogic's gates would be minecraft:redlogic.gates).

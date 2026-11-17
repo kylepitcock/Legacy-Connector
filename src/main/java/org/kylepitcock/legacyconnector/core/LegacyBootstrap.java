@@ -29,7 +29,7 @@ public final class LegacyBootstrap {
         JsonObject meta = readMetadata(container, legacyId);
         LegacyModRecord record = new LegacyModRecord(version, legacyId, mainClass, container, modBus, meta);
         LegacyMods.add(record);
-        LOG.info("Discovered legacy {} mod {} ({}) as {}", version, legacyId, mainClass, record.modernId);
+        LOG.info("Discovered legacy {} mod {} ({}) as {}", record.displayVersion(), legacyId, mainClass, record.modernId);
     }
 
     private static JsonObject readMetadata(ModContainer container, String legacyId) {

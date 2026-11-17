@@ -9,9 +9,12 @@ import org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations;
  * translations straight in: that map is the live code-registered en_US table (see {@link StatCollector}).
  */
 public class StringTranslate {
-    private static final Pattern numericVariablePattern = Pattern.compile("%(\\d+\\$)?[\\d\\.]*[df]");
+    // Declared order matters: 1.2.5-1.4.7 mods (RedPower's Config) take getDeclaredFields()[1] of the class as the translation
+    // Properties: [0] instance, [1] translateTable, [2] languageList (the order of 1.4.7's StringTranslate).
     private static StringTranslate instance = new StringTranslate();
+    private final java.util.Properties translateTable = new LiveProperties(GeneratedTranslations.table("en_US"));
     private final Map<String, String> languageList = GeneratedTranslations.table("en_US");
+    private static final Pattern numericVariablePattern = Pattern.compile("%(\\d+\\$)?[\\d\\.]*[df]");
     private long lastUpdateTimeInMilliseconds = System.currentTimeMillis();
 
     static StringTranslate getInstance() {
@@ -90,5 +93,34 @@ public class StringTranslate {
 
     public long getLastUpdateTimeInMilliseconds() {
         return lastUpdateTimeInMilliseconds;
+    }
+
+    /** 1.2.5-1.4.7's {@code translateTable}: a {@code Properties} that IS the live en_US table, so what a mod puts in becomes a translation. */
+    static final class LiveProperties extends java.util.Properties {
+        private final Map<String, String> table;
+
+        LiveProperties(Map<String, String> table) {
+            this.table = table;
+        }
+
+        @Override public Object get(Object key) { return key == null ? null : table.get(String.valueOf(key)); }
+        @Override public String getProperty(String key) { return key == null ? null : table.get(key); }
+        @Override public Object put(Object key, Object value) { return table.put(String.valueOf(key), String.valueOf(value)); }
+        @Override public Object putIfAbsent(Object key, Object value) { return table.putIfAbsent(String.valueOf(key), String.valueOf(value)); }
+        @Override public synchronized void putAll(Map<?, ?> m) { m.forEach(this::put); }
+        @Override public Object remove(Object key) { return key == null ? null : table.remove(String.valueOf(key)); }
+        @Override public boolean containsKey(Object key) { return key != null && table.containsKey(String.valueOf(key)); }
+        @Override public boolean containsValue(Object value) { return table.containsValue(value); }
+        @Override public int size() { return table.size(); }
+        @Override public boolean isEmpty() { return table.isEmpty(); }
+        @Override public synchronized void clear() { table.clear(); }
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        @Override public java.util.Set<Map.Entry<Object, Object>> entrySet() { return (java.util.Set) table.entrySet(); }
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        @Override public java.util.Set<Object> keySet() { return (java.util.Set) table.keySet(); }
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        @Override public java.util.Collection<Object> values() { return (java.util.Collection) table.values(); }
+        @Override public java.util.Enumeration<Object> keys() { return java.util.Collections.enumeration(new java.util.ArrayList<Object>(table.keySet())); }
+        @Override public java.util.Enumeration<?> propertyNames() { return keys(); }
     }
 }
