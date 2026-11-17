@@ -733,6 +733,16 @@ final class Mc1201Migration {
                 continue;
             }
             String helper = tok.substring(0, at);
+            if (tok.substring(at + 1).startsWith("this")) {
+                // the receiver (below the spilled arguments) goes to the helper first: "Class.method@this:the/helper/ParameterType" (only as the first new parameter)
+                String type = tok.contains(":") ? tok.substring(tok.indexOf(':') + 1) : call.owner;
+                il.add(new InsnNode(Opcodes.DUP));
+                int dot = helper.lastIndexOf('.');
+                String cls = helper.substring(0, dot);
+                if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+                il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), "(L" + type + ";)" + now[j].getDescriptor(), false));
+                continue;
+            }
             StringBuilder desc = new StringBuilder("(");
             for (String a : tok.substring(at + 1).split("\\+")) {
                 int i = Integer.parseInt(a);
@@ -829,7 +839,9 @@ final class Mc1201Migration {
             if (old == null || (old.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
             if (declared(node, b.newName(), b.newDesc()) != null) continue;
             if (!h.isSubclassOf(node.name, b.owner()) && !h.reachesUnknown(node.name)) continue;
-            MethodNode bridge = bridge(node, old, b);
+            // a mod ancestor that already declares the 1.21.1-shaped method (same signature in both versions: inventoryTick) keeps running: the bridge calls it first
+            boolean callSuper = h.declaredIn(node.superName, b.newName(), b.newDesc()) == Origin.MOD;
+            MethodNode bridge = bridge(node, old, b, callSuper);
             if (bridge == null) continue;
             node.methods.add(bridge);
             c.bridges++;
@@ -841,7 +853,7 @@ final class Mc1201Migration {
         return null;
     }
 
-    private static MethodNode bridge(ClassNode node, MethodNode old, Bridge b) {
+    private static MethodNode bridge(ClassNode node, MethodNode old, Bridge b, boolean callSuper) {
         Type[] newArgs = Type.getArgumentTypes(b.newDesc());
         int[] slots = new int[newArgs.length];
         int slot = 1;
@@ -853,14 +865,51 @@ final class Mc1201Migration {
         List<String> tokens = b.args().isEmpty() ? identity(oldArgs.length) : b.args();
         if (tokens.size() != oldArgs.length) return null;
         InsnList il = new InsnList();
+        if (callSuper) {
+            Type superRet = Type.getReturnType(b.newDesc());
+            if (superRet.getSort() != Type.VOID) return null;
+            il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            for (int i = 0; i < newArgs.length; i++) il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+            il.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, node.superName, b.newName(), b.newDesc(), false));
+        }
         if (b.remember() >= 0) {
             il.add(new VarInsnNode(Opcodes.ALOAD, slots[b.remember()]));
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, CONTEXT, "remember", "(Ljava/lang/Object;)V", false));
+        }
+        // guarded tokens ("?Class.method@a+b": the helper answers null when the old method must not run, then the bridge returns): evaluated first
+        int[] guardSlot = new int[oldArgs.length];
+        org.objectweb.asm.tree.LabelNode skip = null;
+        for (int p = 0; p < oldArgs.length; p++) {
+            String tok = tokens.get(p);
+            if (!tok.startsWith("?")) continue;
+            if (Type.getReturnType(b.newDesc()).getSort() != Type.VOID) return null;
+            if (skip == null) skip = new org.objectweb.asm.tree.LabelNode();
+            String helper = tok.substring(1, tok.indexOf('@'));
+            StringBuilder hd = new StringBuilder("(");
+            for (String a : tok.substring(tok.indexOf('@') + 1).split("\\+")) {
+                int i = Integer.parseInt(a);
+                il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+                hd.append(newArgs[i].getDescriptor());
+            }
+            hd.append(')').append(oldArgs[p].getDescriptor());
+            int dot = helper.lastIndexOf('.');
+            String cls = helper.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), hd.toString(), false));
+            guardSlot[p] = slot++;
+            il.add(new VarInsnNode(Opcodes.ASTORE, guardSlot[p]));
+            il.add(new VarInsnNode(Opcodes.ALOAD, guardSlot[p]));
+            il.add(new org.objectweb.asm.tree.JumpInsnNode(Opcodes.IFNULL, skip));
         }
         il.add(new VarInsnNode(Opcodes.ALOAD, 0));
         int stack = 1;
         for (int p = 0; p < oldArgs.length; p++) {
             String tok = tokens.get(p);
+            if (tok.startsWith("?")) {
+                il.add(new VarInsnNode(Opcodes.ALOAD, guardSlot[p]));
+                stack += 1;
+                continue;
+            }
             if (tok.equals("this")) {
                 il.add(new VarInsnNode(Opcodes.ALOAD, 0));
                 stack += 1;
@@ -876,6 +925,22 @@ final class Mc1201Migration {
             if (at > 0) {
                 helper = tok.substring(0, at);
                 tok = tok.substring(at + 1);
+            }
+            if (helper != null && tok.contains("+")) {
+                // a helper taking several new parameters (in the order listed) and answering the old parameter
+                StringBuilder hd = new StringBuilder("(");
+                for (String a : tok.split("\\+")) {
+                    int k = Integer.parseInt(a);
+                    il.add(new VarInsnNode(newArgs[k].getOpcode(Opcodes.ILOAD), slots[k]));
+                    hd.append(newArgs[k].getDescriptor());
+                }
+                hd.append(')').append(oldArgs[p].getDescriptor());
+                int dot = helper.lastIndexOf('.');
+                String cls = helper.substring(0, dot);
+                if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+                il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), hd.toString(), false));
+                stack += oldArgs[p].getSize() + 4;
+                continue;
             }
             int i = Integer.parseInt(tok);
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
@@ -916,10 +981,14 @@ final class Mc1201Migration {
             else return null;
         }
         il.add(new InsnNode(newRet.getOpcode(Opcodes.IRETURN)));
+        if (skip != null) {
+            il.add(skip);
+            il.add(new InsnNode(Opcodes.RETURN));
+        }
         MethodNode out = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, b.newName(), b.newDesc(), null, null);
         out.instructions = il;
         out.maxLocals = slot;
-        out.maxStack = Math.max(stack + 1, 3) + Math.max(newRet.getSize(), oldRet.getSize());
+        out.maxStack = Math.max(stack + 1, 3) + Math.max(newRet.getSize(), oldRet.getSize()) + (callSuper ? slot : 0);
         return out;
     }
 

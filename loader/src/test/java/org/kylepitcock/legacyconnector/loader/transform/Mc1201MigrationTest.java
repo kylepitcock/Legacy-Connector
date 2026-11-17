@@ -192,6 +192,39 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void onArmorTickOverrideGetsAGuardedInventoryTickBridge() {
+        String armorTick = "(L" + STACK + ";Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;)V";
+        ClassNode c = cls("test/Boots", "net/minecraft/world/item/ArmorItem");
+        MethodNode old = method(c, ACC_PUBLIC, "onArmorTick", armorTick);
+        old.instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(c).bridges);
+        MethodNode bridge = findDeclared(c, "inventoryTick", "(L" + STACK + ";Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;IZ)V");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, MIGRATE + "Round9Compat", "wornBy"));
+        assertNotNull(find(bridge, "test/Boots", "onArmorTick"));
+        boolean guarded = false;
+        for (AbstractInsnNode in : bridge.instructions) guarded |= in.getOpcode() == IFNULL;
+        assertTrue(guarded);
+    }
+
+    @Test
+    void dropCustomDeathLootSuperCallGetsTheServerLevel() {
+        String oldDesc = "(Lnet/minecraft/world/damagesource/DamageSource;IZ)V";
+        ClassNode c = cls("test/Rat", "net/minecraft/world/entity/monster/Monster");
+        MethodNode m = method(c, ACC_PROTECTED, "dropCustomDeathLoot", oldDesc);
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new VarInsnNode(ILOAD, 2));
+        m.instructions.add(new VarInsnNode(ILOAD, 3));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, "net/minecraft/world/entity/monster/Monster", "dropCustomDeathLoot", oldDesc, false));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode call = find(m, "net/minecraft/world/entity/monster/Monster", "dropCustomDeathLoot");
+        assertEquals("(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V", call.desc);
+        assertNotNull(find(m, MIGRATE + "Round9Compat", "serverLevelOf"));
+    }
+
+    @Test
     void bufferSourceSuperConstructorTakesByteBuffers() {
         ClassNode c = cls("test/Ghost", "net/minecraft/client/renderer/MultiBufferSource$BufferSource");
         MethodNode m = method(c, ACC_PUBLIC, "<init>", "()V");

@@ -125,3 +125,5 @@ net/minecraft/world/level/storage/loot/functions/SetNbtFunction	net/minecraft/wo
 # 1.20.1's ModelResourceLocation extends ResourceLocation (it carries the variant); 1.21.1's is an unrelated record. Legacy code gets a ResourceLocation subclass, conversion happens at the boundary (ModelLocationCompat).
 net/minecraft/client/resources/model/ModelResourceLocation	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation
 net/minecraft/client/renderer/ChunkBufferBuilderPack	net/minecraft/client/renderer/SectionBufferBuilderPack
+net/minecraft/world/effect/MobEffectInstance$FactorData	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFactorData
+net/minecraft/server/packs/repository/Pack$Info	net/minecraft/server/packs/repository/Pack$Metadata

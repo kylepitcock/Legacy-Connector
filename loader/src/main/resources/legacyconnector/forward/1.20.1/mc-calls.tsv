@@ -912,3 +912,15 @@ net/minecraft/world/entity/monster/Strider	$put$FOOD_ITEMS	(Lnet/minecraft/world
 net/minecraft/world/entity/monster/Strider	$put$TEMPT_ITEMS	(Lnet/minecraft/world/item/crafting/Ingredient;)V	AnimalFood1201	setStriderTempt	(Lnet/minecraft/world/item/crafting/Ingredient;)V
 net/minecraft/world/entity/animal/horse/AbstractHorse	$put$FOOD_ITEMS	(Lnet/minecraft/world/item/crafting/Ingredient;)V	AnimalFood1201	setHorse	(Lnet/minecraft/world/item/crafting/Ingredient;)V
 net/minecraft/world/entity/animal/Parrot	$put$TAME_FOOD	(Ljava/util/Set;)V	AnimalFood1201	setParrotTame	(Ljava/util/Set;)V
+net/minecraft/world/entity/LivingEntity	dropCustomDeathLoot	(Lnet/minecraft/world/damagesource/DamageSource;IZ)V	=args	Round9Compat.serverLevelOf@this:net/minecraft/world/entity/LivingEntity,0,2	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V
+net/minecraft/world/item/Item	onArmorTick	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;)V	Round9Compat	noArmorTick
+net/minecraft/world/item/ItemStack	onArmorTick	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;)V	Round9Compat	stackArmorTick
+net/minecraft/world/level/block/entity/BannerBlockEntity	createPatterns	(Lnet/minecraft/world/item/DyeColor;Lnet/minecraft/nbt/ListTag;)Ljava/util/List;	Round9Compat	createPatterns
+net/minecraft/world/level/block/entity/BannerBlockEntity	getItemPatterns	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/nbt/ListTag;	Round9Compat	getItemPatterns
+net/minecraft/world/level/block/entity/BannerBlockEntity	getPatternCount	(Lnet/minecraft/world/item/ItemStack;)I	Round9Compat	getPatternCount
+net/minecraft/world/level/block/entity/BannerBlockEntity	removeLastPattern	(Lnet/minecraft/world/item/ItemStack;)V	Round9Compat	removeLastPattern
+net/minecraft/world/level/block/entity/BannerBlockEntity	getPatterns	()Ljava/util/List;	Round9Compat	getPatternsList
+net/minecraft/core/cauldron/CauldronInteraction	interact	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/InteractionResult;	Round9Compat	cauldronInteract
+net/minecraft/world/effect/MobEffectInstance	getFactorData	()Ljava/util/Optional;	Round9Compat	getFactorData
+net/minecraft/world/effect/MobEffect	createFactorData	()Ljava/util/Optional;	Round9Compat	createFactorData
+net/minecraft/server/packs/repository/Pack$Metadata	<init>	(Lnet/minecraft/network/chat/Component;ILnet/minecraft/world/flag/FeatureFlagSet;)V	Round9Compat	newPackInfo
