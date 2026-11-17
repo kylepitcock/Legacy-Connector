@@ -1,0 +1,1030 @@
+﻿cpu samples 6,537 (20 ms profile interval => about 131 s of sampled thread time)
+
+## CPU samples / ALL: 6,537 samples; a layer frame on 31.5% of it
+  top self frames:
+      8.0%             525  net.minecraft.world.level.levelgen.Aquifer$NoiseBasedAquifer.computeSubstance
+      6.2%             407  net.minecraft.server.level.GenerationChunkHolder.getChunkIfPresentUnchecked
+      4.8%             311  org.objectweb.asm.ClassReader.readCode
+      4.3%             279  net.minecraft.world.level.levelgen.synth.ImprovedNoise.p
+      4.0%             264  net.minecraft.world.level.biome.Climate$RTree$SubTree.search
+      4.0%             260  net.minecraft.world.level.levelgen.synth.ImprovedNoise.noise
+      3.5%             232  net.minecraft.world.level.biome.BiomeManager.getBiome
+      1.5%             101  net.minecraft.world.level.levelgen.Beardifier.compute
+      1.4%              91  net.minecraft.world.level.levelgen.SurfaceRules$TestRule.tryApply
+      1.4%              91  java.util.ArrayList.forEach
+      1.3%              88  java.util.HashMap.getNode
+      1.3%              83  net.minecraft.world.level.levelgen.synth.PerlinNoise.getValue
+      1.3%              82  net.minecraft.world.level.levelgen.SurfaceSystem.buildSurface
+      1.0%              67  net.minecraft.world.level.material.FluidState.isEmpty
+      1.0%              67  net.minecraft.world.level.levelgen.OreVeinifier.lambda$create$0
+      1.0%              66  net.minecraft.world.level.chunk.PalettedContainer.get
+  layer methods that are the top frame (own cost, no callee):
+      0.3%              22  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources
+      0.3%              20  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      0.2%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.2%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaEquivalents.block
+      0.2%              10  legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$loadedEntityList
+      0.1%               8  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable.generate
+      0.1%               7  org.kylepitcock.legacyconnector.loader.LegacyVersion.isRelocatedRoot
+      0.1%               7  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has
+      0.1%               6  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorImproved.populateNoiseArray
+      0.1%               5  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      0.1%               5  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.stubMethod
+      0.1%               5  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.1%               5  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.func_150807_a
+      0.1%               4  legacyconnector.v1_12_2.net.minecraft.world.World.getEntitiesWithinAABB
+      0.1%               4  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.absent
+    ... with their direct caller:
+      0.3%              20  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources  <-  net.minecraft.server.packs.resources.FallbackResourceManager.listPackResources
+      0.3%              20  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map  <-  org.objectweb.asm.commons.Remapper.mapType
+      0.2%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaEquivalents.block  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.toModern
+      0.2%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.2%              10  legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$loadedEntityList  <-  com.dhanantry.scapeandrunparasites.entity.ai.EntityAIFollowBodies.getFather
+      0.1%               7  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has  <-  java.io.InputStream.readAllBytes
+      0.1%               7  org.kylepitcock.legacyconnector.loader.LegacyVersion.isRelocatedRoot  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      0.1%               6  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorImproved.populateNoiseArray  <-  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves.generateNoiseOctaves
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable.generate  <-  train.common.generation.WorldGenWorld.addOreSpawn
+      0.1%               5  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.readPatched
+      0.1%               5  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.func_150807_a  <-  legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage.func_150818_a
+      0.1%               5  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3  <-  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get
+      0.1%               5  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.stubMethod  <-  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.apply
+      0.1%               4  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.write  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.1%               4  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.parse  <-  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.getPotionEffects
+  innermost layer frame:
+     68.5%           4,481  (none)
+      3.8%             250  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apply
+      1.8%             120  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      1.6%             103  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      1.2%              78  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.travel
+      0.9%              61  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      0.7%              47  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0
+      0.6%              38  legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNavigate.getPathToEntityLiving
+      0.6%              36  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity
+      0.5%              34  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla
+      0.5%              33  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      0.5%              32  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.5%              32  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.5%              30  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.renameKeywordPackages
+      0.4%              29  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.groundY
+      0.4%              28  legacyconnector.v1_12_2.net.minecraft.world.World.modernEntities
+  outermost layer frame (inclusive entry):
+      7.4%             484  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call
+      5.4%             354  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      5.0%             326  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick
+      3.6%             236  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept
+      1.7%             109  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick
+      1.3%              83  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept
+      1.1%              71  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get
+      0.7%              48  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      0.5%              34  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature.place
+      0.4%              27  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources
+      0.4%              26  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place
+      0.3%              22  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe259a000.836109585.accept
+      0.3%              21  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept
+      0.3%              19  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+      0.3%              18  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.3%              17  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept
+  entry <- caller outside the layer:
+      7.4%             484  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call  <-  java.util.concurrent.FutureTask.run
+      5.4%             354  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+      5.0%             326  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      3.5%             229  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.7%             109  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      1.2%              81  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept  <-  net.minecraft.world.level.levelgen.structure.Structure$GenerationStub.lambda$getPiecesBuilder$0
+      1.1%              71  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get  <-  java.util.concurrent.CompletableFuture$AsyncSupply.run
+      0.7%              47  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      0.5%              34  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.4%              26  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.4%              24  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources  <-  net.minecraft.server.packs.resources.FallbackResourceManager.listPackResources
+      0.3%              22  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe259a000.836109585.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.3%              21  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.3%              18  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.3%              17  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.2%              16  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyMobHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+
+## CPU samples / loading: 994 samples; a layer frame on 68.5% of it
+  top self frames:
+     21.2%             211  org.objectweb.asm.ClassReader.readCode
+      2.2%              22  org.objectweb.asm.ClassReader.readUtf
+      1.4%              14  java.util.HashMap.getNode
+      1.4%              14  org.objectweb.asm.ClassReader.readUTF8
+      1.3%              13  com.google.common.collect.RegularImmutableMap.get
+      1.3%              13  java.util.stream.AbstractPipeline.wrapSink
+      1.1%              11  java.util.HashMap.putVal
+      1.1%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      1.1%              11  java.util.zip.ZipFile$ZipFileInflaterInputStream.fill
+      1.0%              10  net.minecraft.world.level.biome.Climate$RTree.lambda$comparator$3
+      0.9%               9  com.google.common.collect.ImmutableSet$SetBuilderImpl.ensureCapacity
+      0.9%               9  java.util.HashMap.resize
+      0.9%               9  java.lang.Class.copyFields
+      0.9%               9  com.mojang.datafixers.optics.Optic$CompositionOptic.lambda$eval$0
+      0.8%               8  net.minecraft.world.level.biome.Climate$RTree.buildParameterSpace
+      0.8%               8  java.util.Arrays.copyOf
+  layer methods that are the top frame (own cost, no callee):
+      1.1%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.7%               7  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has
+      0.4%               4  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.parse
+      0.3%               3  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.indexOf
+      0.2%               2  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText
+      0.2%               2  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.chainOf
+      0.2%               2  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.toModern
+      0.2%               2  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.2%               2  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.blockModels
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.Platform1122.injectCapabilities
+      0.1%               1  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.getPotionEffects
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.neighbourKey
+      0.1%               1  org.kylepitcock.legacyconnector.loader.TranslationPool.take
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+    ... with their direct caller:
+      1.1%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.7%               7  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has  <-  java.io.InputStream.readAllBytes
+      0.4%               4  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.parse  <-  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.getPotionEffects
+      0.3%               3  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.indexOf  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.staticTransformerRegistrations
+      0.2%               2  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read  <-  org.kylepitcock.legacyconnector.loader.LegacyModLocator.loadShimIndex
+      0.2%               2  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText  <-  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.2%               2  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.toModern  <-  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.<init>
+      0.2%               2  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect  <-  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      0.2%               2  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.chainOf  <-  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.collectModelTextures
+      0.1%               1  org.kylepitcock.legacyconnector.loader.mapping.NotchNames.find  <-  org.kylepitcock.legacyconnector.loader.mapping.NotchNames.method
+      0.1%               1  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.scan  <-  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.scan
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.readPatched
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initBlocks  <-  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.splitsAcrossIds
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.preventCollisions  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.neighbourKey  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.withProperty
+  innermost layer frame:
+     31.5%             313  (none)
+     19.0%             189  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apply
+     10.4%             103  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      3.4%              34  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla
+      3.2%              32  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      2.4%              24  org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan.remap
+      2.3%              23  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      1.8%              18  org.kylepitcock.legacyconnector.v1_7_10.Platform1710.dispatch
+      1.4%              14  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      1.2%              12  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      1.1%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      1.1%              11  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.9%               9  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has
+      0.8%               8  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.7%               7  org.kylepitcock.legacyconnector.core.event.ReflectiveEventBus.register
+      0.6%               6  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.resourceExists
+  outermost layer frame (inclusive entry):
+     35.6%             354  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+     23.7%             236  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept
+      4.8%              48  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      1.8%              18  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.7%               7  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has
+      0.5%               5  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getCollisionShape
+      0.4%               4  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1d4f2c0.1650578413.get
+      0.2%               2  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.entity.VillagerTrades1122$$Lambda+0x000001fbe1e4d248.2014496621.accept
+      0.1%               1  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1d4ea78.124239163.get
+      0.1%               1  legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart.setCollisionHandler
+      0.1%               1  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1d4ccf0.515228352.get
+      0.1%               1  legacyconnector.v1_7_10.net.minecraft.block.Block.getBlockFromName
+      0.1%               1  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcb6e8.621857463.accept
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getLightBlock
+  entry <- caller outside the layer:
+     35.6%             354  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+     23.0%             229  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      4.7%              47  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      1.8%              18  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.7%               7  org.kylepitcock.legacyconnector.loader.LegacyJarInspector$Markers.has  <-  java.io.InputStream.readAllBytes
+      0.7%               7  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept  <-  (root)
+      0.4%               4  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getCollisionShape  <-  net.minecraft.world.level.block.state.BlockBehaviour.getBlockSupportShape
+      0.4%               4  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1d4f2c0.1650578413.get  <-  net.neoforged.neoforge.registries.DeferredRegister.lambda$register$0
+      0.2%               2  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources  <-  net.minecraft.server.packs.resources.FallbackResourceManager.listResources
+      0.1%               1  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcb6e8.621857463.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%               1  legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart.setCollisionHandler  <-  train.common.api.EntityRollingStock.initRollingStock
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.entity.VillagerTrades1122$$Lambda+0x000001fbe1e4d248.2014496621.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%               1  legacyconnector.v1_7_10.net.minecraft.block.Block.getBlockFromName  <-  thaumcraft.common.config.Config.syncConfigurable
+      0.1%               1  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  (root)
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getLightBlock  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase$Cache.<init>
+      0.1%               1  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1d4ea78.124239163.get  <-  net.neoforged.neoforge.registries.DeferredRegister.lambda$register$0
+
+## CPU samples / other: 656 samples; a layer frame on 75.3% of it
+  top self frames:
+     14.8%              97  org.objectweb.asm.ClassReader.readCode
+      6.9%              45  java.util.HashMap.getNode
+      4.0%              26  java.lang.ThreadLocal$ThreadLocalMap.getEntry
+      3.4%              22  java.util.ImmutableCollections$SetN.probe
+      2.9%              19  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      2.3%              15  org.objectweb.asm.commons.Remapper.mapMethodDesc
+      2.1%              14  org.objectweb.asm.ClassReader.readUtf
+      2.1%              14  java.io.InputStream.readNBytes
+      1.7%              11  java.util.concurrent.locks.AbstractQueuedSynchronizer.signalNext
+      1.7%              11  org.objectweb.asm.Type.getDescriptor
+      1.4%               9  net.minecraft.nbt.ListTag.write
+      1.4%               9  org.objectweb.asm.ClassReader.<init>
+      1.2%               8  org.objectweb.asm.Type.getArgumentTypes
+      1.1%               7  java.util.HashMap.putVal
+      1.1%               7  org.objectweb.asm.ClassReader.readUTF8
+      1.1%               7  org.kylepitcock.legacyconnector.loader.LegacyVersion.isRelocatedRoot
+  layer methods that are the top frame (own cost, no callee):
+      2.9%              19  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      1.1%               7  org.kylepitcock.legacyconnector.loader.LegacyVersion.isRelocatedRoot
+      0.9%               6  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply
+      0.8%               5  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.stubMethod
+      0.6%               4  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.absent
+      0.6%               4  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      0.6%               4  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.write
+      0.5%               3  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.searchMethod
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.missingIn
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.typedToArray
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.virtualField
+      0.3%               2  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.addEntityTypeKeys
+      0.2%               1  org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122$$Lambda+0x000001fbe1e3f890.600623908.test
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+    ... with their direct caller:
+      2.9%              19  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map  <-  org.objectweb.asm.commons.Remapper.mapType
+      1.1%               7  org.kylepitcock.legacyconnector.loader.LegacyVersion.isRelocatedRoot  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      0.9%               6  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.8%               5  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.stubMethod  <-  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.apply
+      0.6%               4  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.readPatched
+      0.6%               4  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.write  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.5%               3  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform  <-  org.kylepitcock.legacyconnector.loader.TranslationPool.lambda$submit$1
+      0.3%               2  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.addEntityTypeKeys  <-  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.parseLang
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.absent  <-  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.untypedFieldUse
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.absent  <-  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.missing
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.missingIn  <-  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.stubMethod
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.virtualField  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.searchMethod  <-  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveMethod
+      0.3%               2  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.typedToArray  <-  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.relinkReturnType  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply
+  innermost layer frame:
+     24.7%             162  (none)
+     18.3%             120  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      9.3%              61  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apply
+      5.8%              38  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      4.7%              31  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      4.3%              28  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.renameKeywordPackages
+      4.3%              28  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.put
+      2.3%              15  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.hasField
+      2.3%              15  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      2.1%              14  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.write
+      1.7%              11  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply
+      1.5%              10  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.parseLang
+      1.5%              10  org.kylepitcock.legacyconnector.loader.LegacyVersion.isRelocatedRoot
+      1.1%               7  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.missing
+      1.1%               7  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.hasMethod
+      0.9%               6  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply
+  outermost layer frame (inclusive entry):
+     73.8%             484  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call
+      0.8%               5  org.kylepitcock.legacyconnector.core.ViewSweeper$$Lambda+0x000001fbe1e41520.610676357.run
+      0.5%               3  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers$$Lambda+0x000001fbe1276300.1095583342.run
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map
+      0.2%               1  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x000001fbe1d4fb20.509549272.run
+  entry <- caller outside the layer:
+     73.8%             484  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call  <-  java.util.concurrent.FutureTask.run
+      0.8%               5  org.kylepitcock.legacyconnector.core.ViewSweeper$$Lambda+0x000001fbe1e41520.610676357.run  <-  java.lang.Thread.runWith
+      0.5%               3  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers$$Lambda+0x000001fbe1276300.1095583342.run  <-  java.lang.Thread.runWith
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.map  <-  (root)
+      0.2%               1  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x000001fbe1d4fb20.509549272.run  <-  java.lang.Thread.runWith
+
+## CPU samples / server: 774 samples; a layer frame on 78.0% of it
+  top self frames:
+      6.3%              49  net.minecraft.world.level.chunk.PalettedContainer.get
+      5.4%              42  it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap.get
+      3.7%              29  virtuoel.pehkui.api.ScaleData.getScale
+      3.0%              23  java.util.concurrent.ConcurrentHashMap.get
+      3.0%              23  com.google.common.collect.MapMakerInternalMap$Segment.getEntry
+      2.5%              19  net.minecraft.util.AbortableIterationConsumer$$Lambda+0x000001fbe29d4c18.1023473814.accept
+      2.5%              19  net.minecraft.world.level.chunk.PalettedContainer$Strategy$2.getConfiguration
+      2.3%              18  net.minecraft.world.level.chunk.PalettedContainer$Strategy$1.getConfiguration
+      1.9%              15  virtuoel.pehkui.util.ScaleUtils.getInteractionBoxWidthScale
+      1.8%              14  java.util.HashMap.getNode
+      1.7%              13  net.minecraft.world.level.biome.Climate$RTree.lambda$comparator$3
+      1.7%              13  net.minecraft.world.level.chunk.PalettedContainer$$Lambda+0x000001fbe2b4c218.962903907.applyAsInt
+      1.6%              12  net.minecraft.world.level.pathfinder.PathTypeCache.compute
+      1.4%              11  java.lang.ThreadLocal$ThreadLocalMap.getEntry
+      1.3%              10  legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$loadedEntityList
+      1.3%              10  net.minecraft.world.level.BlockCollisions.computeNext
+  layer methods that are the top frame (own cost, no callee):
+      1.3%              10  legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$loadedEntityList
+      0.5%               4  legacyconnector.v1_12_2.net.minecraft.world.World.getEntitiesWithinAABB
+      0.5%               4  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.run
+      0.4%               3  legacyconnector.v1_7_10.net.minecraft.world.World.unloaded
+      0.3%               2  legacyconnector.v1_7_10.net.minecraft.world.World.isAirBlock
+      0.3%               2  legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAITasks.onUpdateTasks
+      0.3%               2  legacyconnector.v1_7_10.net.minecraft.world.World.handleMaterialAcceleration
+      0.3%               2  legacyconnector.v1_12_2.net.minecraft.entity.Entity.onUpdate
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.world.World.acc
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$entityUniqueID
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.EntityList.getKey
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityLookHelper.setLookPositionWithEntity
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.util.EntitySelectors$$Lambda+0x000001fbe2b13750.2013092906.apply
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.mcc$soundPitch
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.Entity.playSound
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.overrides
+    ... with their direct caller:
+      1.3%              10  legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$loadedEntityList  <-  com.dhanantry.scapeandrunparasites.entity.ai.EntityAIFollowBodies.getFather
+      0.5%               4  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.run  <-  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.lambda$register$0
+      0.4%               3  legacyconnector.v1_7_10.net.minecraft.world.World.unloaded  <-  legacyconnector.v1_7_10.net.minecraft.world.World.getBlock
+      0.3%               2  legacyconnector.v1_12_2.net.minecraft.world.World.getEntitiesWithinAABB  <-  com.dhanantry.scapeandrunparasites.entity.ai.EntityAINearestAttackableTargetStatus.shouldExecute
+      0.3%               2  legacyconnector.v1_7_10.net.minecraft.world.World.handleMaterialAcceleration  <-  train.common.api.Locomotive.onUpdate
+      0.3%               2  legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAITasks.onUpdateTasks  <-  legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.mcc$serverAiStep
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.vanillaToLegacy  <-  org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toLegacy
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.canBePushed  <-  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.isPushable
+      0.1%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.PotionBridge.isActive  <-  legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.isPotionActive
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.util.EntitySelectors$$Lambda+0x000001fbe2b13750.2013092906.apply  <-  com.dhanantry.scapeandrunparasites.entity.ai.EntityAINearestAttackableTargetStatus$1.apply
+      0.1%               1  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest.run  <-  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest.lambda$register$0
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.mcc$soundPitch  <-  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.getVoicePitch
+      0.1%               1  legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.mcc$modern  <-  legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.mcc$instance
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAITasks.canUse  <-  legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAITasks.onUpdateTasks
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.entity.Entity.onUpdate  <-  legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.onUpdate
+      0.1%               1  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap  <-  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.getTag
+  innermost layer frame:
+     22.0%             170  (none)
+     10.1%              78  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.travel
+      4.9%              38  legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNavigate.getPathToEntityLiving
+      4.7%              36  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity
+      3.6%              28  legacyconnector.v1_12_2.net.minecraft.world.World.modernEntities
+      3.5%              27  legacyconnector.v1_7_10.net.minecraft.entity.Entity.moveEntity
+      3.4%              26  org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap
+      3.1%              24  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.mcc$superAiStep
+      3.0%              23  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.mcc$superTick
+      2.8%              22  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.run
+      2.2%              17  legacyconnector.v1_12_2.net.minecraft.world.World.getEntitiesWithinAABB
+      2.1%              16  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest.run
+      1.7%              13  legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$loadedEntityList
+      1.6%              12  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest.start
+      1.4%              11  org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement.vanillaOverworld
+      1.3%              10  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.mcc$superBaseTick
+  outermost layer frame (inclusive entry):
+     42.1%             326  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick
+     14.1%             109  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick
+      2.8%              22  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe259a000.836109585.accept
+      2.7%              21  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept
+      2.2%              17  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept
+      2.1%              16  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyMobHost.tick
+      1.9%              15  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest$$Lambda+0x000001fbe259e380.86587616.accept
+      1.8%              14  org.kylepitcock.legacyconnector.v1_12_2.entity.EntityHost1122.tick
+      1.6%              12  org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122$$Lambda+0x000001fbe1db4ac8.1665656553.accept
+      1.4%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e12710.1117849609.accept
+      1.4%              11  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes
+      1.2%               9  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe2adf1c8.1023501050.accept
+      0.6%               5  org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.tick
+      0.4%               3  org.kylepitcock.legacyconnector.v1_12_2.PlacementSelfTest1122$$Lambda+0x000001fbe25a3f70.1606094933.accept
+      0.3%               2  org.kylepitcock.legacyconnector.core.JoinPayloadSizeTest$$Lambda+0x000001fbe25a3920.1807833047.accept
+      0.3%               2  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x000001fbe1e4f810.1647225883.accept
+  entry <- caller outside the layer:
+     42.1%             326  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+     14.1%             109  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      2.8%              22  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe259a000.836109585.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      2.7%              21  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      2.2%              17  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      2.1%              16  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyMobHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      1.9%              15  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest$$Lambda+0x000001fbe259e380.86587616.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.8%              14  org.kylepitcock.legacyconnector.v1_12_2.entity.EntityHost1122.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      1.6%              12  org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122$$Lambda+0x000001fbe1db4ac8.1665656553.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+      1.4%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e12710.1117849609.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+      1.2%               9  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe2adf1c8.1023501050.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.6%               5  org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.tick  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.tick
+      0.5%               4  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes  <-  net.minecraft.world.level.biome.Climate$ParameterList.initializeForTerraBlender
+      0.5%               4  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes  <-  terrablender.util.LevelUtils.lambda$initializeBiomes$1
+      0.4%               3  org.kylepitcock.legacyconnector.v1_12_2.PlacementSelfTest1122$$Lambda+0x000001fbe25a3f70.1606094933.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.4%               3  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes  <-  terrablender.worldgen.noise.InitialLayer.lambda$createEntries$1
+
+## CPU samples / worker: 4,113 samples; a layer frame on 6.7% of it
+  top self frames:
+     12.8%             525  net.minecraft.world.level.levelgen.Aquifer$NoiseBasedAquifer.computeSubstance
+      9.8%             405  net.minecraft.server.level.GenerationChunkHolder.getChunkIfPresentUnchecked
+      6.8%             279  net.minecraft.world.level.levelgen.synth.ImprovedNoise.p
+      6.4%             264  net.minecraft.world.level.biome.Climate$RTree$SubTree.search
+      6.3%             260  net.minecraft.world.level.levelgen.synth.ImprovedNoise.noise
+      5.6%             232  net.minecraft.world.level.biome.BiomeManager.getBiome
+      2.5%             101  net.minecraft.world.level.levelgen.Beardifier.compute
+      2.2%              91  net.minecraft.world.level.levelgen.SurfaceRules$TestRule.tryApply
+      2.2%              91  java.util.ArrayList.forEach
+      2.0%              83  net.minecraft.world.level.levelgen.synth.PerlinNoise.getValue
+      2.0%              82  net.minecraft.world.level.levelgen.SurfaceSystem.buildSurface
+      1.6%              67  net.minecraft.world.level.material.FluidState.isEmpty
+      1.6%              67  net.minecraft.world.level.levelgen.OreVeinifier.lambda$create$0
+      1.6%              65  net.minecraft.world.level.chunk.ProtoChunk.setBlockState
+      1.5%              61  java.util.Objects.hashCode
+      1.3%              53  net.minecraft.world.level.levelgen.NoiseChunk$NoiseInterpolator.compute
+  layer methods that are the top frame (own cost, no callee):
+      0.5%              21  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources
+      0.3%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaEquivalents.block
+      0.2%               8  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable.generate
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorImproved.populateNoiseArray
+      0.1%               5  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.1%               5  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.func_150807_a
+      0.1%               3  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.state
+      0.1%               3  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.func_147424_a
+      0.1%               3  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.id
+      0.0%               2  org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.ownState
+      0.0%               2  legacyconnector.v1_7_10.net.minecraft.world.World.getBlock
+      0.0%               1  legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenCaves.func_151541_a
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillagePoolElement.build
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+      0.0%               1  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.inside
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomeLayers.logSample
+    ... with their direct caller:
+      0.5%              20  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources  <-  net.minecraft.server.packs.resources.FallbackResourceManager.listPackResources
+      0.3%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaEquivalents.block  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.toModern
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorImproved.populateNoiseArray  <-  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves.generateNoiseOctaves
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable.generate  <-  train.common.generation.WorldGenWorld.addOreSpawn
+      0.1%               5  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3  <-  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get
+      0.1%               5  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.func_150807_a  <-  legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage.func_150818_a
+      0.1%               3  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.id  <-  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.levelKey
+      0.1%               3  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.func_147424_a  <-  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.provideChunk
+      0.1%               3  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.state  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.stateOfVanilla
+      0.0%               2  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable.generate  <-  thaumcraft.common.lib.world.ThaumcraftWorldGenerator.generateOres
+      0.0%               2  org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.ownState  <-  org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.stateForMeta
+      0.0%               1  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.func_147423_a  <-  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.func_147424_a
+      0.0%               1  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.inside  <-  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite
+      0.0%               1  legacyconnector.v1_7_10.net.minecraft.world.World.modernSurface  <-  legacyconnector.v1_7_10.net.minecraft.world.World.surface
+      0.0%               1  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorImproved.<init>  <-  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves.<init>
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block  <-  legacyconnector.v1_7_10.net.minecraft.world.World.lambda$deferOutsideRegion$4
+  innermost layer frame:
+     93.3%           3,836  (none)
+      1.1%              47  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0
+      0.8%              32  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.7%              29  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.groundY
+      0.6%              26  legacyconnector.v1_7_10.net.minecraft.world.World.modernSurface
+      0.6%              25  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources
+      0.5%              19  legacyconnector.v1_7_10.net.minecraft.world.World.setBlock
+      0.3%              11  org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaEquivalents.block
+      0.2%               9  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.tryPlace
+      0.2%               8  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable.generate
+      0.2%               8  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.id
+      0.2%               7  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.levelKey
+      0.1%               6  legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorImproved.populateNoiseArray
+      0.1%               5  legacyconnector.v1_7_10.net.minecraft.world.World.getBlock
+      0.1%               5  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.func_150807_a
+      0.1%               4  legacyconnector.v1_12_2.net.minecraft.world.Teleporter.<init>
+  outermost layer frame (inclusive entry):
+      2.0%              83  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept
+      1.7%              71  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get
+      0.8%              34  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature.place
+      0.6%              26  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place
+      0.6%              25  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources
+      0.5%              19  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+      0.2%               9  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.applyBiomeDecoration
+      0.1%               4  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillagePoolElement.place
+      0.0%               2  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomeLayers$$Lambda+0x000001fbe2a14f90.1440497376.run
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$2
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.tryPlace
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710$$Lambda+0x000001fbe1e67620.40054180.accept
+  entry <- caller outside the layer:
+      2.0%              81  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept  <-  net.minecraft.world.level.levelgen.structure.Structure$GenerationStub.lambda$getPiecesBuilder$0
+      1.7%              71  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get  <-  java.util.concurrent.CompletableFuture$AsyncSupply.run
+      0.8%              34  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.6%              26  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.6%              24  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.listResources  <-  net.minecraft.server.packs.resources.FallbackResourceManager.listPackResources
+      0.3%              11  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome  <-  net.minecraft.world.level.biome.BiomeSource.findBiomeHorizontal
+      0.2%               9  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.applyBiomeDecoration  <-  net.minecraft.world.level.chunk.status.ChunkStatusTasks.generateFeatures
+      0.2%               7  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome  <-  net.minecraft.world.level.chunk.LevelChunkSection.fillBiomesFromNoise
+      0.1%               4  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillagePoolElement.place  <-  net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece.place
+      0.0%               2  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept  <-  (root)
+      0.0%               2  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomeLayers$$Lambda+0x000001fbe2a14f90.1440497376.run  <-  java.util.concurrent.ForkJoinTask$RunnableExecuteAction.exec
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome  <-  net.minecraft.world.level.biome.BiomeSource.getBiomesWithin
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0  <-  (root)
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710$$Lambda+0x000001fbe1e67620.40054180.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$2  <-  (root)
+      0.0%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.tryPlace  <-  (root)
+
+## Allocation (sampled weight) / ALL: 39,216,362,824 bytes; a layer frame on 45.8% of it
+  top self frames:
+     10.1%   3,950,618,192  com.google.common.collect.Iterators.forArray
+      7.5%   2,954,548,096  java.io.InputStream.readNBytes
+      5.8%   2,279,440,000  net.minecraft.world.level.chunk.PalettedContainer.pack
+      5.6%   2,193,728,984  java.lang.invoke.DirectMethodHandle.allocateInstance
+      3.8%   1,481,521,016  java.util.Arrays.copyOfRangeByte
+      2.6%   1,026,117,720  jdk.internal.misc.Unsafe.allocateUninitializedArray
+      2.0%     767,498,008  java.lang.StringLatin1.newString
+      1.9%     751,184,056  org.objectweb.asm.tree.MethodNode.visitInsn
+      1.7%     675,127,800  java.lang.Object.clone
+      1.5%     584,221,104  java.util.Arrays.copyOf
+      1.5%     572,925,128  com.google.common.base.Suppliers.memoize
+      1.3%     501,260,496  java.lang.StringConcatHelper.newString
+      1.2%     471,918,224  java.util.zip.InflaterInputStream.<init>
+      1.2%     469,773,992  net.minecraft.world.level.levelgen.DensityFunctions$Ap2.fillArray
+      1.2%     452,329,864  java.util.HashMap.newNode
+      1.1%     429,422,336  net.minecraft.world.level.biome.Climate$Parameter.span
+  layer methods that are the top frame (own cost, no callee):
+      0.5%     205,846,568  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>
+      0.1%      50,026,984  legacyconnector.v1_7_10.net.minecraft.world.World.pos
+      0.1%      30,807,832  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.<init>
+      0.1%      30,051,704  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox
+      0.1%      28,643,936  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText
+      0.1%      23,599,368  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla
+      0.1%      20,957,072  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.parents
+      0.0%      17,172,440  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField
+      0.0%      16,100,792  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.getControllingPassenger
+      0.0%      15,831,984  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity
+      0.0%      15,014,272  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$modern
+      0.0%      13,380,776  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap
+      0.0%      11,182,888  legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of
+      0.0%      11,172,232  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.provideChunk
+      0.0%       9,718,400  legacyconnector.v1_12_2.net.minecraft.world.World.modern
+      0.0%       8,385,664  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+    ... with their direct caller:
+      0.5%     181,350,928  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.lambda$register$36
+      0.1%      29,900,560  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox  <-  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.expand
+      0.1%      28,663,480  legacyconnector.v1_7_10.net.minecraft.world.World.pos  <-  legacyconnector.v1_7_10.net.minecraft.world.World.isAirBlock
+      0.1%      28,643,936  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText  <-  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.1%      23,599,368  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla  <-  org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan.changes
+      0.1%      20,957,072  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.parents  <-  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField
+      0.1%      20,945,640  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.<init>  <-  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap
+      0.0%      17,172,440  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply
+      0.0%      16,981,032  legacyconnector.v1_7_10.net.minecraft.world.World.pos  <-  legacyconnector.v1_7_10.net.minecraft.world.World.setBlock
+      0.0%      14,004,224  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.getControllingPassenger  <-  net.minecraft.world.entity.LivingEntity.maxUpStep
+      0.0%      13,379,304  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap  <-  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.getTag
+      0.0%      12,793,960  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity  <-  train.common.core.handlers.CollisionHandler.handleCollisions
+      0.0%      12,768,576  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$modern  <-  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity
+      0.0%      11,506,264  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>  <-  com.emoniph.witchery.dimension.WorldChunkManagerTorment.provideChunk
+      0.0%      11,172,232  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.provideChunk  <-  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.0%       9,862,192  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.<init>  <-  legacyconnector.v1_12_2.net.minecraft.entity.Entity.getEntityData
+  innermost layer frame:
+     54.2%  21,236,246,200  (none)
+      5.5%   2,160,215,304  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      5.4%   2,112,482,768  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      4.4%   1,742,580,520  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apply
+      2.5%     963,895,280  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.renameKeywordPackages
+      2.1%     834,901,528  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      1.0%     381,183,824  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla
+      0.8%     329,449,880  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      0.8%     324,104,160  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      0.8%     314,651,440  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField
+      0.7%     282,146,296  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.check
+      0.7%     279,924,352  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.hasField
+      0.7%     274,165,960  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.7%     264,308,808  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest.start
+      0.7%     256,696,944  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.parseLang
+      0.6%     232,433,176  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0
+  outermost layer frame (inclusive entry):
+     18.8%   7,387,654,864  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call
+     10.9%   4,291,933,240  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      3.3%   1,310,405,024  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick
+      2.9%   1,144,399,952  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept
+      1.7%     676,246,776  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      1.2%     484,607,168  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick
+      0.9%     341,287,952  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest$$Lambda+0x000001fbe259e380.86587616.accept
+      0.8%     302,939,168  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept
+      0.6%     223,964,368  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place
+      0.5%     215,675,232  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept
+      0.5%     181,350,928  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e10228.1709591193.accept
+      0.3%     125,721,328  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes
+      0.3%     119,710,168  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.tick
+      0.3%     117,226,728  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+      0.3%     111,609,768  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept
+      0.2%      88,750,968  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get
+  entry <- caller outside the layer:
+     18.8%   7,387,654,864  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call  <-  java.util.concurrent.FutureTask.run
+     10.9%   4,291,933,240  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+      3.3%   1,310,405,024  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      2.9%   1,138,114,344  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.7%     676,246,776  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      1.2%     484,607,168  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      0.9%     341,287,952  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest$$Lambda+0x000001fbe259e380.86587616.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.7%     285,802,576  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept  <-  net.minecraft.world.level.levelgen.structure.Structure$GenerationStub.lambda$getPiecesBuilder$0
+      0.6%     223,964,368  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.5%     215,675,232  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.5%     181,350,928  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e10228.1709591193.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.3%     119,710,168  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.tick  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.tick
+      0.3%     111,609,768  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.2%      88,750,968  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get  <-  java.util.concurrent.CompletableFuture$AsyncSupply.run
+      0.2%      70,028,024  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome  <-  net.minecraft.world.level.biome.BiomeSource.findBiomeHorizontal
+      0.2%      68,930,392  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe2adf1c8.1023501050.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+
+## Allocation (sampled weight) / loading: 9,473,618,512 bytes; a layer frame on 66.6% of it
+  top self frames:
+     14.4%   1,363,080,968  java.io.InputStream.readNBytes
+      4.9%     465,683,776  java.util.Arrays.copyOfRangeByte
+      4.3%     408,972,224  org.objectweb.asm.tree.MethodNode.visitInsn
+      2.7%     255,012,208  java.lang.invoke.DirectMethodHandle.allocateInstance
+      2.6%     245,088,592  java.lang.reflect.Field.copy
+      2.3%     219,115,176  java.util.zip.InflaterInputStream.<init>
+      1.9%     178,995,336  java.util.Arrays.copyOf
+      1.9%     178,018,824  java.util.HashMap.newNode
+      1.9%     177,981,328  jdk.internal.misc.Unsafe.allocateUninitializedArray
+      1.9%     175,558,792  org.objectweb.asm.ClassReader.readLabel
+      1.8%     168,114,960  java.lang.StringUTF16.compress
+      1.7%     160,740,360  net.minecraft.world.phys.shapes.IndirectMerger.<init>
+      1.7%     159,091,336  org.objectweb.asm.tree.MethodNode.visitMethodInsn
+      1.7%     158,313,168  org.objectweb.asm.tree.MethodNode.visitVarInsn
+      1.6%     152,316,888  java.util.Arrays.copyOfRange
+      1.5%     146,150,576  net.minecraft.world.level.biome.Climate$Parameter.span
+  layer methods that are the top frame (own cost, no callee):
+      0.3%      28,643,936  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText
+      0.2%      23,599,368  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla
+      0.1%       8,385,664  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      0.1%       6,285,600  legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of
+      0.0%       4,193,136  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.modelsOf
+      0.0%       3,728,872  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.lambda$preventCollisions$2
+      0.0%       3,363,744  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.0%       3,238,728  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      0.0%       2,560,096  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.lambda$preventCollisions$0
+      0.0%       2,098,032  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.getPotionEffects
+      0.0%       2,096,568  org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaEntities1122.<clinit>
+      0.0%       2,096,536  org.kylepitcock.legacyconnector.v1_12_2.bridge.NetworkBridge1122$Channel.<init>
+      0.0%       2,094,528  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.createState
+      0.0%       2,094,528  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122$BlockGetterView.modern
+      0.0%       2,085,784  org.kylepitcock.legacyconnector.loader.LegacyModLocator.hashFile
+      0.0%       1,893,552  org.kylepitcock.legacyconnector.loader.synth.LegacyMethods.load
+    ... with their direct caller:
+      0.3%      28,643,936  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText  <-  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      0.2%      23,599,368  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla  <-  org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan.changes
+      0.1%       8,385,664  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.1%       6,285,600  legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of  <-  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.pos
+      0.0%       4,193,136  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.modelsOf  <-  org.kylepitcock.legacyconnector.v1_12_2.Assets1122.renderTypeOf
+      0.0%       3,728,872  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.lambda$preventCollisions$2  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper$$Lambda+0x000001fbe1297450.786032027.apply
+      0.0%       3,363,744  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect  <-  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      0.0%       3,238,728  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.scan
+      0.0%       2,560,096  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.lambda$preventCollisions$0  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper$$Lambda+0x000001fbe1297688.1719208017.apply
+      0.0%       2,096,568  org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaEntities1122.<clinit>  <-  org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.legacyClass
+      0.0%       2,096,568  legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.getPotionEffects  <-  thaumcraft.common.config.ConfigAspects.registerItemAspects
+      0.0%       2,096,536  org.kylepitcock.legacyconnector.v1_12_2.bridge.NetworkBridge1122$Channel.<init>  <-  org.kylepitcock.legacyconnector.v1_12_2.bridge.NetworkBridge1122$$Lambda+0x000001fbe1f78dd0.1677667209.apply
+      0.0%       2,094,528  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.createState  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.combine
+      0.0%       2,094,528  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122$BlockGetterView.modern  <-  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122$BlockGetterView.getBlockState
+      0.0%       2,085,784  org.kylepitcock.legacyconnector.loader.LegacyModLocator.hashFile  <-  org.kylepitcock.legacyconnector.loader.LegacyModLocator.fileDigest
+      0.0%       1,893,552  org.kylepitcock.legacyconnector.loader.synth.LegacyMethods.load  <-  org.kylepitcock.legacyconnector.loader.synth.LegacyMethods.of
+  innermost layer frame:
+     33.4%   3,164,687,320  (none)
+     12.4%   1,172,021,944  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apply
+     12.0%   1,133,033,128  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      4.2%     394,434,744  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      4.0%     381,183,824  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.applyToVanilla
+      3.4%     324,104,160  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      3.2%     304,298,616  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      2.9%     274,165,960  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.inspect
+      2.3%     219,255,920  org.kylepitcock.legacyconnector.v1_7_10.Platform1710.dispatch
+      1.4%     135,820,152  org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan.remap
+      1.3%     123,655,840  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      1.2%     112,084,232  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.staticTransformerRegistrations
+      1.1%     106,996,416  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.constantPoolText
+      1.1%      99,868,920  org.kylepitcock.legacyconnector.loader.LegacyJarInspector.addCoreModContainerIds
+      0.8%      79,660,208  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.8%      71,092,200  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.renameKeywordPackages
+  outermost layer frame (inclusive entry):
+     45.3%   4,291,933,240  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+     12.1%   1,144,399,952  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept
+      7.1%     676,246,776  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      0.6%      58,692,320  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getCollisionShape
+      0.6%      52,397,056  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.2%      15,150,824  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>
+      0.1%       8,382,456  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>
+      0.1%       7,285,008  org.kylepitcock.legacyconnector.v1_12_2.entity.VillagerTrades1122$$Lambda+0x000001fbe1e4d248.2014496621.accept
+      0.1%       6,289,128  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getShape
+      0.1%       6,276,360  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dca608.1220553272.accept
+      0.0%       4,191,928  org.kylepitcock.legacyconnector.vb1_7_3.PlayerApiLifecycleB173$$Lambda+0x000001fbe1dbd068.1611537172.get
+      0.0%       4,191,080  org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern
+      0.0%       4,178,976  org.kylepitcock.legacyconnector.core.LegacyLifecycle.runLoading
+      0.0%       2,098,696  org.kylepitcock.legacyconnector.v1_12_2.Platform1122.registryEvents
+      0.0%       2,098,032  org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122.generate
+      0.0%       2,097,608  legacyconnector.v1_7_10.net.minecraft.block.Block.getBlockFromName
+  entry <- caller outside the layer:
+     45.3%   4,291,933,240  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+     12.0%   1,138,114,344  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      7.1%     676,246,776  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      0.6%      52,403,264  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getCollisionShape  <-  net.minecraft.world.level.block.state.BlockBehaviour.getBlockSupportShape
+      0.6%      52,397,056  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.2%      15,150,824  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.handler$zkf000$legacyconnector$coremodCollision
+      0.1%       8,382,456  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>  <-  (root)
+      0.1%       7,285,008  org.kylepitcock.legacyconnector.v1_12_2.entity.VillagerTrades1122$$Lambda+0x000001fbe1e4d248.2014496621.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%       6,289,128  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getShape  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.getShape
+      0.1%       6,285,608  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dcbd68.2126637394.accept  <-  (root)
+      0.1%       6,276,360  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x000001fbe1dca608.1220553272.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.0%       4,192,488  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.getCollisionShape  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase$Cache.<init>
+      0.0%       4,191,928  org.kylepitcock.legacyconnector.vb1_7_3.PlayerApiLifecycleB173$$Lambda+0x000001fbe1dbd068.1611537172.get  <-  net.neoforged.neoforge.registries.DeferredRegister.lambda$register$0
+      0.0%       4,191,080  org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern  <-  (root)
+      0.0%       4,178,976  org.kylepitcock.legacyconnector.core.LegacyLifecycle.runLoading  <-  (root)
+      0.0%       2,098,696  org.kylepitcock.legacyconnector.v1_12_2.Platform1122.registryEvents  <-  (root)
+
+## Allocation (sampled weight) / other: 9,489,620,312 bytes; a layer frame on 78.1% of it
+  top self frames:
+     15.4%   1,463,124,832  java.io.InputStream.readNBytes
+     10.3%     976,023,352  java.util.Arrays.copyOfRangeByte
+      7.0%     666,614,304  jdk.internal.misc.Unsafe.allocateUninitializedArray
+      6.4%     602,828,056  java.lang.StringLatin1.newString
+      4.1%     387,551,488  java.lang.StringConcatHelper.newString
+      3.6%     342,211,832  org.objectweb.asm.tree.MethodNode.visitInsn
+      3.2%     301,008,720  org.objectweb.asm.Type.getObjectType
+      2.9%     270,686,688  java.util.Arrays.copyOf
+      2.5%     233,265,680  java.util.zip.InflaterInputStream.<init>
+      2.0%     190,932,656  java.util.HashMap.resize
+      1.7%     158,482,688  org.objectweb.asm.ByteVector.<init>
+      1.6%     153,200,048  java.util.regex.Pattern.compile
+      1.6%     151,909,368  org.objectweb.asm.tree.MethodNode.visitMethodInsn
+      1.5%     146,183,896  org.objectweb.asm.SymbolTable.addConstantUtf8Reference
+      1.5%     140,491,520  java.util.ArrayList.iterator
+      1.4%     137,509,848  java.util.HashMap.newNode
+  layer methods that are the top frame (own cost, no callee):
+      0.2%      20,957,072  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.parents
+      0.2%      17,172,440  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField
+      0.1%       8,385,072  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.findVirtualField
+      0.0%       4,303,584  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      0.0%       4,191,072  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.classRemapper
+      0.0%       3,176,064  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveMethod
+      0.0%       2,096,576  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.normalizePath
+      0.0%       2,045,264  org.kylepitcock.legacyconnector.loader.transform.WorldFloorClampRewriter.apply
+      0.0%         841,184  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.put
+      0.0%         743,968  org.kylepitcock.legacyconnector.loader.transform.ClientClassGuard.apply
+      0.0%         388,552  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.0%          20,640  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.modernizeApi
+      0.0%           5,784  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+      0.0%           1,464  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.breakOverrideCycles
+    ... with their direct caller:
+      0.2%      20,957,072  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.parents  <-  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField
+      0.2%      17,172,440  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.apply
+      0.1%       8,385,072  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.findVirtualField  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.virtualField
+      0.0%       4,303,584  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.0%       4,191,072  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.classRemapper  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.0%       2,096,576  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.normalizePath  <-  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.accept
+      0.0%       2,045,264  org.kylepitcock.legacyconnector.loader.transform.WorldFloorClampRewriter.apply  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.0%       1,759,880  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveMethod  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.check
+      0.0%       1,416,184  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveMethod  <-  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.missingMethod
+      0.0%         841,184  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.put  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.write
+      0.0%         743,968  org.kylepitcock.legacyconnector.loader.transform.ClientClassGuard.apply  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.0%         388,552  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform  <-  org.kylepitcock.legacyconnector.loader.TranslationPool.lambda$submit$1
+      0.0%          20,640  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.modernizeApi  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers$$Lambda+0x000001fbe1275640.1285287269.apply
+      0.0%           5,784  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch  <-  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.lambda$start$1
+      0.0%           1,464  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.breakOverrideCycles  <-  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.finish
+  innermost layer frame:
+     22.3%   2,112,482,768  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+     21.9%   2,077,210,992  (none)
+     10.8%   1,027,182,176  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.read
+      9.4%     892,803,080  org.kylepitcock.legacyconnector.loader.transform.LegacyRemapper.renameKeywordPackages
+      6.0%     570,558,576  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apply
+      4.6%     440,466,784  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.preventCollisions
+      3.3%     314,651,440  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.resolveField
+      3.0%     282,146,296  org.kylepitcock.legacyconnector.loader.transform.ShimLinker.check
+      2.9%     279,924,352  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.hasField
+      2.7%     256,696,944  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.parseLang
+      2.2%     210,158,688  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.hasMethod
+      1.4%     133,900,104  org.kylepitcock.legacyconnector.loader.resource.LegacyResourceConverter.accept
+      1.0%      95,848,400  org.kylepitcock.legacyconnector.loader.transform.Hierarchy.searchMethod
+      1.0%      95,111,944  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.absent
+      0.7%      70,632,400  org.kylepitcock.legacyconnector.loader.transform.JavaCompatRedirects.apply
+      0.7%      66,693,336  org.kylepitcock.legacyconnector.loader.transform.AbsentDependencyStubber.missing
+  outermost layer frame (inclusive entry):
+     77.8%   7,387,654,864  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call
+      0.2%      19,237,504  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers$$Lambda+0x000001fbe1276300.1095583342.run
+      0.1%       5,022,336  org.kylepitcock.legacyconnector.v1_7_10.bridge.CoreModPlugins$$Lambda+0x000001fbe1f10618.518494454.run
+      0.0%         345,192  org.kylepitcock.legacyconnector.core.ViewSweeper$$Lambda+0x000001fbe1e41520.610676357.run
+      0.0%          67,952  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x000001fbe1d4fb20.509549272.run
+  entry <- caller outside the layer:
+     77.8%   7,387,654,864  org.kylepitcock.legacyconnector.loader.TranslationPool$$Lambda+0x000001fbe1297cf0.22008252.call  <-  java.util.concurrent.FutureTask.run
+      0.2%      19,237,504  org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers$$Lambda+0x000001fbe1276300.1095583342.run  <-  java.lang.Thread.runWith
+      0.1%       5,022,336  org.kylepitcock.legacyconnector.v1_7_10.bridge.CoreModPlugins$$Lambda+0x000001fbe1f10618.518494454.run  <-  java.lang.Thread.runWith
+      0.0%         345,192  org.kylepitcock.legacyconnector.core.ViewSweeper$$Lambda+0x000001fbe1e41520.610676357.run  <-  java.lang.Thread.runWith
+      0.0%          67,952  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x000001fbe1d4fb20.509549272.run  <-  java.lang.Thread.runWith
+
+## Allocation (sampled weight) / server: 7,180,697,632 bytes; a layer frame on 47.7% of it
+  top self frames:
+     31.7%   2,279,440,000  net.minecraft.world.level.chunk.PalettedContainer.pack
+      6.0%     427,474,176  java.lang.invoke.DirectMethodHandle.allocateInstance
+      5.3%     377,937,096  net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap.grow
+      3.9%     283,271,760  net.minecraft.world.level.biome.Climate$Parameter.span
+      2.7%     196,679,448  java.util.stream.MatchOps.lambda$makeRef$0
+      2.5%     181,350,928  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>
+      2.1%     148,308,528  com.google.common.collect.ImmutableMapEntry.createEntryArray
+      1.9%     137,260,552  java.lang.Object.clone
+      1.8%     131,493,432  jdk.internal.misc.Unsafe.allocateUninitializedArray
+      1.7%     125,214,928  net.neoforged.neoforge.event.EventHooks.canCreateFluidSource
+      1.6%     116,278,608  java.util.Arrays.copyOf
+      1.4%      97,250,616  net.minecraft.core.BlockPos.relative
+      1.3%      96,823,000  java.util.stream.StreamSupport.stream
+      1.2%      85,452,240  com.mojang.serialization.DataResult.success
+      1.0%      70,596,616  net.minecraft.world.level.material.FlowingFluid.canPassThroughWall
+      0.9%      66,321,144  jdk.internal.misc.Unsafe.allocateInstance
+  layer methods that are the top frame (own cost, no callee):
+      2.5%     181,350,928  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>
+      0.4%      30,807,832  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.<init>
+      0.4%      30,051,704  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox
+      0.4%      28,814,672  legacyconnector.v1_7_10.net.minecraft.world.World.pos
+      0.2%      16,100,792  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.getControllingPassenger
+      0.2%      15,831,984  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity
+      0.2%      15,014,272  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$modern
+      0.2%      13,380,776  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap
+      0.1%       9,718,400  legacyconnector.v1_12_2.net.minecraft.world.World.modern
+      0.1%       7,510,600  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.isPushedByFluid
+      0.1%       6,927,368  legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.add
+      0.1%       4,897,288  legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of
+      0.1%       4,473,936  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.lambda$register$49
+      0.1%       4,192,544  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.doPush
+      0.1%       3,986,160  legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.grow
+      0.1%       3,852,400  legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart.mcc$state
+    ... with their direct caller:
+      2.5%     181,350,928  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.lambda$register$36
+      0.4%      29,900,560  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox  <-  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.expand
+      0.4%      28,663,480  legacyconnector.v1_7_10.net.minecraft.world.World.pos  <-  legacyconnector.v1_7_10.net.minecraft.world.World.isAirBlock
+      0.3%      20,945,640  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.<init>  <-  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap
+      0.2%      14,004,224  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.getControllingPassenger  <-  net.minecraft.world.entity.LivingEntity.maxUpStep
+      0.2%      13,379,304  legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase.mcc$wrap  <-  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.getTag
+      0.2%      12,793,960  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity  <-  train.common.core.handlers.CollisionHandler.handleCollisions
+      0.2%      12,768,576  legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$modern  <-  legacyconnector.v1_7_10.net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity
+      0.1%       9,862,192  legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.<init>  <-  legacyconnector.v1_12_2.net.minecraft.entity.Entity.getEntityData
+      0.1%       8,110,800  legacyconnector.v1_12_2.net.minecraft.world.World.modern  <-  legacyconnector.v1_12_2.net.minecraft.world.World.getBlockState
+      0.1%       6,776,160  legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.add  <-  com.dhanantry.scapeandrunparasites.block.BlockNodeRelay.findNearbyController
+      0.1%       5,412,568  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.isPushedByFluid  <-  net.neoforged.neoforge.common.extensions.IEntityExtension.isPushedByFluid
+      0.1%       4,473,936  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.lambda$register$49  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e12710.1117849609.accept
+      0.1%       4,192,544  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.doPush  <-  net.minecraft.world.entity.LivingEntity.pushEntities
+      0.1%       3,986,160  legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.grow  <-  com.dhanantry.scapeandrunparasites.entity.ai.EntityAINearestAttackableTargetStatus.getTargetableArea
+      0.1%       3,852,400  legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart.mcc$state  <-  legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart.mcc$railShape
+  innermost layer frame:
+     52.3%   3,755,031,728  (none)
+      3.7%     264,308,808  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest.start
+      3.0%     215,675,232  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest.run
+      2.7%     196,015,176  legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAITasks$$Lambda+0x000001fbe2b13be8.1095348927.run
+      2.6%     186,618,944  legacyconnector.v1_12_2.net.minecraft.world.World.getEntitiesWithinAABB
+      2.6%     184,856,528  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.travel
+      2.5%     181,350,928  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>
+      2.4%     169,088,864  legacyconnector.v1_7_10.net.minecraft.entity.Entity.moveEntity
+      2.1%     151,338,720  legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation.toString
+      1.7%     125,029,800  org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement.vanillaOverworld
+      1.7%     119,460,624  legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.values
+      1.4%     101,045,272  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.mcc$superBaseTick
+      1.3%      93,814,384  legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNavigate.getPathToEntityLiving
+      1.2%      82,585,408  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.mcc$superTick
+      1.1%      77,378,200  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.mcc$superBaseTick
+      1.0%      68,930,392  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.lambda$run$1
+  outermost layer frame (inclusive entry):
+     18.2%   1,310,405,024  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick
+      6.7%     484,607,168  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick
+      4.8%     341,287,952  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest$$Lambda+0x000001fbe259e380.86587616.accept
+      3.0%     215,675,232  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept
+      2.5%     181,350,928  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e10228.1709591193.accept
+      1.8%     125,721,328  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes
+      1.7%     119,710,168  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.tick
+      1.6%     111,609,768  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept
+      1.0%      68,930,392  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe2adf1c8.1023501050.accept
+      0.9%      66,653,736  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyMobHost.tick
+      0.9%      63,684,792  org.kylepitcock.legacyconnector.v1_12_2.entity.EntityHost1122.tick
+      0.8%      57,695,760  org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122$$Lambda+0x000001fbe1db4ac8.1665656553.accept
+      0.7%      49,449,392  org.kylepitcock.legacyconnector.v1_7_10.entity.DimensionSelfTest$$Lambda+0x000001fbe259f698.351595984.accept
+      0.6%      45,185,608  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe259a000.836109585.accept
+      0.6%      41,676,624  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x000001fbe1e4f810.1647225883.accept
+      0.4%      26,390,248  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.addAdditionalSaveData
+  entry <- caller outside the layer:
+     18.2%   1,310,405,024  org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      6.7%     484,607,168  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyEntityHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      4.8%     341,287,952  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest$$Lambda+0x000001fbe259e380.86587616.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      3.0%     215,675,232  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest$$Lambda+0x000001fbe259fac0.1822527947.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      2.5%     181,350,928  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x000001fbe1e10228.1709591193.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.7%     119,710,168  org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.tick  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.tick
+      1.6%     111,609,768  org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest$$Lambda+0x000001fbe259f048.1097270533.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.0%      68,930,392  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe2adf1c8.1023501050.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.9%      66,653,736  org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyMobHost.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      0.9%      61,588,232  org.kylepitcock.legacyconnector.v1_12_2.entity.EntityHost1122.tick  <-  net.minecraft.server.level.ServerLevel.tickNonPassenger
+      0.8%      59,340,816  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes  <-  terrablender.worldgen.noise.InitialLayer.lambda$createEntries$1
+      0.8%      58,693,920  org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.addBiomes  <-  terrablender.util.LevelUtils.lambda$initializeBiomes$1
+      0.8%      57,695,760  org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122$$Lambda+0x000001fbe1db4ac8.1665656553.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+      0.7%      49,449,392  org.kylepitcock.legacyconnector.v1_7_10.entity.DimensionSelfTest$$Lambda+0x000001fbe259f698.351595984.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.6%      45,017,696  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest$$Lambda+0x000001fbe259a000.836109585.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.6%      41,676,624  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x000001fbe1e4f810.1647225883.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+
+## Allocation (sampled weight) / worker: 13,072,426,368 bytes; a layer frame on 6.4% of it
+  top self frames:
+     29.2%   3,823,357,672  com.google.common.collect.Iterators.forArray
+     11.5%   1,506,489,696  java.lang.invoke.DirectMethodHandle.allocateInstance
+      4.4%     572,925,128  com.google.common.base.Suppliers.memoize
+      3.7%     487,385,968  java.lang.Object.clone
+      3.6%     469,229,776  net.minecraft.world.level.levelgen.DensityFunctions$Ap2.fillArray
+      2.8%     368,995,840  net.minecraft.world.level.levelgen.DensityFunctions$HolderHolder.mapAll
+      2.4%     310,432,008  net.minecraft.world.level.levelgen.Aquifer$NoiseBasedAquifer.computeSubstance
+      2.2%     282,422,856  net.minecraft.world.level.levelgen.XoroshiroRandomSource.<init>
+      2.1%     269,643,056  java.util.stream.StreamSupport.stream
+      2.1%     269,159,456  java.util.Optional.of
+      1.7%     218,659,648  it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap.<init>
+      1.0%     130,109,720  net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction.create
+      1.0%     128,706,600  jdk.internal.misc.Unsafe.allocateInstance
+      1.0%     128,502,048  net.minecraft.world.level.levelgen.XoroshiroRandomSource$XoroshiroPositionalRandomFactory.at
+      1.0%     127,525,896  net.minecraft.world.level.levelgen.DensityFunctions$MarkerOrMarked.mapAll
+      0.9%     118,620,752  it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue.resize
+  layer methods that are the top frame (own cost, no callee):
+      0.2%      24,495,640  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>
+      0.2%      21,212,312  legacyconnector.v1_7_10.net.minecraft.world.World.pos
+      0.1%      11,172,232  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.provideChunk
+      0.0%       4,167,032  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block
+      0.0%       3,136,544  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenTallGrass.generate
+      0.0%       2,433,912  legacyconnector.v1_7_10.net.minecraft.world.World.modernSurface
+      0.0%       2,104,128  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.add
+      0.0%       1,305,616  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.getBlockStorageArray
+      0.0%       1,022,504  legacyconnector.v1_12_2.net.minecraft.profiler.Profiler.<init>
+      0.0%         957,920  legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrapSlow
+      0.0%         853,048  legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>
+      0.0%         847,912  legacyconnector.v1_12_2.net.minecraft.world.Teleporter.<init>
+      0.0%         730,728  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.guarded
+      0.0%         729,992  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite
+      0.0%         673,808  legacyconnector.v1_7_10.net.minecraft.world.World.mcc$chunkOrNull
+      0.0%         542,200  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard$Journal.<init>
+    ... with their direct caller:
+      0.1%      16,981,032  legacyconnector.v1_7_10.net.minecraft.world.World.pos  <-  legacyconnector.v1_7_10.net.minecraft.world.World.setBlock
+      0.1%      11,506,264  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>  <-  com.emoniph.witchery.dimension.WorldChunkManagerTorment.provideChunk
+      0.1%      11,172,232  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.provideChunk  <-  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.1%       7,678,976  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>  <-  com.emoniph.witchery.dimension.WorldChunkManagerMirror.provideChunk
+      0.0%       4,841,664  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>  <-  legacyconnector.v1_7_10.net.minecraft.world.World.mcc$chunkOrNull
+      0.0%       4,231,280  legacyconnector.v1_7_10.net.minecraft.world.World.pos  <-  legacyconnector.v1_7_10.net.minecraft.world.World.setBlockToAir
+      0.0%       4,167,032  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block  <-  legacyconnector.v1_7_10.net.minecraft.world.World.lambda$deferOutsideRegion$4
+      0.0%       3,136,544  legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenTallGrass.generate  <-  legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeDecorator.genDecorations
+      0.0%       2,433,912  legacyconnector.v1_7_10.net.minecraft.world.World.modernSurface  <-  legacyconnector.v1_7_10.net.minecraft.world.World.surface
+      0.0%       2,104,128  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.add  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block
+      0.0%       1,305,616  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.getBlockStorageArray  <-  com.emoniph.witchery.dimension.WorldChunkManagerTorment.provideChunk
+      0.0%       1,022,504  legacyconnector.v1_12_2.net.minecraft.profiler.Profiler.<init>  <-  legacyconnector.v1_12_2.net.minecraft.world.World.<init>
+      0.0%         957,920  legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrapSlow  <-  legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap
+      0.0%         853,048  legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>  <-  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap
+      0.0%         847,912  legacyconnector.v1_12_2.net.minecraft.world.Teleporter.<init>  <-  legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>
+      0.0%         730,728  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.guarded  <-  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run
+  innermost layer frame:
+     93.6%  12,239,316,160  (none)
+      1.8%     232,433,176  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0
+      1.6%     207,761,456  legacyconnector.v1_12_2.net.minecraft.world.Teleporter.<init>
+      0.7%      88,345,008  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.id
+      0.4%      57,448,488  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.groundY
+      0.3%      43,732,160  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+      0.3%      35,664,824  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.tryPlace
+      0.2%      30,342,472  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.levelKey
+      0.2%      24,495,640  legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.<init>
+      0.2%      21,212,312  legacyconnector.v1_7_10.net.minecraft.world.World.pos
+      0.1%      12,433,792  org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge.spawn
+      0.1%      11,172,232  legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate.provideChunk
+      0.0%       6,254,936  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block
+      0.0%       5,911,504  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+      0.0%       5,385,336  org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.add
+      0.0%       5,357,744  legacyconnector.v1_7_10.net.minecraft.world.World.getBiomeGenForCoords
+  outermost layer frame (inclusive entry):
+      2.3%     302,939,168  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept
+      1.7%     223,964,368  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place
+      0.9%     117,226,728  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+      0.7%      88,750,968  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get
+      0.2%      27,380,848  org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature.place
+      0.2%      27,333,904  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.applyBiomeDecoration
+      0.1%      14,385,432  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillagePoolElement.place
+      0.1%       7,845,792  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$2
+      0.0%       5,993,744  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2a74b78.241508510.accept
+      0.0%       4,251,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.add
+      0.0%       2,530,016  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.tryPlace
+      0.0%       2,226,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature.place
+      0.0%       1,826,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710$$Lambda+0x000001fbe1e67620.40054180.accept
+      0.0%       1,593,896  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.groundY
+      0.0%       1,061,776  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$0
+      0.0%       1,056,352  org.kylepitcock.legacyconnector.v1_12_2.bridge.LootTables1122$$Lambda+0x000001fbe1db23f8.2139584352.accept
+  entry <- caller outside the layer:
+      2.2%     285,802,576  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept  <-  net.minecraft.world.level.levelgen.structure.Structure$GenerationStub.lambda$getPiecesBuilder$0
+      1.7%     223,964,368  org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.7%      88,750,968  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator$$Lambda+0x000001fbe2a74000.1533515797.get  <-  java.util.concurrent.CompletableFuture$AsyncSupply.run
+      0.5%      70,028,024  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome  <-  net.minecraft.world.level.biome.BiomeSource.findBiomeHorizontal
+      0.4%      46,529,688  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome  <-  net.minecraft.world.level.chunk.LevelChunkSection.fillBiomesFromNoise
+      0.2%      27,380,848  org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.2%      27,333,904  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.applyBiomeDecoration  <-  net.minecraft.world.level.chunk.status.ChunkStatusTasks.generateFeatures
+      0.1%      17,136,592  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2982708.650732823.accept  <-  (root)
+      0.1%      14,385,432  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillagePoolElement.place  <-  net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece.place
+      0.1%       7,845,792  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.lambda$wrap$2  <-  (root)
+      0.0%       5,000,928  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions$$Lambda+0x000001fbe2a74b78.241508510.accept  <-  com.mojang.datafixers.util.Either$Left.ifLeft
+      0.0%       4,251,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.add  <-  (root)
+      0.0%       2,530,016  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.tryPlace  <-  (root)
+      0.0%       2,226,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.0%       1,826,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710$$Lambda+0x000001fbe1e67620.40054180.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+      0.0%       1,593,896  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.groundY  <-  (root)
+
+## Top allocated classes (bytes)
+     8,448,716,880  [B
+     3,950,618,192  com.google.common.collect.Iterators$ArrayItr
+     2,875,333,888  [I
+     1,775,053,328  java.lang.String
+     1,032,374,816  [Ljava.lang.Object;
+       872,587,320  [J
+       751,184,056  org.objectweb.asm.tree.InsnNode
+       723,566,112  [D
+       718,394,952  net.minecraft.world.level.levelgen.SurfaceRules$Context$$Lambda+0x000001fbe293bc80.532106439
+       572,925,128  com.google.common.base.Suppliers$NonSerializableMemoizingSupplier
+       503,375,328  net.minecraft.core.BlockPos
+       466,014,872  net.minecraft.world.level.levelgen.NoiseChunk$$Lambda+0x000001fbe2927968.145357784
+       452,833,328  java.util.HashMap$Node
+       432,570,336  org.objectweb.asm.Type
+       430,152,936  net.minecraft.world.level.biome.Climate$Parameter
+       413,770,352  java.util.stream.ReferencePipeline$Head
+
+## GC: 129 collections, total pause 1629 ms, max pause 103 ms; heap after GC min 13 MB, max 1489 MB, last 928 MB
+
+## Thread park (ms) by layer frame
+   3,489,258  (no layer frame)
+      31,315  org.kylepitcock.legacyconnector.loader.TranslationPool.take
+         462  org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.run
+         154  org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest.run
+          91  org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest.start
+          72  org.kylepitcock.legacyconnector.core.LegacyModLocks.generation
+          19  org.kylepitcock.legacyconnector.v1_7_10.entity.DimensionSelfTest.run
+          10  legacyconnector.v1_7_10.net.minecraft.village.VillageCollection.mcc$refresh
+          10  org.kylepitcock.legacyconnector.compat.b173.BlockFamiliesSelfTest.run
+
+## Monitor contention (ms) by layer frame
+       2,256  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.lambda$fillFromNoise$3
+       1,023  (no layer frame)
+         552  org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaEquivalents.block
+         460  org.kylepitcock.legacyconnector.loader.LegacyModLocator.lambda$findCandidates$11
+         290  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+          80  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.getNoiseBiome
+          47  org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.applyBiomeDecoration

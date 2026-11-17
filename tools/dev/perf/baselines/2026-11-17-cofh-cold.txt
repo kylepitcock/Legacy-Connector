@@ -1,0 +1,608 @@
+﻿cpu samples 1,815 (20 ms profile interval => about 36 s of sampled thread time)
+
+## CPU samples / ALL: 1,815 samples; a layer frame on 13.5% of it
+  top self frames:
+     14.8%             269  net.minecraft.world.level.levelgen.synth.ImprovedNoise.p
+      7.5%             136  net.minecraft.world.level.biome.Climate$RTree$SubTree.search
+      7.3%             132  net.minecraft.server.level.GenerationChunkHolder.getChunkIfPresentUnchecked
+      4.4%              79  net.minecraft.world.level.levelgen.synth.PerlinNoise.getValue
+      4.0%              73  com.mojang.datafixers.functions.PointFree.evalCached
+      3.5%              64  net.minecraft.world.level.levelgen.Aquifer$NoiseBasedAquifer.computeSubstance
+      1.8%              33  net.minecraft.world.level.levelgen.SurfaceRules$TestRule.tryApply
+      1.5%              27  net.minecraft.world.level.levelgen.SurfaceSystem.buildSurface
+      1.3%              24  java.util.concurrent.CompletableFuture.getNow
+      1.2%              21  com.mojang.datafixers.optics.Prism$$Lambda+0x00000200b412fd60.1739692883.apply
+      1.2%              21  com.mojang.datafixers.functions.ProfunctorTransformer$$Lambda+0x00000200b412a000.273791087.apply
+      1.1%              20  java.lang.invoke.DirectMethodHandle.allocateInstance
+      1.0%              19  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.9%              17  net.minecraft.world.level.levelgen.NoiseChunk$NoiseInterpolator.compute
+      0.9%              16  net.minecraft.world.level.chunk.ProtoChunk.setBlockState
+      0.8%              14  com.mojang.datafixers.optics.Adapter$$Lambda+0x00000200b409d528.776184473.apply
+  layer methods that are the top frame (own cost, no callee):
+      1.0%              19  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.ForgeApiRewrites1201.apply
+      0.1%               1  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load
+      0.1%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.entityEntriesAfter
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.PalladiumKubeJS1201.rewriteLegacyBuilderApi
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Datagen1201.apply
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initBlocks
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initItemIds
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+    ... with their direct caller:
+      1.0%              19  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.1%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.entityEntriesAfter  <-  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities.replay
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.PalladiumKubeJS1201.rewriteLegacyBuilderApi  <-  org.kylepitcock.legacyconnector.loader.transform.PalladiumKubeJS1201.apply
+      0.1%               1  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load  <-  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.<init>
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Migration.rewriteBody
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.Datagen1201.apply  <-  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve  <-  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.fieldMissing
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initItemIds  <-  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.itemId
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initBlocks  <-  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.blockId
+      0.1%               1  org.kylepitcock.legacyconnector.loader.transform.ForgeApiRewrites1201.apply  <-  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+  innermost layer frame:
+     86.5%           1,570  (none)
+      7.7%             139  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      1.7%              31  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.6%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      0.4%               7  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      0.3%               6  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.3%               5  org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.mobSettings
+      0.2%               4  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.2%               3  org.kylepitcock.legacyconnector.loader.transform.Datagen1201.datagenName
+      0.2%               3  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load
+      0.1%               2  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+      0.1%               2  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+      0.1%               2  org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.renamedMember
+      0.1%               2  org.kylepitcock.legacyconnector.loader.LegacyModLocator.loadShimIndex
+      0.1%               2  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+      0.1%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.modernised
+  outermost layer frame (inclusive entry):
+      8.3%             150  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      2.0%              36  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      0.4%               8  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>
+      0.4%               8  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>
+      0.4%               7  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>
+      0.3%               5  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.legacyDamage
+      0.2%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem
+      0.2%               3  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x00000200b3e35e80.131126731.contribute
+      0.2%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.initVanilla
+      0.2%               3  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      0.1%               2  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept
+      0.1%               2  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x00000200b3d6f680.424048166.run
+      0.1%               2  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage
+      0.1%               2  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.1%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults
+      0.1%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaReverse
+  entry <- caller outside the layer:
+      8.2%             148  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      2.0%              36  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+      0.4%               7  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.4%               7  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>  <-  (root)
+      0.3%               6  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>  <-  java.lang.Class.forName0
+      0.3%               5  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.legacyDamage  <-  (root)
+      0.2%               3  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item  <-  (root)
+      0.2%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem  <-  (root)
+      0.2%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.initVanilla  <-  (root)
+      0.2%               3  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x00000200b3e35e80.131126731.contribute  <-  (root)
+      0.1%               2  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.1%               2  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage  <-  (root)
+      0.1%               2  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>  <-  (root)
+      0.1%               2  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x00000200b3d6f680.424048166.run  <-  java.lang.Thread.runWith
+      0.1%               2  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%               2  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  (root)
+
+## CPU samples / loading: 553 samples; a layer frame on 42.9% of it
+  top self frames:
+     13.2%              73  com.mojang.datafixers.functions.PointFree.evalCached
+      3.8%              21  com.mojang.datafixers.optics.Prism$$Lambda+0x00000200b412fd60.1739692883.apply
+      3.8%              21  com.mojang.datafixers.functions.ProfunctorTransformer$$Lambda+0x00000200b412a000.273791087.apply
+      3.4%              19  java.lang.invoke.DirectMethodHandle.allocateInstance
+      3.4%              19  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      2.5%              14  com.mojang.datafixers.optics.Adapter$$Lambda+0x00000200b409d528.776184473.apply
+      2.2%              12  com.google.common.collect.RegularImmutableMap.get
+      2.2%              12  com.mojang.datafixers.FunctionType$Instance.lambda$dimap$0
+      1.6%               9  java.util.HashMap.putVal
+      1.6%               9  com.mojang.datafixers.optics.Optic$CompositionOptic.applyUnchecked
+      1.6%               9  java.util.concurrent.ConcurrentHashMap.computeIfAbsent
+      1.4%               8  com.mojang.datafixers.optics.Lens$$Lambda+0x00000200b409d780.827788988.apply
+      1.3%               7  com.mojang.datafixers.DataFix.lambda$checked$3
+      1.1%               6  com.mojang.datafixers.functions.Comp.lambda$eval$2
+      1.1%               6  java.lang.Class.copyFields
+      1.1%               6  java.util.function.Function.lambda$compose$0
+  layer methods that are the top frame (own cost, no callee):
+      3.4%              19  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.ForgeApiRewrites1201.apply
+      0.2%               1  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.PalladiumKubeJS1201.rewriteLegacyBuilderApi
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Datagen1201.apply
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initBlocks
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initItemIds
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+    ... with their direct caller:
+      3.4%              19  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.PalladiumKubeJS1201.rewriteLegacyBuilderApi  <-  org.kylepitcock.legacyconnector.loader.transform.PalladiumKubeJS1201.apply
+      0.2%               1  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load  <-  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.<init>
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item  <-  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Migration.rewriteBody
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform  <-  org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.transform
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Datagen1201.apply  <-  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve  <-  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.fieldMissing
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initItemIds  <-  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.itemId
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.initBlocks  <-  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.blockId
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.ForgeApiRewrites1201.apply  <-  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+  innermost layer frame:
+     57.1%             316  (none)
+     25.1%             139  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      5.6%              31  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      2.0%              11  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      1.3%               7  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      1.1%               6  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.9%               5  org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.mobSettings
+      0.7%               4  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.5%               3  org.kylepitcock.legacyconnector.loader.transform.Datagen1201.datagenName
+      0.5%               3  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load
+      0.4%               2  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+      0.4%               2  org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.renamedMember
+      0.4%               2  org.kylepitcock.legacyconnector.loader.LegacyModLocator.loadShimIndex
+      0.4%               2  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+      0.2%               1  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.modernised
+      0.2%               1  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.minecraftAncestors
+  outermost layer frame (inclusive entry):
+     27.1%             150  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      6.5%              36  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      1.4%               8  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>
+      1.4%               8  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>
+      1.3%               7  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>
+      0.9%               5  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.legacyDamage
+      0.5%               3  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      0.5%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem
+      0.5%               3  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x00000200b3e35e80.131126731.contribute
+      0.5%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.initVanilla
+      0.4%               2  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage
+      0.4%               2  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.2%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults
+      0.2%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaReverse
+      0.2%               1  legacyconnector.v1_7_10.net.minecraft.item.ItemSeeds.<init>
+      0.2%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generateTags
+  entry <- caller outside the layer:
+     26.8%             148  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      6.5%              36  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+      1.3%               7  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>  <-  (root)
+      1.3%               7  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      1.1%               6  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>  <-  java.lang.Class.forName0
+      0.9%               5  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.legacyDamage  <-  (root)
+      0.5%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.initVanilla  <-  (root)
+      0.5%               3  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x00000200b3e35e80.131126731.contribute  <-  (root)
+      0.5%               3  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item  <-  (root)
+      0.5%               3  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem  <-  (root)
+      0.4%               2  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  (root)
+      0.4%               2  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.4%               2  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage  <-  (root)
+      0.4%               2  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>  <-  (root)
+      0.2%               1  legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel.registerObject  <-  cofh.lib.common.network.PacketHandler.<init>
+      0.2%               1  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults  <-  (root)
+
+## CPU samples / other: 39 samples; a layer frame on 5.1% of it
+  top self frames:
+      5.1%               2  java.lang.String.getBytes
+      5.1%               2  sun.security.util.math.intpoly.IntegerPolynomial$MutableElement.setDifference
+      5.1%               2  java.io.DataOutputStream.write
+      5.1%               2  java.lang.Character.toUpperCase
+      5.1%               2  org.objectweb.asm.ClassReader.readMethod
+      2.6%               1  net.minecraft.nbt.CompoundTag.write
+      2.6%               1  java.util.Collections$UnmodifiableCollection.contains
+      2.6%               1  java.util.zip.DeflaterOutputStream.write
+      2.6%               1  java.util.concurrent.ThreadPoolExecutor.runWorker
+      2.6%               1  sun.nio.ch.FileDispatcherImpl.size
+      2.6%               1  java.util.concurrent.locks.AbstractQueuedSynchronizer.signalNext
+      2.6%               1  org.objectweb.asm.ClassReader.readUtf
+      2.6%               1  sun.nio.fs.WindowsPath.elementAsString
+      2.6%               1  sun.nio.fs.WindowsFileSystemProvider.implDelete
+      2.6%               1  java.lang.String.join
+      2.6%               1  org.apache.logging.log4j.core.layout.AbstractStringLayout.getStringBuilder
+  layer methods that are the top frame (own cost, no callee):
+    ... with their direct caller:
+  innermost layer frame:
+     94.9%              37  (none)
+      5.1%               2  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+  outermost layer frame (inclusive entry):
+      5.1%               2  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x00000200b3d6f680.424048166.run
+  entry <- caller outside the layer:
+      5.1%               2  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x00000200b3d6f680.424048166.run  <-  java.lang.Thread.runWith
+
+## CPU samples / server: 78 samples; a layer frame on 5.1% of it
+  top self frames:
+     11.5%               9  net.minecraft.world.level.chunk.PalettedContainer.lambda$pack$11
+      6.4%               5  net.minecraft.util.debugchart.DebugSampleSubscriptionTracker.handleUnsubscriptions
+      3.8%               3  net.minecraft.util.debugchart.DebugSampleSubscriptionTracker.handleSubscriptions
+      3.8%               3  net.minecraft.server.level.ChunkHolder.getTickingChunk
+      3.8%               3  com.mojang.serialization.Codec$2.encode
+      2.6%               2  net.minecraft.server.MinecraftServer.runServer
+      2.6%               2  net.minecraft.server.level.ServerChunkCache.tickChunks$mixinextras$wrapped$61
+      2.6%               2  net.minecraft.world.level.chunk.HashMapPalette.idFor
+      2.6%               2  net.minecraft.server.level.ChunkMap.processUnloads
+      2.6%               2  java.util.IdentityHashMap.get
+      2.6%               2  java.lang.invoke.LambdaForm$DMH+0x00000200b44c0c00.1202000606.newInvokeSpecial
+      2.6%               2  java.util.EnumMap$ValueIterator.<init>
+      2.6%               2  net.minecraft.nbt.CompoundTag.putString
+      2.6%               2  net.minecraft.world.level.biome.Climate$RTree.lambda$comparator$3
+      2.6%               2  net.minecraft.world.level.chunk.PalettedContainer.pack
+      2.6%               2  org.objectweb.asm.ClassReader.readCode
+  layer methods that are the top frame (own cost, no callee):
+      1.3%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.entityEntriesAfter
+    ... with their direct caller:
+      1.3%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.entityEntriesAfter  <-  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities.replay
+  innermost layer frame:
+     94.9%              74  (none)
+      1.3%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.entityEntriesAfter
+      1.3%               1  org.kylepitcock.legacyconnector.compat.b173.BlockFamiliesSelfTest.run
+      1.3%               1  org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.onServerTickPost
+      1.3%               1  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.guis
+  outermost layer frame (inclusive entry):
+      2.6%               2  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept
+      1.3%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities$$Lambda+0x00000200b3e2e7e0.1235568951.accept
+      1.3%               1  org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime$$Lambda+0x00000200b3d62ed0.653802823.accept
+  entry <- caller outside the layer:
+      2.6%               2  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.3%               1  org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities$$Lambda+0x00000200b3e2e7e0.1235568951.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      1.3%               1  org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime$$Lambda+0x00000200b3d62ed0.653802823.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+
+## CPU samples / worker: 1,145 samples; a layer frame on 0.2% of it
+  top self frames:
+     23.5%             269  net.minecraft.world.level.levelgen.synth.ImprovedNoise.p
+     11.9%             136  net.minecraft.world.level.biome.Climate$RTree$SubTree.search
+     11.5%             132  net.minecraft.server.level.GenerationChunkHolder.getChunkIfPresentUnchecked
+      6.9%              79  net.minecraft.world.level.levelgen.synth.PerlinNoise.getValue
+      5.6%              64  net.minecraft.world.level.levelgen.Aquifer$NoiseBasedAquifer.computeSubstance
+      2.9%              33  net.minecraft.world.level.levelgen.SurfaceRules$TestRule.tryApply
+      2.4%              27  net.minecraft.world.level.levelgen.SurfaceSystem.buildSurface
+      2.1%              24  java.util.concurrent.CompletableFuture.getNow
+      1.5%              17  net.minecraft.world.level.levelgen.NoiseChunk$NoiseInterpolator.compute
+      1.4%              16  net.minecraft.world.level.chunk.ProtoChunk.setBlockState
+      1.2%              14  net.minecraft.world.level.biome.Climate$RTree$Node.distance
+      1.1%              13  java.util.ArrayList.forEach
+      1.0%              12  net.minecraft.world.level.levelgen.SurfaceRules$LazyCondition.test
+      1.0%              11  java.util.ImmutableCollections$SetN.probe
+      0.9%              10  java.lang.ThreadLocal$ThreadLocalMap.cleanSomeSlots
+      0.9%              10  net.minecraft.util.CubicSpline$Multipoint.create
+  layer methods that are the top frame (own cost, no callee):
+    ... with their direct caller:
+  innermost layer frame:
+     99.8%           1,143  (none)
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.bridge.LootTables1122.onLoad
+      0.1%               1  org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.boxes
+  outermost layer frame (inclusive entry):
+      0.1%               1  org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature.place
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.bridge.LootTables1122$$Lambda+0x00000200b3e02cb8.1062041111.accept
+  entry <- caller outside the layer:
+      0.1%               1  org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature.place  <-  net.minecraft.world.level.levelgen.feature.Feature.place
+      0.1%               1  org.kylepitcock.legacyconnector.v1_12_2.bridge.LootTables1122$$Lambda+0x00000200b3e02cb8.1062041111.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+
+## Allocation (sampled weight) / ALL: 16,007,576,136 bytes; a layer frame on 21.5% of it
+  top self frames:
+     28.2%   4,519,903,424  java.lang.invoke.DirectMethodHandle.allocateInstance
+      6.0%     957,285,136  com.google.common.collect.Iterators.forArray
+      4.2%     665,962,048  java.io.InputStream.readNBytes
+      3.7%     584,849,472  com.mojang.datafixers.util.Either.right
+      2.5%     401,842,640  jdk.internal.misc.Unsafe.allocateInstance
+      2.1%     339,796,152  net.minecraft.world.level.chunk.PalettedContainer.pack
+      2.0%     317,348,560  jdk.internal.misc.Unsafe.allocateUninitializedArray
+      1.7%     273,710,912  java.util.Arrays.copyOfRangeByte
+      1.7%     265,184,664  java.util.zip.InflaterInputStream.<init>
+      1.5%     242,033,192  com.mojang.datafixers.util.Pair.of
+      1.3%     200,180,600  java.util.Arrays.copyOf
+      1.2%     191,746,800  net.minecraft.world.level.biome.Climate$Parameter.span
+      1.2%     189,506,048  java.lang.reflect.Field.copy
+      1.1%     172,901,856  net.minecraft.world.phys.shapes.IndirectMerger.<init>
+      1.1%     172,352,144  java.util.HashMap.resize
+      1.1%     170,015,176  java.util.HashMap.newNode
+  layer methods that are the top frame (own cost, no callee):
+      0.1%       8,385,648  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      0.0%       6,288,552  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers
+      0.0%         827,544  legacyconnector.vb1_7_3.net.minecraft.block.Block.<clinit>
+      0.0%           1,448  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.<init>
+      0.0%           1,448  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.<init>
+      0.0%              40  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+    ... with their direct caller:
+      0.1%       8,385,648  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.0%       2,097,448  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+      0.0%       2,096,576  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.walk
+      0.0%       2,094,528  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers  <-  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+      0.0%         827,544  legacyconnector.vb1_7_3.net.minecraft.block.Block.<clinit>  <-  org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.modernItem
+      0.0%           1,448  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.<init>  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.createState
+      0.0%           1,448  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.<init>  <-  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.0%              40  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch  <-  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.lambda$start$1
+  innermost layer frame:
+     78.5%  12,560,653,616  (none)
+     13.0%   2,086,542,008  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      2.1%     332,946,136  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      0.8%     126,214,240  legacyconnector.v1_12_2.net.minecraft.world.Teleporter.<init>
+      0.5%      86,803,440  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.5%      83,853,568  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      0.4%      69,176,480  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.4%      62,888,184  org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.mobSettings
+      0.3%      46,109,160  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.3%      42,447,648  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>
+      0.3%      40,920,632  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load
+      0.2%      29,288,824  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.scan
+      0.2%      28,574,360  org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.renamedMember
+      0.2%      27,249,800  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers
+      0.1%      18,864,880  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+      0.1%      18,309,384  org.kylepitcock.legacyconnector.loader.transform.McMembers1201.lines
+  outermost layer frame (inclusive entry):
+     13.0%   2,073,855,160  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      2.7%     437,464,048  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      1.0%     157,219,016  legacyconnector.v1_7_10.net.minecraft.item.ItemShears.<init>
+      0.8%     126,214,240  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldEvents1122$$Lambda+0x00000200b3dc92e8.914855268.accept
+      0.3%      54,629,160  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.3%      50,313,888  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>
+      0.3%      48,601,504  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>
+      0.3%      43,027,992  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>
+      0.3%      41,927,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem
+      0.2%      39,823,776  legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.<clinit>
+      0.2%      35,533,416  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept
+      0.2%      29,350,832  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage
+      0.2%      29,349,040  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.reg
+      0.2%      26,705,808  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults
+      0.1%      20,963,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate
+      0.1%      18,866,256  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>
+  entry <- caller outside the layer:
+     12.9%   2,057,082,904  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      2.7%     437,464,048  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+      1.0%     157,219,016  legacyconnector.v1_7_10.net.minecraft.item.ItemShears.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.8%     126,214,240  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldEvents1122$$Lambda+0x00000200b3dc92e8.914855268.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.3%      54,629,160  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.3%      48,601,504  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.handler$zkh000$legacyconnector$coremodCollision
+      0.3%      43,027,992  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>  <-  (root)
+      0.3%      41,927,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem  <-  (root)
+      0.2%      39,823,776  legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.<clinit>  <-  (root)
+      0.2%      35,533,416  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.2%      29,350,832  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage  <-  (root)
+      0.2%      29,349,040  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.reg  <-  (root)
+      0.2%      27,250,776  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.2%      26,705,808  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults  <-  (root)
+      0.1%      23,063,112  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>  <-  (root)
+      0.1%      20,963,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate  <-  (root)
+
+## Allocation (sampled weight) / loading: 10,671,240,632 bytes; a layer frame on 30.7% of it
+  top self frames:
+     39.5%   4,212,334,136  java.lang.invoke.DirectMethodHandle.allocateInstance
+      5.5%     584,849,472  com.mojang.datafixers.util.Either.right
+      2.7%     288,988,296  jdk.internal.misc.Unsafe.allocateUninitializedArray
+      2.1%     223,188,800  java.io.InputStream.readNBytes
+      2.0%     209,496,312  com.mojang.datafixers.util.Pair.of
+      1.8%     193,106,976  java.util.Arrays.copyOfRangeByte
+      1.7%     186,287,112  java.lang.reflect.Field.copy
+      1.6%     170,654,088  net.minecraft.world.phys.shapes.IndirectMerger.<init>
+      1.5%     165,327,168  com.mojang.datafixers.util.Either.left
+      1.4%     145,010,448  net.minecraft.world.level.biome.Climate$Parameter.span
+      1.3%     141,809,632  java.util.HashMap.resize
+      1.3%     133,593,456  java.util.HashSet.<init>
+      1.2%     132,683,800  jdk.internal.misc.Unsafe.allocateInstance
+      1.2%     125,650,896  java.util.HashMap.newNode
+      1.2%     122,985,448  java.util.Arrays.copyOf
+      1.1%     116,428,312  java.util.LinkedHashMap.newNode
+  layer methods that are the top frame (own cost, no callee):
+      0.1%       8,385,648  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      0.1%       6,288,552  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers
+      0.0%           1,448  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.<init>
+      0.0%           1,448  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.<init>
+    ... with their direct caller:
+      0.1%       8,385,648  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.<init>
+      0.0%       2,097,448  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+      0.0%       2,096,576  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers  <-  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.walk
+      0.0%       2,094,528  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers  <-  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+      0.0%           1,448  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.<init>  <-  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.createState
+      0.0%           1,448  org.kylepitcock.legacyconnector.loader.shim.ClassInfo.<init>  <-  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+  innermost layer frame:
+     69.3%   7,398,445,576  (none)
+     19.6%   2,086,542,008  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item
+      3.1%     332,946,136  org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.upgrade
+      0.8%      86,803,440  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.transform
+      0.8%      83,853,568  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.buildPropertyValueTable
+      0.6%      69,176,480  legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer$StateImplementation.link
+      0.6%      62,888,184  org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.mobSettings
+      0.4%      46,109,160  org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read
+      0.4%      42,447,648  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>
+      0.4%      40,920,632  org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable.load
+      0.3%      29,288,824  org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer.scan
+      0.3%      28,574,360  org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.renamedMember
+      0.3%      27,249,800  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.supers
+      0.2%      18,864,880  org.kylepitcock.legacyconnector.loader.transform.SoftLink1201.resolve
+      0.2%      18,309,384  org.kylepitcock.legacyconnector.loader.transform.McMembers1201.lines
+      0.2%      16,768,480  org.kylepitcock.legacyconnector.loader.transform.Mc1201Hierarchy.collect
+  outermost layer frame (inclusive entry):
+     19.4%   2,073,855,160  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull
+      4.1%     437,464,048  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates
+      1.5%     157,219,016  legacyconnector.v1_7_10.net.minecraft.item.ItemShears.<init>
+      0.5%      54,629,160  org.kylepitcock.legacyconnector.LegacyConnector.<init>
+      0.5%      50,313,888  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>
+      0.5%      48,601,504  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>
+      0.4%      43,027,992  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>
+      0.4%      41,927,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem
+      0.4%      39,823,776  legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.<clinit>
+      0.3%      29,350,832  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage
+      0.3%      29,349,040  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.reg
+      0.3%      26,705,808  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults
+      0.2%      20,963,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate
+      0.2%      18,866,256  legacyconnector.v1_7_10.net.minecraft.init.Items.<clinit>
+      0.2%      18,863,632  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generateTags
+      0.1%      12,579,120  legacyconnector.v1_7_10.net.minecraft.item.ItemArmor.<init>
+  entry <- caller outside the layer:
+     19.3%   2,057,082,904  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  net.minecraft.server.packs.repository.Pack.open
+      4.1%     437,464,048  org.kylepitcock.legacyconnector.loader.LegacyModLocator.findCandidates  <-  net.neoforged.fml.loading.moddiscovery.ModDiscoverer.discoverMods
+      1.5%     157,219,016  legacyconnector.v1_7_10.net.minecraft.item.ItemShears.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.5%      54,629,160  org.kylepitcock.legacyconnector.LegacyConnector.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.5%      48,601,504  org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.<clinit>  <-  net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.handler$zkh000$legacyconnector$coremodCollision
+      0.4%      43,027,992  org.kylepitcock.legacyconnector.core.pack.GeneratedPack.<init>  <-  (root)
+      0.4%      41,927,024  org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.vanillaItem  <-  (root)
+      0.4%      39,823,776  legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.<clinit>  <-  (root)
+      0.3%      29,350,832  legacyconnector.v1_7_10.net.minecraft.item.ItemStack.getItemDamage  <-  (root)
+      0.3%      29,349,040  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.reg  <-  (root)
+      0.3%      27,250,776  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>  <-  java.lang.invoke.DirectMethodHandle$Holder.newInvokeSpecial
+      0.3%      26,705,808  org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.registerVanillaDefaults  <-  (root)
+      0.2%      23,063,112  legacyconnector.v1_7_10.net.minecraft.item.Item.<init>  <-  (root)
+      0.2%      20,963,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate  <-  (root)
+      0.2%      18,863,632  org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generateTags  <-  (root)
+      0.2%      16,772,256  org.kylepitcock.legacyconnector.core.pack.GeneratedPack$1.openFull  <-  (root)
+
+## Allocation (sampled weight) / other: 1,300,361,928 bytes; a layer frame on 0.0% of it
+  top self frames:
+     27.5%     357,863,920  java.io.InputStream.readNBytes
+     10.8%     140,429,256  java.util.zip.InflaterInputStream.<init>
+      5.5%      71,257,224  java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await
+      5.5%      71,202,344  org.objectweb.asm.ClassReader.readStream
+      5.0%      64,434,408  java.nio.file.Files.read
+      4.8%      62,859,208  java.util.Arrays.copyOf
+      4.7%      60,498,064  java.util.Arrays.copyOfRangeByte
+      4.5%      58,152,520  java.lang.StringUTF16.compress
+      2.4%      31,225,792  org.objectweb.asm.ClassReader.<init>
+      1.8%      23,962,848  org.objectweb.asm.ClassReader.readUtf
+      1.4%      18,234,480  java.nio.ByteBuffer.wrap
+      1.4%      17,841,888  jdk.nio.zipfs.ZipPath.toAbsolutePath
+      1.3%      17,034,272  jdk.nio.zipfs.ZipFileSystem$EntryInputStream.initDataPos
+      1.2%      15,609,456  jdk.nio.zipfs.ZipFileSystem.getFileAttributes
+      1.1%      14,698,016  java.lang.StringLatin1.newString
+      1.0%      13,194,192  java.util.Arrays.copyOfRange
+  layer methods that are the top frame (own cost, no callee):
+      0.0%              40  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+    ... with their direct caller:
+      0.0%              40  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch  <-  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.lambda$start$1
+  innermost layer frame:
+    100.0%   1,300,236,712  (none)
+      0.0%          48,112  org.kylepitcock.legacyconnector.core.DirectMemoryGuard.watch
+      0.0%              40  org.kylepitcock.legacyconnector.core.ViewSweeper.run
+  outermost layer frame (inclusive entry):
+      0.0%          48,112  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x00000200b3d6f680.424048166.run
+      0.0%              40  org.kylepitcock.legacyconnector.core.ViewSweeper$$Lambda+0x00000200b3e7f230.1687806647.run
+  entry <- caller outside the layer:
+      0.0%          48,112  org.kylepitcock.legacyconnector.core.DirectMemoryGuard$$Lambda+0x00000200b3d6f680.424048166.run  <-  java.lang.Thread.runWith
+      0.0%              40  org.kylepitcock.legacyconnector.core.ViewSweeper$$Lambda+0x00000200b3e7f230.1687806647.run  <-  java.lang.Thread.runWith
+
+## Allocation (sampled weight) / server: 1,053,972,096 bytes; a layer frame on 16.4% of it
+  top self frames:
+     32.2%     339,796,152  net.minecraft.world.level.chunk.PalettedContainer.pack
+     13.3%     139,774,696  jdk.internal.misc.Unsafe.allocateInstance
+     12.0%     126,214,240  it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap.<init>
+      7.9%      83,293,752  com.mojang.serialization.DataResult.success
+      4.4%      46,736,352  net.minecraft.world.level.biome.Climate$Parameter.span
+      1.7%      17,743,504  net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap.grow
+      1.6%      16,772,560  com.mojang.serialization.MapCodec.of
+      1.4%      14,411,152  java.util.zip.InflaterInputStream.<init>
+      1.1%      12,069,280  java.util.HashMap.resize
+      1.1%      11,241,536  java.io.InputStream.readNBytes
+      0.9%       9,644,736  net.minecraft.util.ThreadingDetector.<init>
+      0.9%       9,634,024  java.util.HashMap.newNode
+      0.8%       8,322,608  com.mojang.serialization.DataResult$Success.setLifecycle
+      0.8%       8,131,856  java.util.ArrayList.grow
+      0.7%       7,721,872  com.mojang.serialization.CompressorHolder.<init>
+      0.7%       7,166,824  sun.nio.ch.ChannelInputStream.readAllBytes
+  layer methods that are the top frame (own cost, no callee):
+      0.1%         827,544  legacyconnector.vb1_7_3.net.minecraft.block.Block.<clinit>
+    ... with their direct caller:
+      0.1%         827,544  legacyconnector.vb1_7_3.net.minecraft.block.Block.<clinit>  <-  org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.modernItem
+  innermost layer frame:
+     83.6%     880,680,288  (none)
+     12.0%     126,214,240  legacyconnector.v1_12_2.net.minecraft.world.Teleporter.<init>
+      1.0%      10,166,728  org.kylepitcock.legacyconnector.compat.b173.BlockFamiliesSelfTest.run
+      0.8%       8,025,360  org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodState.<clinit>
+      0.5%       5,724,112  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.behaviour
+      0.4%       4,324,144  org.kylepitcock.legacyconnector.v1_6_4.bridge.SelfTest164.report
+      0.4%       3,967,896  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.guis
+      0.2%       2,023,664  legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.<init>
+      0.2%       2,014,224  org.kylepitcock.legacyconnector.core.ConfigPacketSizes.report
+      0.1%       1,292,000  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.worldEvent
+      0.1%       1,154,240  org.kylepitcock.legacyconnector.vb1_7_3.RendererSelfTestB173.run
+      0.1%       1,134,888  org.kylepitcock.legacyconnector.vb1_7_3.PlayerViewB173.sync
+      0.1%       1,059,576  org.kylepitcock.legacyconnector.vb1_7_3.BlockHeightmapsB173.lambda$refresh$1
+      0.1%         851,384  org.kylepitcock.legacyconnector.vb1_7_3.MoreCreepsCarrierSyncSelfTestB173.run
+      0.1%         848,584  org.kylepitcock.legacyconnector.core.ConfigPacketSizes.lambda$report$1
+      0.1%         827,544  legacyconnector.vb1_7_3.net.minecraft.block.Block.<clinit>
+  outermost layer frame (inclusive entry):
+     12.0%     126,214,240  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldEvents1122$$Lambda+0x00000200b3dc92e8.914855268.accept
+      3.4%      35,533,416  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept
+      0.4%       4,324,144  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x00000200b3ea5130.1716107309.accept
+      0.3%       2,862,808  org.kylepitcock.legacyconnector.core.ConfigPacketSizes$$Lambda+0x00000200b3ea42a8.1973076619.accept
+      0.1%       1,292,000  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x00000200b3e4fcc0.525328828.accept
+      0.1%       1,154,240  org.kylepitcock.legacyconnector.vb1_7_3.RendererSelfTestB173$$Lambda+0x00000200b3e916e0.389746237.accept
+      0.1%       1,059,576  org.kylepitcock.legacyconnector.vb1_7_3.BlockHeightmapsB173$$Lambda+0x00000200b3ea3c58.1558610027.accept
+      0.1%         851,384  org.kylepitcock.legacyconnector.vb1_7_3.MoreCreepsCarrierSyncSelfTestB173$$Lambda+0x00000200b3e9ae48.1667406040.accept
+  entry <- caller outside the layer:
+     12.0%     126,214,240  org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldEvents1122$$Lambda+0x00000200b3dc92e8.914855268.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      3.4%      35,533,416  org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173$$Lambda+0x00000200b3e8d740.241499019.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.4%       4,324,144  org.kylepitcock.legacyconnector.LegacyConnector$$Lambda+0x00000200b3ea5130.1716107309.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.3%       2,862,808  org.kylepitcock.legacyconnector.core.ConfigPacketSizes$$Lambda+0x00000200b3ea42a8.1973076619.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%       1,292,000  org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710$$Lambda+0x00000200b3e4fcc0.525328828.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%       1,154,240  org.kylepitcock.legacyconnector.vb1_7_3.RendererSelfTestB173$$Lambda+0x00000200b3e916e0.389746237.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%       1,059,576  org.kylepitcock.legacyconnector.vb1_7_3.BlockHeightmapsB173$$Lambda+0x00000200b3ea3c58.1558610027.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+      0.1%         851,384  org.kylepitcock.legacyconnector.vb1_7_3.MoreCreepsCarrierSyncSelfTestB173$$Lambda+0x00000200b3e9ae48.1667406040.accept  <-  net.neoforged.bus.ConsumerEventHandler.invoke
+
+## Allocation (sampled weight) / worker: 2,982,001,480 bytes; a layer frame on 0.0% of it
+  top self frames:
+     29.3%     873,451,096  com.google.common.collect.Iterators.forArray
+     10.1%     302,503,696  java.lang.invoke.DirectMethodHandle.allocateInstance
+      4.3%     128,560,560  jdk.internal.misc.Unsafe.allocateInstance
+      3.9%     117,726,992  com.google.common.base.Suppliers.memoize
+      3.2%      96,314,656  net.minecraft.world.level.levelgen.DensityFunctions$Ap2.fillArray
+      2.8%      82,177,696  net.minecraft.world.level.levelgen.DensityFunctions$HolderHolder.mapAll
+      2.6%      78,537,744  net.minecraft.world.level.levelgen.XoroshiroRandomSource.<init>
+      2.5%      73,667,792  java.io.InputStream.readNBytes
+      2.5%      73,225,424  java.util.Optional.of
+      2.4%      71,883,200  java.io.BufferedReader.<init>
+      1.4%      42,701,832  java.util.stream.StreamSupport.stream
+      1.3%      39,268,960  net.minecraft.world.level.biome.Climate$TargetPoint.toParameterArray
+      1.3%      38,444,000  java.lang.Object.clone
+      1.2%      36,026,752  net.minecraft.world.level.levelgen.DensityFunctions$MarkerOrMarked.mapAll
+      1.2%      34,952,960  net.minecraft.world.level.levelgen.Aquifer$NoiseBasedAquifer.computeSubstance
+      1.0%      30,535,656  com.mojang.datafixers.util.Pair.of
+  layer methods that are the top frame (own cost, no callee):
+    ... with their direct caller:
+  innermost layer frame:
+    100.0%   2,981,291,040  (none)
+      0.0%         629,424  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.villageType
+      0.0%          81,016  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710.lambda$register$0
+  outermost layer frame (inclusive entry):
+      0.0%         629,424  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.apply
+      0.0%          81,016  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710$$Lambda+0x00000200b3ea5560.2100858692.accept
+  entry <- caller outside the layer:
+      0.0%         629,424  org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.apply  <-  net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.handler$zlf000$legacyconnector$legacyVillageBuildings
+      0.0%          81,016  org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710$$Lambda+0x00000200b3ea5560.2100858692.accept  <-  net.neoforged.bus.ConsumerEventHandler$WithPredicate.invoke
+
+## Top allocated classes (bytes)
+     2,457,213,104  [B
+     1,229,001,648  java.util.function.Function$$Lambda+0x00000200b40c3730.411143385
+       957,285,136  com.google.common.collect.Iterators$ArrayItr
+       890,572,416  com.mojang.datafixers.FunctionType$$Lambda+0x00000200b412a480.159527831
+       584,849,472  com.mojang.datafixers.util.Either$Right
+       568,185,584  [Ljava.lang.Object;
+       514,087,720  [I
+       310,238,456  com.mojang.datafixers.optics.Prism$$Lambda+0x00000200b412a918.2131559432
+       298,857,088  com.mojang.datafixers.FunctionType$Instance$$Lambda+0x00000200b412ad98.1755621064
+       272,788,504  java.lang.String
+       242,033,192  com.mojang.datafixers.util.Pair
+       195,229,024  net.minecraft.world.level.biome.Climate$Parameter
+       191,646,832  [D
+       189,506,048  java.lang.reflect.Field
+       188,639,944  com.mojang.datafixers.FunctionType$Instance$$Lambda+0x00000200b412a6d8.1652706039
+       181,772,608  net.minecraft.world.level.levelgen.SurfaceRules$Context$$Lambda+0x00000200b43ff2c0.1364659498
+
+## GC: 79 collections, total pause 566 ms, max pause 62 ms; heap after GC min 16 MB, max 555 MB, last 521 MB
+
+## Monitor contention (ms) by layer frame
+       8,904  (no layer frame)
+
+## Thread park (ms) by layer frame
+   1,467,882  (no layer frame)
+          80  org.kylepitcock.legacyconnector.compat.b173.BlockFamiliesSelfTest.run

@@ -164,3 +164,41 @@ AbyssalCraft, Atum, The Midnight, LLibrary, Forgelin) and removed without a swit
   answers are kept in `.legacyconnector/vanilla-items-<data version>.txt`. Thaumcraft's pre-initialization 4.3-5.2 s -> 0.3 s once the file exists.
 - 1.12.2 asset translation: existence checks of mod resources and parsed model JSON are cached by path for the translation run (each check walks the
   class loader's modules, which grows with the pack's mod count). 5.4 s -> 1.2 s in the test set.
+
+## Measuring and baselines
+
+Tools (headless, no client): `./gradlew runServerSubTest -PsubTestDir=<dir> -Pjfr=<file.jfr> -PmsptLog=100 -PmemoryLog` records the whole server self test with Java
+Flight Recorder (profile settings) and logs "MSPT over N ticks" lines (mean, p50, p99, max, heap) and the heap every 10 s; `GRADLE_EXTRA="-Pjfr=... -PmsptLog=100"
+tools/dev/verify.sh <suite>` does the same through a regression suite (cold cache each time). `java tools/dev/perf/JfrLayer.java <file.jfr> [top]` summarises a recording
+per thread group by the layer's own frames (top frame in the layer, inclusive entry point and who calls it, allocation, GC, monitor contention);
+`tools/dev/perf/jfr_report.py` does the same through `jfr print --json`, which does not finish on recordings of 15 MB and more. Raw summaries live in
+`tools/dev/perf/baselines/` (no .jfr files in git); the ranked list is `tools/dev/agent-tasks/perf-hotspots.md`.
+
+Baseline of 2026-11-17 (Windows, JDK 21, `-Xmx6G`, 700 ticks of self test; the machine ran other workers' servers at the same time, so times are noisy,
+sampled shares and allocation are not). Suites: `mixed` = Thaumcraft, Baubles, CodeChickenCore/Lib, Witchery, Traincraft (1.7.10) + SRParasites (1.12.2); `cofh1201` = CoFH Core (1.20.1).
+
+| | mixed, cold cache | mixed, warm cache | cofh1201, cold | cofh1201, warm |
+|---|---|---|---|---|
+| Translation | 19 s of the launch (6 jars; Traincraft 11 s, CodeChickenCore 6 s) | none (cache hit) | 1.6 s | none |
+| Launch to "Done" line | 50 s (Done 5.4 s after server start) | 81 s (contended machine; Done 25.7 s, then 9.6 s on the next run) | 65 s | 43 s |
+| Mod load phases (construction + preInit + init + postInit) | 8.4 s (Thaumcraft preInit 6.4 s, builds the vanilla-items file) | 12 s (contended) | n/a | n/a |
+| Server MSPT, first 100 ticks (self tests start) | mean 87 ms, p99 775 | mean 94, p99 535 | mean 8.1, p99 90 | mean 6.9, p99 79 |
+| Server MSPT, steady state (last 300 ticks) | mean 0.7 to 1.9 ms | 1.3 to 2.3 | 0.4 to 0.6 | 0.5 to 0.6 |
+| Heap after load (memory log) | 1.0 to 1.2 GB | 1.0 to 1.4 GB | 0.55 GB | 0.8 GB |
+| Heap after GC (JFR), last / max | 841 / 1644 MB | 957 / 1530 MB | 521 / 555 MB | n/a |
+| GC | 126 collections, 1.3 s pauses, max 51 ms | 115, 1.0 s, max 49 ms | 79, 0.57 s, max 62 ms | n/a |
+| Sampled allocation, server thread | 14.4 GB | 14.1 GB | 1.05 GB | n/a |
+| Sampled allocation, all threads | 53 GB (loading 16 GB) | 35 GB | n/a | n/a |
+| JFR CPU samples (20 ms), server thread / all | 948 / 5063 | 1091 / 6384 | 78 / n/a | n/a |
+
+After the fix of 2026-11-17 (1.12.2 registries hand out one cached immutable `getValues()` list per change instead of copying the registry per call: `EntityList.getKey`,
+`newEntity`, `getID` scanned and copied the entity registry for every call a mod made per entity per tick; `EntityList.getKey` answers from a per-class cache; `ResourceLocation.toString`
+is cached):
+
+| `mixed`, server thread | before (cold / warm) | after (cold / warm) |
+|---|---|---|
+| CPU samples | 948 / 1091 | 845 / 774 (-11% / -29%) |
+| Sampled allocation | 14.4 / 14.1 GB | 6.9 / 7.2 GB (-52% / -49%) |
+| MSPT of the heavy windows (ticks 100 to 400), mean | 23.7, 30.6, 17.2 ms (cold); 28.2, 36.0, 17.7 (warm) | 18.3, 25.6, 8.8 (cold); 15.6, 22.0, 9.4 (warm) |
+| `Registries1122$Reg.getValues` share of server CPU / allocation | 20.7% / 49.3% | below 0.3% / below 0.5% |
+| Behaviour metrics (`verify.sh mixed`) | PASS | PASS (blocks_ok 973, placement 348/349, items 2186, blocks 503, entities 768 content, alive 539 vs 521) |
