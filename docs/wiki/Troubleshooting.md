@@ -45,7 +45,7 @@ Reference measurement (GTNH-style corpus of 1.7.10 mods, 23,081 recipes): recipe
 
 ## The game stops with "Module ... contains package org.spongepowered..."
 
-A jar bundles its own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods, SuperMartijn642's Core Lib). NeoForge loads such a jar from `mods/` as a launcher plugin before any mod code, including Legacy Connector, can run, so this cannot be fixed from inside the mod. Move the jar into its version folder (`mods/1.12.2/`, `mods/1.7.10/`, ...) before the first launch; Legacy Connector reads those folders and removes the bundled Mixin when it translates the jar.
+A jar bundles its own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods, SuperMartijn642's Core Lib). NeoForge loads such a jar from `mods/` as a launcher plugin before any mod code, including Legacy Connector, can run, so this cannot be fixed from inside the mod. Move the jar into its version folder (`mods/1.12.2/`, `mods/1.7.10/`, ...) before the first launch; Legacy Connector reads those folders and removes the bundled Mixin when it translates the jar. Cubic Chunks (OpenCubicChunks, issue #304) hits this error too, but it is not supported anyway: it replaces vanilla chunk storage, world generation and lighting, so Legacy Connector skips it with a message when it is in a version folder.
 
 ## NeoForge rejects a jar by its file name
 

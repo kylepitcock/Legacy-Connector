@@ -96,6 +96,7 @@ public final class LibraryBridges {
             java.util.Map.entry("mixinextras", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
             java.util.Map.entry("opis", "1.7.10 profiler; use Spark"),
             // 1.12.2
+            java.util.Map.entry("cubicchunks", "1.12.2 world-height mod that replaces vanilla chunk storage, world generation and lighting with 3D cubes; cannot be translated onto 1.21.1 (use a native height/datapack approach)"),
             java.util.Map.entry("betterfps", "1.12.2 performance patches; not applicable to 1.21.1"),
             java.util.Map.entry("foamfix", "1.12.2 performance/memory patches; not applicable to 1.21.1"),
             java.util.Map.entry("phosphor-lighting", "1.12.2 lighting engine rewrite; 1.21.1 has its own"),
