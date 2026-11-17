@@ -78,6 +78,26 @@ class ForwardCallsTest {
     }
 
     @Test
+    void aStaticOriginalOfAReceiverFirstHelperGetsANullReceiverUnderItsArguments() {
+        // 1.5.2's BlockFlowerPot.getMetaForPlant(stack) is static: nothing is on the stack for the helper's receiver parameter
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESTATIC, P + "net/minecraft/block/BlockFlowerPot", "getMetaForPlant",
+                "(L" + P + "net/minecraft/item/ItemStack;)I"));
+        assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_5_2));
+        List<String> b = body(node);
+        assertEquals(List.of("op58", "op1", "op25",
+                "184 legacyconnector/v1_6_4/forward/Forward152Calls.getMetaForPlant(L" + P + "net/minecraft/block/BlockFlowerPot;L" + P + "net/minecraft/item/ItemStack;)I"), b);
+        assertTrue(node.methods.get(0).maxLocals >= 1);
+    }
+
+    @Test
+    void everyForwardTableParsesAndEveryFieldWriteHelperNamesAClass() {
+        for (LegacyVersion v : List.of(LegacyVersion.V1_6_4, LegacyVersion.V1_5_2, LegacyVersion.V1_4_7)) {
+            var rules = org.kylepitcock.legacyconnector.loader.mapping.ForwardMembers.forVersion(v).fieldSetRules();
+            for (String[] rule : rules.values()) assertTrue(rule[4].contains("/"), v + ": field write helper owner " + rule[4]);
+        }
+    }
+
+    @Test
     void blockMaterialIsReadFromTheBlock() {
         ClassNode node = with(new MethodInsnNode(Opcodes.INVOKEINTERFACE, P + "net/minecraft/world/IBlockAccess", "getBlockMaterial", "(III)L" + P + "net/minecraft/block/material/Material;", true));
         assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_6_4));

@@ -43,7 +43,7 @@ R	net/minecraft/entity/Entity	dropItemWithOffset	(IIF)Lnet/minecraft/entity/item
 R	net/minecraft/world/chunk/Chunk	setBlockID	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	chunkSetBlockID	(Lnet/minecraft/world/chunk/Chunk;IIII)Z
 R	net/minecraft/item/ItemStack	onBlockDestroyed	(Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	stackOnBlockDestroyed	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V
 G	net/minecraft/client/settings/GameSettings	renderDistance	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	renderDistance	(Lnet/minecraft/client/settings/GameSettings;)I
-S	net/minecraft/client/settings/GameSettings	renderDistance	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setRenderDistance	(Lnet/minecraft/client/settings/GameSettings;I)V
+S	net/minecraft/client/settings/GameSettings	renderDistance	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setRenderDistance	(Lnet/minecraft/client/settings/GameSettings;I)V
 G	net/minecraft/tileentity/TileEntityMobSpawner	delay	I	=	getDelay	()I
 G	net/minecraft/tileentity/TileEntityMobSpawner	yaw	D	=	getYaw	()D
 G	net/minecraft/tileentity/TileEntityMobSpawner	yaw2	D	=	getYaw2	()D
