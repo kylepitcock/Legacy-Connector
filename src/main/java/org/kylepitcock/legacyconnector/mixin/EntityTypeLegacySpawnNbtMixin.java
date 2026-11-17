@@ -12,15 +12,12 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.Level;
 import org.kylepitcock.legacyconnector.v1_20_1.migrate.ItemStackNbt;
 import org.kylepitcock.legacyconnector.v1_20_1.migrate.SpawnContext;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,36 +44,31 @@ public abstract class EntityTypeLegacySpawnNbtMixin {
             boolean invertY,
             Operation<Entity> original
     ) {
-        try (SpawnContext.Scope ignored = SpawnContext.enterCreate((Object) (Object) this)) {
+        try (SpawnContext.Scope ignored = SpawnContext.enterCreate((Object) this)) {
             return original.call(level, consumer, pos, spawnType, alignPosition, invertY);
         }
     }
 
-    @WrapOperation(
-            method = "create(Lnet/minecraft/server/level/ServerLevel;Ljava/util/function/Consumer;"
-                    + "Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/MobSpawnType;ZZ)"
-                    + "Lnet/minecraft/world/entity/Entity;",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/Mob;finalizeSpawn("
-                            + "Lnet/minecraft/world/level/ServerLevelAccessor;"
-                            + "Lnet/minecraft/world/DifficultyInstance;"
-                            + "Lnet/minecraft/world/entity/MobSpawnType;"
-                            + "Lnet/minecraft/world/entity/SpawnGroupData;)"
-                            + "Lnet/minecraft/world/entity/SpawnGroupData;"
-            ),
+    /**
+     * The consumer-based create method calls create(Level) to construct its
+     * entity before it positions and finalizes that entity. Bind the active
+     * Create frame to that exact returned instance here. This avoids wrapping
+     * an invocation inside a method already wrapped by @WrapMethod.
+     */
+    @WrapMethod(
+            method = "create(Lnet/minecraft/world/level/Level;)Lnet/minecraft/world/entity/Entity;",
             require = 1
     )
-    private SpawnGroupData legacyconnector$applyLegacySpawnTag(
-            Mob mob,
-            ServerLevelAccessor level,
-            DifficultyInstance difficulty,
-            MobSpawnType spawnType,
-            SpawnGroupData groupData,
-            com.llamalad7.mixinextras.injector.wrapoperation.Operation<SpawnGroupData> original
+    private Entity legacyconnector$bindCreatedEntity(
+            Level level,
+            Operation<Entity> original
     ) {
-        try (SpawnContext.Scope ignored = SpawnContext.enterActiveFromCreate(mob)) {
-            return original.call(mob, level, difficulty, spawnType, groupData);
+        try (SpawnContext.Scope ignored = SpawnContext.enterFactory((Object) this)) {
+            Entity entity = original.call(level);
+            if (entity != null) {
+                SpawnContext.bindCreatedEntity((Object) this, entity);
+            }
+            return entity;
         }
     }
 
@@ -101,7 +93,7 @@ public abstract class EntityTypeLegacySpawnNbtMixin {
             MobSpawnType spawnType,
             boolean alignPosition,
             boolean invertY,
-            com.llamalad7.mixinextras.injector.wrapoperation.Operation<Entity> original,
+            Operation<Entity> original,
             ServerLevel enclosingLevel,
             ItemStack stack,
             Player player,
