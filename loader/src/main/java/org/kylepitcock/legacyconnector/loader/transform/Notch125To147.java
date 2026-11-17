@@ -429,6 +429,8 @@ public final class Notch125To147 {
                 if (internalName.startsWith("forge/")) return "net/minecraft/src/" + internalName;
                 // FML 2.x's ModLoader-style annotation (net.minecraft.src.SidedProxy, the default package in a mod jar) is the FML annotation the platform injects
                 if (internalName.equals("SidedProxy")) return "cpw/mods/fml/common/SidedProxy";
+                // FML 2.x kept Side in cpw.mods.fml.common; FML 3 moved it to relauncher (a mod's own copy of the class stays)
+                if (internalName.equals("cpw/mods/fml/common/Side")) return "cpw/mods/fml/relauncher/Side";
             }
             return internalName;
         }
@@ -656,6 +658,15 @@ public final class Notch125To147 {
                     String[] reason = new String[1];
                     OverrideBridges.Plan plan = OverrideBridges.planCall(oldMapped, b[2], reason);
                     if (plan == null) {
+                        // the 1.4.7 shape cannot be reached from these arguments (it needs a World or a player the call does not carry): the shim keeps the 1.2.5 behaviour under the
+                        // side independent name mcc125$<Feather name> (Block.mcc125$getMiningTime, BlockContainer.mcc125$createBlockEntity, ItemStack.mcc125$getTooltip, ...)
+                        // (not a super call: an override of the 1.4.7-shaped method carries a bridge the call must keep reaching)
+                        String[] u = op == org.objectweb.asm.Opcodes.INVOKESPECIAL ? null : resolver.lookup("U", owner, n, d);
+                        if (u != null) {
+                            unadapted.merge(key + ": " + reason[0] + " (called as " + UNJOINED_PREFIX + u[1] + ")", 1, Integer::sum);
+                            super.visitMethodInsn(op, owner, UNJOINED_PREFIX + u[1], d, itf);
+                            return;
+                        }
                         unadapted.merge(key + ": " + reason[0], 1, Integer::sum);
                         super.visitMethodInsn(op, owner, n, d, itf);
                         return;

@@ -46,6 +46,19 @@ public class ForgeHooks {
         return legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.getFuelValue(item);
     }
 
+    /**
+     * Forge 3.x {@code ForgeHooks.onUseHoe(hoe, player, world, x, y, z)}: asks the hoe handlers (the UseHoeEvent of later versions); true when one tilled the block, which damages the hoe.
+     */
+    public static boolean onUseHoe(ItemStack hoe, EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.UseHoeEvent event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.UseHoeEvent(player, hoe, world, x, y, z);
+        if (legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event)) return false;
+        if (event.getResult() == legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event.Result.ALLOW) {
+            if (hoe != null) hoe.damageItem(1, player);
+            return true;
+        }
+        return false;
+    }
+
     public static boolean onUseBonemeal(legacyconnector.v1_7_10.net.minecraft.world.World world, int blockId, int x, int y, int z) {
         for (IBonemealHandler h : MinecraftForge.BONEMEAL) if (h.onUseBonemeal(world, blockId, x, y, z)) return true;
         return false;

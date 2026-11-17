@@ -259,6 +259,47 @@ class Notch125To147Test {
         assertEquals(1, Notch125To147.lastAdaptedCalls().size());
     }
 
+    /** A call whose 1.4.7 shape needs arguments the call does not carry (a World) is not adapted: it reaches the shim's 1.2.5 member under the Feather name. */
+    @Test
+    void refusedCallAdapterFallsBackToTheUnjoinedName() throws IOException {
+        // B row: the 1.4.7 method takes a World (ddd) the old call does not have; U row: the Feather name of the 1.2.5 member
+        String table = TABLE + "B\tc\taaa\tn\t()F\tx1\tm\t(Lddd;III)F\n" + "U\tc\taaa\tn\t()F\tgetMiningTime\n";
+        Notch125To147.Table t = Notch125To147.parse(new BufferedReader(new StringReader(table)))[0];
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "Caller", null, "java/lang/Object", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "run", "(Laaa;)F", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "aaa", "n", "()F", false);
+        mv.visitInsn(Opcodes.FRETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("Caller", cw.toByteArray());
+        Notch125To147.apply(t, NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("Caller"));
+        assertTrue(m.contains("x1.mcc125$getMiningTime()F"), m.toString());
+        assertEquals(0, Notch125To147.lastAdaptedCalls().size());
+    }
+
+    /** FML 2.x's cpw.mods.fml.common.Side is FML 3's relauncher.Side. */
+    @Test
+    void fmlTwoSideClassIsTheRelauncherSide() throws IOException {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "Caller", null, "java/lang/Object", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "run", "(Lcpw/mods/fml/common/Side;)Z", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "cpw/mods/fml/common/Side", "isClient", "()Z", false);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("Caller", cw.toByteArray());
+        Notch125To147.apply(client(), NotchNames.get("1.4.7"), classes);
+        assertTrue(members(classes.get("Caller")).contains("cpw/mods/fml/relauncher/Side.isClient()Z"));
+    }
+
     /** An override of an unjoined game member is named after the Feather name, not left under the obfuscated letter (the 1.4.7 stage would rename the letter again). */
     @Test
     void overrideOfAnUnjoinedMemberCarriesTheSideIndependentName() throws IOException {
