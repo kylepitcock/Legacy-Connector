@@ -102,6 +102,7 @@ com/mojang/blaze3d/vertex/Tesselator	end	()V	CompatBufferBuilder	end	-
 net/minecraft/client/Minecraft	getFrameTime	()F	ClientCompat	getFrameTime	-
 net/minecraft/world/item/ItemStack	isEdible	()Z	MiscCompat	stackIsEdible
 net/minecraft/client/renderer/MultiBufferSource	immediate	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;)Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	ClientCompat	immediate
+net/minecraft/client/renderer/MultiBufferSource	immediateWithBuffers	(Ljava/util/Map;Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;)Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	ClientCompat	immediateWithBuffers
 net/minecraft/client/model/geom/ModelPart	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	ClientCompat	renderPart
 net/minecraft/client/model/Model	renderToBuffer	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	ClientCompat	renderToBuffer
 net/minecraft/client/gui/components/EditBox	tick	()V	ClientCompat	editBoxTick

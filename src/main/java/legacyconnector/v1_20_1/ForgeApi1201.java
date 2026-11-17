@@ -688,6 +688,7 @@ public final class ForgeApi1201 {
     }
 
     public static net.minecraft.nbt.CompoundTag fluidWriteToNBT(net.neoforged.neoforge.fluids.FluidStack stack, net.minecraft.nbt.CompoundTag tag) {
+        if (stack.isEmpty()) return tag; // 1.21.1 refuses to encode an empty stack; 1.20.1 wrote an empty tag
         net.minecraft.nbt.Tag saved = stack.save(registries(), tag);
         return saved instanceof net.minecraft.nbt.CompoundTag c ? c : tag;
     }

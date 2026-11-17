@@ -239,7 +239,7 @@ public final class Forge1201Transformer {
                     ClassNode node = new ClassNode();
                     new ClassReader(in.readAllBytes()).accept(new ClassRemapper(node, mapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                     var info = new org.kylepitcock.legacyconnector.loader.shim.ClassInfo(node.name, node.superName, List.copyOf(node.interfaces), node.access);
-                    for (MethodNode m : node.methods) if (watched.contains(m.name)) info.methods.put(m.name + m.desc, m.access);
+                    for (MethodNode m : node.methods) if (watched.contains(m.name) || m.name.equals("getCapability")) info.methods.put(m.name + m.desc, m.access);
                     out.add(info);
                 } catch (RuntimeException ex) {
                     // reported when the jar itself is translated
@@ -315,12 +315,11 @@ public final class Forge1201Transformer {
         Map<String, ClassNode> nodeByName = new java.util.HashMap<>();
         for (ClassNode node : nodes) nodeByName.put(node.name, node);
         // super.getCapability(...) naming a class of the jar that does not declare it (nor an ancestor of the jar): Minecraft's parent has none either
+        java.util.Set<String> peerNames = peers == null ? java.util.Set.of() : peers.keySet();
         java.util.function.BiPredicate<String, String> baseIsMinecraft = (owner, desc) -> {
-            if (!nodeByName.containsKey(owner) || hierarchy.reachesUnknown(owner)) return false;
-            for (String c = owner; c != null && nodeByName.containsKey(c); c = nodeByName.get(c).superName) {
-                for (org.objectweb.asm.tree.MethodNode m : nodeByName.get(c).methods) if (m.name.equals("getCapability") && m.desc.equals(desc)) return false;
-            }
-            return true;
+            if (!nodeByName.containsKey(owner) && !peerNames.contains(owner)) return false;
+            // no class of this jar or of the other jars of the set declares it: Minecraft's parent has none either (an unknown class above is no answer)
+            return hierarchy.declaredIn(owner, "getCapability", desc) == Mc1201Hierarchy.Origin.MINECRAFT;
         };
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
@@ -385,6 +384,7 @@ public final class Forge1201Transformer {
             if (modEvents.test(node.name) && ForgeApiRewrites1201.markCancelable(node)) viaCalls++;
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
+            if (ForgeApiRewrites1201.fixBurnTime(node)) viaCalls++;
             rewrites += viaCalls;
             // Replace the removed SkinTextureCallback API before the generic soft-link pass.
             int palladiumPlayerSkinFetcherChange = PalladiumPlayerSkinFetcher1201.apply(node);
