@@ -55,12 +55,51 @@ public final class SilentFailureChecks {
         check("network: LegacyPayload encoding is idempotent", this::payloadIdempotent);
         check("registry: entity host ids match their registry keys", this::hostRegistryKeys);
         check("registry: non-vanilla blocks, items, sounds resolve", this::registrySanity);
+        check("oredict: an ore name registered for (id, damage) tags only that subtype", this::oreTagsPerSubtype);
         LOG.info("SILENT FAILURE CHECKS: {} passed, {} failed", passed, failures.size());
         for (String f : failures) LOG.error("SILENT FAILURE CHECK FAILED: {}", f);
         if (Boolean.getBoolean("legacyconnector.selfTestFailFast") && !failures.isEmpty()) {
             LOG.error("SILENT FAILURE CHECKS: legacyconnector.selfTestFailFast is set, halting the server");
             Runtime.getRuntime().halt(3);
         }
+    }
+
+    /**
+     * 1.2.5 to 1.7.10 mods register ore names per (item id, damage) (RedPower: ruby, copper ingot, tin ingot... are metas of one id). The flattened subtype item of each
+     * registration must carry that name's tag, no other subtype may land in it, and two damages of one legacy item must not resolve to one modern item.
+     */
+    private List<String> oreTagsPerSubtype() {
+        List<String> out = new ArrayList<>();
+        Map<net.minecraft.world.item.Item, Map<Integer, String>> byModern = new LinkedHashMap<>();
+        for (var e : legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.mcc$registrations().entrySet()) {
+            String name = e.getKey();
+            var key = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge.tagFor(name));
+            java.util.Set<net.minecraft.world.item.Item> inTag = new java.util.HashSet<>();
+            BuiltInRegistries.ITEM.getTag(key).ifPresent(set -> set.forEach(h -> inTag.add(h.value())));
+            java.util.Set<net.minecraft.world.item.Item> expected = new java.util.HashSet<>();
+            for (legacyconnector.v1_7_10.net.minecraft.item.ItemStack s : e.getValue()) {
+                if (s == null || s.getItem() == null) continue;
+                int damage = s.getItemDamage();
+                if (damage == legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE) {
+                    expected.addAll(s.getItem().mcc$variants.values());
+                    continue;
+                }
+                net.minecraft.world.item.ItemStack modern = s.mcc$modern();
+                if (modern.isEmpty()) continue;
+                expected.add(modern.getItem());
+                if (modern.get(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta()) == null && s.getItem().mcc$variants.size() > 1) {
+                    byModern.computeIfAbsent(modern.getItem(), k -> new LinkedHashMap<>()).putIfAbsent(damage, name);
+                    if (!inTag.contains(modern.getItem())) out.add(name + " lacks its own subtype " + BuiltInRegistries.ITEM.getKey(modern.getItem()) + " (damage " + damage + ")");
+                }
+            }
+            for (net.minecraft.world.item.Item item : inTag) {
+                if (!expected.contains(item) && !BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("minecraft")) out.add("tag of " + name + " holds " + BuiltInRegistries.ITEM.getKey(item) + " that no registration names");
+            }
+        }
+        for (var m : byModern.entrySet()) {
+            if (m.getValue().size() > 1) out.add(BuiltInRegistries.ITEM.getKey(m.getKey()) + " stands for several damages " + m.getValue());
+        }
+        return out;
     }
 
     private void check(String name, Supplier<List<String>> body) {
