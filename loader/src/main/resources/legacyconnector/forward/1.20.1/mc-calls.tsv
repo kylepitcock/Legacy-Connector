@@ -951,3 +951,13 @@ net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl	<init>	(Lnet/min
 net/minecraft/client/gui/screens/recipebook/GhostRecipe	setRecipe	(Lnet/minecraft/world/item/crafting/Recipe;)V	Round10ClientCompat	ghostSetRecipe
 net/minecraft/client/gui/MapRenderer	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/level/saveddata/maps/MapItemSavedData;ZI)V	Round10ClientCompat	mapRender
 net/neoforged/neoforge/client/event/RenderLevelStageEvent	<init>	(Lnet/neoforged/neoforge/client/event/RenderLevelStageEvent$Stage;Lnet/minecraft/client/renderer/LevelRenderer;Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;IFLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;)V	Round10ClientCompat	newRenderLevelStageEvent
+net/minecraft/world/level/saveddata/maps/MapItemSavedData	load	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData;	Round10Compat	mapLoad
+net/minecraft/world/level/saveddata/maps/MapItemSavedData	getUpdatePacket	(ILnet/minecraft/world/entity/player/Player;)Lnet/minecraft/network/protocol/Packet;	Round10Compat	mapUpdatePacket
+net/minecraft/world/level/Level	setMapData	(Ljava/lang/String;Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData;)V	Round10Compat	setMapData
+net/minecraft/world/level/saveddata/maps/MapDecoration	getName	()Lnet/minecraft/network/chat/Component;	Round10Compat	decorationName
+net/minecraft/world/level/saveddata/maps/MapDecoration	getRot	()B	=	rot
+net/minecraft/world/level/saveddata/maps/MapDecoration	getType	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMapDecorationType;	Round10Compat	decorationType
+net/minecraft/world/level/block/entity/SkullBlockEntity	getOwnerProfile	()Lcom/mojang/authlib/GameProfile;	Round10Compat	skullOwner
+net/minecraft/world/level/block/entity/SkullBlockEntity	setOwner	(Lcom/mojang/authlib/GameProfile;)V	Round10Compat	skullSetOwner
+net/minecraft/world/level/block/Block	getStem	()Lnet/minecraft/world/level/block/StemBlock;	Round10Compat	stemOf
+net/minecraft/world/level/block/Block	getAttachedStem	()Lnet/minecraft/world/level/block/AttachedStemBlock;	Round10Compat	attachedStemOf

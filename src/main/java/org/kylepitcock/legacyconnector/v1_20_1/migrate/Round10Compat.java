@@ -109,4 +109,74 @@ public final class Round10Compat {
                 builtin ? net.minecraft.server.packs.repository.PackSource.BUILT_IN : net.minecraft.server.packs.repository.PackSource.DEFAULT, java.util.Optional.empty());
         return new net.minecraft.server.packs.FilePackResources(info, new net.minecraft.server.packs.FilePackResources.SharedZipFileAccess(file), "");
     }
+
+    // ---- maps ---------------------------------------------------------------------------------------------------------------------------------
+
+    /** {@code MapItemSavedData.load(tag)}: 1.21.1 reads the decorations' names through the registry provider (the one the layer remembers for this thread). */
+    public static net.minecraft.world.level.saveddata.maps.MapItemSavedData mapLoad(net.minecraft.nbt.CompoundTag tag) {
+        return net.minecraft.world.level.saveddata.maps.MapItemSavedData.load(tag, MigrateContext.provider());
+    }
+
+    /** {@code MapItemSavedData.getUpdatePacket(int mapId, player)}: map ids are {@code MapId} objects. */
+    public static net.minecraft.network.protocol.Packet<?> mapUpdatePacket(net.minecraft.world.level.saveddata.maps.MapItemSavedData data, int mapId,
+            net.minecraft.world.entity.player.Player player) {
+        return data.getUpdatePacket(new net.minecraft.world.level.saveddata.maps.MapId(mapId), player);
+    }
+
+    /** {@code level.setMapData("map_5", data)}: the key was the saved-data name, {@code map_} followed by the id. */
+    public static void setMapData(net.minecraft.world.level.Level level, String name, net.minecraft.world.level.saveddata.maps.MapItemSavedData data) {
+        int id = 0;
+        try {
+            id = Integer.parseInt(name.startsWith("map_") ? name.substring(4) : name);
+        } catch (NumberFormatException e) {
+            // not a map name: id 0
+        }
+        level.setMapData(new net.minecraft.world.level.saveddata.maps.MapId(id), data);
+    }
+
+    /** {@code MapDecoration.getName()}: the optional name of the record, or null. */
+    public static net.minecraft.network.chat.Component decorationName(net.minecraft.world.level.saveddata.maps.MapDecoration decoration) {
+        return decoration.name().orElse(null);
+    }
+
+    /** {@code MapDecoration.getType()}: the legacy enum constant standing for the decoration's type (null for a type the 1.20.1 enum does not know). */
+    public static LegacyMapDecorationType decorationType(net.minecraft.world.level.saveddata.maps.MapDecoration decoration) {
+        for (LegacyMapDecorationType type : LegacyMapDecorationType.values()) {
+            try {
+                if (type.holder().equals(decoration.type())) return type;
+            } catch (IllegalStateException e) {
+                // a constant 1.21.1 does not have
+            }
+        }
+        return null;
+    }
+
+    // ---- skulls -------------------------------------------------------------------------------------------------------------------------------
+
+    /** {@code SkullBlockEntity.getOwnerProfile()}: the game profile of the owner (1.21.1 keeps a {@code ResolvableProfile}). */
+    public static com.mojang.authlib.GameProfile skullOwner(net.minecraft.world.level.block.entity.SkullBlockEntity skull) {
+        net.minecraft.world.item.component.ResolvableProfile profile = skull.getOwnerProfile();
+        return profile == null ? null : profile.gameProfile();
+    }
+
+    /** {@code SkullBlockEntity.setOwner(GameProfile)}. */
+    public static void skullSetOwner(net.minecraft.world.level.block.entity.SkullBlockEntity skull, com.mojang.authlib.GameProfile profile) {
+        skull.setOwner(profile == null ? null : new net.minecraft.world.item.component.ResolvableProfile(profile));
+    }
+
+    // ---- stem grown blocks --------------------------------------------------------------------------------------------------------------------
+
+    /** {@code StemGrownBlock.getStem()} (the class is {@code Block} now): the stem of the vanilla melon and pumpkin, null for another block. */
+    public static net.minecraft.world.level.block.StemBlock stemOf(net.minecraft.world.level.block.Block block) {
+        if (block == net.minecraft.world.level.block.Blocks.MELON) return (net.minecraft.world.level.block.StemBlock) net.minecraft.world.level.block.Blocks.MELON_STEM;
+        if (block == net.minecraft.world.level.block.Blocks.PUMPKIN) return (net.minecraft.world.level.block.StemBlock) net.minecraft.world.level.block.Blocks.PUMPKIN_STEM;
+        return null;
+    }
+
+    /** {@code StemGrownBlock.getAttachedStem()}. */
+    public static net.minecraft.world.level.block.AttachedStemBlock attachedStemOf(net.minecraft.world.level.block.Block block) {
+        if (block == net.minecraft.world.level.block.Blocks.MELON) return (net.minecraft.world.level.block.AttachedStemBlock) net.minecraft.world.level.block.Blocks.ATTACHED_MELON_STEM;
+        if (block == net.minecraft.world.level.block.Blocks.PUMPKIN) return (net.minecraft.world.level.block.AttachedStemBlock) net.minecraft.world.level.block.Blocks.ATTACHED_PUMPKIN_STEM;
+        return null;
+    }
 }

@@ -29,8 +29,8 @@ public final class ForgeRegistries {
     private ForgeRegistries() {
     }
 
-    /** Forge 1.20.1 registered the {@code ItemDisplayContext} constants; NeoForge 1.21.1 has an extensible enum instead, so this is a registry built over its constants (the ids are their serialized names). */
-    public static final IForgeRegistry<net.minecraft.world.item.ItemDisplayContext> DISPLAY_CONTEXTS = new ForgeRegistryWrapper<>(displayContexts());
+    /** Forge 1.20.1 registered the {@code ItemDisplayContext} constants; NeoForge 1.21.1 has an extensible enum instead, so this is a supplier of a registry built over its constants (the ids are their serialized names). */
+    public static final java.util.function.Supplier<IForgeRegistry<net.minecraft.world.item.ItemDisplayContext>> DISPLAY_CONTEXTS = DisplayContexts.SUPPLIER;
     public static final IForgeRegistry<Block> BLOCKS = new ForgeRegistryWrapper<>(BuiltInRegistries.BLOCK);
     public static final IForgeRegistry<Fluid> FLUIDS = new ForgeRegistryWrapper<>(BuiltInRegistries.FLUID);
     public static final IForgeRegistry<Item> ITEMS = new ForgeRegistryWrapper<>(BuiltInRegistries.ITEM);
@@ -114,6 +114,12 @@ public final class ForgeRegistries {
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType<?>>> FOLIAGE_PLACER_TYPES = Registries.FOLIAGE_PLACER_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType<?>>> TREE_DECORATOR_TYPES = Registries.TREE_DECORATOR_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.registries.holdersets.HolderSetType>> HOLDER_SET_TYPES = NeoForgeRegistries.Keys.HOLDER_SET_TYPES;
+    }
+
+    /** Holder of the registry over the display contexts (built when first read). */
+    private static final class DisplayContexts {
+        static final IForgeRegistry<net.minecraft.world.item.ItemDisplayContext> REGISTRY = new ForgeRegistryWrapper<>(displayContexts());
+        static final java.util.function.Supplier<IForgeRegistry<net.minecraft.world.item.ItemDisplayContext>> SUPPLIER = () -> REGISTRY;
     }
 
     private static net.minecraft.core.Registry<net.minecraft.world.item.ItemDisplayContext> displayContexts() {

@@ -870,6 +870,43 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void mapSkullAndStemCallsGoToHelpers() {
+        String data = "net/minecraft/world/level/saveddata/maps/MapItemSavedData";
+        String skull = "net/minecraft/world/level/block/entity/SkullBlockEntity";
+        String block = "net/minecraft/world/level/block/Block";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "go", "(L" + CT + ";L" + skull + ";L" + block + ";Lnet/minecraft/world/level/Level;L" + data + ";)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, data, "load", "(L" + CT + ";)L" + data + ";", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, skull, "getOwnerProfile", "()Lcom/mojang/authlib/GameProfile;", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, block, "getStem", "()Lnet/minecraft/world/level/block/StemBlock;", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new org.objectweb.asm.tree.LdcInsnNode("map_3"));
+        m.instructions.add(new VarInsnNode(ALOAD, 4));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraft/world/level/Level", "setMapData", "(Ljava/lang/String;L" + data + ";)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(4, apply(c).calls);
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "mapLoad"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "skullOwner"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "stemOf"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "setMapData"));
+    }
+
+    @Test
+    void melonBlockAndEnchantmentSubclassesAreRenamedToStandIns() {
+        // class renames are applied by the remapper before the migration: the table must name stand-ins that exist
+        Mc1201Tables t = Mc1201Tables.get();
+        assertEquals(MIGRATE + "LegacyMelonBlock", t.classes.get("net/minecraft/world/level/block/MelonBlock"));
+        assertEquals(MIGRATE + "LegacyDigDurabilityEnchantment", t.classes.get("net/minecraft/world/item/enchantment/DigDurabilityEnchantment"));
+        assertEquals(MIGRATE + "LegacyArrowPiercingEnchantment", t.classes.get("net/minecraft/world/item/enchantment/ArrowPiercingEnchantment"));
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");
