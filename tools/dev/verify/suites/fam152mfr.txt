@@ -1,0 +1,2 @@
+1.5.2 CoFHCore-1.5.2
+1.5.2 MineFactoryReloaded-2.6

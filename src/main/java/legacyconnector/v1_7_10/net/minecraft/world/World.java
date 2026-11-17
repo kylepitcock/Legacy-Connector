@@ -463,8 +463,14 @@ public class World implements IBlockAccess {
     public static List mcc$get$playerEntities(World w) {
         List<EntityPlayer> out = new ArrayList<>();
         for (var p : w.lvl().players()) out.add((EntityPlayer) EntityBridge.wrap(p));
+        // the server self tests act through a fake player that is not in the level's player list: legacy code that looks the acting player up in
+        // playerEntities (GUI opening, per-player state) needs it there while the test runs
+        for (var p : MCC_TEST_PLAYERS) if (p.level() == w.mcc$fullLevel() && !w.lvl().players().contains(p)) out.add((EntityPlayer) EntityBridge.wrap(p));
         return out;
     }
+
+    /** Fake players of the server self tests that count as players of their level for {@code playerEntities} (see {@link #mcc$get$playerEntities}). */
+    public static final java.util.Set<net.minecraft.server.level.ServerPlayer> MCC_TEST_PLAYERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** Phantom: redirected to {@link #mcc$get$activeChunkSet}. The loaded chunks around players (the ones that tick). */
     @Deprecated

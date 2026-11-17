@@ -274,6 +274,7 @@ public final class BlockSelfTest {
         if (ticks < 0 || ++ticks != 60) return;
         ServerLevel level = server.overworld();
         var player = FakePlayerFactory.get(level, new GameProfile(UUID.nameUUIDFromBytes("legacyconnector-block-test".getBytes()), "[LegacyConnectorTest]"));
+        legacyconnector.v1_7_10.net.minecraft.world.World.MCC_TEST_PLAYERS.add(player);
         checkFluids(level);
         int survived = 0, activated = 0;
         Map<String, Integer> vanished = new java.util.TreeMap<>();
