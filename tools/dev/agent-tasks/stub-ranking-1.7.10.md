@@ -2,6 +2,9 @@
 
 Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 641 jar(s) (503 links, 69 missing-dependency, 48 unresolved, 21 obsolete); 1522 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
+
+Done since generation (batches 1-6 of the shim worker; rows below not yet pruned, regenerate to drop them): vanilla block/item classes (batch 1), world/server/Forge hooks (2), entities/AI/player inventory/tab list packet (3), PathNavigate.canNavigate/isPositionClear, PathFinder.openPoint, Block.requiresUpdates, EntityZombie.func_146070_a, TileEntityChest.getChestType, ISaveHandler.saveWorldInfo, WorldInfo.cloneNBTCompound, IChunkProvider.findClosestStructure, Chunk.getEntitiesOfTypeWithinAAAB, EntityLivingBase.activePotionsMap (4), server commands (ban/banlist/msg/pardon/summon/tp/whitelist), CommandHelp.getCommands, S1CPacketEntityMetadata, MerchantRecipeList.func_151391_a, BiomeEvent.CreateDecorator (5), ChunkProviderEnd, RegionFile/RegionFileCache, MouseFilter, StructureMineshaftStart, ForgeMessage.DimensionRegisterMessage, BaseAttributeMap.addAttributeInstance (6). False positives in the list: nested classes (ServerStatusResponse$PlayerCountData, ForgeVersion$Status), inherited members (EntityPlayer.performHurtAnimation, BlockFluidClassic.definedFluid). Left: FML loader internals (LoadController, ModDiscoverer, ClassPatchManager), LAN/NetworkSystem (shareToLAN, getNetworkSystem, provideLanClient), Thaumcraft-API members on ItemArmor, PotionHelper.func_77905_c, EntityTrackerEntry.sendEventsToPlayers, Packet.generatePacket, NEI/Waila internals.
+
 ## server-side API (top 150 of 614)
 
 ```
