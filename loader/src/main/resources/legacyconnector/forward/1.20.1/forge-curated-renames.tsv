@@ -153,3 +153,8 @@ net/minecraftforge/event/level/BlockEvent$CropGrowEvent$Pre	net/neoforged/neofor
 net/minecraftforge/event/level/BlockEvent$CropGrowEvent$Post	net/neoforged/neoforge/event/level/block/CropGrowEvent$Post
 net/minecraftforge/event/level/BlockEvent$CreateFluidSourceEvent	net/neoforged/neoforge/event/level/block/CreateFluidSourceEvent
 net/minecraftforge/event/entity/living/LivingPackSizeEvent	net/neoforged/neoforge/event/entity/living/SpawnClusterSizeEvent
+# 2026-11-16 ATM 9 gap round 7
+net/minecraftforge/client/ForgeRenderTypes	net/neoforged/neoforge/client/NeoForgeRenderTypes
+net/minecraftforge/common/crafting/conditions/IConditionBuilder	net/neoforged/neoforge/common/conditions/IConditionBuilder
+net/minecraftforge/common/crafting/conditions/ConditionContext	net/neoforged/neoforge/common/conditions/ConditionContext
+net/minecraftforge/gametest/ForgeGameTestHooks	net/neoforged/neoforge/gametest/GameTestHooks

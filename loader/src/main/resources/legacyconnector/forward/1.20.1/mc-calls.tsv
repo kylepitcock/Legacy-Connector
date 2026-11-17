@@ -853,3 +853,13 @@ net/minecraft/client/renderer/ItemModelShaper	register	(Lnet/minecraft/world/ite
 net/neoforged/neoforge/client/event/ModelEvent$ModifyBakingResult	getModels	()Ljava/util/Map;	ModelLocationCompat	models	-
 net/neoforged/neoforge/client/event/ModelEvent$BakingCompleted	getModels	()Ljava/util/Map;	ModelLocationCompat	models	-
 java/lang/invoke/MethodHandle	invokeExact	(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/CapabilityProvider;)Lnet/minecraft/nbt/CompoundTag;	MiscCompat	serializeCapsHandle	(Ljava/lang/invoke/MethodHandle;Ljava/lang/Object;)Lnet/minecraft/nbt/CompoundTag;
+# --- ATM 9 run, round 7 (gap ranking over the whole instance, 2026-11-16) ---
+com/mojang/blaze3d/vertex/SheetedDecalTextureGenerator	<init>	(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lorg/joml/Matrix4f;Lorg/joml/Matrix3f;F)V	Round7ClientCompat	newSheetedDecal
+net/minecraft/client/renderer/blockentity/SkullBlockRenderer	getRenderType	(Lnet/minecraft/world/level/block/SkullBlock$Type;Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/client/renderer/RenderType;	Round7ClientCompat	skullRenderType
+net/minecraft/client/resources/SkinManager	getInsecureSkinInformation	(Lcom/mojang/authlib/GameProfile;)Ljava/util/Map;	Round7ClientCompat	insecureSkinInformation
+net/minecraft/client/resources/model/BakedModel	useAmbientOcclusion	(Lnet/minecraft/world/level/block/state/BlockState;)Z	Round7ClientCompat	useAmbientOcclusion
+net/minecraft/client/resources/model/BakedModel	useAmbientOcclusion	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/renderer/RenderType;)Z	Round7ClientCompat	useAmbientOcclusion
+net/neoforged/fml/util/ObfuscationReflectionHelper	remapName	(Lcpw/mods/modlauncher/api/INameMappingService$Domain;Ljava/lang/String;)Ljava/lang/String;	Round7Compat	remapName
+net/minecraft/advancements/DisplayInfo	getFrame	()Lnet/minecraft/advancements/AdvancementType;	Round7Compat	displayFrame
+net/minecraft/advancements/DisplayInfo	getBackground	()Lnet/minecraft/resources/ResourceLocation;	Round7Compat	displayBackground
+net/minecraft/world/item/ShieldItem	getColor	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/DyeColor;	Round7Compat	shieldColor
