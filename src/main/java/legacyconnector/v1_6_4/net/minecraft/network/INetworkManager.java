@@ -11,6 +11,9 @@ import legacyconnector.v1_7_10.net.minecraft.network.Packet;
 public interface INetworkManager {
     void setNetHandler(INetHandler handler);
 
+    /** The handler packets of this connection go to (1.2.5 {@code getNetHandler()}; null before a handler is set). */
+    INetHandler getNetHandler();
+
     void addToSendQueue(Packet packet);
 
     void wakeThreads();

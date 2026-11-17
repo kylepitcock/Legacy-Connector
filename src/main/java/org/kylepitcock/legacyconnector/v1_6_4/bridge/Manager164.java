@@ -39,6 +39,11 @@ public final class Manager164 implements INetworkManager {
     }
 
     @Override
+    public INetHandler getNetHandler() {
+        return handler;
+    }
+
+    @Override
     public void setNetHandler(INetHandler handler) {
         this.handler = handler;
     }
