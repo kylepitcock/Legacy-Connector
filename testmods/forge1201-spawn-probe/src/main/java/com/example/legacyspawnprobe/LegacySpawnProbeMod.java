@@ -2,6 +2,9 @@ package com.example.legacyspawnprobe;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -26,6 +29,13 @@ public final class LegacySpawnProbeMod {
                     .build(MOD_ID + ":spawn_probe"));
 
     public LegacySpawnProbeMod() {
-        ENTITY_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
+        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ENTITY_TYPES.register(modEventBus);
+        modEventBus.addListener(this::createEntityAttributes);
+    }
+
+    private void createEntityAttributes(EntityAttributeCreationEvent event) {
+        AttributeSupplier attributes = Zombie.createAttributes().build();
+        event.put(SPAWN_PROBE.get(), attributes);
     }
 }
