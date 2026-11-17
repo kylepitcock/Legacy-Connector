@@ -52,4 +52,16 @@ public class SPacketCollectItem implements Packet<INetHandlerPlayClient> {
     public net.minecraft.network.protocol.Packet<?> mcc$modern() {
         return new net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket(collectedItemEntityId, entityId, collectedQuantity);
     }
+
+    public int getCollectedItemEntityID() {
+        return collectedItemEntityId;
+    }
+
+    public int getEntityID() {
+        return entityId;
+    }
+
+    public int getAmount() {
+        return collectedQuantity;
+    }
 }

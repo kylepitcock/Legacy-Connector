@@ -311,4 +311,14 @@ public enum EnumFacing implements IStringSerializable {
     public int getFrontOffsetZ() {
         return getZOffset();
     }
+
+    /** 1.12's name of {@link #byIndex}. */
+    public static EnumFacing getFront(int index) {
+        return byIndex(index);
+    }
+
+    /** 1.12's name of {@link #byHorizontalIndex}. */
+    public static EnumFacing getHorizontal(int index) {
+        return byHorizontalIndex(index);
+    }
 }

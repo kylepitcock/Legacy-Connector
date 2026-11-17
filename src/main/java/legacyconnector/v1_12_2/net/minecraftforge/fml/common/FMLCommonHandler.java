@@ -205,4 +205,9 @@ public class FMLCommonHandler {
             }
         }
     }
+
+    /** Removes the section sign formatting codes of a chat or log line. */
+    public String stripSpecialChars(String message) {
+        return message == null ? null : message.replaceAll("(?i)\u00a7[0-9A-FK-OR]", "");
+    }
 }
