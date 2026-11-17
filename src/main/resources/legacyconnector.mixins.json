@@ -69,6 +69,7 @@
     "ShulkerBoxEntityInsertHookMixin",
     "FurnaceInputHookMixin",
     "ChorusFruitHookMixin",
+    "AnimalFoodHookMixin",
     "PlayerMovementExhaustionHookMixin",
     "LivingEntityUseDurationHookMixin",
     "CakeEatHookMixin",

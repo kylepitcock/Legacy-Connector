@@ -485,6 +485,19 @@ final class Mc1201Migration {
                     rewriteField(m, f, rule);
                     c.fields++;
                 }
+            } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.PUTSTATIC && !h.isMod(f.owner)) {
+                // a static field of Minecraft that mods WRITE and that no longer exists (Chicken.FOOD_ITEMS = ...): mc-calls.tsv rows named $put$field
+                // (descriptor "(T)V") with a static helper taking the value
+                Call rule = null;
+                for (String owner : h.minecraftAncestors(f.owner)) {
+                    rule = t.calls.get(owner + ".$put$" + f.name + "(" + f.desc + ")V");
+                    if (rule != null) break;
+                }
+                if (rule != null) {
+                    String hd = rule.helperDesc() != null ? rule.helperDesc() : "(" + f.desc + ")V";
+                    m.instructions.set(f, new MethodInsnNode(Opcodes.INVOKESTATIC, rule.helper(), rule.helperName(), hd, false));
+                    c.fields++;
+                }
             }
         }
     }
@@ -743,6 +756,19 @@ final class Mc1201Migration {
         String newDesc = rule.newDesc().equals("-") ? f.desc : rule.newDesc();
         InsnList after = new InsnList();
         String post = rule.post();
+        if (rule.newDesc().equals("none-name")) {
+            // the field is gone and its value derives from its name: a helper taking the field name produces it
+            int dot = post.lastIndexOf('.');
+            String cls = post.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            InsnList call = new InsnList();
+            call.add(new org.objectweb.asm.tree.LdcInsnNode(f.name));
+            call.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, post.substring(dot + 1), "(Ljava/lang/String;)" + f.desc, false));
+            m.instructions.insert(f, call);
+            m.instructions.remove(f);
+            m.maxStack = Math.max(m.maxStack, 2);
+            return;
+        }
         if (rule.newDesc().equals("none")) {
             // the field is gone: a helper without arguments produces the value
             int dot = post.lastIndexOf('.');
