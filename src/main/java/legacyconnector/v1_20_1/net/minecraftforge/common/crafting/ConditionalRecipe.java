@@ -47,6 +47,15 @@ public final class ConditionalRecipe {
             return this;
         }
 
+        /** Advancements of generated recipes are not written (1.21.1 recipes carry no advancement of their own; the recipe book unlocks through the recipe's ingredients). */
+        public Builder generateAdvancement() {
+            return this;
+        }
+
+        public Builder generateAdvancement(ResourceLocation id) {
+            return this;
+        }
+
         public void build(Consumer<LegacyFinishedRecipe> consumer, String namespace, String path) {
             build(consumer, ResourceLocation.fromNamespaceAndPath(namespace, path));
         }

@@ -107,6 +107,14 @@ public class LegacyEnchantment {
         return e;
     }
 
+    /**
+     * {@code Enchantment.byId(int)}: the enchantment with that numeric registry id, or null. APPROXIMATION: the numbering is that of the legacy enchantment
+     * registry of this layer (mod enchantments in registration order), not 1.20.1's vanilla numbering (vanilla enchantments are data now).
+     */
+    public static LegacyEnchantment byId(int id) {
+        return LegacyEnchantments.REGISTRY.byId(id);
+    }
+
     /** A stand-in for a vanilla enchantment that is known by id only (no registry yet): equal to every other stand-in of the id. */
     public static LegacyEnchantment ofId(ResourceLocation id) {
         return new LegacyEnchantment(Rarity.COMMON, null, new EquipmentSlot[0]) {

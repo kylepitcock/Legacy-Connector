@@ -856,6 +856,21 @@ public final class RoundCompat {
                 new net.minecraft.server.packs.PackSelectionConfig(required, position, false));
     }
 
+    /** {@code Pack.create(id, title, required, supplier, info, type, position, fixedPosition, source)} of 1.20.1: a pack with an already read description. */
+    public static net.minecraft.server.packs.repository.Pack createPack(String id, net.minecraft.network.chat.Component title, boolean required,
+            LegacyResourcesSupplier supplier, net.minecraft.server.packs.repository.Pack.Metadata metadata, net.minecraft.server.packs.PackType type,
+            net.minecraft.server.packs.repository.Pack.Position position, boolean fixedPosition, net.minecraft.server.packs.repository.PackSource source) {
+        return new net.minecraft.server.packs.repository.Pack(packInfo(id, title, source), packSupplier(supplier), metadata,
+                new net.minecraft.server.packs.PackSelectionConfig(required, position, fixedPosition));
+    }
+
+    /** {@code Pack.readPackInfo(id, supplier)} of 1.20.1: the pack.mcmeta description (null when the pack has none) for the current pack format of data packs. */
+    public static net.minecraft.server.packs.repository.Pack.Metadata readPackInfo(String id, LegacyResourcesSupplier supplier) {
+        return net.minecraft.server.packs.repository.Pack.readPackMetadata(packInfo(id, net.minecraft.network.chat.Component.literal(id),
+                net.minecraft.server.packs.repository.PackSource.DEFAULT), packSupplier(supplier),
+                net.minecraft.SharedConstants.getCurrentVersion().getPackVersion(net.minecraft.server.packs.PackType.SERVER_DATA));
+    }
+
     /** {@code new PathPackResources(String name, Path root, boolean isBuiltin)}. */
     public static net.minecraft.server.packs.PathPackResources newPathPack(String name, java.nio.file.Path root, boolean builtin) {
         return new net.minecraft.server.packs.PathPackResources(packInfo(name, net.minecraft.network.chat.Component.literal(name),

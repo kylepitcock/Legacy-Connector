@@ -4,9 +4,6 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -39,23 +36,12 @@ public final class Round10ClientCompat {
 
     // ---- camera -------------------------------------------------------------------------------------------------------------------------------
 
-    private static MethodHandle maxZoom;
-
     /**
-     * {@code Camera.getMaxZoom(double)}: the third-person camera distance shortened so the camera does not end up inside blocks. 1.21.1 keeps the same
-     * method private with a float parameter; it is reached through a private lookup.
+     * {@code Camera.getMaxZoom(double)}: the third-person camera distance shortened so the camera does not end up inside blocks. 1.21.1 keeps the
+     * same method with a float parameter and result (made public by the layer's access transformer).
      */
-    public static synchronized double cameraMaxZoom(Camera camera, double distance) {
-        try {
-            if (maxZoom == null) {
-                java.lang.reflect.Method m = Camera.class.getDeclaredMethod("getMaxZoom", float.class);
-                m.setAccessible(true);
-                maxZoom = MethodHandles.lookup().unreflect(m).asType(MethodType.methodType(float.class, Camera.class, float.class));
-            }
-            return (float) maxZoom.invokeExact(camera, (float) distance);
-        } catch (Throwable e) {
-            return distance;
-        }
+    public static double cameraMaxZoom(Camera camera, double distance) {
+        return camera.getMaxZoom((float) distance);
     }
 
     // ---- vertex formats -----------------------------------------------------------------------------------------------------------------------
@@ -108,5 +94,52 @@ public final class Round10ClientCompat {
     public static void setToolTip(net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen screen, java.util.List<net.minecraft.network.chat.Component> lines) {
         if (lines == null) return;
         screen.setTooltipForNextRenderPass(lines.stream().map(net.minecraft.network.chat.Component::getVisualOrderText).toList());
+    }
+
+    // ---- models, recipe book, maps ------------------------------------------------------------------------------------------------------------
+
+    /** {@code new ModelBakery.ModelBakerImpl(bakery, spriteGetter, location)}: the sprite getter takes the model location as 1.21.1's {@code TextureGetter} passes it. */
+    public static net.minecraft.client.resources.model.ModelBakery.ModelBakerImpl newModelBaker(net.minecraft.client.resources.model.ModelBakery bakery,
+            java.util.function.BiFunction<net.minecraft.resources.ResourceLocation, net.minecraft.client.resources.model.Material,
+                    net.minecraft.client.renderer.texture.TextureAtlasSprite> spriteGetter, net.minecraft.resources.ResourceLocation location) {
+        net.minecraft.client.resources.model.ModelBakery.TextureGetter getter = (modelLocation, material) -> spriteGetter.apply(modelLocation.id(), material);
+        return bakery.new ModelBakerImpl(getter, net.minecraft.client.resources.model.ModelResourceLocation.standalone(location));
+    }
+
+    /** {@code GhostRecipe.setRecipe(Recipe)}: 1.21.1 takes the recipe with its id (a stand-in id: the ghost recipe only reads the recipe). */
+    public static void ghostSetRecipe(net.minecraft.client.gui.screens.recipebook.GhostRecipe ghost, net.minecraft.world.item.crafting.Recipe<?> recipe) {
+        ghost.setRecipe(new net.minecraft.world.item.crafting.RecipeHolder<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector", "ghost"), recipe));
+    }
+
+    /** {@code MapRenderer.render(pose, buffers, int mapId, data, active, light)}: map ids are {@code MapId} objects now. */
+    public static void mapRender(net.minecraft.client.gui.MapRenderer renderer, com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers,
+            int mapId, net.minecraft.world.level.saveddata.maps.MapItemSavedData data, boolean active, int light) {
+        renderer.render(pose, buffers, new net.minecraft.world.level.saveddata.maps.MapId(mapId), data, active, light);
+    }
+
+    /**
+     * {@code new RenderLevelStageEvent(stage, renderer, pose, projection, tick, partialTick, camera, frustum)}: 1.21.1 also carries the model-view matrix (taken
+     * from the pose stack) and a {@code DeltaTracker} (a fixed one with the partial tick).
+     */
+    public static net.neoforged.neoforge.client.event.RenderLevelStageEvent newRenderLevelStageEvent(net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage stage,
+            net.minecraft.client.renderer.LevelRenderer renderer, com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Matrix4f projection, int tick, float partialTick,
+            Camera camera, net.minecraft.client.renderer.culling.Frustum frustum) {
+        net.minecraft.client.DeltaTracker tracker = new net.minecraft.client.DeltaTracker() {
+            @Override
+            public float getGameTimeDeltaTicks() {
+                return partialTick;
+            }
+
+            @Override
+            public float getGameTimeDeltaPartialTick(boolean ignoreFrozenGame) {
+                return partialTick;
+            }
+
+            @Override
+            public float getRealtimeDeltaTicks() {
+                return partialTick;
+            }
+        };
+        return new net.neoforged.neoforge.client.event.RenderLevelStageEvent(stage, renderer, pose, new org.joml.Matrix4f(pose.last().pose()), projection, tick, tracker, camera, frustum);
     }
 }

@@ -93,3 +93,4 @@ net/minecraft/world/level/storage/loot/functions/SetNbtFunction	setTag	(Lnet/min
 net/minecraft/client/renderer/RenderType	translucentNoCrumbling	*	translucent
 net/minecraft/world/item/CreativeModeTab$Builder	withBackgroundLocation	*	backgroundTexture
 net/minecraft/client/gui/components/toasts/SystemToast$SystemToastId	TUTORIAL_HINT	:*	PERIODIC_NOTIFICATION
+net/minecraft/client/gui/components/ChatComponent	refreshTrimmedMessage	*	refreshTrimmedMessages

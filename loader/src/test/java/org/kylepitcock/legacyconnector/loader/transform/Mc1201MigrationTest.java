@@ -807,6 +807,69 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void networkRegistryAbsentChannelDataFieldAndPackCreateAreRewritten() {
+        String registry = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkRegistry";
+        String channelData = "legacyconnector/v1_20_1/net/minecraftforge/network/ServerStatusPing$ChannelData";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "absent", "()Ljava/lang/String;");
+        m.instructions.add(new FieldInsnNode(GETSTATIC, registry, "ABSENT", "L" + channelData + ";"));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, channelData, "version", "()Ljava/lang/String;", false));
+        m.instructions.add(new InsnNode(ARETURN));
+        assertEquals(1, apply(c).fields);
+        FieldInsnNode f = null;
+        for (AbstractInsnNode in : m.instructions) if (in instanceof FieldInsnNode fi) f = fi;
+        assertNotNull(f);
+        assertEquals("ABSENT_DATA", f.name);
+        assertEquals("L" + channelData + ";", f.desc);
+
+        // a read of the String field of older builds stays
+        ClassNode old = cls("test/Old", "java/lang/Object");
+        MethodNode om = method(old, ACC_PUBLIC | ACC_STATIC, "absent", "()Ljava/lang/String;");
+        om.instructions.add(new FieldInsnNode(GETSTATIC, registry, "ABSENT", "Ljava/lang/String;"));
+        om.instructions.add(new InsnNode(ARETURN));
+        assertEquals(0, apply(old).fields);
+    }
+
+    @Test
+    void packCreateRecipeGhostMapRenderAndModelBakerCallsGoToHelpers() {
+        String pack = "net/minecraft/server/packs/repository/Pack";
+        String supplier = MIGRATE + "LegacyResourcesSupplier";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "(Ljava/lang/String;Lnet/minecraft/network/chat/Component;L" + supplier + ";L" + pack + "$Metadata;)L" + pack + ";");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/minecraft/server/packs/PackType", "SERVER_DATA", "Lnet/minecraft/server/packs/PackType;"));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, pack + "$Position", "TOP", "L" + pack + "$Position;"));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, pack + "Source", "DEFAULT", "L" + pack + "Source;"));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, pack, "create", "(Ljava/lang/String;Lnet/minecraft/network/chat/Component;ZL" + supplier + ";L" + pack
+                + "$Metadata;Lnet/minecraft/server/packs/PackType;L" + pack + "$Position;ZL" + pack + "Source;)L" + pack + ";", false));
+        m.instructions.add(new InsnNode(ARETURN));
+        apply(c);
+        assertNotNull(find(m, MIGRATE + "RoundCompat", "createPack"));
+
+        ClassNode d = cls("test/Maps", "java/lang/Object");
+        String renderer = "net/minecraft/client/gui/MapRenderer";
+        MethodNode r = method(d, ACC_PUBLIC | ACC_STATIC, "draw", "(L" + renderer + ";Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IL"
+                + "net/minecraft/world/level/saveddata/maps/MapItemSavedData;ZI)V");
+        r.instructions.add(new VarInsnNode(ALOAD, 0));
+        r.instructions.add(new VarInsnNode(ALOAD, 1));
+        r.instructions.add(new VarInsnNode(ALOAD, 2));
+        r.instructions.add(new VarInsnNode(ILOAD, 3));
+        r.instructions.add(new VarInsnNode(ALOAD, 4));
+        r.instructions.add(new VarInsnNode(ILOAD, 5));
+        r.instructions.add(new VarInsnNode(ILOAD, 6));
+        r.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, renderer, "render", "(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IL"
+                + "net/minecraft/world/level/saveddata/maps/MapItemSavedData;ZI)V", false));
+        r.instructions.add(new InsnNode(RETURN));
+        apply(d);
+        assertNotNull(find(r, MIGRATE + "Round10ClientCompat", "mapRender"));
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");

@@ -861,7 +861,7 @@ net/minecraft/client/renderer/blockentity/SkullBlockRenderer	getRenderType	(Lnet
 net/minecraft/client/resources/SkinManager	getInsecureSkinInformation	(Lcom/mojang/authlib/GameProfile;)Ljava/util/Map;	Round7ClientCompat	insecureSkinInformation
 net/minecraft/client/resources/model/BakedModel	useAmbientOcclusion	(Lnet/minecraft/world/level/block/state/BlockState;)Z	Round7ClientCompat	useAmbientOcclusion
 net/minecraft/client/resources/model/BakedModel	useAmbientOcclusion	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/renderer/RenderType;)Z	Round7ClientCompat	useAmbientOcclusion
-net/neoforged/fml/util/ObfuscationReflectionHelper	remapName	(Lcpw/mods/modlauncher/api/INameMappingService$Domain;Ljava/lang/String;)Ljava/lang/String;	Round7Compat	remapName
+net/neoforged/fml/util/ObfuscationReflectionHelper	remapName	(Lcpw/mods/modlauncher/api/INameMappingService$Domain;Ljava/lang/String;)Ljava/lang/String;	Round7Compat	remapName	(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;
 net/minecraft/advancements/DisplayInfo	getFrame	()Lnet/minecraft/advancements/AdvancementType;	Round7Compat	displayFrame
 net/minecraft/advancements/DisplayInfo	getBackground	()Lnet/minecraft/resources/ResourceLocation;	Round7Compat	displayBackground
 net/minecraft/world/item/ShieldItem	getColor	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/DyeColor;	Round7Compat	shieldColor
@@ -945,3 +945,9 @@ net/minecraft/commands/arguments/selector/EntitySelectorParser	<init>	(Lcom/moja
 net/minecraft/server/packs/FilePackResources	<init>	(Ljava/lang/String;Ljava/io/File;Z)V	Round10Compat	newFilePack
 net/minecraft/client/gui/screens/inventory/BookViewScreen$BookAccess	<init>	(Lnet/minecraft/world/item/ItemStack;)V	Round10ClientCompat	bookAccess
 net/minecraft/client/gui/screens/multiplayer/JoinMultiplayerScreen	setToolTip	(Ljava/util/List;)V	Round10ClientCompat	setToolTip
+net/minecraft/server/packs/repository/Pack	create	(Ljava/lang/String;Lnet/minecraft/network/chat/Component;ZLorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResourcesSupplier;Lnet/minecraft/server/packs/repository/Pack$Metadata;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/Pack$Position;ZLnet/minecraft/server/packs/repository/PackSource;)Lnet/minecraft/server/packs/repository/Pack;	RoundCompat	createPack
+net/minecraft/server/packs/repository/Pack	readPackInfo	(Ljava/lang/String;Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResourcesSupplier;)Lnet/minecraft/server/packs/repository/Pack$Metadata;	RoundCompat	readPackInfo
+net/minecraft/client/resources/model/ModelBakery$ModelBakerImpl	<init>	(Lnet/minecraft/client/resources/model/ModelBakery;Ljava/util/function/BiFunction;Lnet/minecraft/resources/ResourceLocation;)V	Round10ClientCompat	newModelBaker
+net/minecraft/client/gui/screens/recipebook/GhostRecipe	setRecipe	(Lnet/minecraft/world/item/crafting/Recipe;)V	Round10ClientCompat	ghostSetRecipe
+net/minecraft/client/gui/MapRenderer	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/level/saveddata/maps/MapItemSavedData;ZI)V	Round10ClientCompat	mapRender
+net/neoforged/neoforge/client/event/RenderLevelStageEvent	<init>	(Lnet/neoforged/neoforge/client/event/RenderLevelStageEvent$Stage;Lnet/minecraft/client/renderer/LevelRenderer;Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;IFLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;)V	Round10ClientCompat	newRenderLevelStageEvent
