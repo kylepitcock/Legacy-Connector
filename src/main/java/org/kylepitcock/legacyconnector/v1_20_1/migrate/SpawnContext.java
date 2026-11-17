@@ -106,7 +106,7 @@ public final class SpawnContext {
         if (mob == null) return null;
         Deque<Frame> frames = FRAMES.get();
         if (frames == null || frames.isEmpty()) return null;
-        for (Iterator<Frame> it = frames.descendingIterator(); it.hasNext();) {
+        for (Iterator<Frame> it = frames.iterator(); it.hasNext();) {
             Frame frame = it.next();
             if (frame.kind == Kind.ACTIVE && frame.owner == mob) {
                 return frame.tag;
