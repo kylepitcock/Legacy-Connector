@@ -127,3 +127,7 @@ net/minecraft/client/resources/model/ModelResourceLocation	org/kylepitcock/legac
 net/minecraft/client/renderer/ChunkBufferBuilderPack	net/minecraft/client/renderer/SectionBufferBuilderPack
 net/minecraft/world/effect/MobEffectInstance$FactorData	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFactorData
 net/minecraft/server/packs/repository/Pack$Info	net/minecraft/server/packs/repository/Pack$Metadata
+net/minecraft/client/gui/screens/inventory/BookViewScreen$WrittenBookAccess	net/minecraft/client/gui/screens/inventory/BookViewScreen$BookAccess
+net/minecraft/world/item/enchantment/DigDurabilityEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDigDurabilityEnchantment
+net/minecraft/world/item/enchantment/ArrowPiercingEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArrowPiercingEnchantment
+net/minecraft/world/level/block/MelonBlock	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMelonBlock

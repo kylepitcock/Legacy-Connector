@@ -300,6 +300,11 @@ public final class Round6Compat {
         return horse.getBodyArmorItem();
     }
 
+    /** {@code Horse.getArmor()} (the call keeps the receiver type {@code Horse}). */
+    public static net.minecraft.world.item.ItemStack horseArmor(net.minecraft.world.entity.animal.horse.Horse horse) {
+        return horse.getBodyArmorItem();
+    }
+
     /** {@code LayeredCauldronBlock.RAIN}: the precipitation test that lets rain fill a cauldron. */
     public static java.util.function.Predicate<net.minecraft.world.level.biome.Biome.Precipitation> cauldronRain() {
         return p -> p == net.minecraft.world.level.biome.Biome.Precipitation.RAIN;

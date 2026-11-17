@@ -17,6 +17,9 @@ import net.minecraft.world.item.TridentItem;
  * to the enum; mods used it for their own categories.
  */
 public class LegacyEnchantmentCategory {
+    /** Every category in creation order ({@code EnchantmentCategory.values()}). */
+    private static final java.util.List<LegacyEnchantmentCategory> ALL = new java.util.ArrayList<>();
+
     public static final LegacyEnchantmentCategory ARMOR = new LegacyEnchantmentCategory("ARMOR", i -> i instanceof ArmorItem);
     public static final LegacyEnchantmentCategory ARMOR_FEET = new LegacyEnchantmentCategory("ARMOR_FEET", i -> i instanceof ArmorItem a && a.getType() == ArmorItem.Type.BOOTS);
     public static final LegacyEnchantmentCategory ARMOR_LEGS = new LegacyEnchantmentCategory("ARMOR_LEGS", i -> i instanceof ArmorItem a && a.getType() == ArmorItem.Type.LEGGINGS);
@@ -38,6 +41,20 @@ public class LegacyEnchantmentCategory {
     private LegacyEnchantmentCategory(String name, Predicate<Item> delegate) {
         this.name = name;
         this.delegate = delegate;
+        synchronized (ALL) {
+            ALL.add(this);
+        }
+    }
+
+    public static LegacyEnchantmentCategory[] values() {
+        synchronized (ALL) {
+            return ALL.toArray(new LegacyEnchantmentCategory[0]);
+        }
+    }
+
+    public static LegacyEnchantmentCategory valueOf(String name) {
+        for (LegacyEnchantmentCategory c : values()) if (c.name.equals(name)) return c;
+        throw new IllegalArgumentException("No enchantment category " + name);
     }
 
     private static boolean damageable(Item i) {
