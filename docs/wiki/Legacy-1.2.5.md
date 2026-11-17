@@ -1,6 +1,6 @@
 # Legacy 1.2.5 (ModLoader and early Forge): design
 
-Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **alpha, on by default since 0.5.0 (`versions.minecraft125=false` turns it off)**: small mods register and draw their content in a real client, none has been played in survival (stages 1 to 3 below, first client runs at the end);
+Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **alpha, on by default since 0.5.0 (`versions.minecraft125=false` turns it off)**: small mods register and draw their content in a real client, and six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart (section "Save and reload checks"; stages 1 to 3 below, first client runs at the end);
 the corpus measurements are in [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
 (the forward layer this note recommends hosting on), [Version roadmap](Version-Roadmap.md).
 
@@ -424,7 +424,7 @@ Fixed on the way (generic): Forge 3.4's `IEntityLivingHandler` (death hook, thro
 `net.minecraft.src.SidedProxy` (FML 2.x's ModLoader-style annotation, default package in a mod jar) is now FML's `@SidedProxy` so the platform injects it (`Notch125To147`, transformer 145);
 Forge 3's `FurnaceRecipes.metaSmeltingList` field exists (keyed by item id and damage). Also: `screenshotTest` passes `legacyconnector.mc125` with `-Pmappings125`.
 
-What blocks "playable" (the 0.5.0 condition, a handful of playable 1.2.5 content mods): the mods above register and draw their content, but none was played in survival yet (use, craft, place, save and
+What blocks "playable" (the 0.5.0 condition, a handful of playable 1.2.5 content mods): at the time of this section the mods above registered and drew their content, but none had been played in survival; since 2026-11-17 six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart (see "Save and reload checks"). What "playable" asked for (use, craft, place, save and
 reload), the most common mod type with custom block sheets (a `getTextureFile` that points at a sheet the jar lacks, More Pistons) still draws missing textures, and the big Forge-era mods (IC2,
 BuildCraft, Forestry, Railcraft, Thaumcraft) are only link-probed.
 

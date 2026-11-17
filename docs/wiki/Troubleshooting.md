@@ -62,7 +62,7 @@ Minecraft 1.2.5 support is alpha and on by default. A 1.2.5 jar (detected by its
 1. `versions.minecraft125=false` (or the older `experimental.minecraft125=false`) is set in `config/legacyconnector.properties`: remove the line or set it to `true` and restart.
 2. The build has no 1.2.5 name table (the line says "not supported in this build"): the jars are renamed to Minecraft 1.4.7's names through a table that the release and nightly jars carry (generated at build time from Ornithe's Calamus and Feather mappings, downloaded from maven.ornithemc.net when the mod is built, and never committed). Use a release or nightly jar, or build with network access.
 
-Put the jars (the server build of a mod on a server) into `mods/1.2.5/`. Expect mods that load and then do little: small mods register their content and draw it in a real client, none has been played in survival and the big Forge-era mods are only link-probed. Details: [Legacy 1.2.5](Legacy-1.2.5.md), the toggle: [Configuration](Configuration.md).
+Put the jars (the server build of a mod on a server) into `mods/1.2.5/`. Expect mods that load and then do little: small mods register their content and draw it in a real client, six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart, and the big Forge-era mods are only link-probed. Details: [Legacy 1.2.5](Legacy-1.2.5.md), the toggle: [Configuration](Configuration.md).
 
 ## Reporting
 

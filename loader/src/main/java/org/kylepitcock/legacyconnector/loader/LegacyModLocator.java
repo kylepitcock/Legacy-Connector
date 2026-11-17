@@ -281,7 +281,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Mc125Jars.configure(LibraryBridges.readConfig(modsDir));
             if (Mc125Jars.enabled()) {
                 if (org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available()) {
-                    LOG.info("Legacy Connector: Minecraft 1.2.5 support is on (beta; {}=false turns it off): 1.2.5 mods are hosted through the 1.4.7 chain, some load and then do little", Mc125Jars.CONFIG_KEY);
+                    LOG.info("Legacy Connector: Minecraft 1.2.5 support is on (alpha; {}=false turns it off): 1.2.5 mods are hosted through the 1.4.7 chain, some load and then do little", Mc125Jars.CONFIG_KEY);
                 } else {
                     LOG.info("Legacy Connector: this build has no 1.2.5 name table, so Minecraft 1.2.5 jars are reported as unsupported and not loaded (use a release or nightly build, or build with -Pmappings125)");
                 }
