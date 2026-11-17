@@ -449,6 +449,47 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void mobLegacyFinalizeSpawnBridgeFailsWhenBothSignaturesAreDeclaredInOneClass() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode c = cls("test/MyMobWithOverload", mob);
+        method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc).instructions.add(new InsnNode(ACONST_NULL));
+        method(c, ACC_PUBLIC, "finalizeSpawn", newDesc).instructions.add(new InsnNode(ACONST_NULL));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(c));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(c.name));
+    }
+
+    @Test
+    void mobLegacyFinalizeSpawnBridgeFailsWhenTargetShapedOverloadIsInChildClass() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode parent = cls("test/BaseLegacyMob", mob);
+        method(parent, ACC_PUBLIC, "finalizeSpawn", oldDesc).instructions.add(new InsnNode(ACONST_NULL));
+        ClassNode child = cls("test/ChildMobWithOverload", parent.name);
+        method(child, ACC_PUBLIC, "finalizeSpawn", newDesc).instructions.add(new InsnNode(ACONST_NULL));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(parent, child));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(child.name));
+    }
+
+    @Test
     void bridgeIsNotAddedWhenTheModAlreadyUsesTheNewSignature() {
         ClassNode c = cls("test/NewBE", BE);
         method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V").instructions.add(new InsnNode(RETURN));
