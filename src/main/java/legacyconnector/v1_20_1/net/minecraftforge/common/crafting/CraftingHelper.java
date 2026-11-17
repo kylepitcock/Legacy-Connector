@@ -114,6 +114,23 @@ public final class CraftingHelper {
         PENDING_TYPES.clear();
     }
 
+    /**
+     * {@code CraftingHelper.write(buffer, ingredient)}: the ingredient's network form. APPROXIMATION: with a registry buffer the 1.21.1 codec is used, with a
+     * plain buffer the matching stacks go as item id and count.
+     */
+    public static void write(net.minecraft.network.FriendlyByteBuf buffer, net.minecraft.world.item.crafting.Ingredient ingredient) {
+        if (buffer instanceof net.minecraft.network.RegistryFriendlyByteBuf registryBuffer) {
+            net.minecraft.world.item.crafting.Ingredient.CONTENTS_STREAM_CODEC.encode(registryBuffer, ingredient);
+            return;
+        }
+        ItemStack[] stacks = ingredient.getItems();
+        buffer.writeVarInt(stacks.length);
+        for (ItemStack stack : stacks) {
+            buffer.writeResourceLocation(BuiltInRegistries.ITEM.getKey(stack.getItem()));
+            buffer.writeVarInt(stack.getCount());
+        }
+    }
+
     public static ResourceLocation getID(IIngredientSerializer<?> serializer) {
         for (var e : INGREDIENTS.entrySet()) if (e.getValue() == serializer) return e.getKey();
         return null;

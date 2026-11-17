@@ -9,12 +9,14 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites1122.MOVE_START} and {@code MOVE_DONE}): 1.12.2 coremods put a hook first in {@code Entity.move} (it notes
  * the entity's motion) and one after the block collisions (it sees the movement that happened and the one that was asked for: the position change and the
  * move argument). A no-op without such hooks.
  */
+@CoremodHook
 @Mixin(Entity.class)
 public abstract class EntityMoveHookMixin {
     @Unique

@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites1122.BOAT_DROPS}, {@code MINECART_DROPS}): 1.12.2 coremods put a hook after the item a destroyed boat
  * or minecart dropped (to drop what was attached to it as well). No-ops without such hooks.
  */
+@CoremodHook
 @Mixin(VehicleEntity.class)
 public abstract class VehicleDestroyedHookMixin {
     @Inject(method = "destroy(Lnet/minecraft/world/item/Item;)V", at = @At("TAIL"), require = 0)

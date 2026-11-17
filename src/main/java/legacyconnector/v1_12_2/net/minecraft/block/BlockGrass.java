@@ -53,7 +53,7 @@ public class BlockGrass extends Block implements IGrowable {
     /** Plain dirt (not coarse dirt or podzol). */
     private static boolean isPlainDirt(World world, BlockPos pos, IBlockState state) {
         if (!Block.mcc$named(state.getBlock(), "dirt")) return false;
-        var level = world.mcc$level();
+        var level = world.mcc$access();
         return level == null || level.getBlockState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos)).is(net.minecraft.world.level.block.Blocks.DIRT);
     }
 
@@ -75,7 +75,8 @@ public class BlockGrass extends Block implements IGrowable {
     /** Bone meal: tall grass (and now and then a flower) on the grass around, by random walks as vanilla does. */
     @Override
     public void grow(World worldIn, Random rand, BlockPos pos, IBlockState state) {
-        var level = worldIn.mcc$level();
+        // the world's accessor: during chunk generation a generation region (a write to the real level would wait on the chunk being made)
+        var level = worldIn.mcc$access();
         if (level == null) return;
         BlockPos up = pos.up();
         for (int i = 0; i < 128; ++i) {

@@ -86,7 +86,7 @@ public class BlockTallGrass extends BlockBush implements IGrowable, IShearable {
     /** Bone meal: grass becomes double grass, a fern a large fern (the modern tall plants). */
     @Override
     public void grow(World worldIn, Random rand, BlockPos pos, IBlockState state) {
-        var level = worldIn.mcc$level();
+        var level = worldIn.mcc$access();
         if (level == null) return;
         var mp = org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos);
         var tall = state.getValue(TYPE) == EnumType.FERN ? net.minecraft.world.level.block.Blocks.LARGE_FERN : net.minecraft.world.level.block.Blocks.TALL_GRASS;

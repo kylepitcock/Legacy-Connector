@@ -11,12 +11,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites of 1.7.10 on the client (generic, {@code CoremodSites.Client}): the first-person item drawing end ({@code HAND_ITEMS_END}). A no-op
  * without such a hook. The other client places of this round are in {@code ClientPickBlockHookMixin}, {@code MouseTurnHookMixin} and
  * {@code PlayerBlockReachHookMixin}.
  */
+@CoremodHook
 @Mixin(ItemInHandRenderer.class)
 public abstract class ClientCoremodSitesMixin1710 {
     @Inject(method = "renderHandsWithItems", at = @At("TAIL"), require = 0)

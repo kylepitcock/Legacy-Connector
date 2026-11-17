@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 
 /**
  * 1.12.2 saved-data registry over a modern {@link DimensionDataStorage}: each {@link WorldSavedData} is stored as
- * {@code data/legacy_<name>.dat} of its dimension. Without a storage (client side) data lives in memory only.
+ * {@code data/<name>.dat} of its dimension (see SavedDataFiles). Without a storage (client side) data lives in memory only.
  */
 public class MapStorage {
     private final DimensionDataStorage storage;
@@ -18,6 +18,7 @@ public class MapStorage {
 
     public MapStorage(DimensionDataStorage storage) {
         this.storage = storage;
+        org.kylepitcock.legacyconnector.core.SavedDataFiles.migrate(storage);
     }
 
     /** A storage a mod builds over a save handler: it keeps its data in memory (the world's own storages are the saved ones). */
@@ -41,7 +42,7 @@ public class MapStorage {
     }
 
     private static String file(String name) {
-        return "legacy_" + name.replaceAll("[^a-zA-Z0-9_.-]", "_");
+        return org.kylepitcock.legacyconnector.core.SavedDataFiles.file(name);
     }
 
     /** The saved data, or null when none was saved yet (mods then create it and call {@link #setData}). */

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SequencedMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -40,9 +41,19 @@ public final class Round8ClientCompat {
         return new RenderBuffers(Math.max(1, Math.min(4, Runtime.getRuntime().availableProcessors() / 2)));
     }
 
-    /** {@code new MultiBufferSource.BufferSource(fallback, layerBuilders)}: byte buffers now; the old builders only supplied memory (layers get theirs on demand). */
-    public static MultiBufferSource.BufferSource newBufferSource(CompatBufferBuilder ignored, Map<RenderType, CompatBufferBuilder> ignoredMap) {
-        return MultiBufferSource.immediateWithBuffers(new LinkedHashMap<>(), new ByteBufferBuilder(256));
+    /**
+     * {@code new MultiBufferSource.BufferSource(fallback, layerBuilders)} and the {@code super(...)} call of a mod's subclass of it (Patchouli's ghost buffers):
+     * 1.21.1 takes byte buffers. APPROXIMATION: the old builders only supplied memory, so the fallback is a fresh buffer.
+     */
+    public static ByteBufferBuilder fallbackBuffer(CompatBufferBuilder ignored) {
+        return new ByteBufferBuilder(256);
+    }
+
+    /** The layer map of the constructor above: one byte buffer of the layer's own size per render type, in the map's order. */
+    public static SequencedMap<RenderType, ByteBufferBuilder> layerBuffers(Map<RenderType, ?> layers) {
+        SequencedMap<RenderType, ByteBufferBuilder> out = new LinkedHashMap<>();
+        if (layers != null) for (RenderType type : layers.keySet()) out.put(type, new ByteBufferBuilder(type.bufferSize()));
+        return out;
     }
 
     /**

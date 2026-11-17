@@ -427,6 +427,8 @@ public final class Notch125To147 {
             if (!local.containsKey(internalName)) {
                 if (MODLOADER_MP.contains(internalName)) return "net/minecraft/src/" + internalName;
                 if (internalName.startsWith("forge/")) return "net/minecraft/src/" + internalName;
+                // FML 2.x's ModLoader-style annotation (net.minecraft.src.SidedProxy, the default package in a mod jar) is the FML annotation the platform injects
+                if (internalName.equals("SidedProxy")) return "cpw/mods/fml/common/SidedProxy";
             }
             return internalName;
         }

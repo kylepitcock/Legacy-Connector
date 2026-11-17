@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Legacy village buildings are added to a vanilla village after vanilla assembled it, unchanged
- * (LegacyVillageAdditions): only jigsaw structures starting from a vanilla village pool are touched.
+ * (VillageAdditions): only jigsaw structures starting from a vanilla village pool are touched.
  */
 @Mixin(JigsawStructure.class)
 public abstract class JigsawStructureLegacyVillageMixin {
@@ -25,7 +25,7 @@ public abstract class JigsawStructureLegacyVillageMixin {
     @Inject(method = "findGenerationPoint", at = @At("RETURN"), cancellable = true, require = 0)
     private void legacyconnector$legacyVillageBuildings(Structure.GenerationContext context, CallbackInfoReturnable<Optional<Structure.GenerationStub>> cir) {
         try {
-            cir.setReturnValue(org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyVillageAdditions.apply(cir.getReturnValue(), context, startPool));
+            cir.setReturnValue(org.kylepitcock.legacyconnector.core.worldgen.VillageAdditions.apply(cir.getReturnValue(), context, startPool));
         } catch (RuntimeException | LinkageError e) {
             // the village stays vanilla
         }

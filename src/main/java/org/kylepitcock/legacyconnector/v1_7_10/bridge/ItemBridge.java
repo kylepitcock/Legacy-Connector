@@ -942,6 +942,20 @@ public final class ItemBridge {
         return moved;
     }
 
+    /**
+     * Makes {@code target} (a modern stack some other holder keeps, such as a slot's) the item and components of {@code source}, in
+     * place: 1.7.10's {@code ItemStack.setItem} changed the stack the slot holds, and mods swap an item that way (IC2's batteries between
+     * their empty and charged items, so a wrapped view that kept a replacement copy lost the charge). Count is left alone.
+     */
+    public static void adoptInPlace(net.minecraft.world.item.ItemStack target, net.minecraft.world.item.ItemStack source) {
+        if (target == source || target.isEmpty() || source.isEmpty()) return;
+        var access = (org.kylepitcock.legacyconnector.mixin.ItemStackItemAccess) (Object) target;
+        net.minecraft.world.item.Item newItem = source.getItem();
+        var patch = source.getComponentsPatch();
+        access.legacyconnector$setItem(newItem);
+        access.legacyconnector$setComponents(net.minecraft.core.component.PatchedDataComponentMap.fromPatch(newItem.components(), patch));
+    }
+
     public static net.minecraft.world.item.ItemStack withLegacyDamage(Item item, net.minecraft.world.item.ItemStack stack, int damage) {
         if (stack.getItem() instanceof net.minecraft.world.item.MapItem && stack.get(CompatComponents.legacyMeta()) == null) {
             stack.set(net.minecraft.core.component.DataComponents.MAP_ID, new net.minecraft.world.level.saveddata.maps.MapId(Math.max(0, damage)));

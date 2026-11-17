@@ -10,11 +10,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.LIQUID_BLOCKED}): 1.12.2 coremods put hooks into {@code BlockDynamicLiquid.isBlocked} (the check
  * of blocks flowing liquid does not replace); one answering true keeps the block. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(FlowingFluid.class)
 public abstract class FlowingFluidBlockedHookMixin {
     @Inject(method = "canHoldFluid", at = @At("RETURN"), cancellable = true, require = 0)

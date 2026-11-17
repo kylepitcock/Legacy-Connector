@@ -161,6 +161,10 @@ public class MinecraftForge {
         }
     }
 
+    public static void registerEntityLivingHandler(IEntityLivingHandler handler) {
+        ForgeEvents.entityLiving(handler);
+    }
+
     public static void registerSpecialMobSpawnHandler(ISpecialMobSpawnHandler handler) {
         ForgeEvents.specialSpawn(handler);
     }

@@ -92,7 +92,7 @@ public class ItemBlock extends Item {
 
     public boolean canPlaceBlockOnSide(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
             legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, ItemStack stack) {
-        var level = world.mcc$level();
+        var level = world.mcc$access();
         if (!level.getBlockState(pos.mcc$modern()).canBeReplaced()) pos = pos.offset(side);
         return level.getBlockState(pos.mcc$modern()).canBeReplaced() && block.canPlaceBlockOnSide(world, pos, side);
     }

@@ -55,7 +55,7 @@ public class BlockFurnace extends BlockContainer {
     /** Lights or puts out the furnace at a position, keeping its contents. */
     public static void setState(boolean active, World worldIn, BlockPos pos) {
         if (worldIn == null || pos == null) return;
-        var level = worldIn.mcc$level();
+        var level = worldIn.mcc$access();
         if (level != null) {
             var mp = org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos);
             var modern = level.getBlockState(mp);

@@ -29,6 +29,7 @@ import java.util.Set;
  * </ul>
  */
 public final class LegacyResourceConverter {
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("Legacy Connector");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     /** Legacy texture folders that must be added to the modern atlases. */
@@ -106,6 +107,12 @@ public final class LegacyResourceConverter {
             if (modern.contains("/models/")) {
                 data = qualifySelfParent(data, modern);
                 data = renameForgeModelLoader(data);
+                byte[] readable = dropUnreadableOverrides(data, modern);
+                if (readable != null) {
+                    // the mod's own loader reads the original (legacy resource manager: RAW_ROOT first), the modern model loader the cleaned copy
+                    output.putIfAbsent(RAW_ROOT + modern, data);
+                    data = readable;
+                }
                 addVineModels(data);
             }
             collectModelRefs(data);
@@ -121,6 +128,37 @@ public final class LegacyResourceConverter {
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
         return true;
+    }
+
+    /**
+     * A model whose {@code overrides} are not vanilla item overrides ({@code {"predicate":{...},"model":"ns:x"}}): Tinkers' Construct's {@code .tcon.json} bow
+     * and battle sign models carry per-state {@code textures}/{@code display} entries (or an object instead of an array) that only the mod's own loader
+     * reads. The modern model loader fails the whole model with "Missing model" (and the item renders as the missing model). Returns the model without
+     * those entries (an entry that names a model stays), or null when nothing had to change; the caller keeps the original for the mod's loader.
+     */
+    static byte[] dropUnreadableOverrides(byte[] data, String assetPath) {
+        try {
+            if (!(JsonParser.parseString(new String(data, StandardCharsets.UTF_8)) instanceof JsonObject obj) || !obj.has("overrides")) return null;
+            JsonElement overrides = obj.get("overrides");
+            JsonArray kept = new JsonArray();
+            boolean changed = false;
+            if (overrides instanceof JsonArray arr) {
+                for (JsonElement o : arr) {
+                    if (o instanceof JsonObject oo && oo.get("model") instanceof JsonPrimitive mp && mp.isString()) kept.add(o);
+                    else changed = true;
+                }
+            } else {
+                changed = true;
+            }
+            if (!changed) return null;
+            LOG.debug("{}: {} item override(s) without a model are for the mod's own model loader; the modern copy of the model drops them", assetPath,
+                    overrides instanceof JsonArray a ? a.size() - kept.size() : 1);
+            if (kept.isEmpty()) obj.remove("overrides");
+            else obj.add("overrides", kept);
+            return GSON.toJson(obj).getBytes(StandardCharsets.UTF_8);
+        } catch (RuntimeException e) {
+            return null; // malformed JSON stays as it is
+        }
     }
 
     /** Folder (in the translated jar) holding JSON files from {@code models/} that are not models; the path below it is the original one. */

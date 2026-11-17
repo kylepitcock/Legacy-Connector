@@ -9,11 +9,13 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.SPRINT_STARTED}): 1.7.10 coremods put a hook after the server started a player's sprint in
  * {@code NetHandlerPlayServer.processEntityAction}. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerSprintHookMixin {
     @Shadow

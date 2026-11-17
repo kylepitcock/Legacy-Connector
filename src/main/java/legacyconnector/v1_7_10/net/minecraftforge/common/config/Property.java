@@ -176,7 +176,7 @@ public class Property {
 
     public Property setDefaultValues(String[] v) {
         defaultValue = "";
-        defaultValues = Arrays.copyOf(v, v.length);
+        defaultValues = v == null ? new String[0] : Arrays.copyOf(v, v.length); // (a mod may pass no defaults)
         return this;
     }
 
