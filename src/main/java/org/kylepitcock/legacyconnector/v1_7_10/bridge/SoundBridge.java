@@ -351,6 +351,7 @@ public final class SoundBridge {
     }
 
     static ParticleOptions particle(String name, double vx, double vy, double vz) {
+        if (name == null) return null; // a mod's particle name getter may answer null: no particle, as an unknown name
         if (name.startsWith("iconcrack_") || name.startsWith("blockcrack_") || name.startsWith("blockdust_")) {
             String[] parts = name.split("_");
             int id = parts.length > 1 ? parseInt(parts[1]) : 0;
