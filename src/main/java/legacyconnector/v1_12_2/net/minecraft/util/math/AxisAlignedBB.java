@@ -171,6 +171,11 @@ public class AxisAlignedBB {
         return vec.x >= minX && vec.x <= maxX && vec.y >= minY && vec.y <= maxY;
     }
 
+    /** Whether the segment between the two points touches this box (the box of the two points overlaps it and the segment crosses it). */
+    public boolean intersects(Vec3d min, Vec3d max) {
+        return calculateIntercept(min, max) != null || contains(min) || contains(max);
+    }
+
     public boolean intersects(AxisAlignedBB o) {
         return intersects(o.minX, o.minY, o.minZ, o.maxX, o.maxY, o.maxZ);
     }

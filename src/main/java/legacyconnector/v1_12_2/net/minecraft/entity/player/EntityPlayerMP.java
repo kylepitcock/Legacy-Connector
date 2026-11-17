@@ -283,4 +283,11 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         var sp = mcc$serverPlayer();
         return sp == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer.mcc$of(sp.getStats());
     }
+
+    /** The values last sent to the client (1.12's change detection of the player list); -99999999 forces the first send. */
+    public float lastHealth = -1.0E8F;
+    public int lastFoodLevel = -99999999;
+    public int lastExperience = -99999999;
+    public double managedPosX;
+    public double managedPosZ;
 }

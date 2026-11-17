@@ -1800,7 +1800,31 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         return true;
     }
 
+    /** The entry position and facing the last portal use recorded (vanilla keeps them for the next teleport; modern portals do not expose them). */
+    protected Vec3d lastPortalVec;
+    protected EnumFacing teleportDirection;
+
+    public Vec3d getLastPortalVec() {
+        return lastPortalVec;
+    }
+
+    public EnumFacing getTeleportDirection() {
+        return teleportDirection;
+    }
+
     public void setPortal(BlockPos pos) {
+        if (pos == null) return;
+        lastPortalVec = new Vec3d(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+        teleportDirection = getHorizontalFacing();
+    }
+
+    /** Whether a rider is thrown off when this mount enters water (living mounts only). */
+    protected boolean shouldDismountInWater(Entity rider) {
+        return this instanceof EntityLivingBase;
+    }
+
+    /** Called while the entity overlaps a block (vanilla: nothing). */
+    protected void onInsideBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
     }
 
     public int getPortalCooldown() {
@@ -2354,5 +2378,15 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         } catch (ReflectiveOperationException e) {
             // not added
         }
+    }
+
+    /** Moves the position to the bottom centre of the bounding box without marking the entity as teleported; true when it moved. */
+    public boolean setPositionNonDirty() {
+        AxisAlignedBB box = getEntityBoundingBox();
+        double x = (box.minX + box.maxX) / 2.0D;
+        double z = (box.minZ + box.maxZ) / 2.0D;
+        boolean moved = x != mcc$local_posX || box.minY != mcc$local_posY || z != mcc$local_posZ;
+        if (moved) setPosition(x, box.minY, z);
+        return moved;
     }
 }

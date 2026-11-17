@@ -68,4 +68,8 @@ public class VillageCollection {
     public static String fileNameForProvider(legacyconnector.v1_12_2.net.minecraft.world.WorldProvider provider) {
         return "villages" + provider.getDimensionType().getSuffix();
     }
+
+    /** 1.12 saved the village list as world data; the modern villages save themselves. */
+    public void markDirty() {
+    }
 }

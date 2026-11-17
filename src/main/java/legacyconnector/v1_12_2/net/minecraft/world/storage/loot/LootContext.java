@@ -29,6 +29,17 @@ public class LootContext {
         this.damageSource = damageSource;
     }
 
+    private int lootingModifier = -1;
+
+    /**
+     * Forge: the looting level of the kill. Set by the builder when the caller knows it; otherwise the looting enchantment of the killing
+     * player's held item.
+     */
+    public int getLootingModifier() {
+        if (lootingModifier >= 0) return lootingModifier;
+        return player == null ? 0 : legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getLootingModifier(player);
+    }
+
     public Entity getLootedEntity() {
         return lootedEntity;
     }
@@ -124,6 +135,7 @@ public class LootContext {
         private Entity lootedEntity;
         private EntityPlayer player;
         private DamageSource damageSource;
+        private int lootingModifier = -1;
 
         public Builder(WorldServer world) {
             this.world = world;
@@ -149,8 +161,15 @@ public class LootContext {
             return this;
         }
 
+        public Builder withLootingModifier(int modifier) {
+            this.lootingModifier = modifier;
+            return this;
+        }
+
         public LootContext build() {
-            return new LootContext(luck, world, world == null ? null : world.getLootTableManager(), lootedEntity, player, damageSource);
+            LootContext c = new LootContext(luck, world, world == null ? null : world.getLootTableManager(), lootedEntity, player, damageSource);
+            c.lootingModifier = lootingModifier;
+            return c;
         }
     }
 

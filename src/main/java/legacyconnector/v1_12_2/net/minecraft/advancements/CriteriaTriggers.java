@@ -25,6 +25,12 @@ public class CriteriaTriggers {
     public static final ConsumeItemTrigger CONSUME_ITEM = register(new ConsumeItemTrigger());
     public static final UsedTotemTrigger USED_TOTEM = register(new UsedTotemTrigger());
     public static final PlacedBlockTrigger PLACED_BLOCK = register(new PlacedBlockTrigger());
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.BredAnimalsTrigger BRED_ANIMALS =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.BredAnimalsTrigger());
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.EntityHurtPlayerTrigger ENTITY_HURT_PLAYER =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.EntityHurtPlayerTrigger());
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.PlayerHurtEntityTrigger PLAYER_HURT_ENTITY =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.PlayerHurtEntityTrigger());
     public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ConstructBeaconTrigger CONSTRUCT_BEACON =
             register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ConstructBeaconTrigger());
 

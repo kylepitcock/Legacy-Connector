@@ -52,4 +52,12 @@ public class SPacketTimeUpdate implements Packet<INetHandlerPlayClient> {
     public net.minecraft.network.protocol.Packet<?> mcc$modern() {
         return new net.minecraft.network.protocol.game.ClientboundSetTimePacket(totalWorldTime, worldTime, doDaylightCycle);
     }
+
+    public long getTotalWorldTime() {
+        return totalWorldTime;
+    }
+
+    public long getWorldTime() {
+        return worldTime;
+    }
 }
