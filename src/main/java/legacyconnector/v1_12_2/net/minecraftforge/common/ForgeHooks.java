@@ -239,6 +239,35 @@ public class ForgeHooks {
         return stack != null && !stack.isEmpty() && Stacks1122.toModern(stack).isCorrectToolForDrops(state);
     }
 
+    /** The result a mod gave to a canceled right click with the held item, or null when nothing canceled it. */
+    public static legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onItemRightClick(EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem(player, hand);
+        mcc$bus().post(event);
+        return event.isCanceled() ? event.getCancellationResult() : null;
+    }
+
+    /** The result a mod gave to a canceled interaction at a spot of an entity (the hit point is made relative to the entity), or null. */
+    public static legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onInteractEntityAt(EntityPlayer player, Entity entity, RayTraceResult ray,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        Vec3d hit = ray == null ? null : ray.hitVec;
+        Vec3d local = hit == null || entity == null ? Vec3d.ZERO : new Vec3d(hit.x - Entity.mcc$get$posX(entity), hit.y - Entity.mcc$get$posY(entity), hit.z - Entity.mcc$get$posZ(entity));
+        return onInteractEntityAt(player, entity, local, hand);
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onInteractEntityAt(EntityPlayer player, Entity entity, Vec3d vec3d,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific(player, hand, entity, vec3d);
+        mcc$bus().post(event);
+        return event.isCanceled() ? event.getCancellationResult() : null;
+    }
+
+    /** Whether using an item may go on with the stack changed to another (the item decides; two empties never). */
+    public static boolean canContinueUsing(ItemStack from, ItemStack to) {
+        if (!from.isEmpty() && !to.isEmpty()) return from.getItem().canContinueUsing(from, to);
+        return false;
+    }
+
     /** False when a mod canceled the player's attack on the target. */
     public static boolean onPlayerAttackTarget(EntityPlayer player, Entity target) {
         var p = player == null ? null : player.mcc$player();

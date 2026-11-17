@@ -129,8 +129,6 @@ public final class RuntimeApis1122 {
 
     // ------------------------------------------------------------------ registries
 
-    /** Forge's ItemPredicates: name -> factory of an item predicate from its JSON. */
-    private static final Map<Object, Object> ITEM_PREDICATES = new LinkedHashMap<>();
     /** StatList.ALL_STATS / BASIC_STATS of the stats mods register. */
     private static final Set<Object> STATS = Collections.newSetFromMap(new IdentityHashMap<>());
     private static final Set<Object> BASIC_STATS = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -228,21 +226,6 @@ public final class RuntimeApis1122 {
 
     public static void register() {
         // CriteriaTriggers is a real shim class (register/get/getAll live there)
-        String preds = "net.minecraftforge.advancements.critereon.ItemPredicates.";
-        Synth.addStaticMethod(preds + "register", args -> {
-            if (args.length < 2 || args[0] == null) return null;
-            synchronized (ITEM_PREDICATES) {
-                if (ITEM_PREDICATES.containsKey(args[0])) LOG.warn("An item predicate with name {} is already registered; keeping the first", args[0]);
-                else ITEM_PREDICATES.put(args[0], args[1]);
-            }
-            return null;
-        });
-        Synth.addStaticMethod(preds + "get", args -> {
-            synchronized (ITEM_PREDICATES) {
-                return args.length > 0 && args[0] != null ? ITEM_PREDICATES.get(args[0]) : null;
-            }
-        });
-
         // StatBase.registerStat adds the stat to StatList.ALL_STATS; StatBasic's also to BASIC_STATS
         Synth.addInstanceMethod("net.minecraft.stats.StatBase.registerStat", (self, args) -> {
             synchronized (STATS) {

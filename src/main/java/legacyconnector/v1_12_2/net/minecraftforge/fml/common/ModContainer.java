@@ -37,6 +37,13 @@ public interface ModContainer {
         return new java.util.ArrayList<>();
     }
 
+    /**
+     * Enables or disables the mod. The layer loads every mod it discovered together, so a mod cannot be switched off after the fact: this
+     * is accepted and ignored (a mod is disabled by removing its jar).
+     */
+    default void setEnabledState(boolean enabled) {
+    }
+
     default String getSortingRules() {
         return "";
     }

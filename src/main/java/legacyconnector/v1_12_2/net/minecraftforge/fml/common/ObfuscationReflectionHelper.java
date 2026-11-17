@@ -56,6 +56,17 @@ public class ObfuscationReflectionHelper {
         return ReflectionHelper.findMethod((Class<Object>) clazz, null, new String[] {methodName}, parameterTypes);
     }
 
+    /** The declared constructor with these parameter types, made accessible. */
+    public static <T> java.lang.reflect.Constructor<T> findConstructor(Class<T> clazz, Class<?>... parameterTypes) {
+        try {
+            java.lang.reflect.Constructor<T> c = clazz.getDeclaredConstructor(parameterTypes);
+            c.setAccessible(true);
+            return c;
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Unable to find constructor of " + clazz.getName() + " with " + java.util.Arrays.toString(parameterTypes), e);
+        }
+    }
+
     public static Field findField(Class<?> clazz, String fieldName) {
         return ReflectionHelper.findField(clazz, fieldName);
     }

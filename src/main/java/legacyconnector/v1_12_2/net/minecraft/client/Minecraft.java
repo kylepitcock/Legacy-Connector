@@ -572,6 +572,16 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
         return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.tickLength() : 1.0F;
     }
 
+    /** Whether the game runs on a 64-bit Java. */
+    public static boolean isJava64bit() {
+        String[] keys = {"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"};
+        for (String key : keys) {
+            String value = System.getProperty(key);
+            if (value != null && value.contains("64")) return true;
+        }
+        return false;
+    }
+
     public String getVersion() {
         return "1.12.2";
     }

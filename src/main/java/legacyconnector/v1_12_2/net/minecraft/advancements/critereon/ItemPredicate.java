@@ -61,14 +61,8 @@ public class ItemPredicate {
         JsonObject json = JsonUtils.getJsonObject(element, "item");
         if (json.has("type")) {
             ResourceLocation rl = new ResourceLocation(JsonUtils.getString(json, "type"));
-            Object factory = null;
-            try {
-                factory = org.kylepitcock.legacyconnector.core.synth.Synth.callStatic("net.minecraftforge.advancements.critereon.ItemPredicates.get",
-                        new Object[] {rl});
-            } catch (Throwable t) {
-                // below
-            }
-            if (factory instanceof java.util.function.Function<?, ?> f) return ((java.util.function.Function<JsonObject, ItemPredicate>) f).apply(json);
+            var factory = legacyconnector.v1_12_2.net.minecraftforge.advancements.critereon.ItemPredicates.get(rl);
+            if (factory != null) return factory.apply(json);
             throw new JsonSyntaxException("There is no ItemPredicate of type " + rl);
         }
         MinMaxBounds count = MinMaxBounds.deserialize(json.get("count"));

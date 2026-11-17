@@ -6,6 +6,11 @@ import legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;
 public interface IFMLSidedHandler {
     MinecraftServer getServer();
 
+    /** The physical side this handler runs for. */
+    default legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side getSide() {
+        return FMLCommonHandler.instance().getSide();
+    }
+
     default void haltGame(String message, Throwable exception) {
         throw new RuntimeException(message, exception);
     }

@@ -58,6 +58,12 @@ public class EnumHelper {
         return addEnum(legacyconnector.v1_12_2.net.minecraft.entity.passive.HorseArmorType.class, name, armorStrength, key, key, texture);
     }
 
+    /** Adds a spawn placement type whose rule is the given test (mobs placed this way spawn where it holds). */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType addSpawnPlacementType(String name,
+            java.util.function.BiPredicate<legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos> predicate) {
+        return addEnum(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType.class, name, predicate);
+    }
+
     /** Adds a painting art (title, size and texture offset in pixels); the painting view finds it by its title. */
     public static legacyconnector.v1_12_2.net.minecraft.entity.item.EntityPainting.EnumArt addArt(String name, String tile, int sizeX, int sizeY, int offsetX, int offsetY) {
         return addEnum(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityPainting.EnumArt.class, name, tile, sizeX, sizeY, offsetX, offsetY);

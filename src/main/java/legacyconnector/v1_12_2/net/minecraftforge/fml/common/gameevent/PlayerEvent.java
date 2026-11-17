@@ -76,11 +76,14 @@ public class PlayerEvent extends Event {
     /** A player picked up an item entity (posted after the pickup, with what was picked up). */
     public static class ItemPickupEvent extends PlayerEvent {
         public final ItemStack stack;
+        /** The picked-up item entity (the field mods of 1.12.2 read; {@link #getOriginalEntity()} is the same). */
+        public final legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem pickedUp;
         private final legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem originalEntity;
 
         public ItemPickupEvent(EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem entPickedUp, ItemStack stack) {
             super(player);
             this.originalEntity = entPickedUp;
+            this.pickedUp = entPickedUp;
             this.stack = stack;
         }
 

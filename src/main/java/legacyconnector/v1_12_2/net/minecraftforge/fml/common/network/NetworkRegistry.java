@@ -25,6 +25,11 @@ public class NetworkRegistry {
                 }
             };
 
+    /** FML's mod -> network holder map (the private field mods read; entries appear on first use). */
+    public java.util.Map<Object, legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.internal.NetworkModHolder> registry() {
+        return registry;
+    }
+
     public SimpleNetworkWrapper newSimpleChannel(String name) {
         return new SimpleNetworkWrapper(name);
     }
