@@ -37,7 +37,14 @@ public class MobSpawnerBaseLogic {
             Map.entry("XPOrb", "experience_orb"), Map.entry("Item", "item"), Map.entry("Arrow", "arrow"), Map.entry("Fireball", "fireball"),
             Map.entry("SmallFireball", "small_fireball"), Map.entry("FallingSand", "falling_block"), Map.entry("MinecartRideable", "minecart"),
             Map.entry("MinecartChest", "chest_minecart"), Map.entry("MinecartFurnace", "furnace_minecart"), Map.entry("MinecartTNT", "tnt_minecart"),
-            Map.entry("MinecartHopper", "hopper_minecart"), Map.entry("MinecartSpawner", "spawner_minecart"), Map.entry("EnderCrystal", "end_crystal"));
+            Map.entry("MinecartHopper", "hopper_minecart"), Map.entry("MinecartSpawner", "spawner_minecart"), Map.entry("EnderCrystal", "end_crystal"),
+            Map.entry("MinecartCommandBlock", "command_block_minecart"), Map.entry("Boat", "boat"), Map.entry("ItemFrame", "item_frame"),
+            Map.entry("Painting", "painting"), Map.entry("WitherSkull", "wither_skull"), Map.entry("Snowball", "snowball"), Map.entry("ThrownEgg", "egg"),
+            Map.entry("ThrownEnderpearl", "ender_pearl"), Map.entry("ThrownExpBottle", "experience_bottle"), Map.entry("ThrownPotion", "potion"),
+            Map.entry("EyeOfEnderSignal", "eye_of_ender"), Map.entry("FireworksRocketEntity", "firework_rocket"), Map.entry("LeashKnot", "leash_knot"),
+            Map.entry("LightningBolt", "lightning_bolt"), Map.entry("Minecart", "minecart"));
+
+    private static final java.util.Set<String> UNRESOLVED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private final SpawnerBlockEntity host;
 
@@ -81,12 +88,36 @@ public class MobSpawnerBaseLogic {
     }
 
     private static EntityType<?> typeFor(String name) {
+        if (name == null || name.isEmpty()) return null;
+        // never BuiltInRegistries.ENTITY_TYPE.get(id): the registry is defaulted and answers a pig for any id it does not know
         String vanilla = VANILLA.get(name);
-        if (vanilla != null) return BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.withDefaultNamespace(vanilla));
+        if (vanilla != null) {
+            var found = BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.withDefaultNamespace(vanilla));
+            if (found.isPresent()) return found.get();
+        }
         Class<?> cls = EntityList.stringToClassMapping.get(name);
         if (cls != null) {
             var info = LegacyHosts.info(cls);
             if (info != null) return info.type();
+        }
+        // a modern id (mods that write "minecraft:zombie" or "modid:name") or a differently cased legacy name
+        ResourceLocation id = name.indexOf(':') >= 0 ? ResourceLocation.tryParse(name) : null;
+        if (id != null) {
+            var found = BuiltInRegistries.ENTITY_TYPE.getOptional(id);
+            if (found.isPresent()) return found.get();
+        }
+        for (var e : VANILLA.entrySet()) {
+            if (e.getKey().equalsIgnoreCase(name)) return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.withDefaultNamespace(e.getValue())).orElse(null);
+        }
+        for (var e : EntityList.stringToClassMapping.entrySet()) {
+            if (e.getKey().equalsIgnoreCase(name)) {
+                var info = LegacyHosts.info(e.getValue());
+                if (info != null) return info.type();
+            }
+        }
+        if (UNRESOLVED.add(name)) {
+            org.apache.logging.log4j.LogManager.getLogger("LegacyConnector/Spawner")
+                    .warn("Spawner entity name '{}' is not a known legacy or modern entity: the spawner keeps no mob", name);
         }
         return null;
     }

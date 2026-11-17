@@ -12,6 +12,25 @@ public class TileEntitySkull extends TileEntity {
     private int skullRotation;
     private GameProfile field_152110_j;
 
+    /**
+     * Reads a modern head block entity into this view: the head type from its block (the 1.7.10 type numbers), the rotation of a floor
+     * head and the owner profile of a player head. Witchery's vampire ritual finds its skeleton skull through {@code getSkullType}.
+     */
+    public void mcc$sync(net.minecraft.world.level.block.entity.SkullBlockEntity be) {
+        var state = be.getBlockState();
+        if (state.getBlock() instanceof net.minecraft.world.level.block.AbstractSkullBlock skull) {
+            var type = skull.getType();
+            if (type == net.minecraft.world.level.block.SkullBlock.Types.SKELETON) skullType = 0;
+            else if (type == net.minecraft.world.level.block.SkullBlock.Types.WITHER_SKELETON) skullType = 1;
+            else if (type == net.minecraft.world.level.block.SkullBlock.Types.ZOMBIE) skullType = 2;
+            else if (type == net.minecraft.world.level.block.SkullBlock.Types.PLAYER) skullType = 3;
+            else if (type == net.minecraft.world.level.block.SkullBlock.Types.CREEPER) skullType = 4;
+        }
+        if (state.hasProperty(net.minecraft.world.level.block.SkullBlock.ROTATION)) skullRotation = state.getValue(net.minecraft.world.level.block.SkullBlock.ROTATION);
+        var owner = be.getOwnerProfile();
+        field_152110_j = skullType == 3 && owner != null ? owner.gameProfile() : null;
+    }
+
     /** {@code func_152107_a}: sets the head type (and forgets the player profile). */
     public void func_152107_a(int type) {
         this.skullType = type;

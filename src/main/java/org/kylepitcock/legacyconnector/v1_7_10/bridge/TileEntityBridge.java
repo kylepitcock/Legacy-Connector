@@ -240,6 +240,10 @@ public final class TileEntityBridge {
                     : new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityDispenser(dispenser);
         } else if (be instanceof net.minecraft.world.level.block.entity.BeaconBlockEntity beacon) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon(beacon);
+        } else if (be instanceof net.minecraft.world.level.block.entity.SkullBlockEntity skull) {
+            var head = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySkull();
+            head.mcc$sync(skull);
+            view = head;
         } else if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest(chest);
         } else if (be instanceof net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity furnace) {
