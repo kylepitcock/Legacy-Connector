@@ -1005,10 +1005,7 @@ public final class RenderContext {
         if (s.sheet != null && net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS.equals(s.texture) && has147Mods()) {
             // 1.4.7 index sheet bound as the block atlas (a renderer that draws part of its model from /terrain.png: RedPower's gates in a slot): the
             // UVs are positions in the 256x256 sheet, which the atlas does not have; they go to the tile the pack cut from it, as IsbrhQuads does for chunks
-            // a model texture (a non-square image such as a ModelBase's 128x64 skin, bound by an item or tile renderer) is in the atlas whole: its UVs are
-            // fractions of the image, not tile positions (the energy cell, tank and tesseracts of Thermal Expansion in a slot, #248)
-            double[][] mapped = mapWholeUv(s.sheet, v0, v1, v2, v3);
-            if (mapped == null) mapped = mapSheetUv(s.sheet, v0, v1, v2, v3);
+            double[][] mapped = mapSheetUv(s.sheet, v0, v1, v2, v3);
             if (mapped != null) {
                 v0 = mapped[0];
                 v1 = mapped[1];
@@ -1041,18 +1038,6 @@ public final class RenderContext {
             any147 = known;
         }
         return known;
-    }
-
-    /** The corners with their UVs (fractions of a whole model texture) moved into the atlas sprite that holds the image; null when the sheet is not one. */
-    private static double[][] mapWholeUv(String sheet, double[] v0, double[] v1, double[] v2, double[] v3) {
-        var whole = IsbrhQuads.wholeSprite(sheet);
-        if (whole == null) return null;
-        double[][] out = {v0.clone(), v1.clone(), v2.clone(), v3.clone()};
-        for (double[] c : out) {
-            c[3] = whole.getU0() + net.minecraft.util.Mth.clamp(c[3], 0.0, 1.0) * (whole.getU1() - whole.getU0());
-            c[4] = whole.getV0() + net.minecraft.util.Mth.clamp(c[4], 0.0, 1.0) * (whole.getV1() - whole.getV0());
-        }
-        return out;
     }
 
     /** The corners with their UVs moved from a 1.4.7 sheet's positions into the atlas sprite of the tile the quad lies on; null when the pack has no such tile. */

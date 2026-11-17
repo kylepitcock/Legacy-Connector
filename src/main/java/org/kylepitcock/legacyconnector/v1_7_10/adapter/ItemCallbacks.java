@@ -64,6 +64,22 @@ public final class ItemCallbacks {
         return done ? InteractionResult.sidedSuccess(ctx.getLevel().isClientSide) : InteractionResult.PASS;
     }
 
+    /**
+     * Forge's {@code doesSneakBypassUse(world, x, y, z, player)} (1.5+) and 1.4.7's {@code shouldPassSneakingClickToBlock(world, x, y, z)}: a sneaking
+     * click normally skips the block's activation; an item returning true here lets the block still handle it (Thermal Expansion's Crescent Hammer
+     * picks a machine up by a sneaking click, which is the machine's own onBlockActivated).
+     */
+    static boolean sneakBypass(Item legacy, net.minecraft.world.level.LevelReader level, BlockPos pos, Player player) {
+        if (!(level instanceof Level real)) return false;
+        try {
+            World world = World.mcc$wrap(real);
+            return legacy.doesSneakBypassUse(world, pos.getX(), pos.getY(), pos.getZ(), player(player))
+                    || legacy.shouldPassSneakingClickToBlock(world, pos.getX(), pos.getY(), pos.getZ());
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     static net.minecraft.world.item.ItemStack finishUsing(Item legacy, net.minecraft.world.item.ItemStack stack, Level level, LivingEntity entity) {
         if (!(entity instanceof Player p)) return stack;
         ItemStack result = legacy.onEaten(ItemStack.mcc$wrap(stack), World.mcc$wrap(level), player(p));
