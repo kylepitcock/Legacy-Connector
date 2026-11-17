@@ -519,31 +519,41 @@ public final class MiscCompat {
     // ------------------------------------------------------------------ dispenser: BlockSource became a record
 
     public static BlockPos sourcePos(net.minecraft.core.dispenser.BlockSource s) {
-        return s.pos();
+        return (Object) s instanceof LegacyBlockSource l ? l.getPos() : s.pos();
     }
 
     public static ServerLevel sourceLevel(net.minecraft.core.dispenser.BlockSource s) {
-        return s.level();
+        return (Object) s instanceof LegacyBlockSource l ? l.getLevel() : s.level();
     }
 
     public static net.minecraft.world.level.block.state.BlockState sourceState(net.minecraft.core.dispenser.BlockSource s) {
-        return s.state();
+        return (Object) s instanceof LegacyBlockSource l ? l.getBlockState() : s.state();
     }
 
     public static net.minecraft.world.level.block.entity.BlockEntity sourceEntity(net.minecraft.core.dispenser.BlockSource s) {
-        return s.blockEntity();
+        return (Object) s instanceof LegacyBlockSource l ? l.getEntity() : s.blockEntity();
     }
 
     public static double sourceX(net.minecraft.core.dispenser.BlockSource s) {
-        return s.pos().getX() + 0.5;
+        return (Object) s instanceof LegacyBlockSource l ? l.x() : s.pos().getX() + 0.5;
     }
 
     public static double sourceY(net.minecraft.core.dispenser.BlockSource s) {
-        return s.pos().getY() + 0.5;
+        return (Object) s instanceof LegacyBlockSource l ? l.y() : s.pos().getY() + 0.5;
     }
 
     public static double sourceZ(net.minecraft.core.dispenser.BlockSource s) {
-        return s.pos().getZ() + 0.5;
+        return (Object) s instanceof LegacyBlockSource l ? l.z() : s.pos().getZ() + 0.5;
+    }
+
+    /** The dispenser of a legacy block source (the record's slot is typed; a mod's source may answer another block entity, which then only the legacy getter sees). */
+    public static net.minecraft.world.level.block.entity.DispenserBlockEntity asDispenser(net.minecraft.world.level.block.entity.BlockEntity e) {
+        return e instanceof net.minecraft.world.level.block.entity.DispenserBlockEntity d ? d : null;
+    }
+
+    /** {@code BlockSource.center()} of a legacy block source: the centre of its position. */
+    public static net.minecraft.world.phys.Vec3 sourceCenter(BlockPos pos) {
+        return net.minecraft.world.phys.Vec3.atCenterOf(pos);
     }
 
     // ------------------------------------------------------------------ other signature changes
