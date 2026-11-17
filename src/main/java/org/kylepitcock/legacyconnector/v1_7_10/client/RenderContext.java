@@ -164,7 +164,9 @@ public final class RenderContext {
      * Captures (chunk-meshing threads, and the render thread's own synchronous rebuilds) run one at a time, as legacy block renderers
      * did on 1.7.10's single chunk thread. Reentrant for nested frames on one thread.
      */
-    private static final boolean RENDER_LOCK = Boolean.getBoolean("legacyconnector.renderLock");
+    /** {@code -Dlegacyconnector.itemLock=false} turns off the lock {@link #beginItem} forces (measurement A/B for #293). */
+    private static final boolean ITEM_LOCK = !"false".equals(System.getProperty("legacyconnector.itemLock"));
+    private static final boolean RENDER_LOCK =Boolean.getBoolean("legacyconnector.renderLock");
     /** Fair when the render thread takes it too: chunk threads re-taking it back to back must not starve the frame. */
     private static final java.util.concurrent.locks.ReentrantLock CAPTURE_LOCK = new java.util.concurrent.locks.ReentrantLock(RENDER_LOCK);
     /**
@@ -269,7 +271,7 @@ public final class RenderContext {
     public static void beginItem(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         float[] saved = {legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX,
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY};
-        boolean locked = lockRender(true);
+        boolean locked = lockRender(ITEM_LOCK);
         State s = STATE.get();
         if (s.frames.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
         legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX = light & 0xFFFF;

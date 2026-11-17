@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,10 +47,11 @@ final class ProblemsClient {
         try {
             Map<ModelResourceLocation, BakedModel> models = event.getModels();
             BakedModel missing = models.get(ModelBakery.MISSING_MODEL_VARIANT);
+            long t0 = System.nanoTime();
             scanModels(models, missing);
             scanBlocks(models, missing);
             scanItems(models, missing);
-            scanEntityNames();
+            LOG.info("problem scan after model baking took {} ms", (System.nanoTime() - t0) / 1_000_000);
             LegacyProblems.writeReport();
         } catch (Throwable t) { // a diagnostic must never break loading
             LOG.debug("problem scan after model baking failed: {}", t.toString());
@@ -74,25 +74,43 @@ final class ProblemsClient {
             }
             // only the plain baked models of vanilla's loader: custom (legacy renderer, wrapper) models draw by code and are not asked here
             if (!model.getClass().getName().startsWith("net.minecraft.client.resources.model.")) continue;
+            // one entry per block or item: the 16 meta states of a block share the finding
+            String subject = key.variant().startsWith("meta=") ? key.id().toString() : key.toString();
+            // "standalone" models (a model file another model loads, e.g. Mekanism's item/crusher) are not what any slot or block draws:
+            // the item's own #inventory model is judged instead
+            if (key.variant().equals("standalone")) continue;
+            boolean itemModel = key.variant().equals("inventory");
             try {
-                if (isMissing(model.getParticleIcon(), missingSprite)) {
-                    LegacyProblems.record(Kind.MISSING_TEXTURE, ns, key.toString(), "particle texture is the missing texture");
+                if (itemModel && !model.isCustomRenderer() && isEmpty(model, random)) {
+                    LegacyProblems.record(Kind.NO_ITEM_MODEL, ns, subject, "the item model has no geometry (draws nothing)");
                     continue;
                 }
-                if (usesMissingSprite(model, null, random, missingSprite)) {
-                    LegacyProblems.record(Kind.MISSING_TEXTURE, ns, key.toString(), "a face uses the missing texture");
-                    continue;
-                }
-                for (Direction d : Direction.values()) {
-                    if (usesMissingSprite(model, d, random, missingSprite)) {
-                        LegacyProblems.record(Kind.MISSING_TEXTURE, ns, key.toString(), "the " + d.getName() + " face uses the missing texture");
-                        break;
+                boolean faceMissing = usesMissingSprite(model, null, random, missingSprite);
+                if (!faceMissing) {
+                    for (Direction d : Direction.values()) {
+                        if (usesMissingSprite(model, d, random, missingSprite)) {
+                            faceMissing = true;
+                            break;
+                        }
                     }
+                }
+                if (faceMissing) {
+                    LegacyProblems.record(Kind.MISSING_TEXTURE, ns, subject, "a face uses the missing texture");
+                } else if (isMissing(model.getParticleIcon(), missingSprite) && !itemModel) {
+                    // Only the particle sprite is missing. An item's particle is never seen in a slot or in the hand (Thermal bows and
+                    // tools draw correctly with it), so only a block's break particles count.
+                    LegacyProblems.record(Kind.MISSING_TEXTURE, ns, subject, "particle texture is the missing texture");
                 }
             } catch (RuntimeException ex) {
                 // a model that needs state to answer is not a plain one; leave it
             }
         }
+    }
+
+    private static boolean isEmpty(BakedModel model, RandomSource random) {
+        if (!model.getQuads(null, null, random).isEmpty()) return false;
+        for (Direction d : Direction.values()) if (!model.getQuads(null, d, random).isEmpty()) return false;
+        return true;
     }
 
     private static boolean usesMissingSprite(BakedModel model, Direction side, RandomSource random, ResourceLocation missingSprite) {
@@ -131,13 +149,8 @@ final class ProblemsClient {
             }
             if (has) c[1]++;
             else LegacyProblems.record(Kind.NO_BLOCK_MODEL, id, "a blockstate has no model or the missing model");
-            try {
-                if (block.getName().getString().equals(block.getDescriptionId())) {
-                    LegacyProblems.record(Kind.NO_LANG_NAME, id, "block shows its translation key " + block.getDescriptionId());
-                }
-            } catch (RuntimeException ex) {
-                // a name that throws is not a missing name
-            }
+            // names are judged on the item (scanItems): legacy blocks with subtypes name the stack in getItemStackDisplayName, and the block's
+            // own description is the key by design (Thermal Expansion, Mekanism: every subtype showed a "missing name" that the game never shows)
         }
         perMod.forEach((ns, c) -> {
             LegacyProblems.census(ns, "blocks", c[0]);
@@ -156,7 +169,6 @@ final class ProblemsClient {
             BakedModel m = models.get(ModelResourceLocation.inventory(id));
             if (m == null || m == missing) LegacyProblems.record(Kind.NO_ITEM_MODEL, id, "no item model, or the missing model");
             else c[1]++;
-            if (item instanceof BlockItem) continue; // named by its block
             try {
                 if (new ItemStack(item).getHoverName().getString().equals(item.getDescriptionId())) {
                     LegacyProblems.record(Kind.NO_LANG_NAME, id, "item shows its translation key " + item.getDescriptionId());
@@ -171,19 +183,6 @@ final class ProblemsClient {
         });
     }
 
-    private static void scanEntityNames() {
-        for (var entry : BuiltInRegistries.ENTITY_TYPE.entrySet()) {
-            ResourceLocation id = entry.getKey().location();
-            if (!LegacyProblems.isLegacyNamespace(id.getNamespace())) continue;
-            try {
-                if (entry.getValue().getDescription().getString().equals(entry.getValue().getDescriptionId())) {
-                    LegacyProblems.record(Kind.NO_LANG_NAME, id, "entity shows its translation key " + entry.getValue().getDescriptionId());
-                }
-            } catch (RuntimeException ex) {
-                // not judged
-            }
-        }
-    }
 
     /** First world join: renderers are registered by now. Counts the entity and block entity types that have one. */
     private static void onJoin() {
