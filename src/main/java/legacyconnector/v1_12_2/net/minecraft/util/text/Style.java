@@ -77,6 +77,11 @@ public class Style {
         }
     };
 
+    /** The parent style, the root style when none is set (private in 1.12.2, widened by access transformers in mods). */
+    public Style getParent() {
+        return parent();
+    }
+
     private Style parent() {
         return parentStyle == null ? ROOT : parentStyle;
     }

@@ -34,6 +34,11 @@ public class ConfigCategory implements Map<String, Property> {
         return name;
     }
 
+    /** The dotted path of a category named {@code name} under {@code parent} (null for the top level). */
+    public static String getQualifiedName(String name, ConfigCategory parent) {
+        return parent == null ? name : parent.getQualifiedName() + Configuration.CATEGORY_SPLITTER + name;
+    }
+
     public String getQualifiedName() {
         return parent == null ? name : parent.getQualifiedName() + Configuration.CATEGORY_SPLITTER + name;
     }

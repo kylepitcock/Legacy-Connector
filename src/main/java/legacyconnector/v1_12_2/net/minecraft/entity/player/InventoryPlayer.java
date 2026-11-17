@@ -128,6 +128,38 @@ public class InventoryPlayer implements IInventory {
         }
     }
 
+    /** Phantom field: how many times the inventory changed (the modern inventory's change counter, which the crafting views poll). */
+    @Deprecated
+    public int timesChanged;
+
+    private static final java.lang.reflect.Field MCC$TIMES_CHANGED = mcc$timesChangedField();
+
+    private static java.lang.reflect.Field mcc$timesChangedField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(Inventory.class, "timesChanged");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static int mcc$get$timesChanged(InventoryPlayer inv) {
+        if (MCC$TIMES_CHANGED == null) return 0;
+        try {
+            return MCC$TIMES_CHANGED.getInt(inv.inv());
+        } catch (IllegalAccessException e) {
+            return 0;
+        }
+    }
+
+    public static void mcc$set$timesChanged(InventoryPlayer inv, int v) {
+        if (MCC$TIMES_CHANGED == null) return;
+        try {
+            MCC$TIMES_CHANGED.setInt(inv.inv(), v);
+        } catch (IllegalAccessException e) {
+            // keeps the counter
+        }
+    }
+
     public static int mcc$get$currentItem(InventoryPlayer inv) {
         return inv.inv().selected;
     }

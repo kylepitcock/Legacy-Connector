@@ -28,6 +28,40 @@ public class PlayerList {
         return legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData.mcc$server();
     }
 
+    /** Phantom field: whether every player may use commands; reads go to {@link #mcc$get$commandsAllowedForAll}. */
+    @Deprecated
+    public boolean commandsAllowedForAll;
+
+    private static final java.lang.reflect.Field MCC$ALLOW_COMMANDS = mcc$allowCommandsField();
+
+    private static java.lang.reflect.Field mcc$allowCommandsField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.server.players.PlayerList.class, "allowCommandsForAll");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static boolean mcc$get$commandsAllowedForAll(PlayerList list) {
+        var m = modern();
+        if (m == null || MCC$ALLOW_COMMANDS == null) return false;
+        try {
+            return MCC$ALLOW_COMMANDS.getBoolean(m);
+        } catch (IllegalAccessException e) {
+            return false;
+        }
+    }
+
+    public static void mcc$set$commandsAllowedForAll(PlayerList list, boolean allowed) {
+        list.setCommandsAllowedForAll(allowed);
+    }
+
+    /** Whether the player may join: no whitelist in use, or the player is an operator or on it. */
+    public boolean canJoin(GameProfile profile) {
+        var m = modern();
+        return m == null || m.isWhiteListed(profile);
+    }
+
     /** Lets every player use commands (the "cheats" switch of a LAN world). */
     public void setCommandsAllowedForAll(boolean allowed) {
         var m = modern();
