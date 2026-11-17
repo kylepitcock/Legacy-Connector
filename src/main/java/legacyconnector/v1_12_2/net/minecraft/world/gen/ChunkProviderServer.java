@@ -52,7 +52,7 @@ public class ChunkProviderServer implements IChunkProvider {
     public final legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.IChunkLoader chunkLoader;
 
     private static legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.IChunkLoader mcc$chunkLoader(World world) {
-        var level = world == null ? null : world.mcc$level();
+        var level = world == null ? null : world.mcc$levelObject();
         java.io.File dir = new java.io.File(".");
         if (level instanceof net.minecraft.server.level.ServerLevel sl) {
             dir = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(sl.dimension(),

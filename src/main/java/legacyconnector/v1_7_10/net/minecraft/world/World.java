@@ -168,7 +168,7 @@ public class World implements IBlockAccess {
             // the provider being built, for the mod's own registerWorldChunkManager (same thread, the lock is held); other threads (world
             // generation workers, the level load event) wait for the lock instead of seeing a provider whose controller is not built yet
             if (w.mcc$building != null) return w.mcc$building;
-            Level full = w.mcc$fullLevel();
+            Level full = w.mcc$levelObject();
             WorldProvider created = full == null ? new WorldProvider(Level.OVERWORLD, true, false)
                     : org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.newProvider(full);
             if (full == null || created.worldObj != null) {
@@ -271,6 +271,16 @@ public class World implements IBlockAccess {
         if (org.kylepitcock.legacyconnector.core.worldgen.RealLevelGuard.enabled() && !(lvl() instanceof Level)) {
             org.kylepitcock.legacyconnector.core.worldgen.RealLevelGuard.reached("mcc$fullLevel()");
         }
+        return mcc$fullLevel(lvl());
+    }
+
+    /**
+     * The dimension's {@code Level} as an object, also while this world is a generation region: for what needs the level itself and
+     * never reads or writes its blocks, heights, biomes, chunks or light (entity construction, the generator and registries, the
+     * dimension key, world info constants, the save folder). RealLevelGuard does not report it; block access goes through
+     * {@link #mcc$level()}.
+     */
+    public Level mcc$levelObject() {
         return mcc$fullLevel(lvl());
     }
 
@@ -1277,7 +1287,8 @@ public class World implements IBlockAccess {
 
     private net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> generatorBiome(int x, int y, int z) {
         try {
-            if (mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel sl) {
+            // only the generator's biome source and sampler are read, no chunk
+            if (mcc$levelObject() instanceof net.minecraft.server.level.ServerLevel sl) {
                 var cache = sl.getChunkSource();
                 return cache.getGenerator().getBiomeSource().getNoiseBiome(x >> 2, y >> 2, z >> 2, cache.randomState().sampler());
             }
