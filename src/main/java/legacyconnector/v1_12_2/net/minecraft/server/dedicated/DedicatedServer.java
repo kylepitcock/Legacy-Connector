@@ -68,4 +68,9 @@ public class DedicatedServer extends legacyconnector.v1_12_2.net.minecraft.serve
     public boolean isDedicatedServer() {
         return true;
     }
+
+    /** The watchdog's limit of one tick in milliseconds ({@code max-tick-time} of server.properties; the default is a minute). */
+    public long getMaxTickTime() {
+        return mcc$get$settings(this).getIntProperty("max-tick-time", 60000);
+    }
 }

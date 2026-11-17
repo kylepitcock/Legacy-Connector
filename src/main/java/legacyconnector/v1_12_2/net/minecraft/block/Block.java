@@ -9,6 +9,8 @@ import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry
 public class Block extends IForgeRegistryEntry.Impl<Block> {
     public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespacedDefaultedByKey<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Block> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS, "air");
     protected final Material material;
+    /** MCP name of {@link #material}. */
+    protected final Material blockMaterial;
     protected float blockHardness;
     protected float blockResistance;
     protected int lightValue;
@@ -35,6 +37,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public Block(Material material) {
         this.material = material;
+        this.blockMaterial = material;
         this.blockMapColor = material == null ? null : material.getMaterialMapColor();
         this.translucent = material != null && !material.blocksLight();
         legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer container = null;

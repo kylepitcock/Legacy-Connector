@@ -9,6 +9,7 @@ import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.synth.CtorChooser;
 import org.kylepitcock.legacyconnector.loader.synth.SynthDemand;
 import org.kylepitcock.legacyconnector.loader.synth.SynthDemand.Kind;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -16,6 +17,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -60,6 +62,7 @@ public final class ShimLinker {
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {
+                if (demand != null) interfaceEvidence(insn, hierarchy, demand);
                 if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.PUTSTATIC && isVanillaSingletonHolder(f.owner)
                         && f.desc.startsWith("L")) {
                     // dup; getstatic <the same field>; invokestatic adopt(Object, Object); putstatic
@@ -119,6 +122,26 @@ public final class ShimLinker {
             if (demand != null && hierarchy.isSynth(iface)) demand.interfaces.add(iface);
         }
         return redirected;
+    }
+
+    /**
+     * Usage that only an interface allows, for a type that is synthesized: {@code invokeinterface} or an interface method ref, a lambda or
+     * method reference producing it (the {@code invokedynamic} descriptor returns the functional interface), or a handle to one of its
+     * interface methods. Implementing it is recorded from the class header; together they decide, across the whole mod set, whether the
+     * generated placeholder is an interface (everything else is a plain, extendable class).
+     */
+    static void interfaceEvidence(AbstractInsnNode insn, Hierarchy hierarchy, SynthDemand demand) {
+        if (insn instanceof MethodInsnNode m) {
+            if ((m.itf || m.getOpcode() == Opcodes.INVOKEINTERFACE) && !m.owner.startsWith("[") && hierarchy.isSynth(m.owner)) {
+                demand.interfaces.add(m.owner);
+            }
+        } else if (insn instanceof InvokeDynamicInsnNode d) {
+            Type ret = Type.getReturnType(d.desc);
+            if (ret.getSort() == Type.OBJECT && hierarchy.isSynth(ret.getInternalName())) demand.interfaces.add(ret.getInternalName());
+            for (Object arg : d.bsmArgs) {
+                if (arg instanceof Handle h && h.isInterface() && hierarchy.isSynth(h.getOwner())) demand.interfaces.add(h.getOwner());
+            }
+        }
     }
 
     // ------------------------------------------------------------------ synthesis

@@ -52,6 +52,12 @@ public class EnumHelper {
                 new Class<?>[0], new Object[0]);
     }
 
+    /** Adds a horse armour tier: {@code texture} is the resource path of its layer texture, the hash is the constant's lower-case name. */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.passive.HorseArmorType addHorseArmor(String name, String texture, int armorStrength) {
+        String key = name.toLowerCase(java.util.Locale.ROOT);
+        return addEnum(legacyconnector.v1_12_2.net.minecraft.entity.passive.HorseArmorType.class, name, armorStrength, key, key, texture);
+    }
+
     /** Adds a painting art (title, size and texture offset in pixels); the painting view finds it by its title. */
     public static legacyconnector.v1_12_2.net.minecraft.entity.item.EntityPainting.EnumArt addArt(String name, String tile, int sizeX, int sizeY, int offsetX, int offsetY) {
         return addEnum(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityPainting.EnumArt.class, name, tile, sizeX, sizeY, offsetX, offsetY);

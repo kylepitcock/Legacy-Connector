@@ -28,6 +28,28 @@ public class ItemMonsterPlacer extends Item {
         return entity;
     }
 
+    /**
+     * Merges the stack's {@code EntityTag} into the entity (the data a spawn egg or a mob-carrying item names), keeping its UUID. Entities that
+     * refuse item data ({@code ignoreItemEntityData}, such as players) only take it from operators.
+     */
+    public static void applyItemEntityDataToEntity(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
+        var server = world.getMinecraftServer();
+        if (server == null || target == null) return;
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null || !tag.hasKey("EntityTag", 10)) return;
+        if (!world.isRemote && target.ignoreItemEntityData()
+                && (player == null || !server.getPlayerList().canSendCommands(player.getGameProfile()))) {
+            return;
+        }
+        NBTTagCompound data = target.writeToNBT(new NBTTagCompound());
+        java.util.UUID id = target.getUniqueID();
+        data.merge(tag.getCompoundTag("EntityTag"));
+        target.setUniqueId(id);
+        target.readFromNBT(data);
+    }
+
     /** Names the entity the egg spawns. */
     public static void applyEntityIdToItemStack(ItemStack stack, ResourceLocation entityId) {
         NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();

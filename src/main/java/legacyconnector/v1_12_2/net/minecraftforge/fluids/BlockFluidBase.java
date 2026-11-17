@@ -386,4 +386,17 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
         double top = blockpos.getY() + (densityDir < 0 ? height : 1.0D - height);
         return densityDir < 0 ? yToTest < top : yToTest > top;
     }
+
+    /** How full the block is, for a reader that has only the block access. */
+    public float getFilledPercentage(IBlockAccess world, BlockPos pos) {
+        int quantaRemaining = getQuantaValue(world, pos);
+        float remaining = (quantaRemaining + 1.0F) / (quantaPerBlockFloat + 1.0F);
+        return remaining * (density > 0 ? 1 : -1);
+    }
+
+    /** The surface height of the fluid in the block (full when the same material lies above it). */
+    public float getBlockLiquidHeight(World world, BlockPos pos, IBlockState state, legacyconnector.v1_12_2.net.minecraft.block.material.Material material) {
+        if (world.getBlockState(pos.down(densityDir)).getMaterial() == material) return 1.0F;
+        return Math.max(0.0F, getQuantaPercentage(world, pos) * quantaFraction);
+    }
 }

@@ -176,4 +176,9 @@ public class EntityList {
                 ? name.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT) : name;
         return getClass(new ResourceLocation(n));
     }
+
+    /** Forge: whether the entity is registered under that name. */
+    public static boolean isMatchingName(Entity entity, ResourceLocation name) {
+        return entity != null && name != null && name.equals(getKey(entity));
+    }
 }

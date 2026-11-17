@@ -40,4 +40,8 @@ public class SPacketSpawnPosition implements Packet<INetHandlerPlayClient> {
     public net.minecraft.network.protocol.Packet<?> mcc$modern() {
         return new net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket(new net.minecraft.core.BlockPos(spawnBlockPos.getX(), spawnBlockPos.getY(), spawnBlockPos.getZ()), 0.0F);
     }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos getSpawnPos() {
+        return spawnBlockPos;
+    }
 }

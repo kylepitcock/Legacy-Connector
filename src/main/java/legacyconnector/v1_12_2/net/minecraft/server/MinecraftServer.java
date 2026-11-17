@@ -444,4 +444,52 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
     public String getServerVersion() {
         return "1.12.2";
     }
+
+    public void setMOTD(String motd) {
+        var server = mcc$modern();
+        if (server != null && motd != null) server.setMotd(motd);
+    }
+
+    /** The build height limit (the overworld's maximum build height). */
+    public int getBuildLimit() {
+        var server = mcc$modern();
+        return server == null ? 256 : server.overworld().getMaxBuildHeight();
+    }
+
+    /** 1.12 stored a server-wide build limit; the modern game's is the dimension's height, so only mods' own reads of it are kept. */
+    public void setBuildLimit(int maxBuildHeight) {
+        mcc$buildLimit = Math.max(64, Math.min(256, maxBuildHeight));
+    }
+
+    private int mcc$buildLimit = 256;
+    private static boolean mcc$spawnAnimals = true;
+
+    /** Spawning of animals and npcs: the modern level's spawn settings (monsters keep the difficulty's setting). */
+    public void setCanSpawnAnimals(boolean spawnAnimals) {
+        mcc$spawnAnimals = spawnAnimals;
+        var server = mcc$modern();
+        if (server == null) return;
+        for (var level : server.getAllLevels()) {
+            level.setSpawnSettings(level.getDifficulty() != net.minecraft.world.Difficulty.PEACEFUL, spawnAnimals);
+        }
+    }
+
+    public boolean getCanSpawnAnimals() {
+        return mcc$spawnAnimals;
+    }
+
+    /** Villagers (npcs) spawn with the animals in the modern level's settings. */
+    public void setCanSpawnNPCs(boolean spawnNpcs) {
+        setCanSpawnAnimals(spawnNpcs);
+    }
+
+    public boolean getCanSpawnNPCs() {
+        return mcc$spawnAnimals;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.world.GameType getGameType() {
+        var server = mcc$modern();
+        return server == null ? legacyconnector.v1_12_2.net.minecraft.world.GameType.SURVIVAL
+                : legacyconnector.v1_12_2.net.minecraft.world.GameType.mcc$of(server.getDefaultGameType());
+    }
 }

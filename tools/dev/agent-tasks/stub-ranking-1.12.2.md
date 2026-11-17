@@ -12,12 +12,9 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  net.minecraft.block.Block.getAiPathNodeType(Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.entity.EntityLiving;)Lnet.minecraft.pathfinding.PathNodeType;  # DoubleSlabs-1.12-0.12.2.jar, Fluidlogged-API-v3.3.3-mc1.12.2.jar, lepidodendron-1.12.2-63.02.jar
   3  net.minecraft.world.gen.structure.StructureComponent.generateDoor(Lnet.minecraft.world.World;Lnet.minecraft.world.gen.structure.StructureBoundingBox;Ljava.util.Random;IIILnet.minecraft.util.EnumFacing;Lnet.minecraft.block.BlockDoor;)V  # HeroesExpansion-1.12.2-1.3.5.jar, iceandfire-1.9.1-1.12.2.jar, moreplanets-mc1.12.2-v2.4.1.jar
   3  net.minecraftforge.common.util.EnumHelper.addArt(Ljava.lang.String;Ljava.lang.String;IIII)Lnet.minecraft.entity.item.EntityPainting$EnumArt;  # JSON-Paintings-v1.5.0-mc1.12.2.jar, mcw-paintings-1.0.5-1.12.2forge.jar, moreplanets-mc1.12.2-v2.4.1.jar
-  3  net.minecraftforge.fluids.BlockFluidClassic.getBlockLiquidHeight(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.block.material.Material;)F  # NTM-CE-1.12.2-2.6.1.0.jar, _NTM-Extended-1.12.2-3.0.3.jar, hbm-1.8.4a-G.jar
   3  net.minecraftforge.fluids.Fluid.<init>(Ljava.lang.String;Lnet.minecraft.util.ResourceLocation;Lnet.minecraft.util.ResourceLocation;Ljava.awt.Color;)V -> (Ljava.lang.String;Lnet.minecraft.util.ResourceLocation;Lnet.minecraft.util.ResourceLocation;)V  # NTM-CE-1.12.2-2.6.1.0.jar, _NTM-Extended-1.12.2-3.0.3.jar, hbm-1.8.4a-G.jar
   3  net.minecraftforge.fml.common.thread.SidedThreadGroups.SERVER:Lnet.minecraftforge.fml.common.thread.SidedThreadGroup;  # HammerLib-1.12.2-12.2.66.jar, MCT-ImmersiveTechnology-1.12.2-1.11.216-release.jar, TerrariaCraft-1.12.2-12.6.2.jar
   3  net.minecraftforge.fml.relauncher.libraries.Artifact.getFile()Ljava.io.File;  # !mixinbooter-12.3.jar, Sledgehammer-1.12.2-2.0.26.jar, `FermiumBooter-1.6.4.jar
-  2  net.minecraft.advancements.CriteriaTriggers.BRED_ANIMALS:Lnet.minecraft.advancements.critereon.BredAnimalsTrigger;  # OceanicExpanse-1.2.2.jar, horse_colors-1.12.2-1.4.0.1.jar
-  2  net.minecraft.advancements.critereon.BredAnimalsTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.entity.passive.EntityAnimal;Lnet.minecraft.entity.passive.EntityAnimal;Lnet.minecraft.entity.EntityAgeable;)V  # OceanicExpanse-1.2.2.jar, horse_colors-1.12.2-1.4.0.1.jar
   2  net.minecraft.block.BlockFire.getEncouragement(Lnet.minecraft.block.Block;)I  # NarutoMod-1.12.2-0.3.1.beta.jar, _NTM-Extended-1.12.2-3.0.3.jar
   2  net.minecraft.block.BlockLiquid.getFlow(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;)Lnet.minecraft.util.math.Vec3d;  # Fluidlogged-API-v3.3.3-mc1.12.2.jar, NoCubes-1.12.2-0.4.0-pre-2dca66a0.jar
   2  net.minecraft.command.server.CommandBanPlayer.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar, e4mc-retro_forge-1.1.0+1.9-1.12.2.jar
@@ -35,38 +32,18 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.entity.player.EntityPlayerMP.clearInvulnerableDimensionChange()V  # DoubleSlabs-1.12-0.12.2.jar, NarutoMod-1.12.2-0.3.1.beta.jar
   2  net.minecraft.entity.player.EntityPlayerMP.getLastActiveTime()J  # DoubleSlabs-1.12-0.12.2.jar, NarutoMod-1.12.2-0.3.1.beta.jar
   2  net.minecraft.entity.player.EntityPlayerMP.handleFalling(DZ)V  # DoubleSlabs-1.12-0.12.2.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar
-  2  net.minecraft.entity.player.EntityPlayerMP.lastExperience:I  # BrandonsCore-1.12.2-2.4.20.162-universal.jar, MoBends_1.12.2-2.0.0-alpha.3.jar
-  2  net.minecraft.entity.player.EntityPlayerMP.lastFoodLevel:I  # BrandonsCore-1.12.2-2.4.20.162-universal.jar, MoBends_1.12.2-2.0.0-alpha.3.jar
-  2  net.minecraft.entity.player.EntityPlayerMP.lastHealth:F  # BrandonsCore-1.12.2-2.4.20.162-universal.jar, MoBends_1.12.2-2.0.0-alpha.3.jar
-  2  net.minecraft.entity.player.EntityPlayerMP.managedPosX:D  # CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar, MoBends_1.12.2-2.0.0-alpha.3.jar
-  2  net.minecraft.entity.player.EntityPlayerMP.managedPosZ:D  # CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar, MoBends_1.12.2-2.0.0-alpha.3.jar
   2  net.minecraft.inventory.ContainerEnchantment.<init>(Lnet.minecraft.entity.player.InventoryPlayer;Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;)V  # ImprovableSkills-1.12.2-12.4.68.jar, NotEnoughItems-1.12.2-2.4.3.245-universal.jar
   2  net.minecraft.inventory.ContainerEnchantment.enchantClue:[I  # ImprovableSkills-1.12.2-12.4.68.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
   2  net.minecraft.inventory.ContainerEnchantment.enchantLevels:[I  # ImprovableSkills-1.12.2-12.4.68.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
-  2  net.minecraft.item.Item.getHorseArmorTexture(Lnet.minecraft.entity.EntityLiving;Lnet.minecraft.item.ItemStack;)Ljava.lang.String;  # Call to Battle 3.jar, horse_colors-1.12.2-1.4.0.1.jar
   2  net.minecraft.item.ItemBanner.appendHoverTextFromTileEntityTag(Lnet.minecraft.item.ItemStack;Ljava.util.List;)V  # ConquestReforged-3.0.2-mc1.12.2.jar, [1.12.2]-Epic-Knights-Armor-and-Weapons-6.2v(uncomplete).jar
-  2  net.minecraft.item.ItemMonsterPlacer.applyItemEntityDataToEntity(Lnet.minecraft.world.World;Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.item.ItemStack;Lnet.minecraft.entity.Entity;)V  # SimpleHats-0.4.1.jar, champions-1.12.2-1.0.11.10.jar
   2  net.minecraft.launchwrapper.IClassNameTransformer.unmapClassName(Ljava.lang.String;)Ljava.lang.String;  # !mixinbooter-12.3.jar, vintagefix-0.7.2.jar
   2  net.minecraft.network.NetHandlerPlayServer.update()V  # Call to Battle 3.jar, Call to Battle Vehicles.jar
   2  net.minecraft.network.NetworkSystem.addEndpoint(Ljava.net.InetAddress;I)V  # MineTogether-1.12.2-2.4.7.jar, UniversalTweaks-1.12.2-1.21.0.jar
-  2  net.minecraft.network.play.server.SPacketCollectItem.getCollectedItemEntityID()I  # Mantle-0.11.0+1.12.2-forge.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
-  2  net.minecraft.network.play.server.SPacketCollectItem.getEntityID()I  # Mantle-0.11.0+1.12.2-forge.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
   2  net.minecraft.network.play.server.SPacketEntityMetadata.getDataManagerEntries()Ljava.util.List;  # Mantle-0.11.0+1.12.2-forge.jar, Wynntils-MC1.12.2-v1.15.1-beta.10.jar
   2  net.minecraft.network.play.server.SPacketEntityMetadata.getEntityId()I  # Mantle-0.11.0+1.12.2-forge.jar, Wynntils-MC1.12.2-v1.15.1-beta.10.jar
   2  net.minecraft.network.play.server.SPacketPlayerListHeaderFooter.getFooter()Lnet.minecraft.util.text.ITextComponent;  # Wynntils-MC1.12.2-v1.15.1-beta.10.jar, minihud-forge-1.12.2-0.19.0-dev.20210503.192331.jar
-  2  net.minecraft.network.play.server.SPacketSpawnPosition.getSpawnPos()Lnet.minecraft.util.math.BlockPos;  # Wynntils-MC1.12.2-v1.15.1-beta.10.jar, minihud-forge-1.12.2-0.19.0-dev.20210503.192331.jar
-  2  net.minecraft.network.play.server.SPacketTimeUpdate.getTotalWorldTime()J  # jsmacros-1.12.2-FORGE-1.8.3.jar, minihud-forge-1.12.2-0.19.0-dev.20210503.192331.jar
   2  net.minecraft.network.play.server.SPacketUpdateBossInfo.getOperation()Lnet.minecraft.network.play.server.SPacketUpdateBossInfo$Operation;  # Wynntils-MC1.12.2-v1.15.1-beta.10.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
   2  net.minecraft.network.play.server.SPacketUpdateBossInfo.getUniqueId()Ljava.util.UUID;  # Wynntils-MC1.12.2-v1.15.1-beta.10.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
-  2  net.minecraft.server.MinecraftServer.setBuildLimit(I)V  # CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar, lan-properties_forge-1.0.0+1.12-1.12.2.jar
-  2  net.minecraft.server.MinecraftServer.setCanSpawnAnimals(Z)V  # EasyLAN-forge-1.12.2-v1.6a.jar, lan-properties_forge-1.0.0+1.12-1.12.2.jar
-  2  net.minecraft.server.MinecraftServer.setCanSpawnNPCs(Z)V  # EasyLAN-forge-1.12.2-v1.6a.jar, lan-properties_forge-1.0.0+1.12-1.12.2.jar
-  2  net.minecraft.server.MinecraftServer.setMOTD(Ljava.lang.String;)V  # EasyLAN-forge-1.12.2-v1.6a.jar, lan-properties_forge-1.0.0+1.12-1.12.2.jar
-  2  net.minecraft.server.dedicated.DedicatedServer.getMaxTickTime()J  # MineTogether-1.12.2-2.4.7.jar, industrialcraft-2-2.8.222-ex112.jar
-  2  net.minecraft.server.integrated.IntegratedServer.getGameType()Lnet.minecraft.world.GameType;  # AdvancedRocketry-1.12.2-2.1.9-2.jar, EasyLAN-forge-1.12.2-v1.6a.jar
-  2  net.minecraft.server.integrated.IntegratedServer.setCanSpawnAnimals(Z)V  # Cloudflared-1.12.2-12.2.3.jar, UniversalTweaks-1.12.2-1.21.0.jar
-  2  net.minecraft.server.integrated.IntegratedServer.setCanSpawnNPCs(Z)V  # Cloudflared-1.12.2-12.2.3.jar, UniversalTweaks-1.12.2-1.21.0.jar
-  2  net.minecraft.util.EnumFacing.getFront(I)Lnet.minecraft.util.EnumFacing;  # Chameleon-1.12.2-4.1.3.jar, hbm-1.8.4a-G.jar
   2  net.minecraft.util.IStringSerializable.ADA_BIG:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.util.IStringSerializable.ADA_FLAT:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.util.IStringSerializable.PRI_BIG:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
@@ -75,30 +52,19 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.util.IStringSerializable.PURE_FLAT:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.util.IStringSerializable.SIM_BIG:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.util.IStringSerializable.SIM_FLAT:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
-  2  net.minecraft.village.VillageCollection.markDirty()V  # AsmodeusCore-1.12.2-1.0.5.jar, Galacticraft-1.12.2-4.0.6.jar
   2  net.minecraft.world.ChunkCache.chunkArray:[[Lnet.minecraft.world.chunk.Chunk;  # NoCubes-1.12.2-0.4.0-pre-2dca66a0.jar, [[[valkyrien-skies-1.12.2-1.1.6.jar
   2  net.minecraft.world.World.calculateInitialWeather()V  # UniversalTweaks-1.12.2-1.21.0.jar, modularui-3.1.6.jar
   2  net.minecraft.world.World.processingLoadedTiles:Z  # Fluidlogged-API-v3.3.3-mc1.12.2.jar, RenderLib-1.12.2-1.4.5.jar
   2  net.minecraft.world.World.scheduledUpdatesAreImmediate:Z  # _NTM-Extended-1.12.2-3.0.3.jar, hbm-1.8.4a-G.jar
-  2  net.minecraft.world.WorldProvider.getLightmapColors(FFFF[F)V  # JurassicReborn-1.12.2-1.3.4.jar, 永爱之刃-v11削弱.jar
   2  net.minecraft.world.WorldServer.lootTable:Lnet.minecraft.world.storage.loot.LootTableManager;  # AdvancedRocketry-1.12.2-2.1.9-2.jar, industrialcraft-2-2.8.222-ex112.jar
   2  net.minecraft.world.gen.structure.StructureVillagePieces$Village.biomeDoor()Lnet.minecraft.block.BlockDoor;  # HeroesExpansion-1.12.2-1.3.5.jar, JurassicReborn-1.12.2-1.3.4.jar
   2  net.minecraft.world.gen.structure.StructureVillagePieces$Village.generateDoor(Lnet.minecraft.world.World;Lnet.minecraft.world.gen.structure.StructureBoundingBox;Ljava.util.Random;IIILnet.minecraft.util.EnumFacing;Lnet.minecraft.block.BlockDoor;)V  # HeroesExpansion-1.12.2-1.3.5.jar, ImmersiveEngineering-0.12-98.jar
   2  net.minecraft.world.storage.WorldSavedData.get(Lnet.minecraft.world.World;)Lcom.dhanantry.scapeandrunparasites.world.SRPSaveData;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.world.storage.WorldSavedData.setTotalKills(IIZLnet.minecraft.world.World;Z)Z  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraftforge.advancements.critereon.ItemPredicates.register(Lnet.minecraft.util.ResourceLocation;Ljava.util.function.Function;)V  # TLS-2.3.2-1.12.2.jar, rustic-1.2.0.jar
-  2  net.minecraftforge.common.ForgeChunkManager$ForceChunkEvent.getLocation()Lnet.minecraft.util.math.ChunkPos;  # ChickenChunks-1.12.2-2.4.2.74-universal.jar, CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar
-  2  net.minecraftforge.common.ForgeChunkManager$ForceChunkEvent.getTicket()Lnet.minecraftforge.common.ForgeChunkManager$Ticket;  # ChickenChunks-1.12.2-2.4.2.74-universal.jar, CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar
-  2  net.minecraftforge.common.ForgeChunkManager$UnforceChunkEvent.getLocation()Lnet.minecraft.util.math.ChunkPos;  # ChickenChunks-1.12.2-2.4.2.74-universal.jar, CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar
-  2  net.minecraftforge.common.ForgeChunkManager$UnforceChunkEvent.getTicket()Lnet.minecraftforge.common.ForgeChunkManager$Ticket;  # ChickenChunks-1.12.2-2.4.2.74-universal.jar, CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar
   2  net.minecraftforge.common.ForgeModContainer.zombieBabyChance:F  # OceanicExpanse-1.2.2.jar, moreplanets-mc1.12.2-v2.4.1.jar
-  2  net.minecraftforge.common.util.EnumHelper.addHorseArmor(Ljava.lang.String;Ljava.lang.String;I)Lnet.minecraft.entity.passive.HorseArmorType;  # Atlas-Lib-1.12.2-1.1.11.jar, [1.12.2]-Epic-Knights-Armor-and-Weapons-6.2v(uncomplete).jar
-  2  net.minecraftforge.event.ForgeEventFactory.onItemUseStart(Lnet.minecraft.entity.EntityLivingBase;Lnet.minecraft.item.ItemStack;I)I  # FeederHelmet-14.0.0.jar, HeroesExpansion-1.12.2-1.3.5.jar
   2  net.minecraftforge.event.RegistryEvent$Register.<init>(Lnet.minecraft.util.ResourceLocation;Lnet.minecraftforge.registries.IForgeRegistry;)V -> (Lnet.minecraftforge.registries.IForgeRegistry;)V  # Dimensional Doors-3.2.3.jar, HammerLib-1.12.2-12.2.66.jar
-  2  net.minecraftforge.fluids.BlockFluidClassic.blockMaterial:Lnet.minecraft.block.material.Material;  # hbm-1.8.4a-G.jar, mahoutsukai-1.12.2-v1.19.54.jar
-  2  net.minecraftforge.fluids.BlockFluidClassic.getFilledPercentage(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;)F  # IndustrialUpgrade-1.12.2-3.3.0.43.jar, _NTM-Extended-1.12.2-3.0.3.jar
   2  net.minecraftforge.fml.common.FMLCommonHandler.processWindowMessages()V  # Cloudflared-1.12.2-12.2.3.jar, TerrariaCraft-1.12.2-12.6.2.jar
-  2  net.minecraftforge.fml.common.FMLCommonHandler.stripSpecialChars(Ljava.lang.String;)Ljava.lang.String;  # Cloudflared-1.12.2-12.2.3.jar, TerrariaCraft-1.12.2-12.6.2.jar
   2  net.minecraftforge.fml.common.IFMLSidedHandler.getSide()Lnet.minecraftforge.fml.relauncher.Side;  # CarbonConfig-1.12.2-2.0.2.1.jar, Future-MC-0.2.21.jar
   2  net.minecraftforge.fml.common.ModMetadata.requiredMods:Ljava.util.Set;  # allarrowsinfinityfix-1.8-forge-mc1.12.2.jar, fermiumasm-5.31.jar
   2  net.minecraftforge.fml.common.ModMetadata.updateJSON:Ljava.lang.String;  # YARCF-0.15-b2(1.12.2).jar, txloader-1.12.2-1.5.1.jar
@@ -114,16 +80,10 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraftforge.fml.relauncher.FMLRelaunchLog.info(Ljava.lang.String;[Ljava.lang.Object;)V  # 131-CNPC-Gecko-Addon-1.12.2-(05Jul20_03Feb22)-1.1.1.jar, AdvancedRocketry-1.12.2-2.1.9-2.jar
   2  net.minecraftforge.fml.relauncher.libraries.Repository.resolveAll(Lnet.minecraftforge.fml.relauncher.libraries.Artifact;)Lnet.minecraftforge.fml.relauncher.libraries.Artifact;  # !mixinbooter-12.3.jar, `FermiumBooter-1.6.4.jar
   1  net.minecraft.advancements.Advancement$Builder.build(Lnet.minecraft.util.ResourceLocation;)Lnet.minecraft.advancements.Advancement;  # Wynntils-MC1.12.2-v1.15.1-beta.10.jar
-  1  net.minecraft.advancements.CriteriaTriggers.ENTITY_HURT_PLAYER:Lnet.minecraft.advancements.critereon.EntityHurtPlayerTrigger;  # techguns-2.2.0.1.jar
-  1  net.minecraft.advancements.CriteriaTriggers.PLAYER_HURT_ENTITY:Lnet.minecraft.advancements.critereon.PlayerHurtEntityTrigger;  # techguns-2.2.0.1.jar
-  1  net.minecraft.advancements.critereon.EntityHurtPlayerTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.util.DamageSource;FFZ)V  # techguns-2.2.0.1.jar
   1  net.minecraft.advancements.critereon.ImpossibleTrigger$Instance.<init>()V  # Cherry_on-1.12.2-1.3.35.jar
-  1  net.minecraft.advancements.critereon.PlayerHurtEntityTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.entity.Entity;Lnet.minecraft.util.DamageSource;FFZ)V  # techguns-2.2.0.1.jar
   1  net.minecraft.block.Block.getStateAtViewpoint(Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.util.math.Vec3d;)Lnet.minecraft.block.state.IBlockState;  # Fluidlogged-API-v3.3.3-mc1.12.2.jar
   1  net.minecraft.block.BlockChorusFlower.canSurvive(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;)Z  # simplytea-1.6.jar
   1  net.minecraft.block.BlockDragonEgg.<init>()V  # Galacticraft-1.12.2-4.0.6.jar
-  1  net.minecraft.block.BlockFire.canCatchFire(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;)Z  # Fluidlogged-API-v3.3.3-mc1.12.2.jar
-  1  net.minecraft.block.BlockFire.getFlammability(Lnet.minecraft.block.Block;)I  # NarutoMod-1.12.2-0.3.1.beta.jar
   1  net.minecraft.block.BlockSnowBlock.<init>()V  # lepidodendron-1.12.2-63.02.jar
   1  net.minecraft.command.CommandHelp.<init>()V  # UniversalTweaks-1.12.2-1.21.0.jar
   1  net.minecraft.command.CommandLocate.<init>()V  # LucraftCore-1.12.2-2.4.17.jar
@@ -140,21 +100,16 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.entity.Entity.boundingBox:Lnet.minecraft.util.math.AxisAlignedBB;  # [[[valkyrien-skies-1.12.2-1.1.6.jar
   1  net.minecraft.entity.Entity.entityId:I  # MoBends_1.12.2-2.0.0-alpha.3.jar
   1  net.minecraft.entity.Entity.getOwner()Lnet.minecraft.entity.EntityLivingBase;  # srpcotesia-1.12.2-1.3.4h1.jar
-  1  net.minecraft.entity.Entity.lastPortalVec:Lnet.minecraft.util.math.Vec3d;  # CraftTweaker2-1.12-4.1.20.698.jar
   1  net.minecraft.entity.Entity.makeFlySound()Z  # Modern-Warfare-Cubed-0.1.9.jar
   1  net.minecraft.entity.Entity.nextFlap:F  # MoBends_1.12.2-2.0.0-alpha.3.jar
   1  net.minecraft.entity.Entity.playFlySound(F)F  # Modern-Warfare-Cubed-0.1.9.jar
   1  net.minecraft.entity.Entity.ridingEntity:Lnet.minecraft.entity.Entity;  # [[[valkyrien-skies-1.12.2-1.1.6.jar
   1  net.minecraft.entity.Entity.setOwner(Lnet.minecraft.entity.EntityLivingBase;)V  # srpcotesia-1.12.2-1.3.4h1.jar
-  1  net.minecraft.entity.Entity.setPositionNonDirty()Z  # UniversalTweaks-1.12.2-1.21.0.jar
-  1  net.minecraft.entity.Entity.shouldDismountInWater(Lnet.minecraft.entity.Entity;)Z  # CraftTweaker2-1.12-4.1.20.698.jar
-  1  net.minecraft.entity.Entity.teleportDirection:Lnet.minecraft.util.EnumFacing;  # CraftTweaker2-1.12-4.1.20.698.jar
   1  net.minecraft.entity.EntityAgeable.bridge$getProfessionOptional()Ljava.util.Optional;  # Sledgehammer-1.12.2-2.0.26.jar
   1  net.minecraft.entity.EntityCreature.maximumHomeDistance:F  # MoBends_1.12.2-2.0.0-alpha.3.jar
   1  net.minecraft.entity.EntityCreature.onInsideBlock(Lnet.minecraft.block.state.IBlockState;)V  # TerrariaCraft-1.12.2-12.6.2.jar
   1  net.minecraft.entity.EntityCreature.restoreWaterCost:F  # MoBends_1.12.2-2.0.0-alpha.3.jar
   1  net.minecraft.entity.EntityCreature.updateEquipmentIfNeeded(Lnet.minecraft.entity.item.EntityItem;)V  # UniversalTweaks-1.12.2-1.21.0.jar
-  1  net.minecraft.entity.EntityList.isMatchingName(Lnet.minecraft.entity.Entity;Lnet.minecraft.util.ResourceLocation;)Z  # bbs-2.4-1.12.2.jar
 ```
 
 ## client-side API (top 150 of 549)

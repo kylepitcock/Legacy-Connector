@@ -30,6 +30,17 @@ public class NBTTagString extends NBTBase {
         return StringTag.valueOf(data);
     }
 
+    /** The string as the legacy NBT text form writes it: in double quotes, with backslash and quote escaped. */
+    public static String quoteAndEscape(String text) {
+        StringBuilder sb = new StringBuilder("\"");
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\\' || c == '"') sb.append('\\');
+            sb.append(c);
+        }
+        return sb.append('"').toString();
+    }
+
     @Override
     public String getString() {
         return data;

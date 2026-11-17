@@ -52,6 +52,10 @@ public class Property {
         this(name, value, type, false, validValues, name);
     }
 
+    public Property(String name, String value, Type type, String[] validValues, String langKey) {
+        this(name, value, type, false, validValues, langKey);
+    }
+
     public Property(String name, String value, Type type, String langKey) {
         this(name, value, type, false, new String[0], langKey);
     }
@@ -178,6 +182,20 @@ public class Property {
         defaultValue = "";
         defaultValues = Arrays.copyOf(v, v.length);
         return this;
+    }
+
+    public Property setDefaultValues(int[] v) {
+        return setDefaultValues(Arrays.stream(v).mapToObj(Integer::toString).toArray(String[]::new));
+    }
+
+    public Property setDefaultValues(double[] v) {
+        return setDefaultValues(Arrays.stream(v).mapToObj(Double::toString).toArray(String[]::new));
+    }
+
+    public Property setDefaultValues(boolean[] v) {
+        String[] s = new String[v.length];
+        for (int i = 0; i < v.length; i++) s[i] = Boolean.toString(v[i]);
+        return setDefaultValues(s);
     }
 
     public Property setDefaultValue(int v) {
