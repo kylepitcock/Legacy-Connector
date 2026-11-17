@@ -213,8 +213,22 @@ public final class ItemStack {
     }
 
     public void setItem(Item item) {
+        net.minecraft.world.item.ItemStack replacement = ItemBridge.toModern(item, mcc$count(), getItemDamage());
+        if (!mcc$stack.isEmpty() && !replacement.isEmpty()) {
+            // the stack keeps its tag and other components (IC2 swaps a battery between its empty and charged item and the charge stays)
+            Integer meta = replacement.get(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta());
+            replacement.applyComponents(mcc$stack.getComponentsPatch());
+            if (meta != null) replacement.set(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), meta);
+            else replacement.remove(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta());
+        }
+        if (mcc$wrapped && !mcc$stack.isEmpty() && !replacement.isEmpty()) {
+            // a view of the stack a slot holds: change that stack, as 1.7.10 did (the slot keeps no copy)
+            ItemBridge.adoptInPlace(mcc$stack, replacement);
+            this.mcc$item = item;
+            return;
+        }
         this.mcc$item = item;
-        this.mcc$stack = ItemBridge.toModern(item, mcc$count(), getItemDamage());
+        this.mcc$stack = replacement;
     }
 
     public int getItemDamage() {
@@ -227,7 +241,13 @@ public final class ItemStack {
     }
 
     public void setItemDamage(int damage) {
-        mcc$stack = ItemBridge.withLegacyDamage(mcc$item, mcc$stack, Math.max(0, damage));
+        net.minecraft.world.item.ItemStack result = ItemBridge.withLegacyDamage(mcc$item, mcc$stack, Math.max(0, damage));
+        if (mcc$wrapped && result != mcc$stack && !mcc$stack.isEmpty() && !result.isEmpty()) {
+            // another subtype of a stack a slot holds: the slot's stack becomes it (a copy would leave the slot unchanged)
+            ItemBridge.adoptInPlace(mcc$stack, result);
+            return;
+        }
+        mcc$stack = result;
     }
 
     public int mcc$rawDamage() {

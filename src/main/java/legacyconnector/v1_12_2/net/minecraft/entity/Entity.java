@@ -1526,6 +1526,14 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         if (!mcc$get$isImmuneToFire(this)) attackEntityFrom(legacyconnector.v1_12_2.net.minecraft.util.DamageSource.IN_FIRE, amount);
     }
 
+    /** Lava burns: 4 damage and 15 seconds of fire unless the entity is immune to fire (1.12.2 protected hook, called by entities that walk through lava themselves). */
+    protected void setOnFireFromLava() {
+        if (!mcc$get$isImmuneToFire(this)) {
+            attackEntityFrom(legacyconnector.v1_12_2.net.minecraft.util.DamageSource.LAVA, 4.0F);
+            setFire(15);
+        }
+    }
+
     public void setFire(int seconds) {
         if (mcc$entity != null) mcc$entity.igniteForSeconds(seconds);
     }
