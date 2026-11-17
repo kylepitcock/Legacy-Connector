@@ -91,6 +91,7 @@ public final class RenderContext {
     static final class State {
         final Deque<Frame> frames = new ArrayDeque<>();
         Capture capture;
+        final Deque<float[]> itemBrightness = new ArrayDeque<>();
         /** The 1.4.7 sprite sheet path last bound by string (null when a texture was bound by location). */
         String sheet;
         /** glBegin/glEnd geometry (GL11's immediate mode). */
@@ -236,7 +237,11 @@ public final class RenderContext {
     private RenderContext() {}
 
     private static boolean lockRender() {
-        if (!RENDER_LOCK) return false;
+        return lockRender(false);
+    }
+
+    private static boolean lockRender(boolean force) {
+        if (!RENDER_LOCK && !force) return false;
         CAPTURE_LOCK.lock();
         return true;
     }
@@ -252,6 +257,40 @@ public final class RenderContext {
 
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         beginWorld(pose, buffers, light, overlay, KIND_WORLD);
+    }
+
+    /**
+     * An item drawn by a legacy renderer: holds the capture lock even without {@code legacyconnector.renderLock}. Legacy item renderers and
+     * block handlers share static state (CodeChickenLib's CCRenderState: colour, brightness, normals, the vertex buffer); a chunk
+     * mesh thread capturing a handler at the same moment changed it under the item being drawn, so items turned white, black or dark
+     * from one frame to the next (Thermal Expansion in slots, #293). The light the item is drawn with is also what
+     * {@code OpenGlHelper.lastBrightnessX/Y} holds for the draw, nested in another legacy frame or not, and is restored afterwards.
+     */
+    public static void beginItem(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        float[] saved = {legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX,
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY};
+        boolean locked = lockRender(true);
+        State s = STATE.get();
+        if (s.frames.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX = light & 0xFFFF;
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY = (light >>> 16) & 0xFFFF;
+        s.itemBrightness.push(saved);
+        s.frames.push(new Frame(null, pose, buffers, light, overlay, pose.last(), locked, KIND_WORLD, false));
+        resetColor(s);
+    }
+
+    /** Ends {@link #beginItem}. */
+    public static void endItem() {
+        State s = STATE.get();
+        float[] saved = s.itemBrightness.isEmpty() ? null : s.itemBrightness.pop();
+        try {
+            end();
+        } finally {
+            if (saved != null) {
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX = saved[0];
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY = saved[1];
+            }
+        }
     }
 
     /** A world context for sky renderers ({@link #KIND_SKY}) or particles ({@link #KIND_PARTICLES}): see {@link #geometryBuffer}. */

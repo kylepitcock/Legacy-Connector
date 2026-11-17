@@ -40,6 +40,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             int light, int overlay) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view == null || view.getItem() == null) return;
+        if (context == ItemDisplayContext.GUI) light = net.minecraft.client.renderer.LightTexture.FULL_BRIGHT; // 1.7.10's slot pipeline was full-bright whatever the caller passed
         ItemRenderType type = switch (context) {
             case GUI -> ItemRenderType.INVENTORY;
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> ItemRenderType.EQUIPPED_FIRST_PERSON;
@@ -72,7 +73,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
         // (placing a Thermal Expansion tesseract froze the client: RenderTesseract is item renderer and block handler at once).
         synchronized (renderer) {
         pose.pushPose();
-        RenderContext.beginWorld(pose, buffers, light, overlay);
+        RenderContext.beginItem(pose, buffers, light, overlay);
         try {
             Object[] data;
             switch (type) {
@@ -108,7 +109,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             // a broken legacy renderer must not take the inventory down
             logOnce(renderer.getClass().getName(), e);
         } finally {
-            RenderContext.end();
+            RenderContext.endItem();
             pose.popPose();
         }
         }
@@ -159,7 +160,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (handler == null) return false;
         synchronized (handler) { // same lock order as renderByItem
         pose.pushPose();
-        RenderContext.beginWorld(pose, buffers, light, overlay);
+        RenderContext.beginItem(pose, buffers, light, overlay);
         try {
             if (!handler.shouldRender3DInInventory(renderId)) return false;
             RenderContext.bindTexture(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
@@ -185,7 +186,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             logOnce(handler.getClass().getName(), e);
             return true; // a broken legacy renderer must not take the inventory down
         } finally {
-            RenderContext.end();
+            RenderContext.endItem();
             pose.popPose();
         }
         }
