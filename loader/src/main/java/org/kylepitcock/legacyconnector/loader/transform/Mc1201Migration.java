@@ -455,6 +455,7 @@ final class Mc1201Migration {
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
                 registryBufferLambda(d);
+                if (adaptLambda(d, t, c)) c.calls++;
                 redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
                 // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
