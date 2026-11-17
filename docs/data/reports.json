@@ -1031,6 +1031,18 @@
    "link": "https://www.curseforge.com/minecraft/modpacks/full-retro/files/all?page=1&pageSize=20&showAlphaFiles=show",
    "date": "2026-11-17",
    "open": true
+  },
+  {
+   "issue": 314,
+   "mod": "HBM-NTM-.1.0.27_X5863",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Weapons are not working properly. Fatmans bombs are not exploding, .50 cals rifle tracers are off and bullets deal exactly no damage. https://drive.google.com/file/d/10Lnm90kRM7AV5jNyCzyJPdU0B6o5IOp8/view?usp=sharing Link for video on Google drive, because github doesnt allow videos larger that 10mb on free plan.",
+   "lc": "0.5.0",
+   "neoforge": "21.1.265",
+   "link": "https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT/releases",
+   "date": "2026-11-17",
+   "open": true
   }
  ]
 }
