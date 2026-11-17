@@ -56,6 +56,22 @@ public abstract class EntityMinecart extends Entity {
         return !mcc$get$isDead(this);
     }
 
+    /** Forge posts a MinecartCollisionEvent for every entity that touches a cart, then the push. */
+    @Override
+    public void applyEntityCollision(Entity other) {
+        if (other != null && !mcc$get$world(this).isRemote) {
+            var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (bus.mcc$hasListeners(legacyconnector.v1_12_2.net.minecraftforge.event.entity.minecart.MinecartCollisionEvent.class)) {
+                try {
+                    bus.post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.minecart.MinecartCollisionEvent(this, other));
+                } catch (RuntimeException | LinkageError e) {
+                    // a failing handler never breaks the collision
+                }
+            }
+        }
+        super.applyEntityCollision(other);
+    }
+
     @Override
     public double getMountedYOffset() {
         return 0.0D;

@@ -233,6 +233,31 @@ public class ForgeEventFactory {
         return event;
     }
 
+    /** The placement event of several blocks placed at once (beds, doors, mod multiblocks): canceled when a mod canceled it; the modern multi-place event is fired. */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.MultiPlaceEvent onPlayerMultiBlockPlace(EntityPlayer player,
+            List<legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot> blockSnapshots, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction,
+            EnumHand hand) {
+        var first = blockSnapshots.get(0);
+        var world = first.getWorld();
+        var placedAgainst = world == null ? null : world.getBlockState(first.getPos().offset(direction.getOpposite()));
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.MultiPlaceEvent(blockSnapshots, placedAgainst, player, hand);
+        var modern = new java.util.ArrayList<net.neoforged.neoforge.common.util.BlockSnapshot>();
+        for (var s : blockSnapshots) {
+            var m = mcc$modernSnapshot(s);
+            if (m != null) modern.add(m);
+        }
+        if (modern.size() == blockSnapshots.size() && EventHooks.onMultiBlockPlace(player(player), modern, direction.mcc$modern())) event.setCanceled(true);
+        return event;
+    }
+
+    /** A loaded loot table goes through the LootTableLoadEvent: handlers edit or replace it, a canceled event leaves the empty table. */
+    public static legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable loadLootTable(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name,
+            legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable table, legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager manager) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.LootTableLoadEvent(name, table, manager);
+        return legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event)
+                ? legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable.EMPTY_LOOT_TABLE : event.getTable();
+    }
+
     /** The placement event of a block placed by an entity (canceled when a mod canceled the placement; a modern placement event is fired). */
     public static legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent onBlockPlace(Entity entity,
             legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction) {

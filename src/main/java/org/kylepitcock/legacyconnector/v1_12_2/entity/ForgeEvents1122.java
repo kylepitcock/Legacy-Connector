@@ -190,6 +190,20 @@ public final class ForgeEvents1122 {
             post(new legacyconnector.v1_12_2.net.minecraftforge.event.brewing.PotionBrewEvent.Post(stacks));
             brewWriteBack(e, stacks);
         });
+        game.addListener((net.neoforged.neoforge.event.brewing.PlayerBrewedPotionEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.brewing.PlayerBrewedPotionEvent.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.brewing.PlayerBrewedPotionEvent(p, Stacks1122.view(e.getStack())));
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerFlyableFallEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerFlyableFallEvent.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerFlyableFallEvent(p, e.getDistance(), e.getMultiplier());
+            post(event);
+            e.setDistance(event.getDistance());
+            e.setMultiplier(event.getMultiplier());
+        });
         game.addListener((net.neoforged.neoforge.event.enchanting.EnchantmentLevelSetEvent e) -> {
             var event = new legacyconnector.v1_12_2.net.minecraftforge.event.enchanting.EnchantmentLevelSetEvent(WorldBridge1122.wrap(e.getLevel()),
                     BlockPos.mcc$of(e.getPos()), e.getEnchantRow(), e.getPower(), Stacks1122.view(e.getItem()), e.getOriginalLevel());
