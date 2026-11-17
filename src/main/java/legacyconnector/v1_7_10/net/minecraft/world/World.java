@@ -257,6 +257,9 @@ public class World implements IBlockAccess {
 
     /** The full level, or null for a detached world-gen region without one. */
     public Level mcc$fullLevel() {
+        if (org.kylepitcock.legacyconnector.core.worldgen.RealLevelGuard.enabled() && !(lvl() instanceof Level)) {
+            org.kylepitcock.legacyconnector.core.worldgen.RealLevelGuard.reached("mcc$fullLevel()");
+        }
         return mcc$fullLevel(lvl());
     }
 

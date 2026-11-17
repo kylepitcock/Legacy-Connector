@@ -53,7 +53,7 @@ public class BlockGrass extends Block implements IGrowable {
     /** Plain dirt (not coarse dirt or podzol). */
     private static boolean isPlainDirt(World world, BlockPos pos, IBlockState state) {
         if (!Block.mcc$named(state.getBlock(), "dirt")) return false;
-        var level = world.mcc$level();
+        var level = world.mcc$access();
         return level == null || level.getBlockState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos)).is(net.minecraft.world.level.block.Blocks.DIRT);
     }
 
