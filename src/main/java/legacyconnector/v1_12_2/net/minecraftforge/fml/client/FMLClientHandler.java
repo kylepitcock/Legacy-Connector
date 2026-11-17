@@ -34,6 +34,11 @@ public class FMLClientHandler {
     }
 
     /** OptiFine does not exist for this game; mods use this to switch off their workarounds. */
+    /** Lines the title screen adds to its branding: none (the layer has no optifine container to name). */
+    public java.util.List<String> getAdditionalBrandingInformation() {
+        return java.util.Collections.emptyList();
+    }
+
     public boolean hasOptifine() {
         return false;
     }

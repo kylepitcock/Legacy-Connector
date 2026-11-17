@@ -81,12 +81,34 @@ public class NetworkPlayerInfo {
         return gameProfile;
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.world.GameType gameTypeOverride;
+    private int responseTimeOverride = -1;
+
+    /** Sets the game type this view reports (the game's own entry is updated by the server's packets, not through the view). */
+    public void setGameType(legacyconnector.v1_12_2.net.minecraft.world.GameType gameType) {
+        this.gameTypeOverride = gameType;
+    }
+
+    public void setResponseTime(int responseTime) {
+        this.responseTimeOverride = responseTime;
+    }
+
+    /** Phantom: "slim" or "default" (redirected to {@link #getSkinType()}). */
+    @Deprecated
+    public String skinType;
+
+    public static String mcc$get$skinType(NetworkPlayerInfo info) {
+        return info.getSkinType();
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.world.GameType getGameType() {
+        if (gameTypeOverride != null) return gameTypeOverride;
         var mode = mcc$modern().getGameMode();
         return mode == null ? legacyconnector.v1_12_2.net.minecraft.world.GameType.NOT_SET : legacyconnector.v1_12_2.net.minecraft.world.GameType.mcc$of(mode);
     }
 
     public int getResponseTime() {
+        if (responseTimeOverride >= 0) return responseTimeOverride;
         return mcc$modern().getLatency();
     }
 
