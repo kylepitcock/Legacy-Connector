@@ -983,6 +983,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/opencubicchunks/download/9027901",
    "date": "2026-11-17",
    "open": true
+  },
+  {
+   "issue": 305,
+   "mod": "Thaumcraft 4.2.3.5",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Killing mobs to gain vis only works once when loading into a world.",
+   "lc": "0.4.15-nightly.65.6cc4298",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/files/2227552",
+   "date": "2026-11-17",
+   "open": true
   }
  ]
 }
