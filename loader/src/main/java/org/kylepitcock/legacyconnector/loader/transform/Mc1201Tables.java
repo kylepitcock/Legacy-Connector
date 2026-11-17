@@ -31,7 +31,7 @@ final class Mc1201Tables {
     /** A static field read: {@code GETSTATIC owner.newName:newDesc}, then {@code post}: none, {@code value} (Holder.value + cast) or a helper method. */
     record Field(String owner, String name, String desc, String newName, String newDesc, String post) {}
 
-    /** A changed override; argument tokens: index into the new parameters, {@code this}, or {@code Helper.method@index}. */
+    /** A changed override; argument tokens: index into the new parameters, {@code this}, {@code Helper.method@index}, or {@code Helper.method@this}. */
     record Bridge(String owner, String oldName, String oldDesc, String newName, String newDesc, List<String> args, String ret, int remember) {}
 
     final Map<String, String> classes = new HashMap<>();
