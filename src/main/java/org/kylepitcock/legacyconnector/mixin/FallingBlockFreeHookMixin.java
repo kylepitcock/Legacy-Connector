@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.FALL_THROUGH}): 1.12.2 coremods put a hook last in {@code BlockFalling.canFallThrough} that answers
  * for a state (blocks that gravity blocks fall through). A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(FallingBlock.class)
 public abstract class FallingBlockFreeHookMixin {
     @Inject(method = "isFree", at = @At("RETURN"), cancellable = true, require = 0)

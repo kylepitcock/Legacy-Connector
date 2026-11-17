@@ -7,11 +7,13 @@ import net.minecraft.world.item.ItemStack;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.ITEM_USE_DURATION}): 1.12.2 coremods put a hook around the use duration that
  * {@code EntityLivingBase.getItemInUseMaxCount} reads from the stack in use (eating speed, drawing time). A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityUseDurationHookMixin {
     @WrapOperation(method = "getTicksUsingItem", at = @At(value = "INVOKE",

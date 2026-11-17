@@ -11,11 +11,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.CAKE_EATEN}): 1.12.2 coremods that rework food put a hook in place of the hunger gain of a cake
  * bite (the hook adds the hunger itself, after its own events). A no-op without such a hook; the game's gain stays when the hook fails.
  */
+@CoremodHook
 @Mixin(CakeBlock.class)
 public abstract class CakeEatHookMixin {
     @WrapOperation(method = "eat", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;eat(IF)V"), require = 0)

@@ -11,11 +11,13 @@ import net.minecraft.world.entity.LivingEntity;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.Client.NIGHT_VISION_ACTIVE}, {@code NIGHT_VISION_AMOUNT}): 1.7.10 coremods changed whether the light map
  * counts the player as having night vision, and how strong the effect is (night vision without the potion). A no-op without such hooks.
  */
+@CoremodHook
 @Mixin(LightTexture.class)
 public abstract class LightTextureNightVisionHookMixin {
     @WrapOperation(method = "updateLightTexture", at = @At(value = "INVOKE",

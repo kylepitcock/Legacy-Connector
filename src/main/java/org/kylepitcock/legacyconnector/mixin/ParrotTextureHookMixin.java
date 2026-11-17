@@ -9,8 +9,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /** The texture half of the shoulder parrot hook ({@code CoremodSites1122.SHOULDER_TEXTURE}); see {@link ShoulderParrotTextureHookMixin}. */
+@CoremodHook
 @Mixin(ParrotRenderer.class)
 public abstract class ParrotTextureHookMixin {
     @Inject(method = "getVariantTexture", at = @At("RETURN"), cancellable = true, require = 0)

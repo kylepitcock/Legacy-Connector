@@ -256,6 +256,7 @@ public final class LegacyConnector {
             exit.start();
         });
         org.kylepitcock.legacyconnector.core.ConfigPacketSizes.register(game);
+        org.kylepitcock.legacyconnector.core.MixinSelfCheckHook.register(game);
         org.kylepitcock.legacyconnector.core.ServerScript.register();
         org.kylepitcock.legacyconnector.core.ServerTickScript.register(game);
         org.kylepitcock.legacyconnector.core.ServerDevScript.register();

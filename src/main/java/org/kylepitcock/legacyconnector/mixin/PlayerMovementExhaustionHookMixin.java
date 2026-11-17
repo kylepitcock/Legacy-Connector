@@ -5,12 +5,14 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites1122.EXHAUSTION_DIVE/SWIM/SPRINT/CROUCH/WALK}): 1.12.2 coremods that rework hunger put a hook at each
  * exhaustion call of {@code EntityPlayer.addMovementStat}; the hook answers the amount and is told which movement it is by the place. The modern method
  * has the same calls in another order (swimming, diving, in water, sprinting, crouching, walking). No-ops without hooks.
  */
+@CoremodHook
 @Mixin(ServerPlayer.class)
 public abstract class PlayerMovementExhaustionHookMixin {
     private static final String CAUSE = "causeFoodExhaustion(F)V";
