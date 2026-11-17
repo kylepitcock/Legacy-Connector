@@ -18,6 +18,21 @@ public class ForgeHooksClient {
     }
 
     /** Forge 1.4.7: binds a mod's texture file (a whole sprite sheet or image); the unit argument was the texture slot. */
+    /**
+     * Forge's addition to the title screen: the branding lines ("Minecraft 1.7.10", "Forge ...", "n mods loaded") at its bottom left. The
+     * modern title screen draws its own branding, so mods that replace the legacy menu (and call this from their {@code drawScreen}) get the
+     * lines drawn by the legacy screen.
+     */
+    public static void renderMainMenu(legacyconnector.v1_7_10.net.minecraft.client.gui.GuiMainMenu gui,
+            legacyconnector.v1_7_10.net.minecraft.client.gui.FontRenderer font, int width, int height) {
+        java.util.List<String> brandings = new java.util.ArrayList<>(legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().getBrandings(true));
+        java.util.Collections.reverse(brandings);
+        for (int i = 0; i < brandings.size(); i++) {
+            String brand = brandings.get(i);
+            if (brand != null && !brand.isEmpty()) gui.drawString(font, brand, 2, height - (10 + i * (font.FONT_HEIGHT + 1)), 16777215);
+        }
+    }
+
     public static void bindTexture(String texture, int unit) {
         // Forge 1.4.7 drew the vertices collected so far with the old texture before the new one was bound: a renderer that draws a part per image
         // (CoFH's changeTexture: Thermal Expansion's energy cell frame then its liquid, a tesseract's frame then its core) in one Tessellator draw. Without
