@@ -416,6 +416,105 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void directVirtualMobFinalizeSpawnCallsUseTheScopedSpawnHelper() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String helperDesc = "(L" + mob + ";L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData
+                + ";L" + CT + ";)L" + spawnData + ";";
+
+        ClassNode caller = cls("test/DirectMobSpawnCaller", "java/lang/Object");
+        MethodNode invoke = method(caller, ACC_PUBLIC | ACC_STATIC, "invoke",
+                "(L" + mob + ";L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT + ";)L"
+                        + spawnData + ";");
+        for (int i = 0; i <= 5; i++) invoke.instructions.add(new VarInsnNode(ALOAD, i));
+        invoke.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, mob, "finalizeSpawn", oldDesc, false));
+        invoke.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(caller).calls);
+        MethodInsnNode helper = find(invoke, MIGRATE + "SpawnCompat", "finalizeSpawn");
+        assertNotNull(helper);
+        assertEquals(INVOKESTATIC, helper.getOpcode());
+        assertEquals(helperDesc, helper.desc);
+        assertNull(find(invoke, mob, "finalizeSpawn"));
+        verify(caller);
+    }
+
+    @Test
+    void superMobFinalizeSpawnKeepsInvokespecialAndDropsOnlyTheRemovedTag() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+
+        ClassNode child = cls("test/SuperMobSpawnCaller", mob);
+        MethodNode invoke = method(child, ACC_PUBLIC, "invoke",
+                "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT + ";)L" + spawnData + ";");
+        invoke.instructions.add(new VarInsnNode(ALOAD, 0));
+        for (int i = 1; i <= 5; i++) invoke.instructions.add(new VarInsnNode(ALOAD, i));
+        invoke.instructions.add(new MethodInsnNode(INVOKESPECIAL, mob, "finalizeSpawn", oldDesc, false));
+        invoke.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(child).calls);
+        MethodInsnNode call = find(invoke, mob, "finalizeSpawn");
+        assertNotNull(call);
+        assertEquals(INVOKESPECIAL, call.getOpcode(), "super dispatch must remain non-virtual");
+        assertEquals(newDesc, call.desc);
+        assertEquals(POP, call.getPrevious().getOpcode(), "only the legacy CompoundTag argument is removed");
+        assertNull(find(invoke, MIGRATE + "SpawnCompat", "finalizeSpawn"));
+        verify(child);
+    }
+
+    @Test
+    void explicitEntityTypeCreateAndSpawnOverloadsUseTagPreservingAdapters() {
+        String entityType = "net/minecraft/world/entity/EntityType";
+        String serverLevel = "net/minecraft/server/level/ServerLevel";
+        String consumer = "java/util/function/Consumer";
+        String pos = "net/minecraft/core/BlockPos";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String oldDesc = "(L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos + ";L" + spawnType
+                + ";ZZ)Lnet/minecraft/world/entity/Entity;";
+        String helperDesc = "(L" + entityType + ";L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos
+                + ";L" + spawnType + ";ZZ)Lnet/minecraft/world/entity/Entity;";
+
+        ClassNode caller = cls("test/ExplicitEntityTypeCalls", "java/lang/Object");
+        MethodNode create = method(caller, ACC_PUBLIC | ACC_STATIC, "create",
+                "(L" + entityType + ";L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos + ";L" + spawnType + ";ZZ)Lnet/minecraft/world/entity/Entity;");
+        MethodNode spawn = method(caller, ACC_PUBLIC | ACC_STATIC, "spawn",
+                "(L" + entityType + ";L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos + ";L" + spawnType + ";ZZ)Lnet/minecraft/world/entity/Entity;");
+        for (MethodNode method : List.of(create, spawn)) {
+            for (int i = 0; i <= 7; i++) {
+                Type argument = Type.getArgumentTypes(method.desc)[i];
+                method.instructions.add(new VarInsnNode(argument.getOpcode(ILOAD), new int[] {0,1,2,3,4,5,6,7}[i]));
+            }
+            method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, entityType,
+                    method.name, oldDesc, false));
+            method.instructions.add(new InsnNode(ARETURN));
+        }
+
+        assertEquals(2, apply(caller).calls);
+        MethodInsnNode createAdapter = find(create, MIGRATE + "EntityTypeCompat", "create");
+        MethodInsnNode spawnAdapter = find(spawn, MIGRATE + "EntityTypeCompat", "spawn");
+        assertNotNull(createAdapter);
+        assertNotNull(spawnAdapter);
+        assertEquals(INVOKESTATIC, createAdapter.getOpcode());
+        assertEquals(INVOKESTATIC, spawnAdapter.getOpcode());
+        assertEquals(helperDesc, createAdapter.desc);
+        assertEquals(helperDesc, spawnAdapter.desc);
+        assertNull(find(create, entityType, "create"));
+        assertNull(find(spawn, entityType, "spawn"));
+        verify(caller);
+    }
+
+    @Test
     void legacyMobFinalizeSpawnBridgeReadsTheTagFromThisInstance() {
         String mob = "net/minecraft/world/entity/Mob";
         String level = "net/minecraft/world/level/ServerLevelAccessor";
