@@ -21,6 +21,7 @@ for p in $(ps -W 2>/dev/null | awk '/java/{print $1}'); do :; done
 powershell.exe -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='java.exe'\" | Where-Object { \$_.CommandLine -like '*agent-a497c4bd2a9e66922*' -and \$_.CommandLine -like '*serverSubTest*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }"
 sleep 3; wait $GP 2>/dev/null
 cp $D/logs/latest.log build/devtools/sub125-$label.latest.log 2>/dev/null
+cp $D/logs/legacyconnector-report.txt build/devtools/sub125-$label.report.txt 2>/dev/null
 L=$D/logs/latest.log
 echo "== $label: $*"
 grep -E "EXPERIMENTAL|1\.2\.5 content|Legacy content|Legacy mods loaded|SELF TEST|failed during|SUMMARY|not supported|Dropped" $L | cut -c1-260 | head -40
