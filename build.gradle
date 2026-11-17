@@ -59,6 +59,9 @@ neoForge {
         client {
             client()
             jvmArgument '-Xmx6G'
+            // Optional dev-only legacy compatibility probe; the ServerScript runner is inert unless these properties are set.
+            if (project.hasProperty('serverScript')) systemProperty 'legacyconnector.serverScript', project.property('serverScript')
+            if (project.hasProperty('serverScriptMod')) systemProperty 'legacyconnector.serverScriptMod', project.property('serverScriptMod')
         }
 
         server {

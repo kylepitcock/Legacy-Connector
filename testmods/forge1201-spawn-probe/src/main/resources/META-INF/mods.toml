@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="legacyspawnprobe"
+version="1.0.0"
+displayName="Legacy Connector Forge 1.20.1 Spawn Probe"
+description='''
+Test-only Forge 1.20.1 fixture for validating Legacy Connector's
+EntityType spawn and Mob.finalizeSpawn CompoundTag compatibility.
+'''
+
+[[dependencies.legacyspawnprobe]]
+modId="forge"
+mandatory=true
+versionRange="[47.3.0,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.legacyspawnprobe]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"
