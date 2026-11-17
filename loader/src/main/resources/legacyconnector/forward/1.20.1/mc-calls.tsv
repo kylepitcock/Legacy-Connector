@@ -863,3 +863,12 @@ net/neoforged/fml/util/ObfuscationReflectionHelper	remapName	(Lcpw/mods/modlaunc
 net/minecraft/advancements/DisplayInfo	getFrame	()Lnet/minecraft/advancements/AdvancementType;	Round7Compat	displayFrame
 net/minecraft/advancements/DisplayInfo	getBackground	()Lnet/minecraft/resources/ResourceLocation;	Round7Compat	displayBackground
 net/minecraft/world/item/ShieldItem	getColor	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/DyeColor;	Round7Compat	shieldColor
+# --- round 7, batch 2: armor textures, camera, book model
+net/neoforged/neoforge/client/ClientHooks	getArmorTexture	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Ljava/lang/String;	Round7ClientCompat	clientHooksArmorTexture
+net/minecraft/world/item/ArmorItem	getArmorTexture	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Ljava/lang/String;@special	Round7ClientCompat	itemArmorTextureSuper
+net/minecraft/world/item/Item	getArmorTexture	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Ljava/lang/String;@special	Round7ClientCompat	itemArmorTextureSuper
+net/minecraft/world/item/ArmorItem	getArmorTexture	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Ljava/lang/String;	Round7ClientCompat	itemArmorTexture
+net/minecraft/world/item/Item	getArmorTexture	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Ljava/lang/String;	Round7ClientCompat	itemArmorTexture
+net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer	getArmorResource	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;	Round7ClientCompat	armorResource	(Ljava/lang/Object;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;
+net/minecraft/client/Camera	move	(DDD)V	Round7ClientCompat	cameraMove
+net/minecraft/client/model/BookModel	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	Round7ClientCompat	bookRender

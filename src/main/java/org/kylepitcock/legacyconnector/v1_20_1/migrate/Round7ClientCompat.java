@@ -13,6 +13,14 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.Camera;
+import net.minecraft.client.model.BookModel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,5 +65,76 @@ public final class Round7ClientCompat {
     public static boolean useAmbientOcclusion(BakedModel model, BlockState state, RenderType renderType) {
         var answer = model.useAmbientOcclusion(state, ModelData.EMPTY, renderType);
         return answer.isDefault() ? model.useAmbientOcclusion() : answer.isTrue();
+    }
+
+    // ---- armor textures: Forge's IForgeItem.getArmorTexture(stack, entity, slot, type) became ArmorMaterial layers
+
+    private static final ClassValue<java.lang.reflect.Method> ARMOR_TEXTURE = new ClassValue<>() {
+        @Override
+        protected java.lang.reflect.Method computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+                try {
+                    java.lang.reflect.Method m = c.getDeclaredMethod("getArmorTexture", ItemStack.class, Entity.class, EquipmentSlot.class, String.class);
+                    m.setAccessible(true);
+                    return m;
+                } catch (ReflectiveOperationException | RuntimeException ignored) {
+                    // next superclass
+                }
+            }
+            return null;
+        }
+    };
+
+    /** The texture a mod item's own {@code getArmorTexture(stack, entity, slot, type)} names (the method survives in the translated class), or null. */
+    public static String legacyArmorTexture(Item item, ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        java.lang.reflect.Method m = ARMOR_TEXTURE.get(item.getClass());
+        if (m == null) return null;
+        try {
+            return (String) m.invoke(item, stack, entity, slot, type);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** {@code item.getArmorTexture(stack, entity, slot, type)} on Item/ArmorItem: dispatches to the override of the item's class; the base answered null. */
+    public static String itemArmorTexture(Item item, ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        return legacyArmorTexture(item, stack, entity, slot, type);
+    }
+
+    /** {@code super.getArmorTexture(...)} of a mod item: Forge's default answered null (use the material's texture). */
+    public static String itemArmorTextureSuper(Item item, ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        return null;
+    }
+
+    /** {@code ClientHooks.getArmorTexture(entity, stack, defaultTexture, slot, type)}: the item's own texture name when it has one, else the default. */
+    public static String clientHooksArmorTexture(Entity entity, ItemStack stack, String defaultTexture, EquipmentSlot slot, String type) {
+        String custom = legacyArmorTexture(stack.getItem(), stack, entity, slot, type);
+        return custom != null ? custom : defaultTexture;
+    }
+
+    /** {@code HumanoidArmorLayer.getArmorResource(entity, stack, slot, type)}: the item's own texture, else the first (or overlay) layer of its material. */
+    public static ResourceLocation armorResource(Object layer, Entity entity, ItemStack stack, EquipmentSlot slot, String type) {
+        String custom = legacyArmorTexture(stack.getItem(), stack, entity, slot, type);
+        if (custom != null) return ResourceLocation.parse(custom);
+        if (stack.getItem() instanceof ArmorItem armor) {
+            var layers = armor.getMaterial().value().layers();
+            if (!layers.isEmpty()) {
+                var l = "overlay".equals(type) && layers.size() > 1 ? layers.get(1) : layers.get(0);
+                return l.texture(slot == EquipmentSlot.LEGS);
+            }
+        }
+        return ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");
+    }
+
+    // ---- camera and book model
+
+    /** {@code Camera.move(x, y, z)}: single precision now (the method is opened by the layer's access transformer). */
+    public static void cameraMove(Camera camera, double x, double y, double z) {
+        camera.move((float) x, (float) y, (float) z);
+    }
+
+    /** {@code BookModel.render(stack, consumer, light, overlay, r, g, b, a)}: one packed colour now. */
+    public static void bookRender(BookModel model, PoseStack stack, VertexConsumer consumer, int light, int overlay, float r, float g, float b, float a) {
+        ClientCompat.renderToBuffer(model, stack, consumer, light, overlay, r, g, b, a);
     }
 }
