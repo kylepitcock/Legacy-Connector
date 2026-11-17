@@ -50,6 +50,14 @@ public class StructureVillagePieces {
         protected Village(Start start, int type) {
             super(type);
             if (start != null) this.field_143014_b = start.inDesert;
+            this.mcc$startPiece = start;
+        }
+
+        /** 1.4.7 to 1.6.4 {@code ComponentVillage.startPiece}: the village's start piece (read through the forward layer's field getter). */
+        private Start mcc$startPiece;
+
+        public Start mcc$startPiece() {
+            return this.mcc$startPiece;
         }
 
         @Override
@@ -97,6 +105,12 @@ public class StructureVillagePieces {
         }
 
         protected int getAverageGroundLevel(World world, StructureBoundingBox box) {
+            // placed on a street by the modern village generator (mcc$setGroundLevel): the ground is known, as the height of the top
+            // solid block; the average this method returns is the surface (the air above it, as getTopSolidOrLiquidBlock). Components
+            // that keep their own average-ground field (Forestry's apiarist house in 1.4.7 to 1.5.2) shift their box by (average minus
+            // its top plus a constant) when they first build; an average measured from the terrain here moved the building away from
+            // its plot (buried it).
+            if (this.field_143015_k >= 0) return this.field_143015_k + 1;
             int total = 0;
             int count = 0;
             for (int z = this.boundingBox.minZ; z <= this.boundingBox.maxZ; ++z) {
