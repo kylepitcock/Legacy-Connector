@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.item.ItemStack;
@@ -27,10 +26,9 @@ public final class SpawnProbe {
     private static final List<String> EVENTS = new ArrayList<>();
     private static int positionIndex;
 
-    private static final EntityType<SpawnProbeMob> TYPE = EntityType.Builder
-            .<SpawnProbeMob>of(SpawnProbeMob::new, MobCategory.MONSTER)
-            .sized(0.6F, 1.95F)
-            .build("legacyspawnprobe:spawn_probe");
+    private static EntityType<SpawnProbeMob> type() {
+        return LegacySpawnProbeMod.SPAWN_PROBE.get();
+    }
 
     private SpawnProbe() {}
 
@@ -77,7 +75,7 @@ public final class SpawnProbe {
             throw new IllegalStateException("Nested spawn did not receive a ServerLevel");
         }
         EVENTS.add("nested-start");
-        SpawnProbeMob nested = TYPE.create(
+        SpawnProbeMob nested = type().create(
                 serverLevel,
                 null,
                 entity -> EVENTS.add("nested-consumer"),
@@ -93,7 +91,7 @@ public final class SpawnProbe {
     private static void explicitCreateTag(ServerLevel level) {
         reset();
         String expected = "create-explicit";
-        SpawnProbeMob mob = TYPE.create(level, tag(expected), entity -> EVENTS.add("consumer"),
+        SpawnProbeMob mob = type().create(level, tag(expected), entity -> EVENTS.add("consumer"),
                 nextPosition(level), MobSpawnType.COMMAND, false, false);
         require(mob != null, "EntityType.create returned null");
         require(OBSERVED_TAGS.equals(List.of(expected)), "observed tags " + OBSERVED_TAGS);
@@ -104,7 +102,7 @@ public final class SpawnProbe {
 
     private static void explicitCreateNull(ServerLevel level) {
         reset();
-        SpawnProbeMob mob = TYPE.create(level, null, entity -> EVENTS.add("consumer"),
+        SpawnProbeMob mob = type().create(level, null, entity -> EVENTS.add("consumer"),
                 nextPosition(level), MobSpawnType.COMMAND, false, false);
         require(mob != null, "EntityType.create returned null");
         require(OBSERVED_TAGS.equals(List.of("<null>")), "observed tags " + OBSERVED_TAGS);
@@ -116,7 +114,7 @@ public final class SpawnProbe {
     private static void explicitSpawnTag(ServerLevel level) {
         reset();
         String expected = "spawn-explicit";
-        SpawnProbeMob mob = TYPE.spawn(level, tag(expected), entity -> EVENTS.add("consumer"),
+        SpawnProbeMob mob = type().spawn(level, tag(expected), entity -> EVENTS.add("consumer"),
                 nextPosition(level), MobSpawnType.COMMAND, false, false);
         require(mob != null, "EntityType.spawn returned null");
         require(OBSERVED_TAGS.equals(List.of(expected)), "observed tags " + OBSERVED_TAGS);
@@ -129,7 +127,7 @@ public final class SpawnProbe {
         reset();
         ItemStack stack = new ItemStack(Items.STICK);
         stack.getOrCreateTag().putString("probe", "item-stack");
-        SpawnProbeMob mob = TYPE.spawn(level, stack, null, nextPosition(level),
+        SpawnProbeMob mob = type().spawn(level, stack, null, nextPosition(level),
                 MobSpawnType.COMMAND, false, false);
         require(mob != null, "EntityType.spawn(ItemStack) returned null");
         require(OBSERVED_TAGS.equals(List.of("item-stack")), "observed tags " + OBSERVED_TAGS);
@@ -139,7 +137,7 @@ public final class SpawnProbe {
     private static void itemStackSpawnNull(ServerLevel level) {
         reset();
         ItemStack stack = new ItemStack(Items.STICK);
-        SpawnProbeMob mob = TYPE.spawn(level, stack, null, nextPosition(level),
+        SpawnProbeMob mob = type().spawn(level, stack, null, nextPosition(level),
                 MobSpawnType.COMMAND, false, false);
         require(mob != null, "EntityType.spawn(ItemStack) returned null");
         require(OBSERVED_TAGS.equals(List.of("<null>")), "observed tags " + OBSERVED_TAGS);
@@ -149,7 +147,7 @@ public final class SpawnProbe {
     private static void directVirtualFinalizeSpawn(ServerLevel level) {
         reset();
         BlockPos pos = nextPosition(level);
-        Mob mob = TYPE.create(level, null, null, pos, MobSpawnType.COMMAND, false, false);
+        Mob mob = type().create(level, null, null, pos, MobSpawnType.COMMAND, false, false);
         require(mob != null, "preparatory EntityType.create returned null");
         reset();
 
@@ -167,7 +165,7 @@ public final class SpawnProbe {
         reset();
         CompoundTag parentTag = tag("nested-parent");
         parentTag.putBoolean("spawn_nested", true);
-        SpawnProbeMob parent = TYPE.create(level, parentTag, entity -> EVENTS.add("consumer"),
+        SpawnProbeMob parent = type().create(level, parentTag, entity -> EVENTS.add("consumer"),
                 nextPosition(level), MobSpawnType.COMMAND, false, false);
         require(parent != null, "parent EntityType.create returned null");
         require(OBSERVED_TAGS.equals(List.of("nested-parent", "<null>")),
