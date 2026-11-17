@@ -657,4 +657,11 @@ public class Chunk {
     public void setBlockTileEntityInChunk(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {
         worldObj.setTileEntity(wx(x), y, wz(z), tile);
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5 {@code Chunk.updateSkylight()}: recomputes the sky light of the chunk; the modern light engine keeps it up to date itself. */
+    public void updateSkylight() {
+        generateSkylightMap();
+    }
 }

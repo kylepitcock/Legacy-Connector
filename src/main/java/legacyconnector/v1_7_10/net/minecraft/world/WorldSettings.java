@@ -133,4 +133,11 @@ public class WorldSettings {
             return SURVIVAL;
         }
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's constructor: the game type is its id (0 survival, 1 creative). */
+    public WorldSettings(long seed, int gameType, boolean mapFeatures, boolean hardcore, WorldType type) {
+        this(seed, GameType.getByID(gameType), mapFeatures, hardcore, type);
+    }
 }

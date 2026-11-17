@@ -1,6 +1,6 @@
 # Legacy Connector documentation
 
-Legacy Connector runs unmodified legacy Forge mods (1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, 1.20.1 and Beta 1.7.3) on NeoForge 1.21.1 by translating them at load time. This is the
+Legacy Connector runs unmodified legacy Forge mods (1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, 1.20.1 and Beta 1.7.3; 1.2.5 is experimental and opt-in) on NeoForge 1.21.1 by translating them at load time. This is the
 technical documentation; the [README](../../README.md) has installation and the status overview, and the
 [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists how each mod works.
 
@@ -24,8 +24,12 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Troubleshooting](Troubleshooting.md) | Start-up failures (Mixin modules, file names, missing dependencies), join failures such as "length wider than 21-bit", measuring join payload sizes |
 | [Compatibility and status](Compatibility-and-Status.md) | Status per legacy version, known issues, reading the report |
 | [Development](Development.md) | Building, testing, project layout |
+| [Mixin audit](Mixin-Audit.md) | Every mixin of the layer checked against the performance mods (Sodium, FerriteCore, ModernFix, C2ME...): rules for new mixins |
+| [Gameplay test log](Gameplay-Test-Log.md) | What has been exercised in a real client, per version |
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |
 | [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md) | Effort, approach options and risks for supporting 1.20.1 Forge (and Sinytra) mods |
+| [Legacy 1.20.1 ATM 9 run](Legacy-1.20.1-ATM9-Run.md) | Offline link probe of the 506-jar All the Mods 9 pack (2026-11-07): counts, top blockers, abandoned versus native |
+| [Legacy 1.20.1 preflight analyzer](Legacy-1.20.1-Preflight-Analyzer.md) | Offline preflight analyzer for Forge 1.20.1 jars: report schema, slices, validation checkpoints |
 | [Legacy 1.20.1 client events](Legacy-1.20.1-Client-Events.md) | Every Forge 47 client event against NeoForge 1.21.1: mapping, member changes, open items |
 | [Legacy 1.20.1 fork porting notes](Legacy-1.20.1-Fork-Porting-Notes.md) | A contributor's (kentvillamor08) independent 1.20.1 pipeline notes: scoped adapters, verifiers, pilot results |
 | [Legacy 1.20.1 corpus](Legacy-1.20.1-Corpus.md) | Measured gap report of 140 real Forge 1.20.1 jars (72 abandoned content mods): ranked unresolved symbols, mixins, cheap/medium/heavy, order of work |
@@ -36,7 +40,8 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.6.4 estimate](Legacy-1.6.4-Estimate.md) | Effort and approach for a 1.6.4 layer on top of the 1.7.10 shim |
 | [Legacy 1.6.4 corpus](Legacy-1.6.4-Corpus.md) | Measured API usage of 43 real 1.6.4 mods (numeric ids, old packets, renamed classes) |
 | [Legacy b1.7.3](Legacy-b1.7.3.md) | Beta 1.7.3 ModLoader / Forge 1.0 mods: status, how jars are deobfuscated and linked, plan |
-| [Legacy 1.2.5](Legacy-1.2.5.md) | Design for 1.2.5 ModLoader / early Forge mods: mappings (Calamus + Feather), host layer decision, stages |
+| [Legacy 1.2.5](Legacy-1.2.5.md) | 1.2.5 ModLoader / early Forge mods (experimental, opt-in): mappings (Calamus + Feather), host layer decision, stages, server test results |
+| [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md) | Measured API usage of 91 real 1.2.5 archives (obfuscated names, ModLoader, ModLoaderMP, Forge 3.x) |
 | [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md) | Effort and approach for a 1.4.7 layer (obfuscated names, ModLoader, sprite sheets) over the 1.5.2/1.6.4 layers |
 | [Legacy 1.4.7 corpus](Legacy-1.4.7-Corpus.md) | Measured API usage of 65 real 1.4.7 mods (notch names, sprite sheets, ModLoader, numeric ids) |
 | [Legacy 1.5.2 estimate](Legacy-1.5.2-Estimate.md) | Effort and measured state of a 1.5.2 layer (a delta over the 1.6.4 one) |

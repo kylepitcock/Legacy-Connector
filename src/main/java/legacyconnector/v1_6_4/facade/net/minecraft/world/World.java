@@ -27,6 +27,11 @@ public final class World {
         self.notifyBlocksOfNeighborChange(x, y, z, blockOf(id));
     }
 
+    /** {@code notifyBlocksOfNeighborChange(x, y, z, id, skipSide)}: the neighbors except the one on that side (comparators and diodes skip the side they read). */
+    public static void notifyBlocksOfNeighborChange(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id, int skipSide) {
+        self.notifyBlocksOfNeighborChange(x, y, z, blockOf(id), skipSide);
+    }
+
     public static void notifyBlockOfNeighborChange(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id) {
         self.notifyBlockOfNeighborChange(x, y, z, blockOf(id));
     }

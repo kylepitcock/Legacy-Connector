@@ -56,8 +56,17 @@ public class EntityRenderer implements legacyconnector.v1_7_10.net.minecraft.cli
         if (camera != null && camera.isInitialized()) ActiveRenderInfo.mcc$update(camera.getYRot(), camera.getXRot());
     }
 
+    /** How far behind the player the third person camera sits (mods set it by reflection: Legends' giant characters). */
+    public float thirdPersonDistance = 4.0F;
+    public float thirdPersonDistanceTemp = 4.0F;
+
+    /**
+     * The frame. A mod's subclass overrides this to set things up, calls {@code super} and undoes them afterwards: the call to here is the point where the
+     * modern frame is drawn (see {@code LegacyRendererOverrides}).
+     */
     public void updateCameraAndRender(float partialTicks) {
         if (theShaderGroup != null) theShaderGroup.loadShaderGroup(partialTicks);
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyRendererOverrides.yieldToModernFrame();
     }
 
     private legacyconnector.v1_7_10.net.minecraft.client.shader.ShaderGroup theShaderGroup;

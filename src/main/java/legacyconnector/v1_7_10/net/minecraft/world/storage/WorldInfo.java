@@ -252,4 +252,11 @@ public class WorldInfo {
         tag.setBoolean("initialized", isInitialized());
         return tag;
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code WorldData.getDefaultGamemode()}: the game type (0 survival, 1 creative) newly joined players start in. */
+    public int mcc125$getDefaultGamemode() {
+        return getGameType().getID();
+    }
 }

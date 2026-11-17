@@ -1,0 +1,37 @@
+package org.kylepitcock.legacyconnector.v1_20_1.migrate;
+
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+
+/**
+ * A model location as 1.20.1 code sees it: a {@link ResourceLocation} that also carries the variant. 1.21.1's {@code ModelResourceLocation} is a record that only
+ * holds a location, so the maps of the baking events are shown to legacy code through {@link LegacyModelMap}, whose keys are these (the layer's access
+ * transformer makes ResourceLocation non-final). Equality includes the variant, like the old class.
+ */
+public final class LegacyModelKey extends ResourceLocation {
+    private final ModelResourceLocation model;
+
+    public LegacyModelKey(ModelResourceLocation model) {
+        super(model.id().getNamespace(), model.id().getPath());
+        this.model = model;
+    }
+
+    public ModelResourceLocation model() {
+        return model;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof LegacyModelKey k && k.model.equals(model);
+    }
+
+    @Override
+    public int hashCode() {
+        return model.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return model.toString();
+    }
+}

@@ -269,6 +269,65 @@ class BridgeMethodsTest implements Opcodes {
         assertEquals("attackEntityFrom(L" + DAMAGE + ";F)Z", called);
     }
 
+    private static final String TILE = P7 + "tileentity/TileEntity";
+    private static final String LIVING = P7 + "entity/EntityLivingBase";
+    private static final String PLAYER = P7 + "entity/player/EntityPlayer";
+    private static final String STACK = P7 + "item/ItemStack";
+
+    private static Hierarchy hierarchy147() {
+        Map<String, ClassInfo> shim = new HashMap<>();
+        for (ClassInfo c : List.of(cls("java/lang/Object", null), cls(TILE, "java/lang/Object"), cls(ITEM, "java/lang/Object"),
+                cls(LIVING, "java/lang/Object"), cls(PLAYER, LIVING), cls(STACK, "java/lang/Object"))) shim.put(c.name, c);
+        return new Hierarchy(new ShimIndex(shim), null, Map.of(), LegacyVersion.V1_4_7);
+    }
+
+    @Test
+    void aVoidHookTheEngineNowAsksAResultOfAnswersHandled() {
+        Hierarchy h = hierarchy147();
+        ClassNode mod = mod(h, "mod/Chest", TILE, n -> method(n, "receiveClientEvent", "(II)V"));
+        assertEquals(1, BridgeMethods.apply(mod, h, LegacyVersion.V1_4_7));
+        MethodNode bridge = find(mod, "receiveClientEvent", "(II)Z");
+        assertNotNull(bridge);
+        assertEquals(List.of(INVOKEVIRTUAL + ":mod/Chest.receiveClientEvent(II)V"), ops(bridge));
+        assertEquals(IRETURN, bridge.instructions.getLast().getOpcode());
+        assertEquals(ICONST_1, bridge.instructions.getLast().getPrevious().getOpcode(), "handled");
+    }
+
+    @Test
+    void aSuperCallOfTheVoidHookDropsTheResultTheOldCallerNeverExpected() {
+        Hierarchy h = hierarchy147();
+        ClassNode mod = mod(h, "mod/Chest2", TILE, n -> {
+            MethodNode m = new MethodNode(ACC_PUBLIC, "receiveClientEvent", "(II)V", null, null);
+            m.maxLocals = 3;
+            m.maxStack = 3;
+            m.instructions.add(new VarInsnNode(ALOAD, 0));
+            m.instructions.add(new VarInsnNode(ILOAD, 1));
+            m.instructions.add(new VarInsnNode(ILOAD, 2));
+            m.instructions.add(new MethodInsnNode(INVOKESPECIAL, TILE, "receiveClientEvent", "(II)V", false));
+            m.instructions.add(new InsnNode(RETURN));
+            n.methods.add(m);
+        });
+        BridgeMethods.apply(mod, h, LegacyVersion.V1_4_7);
+        MethodNode own = find(mod, "receiveClientEvent", "(II)V");
+        boolean popped = false;
+        for (AbstractInsnNode i = own.instructions.getFirst(); i != null; i = i.getNext()) popped |= i.getOpcode() == POP;
+        assertTrue(popped, "the boolean the new method returns is dropped, or the stack would not balance");
+    }
+
+    @Test
+    void aMappedParameterListTakesTheTargetNotThePlayer() {
+        Hierarchy h = hierarchy147();
+        String old = "(L" + STACK + ";L" + LIVING + ";)Z";
+        ClassNode mod = mod(h, "mod/Saddle", ITEM, n -> method(n, "itemInteractionForEntity", old));
+        assertEquals(1, BridgeMethods.apply(mod, h, LegacyVersion.V1_5_2));
+        MethodNode bridge = find(mod, "itemInteractionForEntity", "(L" + STACK + ";L" + PLAYER + ";L" + LIVING + ";)Z");
+        assertNotNull(bridge);
+        // this, stack (slot 1), target (slot 3): the player in slot 2 is not passed on
+        int[] loads = bridge.instructions.toArray().length == 0 ? new int[0] : java.util.Arrays.stream(bridge.instructions.toArray())
+                .filter(i -> i instanceof VarInsnNode).mapToInt(i -> ((VarInsnNode) i).var).toArray();
+        assertEquals(List.of(0, 1, 3), java.util.Arrays.stream(loads).boxed().toList());
+    }
+
     @Test
     void aCofhEnergyHandlerWithCanInterfaceGetsCanConnectEnergy() {
         LegacyVersion.setBridgedRoots(List.of("cofh/api/energy/"));

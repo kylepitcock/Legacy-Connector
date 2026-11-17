@@ -12,3 +12,13 @@ net/minecraft/network/Packet	writePacketData	(Ljava/io/DataOutputStream;)V	write
 # a hanging entity broke by dropItemStack() (func_82331_h in a mod built against the SRG names); 1.6.4 made it onBroken(Entity)
 net/minecraft/entity/EntityHanging	dropItemStack	()V	onBroken	(Lnet/minecraft/entity/Entity;)V
 net/minecraft/entity/EntityHanging	func_82331_h	()V	onBroken	(Lnet/minecraft/entity/Entity;)V
+# --- 1.5.2 damage was an int, 1.6.4 made it a float (the same change as attackEntityFrom above): hooks mobs and armor override
+net/minecraft/entity/EntityLivingBase	damageEntity	(Lnet/minecraft/util/DamageSource;I)V	damageEntity	(Lnet/minecraft/util/DamageSource;F)V
+net/minecraft/entity/EntityLivingBase	damageArmor	(I)V	damageArmor	(F)V
+net/minecraft/entity/EntityLivingBase	applyArmorCalculations	(Lnet/minecraft/util/DamageSource;I)I	applyArmorCalculations	(Lnet/minecraft/util/DamageSource;F)F
+net/minecraft/entity/EntityLivingBase	applyPotionDamageCalculations	(Lnet/minecraft/util/DamageSource;I)I	applyPotionDamageCalculations	(Lnet/minecraft/util/DamageSource;F)F
+net/minecraft/entity/IEntityMultiPart	attackEntityFromPart	(Lnet/minecraft/entity/boss/EntityDragonPart;Lnet/minecraft/util/DamageSource;I)Z	attackEntityFromPart	(Lnet/minecraft/entity/boss/EntityDragonPart;Lnet/minecraft/util/DamageSource;F)Z
+# 1.7.10 passes the player first: the 1.5.2 hook (stack, target) takes the stack and the target (new parameters 0 and 2)
+net/minecraft/item/Item	itemInteractionForEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/EntityLivingBase;)Z	itemInteractionForEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/EntityLivingBase;)Z	0,2
+net/minecraft/entity/ai/EntityMoveHelper	setMoveTo	(DDDF)V	setMoveTo	(DDDD)V
+net/minecraft/entity/ai/EntityMoveHelper	getSpeed	()F	getSpeed	()D

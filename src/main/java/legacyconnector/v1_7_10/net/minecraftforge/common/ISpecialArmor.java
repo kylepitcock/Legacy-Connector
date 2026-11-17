@@ -30,9 +30,9 @@ public interface ISpecialArmor {
         @Override
         public int compareTo(ArmorProperties o) {
             if (o.Priority != Priority) return o.Priority - Priority;
-            double left = AbsorbRatio == 0 ? 0 : AbsorbMax / AbsorbRatio;
-            double right = o.AbsorbRatio == 0 ? 0 : o.AbsorbMax / o.AbsorbRatio;
-            return Double.compare(left, right);
+            double left = AbsorbRatio == 0 ? 0 : AbsorbMax * 100.0D / AbsorbRatio;
+            double right = o.AbsorbRatio == 0 ? 0 : o.AbsorbMax * 100.0D / o.AbsorbRatio;
+            return (int) (left - right);
         }
 
         public static void applyArmor(EntityLivingBase entity, ItemStack[] inventory, DamageSource source, double damage) {
@@ -96,20 +96,74 @@ public interface ISpecialArmor {
             return (float) (damage / 25.0D);
         }
 
-        /** Sorts by priority and scales each priority group's ratios so they absorb at most all the damage and each at most its maximum. */
-        private static void standardizeList(ArmorProperties[] armor, double damage) {
+        /**
+         * Forge's own distribution of damage over the armour (the 1.2.5 to 1.7.10 algorithm, taken from Forge 3.3.7's {@code ArmorProperties.StandardizeList}):
+         * sorts by priority, then per priority group scales the ratios down when they add up to more than all the damage, caps each at its maximum
+         * and hands what is left to the next priority level.
+         */
+        static void standardizeList(ArmorProperties[] armor, double damage) {
             java.util.Arrays.sort(armor);
             int start = 0;
             double total = 0;
+            int priority = armor[0].Priority;
+            int pStart = 0;
+            boolean pChange = false;
+            boolean pFinished = false;
             for (int x = 0; x < armor.length; x++) {
                 total += armor[x].AbsorbRatio;
-                if (x == armor.length - 1 || armor[x].Priority != armor[x + 1].Priority) {
-                    for (int y = start; y <= x; y++) {
-                        double ratio = total > 1 ? armor[y].AbsorbRatio / total : armor[y].AbsorbRatio;
-                        armor[y].AbsorbRatio = ratio * damage > armor[y].AbsorbMax ? (double) armor[y].AbsorbMax / damage : ratio;
+                if (x == armor.length - 1 || armor[x].Priority != priority) {
+                    if (armor[x].Priority != priority) {
+                        total -= armor[x].AbsorbRatio;
+                        x--;
+                        pChange = true;
                     }
-                    start = x + 1;
-                    total = 0;
+                    if (total > 1) {
+                        for (int y = start; y <= x; y++) {
+                            double newRatio = armor[y].AbsorbRatio / total;
+                            if (newRatio * damage > armor[y].AbsorbMax) {
+                                armor[y].AbsorbRatio = (double) armor[y].AbsorbMax / damage;
+                                total = 0;
+                                for (int z = pStart; z <= y; z++) total += armor[z].AbsorbRatio;
+                                start = y + 1;
+                                x = y;
+                                break;
+                            } else {
+                                armor[y].AbsorbRatio = newRatio;
+                                pFinished = true;
+                            }
+                        }
+                        if (pChange && pFinished) {
+                            damage -= damage * total;
+                            total = 0;
+                            start = x + 1;
+                            priority = armor[start].Priority;
+                            pStart = start;
+                            pChange = false;
+                            pFinished = false;
+                            if (damage <= 0) {
+                                for (int y = x + 1; y < armor.length; y++) armor[y].AbsorbRatio = 0;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (int y = start; y <= x; y++) {
+                            total -= armor[y].AbsorbRatio;
+                            if (damage * armor[y].AbsorbRatio > armor[y].AbsorbMax) armor[y].AbsorbRatio = (double) armor[y].AbsorbMax / damage;
+                            total += armor[y].AbsorbRatio;
+                        }
+                        damage -= damage * total;
+                        total = 0;
+                        if (x != armor.length - 1) {
+                            start = x + 1;
+                            priority = armor[start].Priority;
+                            pStart = start;
+                            pChange = false;
+                            if (damage <= 0) {
+                                for (int y = x + 1; y < armor.length; y++) armor[y].AbsorbRatio = 0;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }

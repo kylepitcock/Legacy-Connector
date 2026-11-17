@@ -1,0 +1,4 @@
+# Calls whose descriptor names a type the shim has under another name or returns another primitive. method name, descriptor suffix as the mod calls it, suffix the shim has, conversion of the result (- or f2i).
+# EntityMinecart.setCollisionHandler: the shim's forge.IMinecartCollisionHandler extends the common one, but the method takes the common type. ArmorProperties.ApplyArmor returns int in Forge 3.3, float in the shared shim.
+setCollisionHandler	(Lnet/minecraft/src/forge/IMinecartCollisionHandler;)V	(Lnet/minecraftforge/common/IMinecartCollisionHandler;)V	-
+ApplyArmor	D)I	D)F	f2i

@@ -209,4 +209,11 @@ public class ModelBiped extends ModelBase {
     public void renderCloak(float scale) {
         bipedCloak.render(scale);
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's two-argument constructor (grow, yOffset): the biped always used the 64x32 skin layout. */
+    public ModelBiped(float grow, float yOffset) {
+        this(grow, yOffset, 64, 32);
+    }
 }

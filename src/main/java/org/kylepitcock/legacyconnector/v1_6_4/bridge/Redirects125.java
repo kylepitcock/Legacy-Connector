@@ -63,6 +63,16 @@ public final class Redirects125 {
         gui.getChatGUI().printChatMessage(new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText(text));
     }
 
+    /** {@code GuiIngame.b()} (Feather {@code clearChat}): empties the chat history; checked in the 1.2.5 client, it cleared its two line lists. */
+    public static void clearChat(GuiIngame gui) {
+        gui.getChatGUI().clearChatMessages();
+    }
+
+    /** {@code GuiIngame.c(key)} (Feather {@code translate}): translates the key with the language table and adds the result as a chat line (the 1.2.5 body). */
+    public static void translate(GuiIngame gui, String key) {
+        addChatMessage(gui, legacyconnector.v1_7_10.net.minecraft.util.StatCollector.translateToLocal(key));
+    }
+
     /** {@code World.a(blockId, x, y, z, ignoreEntities, side)}: whether a block can be placed there (no placing entity). */
     public static boolean canPlace(World world, int blockId, int x, int y, int z, boolean ignoreEntities, int side) {
         return world.canPlaceEntityOnSide(block(blockId), x, y, z, ignoreEntities, side, null, null);

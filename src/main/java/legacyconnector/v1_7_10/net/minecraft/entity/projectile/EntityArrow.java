@@ -367,4 +367,20 @@ public class EntityArrow extends Entity implements IProjectile {
     protected static int enchantmentLevel(int id, ItemStack bow) {
         return EnchantmentHelper.getEnchantmentLevel(id, bow);
     }
+
+    // Members125 batch 1
+
+    /** Phantom field {@code player} of 1.2.5's arrow: whether a player shot it (and can pick it up again). */
+    public static boolean mcc$get$mcc125$player(EntityArrow a) {
+        return a.canBePickedUp == 1;
+    }
+
+    public static void mcc$set$mcc125$player(EntityArrow a, boolean v) {
+        a.canBePickedUp = v ? 1 : 0;
+    }
+
+    /** 1.2.5 {@code EntityArrow.shoot(x, y, z, speed, spread)} (1.3: {@code setThrowableHeading}). */
+    public void mcc125$shoot(double x, double y, double z, float speed, float spread) {
+        setThrowableHeading(x, y, z, speed, spread);
+    }
 }

@@ -115,4 +115,55 @@ public abstract class GuiContainer extends GuiScreen {
 
     protected void drawSlot(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot) {
     }
+
+    // Members125 batch 3: the accessors NEI's patched GuiContainer of 1.2.5 added
+
+    /** The game instance ({@code mc} of the screen, which NEI's patch exposed as a method). */
+    public legacyconnector.v1_7_10.net.minecraft.client.Minecraft mcc125$mc() {
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc() {
+        return mcc125$mc();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.gui.FontRenderer fontRenderer() {
+        return fontRendererObj;
+    }
+
+    public void setZLevel(int level) {
+        this.zLevel = level;
+    }
+
+    /** NEI's {@code clickSlot(slot, slotId, button, shift)}: a click on a slot, shift as click mode 1. */
+    public void clickSlot(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int slotId, int button, boolean shift) {
+        handleMouseClick(slot, slotId, button, shift ? 1 : 0);
+    }
+
+    /**
+     * 1.7.10's GuiContainer closed on Escape and on the inventory key, so a screen that handles keys itself (a focused text
+     * field of its own) keeps the keystroke by not calling super. The hosting modern screen leaves the inventory key to this method
+     * when the legacy GUI overrides keyTyped (a name field would otherwise close the GUI on every "e").
+     */
+    @Override
+    protected void keyTyped(char c, int keyCode) {
+        if (keyCode == 0) return;
+        boolean inventoryKey = false;
+        try {
+            var settings = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(mc);
+            inventoryKey = settings != null && settings.keyBindInventory.getKeyCode() == keyCode;
+        } catch (RuntimeException | LinkageError ignored) {
+            // no settings yet
+        }
+        if (keyCode == 1 || inventoryKey) {
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player != null) player.closeContainer();
+            else super.keyTyped(c, keyCode);
+        }
+    }
+
+    /** NEI's {@code containerKeyPress(char, key)}: hands a key to the container screen. */
+    public void containerKeyPress(char typed, int key) {
+        keyTyped(typed, key);
+    }
 }

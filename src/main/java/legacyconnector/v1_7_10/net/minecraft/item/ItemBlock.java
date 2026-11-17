@@ -90,6 +90,7 @@ public class ItemBlock extends Item {
             blockInstance.onBlockAdded(world, x, y, z);
         }
         if (world.getBlock(x, y, z) == blockInstance) {
+            blockInstance.mcc125$updateMetadataOnPlaced(world, x, y, z, side);
             blockInstance.onBlockPlacedBy(world, x, y, z, player, stack);
             blockInstance.onPostBlockPlaced(world, x, y, z, metadata);
         }

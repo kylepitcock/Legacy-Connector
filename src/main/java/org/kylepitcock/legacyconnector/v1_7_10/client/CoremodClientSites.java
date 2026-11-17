@@ -51,6 +51,8 @@ public final class CoremodClientSites {
     }
 
     private static int handFailures;
+    /** While a render hook is asked as for a remote player: the legacy {@code Minecraft.thePlayer} answers null. */
+    public static volatile boolean hideLocalPlayer;
 
     /** {@link CoremodSites.Client#HAND_ITEMS_END}: the legacy drawing code gets the legacy render context at the camera. */
     public static void handItemsEnd(float partialTick, com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
@@ -99,6 +101,24 @@ public final class CoremodClientSites {
         } finally {
             RenderContext.end();
             buffers.endBatch();
+        }
+    }
+
+    /** {@link CoremodSites.Client#PLAYER_TRANSLATION}: the legacy drawing code moves and scales the pose of the player model before it is rotated. */
+    public static void playerTranslation(net.minecraft.world.entity.player.Player player, com.mojang.blaze3d.vertex.PoseStack pose) {
+        if (!CoremodSites.Client.PLAYER_TRANSLATION.active() || handFailures > 5) return;
+        RenderContext.beginWorld(pose, net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource(), net.minecraft.client.renderer.LightTexture.FULL_BRIGHT,
+                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        // 1.7.10 drew the local player relative to the camera and its hooks branch on "is this the local player" (and then ignore the position they are
+        // given); the modern game draws every player at its feet like a remote one, so the hook is asked as for a remote player
+        hideLocalPlayer = true;
+        try {
+            CoremodSites.Client.PLAYER_TRANSLATION.fire(null, EntityBridge.wrap(player), 0.0, 0.0, 0.0);
+        } catch (RuntimeException | LinkageError ex) {
+            if (handFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").warn("A coremod hook failed (player render translation)", ex);
+        } finally {
+            hideLocalPlayer = false;
+            RenderContext.end();
         }
     }
 

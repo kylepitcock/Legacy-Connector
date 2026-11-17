@@ -16,6 +16,20 @@ import java.util.Map;
 public final class Mc125Builds {
     private Mc125Builds() {}
 
+    private static java.util.Set<String> classNames(LegacyJar jar) {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
+            var en = zip.entries();
+            while (en.hasMoreElements()) {
+                String n = en.nextElement().getName();
+                if (n.endsWith(".class")) out.add(n.substring(0, n.length() - 6));
+            }
+        } catch (java.io.IOException | RuntimeException e) {
+            // an unreadable jar owns nothing
+        }
+        return out;
+    }
+
     /** Jars to leave out of the set, with the reason. {@code runningSide} is "CLIENT" or "SERVER". */
     public static Map<LegacyJar, String> select(List<LegacyJar> jars, String runningSide) {
         char running = "SERVER".equals(runningSide) ? 's' : 'c';
@@ -28,7 +42,13 @@ public final class Mc125Builds {
         for (var e : byId.entrySet()) {
             List<LegacyJar> group = e.getValue();
             if (group.size() < 2) continue;
-            preferred.put(e.getKey(), group.stream().filter(j -> j.notchSide == running).findFirst().orElse(group.get(0)));
+            // the build for the running side; then the jar that is a pure module of the contested mods (not a repack that carries other mods of its own: LogisticsPipes' client jar
+            // bundles older BuildCraft modules next to mod_LogisticsPipes); then the jar with more classes; then the file name, so the choice never depends on the folder order
+            preferred.put(e.getKey(), group.stream().min(java.util.Comparator
+                    .comparing((LegacyJar j) -> j.notchSide == running ? 0 : 1)
+                    .thenComparing(j -> j.mods.stream().allMatch(m -> byId.get(m.legacyId).stream().filter(x -> x.notchSide == running).count() > 1) ? 0 : 1)
+                    .thenComparing(j -> -classNames(j).size())
+                    .thenComparing(LegacyJar::fileName)).get());
         }
         Map<LegacyJar, String> dropped = new LinkedHashMap<>();
         for (LegacyJar jar : jars) {
@@ -52,6 +72,16 @@ public final class Mc125Builds {
             } else if (any) {
                 // keeps its own mods, gives up the ids another jar of the set carries (the preferred build registers them)
                 List<String> gave = jar.mods.stream().filter(m -> preferred.get(m.legacyId) != null && preferred.get(m.legacyId) != jar).map(m -> m.legacyId + " (" + preferred.get(m.legacyId).fileName() + ")").toList();
+                // and gives up the classes the owners carry as well (otherwise the older copy shadows the owner's in the shared default package)
+                java.util.Set<String> owned = new java.util.HashSet<>();
+                for (LegacyModDecl m : jar.mods) {
+                    LegacyJar keep = preferred.get(m.legacyId);
+                    if (keep != null && keep != jar) owned.addAll(classNames(keep));
+                }
+                java.util.Set<String> mine = new java.util.TreeSet<>(classNames(jar));
+                mine.retainAll(owned);
+                jar.droppedClasses.addAll(mine);
+                jar.notes.add("Left out " + mine.size() + " class(es) owned by " + String.join(", ", gave));
                 jar.mods.removeIf(m -> preferred.get(m.legacyId) != null && preferred.get(m.legacyId) != jar);
                 jar.notes.add("Mod class(es) shared with other jars of the set are loaded from those: " + String.join(", ", gave));
             }

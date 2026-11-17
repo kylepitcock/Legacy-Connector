@@ -17,7 +17,8 @@ final class LegacySpawnData {
         boolean fallback = LegacyHosts.isFallback(host.mcc$self().getType());
         buf.writeBoolean(fallback);
         if (fallback) buf.writeUtf(legacy == null ? "" : legacy.getClass().getName());
-        if (legacy instanceof IEntityAdditionalSpawnData data) {
+        IEntityAdditionalSpawnData data = LegacySpawnExtras.of(legacy);
+        if (data != null) {
             var payload = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.buffer();
             try {
                 if (!writeGuava(legacy, payload)) data.writeSpawnData(payload);
@@ -46,7 +47,8 @@ final class LegacySpawnData {
         int length = buf.readVarInt();
         var payload = buf.readBytes(length);
         try {
-            if (legacy instanceof IEntityAdditionalSpawnData data && length > 0 && !readGuava(legacy, payload)) data.readSpawnData(payload);
+            IEntityAdditionalSpawnData data = length > 0 ? LegacySpawnExtras.of(legacy) : null;
+            if (data != null && !readGuava(legacy, payload)) data.readSpawnData(payload);
         } catch (RuntimeException | LinkageError e) {
             LoggerFactory.getLogger("LegacyConnector/Entities").warn("{} failed to read its spawn data: {}", legacy.getClass().getName(), e.toString());
         } finally {

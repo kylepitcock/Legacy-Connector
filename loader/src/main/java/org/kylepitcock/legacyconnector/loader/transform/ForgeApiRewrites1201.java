@@ -198,6 +198,31 @@ final class ForgeApiRewrites1201 {
         return marked;
     }
 
+    static final String BURN_DESC = "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/RecipeType;)I";
+
+    /**
+     * A mod item's {@code getBurnTime(stack, type)} override answered -1 for "not decided here, use the vanilla value"; NeoForge 1.21.1 throws on a negative
+     * result (JEI's fuel list crashed on it). Every return goes through {@code ApiCompat.burnResult}.
+     */
+    static boolean fixBurnTime(ClassNode node) {
+        boolean changed = false;
+        for (MethodNode m : node.methods) {
+            if (!m.name.equals("getBurnTime") || !m.desc.equals(BURN_DESC) || (m.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
+            for (AbstractInsnNode in : m.instructions.toArray()) {
+                if (in.getOpcode() != Opcodes.IRETURN) continue;
+                org.objectweb.asm.tree.InsnList add = new org.objectweb.asm.tree.InsnList();
+                add.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 1));
+                add.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 2));
+                add.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/ApiCompat", "burnResult",
+                        "(I" + BURN_DESC.substring(1), false));
+                m.instructions.insertBefore(in, add);
+                changed = true;
+            }
+            if (changed) m.maxStack = Math.max(m.maxStack, 3);
+        }
+        return changed;
+    }
+
     static final String INIT_CAPABILITIES = "legacyconnector/v1_20_1/Caps1201$InitCapabilities1201";
     static final String INIT_CAPABILITIES_DESC = "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/nbt/CompoundTag;)L" + PROVIDER + ";";
 }

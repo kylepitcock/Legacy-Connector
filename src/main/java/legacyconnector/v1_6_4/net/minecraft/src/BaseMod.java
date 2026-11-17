@@ -115,6 +115,21 @@ public abstract class BaseMod {
 
     public void serverDisconnect() {}
 
+    // the server build's shapes (ModLoader's server half passes the sending player); a mod of a server jar overrides these
+    /** A custom payload on a channel the mod registered, from {@code player} (server side). */
+    public void receiveCustomPacket(legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload packet,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
+        receiveCustomPacket(packet); // a mod of the other builds overrides the one-argument form
+    }
+
+    /** A chat packet addressed to the mod's channel, from {@code player} (server side). */
+    public void receiveChatPacket(String text, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
+        receiveChatPacket(text);
+    }
+
+    /** A player left the server (server side). */
+    public void serverDisconnect(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {}
+
     public Entity spawnEntity(int entityId, World world, double scaledX, double scaledY, double scaledZ) {
         return null;
     }
