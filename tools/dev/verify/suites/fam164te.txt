@@ -1,0 +1,5 @@
+1.6.4 CoFHCore-2.0.0.5
+1.6.4 ThermalExpansion-3
+1.6.4 CodeChickenCore-1.6.4
+1.6.4 CodeChickenLib-universal
+1.6.4 ForgeMultipart-universal-1.6.4
