@@ -1,0 +1,31 @@
+# Thermal series 1.20.1 (issues 296-303): the machines creative tab, a machine placed and its GUI opened
+mods: 1.20.1 cofh_core-1.20.1
+mods: 1.20.1 thermal_foundation
+mods: 1.20.1 thermal_expansion
+mods: 1.20.1 thermal_dynamics
+mods: 1.20.1 thermal_cultivation
+mods: 1.20.1 redstone_arsenal
+mods: 1.20.1 ensorcellation
+cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /tp @s 0.5 150 0.5
+cmd /gamemode creative @s
+wait 40
+cmd /setblock 2 149 0 thermal:machine_furnace
+cmd /tp @s 0.5 149 0.5
+look 270 30
+wait 60
+shot thermal-furnace-placed
+logabsent ClientPacketListenerMixin
+logabsent InvalidMixin
+use
+wait 40
+expect Machine.*Screen :: mc.screen == null ? "none" : mc.screen.getClass().getName()
+shot thermal-furnace-gui
+logabsent Exception caught during firing event
+creative
+wait 30
+expect thermal :: (function(){ var R=Java.type('net.minecraft.core.registries.BuiltInRegistries').CREATIVE_MODE_TAB; var out=[]; R.keySet().forEach(function(k){ if(String(k).indexOf('thermal')>=0||String(k).indexOf('cofh')>=0) out.push(String(k)); }); return out.join(','); })()
+expect selected :: (function(){ var BR=Java.type('net.minecraft.core.registries.BuiltInRegistries'); var R=BR.CREATIVE_MODE_TAB; var pick=null; R.keySet().forEach(function(k){ var s=String(k); if(s.indexOf('thermal')>=0 && /machine|device|dynamo/.test(s) && pick==null) pick=k; }); if(pick==null) return 'none:'+R.keySet().toString().length; var tab=R.get(pick); var scr=mc.screen; var m=scr.getClass().getDeclaredMethod('selectTab', tab.getClass().getSuperclass()==null?tab.getClass():Java.type('net.minecraft.world.item.CreativeModeTab').class); m.setAccessible(true); m.invoke(scr, tab); return 'selected '+pick; })()
+wait 40
+shot thermal-creative-tab
+logabsent Exception caught during firing event

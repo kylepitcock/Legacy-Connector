@@ -53,12 +53,13 @@ final class Mixin1201 {
         final Map<String, String> instanceStandIns = new java.util.HashMap<>();
         /** member renames applied from the tables (the "renamed" class of the proof) */
         int membersRenamed;
+        int shadowsRetargeted;
         /** old descriptors from the jar's refmaps (mixin class to annotation string to descriptor), set by the transformer before the classes are processed */
         Map<String, Map<String, String>> refmaps = Map.of();
 
         String summary() {
             return mixinClasses + " mixin class(es), " + stringsMoved + " annotation name(s) moved to 1.21.1, " + requireRemoved + " injector requirement(s) relaxed, " + localsRelaxed + " local capture(s) set to FAILSOFT (a vanilla method whose locals changed skips that injection with a Mixin warning naming the mod's mixin), " + dropped.size()
-                    + " mixin(s) dropped (target missing in 1.21.1); target proof: " + repair.summary() + ", " + membersRenamed + " member name(s) renamed";
+                    + " mixin(s) dropped (target missing in 1.21.1); target proof: " + repair.summary() + ", " + membersRenamed + " member name(s) renamed, " + shadowsRetargeted + " inherited @Shadow field(s) retargeted to the declaring superclass";
         }
     }
 
@@ -118,6 +119,7 @@ final class Mixin1201 {
                 return 1;
             }
         }
+        st.shadowsRetargeted += retargetInheritedShadowFields(node, targets, h);
         String shadow = missingShadow(node, targets, h);
         if (shadow != null) {
             st.dropped.add(node.name + " (@Shadow " + shadow + " does not exist in " + targets.get(0) + ")");
@@ -298,6 +300,54 @@ final class Mixin1201 {
         return null;
     }
 
+    /**
+     * A {@code @Shadow} field that 1.21.1 moved from the mixin's target into a superclass (ClientPacketListener.minecraft went to ClientCommonPacketListenerImpl):
+     * Mixin only finds shadow fields declared in the target class itself ("@Shadow field x was not located in the target class"). The shadow field is removed and
+     * the mixin's own field accesses name the declaring superclass instead; after the merge the code runs in the target, a subclass, so the access is the same.
+     * Returns the number of fields retargeted.
+     */
+    static int retargetInheritedShadowFields(ClassNode node, List<String> targets, Mc1201Hierarchy h) {
+        if (targets.size() != 1) return 0;
+        String target = targets.get(0);
+        if (!target.startsWith("net/minecraft/") || McMembers1201.get(target) == null) return 0;
+        McMembers1201.Members own = McMembers1201.get(target);
+        java.util.Map<String, String> owners = new java.util.HashMap<>(); // field name + ":" + desc -> declaring superclass
+        for (FieldNode f : node.fields) {
+            if (!hasShadow(f.invisibleAnnotations) && !hasShadow(f.visibleAnnotations)) continue;
+            if (shadowHasPrefix(f.invisibleAnnotations) || shadowHasPrefix(f.visibleAnnotations)) continue;
+            String key = f.name + ":" + f.desc;
+            if (own.fields().contains(key)) continue;
+            String declaring = null;
+            for (String s : h.supers(target)) {
+                declaring = declaringClass(s, key, h, new java.util.HashSet<>());
+                if (declaring != null) break;
+            }
+            if (declaring != null && declaring.startsWith("net/minecraft/")) owners.put(key, declaring);
+        }
+        if (owners.isEmpty()) return 0;
+        for (MethodNode m : node.methods) {
+            for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions.toArray()) {
+                if (!(in instanceof org.objectweb.asm.tree.FieldInsnNode fi) || !fi.owner.equals(node.name)) continue;
+                String declaring = owners.get(fi.name + ":" + fi.desc);
+                if (declaring != null) fi.owner = declaring;
+            }
+        }
+        node.fields.removeIf(f -> owners.containsKey(f.name + ":" + f.desc) && (hasShadow(f.invisibleAnnotations) || hasShadow(f.visibleAnnotations)));
+        return owners.size();
+    }
+
+    private static String declaringClass(String owner, String fieldKey, Mc1201Hierarchy h, java.util.Set<String> seen) {
+        if (owner.startsWith("java/") || !seen.add(owner)) return null;
+        McMembers1201.Members mm = McMembers1201.get(owner);
+        if (mm == null) return null;
+        if (mm.fields().contains(fieldKey)) return owner;
+        for (String s : h.supers(owner)) {
+            String r = declaringClass(s, fieldKey, h, seen);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
     private static boolean hasShadow(List<AnnotationNode> list) {
         return find(list, SHADOW) != null;
     }
@@ -387,6 +437,8 @@ final class Mixin1201 {
     }
 
     private static boolean isMissing(String target, Mc1201Hierarchy h) {
+        // a Minecraft class 1.21.1 removed that the class table already points at the layer's own stand-in (FrostWalkerEnchantment -> LegacyFrostWalker): nothing to mix into
+        if (target.startsWith("org/kylepitcock/legacyconnector/v1_20_1/migrate/")) return true;
         if (target.startsWith("net/minecraftforge/")) return true; // mapClass would have moved it to NeoForge or a facade
         if (target.startsWith("net/minecraft/") || target.startsWith("com/mojang/blaze3d/") || target.startsWith("com/mojang/math/")
                 || target.startsWith("net/neoforged/neoforge/")) return !h.isMinecraft(target);
