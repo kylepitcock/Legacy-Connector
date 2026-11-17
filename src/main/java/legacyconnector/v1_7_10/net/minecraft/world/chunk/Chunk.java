@@ -573,6 +573,9 @@ public class Chunk {
     }
 
     public void setStorageArrays(legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] storage) {
+        // A generator's detached chunk takes the sections it built itself (Mystcraft: new ExtendedBlockStorage per section, then
+        // setStorageArrays); mcc$blocks() merges them into the arrays. A loaded chunk keeps its views onto the modern chunk.
+        if (mcc$blocks != null && storage != null) mcc$storage = storage;
     }
 
     public ChunkCoordIntPair getChunkCoordIntPair() {

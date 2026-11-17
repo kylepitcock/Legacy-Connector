@@ -86,7 +86,10 @@ public class LegacyChunkGenerator extends ChunkGenerator {
     public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState random, StructureManager structures, ChunkAccess chunk) {
         return CompletableFuture.supplyAsync(() -> {
             IChunkProvider provider = legacy();
-            if (provider == null) return chunk;
+            if (provider == null) {
+                diagnose("has no legacy chunk provider (generator creation failed or the world provider is missing): empty chunks");
+                return chunk;
+            }
             int cx = chunk.getPos().x, cz = chunk.getPos().z;
             Chunk generated;
             try {
@@ -104,7 +107,11 @@ public class LegacyChunkGenerator extends ChunkGenerator {
                 LOG.error("Dimension {} failed to generate chunk {},{}", dimension, cx, cz, e);
                 return chunk;
             }
-            if (generated == null || !generated.mcc$hasArrays()) return chunk;
+            if (generated == null || !generated.mcc$hasArrays()) {
+                diagnose(generated == null ? "provideChunk returned null: empty chunks"
+                        : "provideChunk returned a chunk that has no block arrays (built from " + generated.getClass().getName() + "): empty chunks");
+                return chunk;
+            }
             Block[] blocks = generated.mcc$blocks();
             byte[] meta = generated.mcc$meta();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -123,6 +130,15 @@ public class LegacyChunkGenerator extends ChunkGenerator {
             }
             return chunk;
         }, Util.backgroundExecutor());
+    }
+
+    private volatile boolean diagnosed;
+
+    /** One line per dimension, never per chunk. */
+    private void diagnose(String what) {
+        if (diagnosed) return;
+        diagnosed = true;
+        LOG.warn("Dimension {} {}", dimension, what);
     }
 
     @Override
