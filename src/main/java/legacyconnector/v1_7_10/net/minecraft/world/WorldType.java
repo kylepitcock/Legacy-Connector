@@ -172,6 +172,11 @@ public class WorldType {
     }
 
     public void removeBiome(BiomeGenBase biome) {
+        for (BiomeManager.BiomeType type : BiomeManager.BiomeType.values()) {
+            for (BiomeManager.BiomeEntry entry : BiomeManager.getBiomes(type)) {
+                if (entry.biome == biome) BiomeManager.removeBiome(type, entry);
+            }
+        }
     }
 
     /** Biome selection on top of the land/climate layers; mods return their own layer chain here. */
