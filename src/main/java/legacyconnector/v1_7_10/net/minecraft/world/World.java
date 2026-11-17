@@ -353,15 +353,30 @@ public class World implements IBlockAccess {
     private boolean mcc$splitDrops(int x, int y, int z, BlockPos p, BlockState state) {
         boolean deep = inDeepPass();
         if (!deep && !MCC_ORE_SPLIT.get()) return false;
-        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) return false;
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) return deep && p.getY() >= 0;
         if (!deep && (y < 0 || y > 63)) return false;
         BlockState current = lvl().getBlockState(p);
         boolean ore = !state.isAir() && current.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD)
                 && !state.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD);
-        int h = x * 73856093 ^ y * 19349663 ^ z * 83492791;
-        h ^= h >>> 16;
-        boolean toDeep = (h & 1) == 0;
+        // The deep pass above modern 0 (the crossing band) shares the cells of the normal pass there, keyed by modern height.
+        int ky = deep && p.getY() >= 0 ? p.getY() : y;
+        boolean toDeep = (cellHash(x >> 3, ky >> 3, z >> 3) & 1) == 0;
         return deep ? !ore || !toDeep : ore && toDeep;
+    }
+
+    /**
+     * The ore split is decided per 8x8x8 cell, not per block: a per-block choice thinned every vein to a checkerboard (every other
+     * block along z, shifting each 8 along y) instead of leaving whole veins and whole gaps. Veins stay as the mod shaped them
+     * inside a cell; the share of ores per layer is the same on average.
+     */
+    private static int cellHash(int cx, int cy, int cz) {
+        int h = cx * 73856093 ^ cy * 19349663 ^ cz * 83492791;
+        h ^= h >>> 16;
+        h *= 0x85ebca6b;
+        h ^= h >>> 13;
+        h *= 0xc2b2ae35;
+        h ^= h >>> 16;
+        return h;
     }
 
     /**
@@ -388,8 +403,15 @@ public class World implements IBlockAccess {
      * placed a pylon whose every block was refused and then failed on the missing tile entity ("te" is null).
      */
     private static boolean mcc$aboveDeepLayer(int legacyY) {
-        return inDeepPass() && legacyY + deepShift() >= 0;
+        return inDeepPass() && legacyY + deepShift() >= DEEP_CROSS;
     }
+
+    /**
+     * How far above modern y=0 the deep pass still reads and writes (ores only, see {@link #mcc$splitDrops}): a vein of the deep
+     * pass that reaches up to 0 continues into the band above instead of ending flat at the old 1.7.10 floor line (CustomOreGen veins
+     * did not cross y=0, #82). Everything higher is solid rock to the legacy code, as before.
+     */
+    private static final int DEEP_CROSS = 16;
 
     /**
      * The rock above the deep layer ends where the 1.7.10 world did (y=256): above it is air, as there. Generators that walk
@@ -530,7 +552,7 @@ public class World implements IBlockAccess {
      * within one chunk of its centre (and logs an error with a stack trace for each refused one, which is slow and noisy).
      */
     private boolean outsideRegion(BlockPos p) {
-        if (p.getY() >= 0 && inDeepPass()) return true;
+        if (p.getY() >= DEEP_CROSS && inDeepPass()) return true;
         if (lvl() instanceof net.minecraft.server.level.WorldGenRegion r) {
             var c = r.getCenter();
             return Math.abs((p.getX() >> 4) - c.x) > 1 || Math.abs((p.getZ() >> 4) - c.z) > 1;
@@ -543,7 +565,7 @@ public class World implements IBlockAccess {
      * is loaded: 1.7.10 generated the chunk on the spot (Witchery's Torment mazes span four chunks from chunk 0, 0).
      */
     private void deferOutsideRegion(BlockPos p, BlockState state, int meta) {
-        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || p.getY() >= 0 && inDeepPass()) return;
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || p.getY() >= DEEP_CROSS && inDeepPass()) return;
         Runnable write = state != null ? () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, state)
                 : () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.meta(r.getLevel(), p, meta);
         // part of what the generator run builds (a locatable legacy structure, LegacyGeneratorStructures)
@@ -747,7 +769,7 @@ public class World implements IBlockAccess {
     private int surface(int x, int z, Heightmap.Types type) {
         int modern = modernSurface(x, z, type);
         // the deep layer is buried: its top is y=0 (see mcc$aboveDeepLayer)
-        if (inDeepPass()) modern = Math.min(modern, 0);
+        if (inDeepPass()) modern = Math.min(modern, DEEP_CROSS);
         return legacyY(modern);
     }
 
@@ -2200,7 +2222,7 @@ public class World implements IBlockAccess {
         int y1 = (int) Math.floor(box.minY), y2 = (int) Math.floor(box.maxY + 1.0);
         int z1 = (int) Math.floor(box.minZ), z2 = (int) Math.floor(box.maxZ + 1.0);
         for (int x = x1; x < x2; x++) {
-            for (int y = Math.max(0, y1); y < y2; y++) {
+            for (int y = Math.max(mcc$buildBottom(), y1); y < y2; y++) {
                 for (int z = z1; z < z2; z++) {
                     var block = getBlock(x, y, z);
                     if (block != null && block.getMaterial().isLiquid()) return true;

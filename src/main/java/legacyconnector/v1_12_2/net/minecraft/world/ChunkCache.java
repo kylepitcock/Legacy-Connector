@@ -62,7 +62,8 @@ public class ChunkCache implements IBlockAccess {
 
     @Override
     public IBlockState getBlockState(BlockPos pos) {
-        if (world == null || pos.getY() < 0 || pos.getY() >= 256 || !world.isBlockLoaded(pos)) {
+        // the world's own build range (-64..319 in the overworld unless legacy.deepWorld1122 is off), not 1.12's 0..255
+        if (world == null || world.isOutsideBuildHeight(pos) || !world.isBlockLoaded(pos)) {
             return org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
         }
         return world.getBlockState(pos);

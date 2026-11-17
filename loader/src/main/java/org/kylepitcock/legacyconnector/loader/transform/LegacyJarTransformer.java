@@ -548,6 +548,7 @@ public final class LegacyJarTransformer {
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             buildHeightChecks += BuildHeightRewriter.apply(node, hierarchy, version);
             floorClamps += WorldFloorClampRewriter.apply(node, hierarchy, version);
+            EntityHeightAbsRewriter.apply(node, version);
             BetaActorTargets.apply(node,hierarchy,version);
             BetaMenuConstructors.apply(node,hierarchy,version);
             BetaClassForName.apply(node,version);
