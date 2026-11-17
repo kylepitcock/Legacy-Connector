@@ -323,6 +323,7 @@ public final class Forge1201Transformer {
             return true;
         };
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
+        ClassShape1201 shape = new ClassShape1201();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
         int palladiumKubejsChanges = 0;
         int palladiumKubejsClassesDropped = 0;
@@ -395,6 +396,7 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            viaCalls += shape.apply(node);
             int forgeBusDefaults = ForgeBusDefault1201.apply(node, hierarchy, shim);
             int vertexBridges = VertexConsumerBridge1201.apply(node);
             if (forgeBusDefaults > 0) result.notes.add(node.name.replace('/', '.') + ": " + forgeBusDefaults + " handler(s) of mod bus events on the default (FORGE) bus of @Mod.EventBusSubscriber never ran in Forge 1.20.1 and are inert here too");
@@ -689,6 +691,9 @@ public final class Forge1201Transformer {
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
         }
         java.util.Set<String> openedMembers = PrivateAccess1201.lines(nodes, hierarchy);
+        for (String c : shape.opened) openedMembers.add("public-f " + c);
+        if (shape.converted > 0) result.notes.add("Class shape: " + shape.converted + " class(es) implementing BlockSource (a record in 1.21.1) now extend it and answer through their own getters");
+        for (String u : shape.unconverted) result.notes.add("Class shape: " + u + " implements BlockSource (a record in 1.21.1) and extends another class; it cannot be converted and will not load");
         if (!openedMembers.isEmpty()) {
             byte[] existing = outResources.get("META-INF/accesstransformer.cfg");
             String text = existing == null ? "" : new String(existing, StandardCharsets.UTF_8);
@@ -697,7 +702,7 @@ public final class Forge1201Transformer {
             at.append("# private game members this jar's code uses (Forge 1.20.1 opened them with its own transformers)\n");
             for (String line : openedMembers) at.append(line).append('\n');
             outResources.put("META-INF/accesstransformer.cfg", at.toString().getBytes(StandardCharsets.UTF_8));
-            result.notes.add("Access transformer: " + openedMembers.size() + " private game member(s) used by the code opened");
+            result.notes.add("Access transformer: " + openedMembers.size() + " private game member(s) or final game class(es) used by the code opened");
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
