@@ -128,10 +128,31 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
 
+    private int pendingLegacyKey;
+
+    /** GLFW keys that produce a character event (printable ASCII block and the keypad). */
+    private static boolean isCharacterKey(int key) {
+        return key >= 32 && key <= 96 || key >= 320 && key <= 335;
+    }
+
     @Override
     public boolean keyPressed(int key, int scanCode, int modifiers) {
         if (customKeys && !failed) {
             int legacyKey = LegacyKeys.toLegacy(key);
+            pendingLegacyKey = 0;
+            if (legacyKey != 0 && legacyKey != 1 && isCharacterKey(key)) {
+                // 1.7.10 delivered key and character in ONE keyTyped(char, key); modern splits them (keyPressed, then charTyped).
+                // Deliver at charTyped with the real character, so the GUI's own text elements see 'e' before the inventory key
+                // check does (a Ctrl chord has no char event: deliver now as the control character).
+                boolean ctrl = (modifiers & 2) != 0 && (modifiers & 4) == 0;
+                if (ctrl) {
+                    char control = key >= 65 && key <= 90 ? (char) (key - 64) : '\0';
+                    failed = !ScreenGuard.run(this, () -> legacy.mcc$keyTyped(control, legacyKey));
+                } else {
+                    pendingLegacyKey = legacyKey;
+                }
+                return true;
+            }
             if (legacyKey != 0 && legacyKey != 1) {
                 boolean[] textInput = {false};
                 failed = !ScreenGuard.run(this, () -> textInput[0] = legacy.mcc$keyPressed(legacyKey));
@@ -145,7 +166,12 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
 
     @Override
     public boolean charTyped(char c, int modifiers) {
-        if (customKeys && !failed) failed = !ScreenGuard.run(this, () -> legacy.mcc$keyTyped(c, 0));
+        if (customKeys && !failed) {
+            int legacyKey = pendingLegacyKey;
+            pendingLegacyKey = 0;
+            failed = !ScreenGuard.run(this, () -> legacy.mcc$keyTyped(c, legacyKey));
+            return true;
+        }
         return super.charTyped(c, modifiers);
     }
 
