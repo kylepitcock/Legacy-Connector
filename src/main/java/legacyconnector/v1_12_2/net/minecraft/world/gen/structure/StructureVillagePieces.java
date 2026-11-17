@@ -219,13 +219,12 @@ public class StructureVillagePieces {
         }
 
         /** The door of the village's style: acacia in savanna villages, spruce in taiga villages, oak elsewhere. */
-        protected legacyconnector.v1_12_2.net.minecraft.block.Block biomeDoor() {
-            var door = switch (this.structureType) {
-                case 2 -> net.minecraft.world.level.block.Blocks.ACACIA_DOOR;
-                case 3 -> net.minecraft.world.level.block.Blocks.SPRUCE_DOOR;
-                default -> net.minecraft.world.level.block.Blocks.OAK_DOOR;
+        protected legacyconnector.v1_12_2.net.minecraft.block.BlockDoor biomeDoor() {
+            return switch (this.structureType) {
+                case 2 -> legacyconnector.v1_12_2.net.minecraft.init.Blocks.ACACIA_DOOR;
+                case 3 -> legacyconnector.v1_12_2.net.minecraft.init.Blocks.SPRUCE_DOOR;
+                default -> legacyconnector.v1_12_2.net.minecraft.init.Blocks.OAK_DOOR;
             };
-            return org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.legacyBlock(door.defaultBlockState());
         }
 
         /** Whether the block at a piece position is air. */

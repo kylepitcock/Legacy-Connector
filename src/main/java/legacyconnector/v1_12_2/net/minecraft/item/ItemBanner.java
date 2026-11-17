@@ -18,6 +18,32 @@ public class ItemBanner extends Item {
         return banner;
     }
 
+    /**
+     * The pattern lines of a banner's tooltip (at most six, "Pattern Colour" as the language file names them), read from
+     * {@code BlockEntityTag.Patterns}; the 1.12 {@code ItemBanner} adds them from its own {@code addInformation}.
+     */
+    public static void appendHoverTextFromTileEntityTag(ItemStack stack, java.util.List<String> tooltip) {
+        NBTTagCompound tag = stack.getSubCompound("BlockEntityTag");
+        if (tag == null || !tag.hasKey("Patterns")) return;
+        NBTTagList patterns = tag.getTagList("Patterns", 10);
+        for (int i = 0; i < patterns.tagCount() && i < 6; i++) {
+            NBTTagCompound entry = patterns.getCompoundTagAt(i);
+            EnumDyeColor color = EnumDyeColor.byDyeDamage(entry.getInteger("Color") & 15);
+            legacyconnector.v1_12_2.net.minecraft.tileentity.BannerPattern pattern =
+                    legacyconnector.v1_12_2.net.minecraft.tileentity.BannerPattern.byHash(entry.getString("Pattern"));
+            if (pattern != null) {
+                tooltip.add(legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(
+                        "item.banner." + pattern.getFileName() + "." + color.getUnlocalizedName()));
+            }
+        }
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.List<String> tooltip,
+            legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag flagIn) {
+        appendHoverTextFromTileEntityTag(stack, tooltip);
+    }
+
     /** The banner's base colour (white when the stack names none). */
     public static EnumDyeColor getBaseColor(ItemStack stack) {
         NBTTagCompound tag = stack.getTagCompound();
