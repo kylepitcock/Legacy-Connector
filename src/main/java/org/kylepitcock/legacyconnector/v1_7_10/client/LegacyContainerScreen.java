@@ -39,6 +39,14 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         if (legacy != null) {
             failed = !ScreenGuard.run(this, () -> {
                 legacy.setWorldAndResolution(Minecraft.getMinecraft(), width, height);
+                // a GUI that sets xSize/ySize in initGui (Mystcraft's writing desk: 409 wide, set in validate()) only has its real size
+                // now; the modern origin was centred for the constructor's size, so the slots sat off the legacy elements
+                if (imageWidth != legacy.mcc$xSize() || imageHeight != legacy.mcc$ySize()) {
+                    imageWidth = legacy.mcc$xSize();
+                    imageHeight = legacy.mcc$ySize();
+                    leftPos = (width - imageWidth) / 2;
+                    topPos = (height - imageHeight) / 2;
+                }
                 legacy.mcc$setOrigin(leftPos, topPos);
             });
         }
