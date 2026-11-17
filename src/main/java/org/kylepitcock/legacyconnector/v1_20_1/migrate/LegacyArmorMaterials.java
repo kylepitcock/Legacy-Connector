@@ -27,6 +27,11 @@ public final class LegacyArmorMaterials implements LegacyArmorMaterial {
         HEALTH_FUNCTION_FOR_TYPE.put(ArmorItem.Type.HELMET, 11);
     }
 
+    /** {@code ArmorMaterials.ordinal()}: the position in the 1.20.1 enum (leather, chainmail, iron, gold, diamond, turtle, netherite). */
+    public int ordinal() {
+        return java.util.List.of("leather", "chainmail", "iron", "gold", "diamond", "turtle", "netherite").indexOf(name);
+    }
+
     final String name;
     final Holder<ArmorMaterial> holder;
 

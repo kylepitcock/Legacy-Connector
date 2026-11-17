@@ -110,6 +110,13 @@ public final class Round9Compat {
         return path;
     }
 
+    /** {@code BannerPattern.getHashname()}: the short code of the pattern ({@code "bs"}); the asset's path for a pattern the old list never had. */
+    public static String hashname(BannerPattern pattern) {
+        String path = pattern.assetId().getPath();
+        for (Map.Entry<String, String> e : PATTERN_CODES.entrySet()) if (e.getValue().equals(path)) return e.getKey();
+        return path;
+    }
+
     /** {@code BannerBlockEntity.createPatterns(base, listTag)}: the layers of the old {@code [{Pattern, Color}]} list, the base colour first. */
     public static List<Pair<Holder<BannerPattern>, DyeColor>> createPatterns(DyeColor base, ListTag tags) {
         List<Pair<Holder<BannerPattern>, DyeColor>> out = new ArrayList<>();

@@ -179,4 +179,42 @@ public final class Round10Compat {
         if (block == net.minecraft.world.level.block.Blocks.PUMPKIN) return (net.minecraft.world.level.block.AttachedStemBlock) net.minecraft.world.level.block.Blocks.ATTACHED_PUMPKIN_STEM;
         return null;
     }
+
+    // ---- combat, enchantments, model data, inventory ------------------------------------------------------------------------------------------
+
+    /** {@code CombatRules.getDamageAfterAbsorb(damage, armor, toughness)} of 1.20.1: the original formula (1.21.1 also takes the entity and the damage source for the enchantments). */
+    public static float damageAfterAbsorb(float damage, float armor, float toughness) {
+        float f = 2.0F + toughness / 4.0F;
+        float f1 = net.minecraft.util.Mth.clamp(armor - damage / f, armor * 0.2F, 20.0F);
+        return damage * (1.0F - f1 / 25.0F);
+    }
+
+    /** {@code EnchantmentHelper.isEnchantmentCompatible(existing, candidate)}: no enchantment of the collection rejects the candidate. */
+    public static boolean isEnchantmentCompatible(java.util.Collection<LegacyEnchantment> existing, LegacyEnchantment candidate) {
+        for (LegacyEnchantment e : existing) {
+            if (e != candidate && !candidate.isCompatibleWith(e)) return false;
+        }
+        return true;
+    }
+
+    /** {@code level.getModelDataManager()} (Forge's extension of {@code BlockAndTintGetter}): the client level's manager, null for other getters (they hold no model data). */
+    public static net.neoforged.neoforge.client.model.data.ModelDataManager modelDataManager(net.minecraft.world.level.BlockGetter getter) {
+        return getter instanceof net.minecraft.client.multiplayer.ClientLevel level ? level.getModelDataManager() : null;
+    }
+
+    public static net.neoforged.neoforge.client.model.data.ModelDataManager modelDataManager(net.minecraft.world.level.BlockAndTintGetter getter) {
+        return modelDataManager((net.minecraft.world.level.BlockGetter) getter);
+    }
+
+    /** {@code InventoryMenu.TEXTURE_EMPTY_SLOTS}: the empty-slot icons of boots, leggings, chestplate and helmet. */
+    public static net.minecraft.resources.ResourceLocation[] emptySlotTextures() {
+        return new net.minecraft.resources.ResourceLocation[] {net.minecraft.world.inventory.InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS,
+                net.minecraft.world.inventory.InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS, net.minecraft.world.inventory.InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE,
+                net.minecraft.world.inventory.InventoryMenu.EMPTY_ARMOR_SLOT_HELMET};
+    }
+
+    /** {@code ProjectileUtil.getMobArrow(shooter, arrow, velocity)}: 1.21.1 also passes the weapon (none here). */
+    public static net.minecraft.world.entity.projectile.AbstractArrow mobArrow(net.minecraft.world.entity.LivingEntity shooter, net.minecraft.world.item.ItemStack arrow, float velocity) {
+        return net.minecraft.world.entity.projectile.ProjectileUtil.getMobArrow(shooter, arrow, velocity, null);
+    }
 }

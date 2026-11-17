@@ -907,6 +907,36 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void combatEnchantmentSlotTextureAndBannerCallsGoToHelpers() {
+        String block = "net/minecraft/world/level/BlockAndTintGetter";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "go", "(L" + block + ";)F");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(INVOKEINTERFACE, block, "getModelDataManager", "()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;", true));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/minecraft/world/inventory/InventoryMenu", "TEXTURE_EMPTY_SLOTS", "[Lnet/minecraft/resources/ResourceLocation;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/world/damagesource/CombatRules", "getDamageAfterAbsorb", "(FFF)F", false));
+        m.instructions.add(new InsnNode(FRETURN));
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(2, counts.calls);
+        assertEquals(1, counts.fields);
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "modelDataManager"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "emptySlotTextures"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "damageAfterAbsorb"));
+    }
+
+    @Test
+    void toastIdFieldIsRenamedThroughThe1201ClassName() {
+        // the members table is keyed by the 1.20.1 name of the owner (SystemToastIds), the class rename happens elsewhere
+        assertEquals("PERIODIC_NOTIFICATION", Mc1201Tables.get().renamedMember(
+                "net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds", "TUTORIAL_HINT", ":Lnet/minecraft/client/gui/components/toasts/SystemToast$SystemToastId;"));
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");

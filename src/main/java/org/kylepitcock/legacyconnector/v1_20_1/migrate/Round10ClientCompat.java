@@ -142,4 +142,22 @@ public final class Round10ClientCompat {
         };
         return new net.neoforged.neoforge.client.event.RenderLevelStageEvent(stage, renderer, pose, new org.joml.Matrix4f(pose.last().pose()), projection, tick, tracker, camera, frustum);
     }
+
+    /**
+     * {@code BannerRenderer.renderPatterns(pose, buffers, light, overlay, flag, material, banner, List<Pair<Holder<BannerPattern>, DyeColor>>)}: the 1.20.1 list has the
+     * base colour as its first layer (as {@code Round9Compat.createPatterns} builds it); 1.21.1 takes the base colour and the pattern layers apart.
+     */
+    public static void bannerRenderPatterns(com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers, int light, int overlay,
+            net.minecraft.client.model.geom.ModelPart flag, net.minecraft.client.resources.model.Material material, boolean banner,
+            java.util.List<com.mojang.datafixers.util.Pair<net.minecraft.core.Holder<net.minecraft.world.level.block.entity.BannerPattern>, net.minecraft.world.item.DyeColor>> patterns) {
+        net.minecraft.world.item.DyeColor base = patterns == null || patterns.isEmpty() ? net.minecraft.world.item.DyeColor.WHITE : patterns.get(0).getSecond();
+        java.util.List<net.minecraft.world.level.block.entity.BannerPatternLayers.Layer> layers = new java.util.ArrayList<>();
+        if (patterns != null) {
+            for (int i = 1; i < patterns.size(); i++) {
+                layers.add(new net.minecraft.world.level.block.entity.BannerPatternLayers.Layer(patterns.get(i).getFirst(), patterns.get(i).getSecond()));
+            }
+        }
+        net.minecraft.client.renderer.blockentity.BannerRenderer.renderPatterns(pose, buffers, light, overlay, flag, material, banner, base,
+                new net.minecraft.world.level.block.entity.BannerPatternLayers(layers));
+    }
 }
