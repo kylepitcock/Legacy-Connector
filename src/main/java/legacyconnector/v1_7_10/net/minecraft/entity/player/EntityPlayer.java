@@ -53,6 +53,10 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
     @Deprecated
     public legacyconnector.v1_7_10.net.minecraft.inventory.Container inventoryContainer;
     private legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$inventoryContainer;
+    /** Phantom field {@code xpCooldown}: ticks before the player may pick up another orb. Backed by the modern {@code takeXpDelay}, which the game
+     *  counts down every tick (a side-storage field would never decrease, so Thaumcraft vis orbs worked once). */
+    @Deprecated
+    public int xpCooldown;
     @Deprecated
     public int experienceLevel;
     @Deprecated
@@ -794,6 +798,14 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
     public static void mcc$set$mcc125$lastPortalTime(EntityPlayer p, float v) {
         if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.oSpinningEffectIntensity = v;
         else p.mcc$local_lastPortalTime = v;
+    }
+
+    public static int mcc$get$xpCooldown(EntityPlayer p) {
+        return p.mcc$player().takeXpDelay;
+    }
+
+    public static void mcc$set$xpCooldown(EntityPlayer p, int v) {
+        p.mcc$player().takeXpDelay = v;
     }
 
     /** Phantom field {@code portalCooldown} (1.3: {@code timeUntilPortal}): ticks before the player may use a portal again. */
