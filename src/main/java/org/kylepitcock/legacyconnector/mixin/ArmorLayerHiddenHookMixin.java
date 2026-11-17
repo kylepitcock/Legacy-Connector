@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.ARMOR_HIDDEN}): 1.12.2 coremods put a hook in {@code LayerArmorBase.renderArmorLayer} that answers
  * true for an armour piece that is not to be drawn. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(HumanoidArmorLayer.class)
 public abstract class ArmorLayerHiddenHookMixin {
     @Inject(method = "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/entity/LivingEntity;"

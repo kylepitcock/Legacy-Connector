@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.Client.MOUSE_OVER}): 1.7.10 coremods put a hook into {@code EntityRenderer.getMouseOver} right after the
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * for example). Here the target becomes a miss and the game's picking is skipped, where the game would pick (a level, a player, a camera entity). A no-op
  * without such a hook.
  */
+@CoremodHook
 @Mixin(GameRenderer.class)
 public abstract class GameRendererPickHookMixin {
     @Final

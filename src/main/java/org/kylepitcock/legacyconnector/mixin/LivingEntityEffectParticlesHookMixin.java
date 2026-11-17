@@ -6,12 +6,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.POTION_PARTICLES}): 1.12.2 coremods put a hook before the potion particles of
  * {@code EntityLivingBase.updatePotionEffects}; when it answers false the method ends there. The game's particle call is the only one of
  * {@code tickEffects} and ends the method. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityEffectParticlesHookMixin {
     @Inject(method = "tickEffects", require = 0, cancellable = true,

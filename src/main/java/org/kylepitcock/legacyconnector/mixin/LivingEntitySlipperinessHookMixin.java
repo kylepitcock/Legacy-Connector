@@ -10,11 +10,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.SLIPPERINESS}): 1.12.2 coremods put a hook on the ground friction of {@code EntityLivingBase.travel}
  * (slipperiness times 0.91), receiving the entity and the block below. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(LivingEntity.class)
 public abstract class LivingEntitySlipperinessHookMixin {
     @WrapOperation(method = "travel", at = @At(value = "INVOKE",

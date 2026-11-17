@@ -8,12 +8,14 @@ import net.minecraft.world.entity.player.Player;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.PLAYER_ATTACK}): 1.7.10 coremods replaced the {@code target.attackEntityFrom(source, amount)} of
  * {@code EntityPlayer.attackTargetEntityWithCurrentItem} with a hook of their own (which changes the damage and then damages the target itself).
  * A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(Player.class)
 public abstract class PlayerAttackHookMixin {
     @WrapOperation(method = "attack", at = @At(value = "INVOKE",

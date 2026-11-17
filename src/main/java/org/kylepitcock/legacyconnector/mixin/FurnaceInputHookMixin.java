@@ -7,8 +7,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /** Coremod hook site (generic, {@code CoremodSites1122.FURNACE_INPUT}): a hook of a 1.12.2 coremod keeps stacks out of the furnace's input slot. */
+@CoremodHook
 @Mixin(AbstractFurnaceBlockEntity.class)
 public abstract class FurnaceInputHookMixin {
     @Inject(method = "canPlaceItem", at = @At("RETURN"), cancellable = true, require = 0)
