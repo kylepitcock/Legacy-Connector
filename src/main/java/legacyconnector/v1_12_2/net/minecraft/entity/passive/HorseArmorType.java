@@ -21,6 +21,13 @@ public enum HorseArmorType {
         this.hash = "";
     }
 
+    /** An armour added by {@code EnumHelper.addHorseArmor}: the texture is a full resource path. */
+    HorseArmorType(int protection, String name, String hash, String texturePath) {
+        this.protection = protection;
+        this.textureName = texturePath;
+        this.hash = hash;
+    }
+
     HorseArmorType(int protection, String name, String hash) {
         this.protection = protection;
         this.textureName = "textures/entity/horse/armor/horse_armor_" + name + ".png";

@@ -1800,7 +1800,31 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         return true;
     }
 
+    /** The entry position and facing the last portal use recorded (vanilla keeps them for the next teleport; modern portals do not expose them). */
+    protected Vec3d lastPortalVec;
+    protected EnumFacing teleportDirection;
+
+    public Vec3d getLastPortalVec() {
+        return lastPortalVec;
+    }
+
+    public EnumFacing getTeleportDirection() {
+        return teleportDirection;
+    }
+
     public void setPortal(BlockPos pos) {
+        if (pos == null) return;
+        lastPortalVec = new Vec3d(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+        teleportDirection = getHorizontalFacing();
+    }
+
+    /** Whether a rider is thrown off when this mount enters water (living mounts only). */
+    protected boolean shouldDismountInWater(Entity rider) {
+        return this instanceof EntityLivingBase;
+    }
+
+    /** Called while the entity overlaps a block (vanilla: nothing). */
+    protected void onInsideBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
     }
 
     public int getPortalCooldown() {
