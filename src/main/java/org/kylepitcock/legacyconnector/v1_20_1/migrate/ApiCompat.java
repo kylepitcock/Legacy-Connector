@@ -153,6 +153,14 @@ public final class ApiCompat {
         return fuel == null ? 0 : fuel.burnTime();
     }
 
+    /**
+     * A mod's read of the private {@code Ingredient.itemStacks} cache (1.20.1 filled it by {@code getItems()}; "if null, call getItems(), then use the field"). In
+     * 1.21.1 a custom (NeoForge) ingredient answers {@code getItems()} without filling the field, so the read is null and the mod throws; take the answer itself.
+     */
+    public static ItemStack[] ingredientStacks(net.minecraft.world.item.crafting.Ingredient ingredient) {
+        return ingredient.getItems();
+    }
+
     public static int getBurnTime(ItemStack stack, RecipeType<?> type) {
         // 1.20.1 items answered -1 for "the vanilla value"; 1.21.1 throws on a negative burn time: such an item takes the furnace fuel data map's value
         if (!stack.isEmpty() && stack.getItem().getBurnTime(stack, type) < 0) {

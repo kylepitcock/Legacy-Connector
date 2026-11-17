@@ -437,6 +437,8 @@ final class Mixin1201 {
     }
 
     private static boolean isMissing(String target, Mc1201Hierarchy h) {
+        // a Minecraft class 1.21.1 removed that the class table already points at the layer's own stand-in (FrostWalkerEnchantment -> LegacyFrostWalker): nothing to mix into
+        if (target.startsWith("org/kylepitcock/legacyconnector/v1_20_1/migrate/")) return true;
         if (target.startsWith("net/minecraftforge/")) return true; // mapClass would have moved it to NeoForge or a facade
         if (target.startsWith("net/minecraft/") || target.startsWith("com/mojang/blaze3d/") || target.startsWith("com/mojang/math/")
                 || target.startsWith("net/neoforged/neoforge/")) return !h.isMinecraft(target);
