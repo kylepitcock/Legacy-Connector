@@ -75,7 +75,8 @@ public class BlockGrass extends Block implements IGrowable {
     /** Bone meal: tall grass (and now and then a flower) on the grass around, by random walks as vanilla does. */
     @Override
     public void grow(World worldIn, Random rand, BlockPos pos, IBlockState state) {
-        var level = worldIn.mcc$level();
+        // the world's accessor: during chunk generation a generation region (a write to the real level would wait on the chunk being made)
+        var level = worldIn.mcc$access();
         if (level == null) return;
         BlockPos up = pos.up();
         for (int i = 0; i < 128; ++i) {

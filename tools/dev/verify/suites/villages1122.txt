@@ -1,0 +1,5 @@
+1.12.2 ImmersiveEngineering-0.12
+1.12.2 forestry_1.12.2
+1.12.2 ActuallyAdditions-1.12.2
+1.12.2 Waystones_1.12.2
+1.12.2 signpost-1.12.2

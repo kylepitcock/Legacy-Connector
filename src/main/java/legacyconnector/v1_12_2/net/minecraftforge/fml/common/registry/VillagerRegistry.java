@@ -71,6 +71,7 @@ public class VillagerRegistry {
     public synchronized void registerVillageCreationHandler(IVillageCreationHandler handler) {
         if (handler == null || villageCreationHandlers.contains(handler)) return;
         villageCreationHandlers.add(handler);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyVillages1122.register();
     }
 
     public synchronized List<IVillageCreationHandler> mcc$villageCreationHandlers() {

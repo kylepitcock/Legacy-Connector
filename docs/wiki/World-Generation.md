@@ -220,6 +220,15 @@ no house's place), and handlers that only add vanilla's own 1.7.10 houses (Witch
 village has its own. Witchery's `TownWallMode`/`TownKeepMode` and cluster settings apply as in 1.7.10. Limits: the wall's block
 entity keeps the paths in memory only (as in 1.7.10), so a chunk saved before it ticked gets no wall, and the wall reads chunks
 that are not loaded as air.
+**1.12.2 village buildings** use the same assembly (`core/worldgen/VillageAdditions`, shared; each version supplies a `LegacyVillageSource`):
+1.12.2's `VillagerRegistry.IVillageCreationHandler`s (`LegacyVillages1122`, element type `legacyconnector:legacy_village_building_1122`,
+`LegacyVillagePoolElement1122`) become extra pieces of the vanilla village. The component is planned as 1.12 did
+(`getVillagePieceWeight` for weight and limit, `buildComponent` with an `EnumFacing`, then `buildComponent` of the piece and the
+`pendingRoads`/`pendingHouses` it adds), the village type gives the style (`Start.structureType`: desert 1, savanna 2, taiga 3,
+plains and snowy 0, so `getBiomeSpecificBlockState` and `biomeDoor` answer as in 1.12) and the biome; placing runs
+`addComponentParts` through the generation region (`WorldBridge1122.wrap` of the `WorldGenLevel`), so `setBlockState`,
+`fillWithBlocks`, `replaceAirAndLiquidDownwards`, `generateChest` (loot tables) and `spawnVillagers` work on the chunk being
+generated. A handler or component that throws is logged (first 12) and skipped. Handlers that build 1.12's own houses are left out.
 `villages.legacyBuildings=false` leaves them out. Doors of legacy structures: 1.7.10 kept a door's facing and open state in the lower half's metadata and the hinge in the upper's,
 so a half written on its own would keep the defaults of the rest (an upper half facing east); whenever legacy code writes a door half
 and the other half is there, the world puts both modern halves together (facing and open from the lower, hinge and powered from the
