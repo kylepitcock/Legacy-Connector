@@ -26,16 +26,6 @@ public final class WorldSynth1122 {
             gen.mcc$setPlantType(enumName(args[0]));
             return null;
         });
-        Synth.InstanceMethod door = (self, args) -> {
-            if (!(self instanceof legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureComponent piece) || args.length < 8) return Synth.NONE;
-            piece.mcc$generateDoor((World) args[0], (legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureBoundingBox) args[1],
-                    (java.util.Random) args[2], Synth.toInt(args[3]), Synth.toInt(args[4]), Synth.toInt(args[5]),
-                    (legacyconnector.v1_12_2.net.minecraft.util.EnumFacing) args[6],
-                    args[7] instanceof legacyconnector.v1_12_2.net.minecraft.block.Block b ? b : null);
-            return null;
-        };
-        Synth.addInstanceMethod("net.minecraft.world.gen.structure.StructureComponent.generateDoor", door);
-        Synth.addInstanceMethod("net.minecraft.world.gen.structure.StructureVillagePieces$Village.generateDoor", door);
     }
 
     /**
@@ -49,8 +39,7 @@ public final class WorldSynth1122 {
         try {
             var p = pos.mcc$modern();
             if (!level.getWorldBorder().isWithinBounds(p)) return false;
-            Object custom = Synth.callInstance("net.minecraft.entity.EntityLiving$SpawnPlacementType.canSpawnAt", type, new Object[] {world, pos});
-            if (custom instanceof Boolean b) return b;
+            if (type instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType t && t.mcc$hasCustomRule()) return t.canSpawnAt(world, pos);
             var state = level.getBlockState(p);
             if ("IN_WATER".equals(enumName(type))) {
                 return state.getFluidState().is(net.minecraft.tags.FluidTags.WATER) && level.getFluidState(p.below()).is(net.minecraft.tags.FluidTags.WATER)

@@ -14,6 +14,14 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
     /** Forge: teleporters mods add for this world. */
     public final List<Teleporter> customTeleporters = new ArrayList<>();
     private final Teleporter worldTeleporter;
+    /** 1.12 field the server world holds: the loot table manager (one for all worlds, answering from the server's data packs). */
+    public final legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager lootTable = newLootTable();
+
+    private static legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager newLootTable() {
+        var m = legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager.mcc$of(
+                net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer());
+        return m != null ? m : new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager(null);
+    }
 
     public WorldServer(LevelAccessor access) {
         super(access);
@@ -28,6 +36,17 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
             legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo info, int dimensionId, legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profiler) {
         super(saveHandler, info, legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.createProviderFor(dimensionId), profiler, false);
         this.worldTeleporter = new Teleporter(this);
+    }
+
+    /** The server's function manager (the 1.12 field mods read; {@link #getFunctionManager()} is the same object). */
+    public legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager functionManager;
+
+    public legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager getFunctionManager() {
+        if (functionManager == null) {
+            var s = legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
+            functionManager = s != null ? s.getFunctionManager() : new legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager(null, null);
+        }
+        return functionManager;
     }
 
     private ServerLevel server() {

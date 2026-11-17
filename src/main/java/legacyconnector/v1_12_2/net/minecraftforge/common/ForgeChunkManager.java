@@ -135,6 +135,14 @@ public class ForgeChunkManager {
         return mod == null ? "unknown" : mod.getClass().getName();
     }
 
+    /**
+     * Whether a saved world holds forced-chunk tickets. The layer keeps tickets in the world's own data (the game's forced chunks), not
+     * in a {@code forgeChunkLoading.dat} of the old format, so a world folder never has the old file's tickets: false.
+     */
+    public static boolean savedWorldHasForcedChunkTickets(java.io.File chunkLoaderData) {
+        return false;
+    }
+
     public static synchronized void setForcedChunkLoadingCallback(Object mod, LoadingCallback callback) {
         CALLBACKS.put(modIdOf(mod), callback);
     }

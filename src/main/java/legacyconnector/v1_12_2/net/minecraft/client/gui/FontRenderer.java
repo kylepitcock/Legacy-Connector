@@ -20,6 +20,15 @@ public class FontRenderer implements legacyconnector.v1_12_2.net.minecraft.clien
     protected int[] colorCode = legacyColors();
     protected int[] charWidth = new int[256];
     protected byte[] glyphWidth = new byte[65536];
+    /** The 256 glyph pages of the unicode font ({@code textures/font/unicode_page_XX.png}). */
+    public static final ResourceLocation[] UNICODE_PAGE_LOCATIONS = new ResourceLocation[256];
+
+    static {
+        for (int page = 0; page < UNICODE_PAGE_LOCATIONS.length; page++) {
+            UNICODE_PAGE_LOCATIONS[page] = new ResourceLocation(String.format("textures/font/unicode_page_%02x.png", page));
+        }
+    }
+
     protected ResourceLocation locationFontTexture = new ResourceLocation("textures/font/ascii.png");
     protected float posX;
     protected float posY;

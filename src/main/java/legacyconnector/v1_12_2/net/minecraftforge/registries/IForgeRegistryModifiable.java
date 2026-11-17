@@ -9,4 +9,9 @@ public interface IForgeRegistryModifiable<V extends IForgeRegistryEntry<V>> exte
     void unfreeze();
 
     V remove(ResourceLocation key);
+
+    /** Removes every entry. */
+    default void clear() {
+        for (ResourceLocation key : new java.util.ArrayList<>(getKeys())) remove(key);
+    }
 }

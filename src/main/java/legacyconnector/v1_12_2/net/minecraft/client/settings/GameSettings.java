@@ -8,8 +8,23 @@ public class GameSettings {
     @Deprecated
     public int thirdPersonView;
     @Deprecated
+    /** Whether usage statistics are sent (the layer never sends any: the setting only reads back what was set). */
+    public boolean snooperEnabled;
+    /** 1.12's free debug camera switch (the F3+C view): kept for mods that read it. */
+    public boolean debugCamEnable;
     public boolean fancyGraphics;
     @Deprecated
+    /** The skin layers the player has switched on. */
+    public java.util.Set<legacyconnector.v1_12_2.net.minecraft.entity.player.EnumPlayerModelParts> getModelParts() {
+        java.util.Set<legacyconnector.v1_12_2.net.minecraft.entity.player.EnumPlayerModelParts> out =
+                java.util.EnumSet.noneOf(legacyconnector.v1_12_2.net.minecraft.entity.player.EnumPlayerModelParts.class);
+        var options = net.minecraft.client.Minecraft.getInstance().options;
+        for (var part : legacyconnector.v1_12_2.net.minecraft.entity.player.EnumPlayerModelParts.values()) {
+            if (options.isModelPartEnabled(part.mcc$modern())) out.add(part);
+        }
+        return out;
+    }
+
     public boolean advancedItemTooltips;
     @Deprecated
     public int particleSetting;
