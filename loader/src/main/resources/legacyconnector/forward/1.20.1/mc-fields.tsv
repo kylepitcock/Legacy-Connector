@@ -385,3 +385,6 @@ net/minecraft/client/renderer/entity/ItemRenderer	SPYGLASS_IN_HAND_MODEL	Lorg/ky
 net/minecraft/client/resources/model/ModelBakery	MISSING_MODEL_LOCATION	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;	MISSING_MODEL_VARIANT	Lnet/minecraft/client/resources/model/ModelResourceLocation;	ModelLocationCompat.constant
 net/minecraft/client/resources/model/ModelBakery	MISSING_MODEL_VARIANT	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;	-	Lnet/minecraft/client/resources/model/ModelResourceLocation;	ModelLocationCompat.constant
 net/minecraft/world/level/gameevent/GameEvent	ENTITY_ROAR	Lnet/minecraft/world/level/gameevent/GameEvent;	ENTITY_ACTION	Lnet/minecraft/core/Holder$Reference;	value
+net/minecraft/client/renderer/RenderStateShard	POSITION_COLOR_TEX_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	-	none	Round9ClientCompat.positionColorTexShader
+net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	POSITION_COLOR_TEX_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	-	none	Round9ClientCompat.positionColorTexShader
+net/minecraft/client/gui/components/toasts/Toast	TEXTURE	Lnet/minecraft/resources/ResourceLocation;	-	none	Round9ClientCompat.toastTexture

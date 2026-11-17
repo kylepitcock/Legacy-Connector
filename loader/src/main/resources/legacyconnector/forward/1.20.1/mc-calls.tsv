@@ -877,7 +877,7 @@ net/minecraft/client/model/BookModel	render	(Lcom/mojang/blaze3d/vertex/PoseStac
 net/minecraft/client/renderer/Sheets	armorTrimsSheet	()Lnet/minecraft/client/renderer/RenderType;	Round8ClientCompat	armorTrimsSheet
 net/minecraft/client/renderer/PanoramaRenderer	render	(FF)V	Round8ClientCompat	panoramaRender
 net/minecraft/client/renderer/RenderBuffers	<init>	()V	Round8ClientCompat	newRenderBuffers	()Lnet/minecraft/client/renderer/RenderBuffers;
-net/minecraft/client/renderer/MultiBufferSource$BufferSource	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;Ljava/util/Map;)V	Round8ClientCompat	newBufferSource
+net/minecraft/client/renderer/MultiBufferSource$BufferSource	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;Ljava/util/Map;)V	=args	Round8ClientCompat.fallbackBuffer@0,Round8ClientCompat.layerBuffers@1	(Lcom/mojang/blaze3d/vertex/ByteBufferBuilder;Ljava/util/SequencedMap;)V
 net/minecraft/client/resources/SkinManager	registerTexture	(Lcom/mojang/authlib/minecraft/MinecraftProfileTexture;Lcom/mojang/authlib/minecraft/MinecraftProfileTexture$Type;)Lnet/minecraft/resources/ResourceLocation;	Round8ClientCompat	registerTexture
 net/minecraft/advancements/critereon/InventoryChangeTrigger$TriggerInstance	<init>	(Lnet/minecraft/advancements/critereon/ContextAwarePredicate;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;[Lnet/minecraft/advancements/critereon/ItemPredicate;)V	Round8Compat	newInventoryChange
 net/neoforged/neoforge/fluids/capability/templates/FluidHandlerItemStackSimple$SwapEmpty	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;I)V	=args	LegacyComponents.fluidContent@0,0,1,2	(Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;I)V
@@ -902,3 +902,5 @@ net/minecraft/world/level/saveddata/maps/MapDecoration	getY	()B	=	y
 net/minecraft/client/User	getGameProfile	()Lcom/mojang/authlib/GameProfile;	Round8ClientCompat	userProfile
 com/mojang/blaze3d/platform/Lighting	setupLevel	(Lorg/joml/Matrix4f;)V	Round8ClientCompat	setupLevelLighting
 net/minecraft/client/resources/MobEffectTextureManager	get	(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;	Round8ClientCompat	effectSprite
+net/minecraft/client/renderer/SectionBufferBuilderPack	builder	(Lnet/minecraft/client/renderer/RenderType;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;	Round9ClientCompat	packBuilder	-
+net/minecraft/client/renderer/RenderType	end	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;Lcom/mojang/blaze3d/vertex/VertexSorting;)V	Round9ClientCompat	end	-
