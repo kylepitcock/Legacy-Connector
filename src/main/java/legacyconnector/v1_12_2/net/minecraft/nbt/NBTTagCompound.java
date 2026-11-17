@@ -9,6 +9,7 @@ import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
+@com.google.gson.annotations.JsonAdapter(org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyGson1122.CompoundAdapter.class)
 public class NBTTagCompound extends NBTBase {
     private final CompoundTag mcc$tag;
     /** Child views handed out, so repeated getCompoundTag(key) calls return the same object like in 1.12.2. */
