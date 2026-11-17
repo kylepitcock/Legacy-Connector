@@ -959,6 +959,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-expansion/download/5372749",
    "date": "2026-11-17",
    "open": true
+  },
+  {
+   "issue": 303,
+   "mod": "thermal_dynamics-1.20.1-11.0.1.23",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "Crashes during load.",
+   "lc": "0.4.15",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-dynamics/download/5372747",
+   "date": "2026-11-17",
+   "open": true
   }
  ]
 }
