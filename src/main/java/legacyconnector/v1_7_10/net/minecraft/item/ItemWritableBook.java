@@ -23,6 +23,11 @@ public class ItemWritableBook extends Item {
         return stack;
     }
 
+    /** The deobfuscated name of {@link #func_150930_a}. */
+    public static boolean validBookPageTagContents(NBTTagCompound tag) {
+        return func_150930_a(tag);
+    }
+
     /** {@code func_150930_a}: whether the tag holds a valid {@code pages} list (strings of at most 256 characters). */
     public static boolean func_150930_a(NBTTagCompound tag) {
         if (tag == null || !tag.hasKey("pages", 9)) return false;

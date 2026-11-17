@@ -27,6 +27,27 @@ public class DataWatcher {
         this.owner = owner;
     }
 
+    /** The data type number of each value class (Forge-era mods read it to add their own). */
+    public static final java.util.HashMap dataTypes = new java.util.HashMap();
+
+    static {
+        dataTypes.put(Byte.class, 0);
+        dataTypes.put(Short.class, 1);
+        dataTypes.put(Integer.class, 2);
+        dataTypes.put(Float.class, 3);
+        dataTypes.put(String.class, 4);
+        dataTypes.put(ItemStack.class, 5);
+        dataTypes.put(ChunkCoordinates.class, 6);
+    }
+
+    /** Phantom: redirected to {@link #mcc$get$watchedObjects} (the live table of the watched values by id). */
+    @Deprecated
+    public Map watchedObjects;
+
+    public static Map mcc$get$watchedObjects(DataWatcher w) {
+        return w.watched;
+    }
+
     public void addObject(int id, Object value) {
         int type = typeOf(value);
         if (type < 0) throw new IllegalArgumentException("Unknown data type: " + (value == null ? "null" : value.getClass()));

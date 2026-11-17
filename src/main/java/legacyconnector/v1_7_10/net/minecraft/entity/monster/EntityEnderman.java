@@ -6,6 +6,8 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 /** 1.7.10 enderman: the carried block id and metadata are in watcher slots 16 and 17, the screaming flag in slot 18. */
 public class EntityEnderman extends EntityMob {
     private static final boolean[] carriable = new boolean[256];
+    /** The id of the speed modifier an angry enderman gets (vanilla's, so mods can find and remove it). */
+    public static final java.util.UUID attackingSpeedBoostModifierUUID = java.util.UUID.fromString("020E0DFB-87AE-4653-9556-831010E291A0");
 
     /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
     public EntityEnderman(net.minecraft.world.entity.LivingEntity modern) {

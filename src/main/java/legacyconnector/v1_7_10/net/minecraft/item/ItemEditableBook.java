@@ -15,6 +15,13 @@ public class ItemEditableBook extends Item {
         return stack;
     }
 
+    /** Whether a written book's tag is valid: a title of at most 16 characters, an author and a valid page list. */
+    public static boolean validBookTagContents(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        if (!ItemWritableBook.func_150930_a(tag)) return false;
+        if (!tag.hasKey("title", 8)) return false;
+        return tag.getString("title").length() <= 16 && tag.hasKey("author", 8);
+    }
+
     @Override
     public boolean getShareTag() {
         return true;

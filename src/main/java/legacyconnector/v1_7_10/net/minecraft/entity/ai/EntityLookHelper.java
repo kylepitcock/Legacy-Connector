@@ -34,6 +34,14 @@ public class EntityLookHelper {
         return m != null && m.getLookControl().isLookingAtTarget();
     }
 
+    /** Turns {@code current} toward {@code target} by at most {@code maxDelta} degrees (the shortest way round). */
+    protected float updateRotation(float current, float target, float maxDelta) {
+        float delta = legacyconnector.v1_7_10.net.minecraft.util.MathHelper.wrapAngleTo180_float(target - current);
+        if (delta > maxDelta) delta = maxDelta;
+        if (delta < -maxDelta) delta = -maxDelta;
+        return current + delta;
+    }
+
     public double getLookPosX() {
         Mob m = mob();
         return m == null ? 0 : m.getLookControl().getWantedX();

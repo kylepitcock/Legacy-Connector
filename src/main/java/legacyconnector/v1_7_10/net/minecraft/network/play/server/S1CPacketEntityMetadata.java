@@ -35,6 +35,11 @@ public class S1CPacketEntityMetadata extends Packet {
     @Override
     public void readPacketData(PacketBuffer data) throws IOException {
         field_149379_a = data.readInt();
+        field_149378_b = mcc$readWatched(data);
+    }
+
+    /** Reads watched objects (type and id byte, then the value) up to the 127 end marker; also the tail of the spawn packets. */
+    public static List mcc$readWatched(PacketBuffer data) throws IOException {
         List out = new ArrayList();
         int header;
         while ((header = data.readUnsignedByte()) != 127) {
@@ -51,14 +56,18 @@ public class S1CPacketEntityMetadata extends Packet {
             };
             out.add(new DataWatcher.WatchableObject(type, id, value));
         }
-        field_149378_b = out;
+        return out;
     }
 
     @Override
     public void writePacketData(PacketBuffer data) throws IOException {
         data.writeInt(field_149379_a);
-        if (field_149378_b != null) {
-            for (Object o : field_149378_b) {
+        mcc$writeWatched(data, field_149378_b);
+    }
+
+    public static void mcc$writeWatched(PacketBuffer data, List objects) throws IOException {
+        if (objects != null) {
+            for (Object o : objects) {
                 DataWatcher.WatchableObject w = (DataWatcher.WatchableObject) o;
                 int type = w.getObjectType();
                 data.writeByte((type << 5 | w.getDataValueId() & 31) & 255);
