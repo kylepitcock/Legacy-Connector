@@ -77,6 +77,26 @@ public final class RecipeBridge {
 
     private RecipeBridge() {}
 
+    private static void dropRecorded(Spec spec, String why) {
+        switch (spec) {
+            case Shaped s -> dropped(s.owner, s.output, why);
+            case Shapeless s -> dropped(s.owner, s.output, why);
+            case Smelting s -> dropped(s.owner, s.output, why);
+            case Custom c -> org.kylepitcock.legacyconnector.core.problems.LegacyProblems.record(org.kylepitcock.legacyconnector.core.problems.LegacyProblems.Kind.DROPPED_RECIPE, c.owner, "custom recipe #" + c.index, why);
+        }
+    }
+
+    /** Records a recipe left out of the data pack (counted per mod in the problems report). */
+    private static void dropped(String owner, ItemStack output, String why) {
+        String subject;
+        try {
+            subject = output == null ? "?" : itemId(output.mcc$modern());
+        } catch (RuntimeException e) {
+            subject = String.valueOf(output);
+        }
+        org.kylepitcock.legacyconnector.core.problems.LegacyProblems.record(org.kylepitcock.legacyconnector.core.problems.LegacyProblems.Kind.DROPPED_RECIPE, owner, subject, why);
+    }
+
     private static String owner() {
         LegacyModContainer1710 c = LegacyModContainer1710.active();
         return c == null ? "legacyconnector" : c.record().modernId;
@@ -114,6 +134,7 @@ public final class RecipeBridge {
             if (p == null) {
                 // an ingredient that is not there (an item of the old game that has no counterpart): 1.7.10 would have thrown at registration, the layer skips the recipe
                 LOG.warn("Ignoring legacy shapeless recipe for {}: it names an item that does not exist", output);
+                dropped(owner(), output, "an ingredient is an item that does not exist");
                 return;
             }
         }
@@ -218,7 +239,10 @@ public final class RecipeBridge {
                     case Smelting s -> smelting(s);
                     case Custom c -> custom(c);
                 };
-                if (json == null) continue;
+                if (json == null) {
+                    dropRecorded(spec, "an ingredient cannot be expressed (missing item or empty ore name)");
+                    continue;
+                }
                 String ns = switch (spec) {
                     case Shaped s -> s.owner;
                     case Shapeless s -> s.owner;
@@ -233,6 +257,7 @@ public final class RecipeBridge {
                 jsons.put(id, json);
             } catch (RuntimeException e) {
                 LOG.warn("Could not translate legacy recipe {}: {}", spec, e.toString());
+                dropRecorded(spec, e.toString());
             }
         }
         idOf = ids;

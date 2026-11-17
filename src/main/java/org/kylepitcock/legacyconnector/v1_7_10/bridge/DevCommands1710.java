@@ -44,27 +44,27 @@ public final class DevCommands1710 {
     }
 
     private static void onRegister(RegisterCommandsEvent event) {
-        var root = Commands.literal("legacyconnector").requires(s -> s.hasPermission(2));
-        root.then(Commands.literal("mods").executes(ctx -> mods(ctx.getSource())));
-        root.then(Commands.literal("dim")
+        var root = Commands.literal("legacyconnector");
+        root.then(dev("mods").executes(ctx -> mods(ctx.getSource())));
+        root.then(dev("dim")
                 .then(Commands.literal("list").executes(ctx -> dimList(ctx.getSource())))
                 .then(Commands.argument("id", IntegerArgumentType.integer())
                         .executes(ctx -> dim(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "id"), null))
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .executes(ctx -> dim(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "id"), BlockPosArgument.getBlockPos(ctx, "pos"))))));
-        root.then(Commands.literal("gui")
+        root.then(dev("gui")
                 .then(Commands.argument("mod", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(LegacyMods.ordered().stream().map(r -> r.legacyId).toList(), b))
                         .then(Commands.argument("id", IntegerArgumentType.integer())
                                 .executes(ctx -> gui(ctx.getSource(), StringArgumentType.getString(ctx, "mod"), IntegerArgumentType.getInteger(ctx, "id"), null))
                                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                         .executes(ctx -> gui(ctx.getSource(), StringArgumentType.getString(ctx, "mod"), IntegerArgumentType.getInteger(ctx, "id"),
                                                 BlockPosArgument.getBlockPos(ctx, "pos")))))));
-        root.then(Commands.literal("place")
+        root.then(dev("place")
                 .then(Commands.argument("block", ResourceLocationArgument.id()).suggests((c, b) -> SharedSuggestionProvider.suggestResource(legacyBlockIds(), b))
                         .executes(ctx -> place(ctx.getSource(), ResourceLocationArgument.getId(ctx, "block"), 0))
                         .then(Commands.argument("meta", IntegerArgumentType.integer(0, 15))
                                 .executes(ctx -> place(ctx.getSource(), ResourceLocationArgument.getId(ctx, "block"), IntegerArgumentType.getInteger(ctx, "meta"))))));
-        root.then(Commands.literal("give")
+        root.then(dev("give")
                 .then(Commands.argument("item", ResourceLocationArgument.id()).suggests((c, b) -> SharedSuggestionProvider.suggestResource(legacyItemIds(), b))
                         .executes(ctx -> give(ctx.getSource(), ResourceLocationArgument.getId(ctx, "item"), 0, 1))
                         .then(Commands.argument("meta", IntegerArgumentType.integer(0))
@@ -72,22 +72,27 @@ public final class DevCommands1710 {
                                 .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
                                         .executes(ctx -> give(ctx.getSource(), ResourceLocationArgument.getId(ctx, "item"), IntegerArgumentType.getInteger(ctx, "meta"),
                                                 IntegerArgumentType.getInteger(ctx, "count")))))));
-        root.then(Commands.literal("spawn")
+        root.then(dev("spawn")
                 .then(Commands.argument("entity", ResourceLocationArgument.id()).suggests((c, b) -> SharedSuggestionProvider.suggestResource(legacyEntityIds(), b))
                         .executes(ctx -> spawn(ctx.getSource(), ResourceLocationArgument.getId(ctx, "entity"), 1))
                         .then(Commands.argument("count", IntegerArgumentType.integer(1, 32))
                                 .executes(ctx -> spawn(ctx.getSource(), ResourceLocationArgument.getId(ctx, "entity"), IntegerArgumentType.getInteger(ctx, "count"))))));
-        root.then(Commands.literal("biome")
+        root.then(dev("biome")
                 .then(Commands.argument("biome", ResourceLocationArgument.id()).suggests((c, b) -> SharedSuggestionProvider.suggestResource(
                         c.getSource().getServer().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME).keySet().stream()
                                 .filter(k -> !k.getNamespace().equals("minecraft")), b))
                         .executes(ctx -> biome(ctx.getSource(), ResourceLocationArgument.getId(ctx, "biome")))));
-        root.then(Commands.literal("list")
+        root.then(dev("list")
                 .then(Commands.argument("kind", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("blocks", "items", "entities"), b))
                         .then(Commands.argument("namespace", StringArgumentType.word()).executes(ctx -> list(ctx.getSource(),
                                 StringArgumentType.getString(ctx, "kind"), StringArgumentType.getString(ctx, "namespace"))))));
-        root.then(Commands.literal("inspect").executes(ctx -> inspect(ctx.getSource())));
+        root.then(dev("inspect").executes(ctx -> inspect(ctx.getSource())));
         event.getDispatcher().register(root);
+    }
+
+    /** A subcommand of the development commands: permission level 2. The root itself is open: {@code /legacyconnector problems} (core.problems.ProblemsCommand) is for everyone. */
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> dev(String name) {
+        return Commands.literal(name).requires(s -> s.hasPermission(2));
     }
 
     // ------------------------------------------------------------------ id lists

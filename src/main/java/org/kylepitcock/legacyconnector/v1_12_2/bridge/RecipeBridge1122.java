@@ -77,6 +77,7 @@ public final class RecipeBridge1122 {
                 JsonObject json = r instanceof ShapedRecipes s ? shaped(s) : r instanceof ShapelessRecipes s ? shapeless(s) : null;
                 if (json == null) {
                     if (!(r instanceof ShapedRecipes) && !(r instanceof ShapelessRecipes)) LOG.debug("Recipe class {} is not bridged yet", r.getClass().getName());
+                    else dropped(r, "an ingredient cannot be expressed (missing item or empty ore name)");
                     continue;
                 }
                 var name = r.getRegistryName();
@@ -86,6 +87,7 @@ public final class RecipeBridge1122 {
                 out.put("data/" + ns + "/recipe/" + path + ".json", () -> bytes);
             } catch (RuntimeException e) {
                 LOG.warn("Could not translate legacy recipe {}: {}", r.getRegistryName(), e.toString());
+                dropped(r, e.toString());
             }
         }
         for (Object[] s : SMELTING) {
@@ -95,7 +97,10 @@ public final class RecipeBridge1122 {
                 o.addProperty("type", "minecraft:smelting");
                 o.addProperty("category", "misc");
                 JsonElement ing = ingredient(Ingredient.fromStacks((ItemStack) s[0]));
-                if (ing == null) continue;
+                if (ing == null) {
+                    org.kylepitcock.legacyconnector.core.problems.LegacyProblems.record(org.kylepitcock.legacyconnector.core.problems.LegacyProblems.Kind.DROPPED_RECIPE, "(smelting)", "smelting " + s[0], "the input cannot be expressed");
+                    continue;
+                }
                 o.add("ingredient", ing);
                 o.add("result", result((ItemStack) s[1]));
                 o.addProperty("experience", (Float) s[2]);
@@ -136,6 +141,16 @@ public final class RecipeBridge1122 {
         if (id == null) return false;
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         return server != null && server.getRecipeManager().byKey(id).isEmpty();
+    }
+
+    private static void dropped(IRecipe r, String why) {
+        try {
+            var name = r.getRegistryName();
+            org.kylepitcock.legacyconnector.core.problems.LegacyProblems.record(org.kylepitcock.legacyconnector.core.problems.LegacyProblems.Kind.DROPPED_RECIPE,
+                    name == null ? "(unnamed)" : Ids.modernModId(name.getNamespace()), String.valueOf(name), why);
+        } catch (RuntimeException e) {
+            // a recipe that cannot name itself is not worth more than the warning already logged
+        }
     }
 
     private static JsonObject shaped(ShapedRecipes s) {
