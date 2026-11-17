@@ -21,7 +21,7 @@
 | **1.4.7** | `mods/1.4.7/` | 🧪 Alpha |
 | **Forge 1.20.1** | `mods/1.20.1/` | 🧪 Alpha (remapped in place; on by default) |
 | **Beta 1.7.3** | `mods/b1.7.3/` (jars or zips) | 🧪 Alpha (ModLoader / Forge 1.0 era; contributor-maintained) |
-| 1.2.5 | `mods/1.2.5/` | 🔬 Experimental, opt-in (ModLoader / early Forge mods; three small server builds load, nothing run in a client) |
+| 1.2.5 | `mods/1.2.5/` | 🔬 Experimental, off by default (`experimental.minecraft125=true`; ModLoader / early Forge mods; three small server builds load, nothing run in a client) |
 | 1.19.2, 1.18.2, 1.16.5 | | Planned, as stages on top of the 1.20.1 support |
 
 Put the mods for each version into its folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
@@ -60,7 +60,7 @@ The link figures are an offline check of release 0.4.14 (2026-11-13): how many o
 - **1.6.4 (beta; 35 of 45):** a layer over the 1.7.10 support. Tinkers' Construct (smeltery included), Mo' Creatures, Twilight Forest, Forestry, IndustrialCraft 2 and others were played in survival. Thaumcraft 4 is missing.
 - **1.5.2 (alpha; 35 of 38) and 1.4.7 (alpha; 45 of 49):** small deltas over 1.6.4. Twilight Forest, Applied Energistics 1 and BuildCraft (1.5.2) and RedPower 2, BuildCraft, ComputerCraft and Applied Energistics (1.4.7) run in a real client. Mods that replace Minecraft's own classes in a patched `minecraft.jar` (Better Than Wolves) cannot work.
 - **Forge 1.20.1 (alpha; 99 of 494 jars of the ATM 9 pack, 152 in the nightly build):** mods are remapped in place onto NeoForge 1.21.1, with Forge API facades, data conversion and soft links for removed API. Mixins whose targets changed are repaired or dropped one by one instead of failing the mod, and item NBT in recipes and loot becomes data components. On a server a 108-mod subset of an ATM 9 pack loads with 0 failures. In a client single mods such as CoFH Core, Thermal Foundation, Redstone Arsenal and Ensorcellation reach a world, and Terramity, Palladium with its addon packs and Another Furniture run; the combined ATM 9 set does not reach a world in a client yet. 141 of the 506 mods of the pack link; most other 1.20.1 mods still have unresolved references, and most of the rest have a native 1.21.1 version anyway. Contributions by kentvillamor08.
-- **1.2.5 (experimental, opt-in):** ModLoader / early Forge mods are translated to the 1.4.7 layer when the build flag `-Pmappings125` and the run flag `-Dlegacyconnector.mc125=true` are set. Three small server builds load on a server (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client yet.
+- **1.2.5 (experimental, off by default):** ModLoader / early Forge mods are translated to the 1.4.7 layer when `experimental.minecraft125=true` is set in `config/legacyconnector.properties` (the release and nightly jars carry the needed name table). Three small server builds load on a server (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client yet, so expect mods that load and then do little.
 - **Beta 1.7.3 (alpha; 38 of 44 archives link, 20 of them through placeholder APIs):** ModLoader and Forge 1.0 era mods load with their own textures, block behaviour, tile entities and GUIs, and supported mob families run their original callbacks. Entities and world generation are still incomplete. Contributed by Zekken01.
 
 ---
@@ -182,6 +182,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `legacy.autoSortMods` | `true` | Moves legacy jars dropped into `mods` into the folder of their Minecraft version on launch |
 | `mods.skip` | empty | Legacy mod ids to leave out entirely |
 | `bridges.<name>.enabled` | `true` | `baubles`, `waila`, `nei`, `cofhEnergy`, `patchouli`: `false` loads the legacy library instead of its modern replacement |
+| `experimental.minecraft125` | `false` | Experimental Minecraft 1.2.5 support; off, 1.2.5 jars are only reported with a hint |
 | `experimental.forge1201` | `true` | Loads Forge 1.20.1 mods (remapped in place); `false` leaves such jars alone |
 | `experimental.forge1201.softlink` | `true` | A reference to a 1.21.1 class or member that no longer exists becomes a stand-in that throws only when it runs, instead of keeping the mod from loading |
 | `legacy.deepWorld1122` | `true` | 1.12.2 mods can read and change blocks below y=0 down to the modern world bottom; `false` restores the 1.12 floor at y=0 for a mod that fails on negative y |

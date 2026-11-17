@@ -1,6 +1,6 @@
 # Legacy 1.2.5 (ModLoader and early Forge): design
 
-Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an opt-in** (stages 1 to 3 below);
+Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an experimental toggle (`experimental.minecraft125`, off by default)** (stages 1 to 3 below);
 the corpus measurements are in [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
 (the forward layer this note recommends hosting on), [Version roadmap](Version-Roadmap.md).
 
@@ -143,7 +143,15 @@ itself), `client/resource` (21 of 40: 1.3 reworked resource loading), `client/wo
 (37 of 1051). A mod that touches only blocks, items, recipes, tile entities, entities and worldgen sees less than 5% unjoined members; the unjoined ones are the networking, the client game mode, the
 resource layer and the 1.3 world/chunk access.
 
-## Stage 3 status (2026-11-16): hosted behind an opt-in
+## Stage 3 status (2026-11-16): hosted behind an experimental toggle
+
+**User-facing toggle (since 2026-11-16):** `experimental.minecraft125=true` in `config/legacyconnector.properties` (default `false`; read by the loader through `Mc125Jars.enabled()`, the one
+method every caller uses; the system property `-Dlegacyconnector.mc125=true|false` wins when set and is what the test tooling uses). The release and nightly jars (`bundleJar`) carry the
+generated join table (`legacyconnector/mappings/1.2.5/notch-to-147.tsv`) by default; if maven.ornithemc.net cannot be reached the build still succeeds, prints one warning and the jar has no
+table (`-PnoMappings125` leaves it out on purpose; `verifyBundle125` fails the build when the table is missing and no warning was logged). Four cases: off, any build: 1.2.5 jars are reported
+as not supported yet with the key as the hint (also the ones in `mods/1.2.5/`); on with the table: hosted, one `EXPERIMENTAL` line in the log, every mod marked "experimental (Minecraft 1.2.5)"
+in `legacyconnector-report.txt`; on without the table: one error line, nothing hosted, jars reported. With the toggle off the run-time side stays inert: the loader sets the system property
+`legacyconnector.mc125.active` only when it hosts a 1.2.5 jar and the shared code that only 1.2.5 mods need asks `Mc125Host.active()`. For developers the opt-in below still applies:
 
 `-Dlegacyconnector.mc125=true` (and a build made with `-Pmappings125`): a detected 1.2.5 jar (or any jar in `mods/1.2.5/`) becomes a 1.4.7 jar for the rest of the pipeline.
 `LegacyVersion.V1_2_5` is a source version only (last in the enum, same prefixes and forward chain as 1.4.7); `LegacyJar.version` is `V1_4_7`, `sourceVersion` is `V1_2_5`, `notchSide` is the
