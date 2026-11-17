@@ -147,3 +147,9 @@ net/minecraftforge/common/extensions/IForgeTransformation	net/neoforged/neoforge
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation	net/neoforged/fml/loading/modscan/ModAnnotation
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	net/neoforged/fml/loading/modscan/ModAnnotation$EnumHolder
 net/minecraftforge/client/event/TextureStitchEvent	net/neoforged/neoforge/client/event/TextureAtlasStitchedEvent
+# 2026-11-16 non-client events whose 1.21.1 counterpart moved package or changed name (adapters: Forge1201Events)
+net/minecraftforge/event/level/BlockEvent$CropGrowEvent	net/neoforged/neoforge/event/level/block/CropGrowEvent
+net/minecraftforge/event/level/BlockEvent$CropGrowEvent$Pre	net/neoforged/neoforge/event/level/block/CropGrowEvent$Pre
+net/minecraftforge/event/level/BlockEvent$CropGrowEvent$Post	net/neoforged/neoforge/event/level/block/CropGrowEvent$Post
+net/minecraftforge/event/level/BlockEvent$CreateFluidSourceEvent	net/neoforged/neoforge/event/level/block/CreateFluidSourceEvent
+net/minecraftforge/event/entity/living/LivingPackSizeEvent	net/neoforged/neoforge/event/entity/living/SpawnClusterSizeEvent

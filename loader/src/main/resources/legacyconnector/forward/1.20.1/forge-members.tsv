@@ -62,3 +62,5 @@ net/minecraftforge/common/Tags$Biomes	IS_CONIFEROUS	IS_CONIFEROUS_TREE
 net/minecraftforge/event/ForgeEventFactory	blockGrowFeature	fireBlockGrowFeature
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	getValue	value
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	getDesc	desc
+net/minecraftforge/event/entity/living/LivingPackSizeEvent	getMaxPackSize	getSize
+net/minecraftforge/event/entity/living/LivingPackSizeEvent	setMaxPackSize	setSize

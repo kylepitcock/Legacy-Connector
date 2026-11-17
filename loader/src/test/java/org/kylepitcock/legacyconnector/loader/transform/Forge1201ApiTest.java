@@ -63,6 +63,15 @@ class Forge1201ApiTest {
     }
 
     @Test
+    void nonClientEventsMovedByPackageOrNameAreMapped() {
+        Forge1201Transformer transformer = new Forge1201Transformer(ShimIndex.empty());
+        assertEquals("net/neoforged/neoforge/event/level/block/CropGrowEvent$Pre", transformer.mapClass("net/minecraftforge/event/level/BlockEvent$CropGrowEvent$Pre"));
+        assertEquals("net/neoforged/neoforge/event/level/block/CropGrowEvent$Post", transformer.mapClass("net/minecraftforge/event/level/BlockEvent$CropGrowEvent$Post"));
+        assertEquals("net/neoforged/neoforge/event/level/block/CreateFluidSourceEvent", transformer.mapClass("net/minecraftforge/event/level/BlockEvent$CreateFluidSourceEvent"));
+        assertEquals("net/neoforged/neoforge/event/entity/living/SpawnClusterSizeEvent", transformer.mapClass("net/minecraftforge/event/entity/living/LivingPackSizeEvent"));
+    }
+
+    @Test
     void tableLoadsAndLinesAreClean() {
         Map<String, String> table = ForgeApiRewrites1201.table();
         assertFalse(table.isEmpty());
