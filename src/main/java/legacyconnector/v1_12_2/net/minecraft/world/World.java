@@ -1532,6 +1532,11 @@ public class World implements IBlockAccess {
 
     public void makeFireworks(double x, double y, double z, double motionX, double motionY, double motionZ,
             legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound compound) {
+        // 1.12's WorldClient starts the burst (World itself does nothing); mods call it for their own firework effects, e.g. attack visuals
+        if (!isRemote || compound == null) return;
+        legacyconnector.v1_12_2.net.minecraft.client.Minecraft mc = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
+        new legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleFirework.Starter(this, x, y, z, motionX, motionY, motionZ,
+                mc == null ? null : mc.effectRenderer, compound);
     }
 
     // ------------------------------------------------------------------ time and weather
