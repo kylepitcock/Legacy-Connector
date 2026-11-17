@@ -76,6 +76,12 @@ public class MerchantRecipe {
         return itemToSell;
     }
 
+    /** Sets how often the trade was used and how often it may be (the wire format carries both). */
+    public void mcc$setUses(int uses, int maxUses) {
+        this.toolUses = uses;
+        this.maxTradeUses = maxUses;
+    }
+
     public int getToolUses() {
         return toolUses;
     }

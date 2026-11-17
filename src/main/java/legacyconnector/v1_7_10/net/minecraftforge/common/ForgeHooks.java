@@ -111,11 +111,20 @@ public class ForgeHooks {
         return player.getBreakSpeed(block, false, metadata, x, y, z) / hardness / 30.0F;
     }
 
+    /** Posts {@code LivingFallEvent} for a mod that implements its own fall: the (possibly changed) distance, 0 when a handler cancelled it. */
     public static float onLivingFall(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, float distance) {
-        return distance;
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingFallEvent(entity, distance);
+        return MinecraftForge.EVENT_BUS.post(event) ? 0.0F : event.distance;
     }
 
+    /** Posts {@code LivingJumpEvent} for a mod that implements its own jump. */
     public static void onLivingJump(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent(entity));
+    }
+
+    /** Posts {@code LivingUpdateEvent} for a mod that runs its own living update: true when a handler cancelled the tick. */
+    public static boolean onLivingUpdate(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        return MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent(entity));
     }
 
     public static float getEnchantPower(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {

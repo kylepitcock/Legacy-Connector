@@ -107,6 +107,13 @@ public class ChunkProviderServer implements IChunkProvider {
         return provideChunk(x, z);
     }
 
+    /** Loads the chunk and runs the callback afterwards (1.7.10 did the loading on its IO thread; here the host's chunk cache answers at once). */
+    public Chunk loadChunk(int x, int z, Runnable callback) {
+        Chunk chunk = provideChunk(x, z);
+        if (callback != null) callback.run();
+        return chunk;
+    }
+
     @Override
     public String makeString() {
         return "ServerChunkCache";

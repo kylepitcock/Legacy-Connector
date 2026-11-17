@@ -306,10 +306,36 @@ public class EntityHorse extends EntityAnimal implements legacyconnector.v1_7_10
         return owner != null ? owner.getGameProfile().getName() : "";
     }
 
-    /** The horse's temper (how far it is from being tamed by riding; 0 for a hosted or untamed one). */
+    private int mcc$temper;
+
+    /** The horse's temper (how far it is from being tamed by riding; a mod's own horse keeps what its code set). */
     public int getTemper() {
         var h = mcc$horse();
-        return h != null ? h.getTemper() : 0;
+        return h != null ? h.getTemper() : mcc$temper;
+    }
+
+    /** Sets the temper (0 to the maximum). */
+    public void setTemper(int temper) {
+        var h = mcc$horse();
+        if (h != null) h.setTemper(Math.max(0, Math.min(h.getMaxTemper(), temper)));
+        else mcc$temper = temper;
+    }
+
+    /** Donkeys and mules cannot breed. */
+    public boolean isSterile() {
+        int type = getHorseType();
+        return type == 1 || type == 2;
+    }
+
+    /** {@code func_110201_q}: how far the mouth is open (0-1), as {@link #getMouthOpennessAngle}. */
+    public float func_110201_q(float partialTicks) {
+        return getMouthOpennessAngle(partialTicks);
+    }
+
+    /** Whether a rider is making the horse jump (the charge bar); a modern horse keeps it as its own flag. */
+    public void setHorseJumping(boolean jumping) {
+        var h = mcc$horse();
+        if (h != null) h.setIsJumping(jumping);
     }
 
     /** Whether the horse has bred already: modern horses do not track it. */

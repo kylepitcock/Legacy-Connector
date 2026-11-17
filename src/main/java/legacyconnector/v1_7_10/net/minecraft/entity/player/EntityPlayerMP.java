@@ -132,4 +132,19 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
     public static void mcc$set$playerNetServerHandler(EntityPlayerMP p, legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer handler) {
         p.mcc$netHandler = handler;
     }
+
+    /** Whether the player respawns at their spawn point even without a bed or anchor there (the point was set by a command). */
+    public boolean isSpawnForced(int dimension) {
+        return mcc$serverPlayer().isRespawnForced();
+    }
+
+    /** Counts the distance moved into the walking, swimming, climbing and flying statistics. */
+    public void addMovementStat(double dx, double dy, double dz) {
+        mcc$serverPlayer().checkMovementStatistics(dx, dy, dz);
+    }
+
+    /** The time (milliseconds, game clock) of the player's last action, which the idle kick counts from. */
+    public long getLastActiveTime() {
+        return mcc$serverPlayer().getLastActionTime();
+    }
 }

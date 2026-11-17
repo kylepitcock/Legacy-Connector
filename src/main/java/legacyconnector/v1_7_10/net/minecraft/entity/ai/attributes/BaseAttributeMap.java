@@ -60,6 +60,14 @@ public abstract class BaseAttributeMap {
         return instance;
     }
 
+    /** Registers an instance a mod built itself (by its attribute and, when it has one, its name). */
+    public void addAttributeInstance(ModifiableAttributeInstance instance) {
+        if (instance == null) return;
+        IAttribute attribute = instance.getAttribute();
+        attributes.put(attribute, instance);
+        if (attribute.getAttributeUnlocalizedName() != null) attributesByName.put(attribute.getAttributeUnlocalizedName(), instance);
+    }
+
     public Collection<IAttributeInstance> getAllAttributes() {
         Collection<IAttributeInstance> out = new ArrayList<>(attributes.values());
         for (IAttribute a : SharedMonsterAttributes.mcc$vanilla()) {

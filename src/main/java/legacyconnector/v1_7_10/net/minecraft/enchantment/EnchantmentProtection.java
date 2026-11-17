@@ -63,4 +63,12 @@ public class EnchantmentProtection extends Enchantment {
     public static double func_92092_a(Entity entity, double knockback) {
         return knockback;
     }
+
+    /** How long (ticks) an entity burns, cut by 15 percent per level of Fire Protection on its worn armour. */
+    public static int getFireTimeForEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, int time) {
+        if (!(entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase living)) return time;
+        int level = EnchantmentHelper.getMaxEnchantmentLevel(Enchantment.fireProtection.effectId, living.getLastActiveItems());
+        if (level > 0) time -= legacyconnector.v1_7_10.net.minecraft.util.MathHelper.floor_float(time * level * 0.15F);
+        return time;
+    }
 }

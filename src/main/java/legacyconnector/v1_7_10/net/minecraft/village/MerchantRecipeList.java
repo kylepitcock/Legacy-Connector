@@ -55,4 +55,47 @@ public class MerchantRecipeList extends ArrayList {
         }
         add(recipe);
     }
+
+    /** {@code func_151391_a}: writes the trades to a packet buffer (a count byte, then buy, sell, an optional second buy, the disabled flag, uses and maximum). */
+    public void func_151391_a(legacyconnector.v1_7_10.net.minecraft.network.PacketBuffer buf) {
+        try {
+            buf.writeByte((byte) (size() & 255));
+            for (Object o : this) {
+                MerchantRecipe r = (MerchantRecipe) o;
+                buf.writeItemStackToBuffer(r.getItemToBuy());
+                buf.writeItemStackToBuffer(r.getItemToSell());
+                ItemStack second = r.getSecondItemToBuy();
+                buf.writeBoolean(second != null);
+                if (second != null) buf.writeItemStackToBuffer(second);
+                buf.writeBoolean(r.isRecipeDisabled());
+                buf.writeInt(r.getToolUses());
+                buf.writeInt(r.getMaxTradeUses());
+            }
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** {@code func_151390_b}: reads trades written by {@link #func_151391_a}. */
+    public static MerchantRecipeList func_151390_b(legacyconnector.v1_7_10.net.minecraft.network.PacketBuffer buf) {
+        MerchantRecipeList list = new MerchantRecipeList();
+        try {
+            int count = buf.readByte() & 255;
+            for (int i = 0; i < count; i++) {
+                ItemStack buy = buf.readItemStackFromBuffer();
+                ItemStack sell = buf.readItemStackFromBuffer();
+                ItemStack second = buf.readBoolean() ? buf.readItemStackFromBuffer() : null;
+                boolean disabled = buf.readBoolean();
+                int uses = buf.readInt();
+                int max = buf.readInt();
+                MerchantRecipe r = new MerchantRecipe(buy, second, sell);
+                r.mcc$setUses(uses, max);
+                if (disabled && !r.isRecipeDisabled()) r.func_82785_h();
+                list.add(r);
+            }
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
 }

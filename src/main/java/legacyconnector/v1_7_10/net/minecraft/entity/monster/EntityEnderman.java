@@ -26,6 +26,12 @@ public class EntityEnderman extends EntityMob {
         return false;
     }
 
+    /** Teleports to the spot (or the ground below it) when the destination is free of blocks and liquid; false when it is not. */
+    protected boolean teleportTo(double x, double y, double z) {
+        if (mcc$entity instanceof net.minecraft.world.entity.LivingEntity e) return e.randomTeleport(x, y, z, true);
+        return false;
+    }
+
     /** Which blocks endermen may pick up; mods add their own. */
     public static void setCarriable(Block block, boolean value) {
         int id = Block.getIdFromBlock(block);

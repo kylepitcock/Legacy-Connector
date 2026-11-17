@@ -10,4 +10,9 @@ public class EntityAITempt extends GoalTask {
         super(entity, 3, m -> new TemptGoal(m, speed, s -> item != null && ItemStack.mcc$wrap(s) != null && ItemStack.mcc$wrap(s).getItem() == item,
                 scaredByPlayerMovement));
     }
+
+    /** Whether the tempt goal is following a player holding the item right now. */
+    public boolean isRunning() {
+        return goal() instanceof TemptGoal t && t.isRunning();
+    }
 }

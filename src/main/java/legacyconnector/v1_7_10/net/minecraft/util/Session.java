@@ -9,6 +9,18 @@ public class Session {
     private final String playerId;
     private final String token;
 
+    private String type = "legacy";
+
+    /** 1.7.10 added the account type ("legacy" or "mojang") to the session. */
+    public Session(String username, String playerId, String token, String type) {
+        this(username, playerId, token);
+        this.type = type;
+    }
+
+    public String mcc$type() {
+        return type;
+    }
+
     public Session(String username, String playerId, String token) {
         this.username = username;
         this.playerId = playerId;

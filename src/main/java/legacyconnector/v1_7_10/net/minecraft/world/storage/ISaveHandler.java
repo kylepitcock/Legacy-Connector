@@ -9,6 +9,10 @@ public interface ISaveHandler {
 
     File getWorldDirectory();
 
+    /** Saves the world's level data (the save handler of a mod's own detached world stores nothing). */
+    default void saveWorldInfo(WorldInfo info) {
+    }
+
     File getMapFileFromName(String name);
 
     String getWorldDirectoryName();

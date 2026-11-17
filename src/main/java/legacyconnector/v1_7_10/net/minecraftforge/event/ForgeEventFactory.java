@@ -169,4 +169,35 @@ public class ForgeEventFactory {
         var event = new legacyconnector.v1_7_10.net.minecraftforge.event.world.WorldEvent.PotentialSpawns(world, type, x, y, z, oldList);
         return MinecraftForge.EVENT_BUS.post(event) ? null : event.list;
     }
+
+    /** Posts {@code PotionBrewEvent.Pre}; true when a handler cancelled the brew. */
+    public static boolean onPotionAttemptBreaw(ItemStack[] stacks) {
+        return MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.brewing.PotionBrewEvent.Pre(stacks));
+    }
+
+    /** Posts {@code PotionBrewEvent.Post} (and the older {@code PotionBrewedEvent}) once the bottles were converted. */
+    public static void onPotionBrewed(ItemStack[] stacks) {
+        MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.brewing.PotionBrewEvent.Post(stacks));
+    }
+
+    /** Posts {@code FuelBurnTimeEvent}: the burn time a handler set (result ALLOW), or -1 when none decided it. */
+    public static int getFuelBurnTime(ItemStack fuel) {
+        var event = new FuelBurnTimeEvent(fuel);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event.getResult() == legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event.Result.ALLOW ? event.burnTime : -1;
+    }
+
+    /** Posts {@code ZombieEvent.SummonAidEvent}: the event with the handlers' verdict (DENY, ALLOW, or the chance roll when default). */
+    public static legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.ZombieEvent.SummonAidEvent fireZombieSummonAid(
+            legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityZombie zombie, World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase attacker, double summonChance) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.ZombieEvent.SummonAidEvent(zombie, world, x, y, z, attacker, summonChance);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event;
+    }
+
+    /** How many of a mob may spawn together in a chunk (its own limit; 1.7.10 had no event to change it). */
+    public static int getMaxSpawnPackSize(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving entity) {
+        return entity.getMaxSpawnedInChunk();
+    }
 }

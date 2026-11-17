@@ -607,6 +607,11 @@ public class Block {
         return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.farmland && world.getBlockMetadata(x, y, z) > 0;
     }
 
+    /** Whether the block wants scheduled/random updates registered; 1.7.10 answered yes for every block. */
+    public boolean requiresUpdates() {
+        return true;
+    }
+
     public boolean getBlocksMovement(IBlockAccess world, int x, int y, int z) {
         return !getMaterial().blocksMovement();
     }

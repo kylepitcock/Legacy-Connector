@@ -231,6 +231,36 @@ public class WorldInfo {
         return mcc$additional == null ? null : mcc$additional.get(name);
     }
 
+    private long mcc$sizeAt;
+    private long mcc$size;
+
+    /** The bytes the world's save folder takes on disk (counted at most every ten seconds); a detached info reports its saved {@code SizeOnDisk}. */
+    public long getSizeOnDisk() {
+        if (saved() != null) return saved().getLong("SizeOnDisk");
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return 0L;
+        long now = System.currentTimeMillis();
+        if (now - mcc$sizeAt < 10_000L) return mcc$size;
+        long total = 0L;
+        try (var files = java.nio.file.Files.walk(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT))) {
+            for (var path : (Iterable<java.nio.file.Path>) files::iterator) {
+                if (java.nio.file.Files.isRegularFile(path)) total += java.nio.file.Files.size(path);
+            }
+        } catch (java.io.IOException | RuntimeException e) {
+            return mcc$size;
+        }
+        mcc$sizeAt = now;
+        mcc$size = total;
+        return total;
+    }
+
+    /** The level data with the given player compound under {@code Player} (1.7.10's {@code cloneNBTCompound}); left out when null. */
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound cloneNBTCompound(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound player) {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = getNBTTagCompound();
+        if (player != null) tag.setTag("Player", player);
+        return tag;
+    }
+
     /** The level data as 1.7.10 saved it ({@code level.dat}'s Data compound): a copy of the detached data, or the live world's values. */
     public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound getNBTTagCompound() {
         if (saved() != null) return (legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound) saved().copy();

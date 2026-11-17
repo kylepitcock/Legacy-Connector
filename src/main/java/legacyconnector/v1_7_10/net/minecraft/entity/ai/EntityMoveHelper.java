@@ -42,4 +42,12 @@ public class EntityMoveHelper {
     /** Vanilla movement is ticked by the host; mod subclasses override this and are ticked by EntityLiving. */
     public void onUpdateMoveHelper() {
     }
+
+    /** Turns {@code current} towards {@code target} by at most {@code maxChange} degrees. */
+    protected float limitAngle(float current, float target, float maxChange) {
+        float diff = legacyconnector.v1_7_10.net.minecraft.util.MathHelper.wrapAngleTo180_float(target - current);
+        if (diff > maxChange) diff = maxChange;
+        if (diff < -maxChange) diff = -maxChange;
+        return current + diff;
+    }
 }

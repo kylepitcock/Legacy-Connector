@@ -215,4 +215,46 @@ public class InventoryPlayer implements IInventory {
         }
         return removed;
     }
+
+    /** The slot of the first stack of the item with exactly that damage value (metadata), or -1. */
+    public int getInventorySlotContainItemAndDamage(Item item, int meta) {
+        for (int i = 0; i < 36; i++) {
+            ItemStack s = ItemStack.mcc$wrap(mcc$inv.items.get(i));
+            if (s != null && s.getItem() == item && s.getItemDamage() == meta) return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Picks the item for the player's hand (pick block): selects its hotbar slot, and in creative puts a new stack of it into the first
+     * empty hotbar slot (or the selected one) when none is there.
+     */
+    public void setCurrentItem(Item item, int meta, boolean useMeta, boolean creative) {
+        int slot = useMeta ? getInventorySlotContainItemAndDamage(item, meta) : getInventorySlotContainItem(item);
+        if (slot >= 0 && slot < 9) {
+            mcc$inv.selected = slot;
+        } else if (creative && item != null) {
+            int empty = getFirstEmptyStack();
+            if (empty >= 0 && empty < 9) mcc$inv.selected = empty;
+            mcc$inv.items.set(mcc$inv.selected, new ItemStack(item, 1, useMeta ? meta : 0).mcc$modern());
+        }
+    }
+
+    /** Damages every worn piece of armour by a quarter of the damage taken (at least 1). */
+    public void damageArmor(float damage) {
+        damage /= 4.0F;
+        if (damage < 1.0F) damage = 1.0F;
+        for (int i = 0; i < 4; i++) {
+            ItemStack piece = armorItemInSlot(i);
+            if (piece != null && piece.getItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemArmor) {
+                piece.damageItem((int) damage, player);
+            }
+        }
+    }
+
+    /** How fast the held item mines the block (1 with an empty hand). */
+    public float getStrVsBlock(Block block) {
+        ItemStack held = getCurrentItem();
+        return held == null ? 1.0F : held.getStrVsBlock(block);
+    }
 }

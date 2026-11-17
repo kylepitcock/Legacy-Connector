@@ -508,6 +508,35 @@ public class Chunk {
         return c == null || c.isTerrainPopulated;
     }
 
+    /**
+     * {@code func_150809_p} (MCP {@code checkLight}): works out the chunk's light. The host's own light engine lights every
+     * chunk it loads, so a populated chunk counts as lit as soon as this runs.
+     */
+    public void func_150809_p() {
+        if (isTerrainPopulated) isLightPopulated = true;
+    }
+
+    /**
+     * {@code func_150804_b} (MCP {@code onTick}): the per-tick light upkeep of a loaded chunk; completes the light of a populated
+     * chunk whose light was still pending. The argument asks to skip the deferred relight work, which the host's engine does anyway.
+     */
+    public void func_150804_b(boolean skipRecheck) {
+        if (isTerrainPopulated && !isLightPopulated) func_150809_p();
+    }
+
+    /** Adds to {@code out} the entities of the type inside the box that stand in this chunk and pass the selector (null accepts all). */
+    public void getEntitiesOfTypeWithinAAAB(Class type, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box, List out,
+            legacyconnector.v1_7_10.net.minecraft.command.IEntitySelector selector) {
+        if (worldObj == null || out == null) return;
+        for (Object o : worldObj.selectEntitiesWithinAABB(type, box, selector)) {
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity e = (legacyconnector.v1_7_10.net.minecraft.entity.Entity) o;
+            if (legacyconnector.v1_7_10.net.minecraft.util.MathHelper.floor_double(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posX(e)) >> 4 == xPosition
+                    && legacyconnector.v1_7_10.net.minecraft.util.MathHelper.floor_double(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posZ(e)) >> 4 == zPosition) {
+                out.add(e);
+            }
+        }
+    }
+
     /** Whether the chunk is fully generated: populated and lit. */
     public boolean func_150802_k() {
         return isTerrainPopulated && isLightPopulated;
