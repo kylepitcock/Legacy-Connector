@@ -902,3 +902,4 @@ net/minecraft/world/level/saveddata/maps/MapDecoration	getY	()B	=	y
 net/minecraft/client/User	getGameProfile	()Lcom/mojang/authlib/GameProfile;	Round8ClientCompat	userProfile
 com/mojang/blaze3d/platform/Lighting	setupLevel	(Lorg/joml/Matrix4f;)V	Round8ClientCompat	setupLevelLighting
 net/minecraft/client/resources/MobEffectTextureManager	get	(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;	Round8ClientCompat	effectSprite
+net/minecraft/client/renderer/LevelRenderer	renderSky	(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V	MiscCompat	renderSky	-

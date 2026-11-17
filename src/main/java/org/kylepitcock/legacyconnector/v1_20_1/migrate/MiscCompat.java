@@ -161,6 +161,12 @@ public final class MiscCompat {
         MigrateContext.builder().define(accessor, value);
     }
 
+    /** 1.20.1 {@code LevelRenderer.renderSky(PoseStack, projection, partialTick, camera, foggy, fogSetup)}: 1.21.1 takes the model-view matrix instead of the stack. */
+    public static void renderSky(net.minecraft.client.renderer.LevelRenderer renderer, com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Matrix4f projection,
+            float partialTick, net.minecraft.client.Camera camera, boolean foggy, Runnable fogSetup) {
+        renderer.renderSky(pose.last().pose(), projection, partialTick, camera, foggy, fogSetup);
+    }
+
     public static int getMaxStackSize(Item item) {
         return item.getDefaultMaxStackSize();
     }
