@@ -12,6 +12,18 @@ public class BiomeEvent extends Event {
         this.biome = biome;
     }
 
+    /** Fired when a biome builds its decorator: handlers may replace {@link #newBiomeDecorator}. */
+    public static class CreateDecorator extends BiomeEvent {
+        public final legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeDecorator originalBiomeDecorator;
+        public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeDecorator newBiomeDecorator;
+
+        public CreateDecorator(BiomeGenBase biome, legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeDecorator original) {
+            super(biome);
+            this.originalBiomeDecorator = original;
+            this.newBiomeDecorator = original;
+        }
+    }
+
     /** Which block a village piece uses in this biome: handlers set {@link #replacement}. */
     public static class GetVillageBlockID extends BiomeEvent {
         public final Block original;

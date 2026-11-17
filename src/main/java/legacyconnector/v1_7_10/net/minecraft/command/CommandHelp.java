@@ -15,4 +15,11 @@ public class CommandHelp extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
     }
+
+    /** The commands the server's command manager knows, by name (1.7.10 listed them from here). */
+    protected java.util.Map getCommands() {
+        legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer server = legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.getServer();
+        ICommandManager manager = server == null ? null : server.getCommandManager();
+        return manager == null ? new java.util.HashMap() : manager.getCommands();
+    }
 }
