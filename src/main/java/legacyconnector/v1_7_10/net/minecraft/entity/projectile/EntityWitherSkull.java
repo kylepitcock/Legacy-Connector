@@ -16,11 +16,24 @@ public class EntityWitherSkull extends EntityFireball {
         setSize(0.3125F, 0.3125F);
     }
 
+    public EntityWitherSkull(World world, double x, double y, double z, double ax, double ay, double az) {
+        super(world, x, y, z, ax, ay, az);
+        setSize(0.3125F, 0.3125F);
+    }
+
+    @Override
+    protected void entityInit() {
+        super.entityInit();
+        dataWatcher.addObject(10, (byte) 0);
+    }
+
+    /** Whether this is the blue skull (the wither's charged shot, which breaks any block and is stronger). */
     public boolean isInvulnerable() {
-        return false;
+        return dataWatcher.getWatchableObjectByte(10) == 1;
     }
 
     public void setInvulnerable(boolean invulnerable) {
+        dataWatcher.updateObject(10, (byte) (invulnerable ? 1 : 0));
     }
 
     @Override

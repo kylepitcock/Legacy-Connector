@@ -3,6 +3,7 @@ package legacyconnector.v1_7_10.net.minecraft.server;
 import java.util.Map;
 import java.util.WeakHashMap;
 import legacyconnector.v1_7_10.net.minecraft.command.ICommandSender;
+import legacyconnector.v1_7_10.net.minecraft.network.ServerStatusResponse;
 import legacyconnector.v1_7_10.net.minecraft.server.management.ServerConfigurationManager;
 import legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText;
 import legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates;
@@ -332,5 +333,33 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public void deleteWorldAndStopServer() {
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").warn("A legacy mod ended the game (deleteWorldAndStopServer); stopping the server, the world is kept");
         initiateShutdown();
+    }
+
+    private ServerStatusResponse mcc$status;
+
+    /** What the server list shows (the description is the MOTD, the counts are live). */
+    public synchronized ServerStatusResponse getServerStatusResponse() {
+        if (mcc$status == null) mcc$status = new ServerStatusResponse(this);
+        return mcc$status;
+    }
+
+    /** The proxy the server connects through (none). */
+    public java.net.Proxy getServerProxy() {
+        return java.net.Proxy.NO_PROXY;
+    }
+
+    /** Whether this is the demo version of the game (it never is). */
+    public boolean isDemo() {
+        return false;
+    }
+
+    /** Whether players are checked against the account servers (the dedicated server's {@code online-mode}). */
+    public void setOnlineMode(boolean online) {
+        if (mcc$server != null) mcc$server.setUsesAuthentication(online);
+    }
+
+    /** Whether players may fly in survival without being kicked. */
+    public void setAllowFlight(boolean allow) {
+        if (mcc$server != null) mcc$server.setFlightAllowed(allow);
     }
 }

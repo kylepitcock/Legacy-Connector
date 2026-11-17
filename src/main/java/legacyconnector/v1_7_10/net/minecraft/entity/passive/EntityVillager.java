@@ -137,9 +137,39 @@ public class EntityVillager extends EntityAgeable implements legacyconnector.v1_
     public boolean isMating;
     public boolean isLookingForHome;
 
-    /** Whether the villager (a child) is playing with other children: modern villagers have no such state. */
+    private boolean mcc$playing;
+    private boolean mcc$willingToMate;
+
+    /** Whether the villager (a child) is playing with other children (set by {@code EntityAIPlay}; modern villagers have no such state). */
     public boolean isPlaying() {
-        return false;
+        return mcc$playing;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.mcc$playing = playing;
+    }
+
+    /**
+     * Whether the villager has the food to breed (3 bread, or 12 potatoes or carrots, in its inventory). With {@code refresh} the
+     * inventory is looked at again when the villager was not willing before.
+     */
+    public boolean getIsWillingToMate(boolean refresh) {
+        if (!mcc$willingToMate && refresh && villager() != null) {
+            boolean food = false;
+            var inventory = villager().getInventory();
+            for (int i = 0; i < inventory.getContainerSize() && !food; i++) {
+                var stack = inventory.getItem(i);
+                if (stack.isEmpty()) continue;
+                if (stack.is(net.minecraft.world.item.Items.BREAD) && stack.getCount() >= 3) food = true;
+                else if ((stack.is(net.minecraft.world.item.Items.POTATO) || stack.is(net.minecraft.world.item.Items.CARROT)) && stack.getCount() >= 12) food = true;
+            }
+            mcc$willingToMate = food;
+        }
+        return mcc$willingToMate;
+    }
+
+    public void setIsWillingToMate(boolean willing) {
+        this.mcc$willingToMate = willing;
     }
 
     public boolean isMating() {

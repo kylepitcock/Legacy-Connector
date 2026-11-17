@@ -19,7 +19,8 @@ public class EntityAITasks {
     public EntityAITasks() {
     }
 
-    public EntityAITasks(Object profiler) {
+    /** {@code new EntityAITasks(world.theProfiler)}: the legacy profiler records nothing for the AI (the modern one profiles the goals). */
+    public EntityAITasks(legacyconnector.v1_7_10.net.minecraft.profiler.Profiler profiler) {
     }
 
     public void addTask(int priority, EntityAIBase task) {

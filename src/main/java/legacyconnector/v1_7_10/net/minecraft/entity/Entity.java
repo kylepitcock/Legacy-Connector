@@ -1456,6 +1456,15 @@ public abstract class Entity implements ICommandSender {
         return !mcc$hosted() && mcc$entity != null && mcc$entity.isPickable();
     }
 
+    /** The head yaw of a living entity; other entities have no head to turn. */
+    public void setRotationYawHead(float yaw) {
+    }
+
+    /** The sound of this entity splashing into water. */
+    protected String getSplashSound() {
+        return "game.neutral.swim.splash";
+    }
+
     public boolean canBePushed() {
         return !mcc$hosted() && mcc$entity != null && mcc$entity.isPushable();
     }

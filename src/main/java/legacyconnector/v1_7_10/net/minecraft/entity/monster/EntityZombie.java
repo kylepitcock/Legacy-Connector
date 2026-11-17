@@ -64,6 +64,18 @@ public class EntityZombie extends EntityMob {
         dataWatcher.updateObject(13, (byte) (villager ? 1 : 0));
     }
 
+    private float mcc$baseWidth = -1.0F;
+    private float mcc$baseHeight;
+
+    /** {@code func_146069_a}: scales the size to the given fraction of the size it had the first time this was asked (babies 0.5). */
+    protected final void func_146069_a(float scale) {
+        if (mcc$baseWidth < 0.0F) {
+            mcc$baseWidth = mcc$get$width(this);
+            mcc$baseHeight = mcc$get$height(this);
+        }
+        setSize(mcc$baseWidth * scale, mcc$baseHeight * scale);
+    }
+
     public boolean isChild() {
         if (mcc$entity instanceof net.minecraft.world.entity.monster.Zombie z && !mcc$hosted()) return z.isBaby();
         return dataWatcher.getWatchableObjectByte(12) == 1;
