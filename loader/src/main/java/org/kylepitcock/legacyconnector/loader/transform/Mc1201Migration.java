@@ -685,21 +685,31 @@ final class Mc1201Migration {
         int stack = 1;
         for (int p = 0; p < oldArgs.length; p++) {
             String tok = tokens.get(p);
-            if (tok.equals("this")) {
-                il.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                stack += 1;
-                continue;
-            }
-            if (tok.equals("null")) {
-                il.add(new InsnNode(Opcodes.ACONST_NULL));
-                stack += 1;
-                continue;
-            }
             String helper = null;
             int at = tok.indexOf('@');
             if (at > 0) {
                 helper = tok.substring(0, at);
                 tok = tok.substring(at + 1);
+            }
+            if (tok.equals("this")) {
+                il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                if (helper != null) {
+                    int dot = helper.lastIndexOf('.');
+                    String cls = helper.substring(0, dot);
+                    if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+                    il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1),
+                            "(Ljava/lang/Object;)" + oldArgs[p].getDescriptor(), false));
+                } else {
+                    stack += 1;
+                }
+                stack += helper == null ? 0 : 1;
+                continue;
+            }
+            if (tok.equals("null")) {
+                if (helper != null) return null;
+                il.add(new InsnNode(Opcodes.ACONST_NULL));
+                stack += 1;
+                continue;
             }
             int i = Integer.parseInt(tok);
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
