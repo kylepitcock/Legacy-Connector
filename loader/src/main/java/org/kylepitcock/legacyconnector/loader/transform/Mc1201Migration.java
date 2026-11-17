@@ -699,10 +699,8 @@ final class Mc1201Migration {
                     if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
                     il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1),
                             "(Ljava/lang/Object;)" + oldArgs[p].getDescriptor(), false));
-                } else {
-                    stack += 1;
                 }
-                stack += helper == null ? 0 : 1;
+                stack += oldArgs[p].getSize();
                 continue;
             }
             if (tok.equals("null")) {
