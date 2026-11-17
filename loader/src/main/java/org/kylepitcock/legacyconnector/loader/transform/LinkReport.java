@@ -58,8 +58,39 @@ public final class LinkReport {
         externalClasses.computeIfAbsent(owner, k -> new TreeSet<>()).add(from);
     }
 
+    /**
+     * Classes in a package of a modern mod the legacy mod lists as a REQUIRED dependency, that the modern jar does not have (the id is satisfied by
+     * the modern mod, but it is another API generation: CodeChickenLib 1.21.1 for a 1.12.2 mod). Class -> referencing classes; counts as unresolved.
+     */
+    public final Map<String, TreeSet<String>> missingRequiredLibClasses = new TreeMap<>();
+    /** The required library (mod id) each entry of {@link #missingRequiredLibClasses} was looked for in. */
+    public final Map<String, String> requiredLibOf = new TreeMap<>();
+
+    /** A class found nowhere: external, unless its package belongs to a required modern mod, where it is an unresolved link. */
+    void absentClass(Hierarchy hierarchy, String owner, String from) {
+        String lib = hierarchy.requiredLibrary(owner);
+        if (lib == null) {
+            externalClass(owner, from);
+            return;
+        }
+        missingRequiredLibClasses.computeIfAbsent(owner, k -> new TreeSet<>()).add(from);
+        requiredLibOf.put(owner, lib);
+    }
+
+    /** Called for a class a stubbed method referenced: only the ones in a required modern library's package are recorded (other absent classes are optional integrations). */
+    void absentRequiredLibClass(Hierarchy hierarchy, String owner, String from) {
+        if (hierarchy.requiredLibrary(owner) != null) absentClass(hierarchy, owner, from);
+    }
+
+    /** Required library id -> number of its classes the modern jar lacks. */
+    public Map<String, Integer> missingRequiredLibs() {
+        Map<String, Integer> out = new TreeMap<>();
+        for (String c : missingRequiredLibClasses.keySet()) out.merge(requiredLibOf.get(c), 1, Integer::sum);
+        return out;
+    }
+
     public int errorCount() {
-        return missingClasses.size() + missingShimMembers.size() + missingLibraryMembers.size();
+        return missingClasses.size() + missingShimMembers.size() + missingLibraryMembers.size() + missingRequiredLibClasses.size();
     }
 
     public String render() {
@@ -67,6 +98,11 @@ public final class LinkReport {
         if (!synthesizedClasses.isEmpty()) {
             sb.append("  Synthesized ").append(synthesizedClasses.size()).append(" legacy API class(es) the shim lacks (they link, behaviour is default)\n");
             for (String c : synthesizedClasses) sb.append("    - ").append(c.replace('/', '.')).append('\n');
+        }
+        if (!missingRequiredLibClasses.isEmpty()) {
+            missingRequiredLibs().forEach((lib, n) -> sb.append("  Required library '").append(lib).append("': only a modern mod with that id is installed and it lacks ").append(n)
+                    .append(" class(es) this mod needs (another API generation; install the legacy ").append(lib).append(" jar for this Minecraft version next to it)\n"));
+            section(sb, "Classes of a required library that the installed modern mod lacks", missingRequiredLibClasses);
         }
         section(sb, "Missing shim classes (legacy API not implemented yet)", missingClasses);
         section(sb, "Missing shim members", missingShimMembers);
