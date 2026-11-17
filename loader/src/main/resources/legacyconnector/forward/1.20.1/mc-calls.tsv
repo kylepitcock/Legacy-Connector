@@ -930,3 +930,6 @@ net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	canBrew	(Lnet/minecr
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	brewPotions	(Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;[I)V	LegacyBrewing	brewPotions
 net/neoforged/neoforge/common/CommonHooks	hasNoElements	(Lnet/minecraft/world/item/crafting/Ingredient;)Z	Round9Compat	hasNoElements
 net/neoforged/fml/config/ModConfig	getHandler	()Llegacyconnector/v1_20_1/net/minecraftforge/fml/config/ConfigFileTypeHandler;	Round9Compat	configHandler
+net/minecraft/network/syncher/EntityDataSerializer	write	(Lnet/minecraft/network/FriendlyByteBuf;Ljava/lang/Object;)V	MiscCompat	serializerWrite	-
+net/minecraft/network/syncher/EntityDataSerializer	read	(Lnet/minecraft/network/FriendlyByteBuf;)Ljava/lang/Object;	MiscCompat	serializerRead	-
+net/neoforged/fml/ModList	getModObjectById	(Ljava/lang/String;)Ljava/util/Optional;	MiscCompat	modObjectById	-

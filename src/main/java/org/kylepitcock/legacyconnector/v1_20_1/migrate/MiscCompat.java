@@ -167,6 +167,36 @@ public final class MiscCompat {
         renderer.renderSky(pose.last().pose(), projection, partialTick, camera, foggy, fogSetup);
     }
 
+    private static net.minecraft.network.RegistryFriendlyByteBuf registryBuf(net.minecraft.network.FriendlyByteBuf buf) {
+        return buf instanceof net.minecraft.network.RegistryFriendlyByteBuf r ? r : new net.minecraft.network.RegistryFriendlyByteBuf(buf, MigrateContext.registries());
+    }
+
+    /** {@code EntityDataSerializer.write(FriendlyByteBuf, value)} of 1.20.1: 1.21.1 has a stream codec over the registry buffer (a plain buffer is wrapped). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void serializerWrite(net.minecraft.network.syncher.EntityDataSerializer serializer, net.minecraft.network.FriendlyByteBuf buf, Object value) {
+        serializer.codec().encode(registryBuf(buf), value);
+    }
+
+    /** {@code EntityDataSerializer.read(FriendlyByteBuf)} of 1.20.1. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Object serializerRead(net.minecraft.network.syncher.EntityDataSerializer serializer, net.minecraft.network.FriendlyByteBuf buf) {
+        return serializer.codec().decode(registryBuf(buf));
+    }
+
+    /** {@code ModList.getModObjectById(id)} of 1.20.1: the mod instance of the container. */
+    public static java.util.Optional<?> modObjectById(net.neoforged.fml.ModList list, String id) {
+        return list.getModContainerById(id).map(c -> {
+            try {
+                java.lang.reflect.Field f = net.neoforged.fml.javafmlmod.FMLModContainer.class.getDeclaredField("modInstance");
+                f.setAccessible(true);
+                Object o = f.get(c);
+                return o != null ? o : (Object) c;
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return (Object) c;
+            }
+        });
+    }
+
     public static int getMaxStackSize(Item item) {
         return item.getDefaultMaxStackSize();
     }
