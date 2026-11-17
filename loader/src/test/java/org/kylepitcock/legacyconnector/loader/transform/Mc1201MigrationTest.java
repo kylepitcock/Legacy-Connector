@@ -954,4 +954,27 @@ class Mc1201MigrationTest implements Opcodes {
         assertTrue(w.toByteArray().length > 0);
         new ClassReader(w.toByteArray()).accept(new ClassNode(), 0);
     }
+
+    /** Issue 302: ClientboundSetEntityMotionPacket.getXa/Ya/Za returned the int field in 1.20.1 and a double in 1.21.1; the rows apply inside mixin classes too. */
+    @Test
+    void motionPacketGettersAreRewrittenInsideAMixinClass() {
+        String packet = "net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket";
+        ClassNode c = cls("test/mixin/ListenerMixin", "java/lang/Object");
+        c.visitAnnotation("Lorg/spongepowered/asm/mixin/Mixin;", false);
+        MethodNode m = method(c, ACC_PUBLIC, "handle", "(L" + packet + ";)V");
+        for (String g : new String[] {"getXa", "getYa", "getZa"}) {
+            m.instructions.add(new VarInsnNode(ALOAD, 1));
+            m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, packet, g, "()I", false));
+            m.instructions.add(new InsnNode(POP));
+        }
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(3, apply(c).total());
+        for (String[] pair : new String[][] {{"getXa", "motionXa"}, {"getYa", "motionYa"}, {"getZa", "motionZa"}}) {
+            assertNull(find(m, packet, pair[0]), pair[0] + " is gone");
+            MethodInsnNode h = find(m, MIGRATE + "GapCompat", pair[1]);
+            assertNotNull(h, pair[1]);
+            assertEquals(INVOKESTATIC, h.getOpcode());
+            assertEquals("(L" + packet + ";)I", h.desc);
+        }
+    }
 }
