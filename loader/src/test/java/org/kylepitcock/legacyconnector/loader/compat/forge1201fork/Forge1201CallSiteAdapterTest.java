@@ -314,6 +314,310 @@ final class Forge1201CallSiteAdapterTest {
     }
 
     @Test
+    void rewritesSymbioteBootstrapWithInjectedBusContainerAndPreservedCuriosFrame() throws Exception {
+        String className = "com/scout/symbiote/SymbioteMod";
+        String forgeBus = "net/minecraftforge/eventbus/api/IEventBus";
+        String fmlContext = "net/minecraftforge/fml/javafmlmod/FMLJavaModLoadingContext";
+        String modLoadingContext = "net/minecraftforge/fml/ModLoadingContext";
+        String modConfigType = "net/minecraftforge/fml/config/ModConfig$Type";
+        String configSpec = "net/minecraftforge/fml/config/IConfigSpec";
+        String dist = "net/minecraftforge/api/distmarker/Dist";
+        String distExecutor = "net/minecraftforge/fml/DistExecutor";
+        String gateDescriptor = "(L" + dist + ";Ljava/util/function/Supplier;)V";
+        String configDescriptor = "(L" + modConfigType + ";L" + configSpec + ";Ljava/lang/String;)V";
+        String helperName = "legacyconnector$unsafeRunWhenOn";
+        String helperOwner = "net/neoforged/fml/ModContainer";
+        String targetBus = "net/neoforged/bus/api/IEventBus";
+        String targetGlobalBus = "net/neoforged/neoforge/common/NeoForge";
+        String targetContainer = "net/neoforged/fml/ModContainer";
+
+        Path profileFile = writeProfile("""
+                {
+                  "schemaVersion": 1,
+                  "id": "symbiote-slice-j-constructor-injection",
+                  "rules": [{
+                    "className": "com/scout/symbiote/SymbioteMod",
+                    "methodName": "<init>",
+                    "methodDescriptor": "()V",
+                    "operations": [
+                      {
+                        "type": "method-declaration-descriptor",
+                        "descriptor": "()V",
+                        "replacementDescriptor": "(Lnet/neoforged/bus/api/IEventBus;Lnet/neoforged/fml/ModContainer;)V",
+                        "expectedMatches": 1
+                      },
+                      {
+                        "type": "instruction-sequence",
+                        "match": [{
+                          "kind": "method",
+                          "opcode": "INVOKESTATIC",
+                          "owner": "com/scout/symbiote/util/ForeignHooks",
+                          "name": "enforce",
+                          "descriptor": "()V"
+                        }],
+                        "replaceWith": [
+                          {
+                            "kind": "method",
+                            "opcode": "INVOKESTATIC",
+                            "owner": "com/scout/symbiote/util/ForeignHooks",
+                            "name": "enforce",
+                            "descriptor": "()V"
+                          },
+                          { "kind": "var", "opcode": "ALOAD", "var": 2 },
+                          { "kind": "var", "opcode": "ASTORE", "var": 3 }
+                        ],
+                        "expectedMatches": 1,
+                        "minimumMaxLocals": 4
+                      },
+                      {
+                        "type": "instruction-sequence",
+                        "match": [
+                          {
+                            "kind": "method",
+                            "opcode": "INVOKESTATIC",
+                            "owner": "net/minecraftforge/fml/javafmlmod/FMLJavaModLoadingContext",
+                            "name": "get",
+                            "descriptor": "()Lnet/minecraftforge/fml/javafmlmod/FMLJavaModLoadingContext;"
+                          },
+                          {
+                            "kind": "method",
+                            "opcode": "INVOKEVIRTUAL",
+                            "owner": "net/minecraftforge/fml/javafmlmod/FMLJavaModLoadingContext",
+                            "name": "getModEventBus",
+                            "descriptor": "()Lnet/minecraftforge/eventbus/api/IEventBus;"
+                          },
+                          { "kind": "var", "opcode": "ASTORE", "var": 1 }
+                        ],
+                        "replaceWith": [],
+                        "expectedMatches": 1
+                      },
+                      {
+                        "type": "instruction-sequence",
+                        "match": [{
+                          "kind": "field",
+                          "opcode": "GETSTATIC",
+                          "owner": "net/minecraftforge/common/MinecraftForge",
+                          "name": "EVENT_BUS",
+                          "descriptor": "Lnet/minecraftforge/eventbus/api/IEventBus;"
+                        }],
+                        "replaceWith": [{
+                          "kind": "field",
+                          "opcode": "GETSTATIC",
+                          "owner": "net/neoforged/neoforge/common/NeoForge",
+                          "name": "EVENT_BUS",
+                          "descriptor": "Lnet/neoforged/bus/api/IEventBus;"
+                        }],
+                        "expectedMatches": 1
+                      },
+                      {
+                        "type": "instruction-sequence",
+                        "match": [{
+                          "kind": "method",
+                          "opcode": "INVOKESTATIC",
+                          "owner": "net/minecraftforge/fml/ModLoadingContext",
+                          "name": "get",
+                          "descriptor": "()Lnet/minecraftforge/fml/ModLoadingContext;"
+                        }],
+                        "replaceWith": [{ "kind": "var", "opcode": "ALOAD", "var": 3 }],
+                        "expectedMatches": 2
+                      },
+                      {
+                        "type": "instruction-sequence",
+                        "match": [{
+                          "kind": "method",
+                          "opcode": "INVOKEVIRTUAL",
+                          "owner": "net/minecraftforge/fml/ModLoadingContext",
+                          "name": "registerConfig",
+                          "descriptor": "(Lnet/minecraftforge/fml/config/ModConfig$Type;Lnet/minecraftforge/fml/config/IConfigSpec;Ljava/lang/String;)V"
+                        }],
+                        "replaceWith": [{
+                          "kind": "method",
+                          "opcode": "INVOKEVIRTUAL",
+                          "owner": "net/neoforged/fml/ModContainer",
+                          "name": "registerConfig",
+                          "descriptor": "(Lnet/minecraftforge/fml/config/ModConfig$Type;Lnet/minecraftforge/fml/config/IConfigSpec;Ljava/lang/String;)V"
+                        }],
+                        "expectedMatches": 2
+                      },
+                      {
+                        "type": "lazy-dist-gate",
+                        "owner": "net/minecraftforge/fml/DistExecutor",
+                        "name": "unsafeRunWhenOn",
+                        "descriptor": "(Lnet/minecraftforge/api/distmarker/Dist;Ljava/util/function/Supplier;)V",
+                        "replacementName": "legacyconnector$unsafeRunWhenOn",
+                        "expectedMatches": 2
+                      }
+                    ]
+                  }]
+                }
+                """);
+
+        ClassNode node = new ClassNode();
+        node.version = Opcodes.V17;
+        node.access = Opcodes.ACC_PUBLIC;
+        node.name = className;
+        node.superName = "java/lang/Object";
+
+        MethodNode constructor = new MethodNode(
+                Opcodes.ASM9, Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        LabelNode modBusStart = new LabelNode();
+        LabelNode globalBusStart = new LabelNode();
+        LabelNode curiosMerge = new LabelNode();
+        LabelNode end = new LabelNode();
+
+        constructor.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESTATIC, "com/scout/symbiote/util/ForeignHooks", "enforce", "()V", false));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESTATIC, fmlContext, "get",
+                "()L" + fmlContext + ";", false));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL, fmlContext, "getModEventBus",
+                "()L" + forgeBus + ";", false));
+        constructor.instructions.add(new VarInsnNode(Opcodes.ASTORE, 1));
+        constructor.instructions.add(modBusStart);
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "net/minecraftforge/common/MinecraftForge",
+                "EVENT_BUS", "L" + forgeBus + ";"));
+        constructor.instructions.add(new VarInsnNode(Opcodes.ASTORE, 2));
+        constructor.instructions.add(globalBusStart);
+
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESTATIC, modLoadingContext, "get",
+                "()L" + modLoadingContext + ";", false));
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "net/minecraftforge/fml/config/ModConfig$Type",
+                "COMMON", "L" + modConfigType + ";"));
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "com/scout/symbiote/config/SymbioteConfig",
+                "SPEC", "Lnet/minecraftforge/common/ForgeConfigSpec;"));
+        constructor.instructions.add(new LdcInsnNode("symbiote-common.toml"));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL, modLoadingContext, "registerConfig", configDescriptor, false));
+
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESTATIC, modLoadingContext, "get",
+                "()L" + modLoadingContext + ";", false));
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "net/minecraftforge/fml/config/ModConfig$Type",
+                "CLIENT", "L" + modConfigType + ";"));
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "com/scout/symbiote/config/SymbioteConfig",
+                "CLIENT_SPEC", "Lnet/minecraftforge/common/ForgeConfigSpec;"));
+        constructor.instructions.add(new LdcInsnNode("symbiote-client.toml"));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL, modLoadingContext, "registerConfig", configDescriptor, false));
+
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "net/minecraftforge/api/distmarker/Dist",
+                "CLIENT", "L" + dist + ";"));
+        constructor.instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESTATIC, distExecutor, "unsafeRunWhenOn", gateDescriptor, false));
+
+        constructor.instructions.add(new InsnNode(Opcodes.ICONST_0));
+        constructor.instructions.add(new JumpInsnNode(Opcodes.IFEQ, curiosMerge));
+        constructor.instructions.add(new VarInsnNode(Opcodes.ALOAD, 2));
+        constructor.instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKEINTERFACE, forgeBus, "register", "(Ljava/lang/Object;)V", true));
+        constructor.instructions.add(curiosMerge);
+        constructor.instructions.add(new FrameNode(
+                Opcodes.F_FULL, 3, new Object[]{className, forgeBus, forgeBus}, 0, null));
+
+        constructor.instructions.add(new FieldInsnNode(
+                Opcodes.GETSTATIC, "net/minecraftforge/api/distmarker/Dist",
+                "CLIENT", "L" + dist + ";"));
+        constructor.instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+        constructor.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESTATIC, distExecutor, "unsafeRunWhenOn", gateDescriptor, false));
+        constructor.instructions.add(new InsnNode(Opcodes.RETURN));
+        constructor.instructions.add(end);
+
+        constructor.localVariables = new ArrayList<>(List.of(
+                new LocalVariableNode("this", "L" + className + ";", null,
+                        constructor.instructions.getFirst() instanceof LabelNode first ? first : modBusStart, end, 0),
+                new LocalVariableNode("modBus", "L" + forgeBus + ";", null, modBusStart, end, 1),
+                new LocalVariableNode("forgeBus", "L" + forgeBus + ";", null, globalBusStart, end, 2)));
+        constructor.maxStack = 4;
+        constructor.maxLocals = 3;
+        node.methods.add(constructor);
+
+        Forge1201CallSiteAdapter.Session session = new Forge1201CallSiteAdapter.Session(
+                Forge1201CallSiteAdapter.load(profileFile));
+        session.apply(node);
+        Forge1201CallSiteAdapter.Stats stats = session.finish();
+
+        assertEquals("symbiote-slice-j-constructor-injection", stats.profileId());
+        assertEquals(1, stats.rulesApplied());
+        assertEquals(7, stats.operationsApplied());
+        assertEquals(
+                "(Lnet/neoforged/bus/api/IEventBus;Lnet/neoforged/fml/ModContainer;)V",
+                constructor.desc);
+        assertEquals(4, constructor.maxLocals);
+        assertEquals(1, countVars(constructor, Opcodes.ASTORE, 3));
+        assertEquals(2, countVars(constructor, Opcodes.ALOAD, 3));
+
+        assertEquals(0, countCalls(constructor, fmlContext, "get", "()L" + fmlContext + ";"));
+        assertEquals(0, countCalls(constructor, fmlContext, "getModEventBus", "()L" + forgeBus + ";"));
+        assertEquals(0, countCalls(constructor, modLoadingContext, "get", "()L" + modLoadingContext + ";"));
+        assertEquals(0, countCalls(constructor, modLoadingContext, "registerConfig", configDescriptor));
+        assertEquals(2, countCalls(constructor, helperOwner, "registerConfig", configDescriptor));
+        assertEquals(2, countCalls(constructor, className, helperName, gateDescriptor));
+        assertTrue(containsField(constructor, targetGlobalBus, "EVENT_BUS", "L" + targetBus + ";"));
+        assertFalse(containsField(constructor, "net/minecraftforge/common/MinecraftForge",
+                "EVENT_BUS", "L" + forgeBus + ";"));
+
+        FrameNode frame = findFrame(constructor);
+        assertEquals(Opcodes.F_FULL, frame.type);
+        assertEquals(List.of(className, forgeBus, forgeBus), frame.local,
+                "The Curios merge frame keeps the three original live locals; slot 3 is dead here.");
+        assertEquals("modBus", constructor.localVariables.get(1).name);
+        assertEquals("forgeBus", constructor.localVariables.get(2).name);
+
+        List<MethodNode> helpers = node.methods.stream()
+                .filter(method -> method.name.equals(helperName) && method.desc.equals(gateDescriptor))
+                .toList();
+        assertEquals(1, helpers.size(), "Two source sites should share one generated lazy helper.");
+        MethodNode helper = helpers.get(0);
+        assertTrue(containsField(helper,
+                "net/neoforged/fml/loading/FMLEnvironment",
+                "dist",
+                "Lnet/neoforged/api/distmarker/Dist;"));
+        assertTrue(containsCall(helper, "java/util/function/Supplier", "get"));
+        assertTrue(containsCall(helper, "java/lang/Runnable", "run"));
+        int sideBranch = -1;
+        int supplierGet = -1;
+        int index = 0;
+        for (AbstractInsnNode instruction : helper.instructions) {
+            if (instruction instanceof JumpInsnNode jump && jump.getOpcode() == Opcodes.IF_ACMPNE) {
+                sideBranch = index;
+            }
+            if (instruction instanceof MethodInsnNode call
+                    && call.owner.equals("java/util/function/Supplier") && call.name.equals("get")) {
+                supplierGet = index;
+            }
+            index++;
+        }
+        assertTrue(sideBranch >= 0);
+        assertTrue(supplierGet > sideBranch, "The Supplier must not be evaluated before the side check.");
+
+        ClassWriter writer = new ClassWriter(0);
+        node.accept(writer);
+        ClassNode roundTripped = new ClassNode();
+        new ClassReader(writer.toByteArray()).accept(roundTripped, 0);
+        MethodNode writtenConstructor = roundTripped.methods.stream()
+                .filter(method -> method.name.equals("<init>"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(constructor.desc, writtenConstructor.desc);
+        assertEquals(4, writtenConstructor.maxLocals);
+        assertEquals(List.of(className, forgeBus, forgeBus), findFrame(writtenConstructor).local);
+    }
+
+    @Test
     void failsClosedWhenRequestedFrameLocalDoesNotMatch() throws Exception {
         Path profileFile = writeProfile("""
                 {
