@@ -49,6 +49,8 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
     /** Phantom: the legacy container behind the open menu (null for modern menus). */
     @Deprecated
     public legacyconnector.v1_7_10.net.minecraft.inventory.Container openContainer;
+    /** The container a fake player was given by {@code openContainer = ...} (no menu hosts it). */
+    public legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$unhostedContainer;
     /** Phantom: the container of the player's own inventory (redirected to {@code mcc$get$inventoryContainer}). */
     @Deprecated
     public legacyconnector.v1_7_10.net.minecraft.inventory.Container inventoryContainer;
@@ -105,6 +107,8 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
     public static legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {
         // As 1.7.10: with nothing open (or a menu legacy code knows nothing about) it is the player's own container, never null.
         if (p.mcc$player().containerMenu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu m) return m.legacy();
+        // A player that cannot host a menu (a fake player) keeps the container the mod assigned, as the 1.7.10 field did.
+        if (p.mcc$unhostedContainer != null) return p.mcc$unhostedContainer;
         // A container screen the client built itself from a mod's own packet (IC2's GUIs) is the open container until the server's menu id arrives.
         if (p.mcc$player().level().isClientSide && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
             var detached = org.kylepitcock.legacyconnector.v1_7_10.client.ClientGui.detachedContainer(p.mcc$player());
@@ -117,6 +121,8 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         // Legacy code assigned this when opening containers by hand (FML's openGui went through the GUI bridge): the server hosts it in a menu.
         if (p instanceof EntityPlayerMP mp && mp.mcc$entity() instanceof net.minecraft.server.level.ServerPlayer sp) {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.openManual(sp, mp.currentWindowId, c);
+            mp.mcc$unhostedContainer = sp instanceof net.neoforged.neoforge.common.util.FakePlayer
+                    && c != null && !(c instanceof legacyconnector.v1_7_10.net.minecraft.inventory.ContainerPlayer) ? c : null;
         }
     }
 
