@@ -56,10 +56,29 @@ public final class NbtSaveGuard {
             validate(delta);
             return delta;
         } catch (RuntimeException | LinkageError | IOException | StackOverflowError e) {
+            failed(owner, type, where, e);
+            if (lastGood == null && partialIsWritable(tag, before)) {
+                // never saved well before (an entity written right after its construction, e.g. a projectile without a shooter): the keys
+                // written up to the failure are all there is, and the mod's reader has always been given those
+                return null;
+            }
             for (String key : new HashSet<>(tag.getAllKeys())) if (!before.contains(key)) tag.remove(key);
             if (lastGood != null) for (String key : lastGood.getAllKeys()) if (!tag.contains(key)) tag.put(key, lastGood.get(key).copy());
-            failed(owner, type, where, e);
             return lastGood;
+        }
+    }
+
+    /** Whether the keys a failed writer left behind (those not in {@code before}) can be saved as they are. */
+    private static boolean partialIsWritable(CompoundTag tag, Set<String> before) {
+        try {
+            CompoundTag partial = new CompoundTag();
+            for (String key : tag.getAllKeys()) {
+                if (!before.contains(key)) partial.put(key, tag.get(key).copy());
+            }
+            validate(partial);
+            return true;
+        } catch (RuntimeException | IOException | StackOverflowError e) {
+            return false;
         }
     }
 

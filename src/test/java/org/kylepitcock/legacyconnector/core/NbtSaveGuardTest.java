@@ -67,4 +67,17 @@ class NbtSaveGuardTest {
         assertEquals("mod:thing", second.getString("id"));
         assertEquals(1, LegacyProblems.count("thermalexpansion", Kind.NBT_FAILURE));
     }
+
+    @Test
+    void firstEntityWriteThatFailsKeepsWhatItWrote() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("id", "mod:shot");
+        CompoundTag kept = NbtSaveGuard.guardInPlace(tag, null, () -> {
+            tag.putInt("inTile", 7); // written before the mod throws (a projectile without a shooter)
+            throw new NullPointerException("shooter");
+        }, this, TYPE, "0, 0, 0");
+        assertNull(kept);
+        assertEquals(7, tag.getInt("inTile"));
+        assertEquals("mod:shot", tag.getString("id"));
+    }
 }
