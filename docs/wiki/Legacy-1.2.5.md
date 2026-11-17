@@ -425,3 +425,20 @@ Forge 3's `FurnaceRecipes.metaSmeltingList` field exists (keyed by item id and d
 What blocks "playable" (the 0.5.0 condition, a handful of playable 1.2.5 content mods): the mods above register and draw their content, but none was played in survival yet (use, craft, place, save and
 reload), the most common mod type with custom block sheets (a `getTextureFile` that points at a sheet the jar lacks, More Pistons) still draws missing textures, and the big Forge-era mods (IC2,
 BuildCraft, Forestry, Railcraft, Thaumcraft) are only link-probed.
+
+## Survival sessions (2026-11-17)
+
+Real client (`tools/dev/session125.sh <jar...>` starts a control session with `-Pmappings125`; `tools/dev/ctl.sh` sends player verbs, `tools/dev/jsl.sh` evaluates JavaScript with crafting/inventory helpers), survival mode, superflat world, one mod set at a time. "Playable" means craft, use, place/break and save/reload all worked.
+
+| Mod | Craft | Use / place | Mob / GUI | Save and reload | Result |
+|---|---|---|---|---|---|
+| Obsidian Hilt | 4 obsidian make the hilt | holding right-click over water turns the hilt into a Weak Water Sword (drains the pool); the sword hits mobs and takes damage | - | not tested separately | works (fire sword/Drain key not tried) |
+| BucketCraft | wood and gold buckets crafted | wood bucket picks up water from a source (infinite-water rule refills it) | - | not tested | works (placing, lava, milk not tried) |
+| Craftable Mob Spawners | Pig spawner from 4 mossy cobblestone, 4 iron, porkchop | the item places a spawner with the mob set; it spawns pigs | pigs | not tested | works |
+| Magic Wands | Break wand crafted | click start corner, hold X, click end corner: the box is removed | - | not tested | works for the break wand |
+| Backpack | red backpack crafted | sneak + right-click opens a 54 slot GUI; items stay when closed and reopened | - | saved to `backpacks.dat` on close; a reload through the harness (switching worlds in one process) is confounded by the mod's static storage, not confirmed | partial |
+| Elemental Creepers | - | - | fire creeper chases, swells, explodes (damage, 100+ fire blocks) | not tested | works (the other 14 types not each tried) |
+| More Pistons | (not crafted) | (not placed) | - | - | not playable: its blocks use `/morePistons/blocks/block_textures.png`, a sheet the distributed zip lacks, so the original draws missing textures too |
+| BlockHelper | not re-run | | | | unverified |
+
+Defects found and fixed (generic): `stack.itemID = x` on a stack in a slot did not change the slot's stack (master fixed it in parallel); `Block.collisionRayTrace` used the modern clip, which misses from a start on a face (BucketCraft walks its own ray cell by cell); `World.saveHandler` was an unmapped field reading null (Backpack); `EntityCreeper(World)` had no AI tasks (every mod creeper stood still); a 1.2.5 mod's item callbacks ran a second time on the client world (single player had one world), they now run once on the server (`Mc125Host.registerSingleWorld`, `ItemCallbacks`).

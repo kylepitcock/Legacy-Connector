@@ -10,6 +10,18 @@ public final class Mc125Host {
 
     private Mc125Host() {}
 
+    private static final java.util.Set<ClassLoader> SINGLE_WORLD = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** A 1.2.5 mod's class loader: Minecraft 1.2.5 single player had ONE world, so its item/entity logic must run once (on the server side here). */
+    public static void registerSingleWorld(ClassLoader loader) {
+        if (loader != null) SINGLE_WORLD.add(loader);
+    }
+
+    /** Whether this legacy object's class is from a 1.2.5 mod (its callbacks run only on the logical server, not again on the client world). */
+    public static boolean singleWorld(Object legacy) {
+        return !SINGLE_WORLD.isEmpty() && legacy != null && SINGLE_WORLD.contains(legacy.getClass().getClassLoader());
+    }
+
     public static boolean active() {
         return Boolean.getBoolean(PROPERTY);
     }
