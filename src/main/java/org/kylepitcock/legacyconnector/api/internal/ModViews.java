@@ -126,6 +126,11 @@ public final class ModViews {
 
         @Override
         public LegacyVersion minecraftVersion() {
+            // a Minecraft 1.2.5 jar is hosted as 1.4.7; the loader records the version the mod was written for
+            if (mod.metadata != null && mod.metadata.has("sourceVersion")) {
+                java.util.Optional<LegacyVersion> source = LegacyVersion.byId(mod.metadata.get("sourceVersion").getAsString());
+                if (source.isPresent()) return source.get();
+            }
             return LegacyVersion.byId(mod.version).orElseThrow(() -> new IllegalStateException("Unknown legacy version " + mod.version));
         }
 

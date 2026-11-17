@@ -55,6 +55,16 @@ NeoForge checks file names before any mod runs, so Legacy Connector cannot sort 
 
 When a legacy mod needs a library or mod that is not installed, NeoForge's "Warnings while loading mods" screen names the mod, the missing dependency and the folder to put its jar into (`mods/<version>/`). The mod is still loaded and may fail or miss features without it. The same lines are in `logs/legacyconnector-report.txt`, which also lists per jar what was detected, what could not be linked and what was synthesized. Its last section, "Runtime problems", lists per mod the missing textures and models, items and blocks without a model or a name, and recipes dropped because of a missing item, seen while the game ran; `/legacyconnector problems` shows the same counts in chat (see [Development](Development.md)).
 
+## Minecraft 1.2.5 jars are reported but not loaded
+
+Minecraft 1.2.5 support is experimental and off by default. With the toggle off, 1.2.5 jars (detected by their names, or any jar in `mods/1.2.5/`) are listed in `logs/legacyconnector-report.txt` under "Mods of a Minecraft version that is not supported yet" and are never loaded. To try them:
+
+1. Put the jars (the server build of a mod on a server) into `mods/1.2.5/`.
+2. Set `experimental.minecraft125=true` in `config/legacyconnector.properties` and restart. The log prints one `EXPERIMENTAL Minecraft 1.2.5 support is ON` line and the report marks each such mod "experimental (Minecraft 1.2.5)".
+3. The jars are renamed to Minecraft 1.4.7's names through a table that the release and nightly jars carry (it is generated at build time from Ornithe's Calamus and Feather mappings, downloaded from maven.ornithemc.net when the mod is built, and never committed). A build without the table logs an error and hosts nothing: use a release or nightly jar, or build with network access.
+
+Expect mods that load and then do little: only three small server builds are known to load and nothing has been run in a client. Details: [Legacy 1.2.5](Legacy-1.2.5.md), the toggle: [Configuration](Configuration.md).
+
 ## Reporting
 
 Open a GitHub issue and attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files, with the Legacy Connector version (for a nightly build, the full version from the jar name), the mod and its Minecraft version.

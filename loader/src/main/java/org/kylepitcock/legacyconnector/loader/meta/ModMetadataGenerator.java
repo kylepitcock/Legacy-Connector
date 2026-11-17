@@ -109,6 +109,8 @@ public final class ModMetadataGenerator {
             o.addProperty("clientSideOnly", mod.clientSideOnly);
             o.addProperty("serverSideOnly", mod.serverSideOnly);
             o.addProperty("inCoreModJar", jar.coreModClass != null && !jar.coreModClass.isBlank());
+            // Minecraft 1.2.5 jars are hosted as 1.4.7; the API reports the version the mod was written for
+            if (jar.sourceVersion != null) o.addProperty("sourceVersion", jar.sourceVersion.id());
             mods.add(o);
         }
         root.add("mods", mods);

@@ -23,7 +23,7 @@ public final class FluidViews {
     public static Optional<Object> legacyFluid(Fluid modern, LegacyVersion version) {
         if (modern == null) return Optional.empty();
         return Optional.ofNullable(switch (version) {
-            case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> FluidBridge.legacyOf(modern);
+            case V1_7_10, V1_4_7, V1_5_2, V1_6_4, V1_2_5 -> FluidBridge.legacyOf(modern);
             case V1_12_2 -> FluidBridge1122.legacyOf(modern);
             case V1_20_1 -> modern;
             case VB1_7_3 -> null; // Beta has no fluid registry
@@ -40,7 +40,7 @@ public final class FluidViews {
     public static Optional<Object> stackToLegacy(FluidStack modern, LegacyVersion version) {
         if (modern == null || modern.isEmpty()) return Optional.empty();
         return Optional.ofNullable(switch (version) {
-            case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> FluidBridge.fromModern(modern);
+            case V1_7_10, V1_4_7, V1_5_2, V1_6_4, V1_2_5 -> FluidBridge.fromModern(modern);
             case V1_12_2 -> FluidBridge1122.fromModern(modern);
             case V1_20_1 -> modern;
             case VB1_7_3 -> null;

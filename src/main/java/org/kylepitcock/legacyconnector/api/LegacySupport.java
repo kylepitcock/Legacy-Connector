@@ -75,7 +75,7 @@ public final class LegacySupport {
     }
 
     private static final LegacyVersion[] ORDER = {LegacyVersion.V1_4_7, LegacyVersion.V1_5_2, LegacyVersion.V1_6_4, LegacyVersion.V1_7_10,
-            LegacyVersion.V1_12_2, LegacyVersion.VB1_7_3, LegacyVersion.V1_20_1};
+            LegacyVersion.V1_12_2, LegacyVersion.VB1_7_3, LegacyVersion.V1_20_1, LegacyVersion.V1_2_5};
 
     private static final Map<Feature, Support[]> MATRIX = new EnumMap<>(Feature.class);
 
@@ -101,9 +101,9 @@ public final class LegacySupport {
         return new Support(Level.NOT_APPLICABLE, note);
     }
 
-    /** One row; the arguments follow the version order 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, b1.7.3, 1.20.1. */
+    /** One row; the arguments follow the version order 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, b1.7.3, 1.20.1, 1.2.5 (a column of its own that mirrors 1.4.7: hosted by the 1.4.7 layer). */
     private static void row(Feature f, Support v147, Support v152, Support v164, Support v1710, Support v1122, Support beta, Support v1201) {
-        MATRIX.put(f, new Support[] {v147, v152, v164, v1710, v1122, beta, v1201});
+        MATRIX.put(f, new Support[] {v147, v152, v164, v1710, v1122, beta, v1201, v147});
     }
 
     private static void all(Feature f, Support s) {
