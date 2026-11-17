@@ -36,8 +36,17 @@ public class ChunkCache implements IBlockAccess {
         }
     }
 
+    /** The world's real build range (-64..319 in a modern overworld), not 1.7.10's 0..255: blocks below y=0 read as air before. */
+    private int mcc$bottom() {
+        return worldObj == null ? 0 : worldObj.mcc$buildBottom();
+    }
+
+    private int mcc$top() {
+        return worldObj == null ? 256 : worldObj.mcc$buildTop();
+    }
+
     private Chunk mcc$chunk(int x, int y, int z) {
-        if (y < 0 || y >= 256) return null;
+        if (y < mcc$bottom() || y >= mcc$top()) return null;
         int i = (x >> 4) - chunkX;
         int j = (z >> 4) - chunkZ;
         if (i < 0 || i >= chunkArray.length || j < 0 || j >= chunkArray[i].length) return null;
@@ -62,8 +71,9 @@ public class ChunkCache implements IBlockAccess {
     }
 
     public int getSkyBlockTypeBrightness(EnumSkyBlock type, int x, int y, int z) {
-        if (worldObj == null || mcc$chunk(x, Math.max(0, Math.min(255, y)), z) == null) return type == EnumSkyBlock.Sky ? 15 : 0;
-        return worldObj.getSkyBlockTypeBrightness(type, x, Math.max(0, Math.min(255, y)), z);
+        int cy = Math.max(mcc$bottom(), Math.min(mcc$top() - 1, y));
+        if (worldObj == null || mcc$chunk(x, cy, z) == null) return type == EnumSkyBlock.Sky ? 15 : 0;
+        return worldObj.getSkyBlockTypeBrightness(type, x, cy, z);
     }
 
     public int getSpecialBlockBrightness(EnumSkyBlock type, int x, int y, int z) {

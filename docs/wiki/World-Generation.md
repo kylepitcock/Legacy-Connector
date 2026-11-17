@@ -82,9 +82,10 @@ modern feature:
 1.7.10 worlds ended at y=0 (bedrock); modern ones reach down to -64. Each legacy `IWorldGenerator` therefore runs a
 second time per chunk with the world shifted so that legacy y=0 is the dimension's bottom: ores, bedrock ores and
 underground structures land in the deep layer too (the generator sees deepslate as stone, everything from modern y=0 up as
-solid rock, air above legacy y=256; only writes below y=0 are kept). Legacy ores stay exactly as common as in the original mod: the deep pass keeps only ore writes (natural overworld stone
+solid rock, air above legacy y=256; only ore writes are kept above y=0, and only up to y=15, so a vein of the deep pass that reaches 0
+continues into the band above it instead of ending at the old floor line: veins can cross y=0, CustomOreGen #82). Legacy ores stay exactly as common as in the original mod: the deep pass keeps only ore writes (natural overworld stone
 replaced by another block), and an ore that lands in legacy y 0-63, the band both passes cover, is kept by exactly one of the two
-passes, chosen per position. A chunk gets the 1.7.10 number of ores, the bottom 64 blocks of them spread over -64..63; underground
+passes, chosen per 8x8x8 cell (not per block: a per-block choice thinned every vein to a checkerboard). A chunk gets the 1.7.10 number of ores, the bottom 64 blocks of them spread over -64..63; underground
 structures are built once, by the normal pass. This deep pass is a native placed feature per
 generator, `<modid>:legacy_worldgen_deep/<generator class, lowercased>` (feature type `legacyconnector:legacy_worldgen_deep`,
 config `{"generator": "<that id>"}`), added to every biome by a biome modifier with the same id (step `underground_ores`).
@@ -101,7 +102,9 @@ Outside world generation, code that hard-codes the old range is rewritten by the
 `y < 0` / `y >= 256` checks on the y parameter of a method taking `(World, x, y, z)` (`BuildHeightRewriter`, RotaryCraft's
 placement bounds), and a tile entity's clamp of a height it picked around itself to the bedrock floor, `if (y < K) y = K`
 with K 0..8 on a local computed from `yCoord` (`WorldFloorClampRewriter`, Thaumcraft's Arcane Lamp), which then counts K from
-the world's bottom. Generation views and 0..256 dimensions answer the 1.7.10 range, so nothing changes there.
+the world's bottom, and a `Math.abs` that is the last operation of the y argument of `Entity.setPosition` (or of a store into `posY`) is dropped
+(`EntityHeightAbsRewriter`: Traincraft's slope code did `setPosition(x, Math.abs(y), z)`, which threw a train below y=0 into the sky, #105).
+The legacy `ChunkCache` (renderers, pathfinding) reads the world's real range too. Generation views and 0..256 dimensions answer the 1.7.10 range, so nothing changes there.
 
 ## Structures, fluids and input
 

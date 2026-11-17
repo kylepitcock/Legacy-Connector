@@ -69,7 +69,7 @@ public final class LegacyStructures {
             return;
         }
         var world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
-        int x = (int) source.getPosition().x, y = (int) source.getPosition().y, z = (int) source.getPosition().z;
+        int x = (int) Math.floor(source.getPosition().x), y = (int) Math.floor(source.getPosition().y), z = (int) Math.floor(source.getPosition().z);
         ChunkPosition best = null;
         double bestDistance = Double.MAX_VALUE;
         for (MapGenStructure g : gens) {
