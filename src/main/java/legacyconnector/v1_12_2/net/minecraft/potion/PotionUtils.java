@@ -86,6 +86,20 @@ public class PotionUtils {
         return (int) r << 16 | (int) g << 8 | (int) b;
     }
 
+    /**
+     * The colour of the swirl of an entity's active effects, after {@code PotionColorCalculationEvent} (a mod's handler may change the
+     * colour or hide the particles: 0 then). The layer asks it for entity views whose swirl it works out itself.
+     */
+    public static int mcc$entityColor(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        Collection<PotionEffect> effects = entity.getActivePotionEffects();
+        int color = getPotionColorFromEffectList(effects);
+        boolean hide = true;
+        for (PotionEffect e : effects) if (e.doesShowParticles()) hide = false;
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.PotionColorCalculationEvent(entity, color, hide, effects);
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event.areParticlesHidden() && !event.isCanceled() ? 0 : event.getColor();
+    }
+
     public static PotionType getPotionFromItem(ItemStack stack) {
         return getPotionTypeFromNBT(stack.getTagCompound());
     }

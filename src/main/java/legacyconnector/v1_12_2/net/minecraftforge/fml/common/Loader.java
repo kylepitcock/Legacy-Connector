@@ -202,6 +202,28 @@ public class Loader {
         return "Minecraft " + MC_VERSION;
     }
 
+    /** The FML version string the 1.12.2 crash report line shows. */
+    public String getFMLVersionString() {
+        return "8.0.99.99";
+    }
+
+    /**
+     * The state of a mod. The layer runs every mod through the lifecycle together, so this is the loader's state mapped onto the mod
+     * states (an unknown mod reads as unloaded).
+     */
+    public LoaderState.ModState getModState(ModContainer selectedMod) {
+        if (selectedMod == null) return LoaderState.ModState.UNLOADED;
+        return switch (mcc$state) {
+            case NOINIT, LOADING -> LoaderState.ModState.UNLOADED;
+            case CONSTRUCTING -> LoaderState.ModState.CONSTRUCTED;
+            case PREINITIALIZATION -> LoaderState.ModState.PREINITIALIZED;
+            case INITIALIZATION -> LoaderState.ModState.INITIALIZED;
+            case POSTINITIALIZATION -> LoaderState.ModState.POSTINITIALIZED;
+            case ERRORED -> LoaderState.ModState.ERRORED;
+            default -> LoaderState.ModState.AVAILABLE;
+        };
+    }
+
     public String getMCPVersionString() {
         return "MCP 9.42";
     }

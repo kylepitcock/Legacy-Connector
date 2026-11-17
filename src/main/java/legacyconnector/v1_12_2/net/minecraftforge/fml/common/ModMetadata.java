@@ -9,6 +9,8 @@ public class ModMetadata {
     public String description = "";
     public String url = "";
     public String updateUrl = "";
+    /** 1.12 update-checker JSON address (mods that use the update checker name it; the layer does not poll it). */
+    public String updateJSON = "";
     public String logoFile = "";
     public String version = "";
     public List<String> authorList = new ArrayList<>();

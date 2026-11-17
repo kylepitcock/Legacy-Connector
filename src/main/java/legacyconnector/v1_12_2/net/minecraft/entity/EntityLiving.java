@@ -26,7 +26,26 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122;
 public abstract class EntityLiving extends EntityLivingBase {
     /** Where a creature type spawns (1.12's {@code EntityLiving.SpawnPlacementType}). */
     public enum SpawnPlacementType {
-        ON_GROUND, IN_AIR, IN_WATER
+        ON_GROUND(null), IN_AIR(null), IN_WATER(null);
+
+        private final java.util.function.BiPredicate<legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess,
+                legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos> spawnPredicate;
+
+        /** A placement type with its own rule (Forge's {@code EnumHelper.addSpawnPlacementType}); null is the vanilla rule of the constant. */
+        SpawnPlacementType(java.util.function.BiPredicate<legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess,
+                legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos> spawnPredicate) {
+            this.spawnPredicate = spawnPredicate;
+        }
+
+        /** Whether a creature placed this way may spawn at the position (the mod's rule, or the vanilla one of the constant). */
+        public boolean canSpawnAt(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+            if (spawnPredicate != null) return spawnPredicate.test(world, pos);
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldSynth1122.canCreatureTypeSpawnAtLocation(this, world, pos);
+        }
+
+        public boolean mcc$hasCustomRule() {
+            return spawnPredicate != null;
+        }
     }
 
     public int livingSoundTime;

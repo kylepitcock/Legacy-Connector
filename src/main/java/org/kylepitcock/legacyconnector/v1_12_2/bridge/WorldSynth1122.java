@@ -39,8 +39,7 @@ public final class WorldSynth1122 {
         try {
             var p = pos.mcc$modern();
             if (!level.getWorldBorder().isWithinBounds(p)) return false;
-            Object custom = Synth.callInstance("net.minecraft.entity.EntityLiving$SpawnPlacementType.canSpawnAt", type, new Object[] {world, pos});
-            if (custom instanceof Boolean b) return b;
+            if (type instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType t && t.mcc$hasCustomRule()) return t.canSpawnAt(world, pos);
             var state = level.getBlockState(p);
             if ("IN_WATER".equals(enumName(type))) {
                 return state.getFluidState().is(net.minecraft.tags.FluidTags.WATER) && level.getFluidState(p.below()).is(net.minecraft.tags.FluidTags.WATER)

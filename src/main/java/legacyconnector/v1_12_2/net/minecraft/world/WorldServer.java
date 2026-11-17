@@ -38,6 +38,17 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
         this.worldTeleporter = new Teleporter(this);
     }
 
+    /** The server's function manager (the 1.12 field mods read; {@link #getFunctionManager()} is the same object). */
+    public legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager functionManager;
+
+    public legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager getFunctionManager() {
+        if (functionManager == null) {
+            var s = legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
+            functionManager = s != null ? s.getFunctionManager() : new legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager(null, null);
+        }
+        return functionManager;
+    }
+
     private ServerLevel server() {
         return mcc$level() instanceof ServerLevel s ? s : null;
     }

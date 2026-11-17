@@ -11,12 +11,16 @@ public class FurnaceRecipes {
     /** Input -> output of the mod registrations (keys compare by identity, as legacy ItemStacks do). */
     private final java.util.Map<ItemStack, ItemStack> smeltingList = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
 
+    /** Output -> experience of the mod registrations (the private vanilla map some mods reach by reflection or access transformer). */
+    public final java.util.Map<ItemStack, Float> experienceList = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+
     public static FurnaceRecipes instance() {
         return INSTANCE;
     }
 
     public void addSmeltingRecipe(ItemStack input, ItemStack stack, float experience) {
         smeltingList.put(input, stack);
+        experienceList.put(stack, experience);
         RecipeBridge1122.addSmelting(input, stack, experience);
     }
 

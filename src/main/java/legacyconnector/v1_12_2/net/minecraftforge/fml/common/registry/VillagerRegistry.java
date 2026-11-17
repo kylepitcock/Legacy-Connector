@@ -17,11 +17,51 @@ public class VillagerRegistry {
     private final List<IVillageCreationHandler> villageCreationHandlers = new ArrayList<>();
     private static boolean mcc$vanillaDone;
 
-    /**
-     * Builds a village component; its methods ({@code getVillagePieceWeight}, {@code getComponentClass}, {@code buildComponent}) take
-     * 1.12 structure types the layer does not model yet, so this only marks implementations.
-     */
+    static {
+        try {
+            mcc$registerVanilla();
+        } catch (RuntimeException | LinkageError e) {
+            // registered on first use instead
+        }
+    }
+
+    /** Builds a village component of a mod: how often it is placed, its class, and how one is made at a place. */
     public interface IVillageCreationHandler {
+        legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight getVillagePieceWeight(Random random, int size);
+
+        Class<?> getComponentClass();
+
+        legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.Village buildComponent(
+                legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight villagePiece,
+                legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.Start startPiece,
+                List<legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureComponent> pieces, Random random, int p1, int p2, int p3,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing, int p5);
+    }
+
+    /** 1.12's vanilla professions by name (set when the vanilla registrations are made). */
+    public static VillagerProfession FARMER;
+    public static VillagerProfession LIBRARIAN;
+    public static VillagerProfession PRIEST;
+    public static VillagerProfession SMITH;
+    public static VillagerProfession BUTCHER;
+    public static VillagerProfession NITWIT;
+
+    /**
+     * Forge's hook of the village generator: asks each registered creation handler for its piece weight and adds the ones that may
+     * spawn to the list. The layer's own village assembly (extra pieces of the vanilla village) asks the handlers the same way.
+     */
+    public void addExtraVillageComponents(List<legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight> existing,
+            Random random, int size) {
+        for (IVillageCreationHandler handler : mcc$villageCreationHandlers()) {
+            var weight = handler.getVillagePieceWeight(random, size);
+            if (weight != null) existing.add(weight);
+        }
+    }
+
+    /** Gives a zombie villager a random profession among the registered ones. */
+    public static void setRandomProfession(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityZombieVillager entity, Random rand) {
+        List<VillagerProfession> all = mcc$professions();
+        if (entity != null && !all.isEmpty()) entity.setForgeProfession(all.get(rand.nextInt(all.size())));
     }
 
     public static VillagerRegistry instance() {
@@ -56,6 +96,14 @@ public class VillagerRegistry {
                     "minecraft:textures/entity/zombie_villager/zombie_" + p[0] + ".png");
             for (int i = 1; i < p.length; i++) new VillagerCareer(prof, p[i]);
             Registries1122.VILLAGER_PROFESSIONS.registerVanilla(prof);
+            switch (p[0]) {
+                case "farmer" -> FARMER = prof;
+                case "librarian" -> LIBRARIAN = prof;
+                case "priest" -> PRIEST = prof;
+                case "smith" -> SMITH = prof;
+                case "butcher" -> BUTCHER = prof;
+                default -> NITWIT = prof;
+            }
         }
     }
 
