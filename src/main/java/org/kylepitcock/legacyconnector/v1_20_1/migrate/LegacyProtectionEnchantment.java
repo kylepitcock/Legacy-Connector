@@ -67,4 +67,15 @@ public class LegacyProtectionEnchantment extends LegacyEnchantment {
         }
         return super.checkCompatibility(other);
     }
+
+    /**
+     * {@code ProtectionEnchantment.getExplosionKnockbackAfterDampener(entity, knockback)}: the knockback of an explosion after blast protection. 1.21.1 keeps the
+     * reduction in the {@code EXPLOSION_KNOCKBACK_RESISTANCE} attribute (blast protection adds to it), so the knockback is scaled by what is left.
+     */
+    public static double getExplosionKnockbackAfterDampener(net.minecraft.world.entity.LivingEntity entity, double knockback) {
+        var attribute = net.minecraft.world.entity.ai.attributes.Attributes.EXPLOSION_KNOCKBACK_RESISTANCE;
+        if (!entity.getAttributes().hasAttribute(attribute)) return knockback;
+        double resistance = entity.getAttributeValue(attribute);
+        return knockback * (1.0D - net.minecraft.util.Mth.clamp(resistance, 0.0D, 1.0D));
+    }
 }

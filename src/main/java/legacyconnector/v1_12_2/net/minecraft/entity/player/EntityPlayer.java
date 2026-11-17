@@ -21,6 +21,17 @@ public abstract class EntityPlayer extends EntityLivingBase {
     public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Float> ABSORPTION = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(11, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.FLOAT, EntityPlayer.class, 0.0F, e -> e.mcc$living().getAbsorptionAmount(),
             (e, v) -> e.mcc$living().setAbsorptionAmount(v));
 
+    /**
+     * Vanilla's skin-parts key (bit mask of the shown model parts, id 13): read from the modern player's shown parts. Writes are the
+     * client's own setting and are not applied.
+     */
+    protected static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Byte> PLAYER_MODEL_FLAG = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(13, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BYTE, EntityPlayer.class, (byte) 0, e -> {
+        var player = e.mcc$living() instanceof net.minecraft.world.entity.player.Player p ? p : null;
+        int mask = 0;
+        if (player != null) for (var part : net.minecraft.world.entity.player.PlayerModelPart.values()) if (player.isModelPartShown(part)) mask |= part.getMask();
+        return (byte) mask;
+    }, null);
+
     /** Forge's block reach attribute (the modern block interaction range). */
     public static final IAttribute REACH_DISTANCE = new RangedAttribute(null, "generic.reachDistance", 5.0D, 0.0D, 1024.0D).setShouldWatch(true);
 

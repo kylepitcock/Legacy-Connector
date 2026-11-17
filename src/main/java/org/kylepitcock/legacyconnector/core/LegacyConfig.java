@@ -81,6 +81,9 @@ public final class LegacyConfig {
             legacy.autoSortMods = true
             # Forge 1.20.1 mods are remapped in place and loaded as NeoForge mods (alpha; read by the loader at startup).
             experimental.forge1201 = true
+            # Minecraft 1.2.5 mods (mods/1.2.5/; ModLoader and early Forge, translated to the 1.4.7 layer; alpha). false leaves such jars alone
+            # (read by the loader at startup; the older key experimental.minecraft125 is still read when this one is absent).
+            versions.minecraft125 = true
             # A reference to a missing Minecraft 1.21.1 class, method or field no longer keeps a Forge 1.20.1 mod from loading; the
             # stand-in throws only when it runs (read by the loader at startup).
             experimental.forge1201.softlink = true

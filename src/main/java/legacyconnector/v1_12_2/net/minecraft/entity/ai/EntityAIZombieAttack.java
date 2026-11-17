@@ -16,6 +16,11 @@ public class EntityAIZombieAttack extends EntityAIAttackMelee {
         super(zombie, speedIn, longMemoryIn);
     }
 
+    /** The 1.12 signature: the zombie itself (every zombie is a creature; same task). */
+    public EntityAIZombieAttack(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityZombie zombie, double speedIn, boolean longMemoryIn) {
+        super(zombie, speedIn, longMemoryIn);
+    }
+
     @Override
     public void startExecuting() {
         super.startExecuting();

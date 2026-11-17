@@ -1904,6 +1904,21 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         return m == null ? null : EntityBridge1122.wrap(m.getVehicle());
     }
 
+    /** Phantom: the vehicle ({@link #mcc$get$ridingEntity}; the 1.8-1.12 field mods read and write directly). */
+    @Deprecated
+    public Entity ridingEntity;
+
+    public static Entity mcc$get$ridingEntity(Entity e) {
+        return e.getRidingEntity();
+    }
+
+    public static void mcc$set$ridingEntity(Entity e, Entity vehicle) {
+        var m = e.mcc$entity;
+        if (m == null) return;
+        if (vehicle == null) m.stopRiding();
+        else if (vehicle.mcc$entity != null && m.getVehicle() != vehicle.mcc$entity) m.startRiding(vehicle.mcc$entity, true);
+    }
+
     public Entity getLowestRidingEntity() {
         var m = mcc$entity;
         return m == null ? this : EntityBridge1122.wrap(m.getRootVehicle());

@@ -14,6 +14,18 @@ public class EntityMagmaCube extends EntitySlime {
         this.isImmuneToFire = true;
     }
 
+    /** The body settles slower than a slime's (it keeps 90% of the squash each tick). */
+    @Override
+    protected void alterSquishAmount() {
+        this.squishAmount *= 0.9F;
+    }
+
+    /** Magma cubes squish on every landing, whatever their size. */
+    @Override
+    protected boolean makesSoundOnLand() {
+        return true;
+    }
+
     /** Magma cubes hit two harder than a slime of their size. */
     @Override
     protected int getAttackStrength() {

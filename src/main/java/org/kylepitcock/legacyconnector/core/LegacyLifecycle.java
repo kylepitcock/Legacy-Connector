@@ -193,6 +193,9 @@ public final class LegacyLifecycle {
             long modStart = System.nanoTime();
             Thread thread = Thread.currentThread();
             ClassLoader previous = thread.getContextClassLoader();
+            if (mod.mainClass != null && mod.metadata != null && mod.metadata.has("sourceVersion") && "1.2.5".equals(mod.metadata.get("sourceVersion").getAsString())) {
+                org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.registerSingleWorld(mod.mainClass.getClassLoader());
+            }
             boolean numericIds = mod.version.equals("1.6.4") || mod.version.equals("1.5.2") || mod.version.equals("1.4.7");
             String previousIds = numericIds ? legacyconnector.v1_6_4.net.minecraft.util.Ids.enter(mod.version, mod.mainClass == null ? null : mod.mainClass.getClassLoader()) : null;
             try {

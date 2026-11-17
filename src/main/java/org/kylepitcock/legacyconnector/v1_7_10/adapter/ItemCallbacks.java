@@ -42,6 +42,7 @@ public final class ItemCallbacks {
         net.minecraft.world.item.ItemStack modern = player.getItemInHand(hand);
         ItemStack view = ItemStack.mcc$wrap(modern);
         if (view == null) return InteractionResultHolder.pass(modern);
+        if (level.isClientSide && org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.singleWorld(legacy)) return InteractionResultHolder.pass(modern);
         int before = modern.getCount();
         ItemStack result = legacy.onItemRightClick(view, World.mcc$wrap(level), player(player));
         net.minecraft.world.item.ItemStack out = result == null ? net.minecraft.world.item.ItemStack.EMPTY : result.mcc$modern();
@@ -53,6 +54,8 @@ public final class ItemCallbacks {
     static InteractionResult useOn(Item legacy, UseOnContext ctx, boolean first) {
         ItemStack view = ItemStack.mcc$wrap(ctx.getItemInHand());
         if (view == null) return InteractionResult.PASS;
+        // Minecraft 1.2.5 single player had one world: the item's code runs once (on the server), not a second time on the client world
+        if (ctx.getLevel().isClientSide && org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.singleWorld(legacy)) return InteractionResult.PASS;
         BlockPos pos = ctx.getClickedPos();
         Vec3 h = ctx.getClickLocation();
         World world = World.mcc$wrap(ctx.getLevel());
@@ -62,6 +65,22 @@ public final class ItemCallbacks {
                 ? legacy.onItemUseFirst(view, player(ctx.getPlayer()), world, pos.getX(), pos.getY(), pos.getZ(), side, hx, hy, hz)
                 : legacy.onItemUse(view, player(ctx.getPlayer()), world, pos.getX(), pos.getY(), pos.getZ(), side, hx, hy, hz);
         return done ? InteractionResult.sidedSuccess(ctx.getLevel().isClientSide) : InteractionResult.PASS;
+    }
+
+    /**
+     * Forge's {@code doesSneakBypassUse(world, x, y, z, player)} (1.5+) and 1.4.7's {@code shouldPassSneakingClickToBlock(world, x, y, z)}: a sneaking
+     * click normally skips the block's activation; an item returning true here lets the block still handle it (Thermal Expansion's Crescent Hammer
+     * picks a machine up by a sneaking click, which is the machine's own onBlockActivated).
+     */
+    static boolean sneakBypass(Item legacy, net.minecraft.world.level.LevelReader level, BlockPos pos, Player player) {
+        if (!(level instanceof Level real)) return false;
+        try {
+            World world = World.mcc$wrap(real);
+            return legacy.doesSneakBypassUse(world, pos.getX(), pos.getY(), pos.getZ(), player(player))
+                    || legacy.shouldPassSneakingClickToBlock(world, pos.getX(), pos.getY(), pos.getZ());
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
     }
 
     static net.minecraft.world.item.ItemStack finishUsing(Item legacy, net.minecraft.world.item.ItemStack stack, Level level, LivingEntity entity) {

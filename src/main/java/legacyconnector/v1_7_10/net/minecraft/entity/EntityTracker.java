@@ -22,6 +22,11 @@ public class EntityTracker {
     public IntHashMap trackedEntityIDs;
     public java.util.Set trackedEntities = new java.util.HashSet<>();
 
+    /** 1.7.10's constructor takes the server world. */
+    public EntityTracker(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world) {
+        this((World) world);
+    }
+
     public EntityTracker(World world) {
         this.mcc$world = world;
         final Map<Integer, EntityTrackerEntry> entries = new HashMap<>();

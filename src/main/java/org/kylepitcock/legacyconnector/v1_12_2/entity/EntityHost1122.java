@@ -293,13 +293,15 @@ public class EntityHost1122 extends net.minecraft.world.entity.Entity implements
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         if (legacy == null) return;
-        try {
+        // a throwing writeEntityToNBT must not fail the chunk save: the last good legacy keys are saved instead
+        lastGoodNbt = org.kylepitcock.legacyconnector.core.NbtSaveGuard.guardInPlace(tag, lastGoodNbt, () -> {
             legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
             legacy.mcc$writeCaps(new NBTTagCompound(tag));
-        } catch (RuntimeException | LinkageError e) {
-            Hosts1122.nbtFailure(this, "writing", e);
-        }
+        }, legacy, net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(getType()), blockPosition().toShortString());
     }
+
+    /** The legacy keys of this entity's last successful save (see NbtSaveGuard). */
+    private CompoundTag lastGoodNbt;
 
     @Override
     public void writeSpawnData(RegistryFriendlyByteBuf buf) {

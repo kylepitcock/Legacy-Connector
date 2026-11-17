@@ -398,6 +398,17 @@ public class ServerConfigurationManager {
         return handler == null ? null : handler.readPlayerData(player);
     }
 
+    /** The profiles of the players that are online. */
+    public com.mojang.authlib.GameProfile[] getAllProfiles() {
+        return mcc$server.mcc$modern().getPlayerList().getPlayers().stream().map(p -> p.getGameProfile()).toArray(com.mojang.authlib.GameProfile[]::new);
+    }
+
+    /** Disconnects every player (the server is shutting down or a mod restarts the world). */
+    public void removeAllPlayers() {
+        net.minecraft.network.chat.Component reason = net.minecraft.network.chat.Component.translatable("multiplayer.disconnect.server_shutdown");
+        for (var p : new ArrayList<>(mcc$server.mcc$modern().getPlayerList().getPlayers())) p.connection.disconnect(reason);
+    }
+
     /** Sends the player the chunks around their position again (after a teleport the mod did itself). */
     public void updatePlayerPertinentChunks(EntityPlayerMP player) {
         var sp = player.mcc$serverPlayer();

@@ -532,7 +532,7 @@ final class Mc1201Migration {
     /**
      * A lambda or method reference for a library functional interface whose method changed its parameters (Architectury's {@code ClientGuiEvent.RenderHud}:
      * {@code (GuiGraphics, float)} became {@code (GuiGraphics, DeltaTracker)}): lib-lambdas.tsv rows. The metafactory gets a generated static adapter with the
-     * new signature that converts the parameters (a static helper per changed parameter, {@code Class.method} in the migrate package, or {@code -}) and calls
+     * new signature that converts the parameters (a static helper per changed parameter, and one more entry for the result, {@code Class.method} in the migrate package, or {@code -}; Round 9's {@code CauldronInteraction} is a row too) and calls
      * the original implementation.
      */
     private static boolean adaptLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d, Mc1201Tables t, Counts c) {
@@ -574,6 +574,12 @@ final class Mc1201Migration {
             }
         }
         a.visitMethodInsn(op, impl.getOwner(), impl.getName(), impl.getDesc(), impl.isInterface());
+        String rc = conv.length > newParams.length ? conv[newParams.length] : "-";
+        if (!rc.equals("-")) {   // one more converter than parameters: the result (old return type to the new one)
+            int dot = rc.lastIndexOf('.');
+            a.visitMethodInsn(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/" + rc.substring(0, dot), rc.substring(dot + 1),
+                    "(" + sam.getReturnType().getDescriptor() + ")" + newSam.getReturnType().getDescriptor(), false);
+        }
         a.visitInsn(newSam.getReturnType().getOpcode(Opcodes.IRETURN));
         a.visitMaxs(0, 0);
         c.trampolines.add(a);
@@ -1040,6 +1046,19 @@ final class Mc1201Migration {
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
             int i = Integer.parseInt(b.ret().substring(4));
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+        } else if (b.ret() != null && b.ret().startsWith("call:")) {
+            // the 1.21.1 method answers what the old (void) method left behind: a static helper of the migrate package takes new parameter N and returns the new result
+            // (ParticleRenderType.begin: the builder the mod's begin(builder, textureManager) started on the tesselator)
+            if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+            String spec = b.ret().substring(5);
+            int at = spec.indexOf('@');
+            int i = Integer.parseInt(spec.substring(at + 1));
+            String helper = spec.substring(0, at);
+            int dot = helper.lastIndexOf('.');
+            String cls = helper.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), "(" + newArgs[i].getDescriptor() + ")" + newRet.getDescriptor(), false));
         } else if (b.ret() != null && (b.ret().equals("const:true") || b.ret().equals("const:false"))) {
             // the 1.21.1 method returns a boolean the old (void or other) method had no answer for: the constant, after the old result is dropped
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));

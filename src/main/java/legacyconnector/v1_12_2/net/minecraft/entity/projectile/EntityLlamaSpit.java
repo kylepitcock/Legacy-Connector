@@ -55,6 +55,25 @@ public class EntityLlamaSpit extends legacyconnector.v1_12_2.net.minecraft.entit
         return !mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.projectile.LlamaSpit m ? m : null;
     }
 
+    /** Phantom: the llama that spat ({@link #mcc$get$owner}; the modern spit's owner). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama owner;
+    private legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama mcc$owner;
+
+    public static legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama mcc$get$owner(EntityLlamaSpit e) {
+        var m = e.mcc$self();
+        if (m != null && m.getOwner() != null) {
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(m.getOwner()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama l ? l : null;
+        }
+        return e.mcc$owner;
+    }
+
+    public static void mcc$set$owner(EntityLlamaSpit e, legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama v) {
+        var m = e.mcc$self();
+        if (m != null) m.setOwner(v == null ? null : v.mcc$entity);
+        e.mcc$owner = v;
+    }
+
     @Override
     protected void entityInit() {
     }

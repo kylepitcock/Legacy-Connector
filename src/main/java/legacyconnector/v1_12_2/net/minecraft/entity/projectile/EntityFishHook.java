@@ -102,6 +102,48 @@ public class EntityFishHook extends Entity {
         else e.mcc$local_ticksCatchable = v;
     }
 
+    /** The states of a bobber (1.12: in flight, caught on an entity, floating on the water). */
+    public enum State {
+        FLYING, HOOKED_IN_ENTITY, BOBBING
+    }
+
+    /** Phantom: the bobber's state ({@link #mcc$get$currentState}; the modern bobber's own state). */
+    @Deprecated
+    public State currentState;
+    private State mcc$local_state = State.FLYING;
+    private static final java.lang.reflect.Field MCC$STATE = mcc$stateField();
+
+    private static java.lang.reflect.Field mcc$stateField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.projectile.FishingHook.class, "currentState");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static State mcc$get$currentState(EntityFishHook e) {
+        var h = e.mcc$hook();
+        if (h == null || MCC$STATE == null) return e.mcc$local_state;
+        try {
+            Object s = MCC$STATE.get(h);
+            return s instanceof Enum<?> en ? State.valueOf(en.name()) : e.mcc$local_state;
+        } catch (IllegalAccessException | IllegalArgumentException ex) {
+            return e.mcc$local_state;
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void mcc$set$currentState(EntityFishHook e, State v) {
+        e.mcc$local_state = v == null ? State.FLYING : v;
+        var h = e.mcc$hook();
+        if (h == null || MCC$STATE == null || v == null) return;
+        try {
+            MCC$STATE.set(h, Enum.valueOf((Class) MCC$STATE.getType(), v.name()));
+        } catch (IllegalAccessException | IllegalArgumentException ex) {
+            // keeps the modern state
+        }
+    }
+
     /** Pulls the hooked entity towards the angler (as reeling in does). */
     protected void bringInHookedEntity() {
         var h = mcc$hook();

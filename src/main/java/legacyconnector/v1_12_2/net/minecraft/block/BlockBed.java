@@ -151,6 +151,34 @@ public class BlockBed extends BlockHorizontal implements ITileEntityProvider {
         }
     }
 
+    /**
+     * A free spot beside the bed to wake up or leave on (1.12): the nearest {@code tries}-th position around the bed's two squares with
+     * a solid floor and two free blocks above, or null.
+     */
+    public static BlockPos getSafeExitLocation(World worldIn, BlockPos pos, int tries) {
+        var facing = worldIn.getBlockState(pos).getValue(FACING);
+        int i = pos.getX(), j = pos.getY(), k = pos.getZ();
+        for (int l = 0; l <= 1; ++l) {
+            int minX = i - facing.getFrontOffsetX() * l - 1;
+            int minZ = k - facing.getFrontOffsetZ() * l - 1;
+            for (int x = minX; x <= minX + 2; ++x) {
+                for (int z = minZ; z <= minZ + 2; ++z) {
+                    BlockPos candidate = new BlockPos(x, j, z);
+                    if (mcc$hasRoomForPlayer(worldIn, candidate)) {
+                        if (tries <= 0) return candidate;
+                        --tries;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean mcc$hasRoomForPlayer(World worldIn, BlockPos pos) {
+        return worldIn.getBlockState(pos.down()).isTopSolid() && !worldIn.getBlockState(pos).getMaterial().isSolid()
+                && !worldIn.getBlockState(pos.up()).getMaterial().isSolid();
+    }
+
     @Override
     public void setBedOccupied(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos,
             legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean occupied) {

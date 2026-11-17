@@ -11,6 +11,11 @@ public class NBTTagShort extends NBTBase.NBTPrimitive {
         this((short) 0);
     }
 
+    /** An empty (zero) tag, as the reader of a stream creates it. */
+    public NBTTagShort() {
+        this((short) 0);
+    }
+
     public NBTTagShort(short data) {
         this.data = data;
     }

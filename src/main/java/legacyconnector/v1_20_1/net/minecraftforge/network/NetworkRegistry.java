@@ -8,6 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 /** Forge 1.20.1's channel factory. Version negotiation is not enforced: NeoForge's payload registration is marked optional. */
 public class NetworkRegistry {
     public static final String ABSENT = "ABSENT 🤔";
+    /** Mods of Forge 47.x read {@code NetworkRegistry.ABSENT} as a {@code ChannelData}; the loader points those reads here (mc-fields.tsv), the string stays for older builds. */
+    public static final ServerStatusPing$ChannelData ABSENT_DATA = new ServerStatusPing$ChannelData(ResourceLocation.fromNamespaceAndPath("fml", "absent"), ABSENT, true);
     public static final String ACCEPTVANILLA = "ALLOWVANILLA 👌";
 
     public static SimpleChannel newSimpleChannel(ResourceLocation name, Supplier<String> networkProtocolVersion, Predicate<String> clientAcceptedVersions,

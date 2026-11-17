@@ -88,7 +88,7 @@ for s in "${names[@]}"; do
   # the dimension self test of big packs blocks the main thread for longer than the 60 s watchdog: never let it kill the test run
   sed -i '/^max-tick-time=/d' "$D/server.properties"; echo "max-tick-time=-1" >> "$D/server.properties"
 
-  # Minecraft 1.2.5 is experimental and off by default: -Pmappings125 puts the name table on the classpath and switches the toggle on for the run
+  # Minecraft 1.2.5 is on by default; a dev build has no join table unless -Pmappings125 puts it on the classpath
   extra=(); for e in "${jars[@]}"; do [ "${e%%|*}" = "1.2.5" ] && extra=("-Pmappings125"); done
   glog="build/devtools/verify-$s-gradle.log"
   ./gradlew runServerSubTest "-PsubTestDir=$D" "-PautostopTicks=$AUTOSTOP" ${extra[@]+"${extra[@]}"} ${GRADLE_EXTRA:-} > "$glog" 2>&1 &

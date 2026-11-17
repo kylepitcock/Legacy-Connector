@@ -5,7 +5,10 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 enderman: the carried block id and metadata are in watcher slots 16 and 17, the screaming flag in slot 18. */
 public class EntityEnderman extends EntityMob {
-    private static final boolean[] carriable = new boolean[256];
+    /** The id of the speed modifier an angry enderman gets (vanilla's, so mods can find and remove it). */
+    public static final java.util.UUID attackingSpeedBoostModifierUUID = java.util.UUID.fromString("020E0DFB-87AE-4653-9556-831010E291A0");
+    /** 1.4.7-1.7.10: indexed by block id (4096 slots; the 1.6.4 and older arrays had 256, mods index it with Block ids). */
+    public static final boolean[] carriableBlocks = new boolean[4096];
 
     /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
     public EntityEnderman(net.minecraft.world.entity.LivingEntity modern) {
@@ -35,12 +38,12 @@ public class EntityEnderman extends EntityMob {
     /** Which blocks endermen may pick up; mods add their own. */
     public static void setCarriable(Block block, boolean value) {
         int id = Block.getIdFromBlock(block);
-        if (id >= 0 && id < carriable.length) carriable[id] = value;
+        if (id >= 0 && id < carriableBlocks.length) carriableBlocks[id] = value;
     }
 
     public static boolean getCarriable(Block block) {
         int id = Block.getIdFromBlock(block);
-        return id >= 0 && id < carriable.length && carriable[id];
+        return id >= 0 && id < carriableBlocks.length && carriableBlocks[id];
     }
 
     @Override

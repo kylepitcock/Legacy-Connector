@@ -89,37 +89,38 @@ class Mc125JarsTest {
     }
 
     @Test
-    void modLoaderJarWithMinecraft125NamesIsReportedNotHosted(@TempDir Path dir) throws IOException {
-        List<String[]> calls = table125().subList(0, 40);
-        Path jar = modJar(dir, "mod_Test.jar", calls);
-        assertNull(LegacyJarInspector.inspect(jar), "not hosted");
-        String why = Mc125Jars.takeUnsupported(jar);
-        assertNotNull(why, "recorded as 1.2.5");
-        assertTrue(why.contains("1.2.5"), why);
-        assertEquals("a.jar: Minecraft 1.2.5 (not supported yet): " + why + "; not loaded (" + Mc125Jars.HOW_TO_ENABLE + ")", Mc125Jars.reportLine("a.jar", why));
-        assertNull(Mc125Jars.takeUnsupported(jar), "taken once");
-    }
-
-    @Test
-    void optInWithoutTheTableInTheBuildStillOnlyReports(@TempDir Path dir) throws IOException {
-        org.junit.jupiter.api.Assumptions.assumeFalse(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "build made with -Pmappings125");
-        System.setProperty("legacyconnector.mc125", "true");
+    void modLoaderJarWithMinecraft125NamesIsReportedNotHostedWhenSwitchedOff(@TempDir Path dir) throws IOException {
+        System.setProperty("legacyconnector.mc125", "false");
         try {
-            Path jar = modJar(dir, "mod_Test.jar", table125().subList(0, 40));
-            assertNull(LegacyJarInspector.inspect(jar));
+            List<String[]> calls = table125().subList(0, 40);
+            Path jar = modJar(dir, "mod_Test.jar", calls);
+            assertNull(LegacyJarInspector.inspect(jar), "not hosted");
             String why = Mc125Jars.takeUnsupported(jar);
-            assertNotNull(why);
-            assertTrue(why.contains("no 1.2.5 name table"), why);
+            assertNotNull(why, "recorded as 1.2.5");
+            assertTrue(why.contains("1.2.5"), why);
+            assertEquals("a.jar: Minecraft 1.2.5 (support is switched off): " + why + "; not loaded (" + Mc125Jars.HOW_TO_ENABLE + ")", Mc125Jars.reportLine("a.jar", why));
+            assertNull(Mc125Jars.takeUnsupported(jar), "taken once");
         } finally {
             System.clearProperty("legacyconnector.mc125");
         }
+    }
+
+    @Test
+    void withoutTheTableInTheBuildStillOnlyReports(@TempDir Path dir) throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeFalse(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "build made with -Pmappings125");
+        // default on, no property: the build without the table must report the jar clearly and never throw
+        Path jar = modJar(dir, "mod_Test.jar", table125().subList(0, 40));
+        assertNull(LegacyJarInspector.inspect(jar));
+        String why = Mc125Jars.takeUnsupported(jar);
+        assertNotNull(why);
+        assertTrue(why.contains("no 1.2.5 name table"), why);
+        assertTrue(Mc125Jars.reportLine("a.jar", why).contains("not supported in this build"), why);
     }
 
     /** Needs the real join table (run with {@code -Pmappings125}): the opted-in jar is a 1.4.7 jar whose game calls resolve in 1.4.7's names. */
     @Test
     void optedInJarIsHostedAs147AndRenamedToItsNames(@TempDir Path dir) throws IOException {
         org.junit.jupiter.api.Assumptions.assumeTrue(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "needs -Pmappings125");
-        System.setProperty("legacyconnector.mc125", "true");
         try {
             List<String[]> calls = table125().subList(0, 60);
             Path jar = modJar(dir, "mod_Test.jar", calls);
@@ -157,11 +158,16 @@ class Mc125JarsTest {
     }
 
     @Test
-    void jarInTheFolderOf1_2_5IsReportedWithoutFingerprint(@TempDir Path dir) throws IOException {
-        Path folder = Files.createDirectories(dir.resolve(Mc125Jars.FOLDER));
-        Path jar = modJar(folder, "mod_Test.jar", List.of());
-        assertNull(LegacyJarInspector.inspect(jar));
-        assertNotNull(Mc125Jars.takeUnsupported(jar));
+    void jarInTheFolderOf1_2_5IsReportedWithoutFingerprintWhenSwitchedOff(@TempDir Path dir) throws IOException {
+        System.setProperty("legacyconnector.mc125", "false");
+        try {
+            Path folder = Files.createDirectories(dir.resolve(Mc125Jars.FOLDER));
+            Path jar = modJar(folder, "mod_Test.jar", List.of());
+            assertNull(LegacyJarInspector.inspect(jar));
+            assertNotNull(Mc125Jars.takeUnsupported(jar));
+        } finally {
+            System.clearProperty("legacyconnector.mc125");
+        }
     }
 
     @Test

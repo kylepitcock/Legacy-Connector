@@ -63,6 +63,9 @@ public class SimpleChannel {
         final byte[] raw;
         final int rawIndex;
 
+        /** The packet buffer kept alive for the handler, or null. */
+        volatile io.netty.buffer.ByteBuf heldBuffer;
+
         Payload(IndexedMessageCodec.MessageHandler<?> handler, Object message) {
             this.handler = handler;
             this.message = message;
@@ -115,15 +118,26 @@ public class SimpleChannel {
         int index = buf.readByte() & 0xFF;
         IndexedMessageCodec.MessageHandler<?> h = byIndex.get(index);
         if (h == null) throw new IllegalStateException("Unknown message index " + index + " on channel " + name);
-        // Forge kept the packet buffer alive for the handler (a decoder may keep it and retain() it later, SpectreLib's config sync does): the decoder reads an own
-        // copy of the rest of the packet, never the pooled network buffer that is released when this decode returns
-        net.minecraft.network.FriendlyByteBuf own = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.copiedBuffer(buf));
-        buf.skipBytes(buf.readableBytes());
-        return new Payload(h, h.decode(own));
+        // Forge decoded on the network thread with the buffer retained and released it after the handler: a decoder may keep the buffer and retain() it
+        // later (SpectreLib's config sync does). NeoForge releases the buffer when this decode returns, so it is held until the handler is done.
+        boolean held = PacketBufferLifetime.hold(buf);
+        Payload payload;
+        try {
+            payload = new Payload(h, h.decode(buf));
+        } catch (RuntimeException | Error e) {
+            PacketBufferLifetime.release(buf, held);
+            throw e;
+        }
+        payload.heldBuffer = held ? buf : null;
+        return payload;
     }
 
     private void handle(Payload payload, IPayloadContext ctx) {
-        payload.handler.handle(payload.message, new NetworkEvent.Context(ctx));
+        try {
+            payload.handler.handle(payload.message, new NetworkEvent.Context(ctx));
+        } finally {
+            PacketBufferLifetime.release(payload.heldBuffer, payload.heldBuffer != null);
+        }
     }
 
     // ---- Forge's API --------------------------------------------------------------------------------------------------------

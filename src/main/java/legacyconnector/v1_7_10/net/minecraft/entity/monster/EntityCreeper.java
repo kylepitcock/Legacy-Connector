@@ -20,7 +20,26 @@ public class EntityCreeper extends EntityMob {
 
     public EntityCreeper(World world) {
         super(world);
+        // 1.7.10's constructor: a mod's creeper (Elemental Creepers) inherits this task list; without it the creeper never chases or swells
+        tasks.addTask(1, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAISwimming(this));
+        tasks.addTask(2, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAICreeperSwell(this));
+        tasks.addTask(3, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIAvoidEntity(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityOcelot.class, 6.0F, 1.0D, 1.2D));
+        tasks.addTask(4, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIAttackOnCollide(this, 1.0D, false));
+        tasks.addTask(5, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIWander(this, 0.8D));
+        tasks.addTask(6, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIWatchClosest(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class, 8.0F));
+        tasks.addTask(6, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAILookIdle(this));
+        targetTasks.addTask(1, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAINearestAttackableTarget(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class, 0, true));
+        targetTasks.addTask(2, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIHurtByTarget(this, false));
         setSize(0.6F, 1.8F);
+    }
+
+    @Override
+    protected void applyEntityAttributes() {
+        super.applyEntityAttributes();
+        getEntityAttribute(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
     }
 
     private net.minecraft.world.entity.monster.Creeper mcc$creeper() {

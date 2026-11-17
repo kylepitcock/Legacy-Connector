@@ -194,6 +194,37 @@ public class DragonFightManager {
         }
     }
 
+    private static final java.lang.reflect.Field MCC$BAR = mcc$barField();
+
+    private static java.lang.reflect.Field mcc$barField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.level.dimension.end.EndDragonFight.class, "dragonEvent");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private net.minecraft.server.level.ServerBossEvent mcc$bar() {
+        if (mcc$modern == null || MCC$BAR == null) return null;
+        try {
+            return MCC$BAR.get(mcc$modern) instanceof net.minecraft.server.level.ServerBossEvent b ? b : null;
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    /** Shows the fight's boss bar to a player who entered the End (1.12 called this from the player list on the dimension change). */
+    public void addPlayer(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP player) {
+        var bar = mcc$bar();
+        if (bar != null && player != null && player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer p) bar.addPlayer(p);
+    }
+
+    /** Hides the fight's boss bar from a player who left the End. */
+    public void removePlayer(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP player) {
+        var bar = mcc$bar();
+        if (bar != null && player != null && player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer p) bar.removePlayer(p);
+    }
+
     public int getNumAliveCrystals() {
         return mcc$modern == null ? 0 : mcc$modern.getCrystalsAlive();
     }

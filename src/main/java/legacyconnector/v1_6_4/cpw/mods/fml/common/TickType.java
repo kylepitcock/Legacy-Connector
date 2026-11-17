@@ -15,7 +15,9 @@ public enum TickType {
     PLAYER,
     SERVER,
     WORLDLOAD,
-    GAME;
+    GAME,
+    /** 1.4.7 and 1.5.2: every client tick while a GUI screen is open, {@code tickData} is the screen (see {@code Ticks164}). */
+    CLIENTGUI;
 
     private TickType[] partners = new TickType[0];
 

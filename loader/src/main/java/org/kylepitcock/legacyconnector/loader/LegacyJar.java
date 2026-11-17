@@ -15,7 +15,7 @@ public final class LegacyJar {
     /** Why {@link #version} was chosen; shown in the compatibility report. */
     public String versionEvidence = "";
     /**
-     * Minecraft 1.2.5 jars hosted through the 1.4.7 chain (opt-in {@code legacyconnector.mc125}): {@link #version} is 1.4.7, this is
+     * Minecraft 1.2.5 jars hosted through the 1.4.7 chain (on by default, {@code versions.minecraft125=false} or {@code -Dlegacyconnector.mc125=false} turns it off): {@link #version} is 1.4.7, this is
      * {@link LegacyVersion#V1_2_5} and {@link #notchSide} the 1.2.5 obfuscation the jar uses ('c' client, 's' server). Null otherwise.
      */
     public LegacyVersion sourceVersion;

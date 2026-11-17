@@ -135,4 +135,65 @@ public final class Redirects125 {
             }
         }
     }
+
+    // ---- FML 2.x (the FML that Forge 3.x for 1.2.5 bundles): members FML 3 moved to TickRegistry, GameRegistry and NetworkRegistry
+
+    /**
+     * FML 2.x {@code FMLCommonHandler.registerTickHandler(handler)}: one registration for both sides (FML 3 split it into {@code TickRegistry.registerTickHandler(handler, side)});
+     * each side's listener only fires the tick kinds of its own side, so the handler sees what it asked for from {@code ticks()}.
+     */
+    public static void registerTickHandler(legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler fml, legacyconnector.v1_6_4.cpw.mods.fml.common.ITickHandler handler) {
+        if (handler == null) return;
+        Ticks164.register(handler, legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT);
+        Ticks164.register(handler, legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.SERVER);
+    }
+
+    /** FML 2.x {@code FMLCommonHandler.registerWorldGenerator(generator)}: the registry call of FML 3, weight 0. */
+    public static void registerWorldGenerator(legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler fml, legacyconnector.v1_7_10.cpw.mods.fml.common.IWorldGenerator generator) {
+        if (generator != null) legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerWorldGenerator(generator, 0);
+    }
+
+    /**
+     * FML 2.x {@code FMLCommonHandler.handleWorldGeneration(chunkX, chunkZ, seed, data...)}: the hook the patched chunk provider calls after a chunk is populated;
+     * {@code data} is (world, chunk generator, chunk provider). Runs the registered generators on that chunk.
+     */
+    public static void handleWorldGeneration(legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler fml, int chunkX, int chunkZ, long seed, Object[] data) {
+        if (data == null || data.length < 3 || !(data[0] instanceof World world)
+                || !(data[1] instanceof legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider generator)
+                || !(data[2] instanceof legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider)) return;
+        legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.generateWorld(chunkX, chunkZ, world, generator, provider);
+    }
+
+    /**
+     * FML 2.x {@code FMLCommonHandler.registerChannel(container, channel)}: the mod's custom payloads on {@code channel}. A ModLoader mod gets them in
+     * {@code receiveCustomPacket} (the packet-250 model of {@code ModLoader.registerPacketChannel}); other mods register their {@code IPacketHandler} the FML 3 way.
+     */
+    public static void registerChannel(legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler fml, legacyconnector.v1_7_10.cpw.mods.fml.common.ModContainer container, String channel) {
+        Object mod = container == null ? null : container.getMod();
+        if (mod instanceof legacyconnector.v1_6_4.net.minecraft.src.BaseMod base) legacyconnector.v1_6_4.net.minecraft.src.ModLoader.registerPacketChannel(base, channel);
+    }
+
+    /**
+     * {@code RenderEngine.getTextureContents(path)}: the pixels (ARGB, row by row) of a texture file, read from the mods' jars or the game's resources like ModLoader's
+     * {@code loadImage}; an unreadable file gives an empty array (1.2.5 returned its missing-texture pixels).
+     */
+    public static int[] textureContents(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures, String path) {
+        try {
+            java.awt.image.BufferedImage image = legacyconnector.v1_6_4.net.minecraft.src.ModLoader.loadImage(textures, path);
+            if (image == null) return new int[0];
+            return image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        } catch (Exception e) {
+            return new int[0];
+        }
+    }
+
+    /** Forge 3.x {@code Item.setTextureFile(file)} returns void ({@code Item} itself in later versions; Java cannot overload on the result). */
+    public static void setItemTextureFile(legacyconnector.v1_7_10.net.minecraft.item.Item item, String file) {
+        item.setTextureFile(file);
+    }
+
+    /** Forge 3.x {@code Block.setTextureFile(file)}, void like the item's. */
+    public static void setBlockTextureFile(Block block, String file) {
+        block.setTextureFile(file);
+    }
 }

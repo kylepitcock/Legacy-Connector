@@ -90,8 +90,7 @@ neoForge {
             // Separate game/config/world/cache directories allow one-mod regression runs.
             gameDirectory = project.file(project.findProperty('subTestDir') ?: 'run-subtest')
             programArgument '--nogui'
-            // -Pmappings125 (with the loader built the same way): Minecraft 1.2.5 jars in mods/1.2.5 are hosted through the 1.4.7 chain (docs/wiki/Legacy-1.2.5.md)
-            if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
+            // -Pmappings125 (with the loader built the same way): puts the 1.2.5 join table on the classpath (1.2.5 support itself is on by default); jars in mods/1.2.5 are hosted through the 1.4.7 chain (docs/wiki/Legacy-1.2.5.md)
             systemProperty 'legacytest.autostop', 'true'
             systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
             // -Pjfr=<file.jfr>: Java Flight Recorder (profile settings) for the whole run; analyse with tools/dev/perf/jfr_report.py (docs/wiki/Performance.md)
@@ -105,7 +104,6 @@ neoForge {
             if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
             systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
             // -Pmappings125: host the jars of mods/1.2.5 (needs a loader built with the same property)
-            if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
             // -PcoremodReport: the coremod hook report lists every place that has no equivalent yet
             if (project.hasProperty('coremodReport')) systemProperty 'legacyconnector.coremodHooks.report', 'full'
             // Opt-in observation of real player/chunk natural-spawn cycles; not part of normal build checks.
@@ -143,8 +141,7 @@ neoForge {
             if (project.hasProperty('shotDir')) jvmArguments.addAll('-Xmx12G')
             systemProperty 'legacyconnector.screenshotTest', 'true'
             // -Pmappings125: host the 1.2.5 jars of mods/1.2.5 (needs the join table in the loader, see docs/wiki/Legacy-1.2.5.md)
-            if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
-            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas', 'shotCommands', 'debugIcons', 'debugAssets', 'debugAsm'].each { p ->
+            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotLoadWorld', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas', 'shotCommands', 'debugIcons', 'debugAssets', 'debugAsm'].each { p ->
                 if (project.hasProperty(p)) systemProperty 'legacyconnector.' + p, project.property(p)
             }
             if (project.hasProperty('shotWidth') && project.hasProperty('shotHeight')) {
@@ -512,11 +509,10 @@ tasks.register('checkLegacyMod', JavaExec) {
     dependsOn generateShimIndex
     classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
-    // -Pmappings125: the opt-in 1.2.5 to 1.4.7 table (:loader:genMappings125) is on the classpath; the property legacyconnector.mc125 is passed through
+    // -Pmappings125: the 1.2.5 to 1.4.7 table (:loader:genMappings125) is on the classpath (1.2.5 support is on by default; -Dlegacyconnector.mc125=false turns it off)
     if (project.hasProperty('mappings125')) {
         dependsOn ':loader:genMappings125'
         classpath += files(project(':loader').layout.buildDirectory.dir('generated/mappings125'))
-        systemProperty 'legacyconnector.mc125', 'true'
     }
     // -PcheckJson=<file> also writes a JSON record per jar (tools/compat/probe.py)
     if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
@@ -528,9 +524,7 @@ tasks.register('checkLegacyMod', JavaExec) {
     maxHeapSize = '3g'
     // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
     if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
-    // -Pmappings125: host Minecraft 1.2.5 jars through the 1.4.7 chain (needs the generated join table, see docs/wiki/Legacy-1.2.5.md)
-    if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
-    // -Pmc125Unresolved=<file>: append the game members of 1.2.5 jars the join table could not name (diagnostics)
+        // -Pmc125Unresolved=<file>: append the game members of 1.2.5 jars the join table could not name (diagnostics)
     if (project.findProperty('mc125Unresolved')) systemProperty 'legacyconnector.mc125.unresolved', project.findProperty('mc125Unresolved').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }

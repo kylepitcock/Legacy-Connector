@@ -91,3 +91,40 @@ R	net/minecraft/tileentity/TileEntitySkull	setSkullType	(ILjava/lang/String;)V	s
 S	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	selectedBlockId	I	legacyconnector/v1_6_4/forward/Forward152Calls	setSelectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;I)V
 R	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	getSelectedBlockId	()I	static	legacyconnector/v1_6_4/forward/Forward152Calls	getSelectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;)I
 R	net/minecraft/item/ItemStack	onBlockDestroyed	(Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	onBlockDestroyed	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V
+# API gap pass 2026-11-17 (1.5.2 and 1.4.7, tools/dev/agent-tasks/1.5.2-gaps.md and 1.4.7-gaps.md): signatures that changed, names that moved, constants
+# AI goals took float speeds, 1.7.10 takes double (EntityAIMoveTowardsRestriction, MoveThroughVillage, MoveTowardsTarget); TargetNonTamed lost its float distance
+C	net/minecraft/entity/ai/EntityAIMoveTowardsRestriction	(Lnet/minecraft/entity/EntityCreature;F)V	(Lnet/minecraft/entity/EntityCreature;D)V	args	0	1:legacyconnector/v1_6_4/forward/Forward152#widen#(F)D
+C	net/minecraft/entity/ai/EntityAIMoveThroughVillage	(Lnet/minecraft/entity/EntityCreature;FZ)V	(Lnet/minecraft/entity/EntityCreature;DZ)V	args	0	1:legacyconnector/v1_6_4/forward/Forward152#widen#(F)D	2
+C	net/minecraft/entity/ai/EntityAIMoveTowardsTarget	(Lnet/minecraft/entity/EntityCreature;FF)V	(Lnet/minecraft/entity/EntityCreature;DF)V	args	0	1:legacyconnector/v1_6_4/forward/Forward152#widen#(F)D	2
+C	net/minecraft/entity/ai/EntityAITargetNonTamed	(Lnet/minecraft/entity/passive/EntityTameable;Ljava/lang/Class;FIZ)V	(Lnet/minecraft/entity/passive/EntityTameable;Ljava/lang/Class;IZ)V	args	0	1	3	4
+# the damage of an ender teleport was an int
+C	net/minecraftforge/event/entity/living/EnderTeleportEvent	(Lnet/minecraft/entity/EntityLivingBase;DDDI)V	(Lnet/minecraft/entity/EntityLivingBase;DDDF)V	args	0	1	2	3	4:legacyconnector/v1_6_4/forward/Forward152#toFloat#(I)F
+# liquid tanks no longer know their tile; texture animations are named by their sheet, not by a file name; the dedicated server's property manager has no log agent
+C	net/minecraftforge/liquids/LiquidTank	(IIILnet/minecraft/tileentity/TileEntity;)V	(III)V	args	0	1	2
+C	net/minecraft/src/ModTextureAnimation	(IILjava/lang/String;Ljava/awt/image/BufferedImage;I)V	(IILjava/awt/image/BufferedImage;I)V	args	0	1	3	4
+C	net/minecraft/server/dedicated/PropertyManager	(Ljava/io/File;Lnet/minecraft/logging/ILogAgent;)V	(Ljava/io/File;)V	args	0
+# breaking particles: 1.5.2 passed the render engine, 1.4.7 had no metadata argument
+C	net/minecraft/client/particle/EntityBreakingFX	(Lnet/minecraft/world/World;DDDLnet/minecraft/item/Item;Lnet/minecraft/client/renderer/texture/TextureManager;)V	(Lnet/minecraft/world/World;DDDLnet/minecraft/item/Item;)V	args	0	1	2	3	4
+C	net/minecraft/client/particle/EntityBreakingFX	(Lnet/minecraft/world/World;DDDDDDLnet/minecraft/item/Item;)V	(Lnet/minecraft/world/World;DDDDDDLnet/minecraft/item/Item;I)V	args	0	1	2	3	4	5	6	7	-1:legacyconnector/v1_6_4/forward/Forward152#zero#()I
+# World subclasses: settings and provider swapped places, the log agent is gone
+C	net/minecraft/world/World	(Lnet/minecraft/world/storage/ISaveHandler;Ljava/lang/String;Lnet/minecraft/world/WorldSettings;Lnet/minecraft/world/WorldProvider;Lnet/minecraft/profiler/Profiler;Lnet/minecraft/logging/ILogAgent;)V	(Lnet/minecraft/world/storage/ISaveHandler;Ljava/lang/String;Lnet/minecraft/world/WorldProvider;Lnet/minecraft/world/WorldSettings;Lnet/minecraft/profiler/Profiler;)V	args	0	1	3	2	4
+# the highlight of the block under the cursor took the held item (Forge's event); FML's reflection helper took the value last
+R	net/minecraft/client/renderer/RenderGlobal	drawSelectionBox	(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;ILnet/minecraft/item/ItemStack;F)V	static	legacyconnector/v1_6_4/forward/Forward152	drawSelectionBox	(Lnet/minecraft/client/renderer/RenderGlobal;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;ILnet/minecraft/item/ItemStack;F)V
+R	cpw/mods/fml/common/ObfuscationReflectionHelper	setPrivateValue	(Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V	static	legacyconnector/v1_6_4/forward/Forward152	setPrivateValue	(Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V
+# statics
+G	net/minecraft/block/BlockLeaves	LEAF_TYPES	[Ljava/lang/String;	sfield	legacyconnector/v1_6_4/forward/Forward152	LEAF_TYPES
+G	cpw/mods/fml/common/ObfuscationReflectionHelper	obfuscation	Z	sfield	legacyconnector/v1_6_4/forward/Forward152	OBFUSCATION
+# names the 1.5.2 game had under its SRG ids and 1.7.10 gives readable names
+M	net/minecraft/world/Explosion	func_94613_c	()Lnet/minecraft/entity/EntityLivingBase;	getExplosivePlacedBy
+M	net/minecraft/tileentity/TileEntity	func_85027_a	(Lnet/minecraft/crash/CrashReportCategory;)V	addInfoToCrashReport
+M	net/minecraft/tileentity/TileEntityChest	func_98041_l	()I	getChestType
+M	net/minecraft/command/CommandBase	func_82359_c	(Lnet/minecraft/command/ICommandSender;Ljava/lang/String;)Lnet/minecraft/entity/player/EntityPlayerMP;	getPlayer
+M	net/minecraft/scoreboard/Scoreboard	func_96508_e	(Ljava/lang/String;)Lnet/minecraft/scoreboard/ScorePlayerTeam;	getPlayersTeam
+M	net/minecraft/entity/player/EntityPlayer	func_96122_a	(Lnet/minecraft/entity/player/EntityPlayer;)Z	canAttackPlayer
+M	net/minecraft/inventory/Container	func_94531_b	(Lnet/minecraft/inventory/Slot;)Z	canDragIntoSlot
+F	net/minecraft/entity/EntityHanging	xPosition	field_146063_b
+F	net/minecraft/entity/EntityHanging	yPosition	field_146064_c
+F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
+# FML 1.4.7/1.5.2: unique sprite indices were handed out by the rendering registry (ModLoader's getUniqueSpriteIndex is the same table)
+R	cpw/mods/fml/client/registry/RenderingRegistry	getUniqueTextureIndex	(Ljava/lang/String;)I	static	legacyconnector/v1_6_4/forward/Forward152	getUniqueTextureIndex	(Ljava/lang/Object;Ljava/lang/String;)I
+M	net/minecraft/tileentity/TileEntityHopper	isCoolingDown	()Z	isOnTransferCooldown

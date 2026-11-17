@@ -1,0 +1,7 @@
+# Modrinth project slugs the probe does not download (one per line, "#" starts a comment).
+# Use it for mods whose link result depends on other jars of the corpus and says nothing about the layer.
+#
+# WorldEdit: its bundled-library calls (SnakeYAML 1.x) resolve into another mod's SnakeYAML 2.x when the whole
+# corpus is checked as one set, so it flips between "links" and "unresolved" with the corpus (maintainer, 2026-11-17).
+worldedit
+worldedit-legacy-enhanced

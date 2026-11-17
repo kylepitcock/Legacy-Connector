@@ -19,6 +19,16 @@ public class ForgeHooksClient {
 
     /** Forge 1.4.7: binds a mod's texture file (a whole sprite sheet or image); the unit argument was the texture slot. */
     public static void bindTexture(String texture, int unit) {
+        // Forge 1.4.7 drew the vertices collected so far with the old texture before the new one was bound: a renderer that draws a part per image
+        // (CoFH's changeTexture: Thermal Expansion's energy cell frame then its liquid, a tesseract's frame then its core) in one Tessellator draw. Without
+        // this every quad took the image bound last (the liquid sheet's transparent tiles: cell and tesseract items drew nothing). The chunk capture does it in TextureManager.
+        if (!org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) {
+            var t = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance();
+            if (t.isDrawing) {
+                t.draw();
+                t.startDrawingQuads();
+            }
+        }
         legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.bindTexture(texture);
     }
 

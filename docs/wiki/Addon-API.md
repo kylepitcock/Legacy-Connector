@@ -1,6 +1,6 @@
 # Addon API: writing addons for legacy mods
 
-Legacy Connector runs unmodified Beta 1.7.3, 1.2.5 (experimental, opt-in), 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 Forge mods on NeoForge 1.21.1. The **addon API**
+Legacy Connector runs unmodified Beta 1.7.3, 1.2.5 (alpha), 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 Forge mods on NeoForge 1.21.1. The **addon API**
 lets other NeoForge 1.21.1 mods build on those legacy mods with modern code (see [Support per legacy version](#support-per-legacy-version)
 for what works for which version). Examples of what an addon can do:
 
@@ -120,7 +120,7 @@ Use REGISTERED only when the legacy mod must see your data before its own loadCo
 | --- | --- |
 | `LegacyApi` | `mods()`, `mods(version)`, `failedMods()`, `mod(id)`, `isLoaded(id)`, `hasLegacyMods()`, `phase()`, `runWhen(phase, action)`, `classOf(modId, className)`, `versionOf(object)`, `versionOfNamespace(ns)`, `API_VERSION` ("0.3") |
 | `LegacyMod` | `id()`, `legacyId()`, `name()`, `version()`, `minecraftVersion()`, `failed()`, `failureMessage()`, `classLoader()`, `classOf(name)`, `instance()`, `file()`, `missingDependencies()`, `failedPhase()` |
-| `LegacyVersion` | `V1_4_7`, `V1_5_2`, `V1_6_4`, `V1_7_10`, `V1_12_2`, `VB1_7_3` (id `b1.7.3`), `V1_20_1`, `V1_2_5` (experimental, opt-in; declared last); `id()`, `family()` (1.2.5 and 1.4.7 to 1.6.4 share the 1.7.10 shim), `usesNumericIds()`, `isInPlace()` (1.20.1), `isBeta()` |
+| `LegacyVersion` | `V1_4_7`, `V1_5_2`, `V1_6_4`, `V1_7_10`, `V1_12_2`, `VB1_7_3` (id `b1.7.3`), `V1_20_1`, `V1_2_5` (alpha, on by default; declared last); `id()`, `family()` (1.2.5 and 1.4.7 to 1.6.4 share the 1.7.10 shim), `usesNumericIds()`, `isInPlace()` (1.20.1), `isBeta()` |
 | `LegacyPhase` | `NOT_STARTED`, `DISCOVERED`, `REGISTERED`, `LOAD_COMPLETE` |
 | `LegacyAddon` | the entry point (see above): `priority`, `requiredLegacyMods`, `onLegacyModsDiscovered`, `onLegacyRegistered`, `onLegacyLoadComplete`, `onLegacyModFailed`, `registerCapabilities` |
 | `LegacyAccess` | reflection on legacy objects: `invokeStatic`, `invoke`, `newInstance`, `getStatic`, `getField`, `setField`, `setStatic`, `isInstance`, `hasMethod` |
@@ -244,7 +244,7 @@ batteries (only the 6.x `PowerHandler` API), extracting from BuildCraft engines,
 - **1.7.10** is the reference: every feature below exists for it.
 - **1.12.2** has its own shim (`IBlockState`, metadata through the block's own `getStateFromMeta`; an item with subtypes is one modern item per subtype, a
   fluid is a real modern fluid with a bucket).
-- **1.2.5** (experimental, `experimental.minecraft125`) is translated to the 1.4.7 layer, so its objects, ids and conversions behave exactly as 1.4.7's; `LegacyMod.minecraftVersion()` and `versionOf` still answer `V1_2_5` for such a mod (the loader records the source version in the mod's metadata), and its column in the table below mirrors 1.4.7.
+- **1.2.5** (alpha, `versions.minecraft125`) is translated to the 1.4.7 layer, so its objects, ids and conversions behave exactly as 1.4.7's; `LegacyMod.minecraftVersion()` and `versionOf` still answer `V1_2_5` for such a mod (the loader records the source version in the mod's metadata), and its column in the table below mirrors 1.4.7.
 - **Beta 1.7.3** has its own shim and platform (`legacyconnector.vb1_7_3`): numeric ids (blocks 0-255, items 256 and up) that the mods claim themselves,
   no capabilities, fluids or energy in the old game, so those rows say "n.a.".
 - **1.20.1** mods are remapped in place, so "legacy" blocks, items, stacks, block entities and levels **are** the modern objects: the conversions return them

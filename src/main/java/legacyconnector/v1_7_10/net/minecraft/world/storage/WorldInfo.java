@@ -28,6 +28,41 @@ public class WorldInfo {
         this.mcc$nbt = nbt;
     }
 
+    /** A standalone info for new world settings (what a mod's own save handler builds before the first save). */
+    public WorldInfo(legacyconnector.v1_7_10.net.minecraft.world.WorldSettings settings, String name) {
+        this.world = null;
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+        tag.setLong("RandomSeed", settings.getSeed());
+        tag.setString("LevelName", name);
+        tag.setInteger("GameType", settings.getGameType() == null ? 0 : settings.getGameType().getID());
+        tag.setBoolean("MapFeatures", settings.isMapFeaturesEnabled());
+        tag.setBoolean("hardcore", settings.getHardcoreEnabled());
+        tag.setBoolean("allowCommands", settings.areCommandsAllowed());
+        if (settings.getTerrainType() != null) tag.setString("generatorName", settings.getTerrainType().getWorldTypeName());
+        tag.setString("generatorOptions", settings.field_82751_h == null ? "" : settings.field_82751_h);
+        tag.setInteger("SpawnY", 64);
+        this.mcc$nbt = tag;
+    }
+
+    /** Changes the game mode: on a live world the server's default mode, on a detached info its saved data. */
+    public void setGameType(legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType type) {
+        if (type == null || type.getID() < 0) return;
+        if (saved() != null) {
+            saved().setInteger("GameType", type.getID());
+            return;
+        }
+        var current = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (current != null) current.setDefaultGameType(net.minecraft.world.level.GameType.byId(type.getID()));
+    }
+
+    private int mcc$saveVersion = 19133;
+
+    /** Records the save format version (a detached info keeps it in its data; a live world is always saved in the host's format). */
+    public void setSaveVersion(int version) {
+        mcc$saveVersion = version;
+        if (saved() != null) saved().setInteger("version", version);
+    }
+
     /** The detached data when this is not a view of a world, else null. */
     private legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound saved() {
         return world == null ? mcc$nbt : null;
@@ -184,7 +219,8 @@ public class WorldInfo {
 
     /** The save format version of level.dat: 19133, the Anvil format every 1.7.10 world was saved in. */
     public int getSaveVersion() {
-        return 19133;
+        if (saved() != null && saved().hasKey("version")) return saved().getInteger("version");
+        return mcc$saveVersion;
     }
 
     private boolean mcc$initialized;

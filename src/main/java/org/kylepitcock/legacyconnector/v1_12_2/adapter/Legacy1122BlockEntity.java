@@ -197,11 +197,11 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         super.saveAdditional(tag, registries);
         TileEntity te = legacy;
         if (te != null) {
-            try {
-                tag.put("legacy", te.writeToNBT(new NBTTagCompound()).mcc$modern());
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("Legacy tile entity {} failed to save: {}", te.getClass().getName(), e.toString());
-            }
+            // a throwing writeNBT (or a tag the chunk writer rejects) must neither fail the chunk save nor wipe the tile's data: save the last good copy
+            CompoundTag fresh = org.kylepitcock.legacyconnector.core.NbtSaveGuard.attempt(() -> te.writeToNBT(new NBTTagCompound()).mcc$modern(),
+                    te, net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(getType()), getBlockPos().toShortString());
+            if (fresh != null) lastGood = fresh;
+            if (lastGood != null) tag.put("legacy", lastGood);
         } else if (pending != null) {
             tag.put("legacy", pending);
         }
@@ -282,8 +282,12 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
                 pending.putInt("y", worldPosition.getY());
                 pending.putInt("z", worldPosition.getZ());
             }
+            lastGood = pending;
             legacy = null;
             failed = false;
         }
     }
+
+    /** The legacy NBT of the last successful save or load (see NbtSaveGuard). */
+    private CompoundTag lastGood;
 }

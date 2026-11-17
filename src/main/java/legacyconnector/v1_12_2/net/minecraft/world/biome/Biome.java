@@ -102,6 +102,19 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
         }
     }
 
+    /**
+     * 1.12's registration of a biome under a numeric id and a name ({@code Biome.registerBiome(id, "name", biome)}): the biome is registered
+     * with the layer's biome registry under that name (the numeric id is the legacy world format's and is not needed by the modern game).
+     */
+    public static void registerBiome(int id, String name, Biome biome) {
+        if (biome == null || name == null) return;
+        var key = name.indexOf(':') >= 0 ? new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name)
+                : new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", name);
+        if (biome.getRegistryName() == null) biome.setRegistryName(key);
+        var registry = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.BIOMES;
+        if (!registry.containsKey(key)) registry.register(biome);
+    }
+
     public BiomeDecorator createBiomeDecorator() {
         return getModdedBiomeDecorator(new BiomeDecorator());
     }

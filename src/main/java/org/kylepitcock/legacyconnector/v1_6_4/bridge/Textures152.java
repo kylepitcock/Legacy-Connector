@@ -108,7 +108,11 @@ public final class Textures152 {
         if (vanilla != null) return new ResourceLocation("minecraft", vanilla);
         if (bare.startsWith("armor/")) return new ResourceLocation("minecraft", "textures/models/armor/" + bare.substring(6).replace("_1.png", "_layer_1.png").replace("_2.png", "_layer_2.png"));
         if (bare.startsWith("gui/") || bare.startsWith("misc/") || bare.startsWith("environment/")) return new ResourceLocation("minecraft", "textures/" + bare);
-        if (bare.startsWith("mob/") || bare.startsWith("item/")) return new ResourceLocation("minecraft", "textures/entity/" + bare.substring(bare.indexOf('/') + 1));
+        if (bare.startsWith("mob/") || bare.startsWith("item/")) {
+            var entity = new ResourceLocation("minecraft", "textures/entity/" + bare.substring(bare.indexOf('/') + 1));
+            // a mod's own mob texture (Elemental Creepers' /mob/icecreeper.png) is no vanilla asset: read it from the mod's class path like any other file
+            return assetMissing(entity) ? new ResourceLocation("minecraft", slash ? p : "/" + p) : entity;
+        }
         if (bare.startsWith("textures/")) return new ResourceLocation("minecraft", bare);
         // a class path file of a mod (a path with a leading slash is not an asset): the shim reads it from the mods' class path
         return new ResourceLocation("minecraft", slash ? p : "/" + p);

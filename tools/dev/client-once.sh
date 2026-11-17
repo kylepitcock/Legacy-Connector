@@ -10,6 +10,7 @@ GAME_DIR="run-screenshots"   # -PshotDir=<dir> in EXTRA (as for quick-shots.sh) 
 for a in ${EXTRA:-}; do case "$a" in -PshotDir=*) GAME_DIR="${a#-PshotDir=}";; esac; done
 LOG="$GAME_DIR/logs/latest.log"
 STALL="${STALL:-360}"
+MAXRUN="${MAXRUN:-600}"   # the game is stopped after this many seconds in any case (no boot sits idle)
 MARKERS='broken mod state|Mod loading issue|Preparing crash report|Failed to wait for future|Caught exception during event|Failed to create mod instance|Crash Report|Exception caught in connection|Couldn.t place player'
 
 # Where this run's text starts in the log: the whole file once the game has replaced the previous run's log (its first line changed; comparing sizes is
@@ -55,6 +56,11 @@ while kill -0 $runner 2>/dev/null; do
       status=2
       break
     fi
+  fi
+  if [ $((SECONDS-start)) -ge "$MAXRUN" ]; then
+    echo "client-once: maximum run time $MAXRUN s reached, stopping the game"
+    status=4
+    break
   fi
   if [ $((SECONDS-last_change)) -ge "$STALL" ]; then
     echo "client-once: no log progress for $STALL s, killing the game"

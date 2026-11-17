@@ -43,6 +43,11 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
     }
 
     @Override
+    public boolean doesSneakBypassUse(ItemStack stack, net.minecraft.world.level.LevelReader level, BlockPos pos, Player player) {
+        return ItemCallbacks.sneakBypass(legacy, level, pos, player) || super.doesSneakBypassUse(stack, level, pos, player);
+    }
+
+    @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         return ItemCallbacks.useOn(legacy, context, true);
     }

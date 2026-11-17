@@ -409,6 +409,23 @@ public abstract class EntityLiving extends EntityLivingBase {
         return true;
     }
 
+    /**
+     * A picked-up item lying on the ground replaces the held or worn item when it is better (1.12 protected hook of the pick-up loop):
+     * the modern mob decides which slot and whether the item is an upgrade, the replaced item is dropped, the pick-up is animated.
+     */
+    protected void updateEquipmentIfNeeded(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem itemEntity) {
+        Mob m = mcc$mob();
+        if (m == null || itemEntity == null || !(itemEntity.mcc$entity instanceof net.minecraft.world.entity.item.ItemEntity ie)) return;
+        var stack = ie.getItem();
+        if (stack.isEmpty() || !canEquipItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.view(stack))) return;
+        var equipped = m.equipItemIfPossible(stack.copy());
+        if (equipped.isEmpty()) return;
+        m.onItemPickup(ie);
+        m.take(ie, equipped.getCount());
+        stack.shrink(equipped.getCount());
+        if (stack.isEmpty()) ie.discard();
+    }
+
     /** Right-clicking the mob (after the leash and name tag handling); true when it used the click. */
     protected boolean processInteract(EntityPlayer player, EnumHand hand) {
         Mob m = mcc$mob();

@@ -65,6 +65,7 @@ dimension's Level). Block, height, biome, chunk and light access keeps going thr
 | 1.12.2 `StructureVillagePieces$Village.spawnVillagers` | mod village piece | legitimate: constructs the villager from the Level; `finalizeSpawn` and `addFreshEntity` already go through `mcc$access()` | `mcc$levelObject()` |
 | 1.12.2 `ModernFeatures1122.place` and `placeFeature` | `WorldGenBigTree.generate` etc. | legitimate: only `getChunkSource().getGenerator()`; the feature places into the `WorldGenLevel` region | `mcc$levelObject()` |
 | 1.12.2 `BlockFaces1122.vanillaSturdy` (via `IBlockState.isSideSolid`) | Actually Additions `WorldGenLushCaves` | DEFECT: `isFaceSturdy(realLevel, pos, face)` reads blocks (and shapes) from the real level | now `mcc$access()` |
+| 1.12.2 `Chunk.getEntityLists` | Lepidodendron `Functions.getEntitiesOfTypeWithinAABBPN` from `WorldGenPaleoproterozoicLakes` (`prehistoric1122`) | legitimate: `mcc$level() != null` was only a presence check; the entity query goes through `World.getEntitiesWithinAABB`, which is empty off the server thread | `mcc$levelObject()` |
 
 Known remaining potential reports (not seen in these suites, not changed): 1.7.10 `World` time, weather, spawn point, game rules, save handler,
 scoreboard (`mcc$fullLevel()`): level constants; they will be reported (and classified) when a generator reaches them.

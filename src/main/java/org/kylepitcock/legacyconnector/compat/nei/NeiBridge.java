@@ -244,6 +244,38 @@ public final class NeiBridge {
         return sb.toString();
     }
 
+    /**
+     * The recipes of a handler's item lookup that JEI would not show anyway: JEI already lists the recipes registered with the category
+     * for a focus (by its inputs or outputs), so a lookup result equal to one of them is dropped, or the recipe appears twice.
+     */
+    public static List<Recipe> withoutRegistered(List<Recipe> looked, List<Recipe> registered, net.minecraft.world.item.ItemStack focus, boolean usage) {
+        if (registered.isEmpty() || looked.isEmpty()) return looked;
+        Map<String, List<Recipe>> bySignature = new java.util.HashMap<>();
+        for (Recipe r : registered) {
+            if (r.inputs().isEmpty() && r.outputs().isEmpty()) continue;
+            bySignature.computeIfAbsent(signature(r), k -> new ArrayList<>()).add(r);
+        }
+        List<Recipe> out = new ArrayList<>();
+        for (Recipe r : looked) {
+            boolean listed = false;
+            if (!r.inputs().isEmpty() || !r.outputs().isEmpty()) {
+                for (Recipe known : bySignature.getOrDefault(signature(r), List.of())) {
+                    if (listsStack(usage ? known.inputs() : known.outputs(), focus)) {
+                        listed = true;
+                        break;
+                    }
+                }
+            }
+            if (!listed) out.add(r);
+        }
+        return out;
+    }
+
+    private static boolean listsStack(List<Slot> slots, net.minecraft.world.item.ItemStack focus) {
+        for (Slot s : slots) for (var st : s.stacks()) if (st.getItem() == focus.getItem() && st.getOrDefault(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), 0).equals(focus.getOrDefault(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), 0))) return true;
+        return false;
+    }
+
     private static String slotKey(Slot s) {
         var first = s.stacks().get(0);
         return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(first.getItem()) + "@" + first.getOrDefault(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), 0) + "x" + first.getCount();
@@ -357,6 +389,8 @@ public final class NeiBridge {
         if (catalysts.isEmpty()) {
             java.util.LinkedHashSet<String> namespaces = new java.util.LinkedHashSet<>();
             if (owner != null) namespaces.add(owner);
+            // a jar with several mods (Thermal Expansion: core items, factory machines, energy, transport) keeps its machines in a sibling mod
+            namespaces.addAll(siblingNamespaces(handler.getClass(), owner));
             if (resultNamespace != null && !resultNamespace.equals("minecraft")) namespaces.add(resultNamespace);
             net.minecraft.world.item.ItemStack match = bestMatch(namespaces, title, handler.getClass().getSimpleName());
             if (match != null) catalysts.add(match);
@@ -429,6 +463,29 @@ public final class NeiBridge {
         } catch (RuntimeException | LinkageError e) {
             return null;
         }
+    }
+
+    /** The namespaces of the other legacy mods in the jar a class is in, nearest package first (the machine of a handler may be in any of them). */
+    private static List<String> siblingNamespaces(Class<?> type, String owner) {
+        List<String> out = new ArrayList<>();
+        try {
+            record Hit(String ns, int length) {}
+            List<Hit> hits = new ArrayList<>();
+            for (var c : legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.instance().getActiveModList()) {
+                Object mod = c.getMod();
+                if (mod == null || c.getModId() == null) continue;
+                Class<?> modType = mod.getClass();
+                boolean sameJar = type.getModule().isNamed() ? modType.getModule() == type.getModule() : modType.getClassLoader() == type.getClassLoader();
+                if (!sameJar) continue;
+                String ns = org.kylepitcock.legacyconnector.core.Ids.namespace(c.getModId());
+                if (!ns.equals(owner)) hits.add(new Hit(ns, commonPrefix(type.getName(), modType.getName())));
+            }
+            hits.sort((a, b) -> Integer.compare(b.length(), a.length()));
+            for (Hit h : hits) if (!out.contains(h.ns())) out.add(h.ns());
+        } catch (RuntimeException | LinkageError e) {
+            // only the owner's namespace is searched
+        }
+        return out;
     }
 
     private static int commonPrefix(String a, String b) {
