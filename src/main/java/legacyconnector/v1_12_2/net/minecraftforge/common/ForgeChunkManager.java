@@ -176,6 +176,7 @@ public class ForgeChunkManager {
             }
             ticket.requestedChunks.add(chunk);
         }
+        post(new ForceChunkEvent(ticket, chunk));
         var pos = chunk.mcc$modern();
         level.getServer().execute(() -> level.getChunkSource().addRegionTicket(TICKET, pos, 2, pos, true));
     }
@@ -186,6 +187,7 @@ public class ForgeChunkManager {
         synchronized (ticket) {
             if (!ticket.requestedChunks.remove(chunk)) return;
         }
+        post(new UnforceChunkEvent(ticket, chunk));
         if (level == null) return;
         var pos = chunk.mcc$modern();
         level.getServer().execute(() -> level.getChunkSource().removeRegionTicket(TICKET, pos, 2, pos, true));
@@ -235,5 +237,51 @@ public class ForgeChunkManager {
     /** Tickets of a level that unloaded are dropped (the modern tickets went with it). */
     public static synchronized void mcc$unloadWorld(World world) {
         TICKETS.removeIf(t -> t.world == world || t.world != null && t.world.equals(world));
+    }
+
+    private static void post(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event event) {
+        try {
+            legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        } catch (RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/1.12.2").warn("Chunk loading event handler failed", e);
+        }
+    }
+
+    /** Posted when a mod keeps a chunk loaded through a ticket. */
+    public static class ForceChunkEvent extends legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event {
+        private final Ticket ticket;
+        private final ChunkPos location;
+
+        public ForceChunkEvent(Ticket ticket, ChunkPos location) {
+            this.ticket = ticket;
+            this.location = location;
+        }
+
+        public Ticket getTicket() {
+            return ticket;
+        }
+
+        public ChunkPos getLocation() {
+            return location;
+        }
+    }
+
+    /** Posted when a mod releases a chunk it kept loaded. */
+    public static class UnforceChunkEvent extends legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event {
+        private final Ticket ticket;
+        private final ChunkPos location;
+
+        public UnforceChunkEvent(Ticket ticket, ChunkPos location) {
+            this.ticket = ticket;
+            this.location = location;
+        }
+
+        public Ticket getTicket() {
+            return ticket;
+        }
+
+        public ChunkPos getLocation() {
+            return location;
+        }
     }
 }
