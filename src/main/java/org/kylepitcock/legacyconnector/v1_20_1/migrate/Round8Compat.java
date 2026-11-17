@@ -61,4 +61,43 @@ public final class Round8Compat {
     public static CompoundTag spawnTag(FinalizeSpawnEvent event) {
         return null;
     }
+
+    /** {@code new MobEffectInstance(effect, duration, amplifier, ambient, visible, showIcon, hiddenEffect)}: a holder now. */
+    public static net.minecraft.world.effect.MobEffectInstance newEffectHidden(net.minecraft.world.effect.MobEffect e, int duration, int amplifier, boolean ambient,
+            boolean visible, boolean showIcon, net.minecraft.world.effect.MobEffectInstance hidden) {
+        return new net.minecraft.world.effect.MobEffectInstance(HolderCompat.holder(e), duration, amplifier, ambient, visible, showIcon, hidden);
+    }
+
+    /** The 1.20.1 constructor with an {@code Optional<FactorData>} (the fade-in data of the darkness effect, gone in 1.21.1): the data is dropped. */
+    public static net.minecraft.world.effect.MobEffectInstance newEffectFactor(net.minecraft.world.effect.MobEffect e, int duration, int amplifier, boolean ambient,
+            boolean visible, boolean showIcon, net.minecraft.world.effect.MobEffectInstance hidden, java.util.Optional<?> factorData) {
+        return newEffectHidden(e, duration, amplifier, ambient, visible, showIcon, hidden);
+    }
+
+    /** {@code new RecipeManager()}: the registry lookup is a constructor argument now (the server sets the real one when it loads the recipes). */
+    public static net.minecraft.world.item.crafting.RecipeManager newRecipeManager() {
+        return new net.minecraft.world.item.crafting.RecipeManager(net.minecraft.core.RegistryAccess.EMPTY);
+    }
+
+    /** Extra arguments of {@code new ClientboundExplodePacket(x, y, z, power, blocks, knockback)}: the 1.20.1 packet carried none of them. */
+    public static net.minecraft.world.level.Explosion.BlockInteraction explodeInteraction(float power) {
+        return net.minecraft.world.level.Explosion.BlockInteraction.DESTROY;
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions explodeSmall(float power) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION;
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions explodeLarge(float power) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER;
+    }
+
+    public static net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> explodeSound(float power) {
+        return net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE;
+    }
+
+    /** The background of an advancement is optional in {@code new DisplayInfo(...)}. */
+    public static java.util.Optional<net.minecraft.resources.ResourceLocation> optionalLocation(net.minecraft.resources.ResourceLocation location) {
+        return java.util.Optional.ofNullable(location);
+    }
 }

@@ -61,4 +61,20 @@ public final class Round8ClientCompat {
         }
         return id;
     }
+
+    /** {@code User.getGameProfile()}: the profile is made from the id and the name (the textures are fetched through the session service anyway). */
+    public static com.mojang.authlib.GameProfile userProfile(net.minecraft.client.User user) {
+        return new com.mojang.authlib.GameProfile(user.getProfileId(), user.getName());
+    }
+
+    /** {@code Lighting.setupLevel(Matrix4f)}: the light directions of the level are fixed now. */
+    public static void setupLevelLighting(org.joml.Matrix4f ignored) {
+        com.mojang.blaze3d.platform.Lighting.setupLevel();
+    }
+
+    /** {@code MobEffectTextureManager.get(MobEffect)}: keyed by holder now. */
+    public static net.minecraft.client.renderer.texture.TextureAtlasSprite effectSprite(net.minecraft.client.resources.MobEffectTextureManager manager,
+            net.minecraft.world.effect.MobEffect effect) {
+        return manager.get(HolderCompat.holder(effect));
+    }
 }
