@@ -463,9 +463,15 @@ final class Mc1201Migration {
             int tag = hd.getTag();
             if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_NEWINVOKESPECIAL || hd.getOwner().startsWith("[")) continue;
             boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
+            boolean special = tag == Opcodes.H_INVOKESPECIAL;
             Call rule = null;
             for (String owner : h.minecraftAncestors(hd.getOwner())) {
-                rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
+                if (special) {
+                    rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc() + "@special");
+                } else if (!ctor && tag != Opcodes.H_INVOKESTATIC) {
+                    rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc() + "@virtual");
+                }
+                if (rule == null) rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
                 if (rule != null) break;
             }
             if (rule == null || rule.helper().startsWith("=")) continue;
