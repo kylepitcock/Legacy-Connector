@@ -37,7 +37,7 @@ public final class Ticks164 {
         for (Side s : Side.values()) {
             if (s != side) continue;
             boolean server = s == Side.SERVER;
-            if (DISPATCH.wants(s, server ? TickType.SERVER : TickType.CLIENT) || DISPATCH.wants(s, TickType.GAME) || DISPATCH.wants(s, TickType.GLOBAL) || DISPATCH.wants(s, null)) listen(server ? SERVER : CLIENT, server ? new ServerListener() : new ClientListener());
+            if (DISPATCH.wants(s, server ? TickType.SERVER : TickType.CLIENT) || DISPATCH.wants(s, TickType.GAME) || DISPATCH.wants(s, TickType.GLOBAL) || DISPATCH.wants(s, null) || DISPATCH.wants(s, TickType.CLIENTGUI)) listen(server ? SERVER : CLIENT, server ? new ServerListener() : new ClientListener());
             if (DISPATCH.wants(s, TickType.RENDER)) listen(RENDER, new RenderListener());
             if (DISPATCH.wants(s, TickType.WORLD) || DISPATCH.wants(s, TickType.WORLDLOAD)) listen(WORLD, new WorldListener());
             if (DISPATCH.wants(s, TickType.PLAYER)) listen(PLAYER, new PlayerListener());
@@ -73,6 +73,10 @@ public final class Ticks164 {
             if (!end) DISPATCH.beginGameTick(Side.CLIENT);
             DISPATCH.fire(Side.CLIENT, TickType.CLIENT, end);
             fireGame(Side.CLIENT, end);
+            if (DISPATCH.wants(Side.CLIENT, TickType.CLIENTGUI)) {   // 1.4.7 / 1.5.2: a tick per client tick while a screen is open, carrying the screen
+                legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen screen = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$currentScreen(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft());
+                if (screen != null) DISPATCH.fire(Side.CLIENT, TickType.CLIENTGUI, end, screen);
+            }
         }
     }
 

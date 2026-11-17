@@ -14,6 +14,17 @@ public final class MultiItemRange {
         return self;
     }
 
+    /** {@code add(id, firstDamage, lastDamage)}: the item with that id, every damage value of the range. */
+    public static legacyconnector.v1_7_10.codechicken.nei.MultiItemRange add(legacyconnector.v1_7_10.codechicken.nei.MultiItemRange self, int id, int firstDamage, int lastDamage) {
+        return add(self, Ids.item(id), firstDamage, lastDamage);
+    }
+
+    /** {@code add(item, firstDamage, lastDamage)}: every damage value of the range of the item. */
+    public static legacyconnector.v1_7_10.codechicken.nei.MultiItemRange add(legacyconnector.v1_7_10.codechicken.nei.MultiItemRange self, Item item, int firstDamage, int lastDamage) {
+        if (item != null) for (int damage = firstDamage; damage <= lastDamage && damage - firstDamage < 4096; damage++) self.add(new ItemStack(item, 1, damage));
+        return self;
+    }
+
     /** {@code add(first, last)}: the items with ids first..last. */
     public static legacyconnector.v1_7_10.codechicken.nei.MultiItemRange add(legacyconnector.v1_7_10.codechicken.nei.MultiItemRange self, int first, int last) {
         for (int id = first; id <= last; id++) add(self, id);

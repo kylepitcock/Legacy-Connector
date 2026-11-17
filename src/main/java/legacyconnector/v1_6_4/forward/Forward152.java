@@ -53,6 +53,38 @@ public final class Forward152 {
         return legacyconnector.v1_7_10.net.minecraft.block.BlockPistonBase.determineOrientation(world, x, y, z, player);
     }
 
+    /** {@code RenderingRegistry.getUniqueTextureIndex(sheet)}: the next free sprite index of the sheet, the table ModLoader's {@code getUniqueSpriteIndex} hands out of. */
+    public static int getUniqueTextureIndex(Object registry, String sheet) {
+        return legacyconnector.v1_6_4.net.minecraft.src.ModLoader.getUniqueSpriteIndex(sheet);
+    }
+
+    /** A constant int argument for a constructor rule (the metadata {@code EntityBreakingFX} gained). */
+    public static int zero() {
+        return 0;
+    }
+
+    /** An int argument that became a float ({@code EnderTeleportEvent}'s damage). */
+    public static float toFloat(int i) {
+        return i;
+    }
+
+    /** {@code RenderGlobal.drawSelectionBox(player, target, subPart, heldItem, partialTicks)}: the held item was passed on for Forge's highlight event only. */
+    public static void drawSelectionBox(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal renderer, EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target, int subPart, legacyconnector.v1_7_10.net.minecraft.item.ItemStack held, float partialTicks) {
+        renderer.drawSelectionBox(player, target, subPart, partialTicks);
+    }
+
+    /** {@code ObfuscationReflectionHelper.setPrivateValue(class, instance, fieldName, value)}: 1.4.7 and 1.5.2 took the value last. */
+    public static void setPrivateValue(Class<?> cls, Object instance, String name, Object value) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.ObfuscationReflectionHelper.setPrivateValue((Class) cls, instance, value, name);
+    }
+
+    /** {@code ObfuscationReflectionHelper.obfuscation}: the game runs deobfuscated here, so a mod never needs the obfuscated field names. */
+    public static final boolean OBFUSCATION = false;
+
+    /** {@code BlockLeaves.LEAF_TYPES}: the wood names of the leaf block's four variants. */
+    public static final String[] LEAF_TYPES = {"oak", "spruce", "birch", "jungle"};
+
     /** {@code FMLRelaunchLog.log.getLogger()}: 1.4.7 answered a java.util.logging logger. */
     public static java.util.logging.Logger relaunchLogger(legacyconnector.v1_7_10.cpw.mods.fml.relauncher.FMLRelaunchLog log) {
         return java.util.logging.Logger.getLogger("ForgeModLoader");
