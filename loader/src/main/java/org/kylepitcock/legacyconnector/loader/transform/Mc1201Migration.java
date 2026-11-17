@@ -590,9 +590,15 @@ final class Mc1201Migration {
                 tag = hd.getTag();
             }
             boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
+            boolean special = tag == Opcodes.H_INVOKESPECIAL;
             Call rule = null;
             for (String owner : h.minecraftAncestors(hd.getOwner())) {
-                rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
+                if (special) {
+                    rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc() + "@special");
+                } else if (!ctor && tag != Opcodes.H_INVOKESTATIC) {
+                    rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc() + "@virtual");
+                }
+                if (rule == null) rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
                 if (rule != null) break;
             }
             if (rule == null) continue;
@@ -882,6 +888,16 @@ final class Mc1201Migration {
 
     private static void addBridges(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         for (Bridge b : t.bridges) {
+            if (isMobFinalizeSpawnBridge(b)
+                    && (h.isSubclassOf(node.name, b.owner()) || h.reachesUnknown(node.name))
+                    && h.hasNonSyntheticModDeclaration(node.name, b.newName(), b.newDesc())) {
+                throw new IllegalStateException(
+                        "Cannot migrate Mob.finalizeSpawn in " + node.name
+                                + ": a non-synthetic four-argument finalizeSpawn declaration with the target "
+                                + "descriptor exists in this Mob hierarchy. In Forge 1.20.1 that descriptor "
+                                + "was only an overload, not an override point; on NeoForge 1.21.1 it would "
+                                + "become the Mob override and alter vanilla/legacy dispatch.");
+            }
             MethodNode old = declared(node, b.oldName(), b.oldDesc());
             if (old == null || (old.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
             if (declared(node, b.newName(), b.newDesc()) != null) continue;
@@ -893,6 +909,12 @@ final class Mc1201Migration {
             node.methods.add(bridge);
             c.bridges++;
         }
+    }
+
+    private static boolean isMobFinalizeSpawnBridge(Bridge bridge) {
+        return bridge.owner().equals("net/minecraft/world/entity/Mob")
+                && bridge.oldName().equals("finalizeSpawn")
+                && bridge.newName().equals("finalizeSpawn");
     }
 
     private static MethodNode declared(ClassNode node, String name, String desc) {
@@ -957,16 +979,6 @@ final class Mc1201Migration {
                 stack += 1;
                 continue;
             }
-            if (tok.equals("this")) {
-                il.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                stack += 1;
-                continue;
-            }
-            if (tok.equals("null")) {
-                il.add(new InsnNode(Opcodes.ACONST_NULL));
-                stack += 1;
-                continue;
-            }
             String helper = null;
             int at = tok.indexOf('@');
             if (at > 0) {
@@ -987,6 +999,24 @@ final class Mc1201Migration {
                 if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
                 il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), hd.toString(), false));
                 stack += oldArgs[p].getSize() + 4;
+                continue;
+            }
+            if (tok.equals("this")) {
+                il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                if (helper != null) {
+                    int dot = helper.lastIndexOf('.');
+                    String cls = helper.substring(0, dot);
+                    if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+                    il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1),
+                            "(Ljava/lang/Object;)" + oldArgs[p].getDescriptor(), false));
+                }
+                stack += oldArgs[p].getSize();
+                continue;
+            }
+            if (tok.equals("null")) {
+                if (helper != null) return null;
+                il.add(new InsnNode(Opcodes.ACONST_NULL));
+                stack += 1;
                 continue;
             }
             int i = Integer.parseInt(tok);

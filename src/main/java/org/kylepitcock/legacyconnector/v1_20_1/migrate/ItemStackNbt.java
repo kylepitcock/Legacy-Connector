@@ -71,6 +71,77 @@ public final class ItemStackNbt {
         return merged;
     }
 
+    /**
+     * A detached legacy tag view using the supplied registry context. Unlike {@link #getTag(ItemStack)}, this method never detaches
+     * or replaces CUSTOM_DATA on the source stack, so it is safe for read-only compatibility projections.
+     */
+    public static CompoundTag getTagCopy(ItemStack stack, HolderLookup.Provider provider) {
+        if (stack.isEmpty()) return null;
+        CompoundTag extra = converted(stack, provider);
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if (extra == null) {
+            if (data == null || data.isEmpty()) return null;
+            return data.copyTag();
+        }
+        CompoundTag merged = data == null ? new CompoundTag() : data.copyTag();
+        merged.merge(extra);
+        return merged;
+    }
+
+    /**
+     * Reconstructs the complete 1.20.1 ItemStack tag visible to MobBucketItem after entity spawning.
+     *
+     * <p>The normal legacy tag view restores vanilla componentized keys and residual CUSTOM_DATA. Bucket entity data is then
+     * overlaid key-by-key, and ENTITY_DATA is restored under EntityTag. Every returned compound is detached; the stack is not
+     * modified. Dedicated components win over colliding residual custom data.</p>
+     */
+    public static CompoundTag getBucketTag(ItemStack stack, HolderLookup.Provider provider) {
+        if (stack.isEmpty()) return new CompoundTag();
+        CompoundTag legacy = getTagCopy(stack, provider);
+        if (legacy == null) legacy = new CompoundTag();
+        return appendEntityStackComponents(stack, legacy);
+    }
+
+    /**
+     * Reconstructs the nullable 1.20.1 ItemStack root tag used by EntityType.spawn(ItemStack).
+     *
+     * <p>Unlike MobBucketItem's post-spawn getOrCreateTag path, EntityType.spawn(ItemStack)
+     * called getTag(), which returned null when the stack had no legacy root data. Preserve
+     * that distinction while also projecting BUCKET_ENTITY_DATA and ENTITY_DATA into their
+     * old root-tag locations. The returned tag is detached and the stack is never mutated.</p>
+     */
+    public static CompoundTag getSpawnTag(ItemStack stack, HolderLookup.Provider provider) {
+        if (stack.isEmpty()) return null;
+
+        CompoundTag legacy = getTagCopy(stack, provider);
+        CustomData bucketData = stack.get(DataComponents.BUCKET_ENTITY_DATA);
+        CustomData entityData = stack.get(DataComponents.ENTITY_DATA);
+        boolean hasBucketData = bucketData != null && !bucketData.isEmpty();
+        boolean hasEntityData = entityData != null && !entityData.isEmpty();
+
+        if (legacy == null && !hasBucketData && !hasEntityData) return null;
+        if (legacy == null) legacy = new CompoundTag();
+        return appendEntityStackComponents(stack, legacy);
+    }
+
+    /** Applies dedicated bucket/entity data components to a detached legacy root-tag view. */
+    private static CompoundTag appendEntityStackComponents(ItemStack stack, CompoundTag legacy) {
+        CustomData bucketData = stack.get(DataComponents.BUCKET_ENTITY_DATA);
+        if (bucketData != null && !bucketData.isEmpty()) {
+            CompoundTag bucket = bucketData.copyTag();
+            for (String key : bucket.getAllKeys()) {
+                Tag value = bucket.get(key);
+                if (value != null) legacy.put(key, value.copy());
+            }
+        }
+
+        CustomData entityData = stack.get(DataComponents.ENTITY_DATA);
+        if (entityData != null && !entityData.isEmpty()) {
+            legacy.put("EntityTag", entityData.copyTag());
+        }
+        return legacy;
+    }
+
     public static boolean hasTag(ItemStack stack) {
         return getTag(stack) != null;
     }
@@ -194,6 +265,10 @@ public final class ItemStackNbt {
 
     /** The keys 1.20.1 kept in the stack tag that 1.21.1 has components for; null when the stack has none of them. */
     private static CompoundTag converted(ItemStack stack) {
+        return converted(stack, MigrateContext.provider());
+    }
+
+    private static CompoundTag converted(ItemStack stack, HolderLookup.Provider provider) {
         CompoundTag out = null;
         int damage = stack.getOrDefault(DataComponents.DAMAGE, 0);
         if (damage > 0) (out = nonNull(out)).putInt("Damage", damage);
@@ -205,7 +280,6 @@ public final class ItemStackNbt {
         Component name = stack.get(DataComponents.CUSTOM_NAME);
         ItemLore lore = stack.get(DataComponents.LORE);
         if (name != null || (lore != null && !lore.lines().isEmpty())) {
-            HolderLookup.Provider provider = MigrateContext.provider();
             CompoundTag display = new CompoundTag();
             if (name != null) display.putString("Name", Component.Serializer.toJson(name, provider));
             if (lore != null && !lore.lines().isEmpty()) {
