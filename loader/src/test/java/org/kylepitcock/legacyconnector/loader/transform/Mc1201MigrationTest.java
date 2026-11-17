@@ -473,6 +473,30 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void mobLegacyFinalizeSpawnBridgeFailsWhenPrivateTargetDescriptorOccupiesBridgeSlot() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode c = cls("test/MyMobWithPrivateOverload", mob);
+        MethodNode legacy = method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new InsnNode(ACONST_NULL));
+        legacy.instructions.add(new InsnNode(ARETURN));
+        MethodNode privateOverload = method(c, ACC_PRIVATE, "finalizeSpawn", newDesc);
+        privateOverload.instructions.add(new InsnNode(ACONST_NULL));
+        privateOverload.instructions.add(new InsnNode(ARETURN));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(c));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(c.name));
+    }
+
+    @Test
     void mobLegacyFinalizeSpawnBridgeFailsWhenTargetShapedOverloadIsInChildClass() {
         String mob = "net/minecraft/world/entity/Mob";
         String level = "net/minecraft/world/level/ServerLevelAccessor";
