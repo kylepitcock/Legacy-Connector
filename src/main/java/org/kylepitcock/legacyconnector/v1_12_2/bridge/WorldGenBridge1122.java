@@ -125,7 +125,7 @@ public final class WorldGenBridge1122 {
         try {
             // 1.12 decorated one chunk at a time on the server thread; a mod's generators keep state in plain fields
             long g0 = TIMING ? System.nanoTime() : 0;
-            org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(lock, () -> g.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, provider));
+            org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(lock, () -> g.generate(fmlRandom, chunkX, chunkZ, world, GeneratorProviders1122.forWorld(world, DUMMY), provider));
             if (TIMING) time(g.getClass().getName(), System.nanoTime() - g0);
         } catch (RuntimeException | LinkageError e) {
             int n = FAILURES.incrementAndGet();
@@ -151,7 +151,7 @@ public final class WorldGenBridge1122 {
         try {
             // 1.12 populated the chunk (with its terrain events) before GameRegistry ran the mods' generators
             long t0 = TIMING ? System.nanoTime() : 0;
-            if (events) TerrainEvents1122.populate(world, worldSeed, chunkX, chunkZ, DUMMY);
+            if (events) TerrainEvents1122.populate(world, worldSeed, chunkX, chunkZ, GeneratorProviders1122.forWorld(world, DUMMY));
             if (TIMING) time("terrain events (populate)", System.nanoTime() - t0);
             Random fmlRandom = new Random(worldSeed);
             long chunkSeed = chunkSeed(worldSeed, chunkX, chunkZ);
