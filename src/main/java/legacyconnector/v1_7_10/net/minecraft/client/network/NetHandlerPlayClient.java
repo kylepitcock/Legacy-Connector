@@ -8,7 +8,30 @@ public class NetHandlerPlayClient implements legacyconnector.v1_7_10.net.minecra
     @Deprecated
     public java.util.List playerInfoList;
 
+    /** Phantom: the connection's client-side saved data (redirected to {@link #mcc$get$mapStorageOrigin}); Mystcraft keeps its client ages there. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mapStorageOrigin;
+
+    private static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage clientStorage;
+
     public NetHandlerPlayClient() {
+    }
+
+    /** The saved data of the current connection: in memory, a new one for every connection (1.7.10 made one per handler; see {@link #mcc$connectionClosed}). */
+    public static synchronized legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$mapStorageOrigin(NetHandlerPlayClient handler) {
+        if (clientStorage == null) {
+            clientStorage = new legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage((legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler) null);
+        }
+        return clientStorage;
+    }
+
+    /** The client left its server: the next connection starts with empty client-side saved data. */
+    public static synchronized void mcc$connectionClosed() {
+        clientStorage = null;
+    }
+
+    public static void mcc$set$mapStorageOrigin(NetHandlerPlayClient handler, legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage storage) {
+        // one per connection, owned by the layer
     }
 
     /** A handler a mod makes for a client world of its own (fake worlds); it talks to the game's real connection. */
