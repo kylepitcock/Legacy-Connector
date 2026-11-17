@@ -122,7 +122,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
                 if (stack == null) return out;
                 boolean usage = focus.getRole() == RecipeIngredientRole.INPUT;
                 if (focus.getRole() != RecipeIngredientRole.INPUT && focus.getRole() != RecipeIngredientRole.OUTPUT) return out;
-                for (Category c : categories) if (!NeiBridge.lookup(c.handler, stack, usage).isEmpty()) out.add(c.type);
+                for (Category c : categories) if (!lookupBeyondRegistered(c, stack, usage).isEmpty()) out.add(c.type);
                 return out;
             }
 
@@ -133,7 +133,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
                 net.minecraft.world.item.ItemStack stack = stackOf(focus);
                 if (stack == null) return List.of();
                 if (focus.getRole() != RecipeIngredientRole.INPUT && focus.getRole() != RecipeIngredientRole.OUTPUT) return List.of();
-                return (List<T>) NeiBridge.lookup(c.handler, stack, focus.getRole() == RecipeIngredientRole.INPUT);
+                return (List<T>) lookupBeyondRegistered(c, stack, focus.getRole() == RecipeIngredientRole.INPUT);
             }
 
             @Override
@@ -141,6 +141,11 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
                 return List.of();
             }
         });
+    }
+
+    /** The handler's item lookup minus the recipes JEI lists itself from the category's registered recipes (those would show twice). */
+    private static List<NeiBridge.Recipe> lookupBeyondRegistered(Category c, net.minecraft.world.item.ItemStack stack, boolean usage) {
+        return NeiBridge.withoutRegistered(NeiBridge.lookup(c.handler, stack, usage), c.recipes, stack, usage);
     }
 
     private static net.minecraft.world.item.ItemStack stackOf(mezz.jei.api.recipe.IFocus<?> focus) {
