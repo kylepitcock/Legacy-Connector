@@ -1,6 +1,6 @@
 # Addon API: writing addons for legacy mods
 
-Legacy Connector runs unmodified Beta 1.7.3, 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 Forge mods on NeoForge 1.21.1. The **addon API**
+Legacy Connector runs unmodified Beta 1.7.3, 1.2.5 (experimental, opt-in), 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 Forge mods on NeoForge 1.21.1. The **addon API**
 lets other NeoForge 1.21.1 mods build on those legacy mods with modern code (see [Support per legacy version](#support-per-legacy-version)
 for what works for which version). Examples of what an addon can do:
 
@@ -120,7 +120,7 @@ Use REGISTERED only when the legacy mod must see your data before its own loadCo
 | --- | --- |
 | `LegacyApi` | `mods()`, `mods(version)`, `failedMods()`, `mod(id)`, `isLoaded(id)`, `hasLegacyMods()`, `phase()`, `runWhen(phase, action)`, `classOf(modId, className)`, `versionOf(object)`, `versionOfNamespace(ns)`, `API_VERSION` ("0.3") |
 | `LegacyMod` | `id()`, `legacyId()`, `name()`, `version()`, `minecraftVersion()`, `failed()`, `failureMessage()`, `classLoader()`, `classOf(name)`, `instance()`, `file()`, `missingDependencies()`, `failedPhase()` |
-| `LegacyVersion` | `V1_4_7`, `V1_5_2`, `V1_6_4`, `V1_7_10`, `V1_12_2`, `VB1_7_3` (id `b1.7.3`), `V1_20_1`; `id()`, `family()` (1.4.7 to 1.6.4 share the 1.7.10 shim), `usesNumericIds()`, `isInPlace()` (1.20.1), `isBeta()` |
+| `LegacyVersion` | `V1_4_7`, `V1_5_2`, `V1_6_4`, `V1_7_10`, `V1_12_2`, `VB1_7_3` (id `b1.7.3`), `V1_20_1`, `V1_2_5` (experimental, opt-in; declared last); `id()`, `family()` (1.2.5 and 1.4.7 to 1.6.4 share the 1.7.10 shim), `usesNumericIds()`, `isInPlace()` (1.20.1), `isBeta()` |
 | `LegacyPhase` | `NOT_STARTED`, `DISCOVERED`, `REGISTERED`, `LOAD_COMPLETE` |
 | `LegacyAddon` | the entry point (see above): `priority`, `requiredLegacyMods`, `onLegacyModsDiscovered`, `onLegacyRegistered`, `onLegacyLoadComplete`, `onLegacyModFailed`, `registerCapabilities` |
 | `LegacyAccess` | reflection on legacy objects: `invokeStatic`, `invoke`, `newInstance`, `getStatic`, `getField`, `setField`, `setStatic`, `isInstance`, `hasMethod` |
@@ -244,6 +244,7 @@ batteries (only the 6.x `PowerHandler` API), extracting from BuildCraft engines,
 - **1.7.10** is the reference: every feature below exists for it.
 - **1.12.2** has its own shim (`IBlockState`, metadata through the block's own `getStateFromMeta`; an item with subtypes is one modern item per subtype, a
   fluid is a real modern fluid with a bucket).
+- **1.2.5** (experimental, `experimental.minecraft125`) is translated to the 1.4.7 layer, so its objects, ids and conversions behave exactly as 1.4.7's; `LegacyMod.minecraftVersion()` and `versionOf` still answer `V1_2_5` for such a mod (the loader records the source version in the mod's metadata), and its column in the table below mirrors 1.4.7.
 - **Beta 1.7.3** has its own shim and platform (`legacyconnector.vb1_7_3`): numeric ids (blocks 0-255, items 256 and up) that the mods claim themselves,
   no capabilities, fluids or energy in the old game, so those rows say "n.a.".
 - **1.20.1** mods are remapped in place, so "legacy" blocks, items, stacks, block entities and levels **are** the modern objects: the conversions return them
@@ -257,30 +258,30 @@ to rewrite this block).
 
 <!-- support-matrix:begin (generated from LegacySupport; run the test with API_DOCS_UPDATE=1 to rewrite) -->
 
-| API feature | 1.4.7 | 1.5.2 | 1.6.4 | 1.7.10 | 1.12.2 | b1.7.3 | 1.20.1 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `LegacyApi.mods()` / `mod(id)` / `isLoaded` / `mods(version)` | yes | yes | yes | yes | yes | yes | limited (mods are plain NeoForge mods: `failed()` is false, `instance()` is empty) |
-| Phases, addon callbacks, mod bus events, `runWhen` | yes | yes | yes | yes | yes | yes | limited (DISCOVERED and REGISTERED run back to back after the last registry event) |
-| `onLegacyModFailed` / `LegacyModFailedEvent` / `failedPhase()` / `missingDependencies()` | yes | yes | yes | yes | yes | yes | n.a. (FML loads these mods; its own error screen reports them) |
-| `LegacyApi.versionOf(object)` / `versionOfNamespace` | yes | yes | yes | yes | yes | yes | yes |
-| `LegacyAccess` on mod objects | yes | yes | yes | yes | yes | yes | yes |
-| `LegacyItems.toLegacy` / `fromLegacy` | yes (live view, null for empty) | yes (live view, null for empty) | yes (live view, null for empty) | yes (live view, null for empty) | yes (copy, EMPTY for empty) | yes (null for empty; a modern item Beta lacks rides one reserved item) | yes (the modern stack itself) |
-| `LegacyContentHooks.itemKey` / `legacyStack` / `legacyBlockStack` / `modernItemId` | yes (stand-in for modern content) | yes (stand-in for modern content) | yes (stand-in for modern content) | yes (stand-in for modern content) | yes (stand-in item for modern content) | yes (name = modern id) | yes (key = registry id) |
-| `LegacyBlocks.legacyBlock` / `legacyMeta` / `fromLegacy(block, meta)` / `versionOf` | yes | yes | yes | yes | yes | yes | limited (the block is the modern block; no metadata) |
-| `LegacyBlocks.legacyState` / `fromLegacyState` | n.a. | n.a. | n.a. | n.a. | yes (`IBlockState`) | n.a. | yes (the state itself) |
-| `LegacyBlocks.legacyTile` / `tileVersion` | yes | yes | yes | yes | yes | yes | yes (the block entity itself) |
-| `LegacyWorlds.toLegacy` | yes | yes | yes | yes | yes | yes | yes (the level itself) |
-| `numericBlockId` / `numericItemId` / `legacyBlockById` / `legacyItemById` | yes | yes | yes | n.a. | n.a. | yes (ids 0-255 / items 256+) | n.a. |
-| `LegacyCapabilities.forTile` / `forAnyTile` (addon rules) | yes | yes | yes | yes | yes | yes | limited (only the block entity types of the 1.20.1 mods) |
-| Built-in item handler capability of tiles | yes | yes | yes | yes | yes | yes (`IInventory`, no sides) | yes (native (Forge capability bridged)) |
-| Built-in fluid handler capability of tiles | yes (ITankContainer) | yes (ITankContainer) | yes (ITankContainer) | yes (IFluidHandler / IFluidTank) | yes (Forge fluid handler) | n.a. (Beta has no fluids API) | yes (native (Forge capability bridged)) |
-| Built-in energy capability: RF / Forge Energy | limited (only mods that use the RF API) | limited (only mods that use the RF API) | limited (only mods that use the RF API) | yes (1 RF = 1 FE) | yes (Forge Energy and Redstone Flux) | n.a. (Beta has no energy API) | yes (native (Forge capability bridged)) |
-| Built-in energy capability: IC2 EU | no-op (not built in) | no-op (not built in) | no-op (not built in) | yes (`energy.fePerEu`) | no-op (not built in) | n.a. (Beta has no energy API) | no-op (the mods' own capabilities) |
-| Built-in energy capability: BuildCraft MJ | no-op (not built in) | no-op (not built in) | no-op (not built in) | yes (receive only; `energy.fePerMj`) | no-op (not built in) | n.a. (Beta has no energy API) | no-op (the mods' own capabilities) |
-| Built-in item/fluid/energy capabilities of items | limited (RF items, fluid containers) | limited (RF items, fluid containers) | limited (RF items, fluid containers) | yes (RF, IC2 EU, fluid containers) | yes (`initCapabilities`) | n.a. (no capability system) | yes (native (Forge capability bridged)) |
-| `LegacyFluids.modernFluid` / `legacyFluid` / `fromLegacy` / `toLegacy` | yes | yes | yes | yes | yes | n.a. (Beta has no fluid registry) | yes (the fluid is modern already) |
-| `LegacyFluids.bucketOf` | limited (buckets registered with the container registry) | limited (buckets registered with the container registry) | limited (buckets registered with the container registry) | limited (buckets registered with the container registry) | yes (also generated buckets) | n.a. (Beta has no fluid registry) | yes (the fluid's bucket item) |
-| `LegacyTabs.modernTab` / `modernTabs` | yes | yes | yes | yes | yes | limited (one tab per mod, no tab objects) | yes (the tab itself) |
+| API feature | 1.4.7 | 1.5.2 | 1.6.4 | 1.7.10 | 1.12.2 | b1.7.3 | 1.20.1 | 1.2.5 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `LegacyApi.mods()` / `mod(id)` / `isLoaded` / `mods(version)` | yes | yes | yes | yes | yes | yes | limited (mods are plain NeoForge mods: `failed()` is false, `instance()` is empty) | yes |
+| Phases, addon callbacks, mod bus events, `runWhen` | yes | yes | yes | yes | yes | yes | limited (DISCOVERED and REGISTERED run back to back after the last registry event) | yes |
+| `onLegacyModFailed` / `LegacyModFailedEvent` / `failedPhase()` / `missingDependencies()` | yes | yes | yes | yes | yes | yes | n.a. (FML loads these mods; its own error screen reports them) | yes |
+| `LegacyApi.versionOf(object)` / `versionOfNamespace` | yes | yes | yes | yes | yes | yes | yes | yes |
+| `LegacyAccess` on mod objects | yes | yes | yes | yes | yes | yes | yes | yes |
+| `LegacyItems.toLegacy` / `fromLegacy` | yes (live view, null for empty) | yes (live view, null for empty) | yes (live view, null for empty) | yes (live view, null for empty) | yes (copy, EMPTY for empty) | yes (null for empty; a modern item Beta lacks rides one reserved item) | yes (the modern stack itself) | yes (live view, null for empty) |
+| `LegacyContentHooks.itemKey` / `legacyStack` / `legacyBlockStack` / `modernItemId` | yes (stand-in for modern content) | yes (stand-in for modern content) | yes (stand-in for modern content) | yes (stand-in for modern content) | yes (stand-in item for modern content) | yes (name = modern id) | yes (key = registry id) | yes (stand-in for modern content) |
+| `LegacyBlocks.legacyBlock` / `legacyMeta` / `fromLegacy(block, meta)` / `versionOf` | yes | yes | yes | yes | yes | yes | limited (the block is the modern block; no metadata) | yes |
+| `LegacyBlocks.legacyState` / `fromLegacyState` | n.a. | n.a. | n.a. | n.a. | yes (`IBlockState`) | n.a. | yes (the state itself) | n.a. |
+| `LegacyBlocks.legacyTile` / `tileVersion` | yes | yes | yes | yes | yes | yes | yes (the block entity itself) | yes |
+| `LegacyWorlds.toLegacy` | yes | yes | yes | yes | yes | yes | yes (the level itself) | yes |
+| `numericBlockId` / `numericItemId` / `legacyBlockById` / `legacyItemById` | yes | yes | yes | n.a. | n.a. | yes (ids 0-255 / items 256+) | n.a. | yes |
+| `LegacyCapabilities.forTile` / `forAnyTile` (addon rules) | yes | yes | yes | yes | yes | yes | limited (only the block entity types of the 1.20.1 mods) | yes |
+| Built-in item handler capability of tiles | yes | yes | yes | yes | yes | yes (`IInventory`, no sides) | yes (native (Forge capability bridged)) | yes |
+| Built-in fluid handler capability of tiles | yes (ITankContainer) | yes (ITankContainer) | yes (ITankContainer) | yes (IFluidHandler / IFluidTank) | yes (Forge fluid handler) | n.a. (Beta has no fluids API) | yes (native (Forge capability bridged)) | yes (ITankContainer) |
+| Built-in energy capability: RF / Forge Energy | limited (only mods that use the RF API) | limited (only mods that use the RF API) | limited (only mods that use the RF API) | yes (1 RF = 1 FE) | yes (Forge Energy and Redstone Flux) | n.a. (Beta has no energy API) | yes (native (Forge capability bridged)) | limited (only mods that use the RF API) |
+| Built-in energy capability: IC2 EU | no-op (not built in) | no-op (not built in) | no-op (not built in) | yes (`energy.fePerEu`) | no-op (not built in) | n.a. (Beta has no energy API) | no-op (the mods' own capabilities) | no-op (not built in) |
+| Built-in energy capability: BuildCraft MJ | no-op (not built in) | no-op (not built in) | no-op (not built in) | yes (receive only; `energy.fePerMj`) | no-op (not built in) | n.a. (Beta has no energy API) | no-op (the mods' own capabilities) | no-op (not built in) |
+| Built-in item/fluid/energy capabilities of items | limited (RF items, fluid containers) | limited (RF items, fluid containers) | limited (RF items, fluid containers) | yes (RF, IC2 EU, fluid containers) | yes (`initCapabilities`) | n.a. (no capability system) | yes (native (Forge capability bridged)) | limited (RF items, fluid containers) |
+| `LegacyFluids.modernFluid` / `legacyFluid` / `fromLegacy` / `toLegacy` | yes | yes | yes | yes | yes | n.a. (Beta has no fluid registry) | yes (the fluid is modern already) | yes |
+| `LegacyFluids.bucketOf` | limited (buckets registered with the container registry) | limited (buckets registered with the container registry) | limited (buckets registered with the container registry) | limited (buckets registered with the container registry) | yes (also generated buckets) | n.a. (Beta has no fluid registry) | yes (the fluid's bucket item) | limited (buckets registered with the container registry) |
+| `LegacyTabs.modernTab` / `modernTabs` | yes | yes | yes | yes | yes | limited (one tab per mod, no tab objects) | yes (the tab itself) | yes |
 
 <!-- support-matrix:end -->
 

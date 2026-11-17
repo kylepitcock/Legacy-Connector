@@ -28,7 +28,7 @@ public final class Convert {
 
     public static Object itemToLegacy(ItemStack modern, LegacyVersion version) {
         return switch (version) {
-            case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> modern == null ? null : legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(modern);
+            case V1_7_10, V1_4_7, V1_5_2, V1_6_4, V1_2_5 -> modern == null ? null : legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(modern);
             case V1_12_2 -> standIn1122(modern == null ? ItemStack.EMPTY : modern);
             case V1_20_1 -> modern == null ? ItemStack.EMPTY : modern; // the legacy stack IS the modern one
             case VB1_7_3 -> modern == null ? null : org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toLegacy(modern); // null for empty, like Beta
@@ -70,7 +70,7 @@ public final class Convert {
 
     public static Optional<Object> blockToLegacy(BlockState state, LegacyVersion version) {
         return Optional.ofNullable(switch (version) {
-            case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> BlockBridge.legacyBlock(state);
+            case V1_7_10, V1_4_7, V1_5_2, V1_6_4, V1_2_5 -> BlockBridge.legacyBlock(state);
             case V1_12_2 -> StatesBridge1122.legacyBlock(state);
             case V1_20_1 -> state.getBlock(); // the legacy block IS the modern one
             case VB1_7_3 -> legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS[Math.max(0, Math.min(255, org.kylepitcock.legacyconnector.vb1_7_3.BlocksB173.legacyId(state)))];
@@ -83,6 +83,7 @@ public final class Convert {
             case V1_4_7:
             case V1_5_2:
             case V1_6_4:
+            case V1_2_5:
                 return OptionalInt.of(BlockBridge.legacyMeta(state));
             case V1_20_1:
                 return OptionalInt.empty(); // no metadata after the flattening
@@ -141,7 +142,7 @@ public final class Convert {
 
     public static Object worldToLegacy(Level level, LegacyVersion version) {
         return switch (version) {
-            case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+            case V1_7_10, V1_4_7, V1_5_2, V1_6_4, V1_2_5 -> legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
             case V1_12_2 -> WorldBridge1122.wrap(level);
             case V1_20_1 -> level; // the legacy level IS the modern one
             case VB1_7_3 -> legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level);

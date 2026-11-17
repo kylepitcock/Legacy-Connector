@@ -25,7 +25,7 @@ public final class LegacyMods {
      * (see the loader's {@code LegacyVersion.forward}); every other version is its own family.
      */
     public static String family(String version) {
-        return "1.6.4".equals(version) || "1.5.2".equals(version) || "1.4.7".equals(version) ? "1.7.10" : version;
+        return "1.6.4".equals(version) || "1.5.2".equals(version) || "1.4.7".equals(version) || "1.2.5".equals(version) ? "1.7.10" : version;
     }
 
     public static synchronized LegacyPlatform platform(String version) {

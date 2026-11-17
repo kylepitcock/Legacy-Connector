@@ -18,7 +18,13 @@ public enum LegacyVersion {
      * Added in API 0.3: Beta 1.7.3 mods (ModLoader / Forge 1.0). Own platform and shim (numeric block and item ids 0-255 / 256+, one id
      * space, mods keep their ids); there is no Forge API, no capabilities of their own and no energy or fluid containers.
      */
-    VB1_7_3("b1.7.3");
+    VB1_7_3("b1.7.3"),
+    /**
+     * Added in API 0.3 (after Beta 1.7.3, PATCH-compatible): Minecraft 1.2.5 mods (ModLoader / early Forge), experimental and opt-in ({@code experimental.minecraft125}). They are
+     * translated to 1.4.7 and run on the same shim and bridges, so objects and numeric ids behave as for {@link #V1_4_7}; only the version
+     * the mod was written for differs. Declared last so the ordinals of the other constants stay.
+     */
+    V1_2_5("1.2.5");
 
     private final String id;
 
@@ -38,16 +44,16 @@ public enum LegacyVersion {
 
     /**
      * The shim family the version's legacy objects belong to: 1.4.7, 1.5.2 and 1.6.4 mods run on the 1.7.10 shim (the same
-     * {@code ItemStack}/{@code Block}/{@code TileEntity}/{@code World} classes), so this is {@link #V1_7_10} for them; every other
+     * {@code ItemStack}/{@code Block}/{@code TileEntity}/{@code World} classes), so this is {@link #V1_7_10} for them (and for 1.2.5); every other
      * version is its own family. Added in API 0.2.
      */
     public LegacyVersion family() {
-        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 ? V1_7_10 : this;
+        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 || this == V1_2_5 ? V1_7_10 : this;
     }
 
-    /** True for 1.4.7, 1.5.2 and 1.6.4: blocks and items have numeric ids (a separate id space per version). Added in API 0.2. */
+    /** True for 1.2.5, 1.4.7, 1.5.2 and 1.6.4: blocks and items have numeric ids (a separate id space per version). Added in API 0.2. */
     public boolean usesNumericIds() {
-        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4;
+        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 || this == V1_2_5;
     }
 
     /**

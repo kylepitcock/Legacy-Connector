@@ -379,7 +379,7 @@
     function code(t) { return el("code", null, t); }
     function b(t) { return el("b", null, t); }
     if (mc === "1.2.5") {
-      host.appendChild(p([b("Experimental, opt-in. "), "Minecraft 1.2.5 (ModLoader and early Forge mods) is hosted through the 1.4.7 layer and is off by default: it needs a build made with ", code("-Pmappings125"), " and the run flag ", code("-Dlegacyconnector.mc125=true"), ". Put the jars in ", code("mods/1.2.5/"), ". Three small server builds (MagicWands, Backpack, Elemental Creepers) loaded on a server; nothing has been run in a client."]));
+      host.appendChild(p([b("Experimental, opt-in. "), "Minecraft 1.2.5 (ModLoader and early Forge mods) is hosted through the 1.4.7 layer and is off by default: set ", code("experimental.minecraft125=true"), " in ", code("config/legacyconnector.properties"), " (the release and nightly jars carry the name table it needs) and put the jars in ", code("mods/1.2.5/"), ". Three small server builds (MagicWands, Backpack, Elemental Creepers) loaded on a server; nothing has been run in a client."]));
       host.appendChild(p([b("Read “Ready to test” with care here. "), "For 1.2.5 it means the jar translates and every reference resolves, but the references include many game members that exist only as empty placeholders (the layer synthesizes them so the jar links; in the 1.2.5 corpus about 1,400 distinct members, 385 of them used by the mods of the latest run). A mod can therefore link and still do nothing in the places that matter. The automated-check table shows how many placeholders each mod uses; a high number is a warning, and none of these results is a test that the mod works."]));
       return;
     }
