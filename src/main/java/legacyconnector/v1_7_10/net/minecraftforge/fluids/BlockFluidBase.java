@@ -18,7 +18,7 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
  * by scheduled updates ({@link BlockFluidClassic}, {@link BlockFluidFinite}).
  */
 public abstract class BlockFluidBase extends Block implements IFluidBlock {
-    public static final Map<Block, Boolean> defaultDisplacements = new HashMap<>();
+    protected static final Map<Block, Boolean> defaultDisplacements = new HashMap<>();
 
     static {
         defaultDisplacements.put(Blocks.wooden_door, false);
@@ -28,7 +28,7 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
         defaultDisplacements.put(Blocks.reeds, false);
     }
 
-    protected Map<Block, Boolean> displacements = new HashMap<>(defaultDisplacements);
+    public Map<Block, Boolean> displacements = new HashMap<>(defaultDisplacements);
 
     protected int quantaPerBlock = 8;
     protected float quantaPerBlockFloat = 8F;
