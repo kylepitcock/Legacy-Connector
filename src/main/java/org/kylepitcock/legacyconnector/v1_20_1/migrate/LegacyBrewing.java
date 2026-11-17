@@ -323,4 +323,29 @@ public final class LegacyBrewing {
         PotionBrewing b = current();
         return b == null ? new ArrayList<>(ADDED_RECIPES) : b.getRecipes(); // the built registry already holds the replayed ones
     }
+
+    /** {@code BrewingRecipeRegistry.canBrew(inputs, ingredient, slots)}: some slot holds an input that a recipe turns into something with this ingredient. */
+    public static boolean canBrew(net.minecraft.core.NonNullList<ItemStack> inputs, ItemStack ingredient, int[] slots) {
+        if (ingredient.isEmpty()) return false;
+        for (int slot : slots) {
+            ItemStack input = inputs.get(slot);
+            if (input.isEmpty()) continue;
+            for (IBrewingRecipe r : recipes()) if (!r.getOutput(input, ingredient).isEmpty()) return true;
+        }
+        return false;
+    }
+
+    /** {@code BrewingRecipeRegistry.brewPotions(inputs, ingredient, slots)}: every brewable slot becomes the output of the first recipe that accepts it. */
+    public static void brewPotions(net.minecraft.core.NonNullList<ItemStack> inputs, ItemStack ingredient, int[] slots) {
+        for (int slot : slots) {
+            ItemStack input = inputs.get(slot);
+            for (IBrewingRecipe r : recipes()) {
+                ItemStack out = r.getOutput(input, ingredient);
+                if (!out.isEmpty()) {
+                    inputs.set(slot, out);
+                    break;
+                }
+            }
+        }
+    }
 }
