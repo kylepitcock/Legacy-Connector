@@ -127,6 +127,15 @@ public class World implements IBlockAccess {
         return level;
     }
 
+    /**
+     * The dimension's {@code Level} as an object, also for a generation region's view: for what needs the level itself and never
+     * reads or writes its blocks, heights, biomes, chunks or light (entity construction, the generator, registries, the save folder).
+     * RealLevelGuard does not report it; block access goes through {@link #mcc$access()}.
+     */
+    public Level mcc$levelObject() {
+        return level;
+    }
+
     /** What block reads and writes go through: the level, or the generation region. */
     public LevelAccessor mcc$access() {
         return acc();

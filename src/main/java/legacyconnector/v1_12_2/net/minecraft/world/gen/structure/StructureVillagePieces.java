@@ -156,7 +156,7 @@ public class StructureVillagePieces {
                 if (!structurebb.isVecInside(new BlockPos(j, k, l))) break;
                 ++this.villagersSpawned;
                 var access = worldIn.mcc$access();
-                var level = worldIn.mcc$level();
+                var level = worldIn.mcc$levelObject();
                 if (access == null || level == null) continue;
                 var type = this.isZombieInfested ? net.minecraft.world.entity.EntityType.ZOMBIE_VILLAGER : net.minecraft.world.entity.EntityType.VILLAGER;
                 var entity = type.create(level);

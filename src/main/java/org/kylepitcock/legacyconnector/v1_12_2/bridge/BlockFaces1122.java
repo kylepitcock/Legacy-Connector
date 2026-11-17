@@ -30,7 +30,7 @@ public final class BlockFaces1122 {
             var p = new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ());
             Direction d = Direction.byName(side.getName());
             if (d == null) return false;
-            if (world instanceof World w && w.mcc$level() != null) return s.isFaceSturdy(w.mcc$level(), p, d);
+            if (world instanceof World w && w.mcc$access() != null) return s.isFaceSturdy(w.mcc$access(), p, d);
             return s.isFaceSturdy(EmptyBlockGetter.INSTANCE, p, d);
         } catch (RuntimeException | LinkageError e) {
             return null;

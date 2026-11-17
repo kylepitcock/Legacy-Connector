@@ -151,7 +151,8 @@ public final class EntityBridge {
     }
 
     public static boolean spawn(World world, Entity entity) {
-        Level level = world.mcc$fullLevel();
+        // the level object only (entity lookup, host creation); the entity is added through world.mcc$level(), the generation region while generating
+        Level level = world.mcc$levelObject();
         if (level == null) return false;
         if (entity.mcc$entity == null) {
             // Constructed without a world (or before the world was known): give it a host now.

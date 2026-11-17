@@ -34,7 +34,7 @@ public class WorldInfo {
     }
 
     private Level level() {
-        return world == null ? null : world.mcc$fullLevel();
+        return world == null ? null : world.mcc$levelObject();
     }
 
     public long getSeed() {

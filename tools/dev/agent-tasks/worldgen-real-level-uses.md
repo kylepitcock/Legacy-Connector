@@ -46,3 +46,25 @@ Verdicts. WRONG = fixed in this change.
 | `getServer().getLevel(..)` / `getChunkAt` in shims and bridges | safe: one site (`World.markBlockForUpdate` path, under `mcc$liveLevel()`) |
 
 Counts: about 240 sites reviewed (grouped above); 21 wrong (fixed), about 110 safe, 3 groups (about 25 sites) uncertain.
+
+## Guard reports of the first suite runs (2026-11-17): classification
+
+Reports from `mixed` (10), `bop1122` (2), `villages1122` (6), `traincraft` (6). New accessors that the guard does NOT report, documented as
+"the Level as an object, never block access": 1.7.10 `World.mcc$levelObject()`, 1.12.2 `World.mcc$levelObject()` (region views return the
+dimension's Level). Block, height, biome, chunk and light access keeps going through `mcc$level()` (1.7.10) / `mcc$access()` (1.12.2).
+
+| Site (version, member) | Triggered by | Verdict | Handling |
+|---|---|---|---|
+| 1.7.10 `ChunkProviderServer.mcc$loader` (via `World.getChunkProvider`) | Witchery/Traincraft `IWorldGenerator.generate`, `WorldGenBridge.decorate`, `DeepLayer1710` | legitimate: only reads the dimension folder path for the loader; `chunkExists`/`provideChunk` already answer from the region | `mcc$levelObject()` |
+| 1.12.2 `ChunkProviderServer.mcc$chunkLoader` (via `World.mcc$serverChunkProvider`) | `WorldGenBridge1122.decorate` | legitimate (same) | `mcc$levelObject()` |
+| 1.7.10 `World.mcc$get$provider` (`registerWorld`, `WorldInfo.getTerrainType`, `WorldInfo.level`) | any mod reading `world.provider` from a generator (Witchery, Thaumcraft, Traincraft, village pieces `getAverageGroundLevel`) | legitimate: creating the provider needs the level object and the dimension key; `WorldInfo` reads only dimension and server constants | `mcc$levelObject()` in `mcc$get$provider` and `WorldInfo.level()` |
+| 1.7.10 `World.generatorBiome` (from `getBiomeGenForCoords`, `ChunkProviderGenerate.populate`) | off-thread biome fallback | legitimate: reads the generator's biome source and sampler, not a chunk | `mcc$levelObject()` |
+| 1.7.10 `LegacyHosts.adopt`, `VanillaEntities.create` (Witchery guard, item frame; Traincraft minecart) | entity constructors during village generation | legitimate: entity construction needs the Level object | `mcc$levelObject()` |
+| 1.7.10 `EntityBridge.spawn` | `World.spawnEntityInWorld` in village components | legitimate: the entity is added through `world.mcc$level()` (the region while generating); the level object is used for the entity lookup and host creation only | `mcc$levelObject()` |
+| 1.12.2 `VanillaEntities1122.create` (item frame) | `EntityHanging.<init>` in a village piece | legitimate: entity construction | `mcc$levelObject()` |
+| 1.12.2 `StructureVillagePieces$Village.spawnVillagers` | mod village piece | legitimate: constructs the villager from the Level; `finalizeSpawn` and `addFreshEntity` already go through `mcc$access()` | `mcc$levelObject()` |
+| 1.12.2 `ModernFeatures1122.place` and `placeFeature` | `WorldGenBigTree.generate` etc. | legitimate: only `getChunkSource().getGenerator()`; the feature places into the `WorldGenLevel` region | `mcc$levelObject()` |
+| 1.12.2 `BlockFaces1122.vanillaSturdy` (via `IBlockState.isSideSolid`) | Actually Additions `WorldGenLushCaves` | DEFECT: `isFaceSturdy(realLevel, pos, face)` reads blocks (and shapes) from the real level | now `mcc$access()` |
+
+Known remaining potential reports (not seen in these suites, not changed): 1.7.10 `World` time, weather, spawn point, game rules, save handler,
+scoreboard (`mcc$fullLevel()`): level constants; they will be reported (and classified) when a generator reaches them.
