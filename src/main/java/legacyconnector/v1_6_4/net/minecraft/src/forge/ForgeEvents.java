@@ -162,6 +162,15 @@ final class ForgeEvents {
         });
     }
 
+    static void entityLiving(IEntityLivingHandler handler) {
+        MinecraftForge.EVENT_BUS.register(new Object() {
+            @SubscribeEvent
+            public void onDeath(legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingDeathEvent e) {
+                if (!e.isCanceled() && handler.onEntityLivingDeath(e.entityLiving, e.source)) e.setCanceled(true);
+            }
+        });
+    }
+
     static void specialSpawn(ISpecialMobSpawnHandler handler) {
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
