@@ -155,7 +155,7 @@ final class Mc1201Migration {
      * {@code codec()} 1.21.1 asks for: a stream codec that calls those two methods on the object (see {@code MiscCompat.serializerCodec}).
      */
     private static void addSerializerCodec(ClassNode node, Counts c) {
-        if (node.interfaces == null || !node.interfaces.contains("net/minecraft/network/syncher/EntityDataSerializer")) return;
+        if (node.interfaces == null || node.interfaces.stream().noneMatch(i -> i.startsWith("net/minecraft/network/syncher/EntityDataSerializer"))) return;
         String desc = "()Lnet/minecraft/network/codec/StreamCodec;";
         if (declared(node, "codec", desc) != null) return;
         MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
