@@ -378,4 +378,29 @@ public class ServerConfigurationManager {
         }
         return true;
     }
+
+    /**
+     * Respawns a dead player (1.7.10 {@code respawnPlayer(player, dimension, conqueredEnd)}) and returns the new player entity. The
+     * host decides where: the player's bed or respawn anchor, else the world spawn; the dimension argument is not honoured.
+     */
+    public EntityPlayerMP respawnPlayer(EntityPlayerMP player, int dimension, boolean conqueredEnd) {
+        var modern = mcc$server.mcc$modern().getPlayerList().respawn(player.mcc$serverPlayer(), conqueredEnd,
+                net.minecraft.world.entity.Entity.RemovalReason.KILLED);
+        return (EntityPlayerMP) EntityBridge.wrap(modern);
+    }
+
+    /**
+     * The saved data of the player ({@code <uuid>.dat} of the world's player data folder), which is also loaded into the entity as
+     * 1.7.10's login did; null when the player was never saved.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound readPlayerDataFromFile(EntityPlayerMP player) {
+        var handler = mcc$server.worldServerForDimension(0).getSaveHandler().getSaveHandler();
+        return handler == null ? null : handler.readPlayerData(player);
+    }
+
+    /** Sends the player the chunks around their position again (after a teleport the mod did itself). */
+    public void updatePlayerPertinentChunks(EntityPlayerMP player) {
+        var sp = player.mcc$serverPlayer();
+        sp.serverLevel().getChunkSource().move(sp);
+    }
 }

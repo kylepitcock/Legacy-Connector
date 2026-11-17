@@ -334,4 +334,39 @@ public class WorldProvider {
     public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getEntrancePortalLocation() {
         return dimensionId == 1 ? new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(100, 50, 0) : null;
     }
+
+    /** Forge: whether hostile and peaceful mobs spawn naturally in this dimension (it also stops the spawner of a matching world). */
+    public void setAllowedSpawnTypes(boolean allowHostile, boolean allowPeaceful) {
+        if (worldObj != null) worldObj.setAllowedSpawnTypes(allowHostile, allowPeaceful);
+    }
+
+    /** Forge: whether a player may be placed here at the column (the overworld wants grass on top). */
+    public boolean canCoordinateBeSpawn(int x, int z) {
+        return worldObj != null && worldObj.getTopBlock(x, z) == legacyconnector.v1_7_10.net.minecraft.init.Blocks.grass;
+    }
+
+    /** Forge: whether lightning may strike in the chunk. */
+    public boolean canDoLightning(legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk) {
+        return true;
+    }
+
+    /** Forge: whether rain and snow may form ice and snow layers in the chunk. */
+    public boolean canDoRainSnowIce(legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk) {
+        return true;
+    }
+
+    /** Forge: the message shown when entering the dimension (the Nether and the End have one). */
+    public String getWelcomeMessage() {
+        return this instanceof WorldProviderEnd || dimensionId == 1 ? "Entering the End" : this instanceof WorldProviderHell || dimensionId == -1 ? "Entering the Nether" : null;
+    }
+
+    /** Forge: the message shown when leaving the dimension. */
+    public String getDepartMessage() {
+        return this instanceof WorldProviderEnd || dimensionId == 1 ? "Leaving the End" : this instanceof WorldProviderHell || dimensionId == -1 ? "Leaving the Nether" : null;
+    }
+
+    /** Forge: the dimension a player who dies here respawns in (the overworld). */
+    public int getRespawnDimension(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
+        return 0;
+    }
 }

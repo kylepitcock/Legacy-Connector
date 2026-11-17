@@ -68,6 +68,19 @@ public class WorldServer extends World {
     public void resetUpdateEntityTick() {
     }
 
+    private Teleporter mcc$defaultTeleporter;
+
+    /** Forge: the world's own teleporter (the nether portal rules; mods ask for it to place entities the vanilla way). */
+    public synchronized Teleporter getDefaultTeleporter() {
+        if (mcc$defaultTeleporter == null) mcc$defaultTeleporter = new Teleporter(this);
+        return mcc$defaultTeleporter;
+    }
+
+    /** Flushes the save handler's pending writes (the host saves chunks and level data itself). */
+    public void flush() {
+        getSaveHandler().flush();
+    }
+
     /** Forge: the teleporters of mods registered for this world (kept so their portal caches are cleaned with the world's). */
     public java.util.List<Teleporter> customTeleporters = new java.util.ArrayList<>();
 

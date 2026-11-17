@@ -508,6 +508,22 @@ public class Chunk {
         return c == null || c.isTerrainPopulated;
     }
 
+    /**
+     * {@code func_150809_p} (MCP {@code checkLight}): works out the chunk's light. The host's own light engine lights every
+     * chunk it loads, so a populated chunk counts as lit as soon as this runs.
+     */
+    public void func_150809_p() {
+        if (isTerrainPopulated) isLightPopulated = true;
+    }
+
+    /**
+     * {@code func_150804_b} (MCP {@code onTick}): the per-tick light upkeep of a loaded chunk; completes the light of a populated
+     * chunk whose light was still pending. The argument asks to skip the deferred relight work, which the host's engine does anyway.
+     */
+    public void func_150804_b(boolean skipRecheck) {
+        if (isTerrainPopulated && !isLightPopulated) func_150809_p();
+    }
+
     /** Whether the chunk is fully generated: populated and lit. */
     public boolean func_150802_k() {
         return isTerrainPopulated && isLightPopulated;
