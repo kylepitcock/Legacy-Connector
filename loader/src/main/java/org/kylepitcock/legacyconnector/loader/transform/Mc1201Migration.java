@@ -564,6 +564,9 @@ final class Mc1201Migration {
             a.visitVarInsn(newParams[i].getOpcode(Opcodes.ILOAD), slot);
             slot += newParams[i].getSize();
             String cv = i < conv.length ? conv[i] : "-";
+            if (cv.equals("-") && !newParams[i].equals(oldParams[i]) && oldParams[i].getSort() == Type.OBJECT) {
+                a.visitTypeInsn(Opcodes.CHECKCAST, oldParams[i].getInternalName());   // the interface is generic now: the impl keeps its own type
+            }
             if (!cv.equals("-")) {
                 int dot = cv.lastIndexOf('.');
                 a.visitMethodInsn(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/" + cv.substring(0, dot), cv.substring(dot + 1),

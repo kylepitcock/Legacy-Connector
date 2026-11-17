@@ -1,3 +1,4 @@
 # Lambdas and method references for library functional interfaces whose method changed its parameters (Mc1201Migration.adaptLambda).
 # interface TAB sam name TAB old descriptor TAB new descriptor TAB converters: one entry per parameter, "-" or Helper.method (static in the migrate package, takes the new parameter, returns the old one), comma separated
 dev/architectury/event/events/client/ClientGuiEvent$RenderHud	renderHud	(Lnet/minecraft/client/gui/GuiGraphics;F)V	(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V	-,ApiCompatClient.deltaPartial
+dev/architectury/networking/NetworkManager$NetworkReceiver	receive	(Lnet/minecraft/network/FriendlyByteBuf;Ldev/architectury/networking/NetworkManager$PacketContext;)V	(Ljava/lang/Object;Ldev/architectury/networking/NetworkManager$PacketContext;)V	-,-

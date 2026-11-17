@@ -423,6 +423,13 @@ public final class ForgeApi1201 {
         return DeferredRegister.create((net.minecraft.resources.ResourceKey) registry.getRegistryKey(), modid);
     }
 
+    /** {@code RegisterRecipeBookCategoriesEvent.registerRecipeCategoryFinder(type, f)}: 1.20.1 handed the recipe to {@code f}, NeoForge 1.21.1 the holder. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void recipeCategoryFinder(net.neoforged.neoforge.client.event.RegisterRecipeBookCategoriesEvent event, net.minecraft.world.item.crafting.RecipeType type,
+            java.util.function.Function finder) {
+        event.registerRecipeCategoryFinder(type, holder -> (net.minecraft.client.RecipeBookCategories) finder.apply(((net.minecraft.world.item.crafting.RecipeHolder) holder).value()));
+    }
+
     private static final java.util.Map<String, Object> MOD_INSTANCES = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Called at the end of every constructor of a {@code @Mod} class: Forge's {@code ModContainer.getMod()} answered with this object. */
