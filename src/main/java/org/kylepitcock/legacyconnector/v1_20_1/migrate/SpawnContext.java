@@ -19,10 +19,13 @@ import net.minecraft.nbt.CompoundTag;
  * EntityType.create invocation. The matching Create claims the pending frame,
  * so later reentrant creates cannot reuse it. Every target EntityType.create
  * call opens a Create scope, even when it has no matching Pending scope. This
- * masks an outer scope from nested creates.
- * The exact Mob.finalizeSpawn invocation opens an Active scope for that Mob.
- * A generated legacy override bridge reads the active tag using
- * {@link #currentTagFor(Object)}.</p>
+ * masks an outer scope from nested creates.</p>
+ *
+ * <p>The target consumer-based create method constructs its entity through
+ * EntityType.create(Level). A Factory scope surrounds that construction and
+ * binds the returned entity by identity to the immediately enclosing Create
+ * frame. Generated legacy Mob.finalizeSpawn bridges can then retrieve the tag
+ * only for that exact entity. Direct legacy virtual calls use an Active scope.</p>
  *
  * <p>All scopes must be closed in LIFO order on the thread that opened them.
  * Callers should use try-with-resources so exceptions and early returns cannot
@@ -32,6 +35,7 @@ public final class SpawnContext {
     private enum Kind {
         PENDING,
         CREATE,
+        FACTORY,
         ACTIVE
     }
 
@@ -40,6 +44,8 @@ public final class SpawnContext {
         private final Object owner;
         private final CompoundTag tag;
         private boolean claimed;
+        private Frame parentCreate;
+        private Object createdEntity;
 
         private Frame(Kind kind, Object owner, CompoundTag tag) {
             this.kind = kind;
@@ -82,15 +88,42 @@ public final class SpawnContext {
     }
 
     /**
-     * Opens an Active scope using the tag from the Create scope immediately
-     * surrounding the target Mob.finalizeSpawn invocation.
+     * Opens the narrow factory boundary used by EntityType.create(Level).
+     * Only the direct factory call made while the matching Create frame is
+     * on top may bind its returned entity. Reentrant factory calls made by
+     * constructors receive a Factory frame with no parent Create and cannot
+     * steal the outer entity's tag.
      */
-    public static Scope enterActiveFromCreate(Object mob) {
-        Objects.requireNonNull(mob, "mob");
+    public static Scope enterFactory(Object entityType) {
+        Objects.requireNonNull(entityType, "entityType");
         Deque<Frame> frames = FRAMES.get();
         Frame top = frames == null ? null : frames.peek();
-        CompoundTag tag = top != null && top.kind == Kind.CREATE ? top.tag : null;
-        return push(new Frame(Kind.ACTIVE, mob, tag));
+        Frame parentCreate = top != null
+                && top.kind == Kind.CREATE
+                && top.owner == entityType
+                ? top
+                : null;
+        Frame factory = new Frame(Kind.FACTORY, entityType, null);
+        factory.parentCreate = parentCreate;
+        return push(factory);
+    }
+
+    /**
+     * Binds the returned entity to the Create frame captured by the current
+     * direct Factory scope. Calls from nested/reentrant factory scopes are
+     * deliberately ignored.
+     */
+    public static void bindCreatedEntity(Object entityType, Object entity) {
+        Objects.requireNonNull(entityType, "entityType");
+        Objects.requireNonNull(entity, "entity");
+        Deque<Frame> frames = FRAMES.get();
+        Frame top = frames == null ? null : frames.peek();
+        if (top != null
+                && top.kind == Kind.FACTORY
+                && top.owner == entityType
+                && top.parentCreate != null) {
+            top.parentCreate.createdEntity = entity;
+        }
     }
 
     /**
@@ -102,9 +135,10 @@ public final class SpawnContext {
     }
 
     /**
-     * Returns the tag belonging to the innermost Active frame for this exact
-     * object identity. An active null tag intentionally shadows an outer
-     * active tag for the same Mob.
+     * Returns the innermost tag associated with this exact Mob identity.
+     * Direct-call Active frames take precedence. A Factory or Create frame is
+     * a shadow boundary, so unrelated nested entity construction cannot
+     * inherit an ancestor's tag.
      */
     public static CompoundTag currentTagFor(Object mob) {
         if (mob == null) return null;
@@ -114,6 +148,12 @@ public final class SpawnContext {
             Frame frame = it.next();
             if (frame.kind == Kind.ACTIVE && frame.owner == mob) {
                 return frame.tag;
+            }
+            if (frame.kind == Kind.FACTORY) {
+                return null;
+            }
+            if (frame.kind == Kind.CREATE) {
+                return frame.createdEntity == mob ? frame.tag : null;
             }
         }
         return null;
