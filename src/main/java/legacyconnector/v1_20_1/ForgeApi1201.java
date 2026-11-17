@@ -694,6 +694,17 @@ public final class ForgeApi1201 {
     }
 
     public static net.neoforged.neoforge.fluids.FluidStack fluidLoad(net.minecraft.nbt.CompoundTag tag) {
+        // 1.20.1 loadFluidStackFromNBT answered EMPTY, silently, for a tag without a fluid (a tank's own tag with only capacity/slot keys: CoFH Core's FluidStorageCoFH.read);
+        // 1.21.1 logs "Tried to load invalid fluid" on every such read, per tank per packet
+        if (tag == null || !tag.contains("id")) {
+            if (tag != null && tag.contains("FluidName", 8)) { // a 1.20.1 world's own format: FluidName + Amount
+                net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(tag.getString("FluidName"));
+                var fluid = id == null ? null : net.minecraft.core.registries.BuiltInRegistries.FLUID.getOptional(id).orElse(null);
+                if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) return net.neoforged.neoforge.fluids.FluidStack.EMPTY;
+                return new net.neoforged.neoforge.fluids.FluidStack(fluid, tag.getInt("Amount"));
+            }
+            return net.neoforged.neoforge.fluids.FluidStack.EMPTY;
+        }
         return net.neoforged.neoforge.fluids.FluidStack.parseOptional(registries(), tag);
     }
 
