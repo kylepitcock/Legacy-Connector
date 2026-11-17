@@ -649,6 +649,17 @@ final class Mc1201Migration {
 
     private static void addBridges(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         for (Bridge b : t.bridges) {
+            if (isMobFinalizeSpawnBridge(b)
+                    && (h.isSubclassOf(node.name, b.owner()) || h.reachesUnknown(node.name))
+                    && h.hasNonSyntheticVirtualModDeclaration(node.name, b.oldName(), b.oldDesc())
+                    && h.hasNonSyntheticVirtualModDeclaration(node.name, b.newName(), b.newDesc())) {
+                throw new IllegalStateException(
+                        "Cannot migrate legacy Mob.finalizeSpawn in " + node.name
+                                + ": a Forge 1.20.1 five-argument override and a non-synthetic "
+                                + "four-argument finalizeSpawn declaration coexist in the mod hierarchy. "
+                                + "The four-argument declaration was not an override point in Forge 1.20.1, "
+                                + "so automatically choosing one would change dispatch semantics.");
+            }
             MethodNode old = declared(node, b.oldName(), b.oldDesc());
             if (old == null || (old.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
             if (declared(node, b.newName(), b.newDesc()) != null) continue;
@@ -658,6 +669,12 @@ final class Mc1201Migration {
             node.methods.add(bridge);
             c.bridges++;
         }
+    }
+
+    private static boolean isMobFinalizeSpawnBridge(Bridge bridge) {
+        return bridge.owner().equals("net/minecraft/world/entity/Mob")
+                && bridge.oldName().equals("finalizeSpawn")
+                && bridge.newName().equals("finalizeSpawn");
     }
 
     private static MethodNode declared(ClassNode node, String name, String desc) {
