@@ -98,7 +98,7 @@ public final class VanillaEntities {
         String n = legacyName(legacy.getClass());
         Supplier<EntityType<?>> type = n == null ? null : TYPES.get(n);
         if (type == null) return null;
-        Level level = world == null ? null : world.mcc$fullLevel();
+        Level level = world == null ? null : world.mcc$levelObject();
         if (level == null) return null;
         try {
             return type.get().create(level);

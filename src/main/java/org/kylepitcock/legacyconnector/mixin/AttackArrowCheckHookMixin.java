@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.ARROW_TARGET}): 1.7.10 coremods changed which entities the server treats as arrows when a player attacks
  * (arrows are not attackable). A hook can only take an entity out of that class here (the game's check then goes on to cast it). A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(targets = "net.minecraft.server.network.ServerGamePacketListenerImpl$1")
 public abstract class AttackArrowCheckHookMixin {
     @Final

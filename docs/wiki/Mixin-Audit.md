@@ -35,9 +35,8 @@ type-agnostic style is available everywhere.
 * (c) `require` 0 hiding a silently unapplied injection: **97 mixin classes**, listed in the table. 65 of them are the coremod hooks (`*HookMixin`,
   `*CoremodSites*`): `require = 0` is deliberate there (a hook for a coremod's patch site; if a NeoForge or Minecraft update moves the target the
   coremod effect silently disappears, vanilla behaviour stays). 32 are feature mixins whose absence changes behaviour without an error
-  (`StateHolderPropertyEquals`, `Varint21*` (payload size), `RecipeManagerContext`, `TreeGrowerLegacy`, the registry mixins, ...). Proposal, not done: the coremod
-  probes (`tools/dev/coremod-sites-1710-probe*.js`) already load every target; add a startup log line counting applied vs expected `legacyconnector$` handlers
-  (`MixinEnvironment.getCurrentEnvironment().audit()` or a plugin `postApply` counter) so an unapplied handler shows in the report instead of being silent.
+  (`StateHolderPropertyEquals`, `Varint21*` (payload size), `RecipeManagerContext`, `TreeGrowerLegacy`, the registry mixins, ...). Done: since 2026-11-16 a startup self check reports it (see "Startup self check" below); the 65/32 split of this table is superseded by the
+  `@CoremodHook` list below.
 * (d) fine: **49** (strict `require = 1` injectors on vanilla/Beta/Fisk-style targets and member-only mixins). 26 injectors keep the main
   config's default `require = 1`: they fail loudly if a target moves, which is wanted for core features; none of their targets is touched by a perf mod
   in the set at the injection point (see the overlap column).
@@ -70,6 +69,29 @@ the style Lithium coexists with; re-run `tools/dev/agent-tasks` probes when a Li
 * Give an injector that carries an optional feature `require = 0` and a line in the Javadoc saying what silently stops working; keep core features at the default.
 * Offline check: `tools/dev/gate.sh` compiles, and `tools/dev/agent-tasks` probes load every target. To compare against a new perf mod, extract its mixin config
   and diff the `method`/`at` pairs against the table below (the scan used for this page parsed the class files of every `*.mixins.json`).
+
+## Startup self check (which injectors were applied)
+
+`mixinplugin/MixinSelfCheck` (recorded from `LegacyMixinPlugin`'s Mixin extension, both configs): after all mixins were applied to a target class, the
+class is scanned once for the merged handler methods (`prefix$ABC123$[source$]name`) and the call sites that reference each; an injector that found no
+injection point leaves its handler in the class with no caller. After the game has loaded the targets (client title screen and server start;
+`MixinSelfCheckHook`) the layer logs one line per trigger,
+
+    Legacy Connector mixins: 151 injectors applied, 0 not applied (plus 2 optional coremod hook injectors not applied, by design), 12 not checked yet (target class not loaded)
+
+and one WARN per unapplied FEATURE injector (mixin, handler, injector kind, target methods). Mixins marked `@CoremodHook` (below) are the deliberately optional
+coremod hook replays: only counted. "Not checked yet" are injectors whose target class had not been transformed at that moment. Limit: two mixins on one
+target with the same handler name are matched together (the check cannot tell them apart; it only flags when both are dead). The headless server self test
+prints the line; `tools/dev/verify.sh` records `mixins_applied` and `mixins_not_applied` (a non-zero not-applied count in a suite whose baseline is 0
+is a regression, so a perf mod removing an injection point fails the suite).
+
+### Deliberate coremod hooks (`@CoremodHook`)
+
+<!-- coremod-hooks:begin (generated from @CoremodHook; run the test with MIXIN_DOCS_UPDATE=1 to rewrite) -->
+
+AbstractClientPlayerFovHookMixin, AnvilMenuCostHookMixin, AnvilScreenCostHookMixin, ArmorLayerHiddenHookMixin, AttackArrowCheckHookMixin, BannerTooltipLayersHookMixin, BeaconEffectsHookMixin, BlockExplodedHookMixin, BlockHarvestExhaustionHookMixin, BlockStateCollisionHookMixin, CakeEatHookMixin, ChorusFruitHookMixin, ClientCoremodSitesMixin1710, ClientPickBlockHookMixin, CollisionGetterHookMixin, CrossCollisionHookMixin, EnchantmentHelperHookMixin, EntityFlameHookMixin, EntityLightProbeHookMixin, EntityMoveHookMixin, EntityMovementHookMixin, ExplosionKnockbackHookMixin, FallingBlockFreeHookMixin, FireworkRocketLiftHookMixin, FlowingFluidBlockedHookMixin, FlyingMobTravelHookMixin, FoodDataHookMixin1122, FurnaceInputHookMixin, FurnaceResultHookMixin, FurnaceTakenOverHookMixin, GameRendererPickHookMixin, HungerEffectExhaustionHookMixin, InBedChatScreenHookMixin, InventoryDropAllHookMixin, ItemStackComponentHookMixin, ItemStackHookMixin, ItemSupportsEnchantmentHookMixin, LevelRainHookMixin, LevelRainingAtHookMixin, LevelSetBlockHookMixin, LightTextureNightVisionHookMixin, LiquidBlockAddedHookMixin, LivingEntityCoremodSitesMixin, LivingEntityEffectParticlesHookMixin, LivingEntityRendererNameHookMixin, LivingEntitySlipperinessHookMixin, LivingEntityUseDurationHookMixin, LivingRenderPoseHookMixin1710, LoomLayersHookMixin, MobAiHookMixin, MouseTurnHookMixin, NearestTargetPlayerHookMixin, ParrotTextureHookMixin, PlayerAttackHookMixin, PlayerBlockReachHookMixin, PlayerEntityReachHookMixin, PlayerExhaustionHookMixin, PlayerHurtSoundHookMixin, PlayerMovementExhaustionHookMixin, PressurePlateEntitiesHookMixin, ScreenEffectOverlayHookMixin, ServerLevelNeighborHookMixin, ServerLevelSleepHookMixin, ServerLevelWakeHookMixin, ServerLevelWeatherHookMixin, ServerSprintHookMixin, ShoulderParrotTextureHookMixin, ShulkerBoxEntityInsertHookMixin, ShulkerBoxInsertHookMixin, SignalGetterHookMixin, SlimeChunkHookMixin, TargetingCandidatesHookMixin, TargetingHiddenHookMixin, TrackedEntityRangeHookMixin, TrunkPlacerGroundHookMixin, UnloadedChunkSlowFallHookMixin, VehicleDestroyedHookMixin, WitherBlockHookMixin
+
+<!-- coremod-hooks:end -->
 
 ## Full table
 

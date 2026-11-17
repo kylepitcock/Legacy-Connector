@@ -172,7 +172,27 @@ public final class Forge1201Transformer {
         return name;
     }
 
+    /**
+     * A table rename that would fold two classes of the jar being translated into one name: the 1.20.1 build of a library that the table maps to its
+     * 1.21.1 shape (GeckoLib 4.8's {@code CoreGeoModel}, an interface the model class implements, is {@code GeoModel} in 4.9) translated as the fallback
+     * when the pack has no 1.21.1 build. Renaming there made {@code GeoModel} implement itself, which the JVM rejects with a ClassCircularityError when
+     * the class is defined. The jar keeps both names (its own classes agree with each other); the OTHER jars' references still follow the table.
+     */
+    static boolean mergesOwnClasses(Set<String> own, String from, String to) {
+        return own.contains(from) && own.contains(to);
+    }
+
     private final class Mapper extends Remapper {
+        private final Set<String> own;
+
+        Mapper() {
+            this(ownClasses);
+        }
+
+        Mapper(Set<String> own) {
+            this.own = own;
+        }
+
         @Override
         public String map(String internalName) {
             String moved = plan.isEmpty() ? null : plan.mapClass(VER, internalName);
@@ -180,7 +200,7 @@ public final class Forge1201Transformer {
             String r = mapClass(internalName);
             // mc-classes.tsv is keyed by the name after the Forge renames (a NeoForge class that has no counterpart in 1.21.1 maps on to a stand-in)
             String mc = Mc1201Tables.get().classes.get(r);
-            return mc != null ? mc : r;
+            return mc != null && !mergesOwnClasses(own, r, mc) ? mc : r;
         }
 
         @Override
@@ -228,9 +248,14 @@ public final class Forge1201Transformer {
      */
     public List<org.kylepitcock.legacyconnector.loader.shim.ClassInfo> scan(LegacyJar jar) throws IOException {
         Set<String> watched = Mc1201Tables.get().watchedMethodNames();
-        Mapper mapper = new Mapper();
         List<org.kylepitcock.legacyconnector.loader.shim.ClassInfo> out = new ArrayList<>();
         try (ZipFile zip = new ZipFile(jar.existing().toFile())) {
+            Set<String> names = new HashSet<>();
+            for (Enumeration<? extends ZipEntry> en = zip.entries(); en.hasMoreElements(); ) {
+                String n = en.nextElement().getName();
+                if (n.endsWith(".class") && !n.startsWith("META-INF/")) names.add(n.substring(0, n.length() - 6));
+            }
+            Mapper mapper = new Mapper(names);
             for (Enumeration<? extends ZipEntry> en = zip.entries(); en.hasMoreElements(); ) {
                 ZipEntry e = en.nextElement();
                 String name = e.getName();

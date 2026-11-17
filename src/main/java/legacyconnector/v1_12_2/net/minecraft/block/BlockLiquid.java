@@ -41,8 +41,8 @@ public abstract class BlockLiquid extends Block {
         boolean vanilla = state.getBlock().mcc$modern instanceof net.minecraft.world.level.block.Block b
                 && !(b instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block);
         if (!vanilla && state.getPropertyKeys().contains(LEVEL)) return state.getValue(LEVEL);
-        if (worldIn instanceof World w && w.mcc$level() != null) {
-            var fluid = w.mcc$level().getFluidState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
+        if (worldIn instanceof World w && w.mcc$access() != null) {
+            var fluid = w.mcc$access().getFluidState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
             if (fluid.isEmpty() || fluid.isSource()) return 0;
             return (fluid.getValue(net.minecraft.world.level.material.FlowingFluid.FALLING) ? 8 : 0) | Math.max(0, 8 - fluid.getAmount()) & 7;
         }
@@ -138,9 +138,9 @@ public abstract class BlockLiquid extends Block {
 
     /** The direction of the flow at a position (the modern fluid's flow vector there). */
     public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d mcc$flow(IBlockAccess worldIn, BlockPos pos) {
-        if (worldIn instanceof World w && w.mcc$level() != null) {
+        if (worldIn instanceof World w && w.mcc$access() != null) {
             var mp = org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos);
-            var v = w.mcc$level().getFluidState(mp).getFlow(w.mcc$level(), mp);
+            var v = w.mcc$access().getFluidState(mp).getFlow(w.mcc$access(), mp);
             return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(v.x, v.y, v.z);
         }
         return legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d.ZERO;

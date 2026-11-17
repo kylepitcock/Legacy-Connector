@@ -84,6 +84,34 @@ public final class TagStandIns1201 {
         return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "heads"));
     }
 
+    /**
+     * The field-by-name rows ({@code none-name} in {@code mc-fields.tsv}): the field name of Forge's {@code Tags.Items/Blocks/Biomes} constant that
+     * 1.21.1 lacks, as the {@code c:} convention tag the loader's data conversion spells the same Forge tag as. The tags of the colours, panes, quartz
+     * blocks and armour pieces are filled by the layer's own data ({@code data/c/tags}), the rest stay empty unless a pack defines them.
+     */
+    public static TagKey itemTag(String field) {
+        return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", path(field)));
+    }
+
+    public static TagKey blockTag(String field) {
+        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", path(field)));
+    }
+
+    public static TagKey biomeTag(String field) {
+        return TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath("c", path(field)));
+    }
+
+    static String path(String field) {
+        String lower = field.toLowerCase(java.util.Locale.ROOT);
+        if (field.equals("STAINED_GLASS")) return "glass_blocks/stained";
+        if (field.equals("STAINED_GLASS_PANES")) return "glass_panes/stained";
+        if (field.startsWith("GLASS_PANES_")) return "glass_panes/" + lower.substring("glass_panes_".length());
+        if (field.startsWith("GLASS_")) return "glass_blocks/" + lower.substring("glass_".length());
+        if (field.startsWith("STORAGE_BLOCKS_")) return "storage_blocks/" + lower.substring("storage_blocks_".length());
+        if (field.startsWith("ARMORS_")) return "armors/" + lower.substring("armors_".length());
+        return lower;
+    }
+
     public static TagKey isWater() {
         return TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath("c", "is_water"));
     }

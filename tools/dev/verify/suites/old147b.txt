@@ -1,0 +1,12 @@
+1.4.7 immibis-core-52
+1.4.7 immibis-microblocks-52
+1.4.7 immibis-peripherals-52
+1.4.7 tubestuff-52
+1.4.7 infinitubes-52
+1.4.7 liquid-xp-52
+1.4.7 adv-repulsion-systems-52
+1.4.7 dimensional-anchor-52
+1.4.7 miscperipherals-3.1
+1.4.7 ComputerCraft1.5.zip
+1.4.7 xcraft
+1.4.7 rpcDrive

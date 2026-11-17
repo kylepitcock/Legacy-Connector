@@ -14,6 +14,9 @@ public class FurnaceRecipes {
     private final Map smeltingList = new HashMap();
     @SuppressWarnings("rawtypes")
     private final Map experienceList = new HashMap();
+    /** Forge 3.x's {@code FurnaceRecipes.metaSmeltingList}: (item id, damage) to the result, for the registrations of one damage value (read by name by mods that merge recipes). */
+    @SuppressWarnings("rawtypes")
+    public final Map metaSmeltingList = new HashMap();
 
     public static FurnaceRecipes smelting() {
         return smeltingBase;
@@ -30,6 +33,9 @@ public class FurnaceRecipes {
     @SuppressWarnings("unchecked")
     public void addSmeltingRecipe(ItemStack input, ItemStack output, float xp) {
         smeltingList.put(input, output);
+        if (input.getItem() != null && input.getItemDamage() != 32767) {
+            metaSmeltingList.put(java.util.Arrays.asList(legacyconnector.v1_6_4.net.minecraft.util.Ids.itemId(input.getItem()), input.getItemDamage()), output);
+        }
         experienceList.put(output, xp);
         RecipeBridge.addSmelting(input, output, xp);
     }

@@ -390,3 +390,38 @@ Client builds only load on a client (their game classes fit the client names); a
   classes. Dropping the copies and reporting them (`Notch125To147`) keeps the 8 mods usable, a pure patch has nothing left to load.
 - **Server jars**: separate obfuscation confirmed (`ModLoaderMP Server`, `forestry-server`, `industrialcraft-2-server`, ... fit the server table of the join and not the client one; 21 units); ModLoaderMP
   needs `BaseModMp`/`ModLoaderMp`/`Packet230ModLoader` from its own zip (not bundled by the mods, 11 units use it).
+
+## First client runs and a wider server sweep (2026-11-17)
+
+Toggle on (`-Pmappings125`, `experimental.minecraft125=true`), one mod per run, fresh config, world and cache, jars from the MCArchive corpus. Server runs: `tools/dev/run125.sh <label> <jar>`
+(`run125-batch.sh label=jar ...`, `RATE=1` also writes `docs/data/mods.json` through `tools/compat/from_client.py ... 1.2.5`). Client runs: `tools/dev/run125-client.sh label=jar ...`
+(`tools/dev/quick-shots.sh` on the Windows desktop, superflat world, perf mods off unless `PERF=1`; ObsidianHilt was also run with the perf mods and renders the same). Screenshots (full-colour JPEG)
+are in `docs/screenshots/old-versions/1.2.5/`. **These are the first 1.2.5 mods that ran in a real client.**
+
+| Mod (jar) | Server | Client | First failure / note |
+|---|---|---|---|
+| Obsidian Hilt | 8 items, self test clean | 8 items, textures right | none |
+| BucketCraft | skipped (client classes) | 21 items, textures right | none |
+| Craftable Mob Spawners | skipped (client classes) | 24 items, textures right | none |
+| Magic Wands (client / server builds) | server: 6 items, 6 recipes | 6 items, textures right | item self test: 4 items need a player target |
+| Backpack (client / server builds) | 1 item, 17 recipes | 1 item | none |
+| Elemental Creepers (sp / server builds) | 15 entity types alive | 15 entity types register | none |
+| GOL, NeoMelaphyre, Smoking Chimney | skipped (client classes) | 1 block + 1 item each, blocks render | none |
+| Timber | 1 block | 1 block | none |
+| Unofficial Tale of Kingdoms | skipped (client classes) | 1 item, 41 entity types | not played |
+| More Pistons | 9 blocks, 9 items | blocks draw missing textures | the blocks' `getTextureFile` names `/morePistons/blocks/block_textures.png`, which the zip does not contain (only the tile PNGs for `addOverride`); the rod's `breakBlock` reads `Minecraft.playerController` (null on a server: a mod bug on a dedicated server) |
+| EE3 0.1a (server) | 2 items | not run | was a `VerifyError` (missing `forge.adaptors.EntityLivingHandlerAdaptor`), then an unset `@SidedProxy`, then `FurnaceRecipes.metaSmeltingList` (all fixed below) |
+| Somnia, Custom Recipes | loads, no content | loads, no content | libraries/tweaks, nothing to register |
+| Obsidian Ingots, SDKs Mods, Herobrine | fail by design | not run | "patched-game jar mod" (they replace vanilla classes) |
+| NEWTON gravity enabler | fails | not run | a 1.2.3 jar (its obfuscated names differ from 1.2.5's) that also ships patched `ItemSand` |
+| Advanced Solar Panel (server) | fails | not run | needs the IC2 API classes (`ic2.api.Items`): load IC2 with it |
+| BlockHelper (server) | NPE in `load` before the `@SidedProxy` fix | not re-run | its proxy field was never injected; should work now, not re-run |
+| Checkpoints | no content registered | not run | not investigated |
+
+Fixed on the way (generic): Forge 3.4's `IEntityLivingHandler` (death hook, through `LivingDeathEvent`) with `adaptors/EntityLivingHandlerAdaptor` and `SoundHandlerAdaptor`;
+`net.minecraft.src.SidedProxy` (FML 2.x's ModLoader-style annotation, default package in a mod jar) is now FML's `@SidedProxy` so the platform injects it (`Notch125To147`, transformer 145);
+Forge 3's `FurnaceRecipes.metaSmeltingList` field exists (keyed by item id and damage). Also: `screenshotTest` passes `legacyconnector.mc125` with `-Pmappings125`.
+
+What blocks "playable" (the 0.5.0 condition, a handful of playable 1.2.5 content mods): the mods above register and draw their content, but none was played in survival yet (use, craft, place, save and
+reload), the most common mod type with custom block sheets (a `getTextureFile` that points at a sheet the jar lacks, More Pistons) still draws missing textures, and the big Forge-era mods (IC2,
+BuildCraft, Forestry, Railcraft, Thaumcraft) are only link-probed.

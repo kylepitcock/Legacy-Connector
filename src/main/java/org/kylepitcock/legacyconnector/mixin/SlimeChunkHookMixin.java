@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.SLIME_CHUNK}): 1.12.2 coremods put a hook early in {@code EntitySlime.getCanSpawnHere} that decides
  * whether the chunk is a slime chunk (0 no, 1 yes, -1 the game decides). A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(Slime.class)
 public abstract class SlimeChunkHookMixin {
     @Inject(method = "checkSlimeSpawnRules", at = @At("HEAD"), cancellable = true, require = 0)

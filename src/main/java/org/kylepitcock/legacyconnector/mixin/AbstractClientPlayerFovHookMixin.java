@@ -7,11 +7,13 @@ import net.minecraft.world.entity.player.Abilities;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.Client.FOV_WALK_SPEED}): 1.7.10 coremods replaced the {@code capabilities.getWalkSpeed()} of
  * {@code EntityPlayerSP.getFOVMultiplier} (the field of view follows the player's speed). A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(AbstractClientPlayer.class)
 public abstract class AbstractClientPlayerFovHookMixin {
     @WrapOperation(method = "getFieldOfViewModifier", at = @At(value = "INVOKE",

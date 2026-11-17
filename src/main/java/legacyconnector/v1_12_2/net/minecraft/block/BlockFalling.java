@@ -22,7 +22,8 @@ public class BlockFalling extends Block {
 
     private void mcc$scheduleFall(World world, BlockPos pos) {
         var level = world == null ? null : world.mcc$level();
-        if (level != null && mcc$modern instanceof net.minecraft.world.level.block.Block modern) level.scheduleTick(pos.mcc$modern(), modern, tickRate(world));
+        var access = world == null ? null : world.mcc$access();
+        if (access != null && mcc$modern instanceof net.minecraft.world.level.block.Block modern) access.scheduleTick(pos.mcc$modern(), modern, tickRate(world));
     }
 
     @Override
@@ -41,6 +42,7 @@ public class BlockFalling extends Block {
     }
 
     private void checkFallable(World world, BlockPos pos) {
+        if (!(world.mcc$access() instanceof net.minecraft.world.level.Level)) return; // generating: blocks do not fall
         var level = world.mcc$level();
         var mp = pos.mcc$modern();
         var below = mp.below();

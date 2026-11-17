@@ -54,7 +54,7 @@ public class BlockSnapshot {
     }
 
     private static NBTTagCompound mcc$tileData(World world, BlockPos pos) {
-        var level = world == null ? null : world.mcc$level();
+        var level = world == null ? null : world.mcc$access();
         if (level == null) return null;
         var be = level.getBlockEntity(pos.mcc$modern());
         return be == null ? null : new NBTTagCompound(be.saveWithFullMetadata(level.registryAccess()));

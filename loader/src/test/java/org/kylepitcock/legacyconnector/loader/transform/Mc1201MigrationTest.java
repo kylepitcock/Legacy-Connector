@@ -160,6 +160,86 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void removedConventionTagFieldBecomesNameLookup() {
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        String tag = "Lnet/minecraft/tags/TagKey;";
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "pane", "()" + tag);
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/neoforged/neoforge/common/Tags$Items", "GLASS_PANES_RED", tag));
+        m.instructions.add(new InsnNode(ARETURN));
+        assertEquals(1, apply(c).fields);
+        assertEquals("GLASS_PANES_RED", ((org.objectweb.asm.tree.LdcInsnNode) m.instructions.getFirst()).cst);
+        MethodInsnNode call = (MethodInsnNode) m.instructions.getFirst().getNext();
+        assertEquals(MIGRATE + "TagStandIns1201", call.owner);
+        assertEquals("itemTag", call.name);
+        assertEquals("(Ljava/lang/String;)" + tag, call.desc);
+    }
+
+    @Test
+    void animalFoodFieldIsReadFromTheTagAndWrittenThroughTheHelper() {
+        String ing = "Lnet/minecraft/world/item/crafting/Ingredient;";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "add", "()V");
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/minecraft/world/entity/animal/Chicken", "FOOD_ITEMS", ing));
+        m.instructions.add(new FieldInsnNode(PUTSTATIC, "net/minecraft/world/entity/animal/Chicken", "FOOD_ITEMS", ing));
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(2, apply(c).fields);
+        MethodInsnNode read = (MethodInsnNode) m.instructions.getFirst();
+        assertEquals(MIGRATE + "AnimalFood1201", read.owner);
+        assertEquals("chicken", read.name);
+        MethodInsnNode write = (MethodInsnNode) read.getNext();
+        assertEquals("setChicken", write.name);
+        assertEquals("(" + ing + ")V", write.desc);
+    }
+
+    @Test
+    void onArmorTickOverrideGetsAGuardedInventoryTickBridge() {
+        String armorTick = "(L" + STACK + ";Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;)V";
+        ClassNode c = cls("test/Boots", "net/minecraft/world/item/ArmorItem");
+        MethodNode old = method(c, ACC_PUBLIC, "onArmorTick", armorTick);
+        old.instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(c).bridges);
+        MethodNode bridge = findDeclared(c, "inventoryTick", "(L" + STACK + ";Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;IZ)V");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, MIGRATE + "Round9Compat", "wornBy"));
+        assertNotNull(find(bridge, "test/Boots", "onArmorTick"));
+        boolean guarded = false;
+        for (AbstractInsnNode in : bridge.instructions) guarded |= in.getOpcode() == IFNULL;
+        assertTrue(guarded);
+    }
+
+    @Test
+    void dropCustomDeathLootSuperCallGetsTheServerLevel() {
+        String oldDesc = "(Lnet/minecraft/world/damagesource/DamageSource;IZ)V";
+        ClassNode c = cls("test/Rat", "net/minecraft/world/entity/monster/Monster");
+        MethodNode m = method(c, ACC_PROTECTED, "dropCustomDeathLoot", oldDesc);
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new VarInsnNode(ILOAD, 2));
+        m.instructions.add(new VarInsnNode(ILOAD, 3));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, "net/minecraft/world/entity/monster/Monster", "dropCustomDeathLoot", oldDesc, false));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode call = find(m, "net/minecraft/world/entity/monster/Monster", "dropCustomDeathLoot");
+        assertEquals("(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V", call.desc);
+        assertNotNull(find(m, MIGRATE + "Round9Compat", "serverLevelOf"));
+    }
+
+    @Test
+    void bufferSourceSuperConstructorTakesByteBuffers() {
+        ClassNode c = cls("test/Ghost", "net/minecraft/client/renderer/MultiBufferSource$BufferSource");
+        MethodNode m = method(c, ACC_PUBLIC, "<init>", "()V");
+        String legacy = "L" + MIGRATE + "CompatBufferBuilder;";
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new org.objectweb.asm.tree.InsnNode(ACONST_NULL));
+        m.instructions.add(new InsnNode(ACONST_NULL));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, "net/minecraft/client/renderer/MultiBufferSource$BufferSource", "<init>", "(" + legacy + "Ljava/util/Map;)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode ctor = find(m, "net/minecraft/client/renderer/MultiBufferSource$BufferSource", "<init>");
+        assertEquals("(Lcom/mojang/blaze3d/vertex/ByteBufferBuilder;Ljava/util/SequencedMap;)V", ctor.desc);
+    }
+
+    @Test
     void droppedInstanceFieldBecomesHelperCalls() {
         String opts = "net/minecraft/client/Options";
         ClassNode c = cls("test/Mod", "java/lang/Object");

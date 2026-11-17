@@ -30,9 +30,10 @@ def norm(s):
 # modern id -> (legacy id, name, version), only jars of the requested legacy version
 mods, jar_ok = {}, False
 for line in report.read_text(encoding="utf-8", errors="replace").splitlines():
-    m = re.match(r"^(\S.*\.jar)\s+\[(\d[\d.]*)?", line)
+    m = re.match(r"^(\S.*\.(?:jar|zip))\s+\[(\d[\d.]*)?", line)
     if m:
-        jar_ok = m.group(2) in (None, mc)
+        # a 1.2.5 jar is hosted as 1.4.7 and the report line says so ("[1.4.7, Minecraft 1.2.5, ...")
+        jar_ok = m.group(2) in (None, mc) or (mc == "1.2.5" and m.group(2) == "1.4.7" and "Minecraft 1.2.5" in line)
         continue
     m = re.match(r"^  mod (.+?) -> (\S+)\s+\((.*)\)\s*$", line)
     if m and jar_ok:

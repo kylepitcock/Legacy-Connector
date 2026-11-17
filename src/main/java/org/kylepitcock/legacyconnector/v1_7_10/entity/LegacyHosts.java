@@ -260,7 +260,7 @@ public final class LegacyHosts {
 
     /** A host for a legacy object a mod constructed itself; null when the world is not a real level. */
     public static LegacyHost adopt(Entity legacy, World world) {
-        Level level = world == null ? null : world.mcc$fullLevel();
+        Level level = world == null ? null : world.mcc$levelObject();
         if (level == null || isParticle(legacy.getClass())) return null;
         Info info = info(legacy.getClass());
         Kind kind = info != null ? info.kind() : kindOf(legacy.getClass());

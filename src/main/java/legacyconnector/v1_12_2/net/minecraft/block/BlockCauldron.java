@@ -118,11 +118,11 @@ public class BlockCauldron extends Block {
     /** Sets the water level (0 empties it): the modern cauldron or water cauldron for a vanilla one, the LEVEL property otherwise. */
     public void setWaterLevel(World worldIn, BlockPos pos, IBlockState state, int level) {
         level = Math.max(0, Math.min(3, level));
-        if (isVanilla() && worldIn.mcc$level() != null) {
+        if (isVanilla() && worldIn.mcc$access() != null) {
             var mp = org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos);
             var modern = level == 0 ? net.minecraft.world.level.block.Blocks.CAULDRON.defaultBlockState()
                     : net.minecraft.world.level.block.Blocks.WATER_CAULDRON.defaultBlockState().setValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL, level);
-            worldIn.mcc$level().setBlock(mp, modern, 2);
+            worldIn.mcc$access().setBlock(mp, modern, 2);
         } else {
             worldIn.setBlockState(pos, state.withProperty(LEVEL, level), 2);
         }
@@ -145,8 +145,8 @@ public class BlockCauldron extends Block {
 
     /** The water level there: the modern water cauldron's for a vanilla cauldron. */
     private int mcc$level(World worldIn, BlockPos pos, IBlockState state) {
-        if (isVanilla() && worldIn.mcc$level() != null) {
-            var modern = worldIn.mcc$level().getBlockState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
+        if (isVanilla() && worldIn.mcc$access() != null) {
+            var modern = worldIn.mcc$access().getBlockState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
             return modern.hasProperty(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL) && modern.is(net.minecraft.world.level.block.Blocks.WATER_CAULDRON)
                     ? modern.getValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL) : 0;
         }
