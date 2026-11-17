@@ -121,7 +121,8 @@ public final class SpawnContext {
         if (top != null
                 && top.kind == Kind.FACTORY
                 && top.owner == entityType
-                && top.parentCreate != null) {
+                && top.parentCreate != null
+                && top.parentCreate.createdEntity == null) {
             top.parentCreate.createdEntity = entity;
         }
     }
