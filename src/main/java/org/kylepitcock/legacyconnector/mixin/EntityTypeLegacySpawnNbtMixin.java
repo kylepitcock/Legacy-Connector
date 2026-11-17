@@ -5,8 +5,8 @@
  */
 package org.kylepitcock.legacyconnector.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.Operation;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
