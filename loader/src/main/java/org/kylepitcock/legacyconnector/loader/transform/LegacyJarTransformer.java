@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 147;
+    public static final int TRANSFORMER_VERSION = 149;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -227,8 +227,8 @@ public final class LegacyJarTransformer {
                 // Instructions are needed to see a class calling an inherited method under its SRG name while declaring the readable one
                 // (Twilight Forest's Naga: getMaximumHomeDistance() { return func_110174_bM(); } would recurse once renamed); only classes
                 // that mention an SRG method name can do that.
-                boolean srgCalls = new String(data, java.nio.charset.StandardCharsets.ISO_8859_1).contains("func_");
-                new ClassReader(data).accept(n, (srgCalls ? 0 : ClassReader.SKIP_CODE) | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                // (and a notch-named class: its inherited calls collide with its own declarations without any func_ name, The Lion King's quiver)
+                new ClassReader(data).accept(n, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 remapper.preventCollisions(n);
             } catch (RuntimeException ignored) {
                 // unreadable classes are reported later

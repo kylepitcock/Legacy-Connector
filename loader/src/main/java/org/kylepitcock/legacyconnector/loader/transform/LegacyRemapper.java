@@ -65,6 +65,8 @@ public final class LegacyRemapper extends Remapper {
     private final java.util.Set<String> keep = new java.util.HashSet<>();
     /** {@code owner.readableName+desc} of a mod's own method that shares its name with a mapped vanilla one. */
     private final java.util.Set<String> renameLocal = new java.util.HashSet<>();
+    /** Declarations (owner.name+desc as written in the jar) renamed to {@code name$mod} because an inherited method the class calls ends up with the same final name. */
+    private final java.util.Set<String> renameLocalRaw = new java.util.HashSet<>();
 
     private final ShimIndex shim;
     private final SynthDemand demand;
@@ -327,6 +329,7 @@ public final class LegacyRemapper extends Remapper {
      * and the references the jar makes to it), so the SRG call still reaches the vanilla method.
      */
     private void preventInheritedCallCollisions(org.objectweb.asm.tree.ClassNode original) {
+        preventForwardedCallCollisions(original);
         java.util.Set<String> declared = new java.util.HashSet<>();
         for (var m : original.methods) if (mcp.method(m.name).equals(m.name)) declared.add(m.name + m.desc);
         if (declared.isEmpty()) return;
@@ -343,6 +346,35 @@ public final class LegacyRemapper extends Remapper {
                 }
             }
         }
+    }
+
+    /**
+     * A class that declares a method AND calls an inherited method of another name on itself, where both end up with the same name once the
+     * notch/SRG/forward renames are applied, would call itself (The Lion King's quiver: {@code e()} = IInventory.onInventoryChanged calls
+     * {@code c()} = WorldSavedData.markDirty, both {@code markDirty()} in the 1.7.10 shim: StackOverflowError). The declaration is renamed
+     * locally ({@code $mod}) so the call reaches the inherited method.
+     */
+    private void preventForwardedCallCollisions(org.objectweb.asm.tree.ClassNode original) {
+        java.util.Set<String> declaredRaw = new java.util.HashSet<>();
+        for (var m : original.methods) declaredRaw.add(m.name + m.desc);
+        for (var m : original.methods) {
+            if (m.instructions == null) continue;
+            for (var insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+                if (!(insn instanceof org.objectweb.asm.tree.MethodInsnNode call) || !call.owner.equals(original.name)
+                        || call.getOpcode() == org.objectweb.asm.Opcodes.INVOKESPECIAL || call.name.startsWith("<")
+                        || declaredRaw.contains(call.name + call.desc)) continue;
+                String callFinal = finalMethodName(original.name, call.name, call.desc);
+                for (var d : original.methods) {
+                    if (d.name.startsWith("<") || !d.desc.equals(call.desc) || d.name.equals(call.name)) continue;
+                    if (finalMethodName(original.name, d.name, d.desc).equals(callFinal)) renameLocalRaw.add(original.name + "." + d.name + d.desc);
+                }
+            }
+        }
+    }
+
+    private String finalMethodName(String owner, String name, String desc) {
+        String readable = readable(owner, name, desc);
+        return members == null ? readable : members.method(legacyClass(owner), readable, legacyDesc(desc), this::localSupers);
     }
 
     /** The readable (MCP) name of a method a class declares, as {@link #mapMethodName} will produce it (a notch-named jar's declarations go through the notch table first). */
@@ -478,6 +510,7 @@ public final class LegacyRemapper extends Remapper {
     public String mapMethodName(String owner, String name, String descriptor) {
         if (owner.endsWith(LIVING_KEEP)) owner = owner.substring(0, owner.length() - LIVING_KEEP.length());
         if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
+        if (!renameLocalRaw.isEmpty() && renameLocalRaw.contains(owner + "." + name + descriptor)) return methodName(owner, name, descriptor) + "$mod";
         if (!renameLocal.isEmpty() && !name.startsWith("func_")) {
             String srg = notchSrg(owner, name, descriptor);
             if (!srg.startsWith("func_") && renameLocal.contains(owner + "." + srg + descriptor)) return srg + "$mod";
