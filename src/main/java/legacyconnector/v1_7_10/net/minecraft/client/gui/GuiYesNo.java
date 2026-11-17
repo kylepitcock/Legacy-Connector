@@ -39,6 +39,20 @@ public class GuiYesNo extends GuiScreen {
         buttonList.add(new GuiButton(1, width / 2 + 5, height / 6 + 96, 150, 20, cancelButtonText));
     }
 
+    private int ticksUntilEnable;
+
+    /** Disables the buttons for {@code ticks} ticks (the question that must not be answered by a double click). */
+    public void setButtonDelay(int ticks) {
+        this.ticksUntilEnable = ticks;
+        for (Object o : buttonList) ((GuiButton) o).enabled = false;
+    }
+
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        if (--ticksUntilEnable == 0) for (Object o : buttonList) ((GuiButton) o).enabled = true;
+    }
+
     @Override
     protected void actionPerformed(GuiButton button) {
         parentScreen.confirmClicked(button.id == 0, worldNumber);

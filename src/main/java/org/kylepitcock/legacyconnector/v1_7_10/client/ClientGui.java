@@ -73,6 +73,7 @@ public final class ClientGui {
             mc.setScreen(new LegacyContainerScreen(menu, inv, net.minecraft.network.chat.Component.empty()));
             return;
         }
+        if (vanilla != null && vanilla == mc.screen) return; // the screen was opened while it was built (the connect screen)
         mc.setScreen(vanilla != null ? vanilla : new LegacyScreen(screen));
     }
 
@@ -82,7 +83,8 @@ public final class ClientGui {
      */
     private static net.minecraft.client.gui.screens.Screen vanillaEquivalent(Minecraft mc, GuiScreen screen) {
         Class<?> cls = screen.getClass();
-        if (!cls.getName().contains("net.minecraft.client.gui.") && !cls.getName().contains("cpw.mods.fml.client.")) return null;
+        if (!cls.getName().contains("net.minecraft.client.gui.") && !cls.getName().contains("cpw.mods.fml.client.")
+                && !cls.getName().contains("net.minecraft.client.multiplayer.")) return null;
         net.minecraft.client.gui.screens.Screen parent = mc.screen;
         return switch (cls.getSimpleName()) {
             case "GuiMainMenu" -> new net.minecraft.client.gui.screens.TitleScreen();
@@ -106,6 +108,15 @@ public final class ClientGui {
                     ? new net.minecraft.client.gui.screens.ChatScreen(chat.mcc$defaultText()) : null;
             case "GuiScreenAddServer" -> screen instanceof legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreenAddServer add
                     ? add.mcc$modern(parent) : null;
+            case "GuiGameOver" -> new net.minecraft.client.gui.screens.DeathScreen(null, mc.level != null && mc.level.getLevelData().isHardcore());
+            case "GuiShareToLan" -> new net.minecraft.client.gui.screens.ShareToLanScreen(parent);
+            case "GuiSleepMP" -> mc.player == null || !mc.player.isSleeping() ? null : new net.minecraft.client.gui.screens.InBedChatScreen();
+            case "GuiDownloadTerrain" -> new net.minecraft.client.gui.screens.ReceivingLevelScreen(
+                    () -> mc.player == null || mc.level == null || mc.level.getChunkSource().hasChunk(mc.player.chunkPosition().x, mc.player.chunkPosition().z),
+                    net.minecraft.client.gui.screens.ReceivingLevelScreen.Reason.OTHER);
+            case "GuiScreenBook" -> screen instanceof legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreenBook book ? book.mcc$modern() : null;
+            case "GuiConnecting" -> screen instanceof legacyconnector.v1_7_10.net.minecraft.client.multiplayer.GuiConnecting connecting
+                    ? connecting.mcc$connect(parent) : null;
             case "GuiStreamOptions" -> new LegacyScreen(new legacyconnector.v1_7_10.net.minecraft.client.gui.stream.GuiStreamUnavailable(screen));
             default -> null;
         };
