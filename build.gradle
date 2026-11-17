@@ -142,6 +142,8 @@ neoForge {
             gameDirectory = project.file(project.findProperty('shotDir') ?: 'run-screenshots') // -PshotDir=run-atm10: a copy of a real pack
             if (project.hasProperty('shotDir')) jvmArguments.addAll('-Xmx12G')
             systemProperty 'legacyconnector.screenshotTest', 'true'
+            // -Pmappings125: host the 1.2.5 jars of mods/1.2.5 (needs the join table in the loader, see docs/wiki/Legacy-1.2.5.md)
+            if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
             ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas', 'shotCommands', 'debugIcons', 'debugAssets', 'debugAsm'].each { p ->
                 if (project.hasProperty(p)) systemProperty 'legacyconnector.' + p, project.property(p)
             }

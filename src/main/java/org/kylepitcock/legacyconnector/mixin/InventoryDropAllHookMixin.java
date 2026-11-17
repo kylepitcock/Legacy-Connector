@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.PLAYER_DROPS}): 1.12.2 coremods put a hook after the empty check of each stack in
  * {@code InventoryPlayer.dropAllItems}; a hook answering false keeps the stack in the inventory. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(Inventory.class)
 public abstract class InventoryDropAllHookMixin {
     @Shadow

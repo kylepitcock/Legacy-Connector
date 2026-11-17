@@ -10,12 +10,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.NEIGHBOR_POWERED}, {@code POWER_LEVEL}): 1.7.10 coremods changed what
  * {@code World.isBlockIndirectlyGettingPowered} and {@code getIndirectPowerLevelTo} answer (powers that emit redstone signals). Only real levels;
  * a no-op without such hooks.
  */
+@CoremodHook
 @Mixin(SignalGetter.class)
 public interface SignalGetterHookMixin {
     @Inject(method = "hasNeighborSignal", at = @At("RETURN"), cancellable = true, require = 0)

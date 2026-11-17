@@ -14,6 +14,7 @@ LOG = """[13Nov2026 13:25:50.000] [main/INFO] [LegacyConnector/]: Legacy mods lo
   foo: bar
 [13Nov2026 13:25:54.000] [Server thread/INFO] [x]: ENTITY SELF TEST: 9 alive, 1 removed, 1 failed, 2 not spawned of 12 types
 [13Nov2026 13:25:54.515] [Server thread/INFO] [x]: SILENT FAILURE CHECKS: 6 passed, 1 failed
+[13Nov2026 13:25:55.000] [Server thread/INFO] [LegacyConnector/Mixins/]: Legacy Connector mixins: 140 injectors applied, 2 not applied (plus 5 optional coremod hook injectors not applied, by design) (server started)
 java.lang.VerifyError: bad
 """
 
@@ -27,6 +28,7 @@ class ParseTest(unittest.TestCase):
         self.assertEqual((m["blocks_placed"], m["blocks_ok"], m["blocks_problems"]), (85, 80, 3))
         self.assertEqual((m["entities_alive"], m["entities_failed"], m["entities_not_spawned"]), (9, 1, 2))
         self.assertEqual(m["silent_failed"], 1)
+        self.assertEqual((m["mixins_applied"], m["mixins_not_applied"]), (140, 2))
         self.assertEqual((m["placement_placed"], m["placement_total"]), (70, 80))
         self.assertEqual((m["content_items"], m["content_blocks"], m["content_entities"]), (120, 85, 12))
         self.assertEqual((m["crash_reports"], m["verify_errors"], m["reached_selftest"]), (1, 1, 1))
