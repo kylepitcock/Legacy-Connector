@@ -59,7 +59,7 @@ public final class ForeignEnergy1710 {
         if (early.sink != null) return side != null && !early.accepts(tile, from) ? null : new EarlyEuStorage(tile, from, early);
         EarlyMj earlyMj = EARLY_MJ.get(tile.getClass());
         if (earlyMj.receptor != null) return new EarlyMjStorage(tile, from, earlyMj);
-        if (early.storage != null) return new EarlyEuMeter(tile, early);
+        if (early.storage != null && org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return new EarlyEuMeter(tile, early);
         return null;
     }
 
@@ -447,6 +447,7 @@ public final class ForeignEnergy1710 {
 
         /** The packet to offer: the tier of the block's output when it has one, else the low-voltage packet (32 EU). */
         int packet(TileEntity tile) {
+            if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return 32; // the storage tiers are verified for Minecraft 1.2.5 only
             int out = units(output, tile);
             return out <= 0 ? 32 : EnergyRates.packetForOutput(out);
         }

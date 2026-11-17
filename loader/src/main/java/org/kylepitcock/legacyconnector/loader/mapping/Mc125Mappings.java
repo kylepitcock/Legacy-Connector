@@ -158,6 +158,11 @@ public final class Mc125Mappings {
      * args: calamus1.2.5-client feather1.2.5-client calamus1.2.5-server feather1.2.5-server calamus1.4.7 feather1.4.7 outDir
      */
     public static void main(String[] args) throws IOException {
+        if (args.length == 2 && args[0].equals("--skip")) {
+            // lenient bundle build whose inputs could not be fetched: leave no (possibly stale) table behind
+            Files.deleteIfExists(Path.of(args[1]).resolve("legacyconnector/mappings/1.2.5/notch-to-147.tsv"));
+            return;
+        }
         if (args.length != 7) throw new IllegalArgumentException("usage: <calamus125c> <feather125c> <calamus125s> <feather125s> <calamus147> <feather147> <outDir>");
         Names v147 = load(Path.of(args[4]), Path.of(args[5]));
         Map<String, String> readableTo147 = new HashMap<>();

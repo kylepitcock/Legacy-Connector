@@ -11,6 +11,16 @@ import org.kylepitcock.legacyconnector.v1_6_4.bridge.ModLoaderHooks125;
 
 /** ModLoader 1.2.5's tick-hook rules and chunk random, on fake mods. */
 class ModLoaderHooks125Test {
+    @org.junit.jupiter.api.BeforeAll
+    static void mc125On() {
+        System.setProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY, "true"); // the loader sets it when it hosts a 1.2.5 jar
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void mc125Off() {
+        System.clearProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY);
+    }
+
     @Test
     void clockHooksRunOncePerWorldTickAndOthersEveryFrame() {
         ModLoaderHooks125.Hooks<String> hooks = new ModLoaderHooks125.Hooks<>();

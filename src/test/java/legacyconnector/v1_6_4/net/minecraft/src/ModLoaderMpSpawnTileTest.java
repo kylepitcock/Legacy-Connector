@@ -22,6 +22,16 @@ import org.junit.jupiter.api.Test;
  * writes with its type id (ids above 127 folded to the signed byte) and a registered client class reads.
  */
 class ModLoaderMpSpawnTileTest {
+    @org.junit.jupiter.api.BeforeAll
+    static void mc125On() {
+        System.setProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY, "true"); // the loader sets it when it hosts a 1.2.5 jar
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void mc125Off() {
+        System.clearProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY);
+    }
+
     public static class TileMod extends BaseModMp {
         int[] seen;
         float[] floats;

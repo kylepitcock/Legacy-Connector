@@ -174,14 +174,14 @@ public final class LegacyJarInspector {
                 } else if (folder == null || !(folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER))) {
                     ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
                 }
-                if (ev125 == null && !modLoaderMods.isEmpty() && !(folder != null && (folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER)))) {
+                if (ev125 == null && Mc125Jars.enabled() && !modLoaderMods.isEmpty() && !(folder != null && (folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER)))) {
                     String near = Mc125Jars.detectNear(zip, () -> NotchFingerprint.scores(zip));
                     if (near != null) {
                         Mc125Jars.record(path, near);
                         return null;
                     }
                 }
-                if ((ev125 != null || !modLoaderMods.isEmpty()) && !(folder != null && folder.toString().equals("1.4.7")) && Mc125Jars.isMcpNamedServerBuild(zip)) {
+                if ((ev125 != null || (Mc125Jars.enabled() && !modLoaderMods.isEmpty())) && !(folder != null && folder.toString().equals("1.4.7")) && Mc125Jars.isMcpNamedServerBuild(zip)) {
                     // a CraftBukkit / MCPC build of a 1.2.x mod: MCP names, neither 1.2.5's obfuscation nor a version this layer has names for
                     Mc125Jars.record(path, "CraftBukkit/MCPC build (game classes named by MCP names in net/minecraft/server); use the client or server build of the mod");
                     return null;
@@ -192,16 +192,17 @@ public final class LegacyJarInspector {
                         Mc125Jars.recordApiDistribution(path, apiDist + " for Minecraft 1.2.5");
                         return null;
                     }
-                    if (!Mc125Jars.optedIn()) {
+                    if (!Mc125Jars.enabled()) {
                         Mc125Jars.record(path, ev125);
                         return null;
                     }
                     if (!org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available()) {
-                        Mc125Jars.record(path, ev125 + "; this build has no 1.2.5 table (built without -Pmappings125)");
+                        Mc125Jars.record(path, ev125 + "; this build has no 1.2.5 name table");
                         return null;
                     }
                     // opted in: hosted through the 1.4.7 chain after Notch125To147 (decided with the version below)
                     mc125Evidence = ev125;
+                    Mc125Jars.markHosting();
                     jar.notchSide = Mc125Jars.sideOf(zip);
                 }
                 if (bare && mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {

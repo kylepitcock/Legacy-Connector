@@ -13,7 +13,7 @@ public abstract class BaseModMp extends BaseMod {
 
     /** ModLoaderMP's id of a mod (checked against its bytecode): {@code toString().hashCode()}, that is the hash of "name version", the same in every session. */
     public final int getId() {
-        return toString().hashCode();
+        return org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active() ? toString().hashCode() : getClass().getSimpleName().hashCode();
     }
 
     /** A packet the server sent to this client. */

@@ -20,6 +20,16 @@ import org.kylepitcock.legacyconnector.v1_6_4.bridge.LiquidsBc32;
 
 /** The 1.2.5-era capability adapters (IC2 1.103 storage blocks, BuildCraft liquid variants) on test doubles of the real interfaces, without a game. */
 class Capabilities125Test {
+    @org.junit.jupiter.api.BeforeAll
+    static void mc125On() {
+        System.setProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY, "true"); // the loader sets it when it hosts a 1.2.5 jar
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void mc125Off() {
+        System.clearProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY);
+    }
+
     /** An IC2 1.103 storage block (BatBox, MFE, MFSU): sink and storage, with the tier's output. */
     static class StorageBlock extends TileEntity implements IEnergySink, IEnergyStorage {
         final int output;

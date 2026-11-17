@@ -674,6 +674,32 @@ tasks.register('bundleJar', Jar) {
 }
 tasks.named('assemble') { dependsOn 'bundleJar' }
 
+// The bundle carries the 1.2.5 name table (the experimental toggle experimental.minecraft125 needs it) or the build logged the warning that it does not
+// (offline / maven.ornithemc.net down); -PnoMappings125 opts out on purpose. A silent bundle without the table fails here.
+tasks.register('verifyBundle125') {
+    group = 'verification'
+    description = 'Asserts that bundleJar contains legacyconnector/mappings/1.2.5/notch-to-147.tsv or logged the missing-table warning.'
+    mustRunAfter 'bundleJar'
+    doLast {
+        def jarFile = tasks.named('bundleJar').get().archiveFile.get().asFile
+        boolean has = false
+        new java.util.zip.ZipFile(jarFile).withCloseable { z -> has = z.getEntry('legacyconnector/mappings/1.2.5/notch-to-147.tsv') != null }
+        boolean requested = project.hasProperty('mappings125') || gradle.startParameter.taskNames.any { it.endsWith('bundleJar') || it.endsWith('installBundle') }
+        if (has) {
+            println "bundleJar carries the 1.2.5 name table (${jarFile.name}: ${jarFile.length()} bytes)"
+        } else if (project.hasProperty('noMappings125')) {
+            println 'bundleJar has no 1.2.5 name table (opted out with -PnoMappings125)'
+        } else if (!requested) {
+            println 'bundleJar built as a dependency of another task: no 1.2.5 name table requested'
+        } else if (rootProject.ext.has('mc125Warned') && rootProject.ext.mc125Warned) {
+            println 'bundleJar has no 1.2.5 name table (warning logged above)'
+        } else {
+            throw new GradleException('bundleJar has no 1.2.5 name table and no warning was logged')
+        }
+    }
+}
+tasks.named('bundleJar') { finalizedBy 'verifyBundle125' }
+
 // ./gradlew installBundle -PmodsDir=<instance>/mods : builds the distributable jar and replaces any older Legacy Connector jar in that folder.
 tasks.register('installBundle', Copy) {
     group = 'build'

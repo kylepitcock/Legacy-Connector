@@ -55,7 +55,12 @@ public final class ModLoaderHooks125 {
                 if (hooks.isEmpty()) return;
                 snapshot = new ArrayList<>(hooks.entrySet());
             }
+            boolean exact = Mc125Host.active(); // the other versions keep their hooks and ignore useClock, as before
             for (Map.Entry<M, Boolean> e : snapshot) {
+                if (!exact) {
+                    call.test(e.getKey());
+                    continue;
+                }
                 if (!clockChanged && e.getValue()) continue;
                 if (!call.test(e.getKey())) remove(e.getKey());
             }

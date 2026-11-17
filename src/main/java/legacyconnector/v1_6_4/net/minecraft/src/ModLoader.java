@@ -286,9 +286,11 @@ public class ModLoader {
     public static void registerKey(BaseMod mod, legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding key, boolean allowRepeat) {
         if (mod == null || key == null) return;
         // ModLoader read the keyboard itself, also with a screen open, where the modern key mappings are released: poll the raw state for that case
-        Ticks.ensureClient();
-        org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.add(new org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.Key(
-                () -> mod.keyboardEvent(key), allowRepeat, () -> org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.rawDown(key)));
+        if (org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) {
+            Ticks.ensureClient();
+            org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.add(new org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.Key(
+                    () -> mod.keyboardEvent(key), allowRepeat, () -> org.kylepitcock.legacyconnector.v1_6_4.bridge.ModKeys125.rawDown(key)));
+        }
         legacyconnector.v1_6_4.cpw.mods.fml.client.registry.KeyBindingRegistry.registerKeyBinding(
                 new legacyconnector.v1_6_4.cpw.mods.fml.client.registry.KeyBindingRegistry.KeyHandler(
                         new legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding[] {key}, new boolean[] {allowRepeat}) {
@@ -528,6 +530,7 @@ public class ModLoader {
      */
     static void mcc$checkPacks() {
         List<String> ids = List.copyOf(net.minecraft.client.Minecraft.getInstance().getResourcePackRepository().getSelectedIds());
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return; // only Minecraft 1.2.5 mods get registerAnimation re-run on a resource pack change
         List<String> before = lastPacks;
         lastPacks = ids;
         if (before == null || before.equals(ids)) return;
@@ -604,7 +607,7 @@ public class ModLoader {
      * the render tick this call stood for), so a call from a mod only runs the due in-game hooks once, here, with the same rules.
      */
     public static void onTick(float partialTicks, Minecraft game) {
-        Ticks.CLIENT.tickEnd(EnumSet.of(TickType.RENDER), partialTicks);
+        if (org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) Ticks.CLIENT.tickEnd(EnumSet.of(TickType.RENDER), partialTicks);
     }
 
     /**
@@ -613,6 +616,7 @@ public class ModLoader {
      * that populates a chunk by hand.
      */
     public static void populateChunk(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, int chunkX, int chunkZ, World world) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return;
         Random random = ModLoaderHooks125.chunkRandom(world.getSeed(), chunkX, chunkZ);
         for (BaseMod m : MODS) dispatchGenerate(m, world, random, chunkX, chunkZ);
     }

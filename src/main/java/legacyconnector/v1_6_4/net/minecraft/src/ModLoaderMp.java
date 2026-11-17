@@ -149,6 +149,7 @@ public final class ModLoaderMp {
      * the layer turns into a menu on the server and a container screen on the client.
      */
     public static void registerGUI(BaseModMp mod, int id) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return; // implemented for Minecraft 1.2.5 only; a no-op for the other versions, as before
         // ModLoaderMP logged "RegisterGUI error: inventoryType already registered." and kept the first mod
         if (GUI_MODS.putIfAbsent(id, mod) != null && GUI_MODS.get(id) != mod) {
             log("RegisterGUI error: inventoryType already registered.");
@@ -175,6 +176,7 @@ public final class ModLoaderMp {
     /** The server side of {@code ModLoader.openGUI(player, id, inventory, container)}: false when no mod registered the id. */
     static boolean mcc$openGui(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, int id,
             legacyconnector.v1_7_10.net.minecraft.inventory.Container container) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return false; // implemented for Minecraft 1.2.5 only; a no-op for the other versions, as before
         BaseModMp mod = GUI_MODS.get(id);
         if (mod == null || player == null || container == null) return false;
         STAGED.put(player, container);
@@ -231,6 +233,7 @@ public final class ModLoaderMp {
 
     /** Server: sends the tile's description packet to every client ({@code sendPacketToAll(tile.getDescriptionPacket())}). */
     public static void sendTileEntityPacket(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return; // implemented for Minecraft 1.2.5 only; a no-op for the other versions, as before
         initialize();
         Network164.sendToAll(tile.getDescriptionPacket());
     }
@@ -247,6 +250,7 @@ public final class ModLoaderMp {
 
     /** Server: tracker range and update interval of an entity class (blocks, ticks); the entity's native tracker uses them ({@code LegacyHosts.setTracking}). */
     public static void registerEntityTracker(Class<?> entityClass, int updateRange, int updateInterval) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return; // implemented for Minecraft 1.2.5 only; a no-op for the other versions, as before
         if (TRACKERS.putIfAbsent(entityClass, new int[] {updateRange, updateInterval}) != null) {
             log("RegisterEntityTracker error: entityClass already registered.");
             return;
@@ -260,6 +264,7 @@ public final class ModLoaderMp {
 
     /** Server: the spawn type id of an entity class and whether its spawn packet names an owner (the entity's {@code owner} field). */
     public static void registerEntityTrackerEntry(Class<?> entityClass, boolean hasOwner, int id) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return; // implemented for Minecraft 1.2.5 only; a no-op for the other versions, as before
         if (id > 255) log("RegisterEntityTrackerEntry error: entityId cannot be greater than 255.");
         if (TRACKER_ENTRIES.putIfAbsent(entityClass, new EntityTrackerEntry2(id, hasOwner)) != null) {
             log("RegisterEntityTrackerEntry error: entityClass already registered.");
@@ -277,6 +282,7 @@ public final class ModLoaderMp {
 
     /** Client: the entity class of a spawn type (ids above 127 are stored as the signed byte the packet carries, as in the real class). */
     public static void registerNetClientHandlerEntity(Class<?> entityClass, boolean hasOwner, int id) {
+        if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return; // implemented for Minecraft 1.2.5 only; a no-op for the other versions, as before
         if (id > 255) {
             log("RegisterNetClientHandlerEntity error: entityId cannot be greater than 255.");
             return;
