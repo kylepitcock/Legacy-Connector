@@ -62,6 +62,15 @@ initialization: the server script runs after the entity-type registry is
 frozen, and an unregistered `EntityType.Builder.build(...)` at that point
 fails with `IllegalStateException: Registry is already frozen`.
 
+## Entity attributes
+
+Because `SpawnProbeMob` extends `Zombie`, the mod registers a default
+attribute supplier for its custom entity type using Forge's
+`EntityAttributeCreationEvent` on the mod event bus and
+`Zombie.createAttributes().build()`. Registering the EntityType alone is not
+sufficient: without the matching attribute supplier, Minecraft cannot create
+the mob and its attribute map remains unavailable during construction.
+
 ## What it covers
 
 1. Explicit Forge 1.20.1 `EntityType.create(..., CompoundTag, ...)` with a
