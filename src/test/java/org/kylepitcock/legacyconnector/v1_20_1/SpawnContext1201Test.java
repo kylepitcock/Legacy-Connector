@@ -17,9 +17,10 @@ import org.kylepitcock.legacyconnector.v1_20_1.migrate.SpawnContext.Scope;
 
 class SpawnContext1201Test {
     @Test
-    void pendingTagFlowsThroughMatchingCreateAndActiveScopes() {
+    void pendingTagFlowsThroughMatchingCreateAndBoundFactoryEntity() {
         Object entityType = new Object();
         Object mob = new Object();
+        Object otherMob = new Object();
         CompoundTag tag = tag("source", "explicit");
 
         try (Scope pending = SpawnContext.pushPending(entityType, tag)) {
@@ -28,11 +29,13 @@ class SpawnContext1201Test {
             try (Scope create = SpawnContext.enterCreate(entityType)) {
                 assertNull(SpawnContext.currentTagFor(mob));
 
-                try (Scope active = SpawnContext.enterActiveFromCreate(mob)) {
-                    assertSame(tag, SpawnContext.currentTagFor(mob));
+                try (Scope factory = SpawnContext.enterFactory(entityType)) {
+                    assertNull(SpawnContext.currentTagFor(mob));
+                    SpawnContext.bindCreatedEntity(entityType, mob);
                 }
 
-                assertNull(SpawnContext.currentTagFor(mob));
+                assertSame(tag, SpawnContext.currentTagFor(mob));
+                assertNull(SpawnContext.currentTagFor(otherMob));
             }
 
             assertNull(SpawnContext.currentTagFor(mob));
@@ -50,12 +53,14 @@ class SpawnContext1201Test {
 
         try (Scope pending = SpawnContext.pushPending(expectedType, tag)) {
             try (Scope unrelatedCreate = SpawnContext.enterCreate(otherType);
-                 Scope unrelatedActive = SpawnContext.enterActiveFromCreate(mob)) {
+                 Scope unrelatedFactory = SpawnContext.enterFactory(otherType)) {
+                SpawnContext.bindCreatedEntity(otherType, mob);
                 assertNull(SpawnContext.currentTagFor(mob));
             }
 
             try (Scope matchingCreate = SpawnContext.enterCreate(expectedType);
-                 Scope matchingActive = SpawnContext.enterActiveFromCreate(mob)) {
+                 Scope matchingFactory = SpawnContext.enterFactory(expectedType)) {
+                SpawnContext.bindCreatedEntity(expectedType, mob);
                 assertSame(tag, SpawnContext.currentTagFor(mob));
             }
         }
@@ -64,29 +69,32 @@ class SpawnContext1201Test {
     @Test
     void matchingPendingTagIsClaimedByOnlyFirstCreate() {
         Object entityType = new Object();
-        Object mob = new Object();
+        Object firstMob = new Object();
+        Object secondMob = new Object();
         CompoundTag tag = tag("source", "one-shot");
 
         try (Scope pending = SpawnContext.pushPending(entityType, tag)) {
             try (Scope firstCreate = SpawnContext.enterCreate(entityType);
-                 Scope firstActive = SpawnContext.enterActiveFromCreate(mob)) {
-                assertSame(tag, SpawnContext.currentTagFor(mob));
+                 Scope firstFactory = SpawnContext.enterFactory(entityType)) {
+                SpawnContext.bindCreatedEntity(entityType, firstMob);
+                assertSame(tag, SpawnContext.currentTagFor(firstMob));
             }
 
             // The pending scope remains open until the outer spawn returns, but
             // the first matching create has claimed it. Later reentrant creates
             // must not receive the same legacy tag.
             try (Scope laterCreate = SpawnContext.enterCreate(entityType);
-                 Scope laterActive = SpawnContext.enterActiveFromCreate(mob)) {
-                assertNull(SpawnContext.currentTagFor(mob));
+                 Scope laterFactory = SpawnContext.enterFactory(entityType)) {
+                SpawnContext.bindCreatedEntity(entityType, secondMob);
+                assertNull(SpawnContext.currentTagFor(secondMob));
             }
         }
 
-        assertNull(SpawnContext.currentTagFor(mob));
+        assertNull(SpawnContext.currentTagFor(firstMob));
     }
 
     @Test
-    void nestedNullTagShadowsAndThenRestoresOuterActiveTagForSameMob() {
+    void nestedNullTagShadowsAndThenRestoresOuterBoundEntityTag() {
         Object outerType = new Object();
         Object innerType = new Object();
         Object mob = new Object();
@@ -94,13 +102,15 @@ class SpawnContext1201Test {
 
         try (Scope outerPending = SpawnContext.pushPending(outerType, outerTag);
              Scope outerCreate = SpawnContext.enterCreate(outerType);
-             Scope outerActive = SpawnContext.enterActiveFromCreate(mob)) {
+             Scope outerFactory = SpawnContext.enterFactory(outerType)) {
+            SpawnContext.bindCreatedEntity(outerType, mob);
             assertSame(outerTag, SpawnContext.currentTagFor(mob));
 
             try (Scope innerPending = SpawnContext.pushPending(innerType, null);
                  Scope innerCreate = SpawnContext.enterCreate(innerType);
-                 Scope innerActive = SpawnContext.enterActiveFromCreate(mob)) {
-                // A present-but-null inner tag must not fall through to the outer Active frame.
+                 Scope innerFactory = SpawnContext.enterFactory(innerType)) {
+                SpawnContext.bindCreatedEntity(innerType, mob);
+                // A present-but-null inner tag must not fall through to the outer Create frame.
                 assertNull(SpawnContext.currentTagFor(mob));
             }
 
@@ -113,20 +123,45 @@ class SpawnContext1201Test {
     @Test
     void nestedCreateWithoutPendingTagDoesNotInheritParentTag() {
         Object entityType = new Object();
-        Object mob = new Object();
+        Object outerMob = new Object();
+        Object nestedMob = new Object();
         CompoundTag outerTag = tag("source", "outer");
 
         try (Scope pending = SpawnContext.pushPending(entityType, outerTag);
-             Scope create = SpawnContext.enterCreate(entityType);
-             Scope active = SpawnContext.enterActiveFromCreate(mob)) {
-            assertSame(outerTag, SpawnContext.currentTagFor(mob));
+             Scope outerCreate = SpawnContext.enterCreate(entityType);
+             Scope outerFactory = SpawnContext.enterFactory(entityType)) {
+            SpawnContext.bindCreatedEntity(entityType, outerMob);
+            assertSame(outerTag, SpawnContext.currentTagFor(outerMob));
 
             try (Scope nestedCreate = SpawnContext.enterCreate(entityType);
-                 Scope nestedActive = SpawnContext.enterActiveFromCreate(mob)) {
-                assertNull(SpawnContext.currentTagFor(mob));
+                 Scope nestedFactory = SpawnContext.enterFactory(entityType)) {
+                SpawnContext.bindCreatedEntity(entityType, nestedMob);
+                assertNull(SpawnContext.currentTagFor(nestedMob));
+                assertNull(SpawnContext.currentTagFor(outerMob));
             }
 
-            assertSame(outerTag, SpawnContext.currentTagFor(mob));
+            assertSame(outerTag, SpawnContext.currentTagFor(outerMob));
+        }
+    }
+
+    @Test
+    void nestedFactoryCannotBindToAncestorCreate() {
+        Object entityType = new Object();
+        Object outerMob = new Object();
+        Object nestedMob = new Object();
+        CompoundTag tag = tag("source", "outer");
+
+        try (Scope pending = SpawnContext.pushPending(entityType, tag);
+             Scope create = SpawnContext.enterCreate(entityType);
+             Scope outerFactory = SpawnContext.enterFactory(entityType)) {
+            try (Scope nestedFactory = SpawnContext.enterFactory(entityType)) {
+                SpawnContext.bindCreatedEntity(entityType, nestedMob);
+            }
+
+            assertNull(SpawnContext.currentTagFor(nestedMob));
+            SpawnContext.bindCreatedEntity(entityType, outerMob);
+            assertSame(tag, SpawnContext.currentTagFor(outerMob));
+            assertNull(SpawnContext.currentTagFor(nestedMob));
         }
     }
 
@@ -143,6 +178,21 @@ class SpawnContext1201Test {
     }
 
     @Test
+    void activeTagDoesNotCrossAnInnerCreateBoundary() {
+        Object entityType = new Object();
+        Object mob = new Object();
+        CompoundTag activeTag = tag("source", "direct");
+
+        try (Scope active = SpawnContext.pushActive(mob, activeTag)) {
+            assertSame(activeTag, SpawnContext.currentTagFor(mob));
+            try (Scope create = SpawnContext.enterCreate(entityType)) {
+                assertNull(SpawnContext.currentTagFor(mob));
+            }
+            assertSame(activeTag, SpawnContext.currentTagFor(mob));
+        }
+    }
+
+    @Test
     void scopesAreCleanedWhenNestedWorkThrows() {
         Object entityType = new Object();
         Object mob = new Object();
@@ -151,7 +201,8 @@ class SpawnContext1201Test {
         IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> {
             try (Scope pending = SpawnContext.pushPending(entityType, tag);
                  Scope create = SpawnContext.enterCreate(entityType);
-                 Scope active = SpawnContext.enterActiveFromCreate(mob)) {
+                 Scope factory = SpawnContext.enterFactory(entityType);
+                 Scope active = SpawnContext.pushActive(mob, tag)) {
                 assertSame(tag, SpawnContext.currentTagFor(mob));
                 throw new IllegalStateException("test failure");
             }
