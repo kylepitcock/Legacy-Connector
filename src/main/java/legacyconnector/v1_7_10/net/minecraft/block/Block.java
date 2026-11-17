@@ -1150,14 +1150,12 @@ public class Block {
     public legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition collisionRayTrace(World world, int x, int y, int z,
             legacyconnector.v1_7_10.net.minecraft.util.Vec3 start, legacyconnector.v1_7_10.net.minecraft.util.Vec3 end) {
         setBlockBoundsBasedOnState(world, x, y, z);
-        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(minX, minY, minZ, maxX, maxY, maxZ);
-        var from = new net.minecraft.world.phys.Vec3(start.xCoord - x, start.yCoord - y, start.zCoord - z);
-        var to = new net.minecraft.world.phys.Vec3(end.xCoord - x, end.yCoord - y, end.zCoord - z);
-        var hit = net.minecraft.world.phys.AABB.clip(java.util.List.of(box), from, to, net.minecraft.core.BlockPos.ZERO);
+        // The legacy algorithm (AxisAlignedBB.calculateIntercept): unlike the modern AABB.clip it also hits from a start ON a face or inside
+        // the box. Mods that walk a ray cell by cell start each step on the previous cell's boundary (BucketCraft's own ray trace).
+        var hit = legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox(minX, minY, minZ, maxX, maxY, maxZ)
+                .calculateIntercept(start.addVector(-x, -y, -z), end.addVector(-x, -y, -z));
         if (hit == null) return null;
-        var at = hit.getLocation();
-        return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(x, y, z, hit.getDirection().get3DDataValue(),
-                legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(at.x + x, at.y + y, at.z + z));
+        return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(x, y, z, hit.sideHit, hit.hitVec.addVector(x, y, z));
     }
 
     public boolean canPlaceTorchOnTop(World world, int x, int y, int z) {

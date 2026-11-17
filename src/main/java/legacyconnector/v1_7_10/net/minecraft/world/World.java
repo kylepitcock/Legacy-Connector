@@ -64,6 +64,10 @@ public class World implements IBlockAccess {
     @Deprecated
     public List loadedTileEntityList;
 
+    /** Phantom: redirected to {@link #mcc$get$saveHandler}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler saveHandler;
+
     /** Phantom: redirected to {@link #mcc$get$mapStorage}. Global (overworld) saved data. */
     @Deprecated
     public legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mapStorage;
@@ -827,8 +831,16 @@ public class World implements IBlockAccess {
 
     public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler getSaveHandler() {
         Level level = mcc$fullLevel();
-        java.io.File dir = level instanceof ServerLevel s ? s.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile() : new java.io.File(".");
+        net.minecraft.server.MinecraftServer server = level instanceof ServerLevel s ? s.getServer() : null;
+        // a client world in single player (1.2.5-1.6.4 mods read Minecraft.theWorld.saveHandler to find the save folder): the integrated server's
+        if (server == null && level != null && level.isClientSide()) server = net.minecraft.client.Minecraft.getInstance().getSingleplayerServer();
+        java.io.File dir = server != null ? server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile() : new java.io.File(".");
         return new legacyconnector.v1_7_10.net.minecraft.world.storage.SaveHandler(dir, dir.getName());
+    }
+
+    /** The {@code saveHandler} field of 1.2.5 to 1.7.10's World (a phantom, see {@link #saveHandler}). */
+    public static legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler mcc$get$saveHandler(World w) {
+        return w.getSaveHandler();
     }
 
     /** Whether the player may break blocks here; the provider decides (by default {@link #canMineBlockBody}: spawn protection). */

@@ -4,7 +4,7 @@
 # Each run: fresh game dir mods (only that jar in mods/1.2.5), no perf mods unless PERF=1; shots are copied to build/devtools/c125/<label>/ and the log to
 # build/devtools/c125/<label>.log; a summary line per run is printed.
 cd "$(dirname "$0")/../.." || exit 1
-SRC=/y/Programming/Minecraft/Retrofit/test-mods-mcarchive/1.2.5
+SRC=${SRC125:-/y/Programming/Minecraft/Retrofit/test-mods-mcarchive/1.2.5}
 for a in "$@"; do
   label=${a%%=*}; jar=${a#*=}
   rm -rf run-screenshots/mods run-screenshots/shots run-screenshots/.legacyconnector/cache

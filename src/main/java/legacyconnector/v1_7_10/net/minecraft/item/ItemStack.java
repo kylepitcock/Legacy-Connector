@@ -213,8 +213,17 @@ public final class ItemStack {
     }
 
     public void setItem(Item item) {
+        int damage = getItemDamage();
         this.mcc$item = item;
-        this.mcc$stack = ItemBridge.toModern(item, mcc$count(), getItemDamage());
+        var fresh = ItemBridge.toModern(item, mcc$count(), damage);
+        if (mcc$wrapped && mcc$stack != null && !mcc$stack.isEmpty() && mcc$stack != net.minecraft.world.item.ItemStack.EMPTY
+                && !fresh.isEmpty() && fresh.getItem() != mcc$stack.getItem()) {
+            // a view of a stack in a slot or container: 1.7.10 changed the item of that very stack (stack.itemID = x), so the slot sees it
+            mcc$stack.item = fresh.getItem();
+            mcc$stack.components = fresh.components;
+            return;
+        }
+        this.mcc$stack = fresh;
     }
 
     public int getItemDamage() {
