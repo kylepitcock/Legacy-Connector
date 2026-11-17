@@ -709,7 +709,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         var state = level.getBlockState(mp);
         var rotated = state.rotate(level, mp, net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
         if (rotated == state) return false;
-        level.setBlockAndUpdate(mp, rotated);
+        level.setBlock(mp, rotated, 3);
         return true;
     }
 
