@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Unattended regression runner for the headless server self test. See docs/wiki/Development.md ("Regression suites").
 # usage: tools/dev/verify.sh [--update] [suite ...]      (no suite = all of tools/dev/verify/suites/*.txt)
-# Env: JAR_ROOT (main checkout holding the gitignored jar folders), AUTOSTOP (ticks, default 700), SUITE_TIMEOUT (seconds, default 900).
+# Env: GRADLE_EXTRA (extra Gradle arguments, e.g. "-Pjfr=C:/tmp/a.jfr -PmsptLog=600 -PmemoryLog"), JAR_ROOT (main checkout holding the gitignored jar folders), AUTOSTOP (ticks, default 700), SUITE_TIMEOUT (seconds, default 900).
 set -u
 cd "$(dirname "$0")/../.."
 ROOT="$PWD"
@@ -89,7 +89,7 @@ for s in "${names[@]}"; do
   sed -i '/^max-tick-time=/d' "$D/server.properties"; echo "max-tick-time=-1" >> "$D/server.properties"
 
   glog="build/devtools/verify-$s-gradle.log"
-  ./gradlew runServerSubTest "-PsubTestDir=$D" "-PautostopTicks=$AUTOSTOP" > "$glog" 2>&1 &
+  ./gradlew runServerSubTest "-PsubTestDir=$D" "-PautostopTicks=$AUTOSTOP" ${GRADLE_EXTRA:-} > "$glog" 2>&1 &
   gpid=$!
   start=$SECONDS; timedout=""
   while kill -0 $gpid 2>/dev/null; do

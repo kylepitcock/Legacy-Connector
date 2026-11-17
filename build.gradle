@@ -94,6 +94,11 @@ neoForge {
             if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
             systemProperty 'legacytest.autostop', 'true'
             systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
+            // -Pjfr=<file.jfr>: Java Flight Recorder (profile settings) for the whole run; analyse with tools/dev/perf/jfr_report.py (docs/wiki/Performance.md)
+            if (project.hasProperty('jfr')) jvmArgument '-XX:StartFlightRecording=filename=' + project.property('jfr') + ',settings=profile,dumponexit=true'
+            // -PmsptLog=<ticks>: a "MSPT over N ticks" line (mean, p50, p99, max, heap) every N server ticks; -PmemoryLog logs heap and direct memory every 10 s
+            if (project.hasProperty('msptLog')) systemProperty 'legacyconnector.msptLog', project.property('msptLog')
+            if (project.hasProperty('memoryLog')) systemProperty 'legacyconnector.memoryLog', 'true'
             // runs the client blockstate translation on the server too (logs "1.12.2 blockstates: N translated, M fell back"); -PassetsDump=<dir> writes it
             systemProperty 'legacyconnector.assetsSelfTest', project.findProperty('assetsDump') ?: 'true'
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
