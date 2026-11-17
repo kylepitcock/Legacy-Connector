@@ -18607,10 +18607,10 @@
    "name": "mod_Backpack",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (5 classes). 2 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in 1.2.5 dedicated server self test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "mod_BeachFloatHandler",
@@ -18659,12 +18659,12 @@
   },
   {
    "name": "mod_BucketCraft",
-   "version": "0.0.0-legacy",
+   "version": "MC 1.2.3",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (12 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a real 1.2.5 client (experimental toggle): 21 items register with their textures; not tested further in play."
   },
   {
    "name": "mod_BuildCraftBuilders",
@@ -18740,21 +18740,21 @@
   },
   {
    "name": "mod_Chimney",
-   "version": "0.0.0-legacy",
+   "version": "",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (4 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a real 1.2.5 client: 1 block and 1 item register and the block renders; not tested further in play."
   },
   {
    "name": "mod_CraftableMobSpawners",
-   "version": "0.0.0-legacy",
+   "version": "",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (3 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a real 1.2.5 client: 24 items register with textures; not tested further in play."
   },
   {
    "name": "mod_CreeperTrip",
@@ -18796,10 +18796,10 @@
    "name": "mod_ElementalCreepers",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (23 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in 1.2.5 dedicated server self test: 0 items, 0 blocks, 15 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "mod_EntMover",
@@ -18866,21 +18866,21 @@
   },
   {
    "name": "mod_Gol",
-   "version": "0.0.0-legacy",
+   "version": "Gamma 1.0.0",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (5 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a real 1.2.5 client: 1 block and 1 item register and the block renders; not tested further in play."
   },
   {
    "name": "mod_HeroesGuild",
-   "version": "0.0.0-legacy",
+   "version": "1.3.0",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (75 classes). 8 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a real 1.2.5 client: 1 item and 41 entity types register; not tested further in play (the mod skips itself on a dedicated server)."
   },
   {
    "name": "mod_IC2AdvancedMachines",
@@ -18940,19 +18940,19 @@
    "name": "mod_MagicWands",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (8 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "1.2.5 server build: 6 items register and 6 recipes translate; the item self test reports problems for 4 items (they need a player target). The client build shows all 6 items with their textures in a real 1.2.5 client run."
   },
   {
    "name": "mod_Melaphyre",
-   "version": "0.0.0-legacy",
+   "version": "",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (1 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a real 1.2.5 client: 1 block and 1 item register and render; not tested further in play."
   },
   {
    "name": "mod_MineFactory",
@@ -18994,10 +18994,10 @@
    "name": "mod_MorePistons",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (13 classes). 4 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Loads in a 1.2.5 client and server: 9 blocks and 9 items register and are placed, but every face draws the missing texture (the blocks name a texture file the zip does not contain) and the piston rod's breakBlock calls Minecraft.playerController, which does not exist on a dedicated server."
   },
   {
    "name": "mod_MorePlayerModels",
@@ -19039,10 +19039,10 @@
    "name": "mod_obsidianhilt",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (5 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in 1.2.5 dedicated server self test: 8 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "mod_ObsidianIngots",
@@ -19291,10 +19291,10 @@
    "name": "mod_Timber",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (2 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in 1.2.5 dedicated server self test: 0 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "mod_TooManyItems",
@@ -30898,6 +30898,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_EE3",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in 1.2.5 dedicated server self test: 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   }
  ],
  "hidden": [
