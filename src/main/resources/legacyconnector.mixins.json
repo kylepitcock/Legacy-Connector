@@ -78,6 +78,7 @@
     "VehicleDestroyedHookMixin",
     "TargetingHiddenHookMixin",
     "ServerLevelSleepHookMixin",
+    "PlayerListRuntimeDimensionMixin",
     "FlowingFluidBlockedHookMixin",
     "FurnaceResultHookMixin",
     "LoomLayersHookMixin",

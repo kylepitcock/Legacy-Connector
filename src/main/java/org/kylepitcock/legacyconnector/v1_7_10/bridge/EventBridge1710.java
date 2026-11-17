@@ -920,6 +920,7 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut e) -> {
             connectedPostedFor = null;
+            legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.mcc$connectionClosed();
             if (!wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent.class)) return;
             fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent(
                     legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection())));
