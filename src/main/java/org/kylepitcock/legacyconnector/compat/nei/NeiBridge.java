@@ -181,7 +181,7 @@ public final class NeiBridge {
                 for (int i = 0; i < h.numRecipes(); i++) {
                     try {
                         PositionedStack result = h.getResultStack(i);
-                        out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i));
+                        out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)));
                     } catch (RuntimeException | LinkageError e) {
                         // skip a broken recipe
                     }
@@ -209,7 +209,74 @@ public final class NeiBridge {
         return out;
     }
 
-    private static final Map<String, List<Recipe>> LOOKUPS = new java.util.concurrent.ConcurrentHashMap<>();
+    /** The usage lookups {@link #promote} asks, unpromoted, by handler class and item. */
+    private static final Map<String, List<Recipe>> RAW_USAGE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static List<Recipe> rawUsage(TemplateRecipeHandler handler, net.minecraft.world.item.ItemStack stack) {
+        String key = handler.getClass().getName() + "|" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())
+                + "|" + stack.getOrDefault(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), 0);
+        List<Recipe> cached = RAW_USAGE.get(key);
+        if (cached != null) return cached;
+        List<Recipe> out = new ArrayList<>();
+        try {
+            TemplateRecipeHandler h = handler.newInstance();
+            h.loadUsageRecipes("item", ItemStack.mcc$wrap(stack));
+            for (int i = 0; i < h.numRecipes(); i++) {
+                try {
+                    PositionedStack result = h.getResultStack(i);
+                    out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), List.of(), h, i));
+                } catch (RuntimeException | LinkageError e) {
+                    // skip a broken recipe
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a handler that cannot answer for this item
+        }
+        RAW_USAGE.put(key, out);
+        return out;
+    }
+
+    private static String signature(Recipe r) {
+        StringBuilder sb = new StringBuilder();
+        for (Slot s : r.inputs()) sb.append(slotKey(s)).append(',');
+        sb.append("->");
+        for (Slot s : r.outputs()) sb.append(slotKey(s)).append(',');
+        return sb.toString();
+    }
+
+    private static String slotKey(Slot s) {
+        var first = s.stacks().get(0);
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(first.getItem()) + "@" + first.getOrDefault(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), 0) + "x" + first.getCount();
+    }
+
+    /**
+     * NEI's "other stacks" hold two different things: what a machine merely needs (a furnace's fuel, a catalyst) and a recipe's further ingredients
+     * (the second input of a two-input machine). JEI must list the second kind as inputs, or the item's "uses" miss the recipe. A slot is an ingredient
+     * exactly when the handler's own usage lookup for that item finds this recipe, which is the test NEI's "show uses" applied.
+     */
+    private static Recipe promote(TemplateRecipeHandler handler, Recipe r) {
+        if (r.others().isEmpty() || r.outputs().isEmpty() && r.inputs().isEmpty()) return r;
+        String signature = signature(r);
+        List<Slot> inputs = new ArrayList<>(r.inputs());
+        List<Slot> others = new ArrayList<>();
+        for (Slot s : r.others()) {
+            boolean ingredient = false;
+            try {
+                for (Recipe u : rawUsage(handler, s.stacks().get(0))) {
+                    if (!u.inputs().isEmpty() && signature(u).equals(signature)) {
+                        ingredient = true;
+                        break;
+                    }
+                }
+            } catch (RuntimeException | LinkageError e) {
+                // not decidable: it stays a catalyst
+            }
+            (ingredient ? inputs : others).add(s);
+        }
+        return inputs.size() == r.inputs().size() ? r : new Recipe(inputs, r.outputs(), others, r.handler(), r.index());
+    }
+
+    private static final Map<String, List<Recipe>> LOOKUPS =new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * The recipes a handler shows for one item, as NEI asked on a recipe/usage lookup: {@code loadCraftingRecipes("item", stack)}
@@ -231,7 +298,7 @@ public final class NeiBridge {
             for (int i = 0; i < h.numRecipes(); i++) {
                 try {
                     PositionedStack result = h.getResultStack(i);
-                    out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i));
+                    out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)));
                 } catch (RuntimeException | LinkageError e) {
                     // skip a broken recipe
                 }
