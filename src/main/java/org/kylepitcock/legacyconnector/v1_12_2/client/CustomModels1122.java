@@ -167,6 +167,41 @@ public final class CustomModels1122 {
         }
     }
 
+    /**
+     * The loader model of a block's {@code inventory} blockstate variant ({@code "inventory": [{}]} with {@code defaults.model} a loader file such as
+     * Mekanism's glow_panel.obj.mek) for an item registered at {@code mod:block#inventory} that has no item json: Forge loaded that variant for the
+     * item. Without it the item drew the plain converted model and lost the loader model's own item transforms (Mekanism's glow panels).
+     */
+    private static ResourceLocation inventoryVariantModel(String key) {
+        try {
+            ModelResourceLocation mrl = new ModelResourceLocation(key);
+            if (!"inventory".equals(mrl.getVariant())) return null;
+            var resource = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager()
+                    .getResource(new ResourceLocation(mrl.getNamespace(), "blockstates/" + mrl.getPath() + ".json"));
+            try (java.io.Reader reader = new java.io.InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+                var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+                var variants = json.has("variants") && json.get("variants").isJsonObject() ? json.getAsJsonObject("variants") : null;
+                if (variants == null || !variants.has("inventory")) return null;
+                String model = null;
+                var inv = variants.get("inventory");
+                if (inv.isJsonArray() && inv.getAsJsonArray().size() > 0) inv = inv.getAsJsonArray().get(0);
+                if (inv.isJsonObject() && inv.getAsJsonObject().has("model")) model = inv.getAsJsonObject().get("model").getAsString();
+                if (model == null && json.has("defaults") && json.get("defaults").isJsonObject() && json.getAsJsonObject("defaults").has("model")) {
+                    model = json.getAsJsonObject("defaults").get("model").getAsString();
+                }
+                if (model == null) return null;
+                ResourceLocation parsed = new ResourceLocation(model);
+                // a blockstate's models live under models/block/ (the variant loader's folder), unless the name already gives a folder
+                String path = parsed.getPath();
+                if (!path.startsWith("block/") && !path.startsWith("item/")) path = "block/" + path;
+                ResourceLocation actual = new ResourceLocation(parsed.getNamespace(), "models/" + path);
+                return ModelLoaderRegistry.mcc$loaderFor(actual) != null ? actual : null;
+            }
+        } catch (java.io.IOException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** The loader model of a legacy location string ({@code domain:path#variant}), or null when no loader takes it. */
     private static IModel load(String key) {
         ResourceLocation location;
@@ -195,6 +230,7 @@ public final class CustomModels1122 {
             // a json model whose parent a loader makes ("parent": "mod:item/internal/x$from_item(mod:x)"): Forge loaded parents through the
             // loaders too, so the item draws the loader's model (the modern bakery cannot, the name is no valid id)
             ResourceLocation parent = loaderParent(location);
+            if (parent == null) parent = inventoryVariantModel(key);
             if (parent == null) return null;
             location = parent;
         }
