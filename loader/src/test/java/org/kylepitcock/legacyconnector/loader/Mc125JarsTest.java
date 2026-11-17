@@ -96,7 +96,7 @@ class Mc125JarsTest {
         String why = Mc125Jars.takeUnsupported(jar);
         assertNotNull(why, "recorded as 1.2.5");
         assertTrue(why.contains("1.2.5"), why);
-        assertEquals("a.jar: Minecraft 1.2.5 (not supported yet): " + why + "; not loaded", Mc125Jars.reportLine("a.jar", why));
+        assertEquals("a.jar: Minecraft 1.2.5 (not supported yet): " + why + "; not loaded (" + Mc125Jars.HOW_TO_ENABLE + ")", Mc125Jars.reportLine("a.jar", why));
         assertNull(Mc125Jars.takeUnsupported(jar), "taken once");
     }
 
@@ -109,7 +109,7 @@ class Mc125JarsTest {
             assertNull(LegacyJarInspector.inspect(jar));
             String why = Mc125Jars.takeUnsupported(jar);
             assertNotNull(why);
-            assertTrue(why.contains("-Pmappings125"), why);
+            assertTrue(why.contains("no 1.2.5 name table"), why);
         } finally {
             System.clearProperty("legacyconnector.mc125");
         }

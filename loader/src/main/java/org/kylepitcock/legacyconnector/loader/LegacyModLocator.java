@@ -278,6 +278,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
 
             LOG.info("Legacy Connector {} (loader) starting", Provenance.translatorVersion());
+            Mc125Jars.configure(LibraryBridges.readConfig(modsDir));
+            if (Mc125Jars.enabled()) {
+                if (org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available()) {
+                    LOG.warn("Legacy Connector: ***** EXPERIMENTAL Minecraft 1.2.5 support is ON ({}): 1.2.5 mods are hosted through the 1.4.7 chain; many will load and then do little *****", Mc125Jars.CONFIG_KEY);
+                } else {
+                    LOG.error("Legacy Connector: {} is on, but this build has no 1.2.5 name table, so no Minecraft 1.2.5 mod is hosted (use a release or nightly build, or build with -Pmappings125)", Mc125Jars.CONFIG_KEY);
+                }
+            }
             ShimIndex index = loadShimIndex(runtimeJar);
             LOG.info("Legacy Connector: shim index has {} legacy API classes", index.size());
 
@@ -315,6 +323,12 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             if (packaged == null) packaged = unwrapRootFolder(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
+                            if (jar != null && !Mc125Jars.enabled() && jar.sourceVersion != LegacyVersion.V1_2_5 && dir.getFileName().toString().equals(Mc125Jars.FOLDER)) {
+                                // mods/1.2.5 holds 1.2.5 jars only: with the experiment off they are reported, never half-loaded
+                                context.addLocated(p);
+                                notSupportedNotes.add(Mc125Jars.reportLine(p.getFileName().toString(), "in mods/" + Mc125Jars.FOLDER));
+                                continue;
+                            }
                             String apiDist = jar == null ? Mc125Jars.takeApiDistribution(packaged != null ? packaged : p) : null;
                             if (apiDist != null) {
                                 // the ModLoader / ModLoaderMP / Forge zip itself: the layer provides that API, loading a second copy would only shadow it
@@ -327,7 +341,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             if (unsupported != null) {
                                 // a Minecraft version this layer recognises but does not host yet: reported, never mis-hosted as another version
                                 context.addLocated(p);
-                                LOG.warn("Legacy Connector: {} is a Minecraft 1.2.5 mod ({}); 1.2.5 is not supported yet, so it is not loaded", p.getFileName(), unsupported);
+                                LOG.warn("Legacy Connector: {} is a Minecraft 1.2.5 mod ({}); not loaded{}", p.getFileName(), unsupported, Mc125Jars.enabled() || unsupported.contains("no 1.2.5 name table") ? "" : " (" + Mc125Jars.HOW_TO_ENABLE + ")");
                                 notSupportedNotes.add(Mc125Jars.reportLine(p.getFileName().toString(), unsupported));
                                 continue;
                             }
@@ -400,6 +414,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LIBRARY_SKIPS.putAll(BetaJars.selectBuilds(legacy, side()));
             // Minecraft 1.2.5 mods (opt-in) come the same way
             LIBRARY_SKIPS.putAll(Mc125Builds.select(legacy, side()));
+            org.kylepitcock.legacyconnector.loader.transform.Notch125To147.registerSet(legacy.stream().filter(j -> !LIBRARY_SKIPS.containsKey(j)).toList());
             libraryNotes = libraries.notes();
             liteNotes = liteLoaderNotes(List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
@@ -430,6 +445,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     }
                 }
             }
+            // tools/dev/client-once.sh finds the game to stop by this line (the game's command line is not readable on Windows)
+            LOG.info("Legacy Connector: process id {} game directory {}", ProcessHandle.current().pid(), System.getProperty("user.dir"));
             // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.
             System.setProperty("legacyconnector.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId)
                     .filter(java.util.Objects::nonNull).toList()));
@@ -867,6 +884,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(fileDigest(jar.existing()));
             md.update(bridges.toString().getBytes(StandardCharsets.UTF_8));
             md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
+            md.update(jar.droppedClasses.toString().getBytes(StandardCharsets.UTF_8));
         }
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
         byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds()) + "|" + SideBySide.current().fingerprint()).getBytes(StandardCharsets.UTF_8);

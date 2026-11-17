@@ -17,6 +17,11 @@ import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 public abstract class PlayerBlockReachHookMixin {
     @Inject(method = "blockInteractionRange", at = @At("RETURN"), cancellable = true, require = 0)
     private void legacyconnector$coremodBlockReach(CallbackInfoReturnable<Double> cir) {
-        if (CoremodSites.Client.BLOCK_REACH.listed() && ((Player) (Object) this).level().isClientSide) cir.setReturnValue(CoremodSites.Client.blockReach(cir.getReturnValue()));
+        if (!((Player) (Object) this).level().isClientSide) return;
+        if (CoremodSites.Client.BLOCK_REACH.listed()) cir.setReturnValue(CoremodSites.Client.blockReach(cir.getReturnValue()));
+        // a mod's PlayerControllerMP subclass answers the client reach itself
+        if (((Player) (Object) this) == net.minecraft.client.Minecraft.getInstance().player) {
+            cir.setReturnValue(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyRendererOverrides.blockReach(cir.getReturnValue()));
+        }
     }
 }

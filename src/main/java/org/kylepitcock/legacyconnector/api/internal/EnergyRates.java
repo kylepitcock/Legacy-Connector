@@ -23,6 +23,19 @@ public final class EnergyRates {
         return 8.0 * (1L << (2 * tier));
     }
 
+    /**
+     * The packet size to offer an IC2 1.103 storage block ({@code IEnergyStorage.getOutput()}: BatBox 32, MFE 128, MFSU 512): the largest packet limit of a tier
+     * that does not exceed its output, at least the low-voltage 32 and at most the 2048 of the fourth tier. A machine given a packet above its tier explodes.
+     */
+    public static int packetForOutput(int output) {
+        int best = 32;
+        for (int tier = 1; tier <= 4; tier++) {
+            int limit = (int) packetLimit(tier);
+            if (limit <= output) best = limit;
+        }
+        return best;
+    }
+
     /** EU to offer a sink for {@code fe} FE: bounded by the sink's demand and by its tier's packet limit, whole EU. */
     public static double euToInject(long fe, int fePerEu, double demanded, int tier) {
         long eu = unitsFromFe(fe, fePerEu);

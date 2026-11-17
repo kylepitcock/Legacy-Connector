@@ -1,0 +1,107 @@
+package org.kylepitcock.legacyconnector.v1_20_1.migrate;
+
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+
+/**
+ * The baked model map of {@code ModelEvent.ModifyBakingResult} / {@code BakingCompleted} as 1.20.1 had it ({@code Map<ResourceLocation, BakedModel>} keyed by
+ * model locations): a view of NeoForge's {@code Map<ModelResourceLocation, BakedModel>} whose keys are {@link LegacyModelKey}s. Lookups and writes accept the
+ * legacy keys, real model locations and plain locations (a plain location is the standalone model of that id).
+ */
+public final class LegacyModelMap extends AbstractMap<Object, BakedModel> {
+    private final Map<ModelResourceLocation, BakedModel> real;
+
+    public LegacyModelMap(Map<ModelResourceLocation, BakedModel> real) {
+        this.real = real;
+    }
+
+    private static ModelResourceLocation unwrap(Object key) {
+        if (key instanceof LegacyModelKey k) return k.model();
+        if (key instanceof ModelResourceLocation m) return m;
+        if (key instanceof ResourceLocation r) return ModelResourceLocation.standalone(r);
+        return null;
+    }
+
+    @Override
+    public BakedModel get(Object key) {
+        ModelResourceLocation m = unwrap(key);
+        return m == null ? null : real.get(m);
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        ModelResourceLocation m = unwrap(key);
+        return m != null && real.containsKey(m);
+    }
+
+    @Override
+    public BakedModel put(Object key, BakedModel value) {
+        ModelResourceLocation m = unwrap(key);
+        if (m == null) throw new ClassCastException("Not a model location: " + key);
+        return real.put(m, value);
+    }
+
+    @Override
+    public BakedModel remove(Object key) {
+        ModelResourceLocation m = unwrap(key);
+        return m == null ? null : real.remove(m);
+    }
+
+    @Override
+    public int size() {
+        return real.size();
+    }
+
+    @Override
+    public Set<Entry<Object, BakedModel>> entrySet() {
+        return new AbstractSet<>() {
+            @Override
+            public Iterator<Entry<Object, BakedModel>> iterator() {
+                Iterator<Entry<ModelResourceLocation, BakedModel>> it = real.entrySet().iterator();
+                return new Iterator<>() {
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public Entry<Object, BakedModel> next() {
+                        Entry<ModelResourceLocation, BakedModel> e = it.next();
+                        return new Entry<>() {
+                            @Override
+                            public Object getKey() {
+                                return new LegacyModelKey(e.getKey());
+                            }
+
+                            @Override
+                            public BakedModel getValue() {
+                                return e.getValue();
+                            }
+
+                            @Override
+                            public BakedModel setValue(BakedModel value) {
+                                return e.setValue(value);
+                            }
+                        };
+                    }
+
+                    @Override
+                    public void remove() {
+                        it.remove();
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                return real.size();
+            }
+        };
+    }
+}

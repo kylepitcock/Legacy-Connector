@@ -44,7 +44,7 @@ An archive is split into **units** by install root (a zip with `SMP/` and `SSP/`
 ## Link probe after the second round (2026-11-16)
 
 `probe.py --mc 1.2.5` over the 91 archives, nested wrappers and install roots expanded: 47 translated client/server units (of 100 archives' units; the other builds are left out by `Mc125Builds`, 30 are not
-mods), **38 link and 9 do not** (first run: 19 / 18). 1411 distinct stubbed members (1776 stubs; first run 1424 / 1801; the later rounds moved the work from stubs to bridges), `verifyFailures` 0. Of the 9: NEWTON
+mods), **43 link and 3 do not** (round 5; 38 / 9 before, first run 19 / 18). 388 distinct stubbed members (470 stubs; 1360 / 1606 before NEWTON, SDKs and herobrine were classified, 1411 / 1776 before the call adapters, 1424 / 1801 in the first run), `verifyFailures` 0. Of the 9: NEWTON
 (1.2.3), SDKs, herobrine, five BuildCraft 3.1.5 modules that clash with the BuildCraft classes LogisticsPipes-client re-bundles (an artifact of probing both as one set), IC2. 929 overrides of changed-signature
 game methods in the translated units, all 929 bridged (see Legacy-1.2.5.md).
 
@@ -156,3 +156,34 @@ ModLoaderMP, Forge zips), `craftbukkit-build`, `library`. "fit" = share of obfus
 | tropicraftv3.0.zip | mod | client | 310 | mod_BeachFloatHandler, mod_EntMover | ModLoader, Forge3, AudioMod | 0 (0%) | - | 100% / 0% |
 | twilightforest-1.10.1-server.zip | mod | server | 197 | mod_TwilightForest | ModLoader, Forge3 | 0 (0%) | - | 100% / 1% |
 | twilightforest-1.10.1.zip | mod | client | 233 | mod_TwilightForest | ModLoader, Forge3 | 0 (0%) | - | 100% / 0% |
+
+## Missing game members: replacing stubs with behaviour (Members125)
+
+A 1.2.5 game member with no 1.4.7 counterpart is renamed `mcc125$<Feather name>` and, when the shim has no member of that name, synthesized as an empty stub. The Members125 batches add the real members to the shim
+classes (virtual members and phantom-field accessors `mcc$get$mcc125$<name>` / `mcc$set$mcc125$<name>` on the class; the 1.2.5 behaviour read from the real 1.2.5 client bytecode), most used first.
+`Members125Test` keeps the shape of every member in sync with what the loader emits. Count: `tools/compat/probe.py <dir> --mc 1.2.5` over the 91 archives, stubbed members in the translated client units, distinct members / stubs (the figure is
+the per-jar `stubbed` list summed; a member stubbed in several jars counts once, a stub is one jar-member pair).
+
+| After | distinct stubbed members | stubs |
+|---|---|---|
+| start (merge of int/1.2.5, transformer 131) | 628 | 721 |
+| batch 1: world, player, entity, block and item members (below) | 583 | 654 |
+| after merging int/1.2.5 round 5 (loader hierarchy fix) and batch 2 (constructors, sound pool, movement stats, ...) | 304 | 346 |
+| batch 3 (RenderPlayer, NEI's GuiContainer accessors, NBT streams, stats, version string) | 289 | 324 |
+
+Batch 1 (45 members): `World.getEntity`, `getMoonPhase(float)`, `isNew`, `save`, `forceSave`; `WorldInfo.getDefaultGamemode`; `AxisAlignedBB`/`Vec3` `resetPool`/`clearCache` (the shim never pools: nothing to reset); `EntityItem.item`;
+`EntityLiving.stuckArrows`, `swingArm`, `beforeRemove`, `onFinishedPotionEffect`; player `dimension`, `portalTime`, `lastPortalTime`, `portalCooldown`, `pickUp`, `faceEntity`; `EntityPlayerSP.sendChat`;
+`PlayerControllerMP.closeMenu`, `creative`, `setGameMode`; `GuiIngame.clearChat`; `EntityDragon.getDisplayHealth`; `EntityArrow.shoot`/`player`; `EntityThrowable.thrown`; `EntityPainting` fields and `setDirection`/`canSurvive`;
+`Block.getMiningTime`, `Block.getBlockTexture(world, x, y, z, side)`; Forge 3.x hooks `Item.onItemUseFirst(stack, player, world, x, y, z, side)` and `itemInteractionForEntity(stack, entity)` (the 1.7.10 shapes forward to them, so a 1.2.5 override is
+called); `BlockContainer.getBlockEntity(metadata)` and `mcc125$createBlockEntity()` (the block entity factory of 1.2.5: before this a 1.2.5 machine block had no block entity at all because `createNewTileEntity` was never overridden).
+
+Batch 2: `Facing.faceToSide`, constructors (`ModelBiped(f, f)`, `EntityTNTPrimed(world, x, y, z)`, `WorldSettings(seed, int, ...)`, `PlayerControllerMP(mc)`), `WorldProvider.getWelcomeMessage`, `RenderManager.cacheActiveRenderInfo` without the pointed entity,
+`TileEntityRendererDispatcher.playerYaw/playerPitch`, `SoundManager.getSoundsPool`, `Chunk.updateSkylight`, `EntityPlayer.addMovementStat` (statistics and exhaustion of 1.2.5), `BlockPane.canThisPaneConnectToThisBlockID`, `Block.isBlockSolidOnSide`.
+Batch 3: `RenderPlayer.renderSpecials/rotatePlayer/renderPlayer/renderPlayerSleep`, the accessors NEI's patched `GuiContainer` added (`mc`, `fontRenderer`, `setZLevel`, `clickSlot`, `containerKeyPress`), `NBTTagCompound.write/load`
+(DataOutput/DataInput payload), `StatFileWriter.readStat`, `EntityPlayer.resetHeight`, `Minecraft.C()` (the version string).
+
+Left as stubs, with the reason: `EntityMinecart` inventory/fuel/push/drag/type members and `RailLogic`, `BlockRail.hasPowerBit` (the layer's minecart is a view of the modern one; the 1.2.5 cart types need their own entity class: a feature, not a member);
+`Minecraft.setWorld`, `usePortal`, `Teleporter.<init>()`, `World.<init>(...)`, `EntityClientPlayerMP.<init>` (client world swaps cannot be done on the modern client); `EntityLivingBase.lastDamage` and `EntityLargeFireball.o/p/q` (protected fields of the modern entity, side-specific letters);
+`Block.requiresSelfNotify` (needs the 1.2.5 self-notify rule in the world's metadata path); `GameSettings$Options.SOUND`, `GuiContainer.refresh`, `RenderPlayer.a()` (behaviour not established); `Item.setTextureFile(String)V` (return type, loader request);
+`FMLCommonHandler.registerTickHandler/registerWorldGenerator`, `INetworkManager.getNetHandler`, `ChatLine`, `ContainerCreative`, `EntityDragonBase`, `ISidedInventory` and other classes (run-time worker); SmartMoving's `EntityPlayerSP.get/set...Field` accessors (members of a game class copy the layer drops);
+the garbage members in request 3 of `1.2.5-loader-requests-from-shim.md`.

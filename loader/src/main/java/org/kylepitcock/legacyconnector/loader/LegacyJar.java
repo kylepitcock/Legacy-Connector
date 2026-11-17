@@ -36,6 +36,11 @@ public final class LegacyJar {
     public String accessTransformer;
     public final List<String> notes = new ArrayList<>();
     /**
+     * Class names (internal, without .class) this jar must not contribute because another jar of the set owns them (Minecraft 1.2.5 repacks such as LogisticsPipes' BuildCraft copy,
+     * see {@code Mc125Builds}); removed before translation and part of the translation cache key.
+     */
+    public final java.util.Set<String> droppedClasses = new java.util.TreeSet<>();
+    /**
      * {provides, apiVersion, owner, package} of every package-info {@code @API} in the jar (BuildCraft's "BuildCraftAPI|transport",
      * ...): FML counted these as mods for {@code @Optional} and for dependency checks.
      */

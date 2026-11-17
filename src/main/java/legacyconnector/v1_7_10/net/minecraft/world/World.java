@@ -2484,4 +2484,34 @@ public class World implements IBlockAccess {
     public float getTensionFactorForBlock(double x, double y, double z) {
         return func_147473_B((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
+
+    // Members125 batch 1: members of Minecraft 1.2.5's World that 1.3 renamed or moved (the loader names them mcc125$<Feather name>)
+
+    /** 1.2.5 {@code World.getEntity(id)} (1.3: {@code getEntityByID}). */
+    public Entity mcc125$getEntity(int id) {
+        return getEntityByID(id);
+    }
+
+    /** 1.2.5 {@code World.getMoonPhase(partialTicks)}: the phase 0 to 7 (the modern level answers the phase of the current day). */
+    public int getMoonPhase(float partialTicks) {
+        return getMoonPhase();
+    }
+
+    /** Phantom field {@code World.isNew} (1.2.5 {@code isNewWorld}): true while the world was created in this session (its first minute). */
+    public static boolean mcc$get$mcc125$isNew(World w) {
+        return w.getTotalWorldTime() < 1200L;
+    }
+
+    public static void mcc$set$mcc125$isNew(World w, boolean v) {
+    }
+
+    /** 1.2.5 {@code World.save(flush, progress)}: saves the world's chunks and level data of a server world; a client world has nothing to save. */
+    public void mcc125$save(boolean flush, legacyconnector.v1_7_10.net.minecraft.util.IProgressUpdate progress) {
+        if (this instanceof WorldServer server) server.saveAllChunks(flush, progress);
+    }
+
+    /** 1.2.5 {@code World.forceSave(progress)}: a full save (the 1.2.5 {@code save(true, progress)}). */
+    public void mcc125$forceSave(legacyconnector.v1_7_10.net.minecraft.util.IProgressUpdate progress) {
+        mcc125$save(true, progress);
+    }
 }

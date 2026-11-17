@@ -1,0 +1,32 @@
+# Classes of 1.2.5 and 1.4.7 with the same Calamus intermediary id and different Feather names or packages, reviewed (readable 1.2.5 name, readable 1.4.7 name). Each was confirmed by the share of the members
+# that exist by name in both (join-class-changes.tsv: at least 77%, 100% for most) and by the role of the class (client world, chunk cache, map item, portal forcer, server console, ...).
+net/minecraft/isom/IsomPreviewCanvas__OS	net/minecraft/client/Minecraft__OS
+net/minecraft/client/render/entity/FireballRenderer	net/minecraft/client/render/entity/ProjectileRenderer
+net/minecraft/item/PaintingItem	net/minecraft/item/DecorationItem
+net/minecraft/client/world/MultiplayerWorld	net/minecraft/client/world/ClientWorld
+net/minecraft/world/chunk/ChunkCache	net/minecraft/server/world/chunk/ServerChunkCache
+net/minecraft/world/ScheduledTick	net/minecraft/server/world/ScheduledTick
+net/minecraft/isom/IsomPreviewCanvas__6839628	net/minecraft/client/Minecraft__6839628
+net/minecraft/world/PortalForcer	net/minecraft/server/world/PortalForcer
+net/minecraft/client/world/chunk/MultiplayerChunkCache	net/minecraft/client/world/chunk/ClientChunkCache
+net/minecraft/item/MapItem	net/minecraft/item/FilledMapItem
+net/minecraft/network/Connection__6529692	net/minecraft/network/RemoteConnection__6529692
+net/minecraft/network/Connection__9755172	net/minecraft/network/RemoteConnection__9755172
+net/minecraft/client/MultiplayerInteractionManager	net/minecraft/client/ClientPlayerInteractionManager
+net/minecraft/network/Connection__5510478	net/minecraft/network/RemoteConnection__5510478
+net/minecraft/network/Connection__4553622	net/minecraft/network/RemoteConnection__4553622
+net/minecraft/server/gui/MinecraftServerGui__8050545	net/minecraft/server/dedicated/gui/DedicatedServerGui__8050545
+net/minecraft/server/gui/MinecraftServerGui__2784775	net/minecraft/server/dedicated/gui/DedicatedServerGui__2784775
+net/minecraft/server/gui/MinecraftServerGui__6057554	net/minecraft/server/dedicated/gui/DedicatedServerGui__6057554
+net/minecraft/server/PendingCommand	net/minecraft/server/dedicated/PendingCommand
+net/minecraft/server/gui/PlayerListGui	net/minecraft/server/dedicated/gui/PlayerListGui
+net/minecraft/server/MinecraftServer__1484193	net/minecraft/server/dedicated/DedicatedServer__1484193
+net/minecraft/server/MinecraftServer__1739936	net/minecraft/server/dedicated/DedicatedServer__1739936
+net/minecraft/server/gui/LogHandler	net/minecraft/server/dedicated/gui/LogHandler
+net/minecraft/server/gui/LogHandler__0760609	net/minecraft/server/dedicated/gui/LogHandler__0760609
+net/minecraft/server/gui/PlayerStatsGui	net/minecraft/server/dedicated/gui/PlayerStatsGui
+net/minecraft/server/gui/PlayerStatsGui__4702006	net/minecraft/server/dedicated/gui/PlayerStatsGui__4702006
+net/minecraft/server/ServerProperties	net/minecraft/server/dedicated/ServerProperties
+net/minecraft/command/source/CommandSource	net/minecraft/server/command/source/CommandSource
+net/minecraft/server/gui/MinecraftServerGui	net/minecraft/server/dedicated/gui/DedicatedServerGui
+net/minecraft/server/MinecraftServerAccess	net/minecraft/server/dedicated/DedicatedServerAccess

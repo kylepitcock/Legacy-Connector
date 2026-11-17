@@ -546,6 +546,11 @@ public class Item {
     }
 
     public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+        return onItemUseFirst(stack, player, world, x, y, z, side);
+    }
+
+    /** Forge 3.x (Minecraft 1.2.5) {@code onItemUseFirst}: before the block is activated, without the hit position; 1.2.5 mods override this one. */
+    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side) {
         return false;
     }
 
@@ -583,6 +588,11 @@ public class Item {
     }
 
     public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer player, EntityLivingBase entity) {
+        return itemInteractionForEntity(stack, entity);
+    }
+
+    /** Forge 3.x (Minecraft 1.2.5) {@code itemInteractionForEntity(stack, entity)}: a right click on a mob; 1.2.5 mods override this one (no player argument). */
+    public boolean itemInteractionForEntity(ItemStack stack, EntityLivingBase entity) {
         return false;
     }
 

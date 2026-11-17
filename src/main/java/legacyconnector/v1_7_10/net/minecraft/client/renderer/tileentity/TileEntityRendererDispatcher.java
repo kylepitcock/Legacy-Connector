@@ -84,4 +84,21 @@ public class TileEntityRendererDispatcher {
         field_147561_k = y;
         field_147558_l = z;
     }
+
+    // Members125 batch 2
+
+    /** Phantom fields {@code playerYaw} and {@code playerPitch} of 1.2.5's dispatcher: the view's angles, read from the modern camera. */
+    public static float mcc$get$playerYaw(TileEntityRendererDispatcher d) {
+        return net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getYRot();
+    }
+
+    public static void mcc$set$playerYaw(TileEntityRendererDispatcher d, float v) {
+    }
+
+    public static float mcc$get$playerPitch(TileEntityRendererDispatcher d) {
+        return net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getXRot();
+    }
+
+    public static void mcc$set$playerPitch(TileEntityRendererDispatcher d, float v) {
+    }
 }

@@ -24,6 +24,19 @@ public final class GameRegistry {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name, modId);
     }
 
+    /**
+     * {@code registerBlock(block, itemClass, name, modId, itemCtorArgs...)}: the item block is built by the constructor that takes the block's id minus 256 followed by
+     * the arguments ({@code ItemBlockCamoButton(int, Block)}); returned nothing in 1.6.4 (the call otherwise has no 1.7.10 return type to link to).
+     */
+    public static void registerBlock(Block block, Class<? extends ItemBlock> itemClass, String name, String modId, Object... itemCtorArgs) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name, modId, itemCtorArgs);
+    }
+
+    /** {@code registerBlock(block, itemClass, name, itemCtorArgs...)} (Forge 1.6.4 without the mod id). */
+    public static void registerBlock(Block block, Class<? extends ItemBlock> itemClass, String name, Object... itemCtorArgs) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name, (String) null, itemCtorArgs);
+    }
+
     /** {@code addBiome(biome)}: Forge 1.6.4 added the biome to the default world type's biome list, which the pack's biome placement then draws from. */
     public static void addBiome(legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome) {
         if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.addNewBiome(biome);
