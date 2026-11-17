@@ -54,6 +54,14 @@ The script is renamed to `spawnprobe.js.done` after execution. Copy a fresh
 Expected successful output starts with `LegacySpawnProbe: 7/7 passed`.
 Any failed assertion or thrown exception is included in the result file.
 
+## Entity type registration
+
+The probe entity type is registered through Forge's `DeferredRegister` from
+the mod constructor. Do not construct it from `SpawnProbe` static
+initialization: the server script runs after the entity-type registry is
+frozen, and an unregistered `EntityType.Builder.build(...)` at that point
+fails with `IllegalStateException: Registry is already frozen`.
+
 ## What it covers
 
 1. Explicit Forge 1.20.1 `EntityType.create(..., CompoundTag, ...)` with a
