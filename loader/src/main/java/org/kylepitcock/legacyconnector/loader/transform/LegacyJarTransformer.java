@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 175;
+    public static final int TRANSFORMER_VERSION = 183;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -140,6 +140,8 @@ public final class LegacyJarTransformer {
         public int softLinked;
         /** The stand-ins, one entry per symbol: {@code class owner}, {@code method owner.name(desc)}, {@code field owner.name:desc} (internal names). */
         public final List<String> softSymbols = new ArrayList<>();
+        /** The part of {@link #softSymbols} that mixin handler bodies refer to (same format). */
+        public final List<String> softMixinSymbols = new ArrayList<>();
     }
 
     /** Raw contents of a legacy jar. */

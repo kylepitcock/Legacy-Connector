@@ -968,3 +968,6 @@ net/minecraft/world/item/enchantment/EnchantmentHelper	isEnchantmentCompatible	(
 net/minecraft/world/level/BlockAndTintGetter	getModelDataManager	()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;	Round10Compat	modelDataManager
 net/minecraft/world/level/BlockGetter	getModelDataManager	()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;	Round10Compat	modelDataManager
 net/minecraft/world/entity/projectile/ProjectileUtil	getMobArrow	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;	Round10Compat	mobArrow
+net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket	getXa	()I	GapCompat	motionXa
+net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket	getYa	()I	GapCompat	motionYa
+net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket	getZa	()I	GapCompat	motionZa

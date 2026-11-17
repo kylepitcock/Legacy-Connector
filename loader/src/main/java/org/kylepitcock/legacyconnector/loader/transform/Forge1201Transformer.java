@@ -584,6 +584,11 @@ public final class Forge1201Transformer {
             result.notes.addAll(soft.stats.lines());
             result.softLinked = soft.stats.symbols();
             result.softSymbols.addAll(soft.stats.symbolList());
+            result.softMixinSymbols.addAll(soft.stats.mixinSymbols);
+            if (!soft.stats.mixinSymbols.isEmpty()) {
+                result.notes.add("Mixin warning: " + soft.stats.mixinSymbols.size() + " reference(s) inside mixin handler bodies do not exist in 1.21.1 and were replaced by stand-ins (that handler misbehaves or throws when it runs): "
+                        + String.join(", ", soft.stats.mixinSymbols.stream().limit(12).map(x -> x.replace('/', '.')).toList()));
+            }
         }
         if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
