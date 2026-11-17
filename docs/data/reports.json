@@ -995,6 +995,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/files/2227552",
    "date": "2026-11-17",
    "open": true
+  },
+  {
+   "issue": 306,
+   "mod": "Mystcraft 0.12.3.04",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Custom dimensions do not generate terrain regardless of pages in book <img width=\"1002\" height=\"988\" alt=\"book\" src=\"https://github.com/user-attachments/assets/46980d6a-b826-42db-809f-6cfaa8ee3471\" /> <img width=\"2560\" height=\"1361\" alt=\"image\" src=\"https://github.com/user-attachments/assets/5cab2629-2502-4232-9a77-cef936d60db7\" /> Side note, pressing e while in the book binding gui closes it, ev…",
+   "lc": "0.4.15-nightly.65.6cc4298",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/mystcraft/files/2417042",
+   "date": "2026-11-17",
+   "open": true
   }
  ]
 }
