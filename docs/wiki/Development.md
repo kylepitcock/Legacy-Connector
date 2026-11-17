@@ -82,6 +82,10 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
 - `./gradlew compileJava --rerun` is the compile check (compileJava is non-incremental: the shim access widener rewrites class files), then
   `./gradlew generateShimIndex`, which catches "phantom field access" errors: shim code must read legacy fields that exist only as virtual
   fields through the `mcc$get$`/`mcc$set$` accessors.
+- `./gradlew checkShimMembers` (part of `check`) compares the public/protected members of the shim with `tools/dev/shim-members.txt.gz`:
+  members may be added, never silently removed or changed (name, descriptor, static or instance), because a mod that linked against one turns
+  into an unresolved reference (`gap_shim` in the probe). Accept an intended removal or record additions with
+  `python tools/dev/check_shim_members.py --update` and say so in the commit.
 - `tools/dev/run-corpus.sh [dir]` runs the server self test over a whole directory of jars. Run only one server at a time and never compile
   while one runs.
 - Translation results are cached per jar and mod set (`run-*/.legacyconnector/cache`). After changing the loader, linker, stubber or shim,
