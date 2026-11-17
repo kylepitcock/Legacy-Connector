@@ -1518,6 +1518,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Applied Energistics",
+   "version": "rv12.a",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: ic2.api.recipe.IMachineRecipeManager.addRecipe(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.Object;)V, powercrystals.minefactoryreloaded.api.IDeepStorageUnit.setStoredItemType(III)V."
+  },
+  {
    "name": "Applied Energistics 2",
    "version": "rv3-beta-6",
    "mc": "1.7.10",
@@ -1544,6 +1553,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (1537 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Applied Energistics rv.9.h",
+   "version": "",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147ae): 14 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Applied Energistics rv.9.i",
    "version": "",
    "mc": "1.4.7",
@@ -1553,13 +1571,22 @@
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 14 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Applied Energistics rv12.a",
+   "version": "",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164ae): 96 items, 5 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Applied Energistics rv14.dev2",
    "version": "",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: 8 ME cables crafted from the grid recipe (an ore dictionary recipe), the Grind Stone placed and its screen opened, and iron ore shift-clicked into its input (this used to crash the server with an AbstractMethodError: the mod's inventory interface relies on the tile entity superclass having `onInventoryChanged`). Turning the wooden crank to grind was not reached (the crank did not attach through the test's block clicks). Terminal and drive screens worked before; the grind result and the ME network are untried."
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152ae): 67 items, 5 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Applied Energistics rv14.finale3",
@@ -2066,6 +2093,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (7 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "AtomicStryker Update Check Mod",
+   "version": "1.1.1",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (7 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Atum",
    "version": "2 2.0.20",
    "mc": "1.12.2",
@@ -2394,18 +2430,9 @@
    "version": "1.5.2 - 1.2.0",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "Real client, survival, shaders: the Quantum Chest recipe crafted in the 3x3 grid, the chest placed and its own screen opened; a Backpack opened by right-click shows the mod's screen and takes a stack of cobblestone by shift-click. (The quantum chest slot only accepts backpacks, as designed.)"
-  },
-  {
-   "name": "Backpacks!",
-   "version": "1.5.2 - 1.2.0",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client, survival, shaders: the Quantum Chest recipe crafted in the 3x3 grid, the chest placed and its own screen opened; a Backpack opened by right-click shows the mod's screen and takes a stack of cobblestone by shift-click. (The quantum chest slot only accepts backpacks, as designed.)"
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bcmod): 4 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Backported Animal Variants",
@@ -2688,33 +2715,6 @@
   },
   {
    "name": "BC Builders",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 6 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
-  },
-  {
-   "name": "BC Builders",
-   "version": "3.4.6.19",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "BC Builders",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 6 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
-  },
-  {
-   "name": "BC Builders",
    "version": "4.2.2",
    "mc": "1.6.4",
    "source": "probe",
@@ -2723,49 +2723,49 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (661 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
-   "name": "BC Energy",
-   "version": "7.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "BC Energy",
-   "version": "7.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "BC Energy",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 5 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Energy",
-   "version": "3.4.6.19",
+   "name": "BC Builders",
+   "version": "3.4.4.17",
    "mc": "1.4.7",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147bc) without errors (no blocks, items or entities of its own)."
   },
   {
-   "name": "BC Energy",
+   "name": "BC Builders",
    "version": "3.7.4.1",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 5 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bc): 6 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "BC Builders",
+   "version": "4.2.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164bc): 8 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "BC Energy",
+   "version": "7.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Energy",
+   "version": "7.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Energy",
@@ -2777,49 +2777,49 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (661 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
-   "name": "BC Factory",
-   "version": "7.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "BC Factory",
-   "version": "7.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "BC Factory",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 9 items, 9 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Factory",
-   "version": "3.4.6.19",
+   "name": "BC Energy",
+   "version": "3.4.4.17",
    "mc": "1.4.7",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "Real client 2026-11-07: a redstone-powered wooden engine drives the pump over a water source and the tank beside it fills with 1000 mB of water. The pump needs a world floor above y=0 (it scans down while y > 0)."
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147bc): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
-   "name": "BC Factory",
+   "name": "BC Energy",
    "version": "3.7.4.1",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 9 items, 9 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bc): 5 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Energy",
+   "version": "4.2.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164bc): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Factory",
+   "version": "7.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Factory",
+   "version": "7.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Factory",
@@ -2829,6 +2829,33 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (661 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "BC Factory",
+   "version": "3.4.4.17",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147bc) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "BC Factory",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bc): 9 items, 9 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Factory",
+   "version": "4.2.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164bc): 10 items, 10 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BC Robotics",
@@ -2868,39 +2895,39 @@
   },
   {
    "name": "BC Silicon",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Silicon",
-   "version": "3.4.6.19",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Silicon",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Silicon",
    "version": "4.2.2",
    "mc": "1.6.4",
    "source": "probe",
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (661 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "BC Silicon",
+   "version": "3.4.4.17",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147bc): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Silicon",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bc): 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Silicon",
+   "version": "4.2.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164bc): 8 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (10%)."
   },
   {
    "name": "BC Transport",
@@ -2922,48 +2949,48 @@
   },
   {
    "name": "BC Transport",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 30 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Transport",
-   "version": "3.4.6.19",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 25 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Transport",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 30 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Transport",
    "version": "4.2.2",
    "mc": "1.6.4",
    "source": "probe",
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (661 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "BC Transport",
+   "version": "3.4.4.17",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147bc): 23 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Transport",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bc): 30 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Transport",
+   "version": "4.2.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164bc): 53 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BCMod (Brad16840.Common mod)",
    "version": "1.5.2 - 1.2.0",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "loads",
-   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in pre-1.7 second pass server self test (fam152bcmod) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "BD Lib",
@@ -3808,6 +3835,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (281 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Biomes O' Plenty",
+   "version": "1.4.7",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147bop): 111 items, 102 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 10 (dropped_recipe=10)."
+  },
+  {
    "name": "Blahaj",
    "version": "1.0",
    "mc": "1.7.10",
@@ -4516,24 +4552,6 @@
   },
   {
    "name": "BuildCraft",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client, survival, shaders: the auto workbench places and its crafting screen opens with the grid, output slot and inventory; engines, pipes, tanks and pumps register (self test: 85 items and blocks across the modules, 3 entity types)."
-  },
-  {
-   "name": "BuildCraft",
-   "version": "3.4.6.19",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Mod has newer versions. Survival check 2026-11-07: a wooden pipe pulls items out of a chest when a wooden engine (redstone-powered) runs, cobblestone pipes carry them to a second chest; the engine finds its receiver on placement; oil blocks draw (black pool: the fluid block tile and renderBlockFluids are forwarded). The pump did not lower its tube in the time tried, so liquid transport is not verified."
-  },
-  {
-   "name": "BuildCraft",
    "version": "7.99.24.8",
    "mc": "1.12.2",
    "source": "corpus",
@@ -4549,6 +4567,33 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (661 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "BuildCraft",
+   "version": "3.4.4.17",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147bc): 55 items, 19 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "BuildCraft",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152bc): 39 items, 1 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BuildCraft",
+   "version": "4.2.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164bc): 8 items, 1 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BuildCraft (Core and Energy)",
@@ -5388,6 +5433,15 @@
    "notes": "Real client, survival, shaders: Chunk Loader recipe crafted in the grid, the block placed, its screen opened; the + button raised the radius from 2 to 3 (9 to 25 chunks) and Show Lasers drew the laser outline."
   },
   {
+   "name": "ChickenChunks",
+   "version": "1.3.3.4",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164ccx): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Chimes",
    "version": "2.0.1",
    "mc": "1.20.1",
@@ -5900,6 +5954,24 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (42 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "CoFH Core",
+   "version": "1.4.7.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147te) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "CoFH Core",
+   "version": "2.0.0.5",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 12 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "CoFH Loot",
    "version": "2.0.0.b7",
    "mc": "1.6.4",
@@ -5907,6 +5979,15 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (175 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "CoFH Loot",
+   "version": "2.0.0.5",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CoFH Masquerade",
@@ -5918,6 +5999,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (175 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "CoFH Masquerade",
+   "version": "2.0.0.5",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "CoFH Social",
    "version": "2.0.0.b7",
    "mc": "1.6.4",
@@ -5925,6 +6015,15 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (175 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "CoFH Social",
+   "version": "2.0.0.5",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CoFH World",
@@ -5945,7 +6044,34 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (175 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "CoFH World",
+   "version": "2.0.0.5",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "CoFHNetwork",
+   "version": "1.5.2.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (149 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "CoFHNetwork",
+   "version": "1.5.2.1",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152te): 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "CoFHWorld",
    "version": "1.5.2.1",
    "mc": "1.5.2",
    "source": "probe",
@@ -5957,10 +6083,10 @@
    "name": "CoFHWorld",
    "version": "1.5.2.1",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-16",
+   "source": "client",
+   "date": "2026-11-17",
    "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (149 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Loads in pre-1.7 second pass server self test (fam152te) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Collective",
@@ -6180,24 +6306,6 @@
   },
   {
    "name": "ComputerCraft",
-   "version": "1.53",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: a computer places and its terminal screen opens and prints CraftOS 1.5 with the prompt. The turtle screens fail in the server self test only (fake player without a world); typing in the terminal and turtle programs are not tried in 1.5.2 (the 1.4.7 round did: they work)."
-  },
-  {
-   "name": "ComputerCraft",
-   "version": "1.5",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client 2026-11-07: the computer screen draws and works. 'help' and 'ls' print, the Lua prompt runs, keys reach the program. A turtle takes fuel by hand-in-slot, runs turtle.refuel() and moves forward. A MiscPeripherals block beside a computer shows up as a peripheral (getType and getMethods answer). Fixed: the font sheet the mod builds itself and uploads as an OpenGL texture, and the ROM mount (the translated jar had no folder entries)."
-  },
-  {
-   "name": "ComputerCraft",
    "version": "1.62",
    "mc": "1.6.4",
    "source": "probe",
@@ -6206,22 +6314,49 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (513 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
-   "name": "ComputerCraft Turtles",
+   "name": "ComputerCraft",
+   "version": "1.5",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147cc): 7 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "ComputerCraft",
    "version": "1.53",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Self-tested in server self test, 1.5.2 set: 2 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 4 threw errors (100%)."
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152cc): 9 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "ComputerCraft",
+   "version": "1.62",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164cc): 21 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "ComputerCraft Turtles",
    "version": "1.5",
    "mc": "1.4.7",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "A turtle placed in survival opens its screen (terminal and 4x4 inventory), refuels from coal put in its slot, moves and turns on Lua commands. A plain turtle cannot dig (no tool), which is the mod's own rule."
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147cc): 6 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "ComputerCraft Turtles",
+   "version": "1.53",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152cc): 7 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "ComputerCraftEdu",
@@ -9316,6 +9451,15 @@
    "notes": "Real client, survival, shaders: the Ender Chest recipe crafted in the grid, the chest placed and right-clicked while aimed at (the mod ray-traces the player's look, so a test that clicks a block position without aiming gets no screen: that was the earlier 'opens no screen'); the screen opens with its dye buttons and keeps 16 diamonds put in by shift-click. The item renderer still logs the missing 1.21.1 textures tunnel.png and particlefield.png."
   },
   {
+   "name": "EnderStorage",
+   "version": "1.4.3.6",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164ccx): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "EnderTanks",
    "version": "1.20.1-1.5",
    "mc": "1.20.1",
@@ -9368,6 +9512,15 @@
    "date": "2026-11-16",
    "status": "fails",
    "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: cofh.CoFHCore.clothFireproof:Llegacyconnector.v1_7_10.net.minecraft.block.material.Material;, thermalexpansion.core.gui.TabRedstone.backgroundColor:I, thermalexpansion.energy.gui.TabEngine.backgroundColor:I, thermalexpansion.factory.gui.TabMachineConfig.backgroundColor:I, thermalexpansion.factory.gui.TabMachineEnergy.backgroundColor:I (+2 more)."
+  },
+  {
+   "name": "Energy",
+   "version": "2.2.2.2",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147te): 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Energy Converters",
@@ -9563,9 +9716,27 @@
    "version": "1.6.4",
    "mc": "1.6.4",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "loads",
-   "notes": "Loads in server self test, old-only 1.6.4 set without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in pre-1.7 second pass server self test (dep164c) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Equivalent Exchange",
+   "version": "3 pre1f",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147ee3): 29 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 1 (dropped_recipe=1)."
+  },
+  {
+   "name": "Equivalent Exchange",
+   "version": "3 pre1h (build 16)",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152ee3): 15 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 1 (dropped_recipe=1)."
   },
   {
    "name": "Equivalent Exchange (Forge)",
@@ -9770,9 +9941,18 @@
    "version": "0.11.2",
    "mc": "1.6.4",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Needs Ex Nihilo, which is not in the download."
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (dep164e): 176 items, 29 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Ex Nihilo",
+   "version": "1.29e",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (dep164e): 110 items, 20 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Exchangers",
@@ -10304,6 +10484,15 @@
    "date": "2026-11-16",
    "status": "fails",
    "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: cofh.CoFHCore.clothFireproof:Llegacyconnector.v1_7_10.net.minecraft.block.material.Material;, thermalexpansion.core.gui.TabRedstone.backgroundColor:I, thermalexpansion.energy.gui.TabEngine.backgroundColor:I, thermalexpansion.factory.gui.TabMachineConfig.backgroundColor:I, thermalexpansion.factory.gui.TabMachineEnergy.backgroundColor:I (+2 more)."
+  },
+  {
+   "name": "Factory",
+   "version": "2.2.2.2",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147te): 27 items, 4 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Fairy Lights",
@@ -10937,39 +11126,39 @@
   },
   {
    "name": "Forestry for Minecraft",
-   "version": "2.3.1.1",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: it loads now (the VerifyError in the configuration reader is gone): the apiary (Bee House screen with its slots and side tabs), analyzer, engine, factory and mail blocks place and open their own screens, and the impregnated frame recipe crafts. A meta 0 core block shows an untranslated title (tile.for.null). Breeding, the engines' power and the farm were not tried. 2026-11-07: with other mods in mods/ it registered every item twice ('Tried to recreate an item') because getSourceFile gave the translated copy's name; fixed. Apiary, engine, factory, alveary, beehive and stump blocks render."
-  },
-  {
-   "name": "Forestry for Minecraft",
-   "version": "2.2.8.4",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: the apiary placed and its screen opens (the mod's own screen with the tool tabs, the slots and the hex bee slots); a princess bee shift-clicked from the hotbar lands in the queen slot and the bee item draws with its icon. Machine and apiary recipes of this build are Forestry's own recipe class (ShapedRecipeCustom): they list with no result item, crafting them in the grid was not verified. Bee breeding over time, the farm and engines are untried."
-  },
-  {
-   "name": "Forestry for Minecraft",
-   "version": "2.0.0.11",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Mod has newer versions. Loads with Binnie's Extra Bees (genetics API shared once, plugins found, 330 alleles); container screens do not open because this build targets another obfuscation (see Forestry for Minecraft)."
-  },
-  {
-   "name": "Forestry for Minecraft",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
    "source": "probe",
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (760 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Forestry for Minecraft",
+   "version": "2.0.0.9",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147forestry): 368 items, 30 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Forestry for Minecraft",
+   "version": "2.2.8.4",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152forestry): 410 items, 35 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Forestry for Minecraft",
+   "version": "2.3.1.1",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164forestry): 400 items, 35 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "ForeverLoveSword",
@@ -11071,6 +11260,15 @@
    "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad type on operand stack; 14 error log lines"
   },
   {
+   "name": "Forge Microblocks",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 5 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Forge Multipart",
    "version": "1.2.0.345",
    "mc": "1.7.10",
@@ -11105,6 +11303,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads now (server self test, 1.5.2 set): its Scala mixin compiler failed on the bytes of java.lang.Object (the FML loader view handed out JDK classes' bytes; it now returns none, as FML's did) and loaded the vanilla classes through the wrong loader."
+  },
+  {
+   "name": "Forge Multipart",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.ExceptionInInitializerError"
   },
   {
    "name": "Forge Multipart CBE",
@@ -14041,6 +14248,15 @@
    "notes": "Automated check 0.4.14-nightly: needs code from another mod or API that is not available or does not match: legacyconnector.vb1_7_3.net.minecraft.client.resource.language.TranslationStorage.<init>(Llegacyconnector_synth.vb1_7_3.net.minecraft.client.gui.screen.MultiplayerScreen;)V, legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingVariants.<init>()V, legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource.<init>()V, legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion.<init>(Llegacyconnector.vb1_7_3.net.minecraft.world.World;Llegacyconnector.vb1_7_3.net.minecraft.entity.Entity;DDDF)V, legacyconnector_b173.industrialcraft.BlockAdvFurnace.a_(I)I (+280 more)."
   },
   {
+   "name": "IndustrialCraft",
+   "version": "2 2.0.397-experimental",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164ic2): 295 items, 39 blocks, 9 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 6 blocks did not stay placed."
+  },
+  {
    "name": "IndustrialCraft 2",
    "version": "2.2.827-experimental",
    "mc": "1.7.10",
@@ -15931,9 +16147,9 @@
    "version": "1.2.0",
    "mc": "1.6.4",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "loads",
-   "notes": "Loads in server self test, old-only 1.6.4 set without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in pre-1.7 second pass server self test (dep164c) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Loot Beams backport",
@@ -17421,6 +17637,24 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Applied Energistics",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Applied Energistics",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Atum",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17437,6 +17671,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Atum",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Atum",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: BackTools",
@@ -17457,6 +17709,24 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: BackTools",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: BackTools",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Biomes O' Plenty",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17475,6 +17745,24 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Biomes O' Plenty",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Biomes O' Plenty",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Chococraft",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17491,6 +17779,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Chococraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Chococraft",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: ExtraBiomes",
@@ -17520,6 +17826,33 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: ExtraBiomes",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: ExtraBiomes",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: ExtraBiomes",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Forestry",
    "version": "1.4.6R2.1.3",
    "mc": "1.4.7",
@@ -17545,6 +17878,33 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Forestry",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Forestry",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: powercrystals/core/block/BlockFluidClassic (the Legacy Connector layer does not implement this legacy API ye"
+  },
+  {
+   "name": "MFR Compat: Forestry",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Forestry (2)",
@@ -17554,6 +17914,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Forestry (2)",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: powercrystals/core/block/BlockFluidClassic (the Legacy Connector layer does not implement this legacy API ye"
+  },
+  {
+   "name": "MFR Compat: Forestry (part",
+   "version": "2) 1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Forestry (part 2)",
@@ -17592,6 +17970,33 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: IC2",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: IC2",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: IC2",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Magical Crops",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17610,6 +18015,24 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Magical Crops",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Magical Crops",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Mystcraft",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17626,6 +18049,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Mystcraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Mystcraft",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Pam's Mods",
@@ -17653,6 +18094,33 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Pam's Mods",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Pam's Mods",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Pam's Mods",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Railcraft",
@@ -17664,6 +18132,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Railcraft",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: RP2",
    "version": "1.4.6R2.1.3",
    "mc": "1.4.7",
@@ -17689,6 +18166,33 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: RP2",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147mfr): 34 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "MFR Compat: RP2",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: RP2",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Soul Shards",
@@ -17700,6 +18204,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Soul Shards",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: SoulShards",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17707,6 +18220,15 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: SoulShards",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Sufficient Biomes",
@@ -17725,6 +18247,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: Sufficient Biomes",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Sufficient Biomes",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Thaumcraft",
@@ -17754,6 +18294,33 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Thaumcraft",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam147mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Thaumcraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Thaumcraft",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: Thermal Expansion",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17763,6 +18330,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Thermal Expansion",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: TwilightForest",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17779,6 +18355,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: TwilightForest",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: TwilightForest",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MFR Compat: Vanilla",
@@ -17817,6 +18411,24 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "MFR Compat: Vanilla",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.RuntimeException: java.lang.NoClassDefFoundError: powercrystals/core/mod/BaseMod"
+  },
+  {
+   "name": "MFR Compat: Vanilla",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "MFR Compat: XyCraft",
    "version": "1.5.1R2.6.2",
    "mc": "1.5.2",
@@ -17833,6 +18445,24 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "MFR Compat: XyCraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152mfr) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: XyCraft",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164mfr): 98 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Michaels Mod",
@@ -18015,6 +18645,15 @@
    "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.VerifyError: Bad type on operand stack; 2 error log lines"
   },
   {
+   "name": "Minecraft Multipart Plugin",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Minecraft Rich Presence",
    "version": "1.0",
    "mc": "1.12.2",
@@ -18103,6 +18742,33 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: PowerCrystalsCore. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "Minefactory Reloaded",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "partial",
+   "notes": "In pre-1.7 second pass server self test (fam147mfr) 79 items, 12 blocks, 0 entity types register, but loading failed during init: java.lang.RuntimeException: java.lang.NoClassDefFoundError: powercrystals.core.updater.UpdateManager"
+  },
+  {
+   "name": "MineFactory Reloaded",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: powercrystals/core/mod/BaseMod (the Legacy Connector layer does not implement this legacy API yet - see logs"
+  },
+  {
+   "name": "MineFactory Reloaded",
+   "version": "1.6.2R2.7.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164mfr): 141 items, 29 blocks, 4 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (1%). 8 blocks did not stay placed."
   },
   {
    "name": "MinefactoryReloaded Client",
@@ -18798,6 +19464,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (33 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod_EE3",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in 1.2.5 dedicated server self test: 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "mod_ElementalCreepers",
    "version": "0.0.0-legacy",
    "mc": "1.2.5",
@@ -19483,12 +20158,12 @@
   },
   {
    "name": "Modular Turrets",
-   "version": "",
+   "version": "1.0.1",
    "mc": "1.6.4",
    "source": "client",
-   "date": "2026-11-06",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "Client test: turrets render. It crashed the server on a null NBT string before a fix."
+   "notes": "Self-tested in pre-1.7 second pass server self test (dep164b): 33 items, 11 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Modular UI",
@@ -20057,30 +20732,30 @@
   },
   {
    "name": "Mystcraft",
-   "version": "",
-   "mc": "1.6.4",
+   "version": "0.10.0.00",
+   "mc": "1.4.7",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Fails in postInit ('Invalid item form for block tile.myst.fluidwith metadata 0' on the fluid block registration); the earlier duplicate symbol error is gone. Some blocks register and render."
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147myst): 15 items, 10 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Mystcraft",
    "version": "0.10.5.00",
    "mc": "1.5.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: the writing desk recipe crafted in the grid, the desk placed and its screen opens; the panels are still laid out wrongly (symbol list at the left, the inventory panel at the far right of a window wider than the screen). Age creation and linking were not tried."
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152myst): 17 items, 11 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Mystcraft",
-   "version": "0.10.1.00",
-   "mc": "1.4.7",
+   "version": "0.10.13.01",
+   "mc": "1.6.4",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "partial",
-   "notes": "Loads and registers (15 items, 10 blocks, 3 entities). Real client 2026-11-07: an age can be created and the writing desk screen opens in survival; ages beyond creation and the other machines were not tried."
+   "notes": "In pre-1.7 second pass server self test (fam164myst) 17 items, 12 blocks, 3 entity types register, but loading failed during postInit: java.lang.RuntimeException: Invalid item form for block tile.myst.fluidwith metadata 0"
   },
   {
    "name": "Mysterious Mountain Lib",
@@ -20324,6 +20999,33 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Natura",
+   "version": "2.1.5",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152natura): 279 items, 105 blocks, 5 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%)."
+  },
+  {
+   "name": "Natura",
+   "version": "2.1.14",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164natura): 293 items, 116 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
+  },
+  {
+   "name": "Natura compat: MFR",
+   "version": "0.1",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam152natura) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Naturalist",
@@ -21712,6 +22414,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (376 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "OpenMods",
+   "version": "0.5.1",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (dep164d) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "OpenModsLib",
    "version": "0.12.2",
    "mc": "1.12.2",
@@ -21764,6 +22475,15 @@
    "date": "2026-11-16",
    "status": "loads",
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: ComputerCraft. Everything else it uses links; the mod may still work without it."
+  },
+  {
+   "name": "OpenPeripheralCore",
+   "version": "0.4.1",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (dep164d) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "OpenPeripheralIntegration",
@@ -22774,6 +23494,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: iChunUtil. Everything else it uses links; the mod may still work without it."
   },
   {
+   "name": "PortalGun",
+   "version": "2.0.2",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: iChunUtil. Everything else it uses links; the mod may still work without it."
+  },
+  {
    "name": "portalgun v5 b173-root",
    "version": "0.0.0-legacy",
    "mc": "b1.7.3",
@@ -22859,9 +23588,9 @@
    "version": "1.5.1R2.3.2B1",
    "mc": "1.6.4",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-17",
    "status": "works",
-   "notes": "Self-tested in server self test, old-only 1.6.4 set: 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in pre-1.7 second pass server self test (dep164a): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Power Drop",
@@ -23438,6 +24167,15 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Railcraft",
+   "version": "8.4.0.0",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164rail): 426 items, 32 blocks, 18 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Railcraft Reborn",
@@ -25550,21 +26288,21 @@
   },
   {
    "name": "Simply Jetpacks",
-   "version": "0.3.1.1",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-06",
-   "status": "works",
-   "notes": "Client test: items render."
-  },
-  {
-   "name": "Simply Jetpacks",
    "version": "2 2.2.14.67",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Automated client survey: 8 items, 0 blocks, 0 entity types; 1 error log lines"
+  },
+  {
+   "name": "Simply Jetpacks",
+   "version": "0.3.1.1",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (dep164b): 23 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Simply Jetpacks 2",
@@ -27845,33 +28583,6 @@
   },
   {
    "name": "The Twilight Forest",
-   "version": "1.20.3",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client, survival, shaders: the ironwood axe recipe gives its result from the crafting grid (the 3 recipes with an empty result are code recipes). Earlier checks: blocks, items and several mobs render; hostile mobs and the dimension were not checked. 2026-11-07 round: the dimension generated nothing (void) because MapGenStructure.getStructureName was abstract; fixed. Portal (diamond into the flower pool) forms and teleports, terrain and trees generate, mobs (lich, knight phantom, tower golem, redcap, druid, minotaur, boar, deer, penguin) render with boss bars; the Naga draws as a leaf cube (issue #190). 2026-11-07 (later): the Naga no longer draws as one leaf cube: the legacy renderer draws its body segments through RenderManager.renderEntitySimple, which drew them all at the camera origin (now at the entity's position), and the Naga's own class recursed forever (StackOverflowError that crashed the server) because the mod method getMaximumHomeDistance() collided with the forward rename of the SRG func_110174_bM it calls (now renamed locally); the boss bar of a boss the player left (other dimension) or that unloaded is removed; entities created from a bare spawner/summon tag no longer run the legacy NBT read (the Naga's 'Home' list). Not fixed: purple oversized square particles at a killed Naga's position (issue #190 stays open)."
-  },
-  {
-   "name": "The Twilight Forest",
-   "version": "1.18.2",
-   "mc": "1.5.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored. Real client 2026-11-07: the dimension generates and renders (forest, ponds); the hydra, naga, tower golem and goblin knight spawn and draw with boss bars (the hydra crashed the client with a ClassCastException until EntityLiving.despawnEntity was made server-only). Mob sounds are unknown sound events (#195)."
-  },
-  {
-   "name": "The Twilight Forest",
-   "version": "1.15.4",
-   "mc": "1.4.7",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 144 items, 23 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed. Real client 2026-11-07 (Sodium and the usual performance mods): the client proxy used to fail verification (ModelIronGolem and TileEntityMobSpawnerRenderer were synthesized classes, no ModelBase or renderer); now it loads, the dimension generates (forest, ponds) and its mobs render (docs/screenshots/old-versions/1.4.7). Bosses, labyrinths and the portal were not tried."
-  },
-  {
-   "name": "The Twilight Forest",
    "version": "4.3.2508",
    "mc": "1.20.1",
    "source": "probe",
@@ -27887,6 +28598,33 @@
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Automated client survey: 272 items, 171 blocks, 80 entity types, 20 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 9 missing texture/model log lines; 33 error log lines"
+  },
+  {
+   "name": "The Twilight Forest",
+   "version": "1.15.1",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147tf): 166 items, 22 blocks, 46 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
+  },
+  {
+   "name": "The Twilight Forest",
+   "version": "1.18.2",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152tf): 209 items, 25 blocks, 55 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
+  },
+  {
+   "name": "The Twilight Forest",
+   "version": "1.20.3",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164tf): 222 items, 27 blocks, 57 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
   },
   {
    "name": "The Undergarden",
@@ -28036,6 +28774,33 @@
    "date": "2026-11-16",
    "status": "fails",
    "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: cofh.CoFHCore.clothFireproof:Llegacyconnector.v1_7_10.net.minecraft.block.material.Material;, thermalexpansion.core.gui.TabRedstone.backgroundColor:I, thermalexpansion.energy.gui.TabEngine.backgroundColor:I, thermalexpansion.factory.gui.TabMachineConfig.backgroundColor:I, thermalexpansion.factory.gui.TabMachineEnergy.backgroundColor:I (+2 more)."
+  },
+  {
+   "name": "Thermal Expansion",
+   "version": "2.2.2.2",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147te): 51 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Thermal Expansion",
+   "version": "2.4.2.0",
+   "mc": "1.5.2",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam152te): 112 items, 16 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Thermal Expansion",
+   "version": "3.0.0.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 169 items, 20 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Thermal Extra",
@@ -28828,6 +29593,15 @@
    "date": "2026-11-16",
    "status": "fails",
    "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: cofh.CoFHCore.clothFireproof:Llegacyconnector.v1_7_10.net.minecraft.block.material.Material;, thermalexpansion.core.gui.TabRedstone.backgroundColor:I, thermalexpansion.energy.gui.TabEngine.backgroundColor:I, thermalexpansion.factory.gui.TabMachineConfig.backgroundColor:I, thermalexpansion.factory.gui.TabMachineEnergy.backgroundColor:I (+2 more)."
+  },
+  {
+   "name": "Transport",
+   "version": "2.2.2.2",
+   "mc": "1.4.7",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam147te): 5 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Trash Cans",
@@ -30906,42 +31680,6 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "mod_EE3",
-   "version": "0.0.0-legacy",
-   "mc": "1.2.5",
-   "source": "client",
-   "date": "2026-11-17",
-   "status": "works",
-   "notes": "Self-tested in 1.2.5 dedicated server self test: 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "Applied Energistics",
-   "version": "rv12.a",
-   "mc": "1.6.4",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "fails",
-   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: ic2.api.recipe.IMachineRecipeManager.addRecipe(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.Object;)V, powercrystals.minefactoryreloaded.api.IDeepStorageUnit.setStoredItemType(III)V."
-  },
-  {
-   "name": "AtomicStryker Update Check Mod",
-   "version": "1.1.1",
-   "mc": "1.6.4",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (7 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "PortalGun",
-   "version": "2.0.2",
-   "mc": "1.6.4",
-   "source": "probe",
-   "date": "2026-11-16",
-   "status": "loads",
-   "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: iChunUtil. Everything else it uses links; the mod may still work without it."
   }
  ],
  "hidden": [
