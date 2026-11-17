@@ -577,6 +577,7 @@ public final class EventBridge1710 {
         // Forge's ISpecialArmor: worn pieces that absorb damage by their own rules (ProjectE's matter armour: 80% less damage, none from
         // lava, drowning or mobs) take their share before the modern armour maths runs on what is left.
         gameBus.addListener((LivingIncomingDamageEvent e) -> specialArmor(e));
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post e) -> wearLegacyArmor(e));
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (!wants(forge(), LivingDeathEvent.class)) return;
             if (forge().post(new LivingDeathEvent((EntityLivingBase) EntityBridge.wrap(e.getEntity()), legacySource(e.getSource())))) e.setCanceled(true);
@@ -1195,6 +1196,28 @@ public final class EventBridge1710 {
             net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
     private static int armorTickFailures;
     private static int specialArmorFailures;
+
+    /**
+     * 1.7.10 {@code EntityPlayer.damageArmor}: every worn {@code ItemArmor} loses max(1, damage / 4) durability for a hit that does not
+     * bypass armor. The modern game wears down only {@code ArmorItem}s, which a legacy armor item (an adapter) is not, so mods' armor
+     * (IC2's bronze, Thaumcraft's thaumium) never lost durability. {@code ISpecialArmor} pieces take theirs in {@link #specialArmor}
+     * (Forge's {@code damageArmor} of the piece).
+     */
+    private static void wearLegacyArmor(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post e) {
+        if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player player) || player.level().isClientSide()) return;
+        var source = e.getSource();
+        if (source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR) || e.getOriginalDamage() <= 0.0F) return;
+        int amount = Math.max(1, (int) (e.getOriginalDamage() / 4.0F));
+        for (var slot : ARMOR_SLOTS) {
+            var stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || stack.getItem() instanceof net.minecraft.world.item.ArmorItem || !stack.isDamageableItem()
+                    || !(stack.getItem() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemAdapter adapter)
+                    || !(adapter.legacyItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemArmor)
+                    || adapter.legacyItem() instanceof legacyconnector.v1_7_10.net.minecraftforge.common.ISpecialArmor) continue;
+            if (source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE) && stack.has(net.minecraft.core.component.DataComponents.FIRE_RESISTANT)) continue;
+            stack.hurtAndBreak(amount, player, slot);
+        }
+    }
 
     /** Applies the {@code ISpecialArmor} pieces a living entity wears to incoming damage (1.7.10 slots: 0 boots .. 3 helmet). */
     private static void specialArmor(LivingIncomingDamageEvent e) {

@@ -56,6 +56,11 @@ public class ObfuscationReflectionHelper {
         return ReflectionHelper.findMethod((Class<Object>) clazz, null, new String[] {methodName}, parameterTypes);
     }
 
+    /** The (accessible) constructor of {@code klass} with these parameter types (1.12.2 build 2768+). */
+    public static <T> java.lang.reflect.Constructor<T> findConstructor(Class<T> klass, Class<?>... parameterTypes) {
+        return ReflectionHelper.findConstructor(klass, parameterTypes);
+    }
+
     public static Field findField(Class<?> clazz, String fieldName) {
         return ReflectionHelper.findField(clazz, fieldName);
     }
