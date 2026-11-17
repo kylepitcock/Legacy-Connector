@@ -62,6 +62,30 @@ class SpawnContext1201Test {
     }
 
     @Test
+    void matchingPendingTagIsClaimedByOnlyFirstCreate() {
+        Object entityType = new Object();
+        Object mob = new Object();
+        CompoundTag tag = tag("source", "one-shot");
+
+        try (Scope pending = SpawnContext.pushPending(entityType, tag)) {
+            try (Scope firstCreate = SpawnContext.enterCreate(entityType);
+                 Scope firstActive = SpawnContext.enterActiveFromCreate(mob)) {
+                assertSame(tag, SpawnContext.currentTagFor(mob));
+            }
+
+            // The pending scope remains open until the outer spawn returns, but
+            // the first matching create has claimed it. Later reentrant creates
+            // must not receive the same legacy tag.
+            try (Scope laterCreate = SpawnContext.enterCreate(entityType);
+                 Scope laterActive = SpawnContext.enterActiveFromCreate(mob)) {
+                assertNull(SpawnContext.currentTagFor(mob));
+            }
+        }
+
+        assertNull(SpawnContext.currentTagFor(mob));
+    }
+
+    @Test
     void nestedNullTagShadowsAndThenRestoresOuterActiveTagForSameMob() {
         Object outerType = new Object();
         Object innerType = new Object();
