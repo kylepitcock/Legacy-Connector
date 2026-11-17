@@ -88,6 +88,24 @@ public final class LegacyRendererOverrides {
         return legacy == null ? 0.0 : 1.62F - legacy.yOffset;
     }
 
+    /**
+     * The block (and its position) that fills the screen when the eye is inside it ({@code ScreenEffectRenderer.getOverlayBlock}), sampled at the camera the mod lifted by
+     * {@code raise} instead of at the player's own eye: eight points around the camera, 0.1 apart vertically (1.7.10's {@code isEntityInsideOpaqueBlock}).
+     */
+    public static org.apache.commons.lang3.tuple.Pair<net.minecraft.world.level.block.state.BlockState, net.minecraft.core.BlockPos> overlayBlock(net.minecraft.world.entity.player.Player player, double raise) {
+        var level = player.level();
+        var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int i = 0; i < 8; i++) {
+            double x = player.getX() + ((i >> 0) % 2 - 0.5F) * player.getBbWidth() * 0.8F;
+            double y = player.getEyeY() + raise + ((i >> 1) % 2 - 0.5F) * 0.1F;
+            double z = player.getZ() + ((i >> 2) % 2 - 0.5F) * player.getBbWidth() * 0.8F;
+            pos.set(x, y, z);
+            var state = level.getBlockState(pos);
+            if (state.getRenderShape() != net.minecraft.world.level.block.RenderShape.INVISIBLE && state.isViewBlocking(level, pos)) return org.apache.commons.lang3.tuple.Pair.of(state, pos.immutable());
+        }
+        return null;
+    }
+
     /** The distance of the third person camera the mod set ({@code EntityRenderer.thirdPersonDistance}), or the normal 4. */
     public static float thirdPersonDistance(float normal) {
         var renderer = overriddenRenderer();
