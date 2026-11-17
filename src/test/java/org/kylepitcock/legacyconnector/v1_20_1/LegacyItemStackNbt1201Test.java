@@ -131,6 +131,25 @@ class LegacyItemStackNbt1201Test {
     }
 
     @Test
+    void spawnTagIsPresentWhenOnlyDedicatedEntityComponentsExist() {
+        ItemStack bucketOnly = new ItemStack(Items.COD_BUCKET);
+        CompoundTag bucket = new CompoundTag();
+        bucket.putInt("Age", 42);
+        bucketOnly.set(DataComponents.BUCKET_ENTITY_DATA, CustomData.of(bucket));
+        CompoundTag projectedBucket = ItemStackNbt.getSpawnTag(bucketOnly, RegistryAccess.EMPTY);
+        assertNotNull(projectedBucket);
+        assertEquals(42, projectedBucket.getInt("Age"));
+
+        ItemStack entityOnly = new ItemStack(Items.COD_BUCKET);
+        CompoundTag entity = new CompoundTag();
+        entity.putString("id", "minecraft:cod");
+        entityOnly.set(DataComponents.ENTITY_DATA, CustomData.of(entity));
+        CompoundTag projectedEntity = ItemStackNbt.getSpawnTag(entityOnly, RegistryAccess.EMPTY);
+        assertNotNull(projectedEntity);
+        assertEquals("minecraft:cod", projectedEntity.getCompound("EntityTag").getString("id"));
+    }
+
+    @Test
     void spawnTagProjectsBucketEntityDataEntityDataAndLegacyRootWithoutMutatingStack() {
         ItemStack stack = new ItemStack(Items.COD_BUCKET);
 
