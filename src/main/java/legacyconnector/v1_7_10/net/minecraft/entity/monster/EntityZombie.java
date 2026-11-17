@@ -60,6 +60,22 @@ public class EntityZombie extends EntityMob {
         return dataWatcher.getWatchableObjectByte(13) == 1;
     }
 
+    private legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIBase mcc$breakDoors;
+
+    /** {@code func_146070_a}: lets the zombie break doors down (adds or removes the break-door task). */
+    public void func_146070_a(boolean breakDoors) {
+        getNavigator().setBreakDoors(breakDoors);
+        if (breakDoors) {
+            if (mcc$breakDoors == null) {
+                mcc$breakDoors = new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIBreakDoor(this);
+                tasks.addTask(1, mcc$breakDoors);
+            }
+        } else if (mcc$breakDoors != null) {
+            tasks.removeTask(mcc$breakDoors);
+            mcc$breakDoors = null;
+        }
+    }
+
     public void setVillager(boolean villager) {
         dataWatcher.updateObject(13, (byte) (villager ? 1 : 0));
     }

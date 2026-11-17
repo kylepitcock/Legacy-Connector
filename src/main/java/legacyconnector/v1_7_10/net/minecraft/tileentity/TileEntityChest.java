@@ -70,8 +70,13 @@ public class TileEntityChest extends TileEntity implements IInventory {
         adjacentChestChecked = false;
     }
 
+    /** The chest type: 0 for a normal chest, 1 for a trapped chest (1.7.10 read it from the block). */
+    public int getChestType() {
+        return getBlockType() == legacyconnector.v1_7_10.net.minecraft.init.Blocks.trapped_chest ? 1 : 0;
+    }
+
     public int func_145980_j() {
-        return 0;
+        return getChestType();
     }
 
     @Override

@@ -18,6 +18,12 @@ public class PathFinder {
     public boolean isMovementBlockAllowed;
     public boolean isPathingInWater;
     public boolean canEntityDrown;
+    private final java.util.HashMap<Integer, PathPoint> mcc$points = new java.util.HashMap<>();
+
+    /** The shared point of a position (a search reuses one object per block, as 1.7.10's hash of points did). */
+    public final PathPoint openPoint(int x, int y, int z) {
+        return mcc$points.computeIfAbsent(PathPoint.makeHash(x, y, z), k -> new PathPoint(x, y, z));
+    }
 
     public PathFinder(IBlockAccess world, boolean woodenDoors, boolean movementBlocks, boolean pathInWater, boolean canDrown) {
         this.worldMap = world;

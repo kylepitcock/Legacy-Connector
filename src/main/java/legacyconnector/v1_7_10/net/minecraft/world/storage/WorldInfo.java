@@ -254,6 +254,13 @@ public class WorldInfo {
         return total;
     }
 
+    /** The level data with the given player compound under {@code Player} (1.7.10's {@code cloneNBTCompound}); left out when null. */
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound cloneNBTCompound(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound player) {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = getNBTTagCompound();
+        if (player != null) tag.setTag("Player", player);
+        return tag;
+    }
+
     /** The level data as 1.7.10 saved it ({@code level.dat}'s Data compound): a copy of the detached data, or the live world's values. */
     public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound getNBTTagCompound() {
         if (saved() != null) return (legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound) saved().copy();

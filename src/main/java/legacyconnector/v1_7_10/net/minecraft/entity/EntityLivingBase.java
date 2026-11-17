@@ -381,6 +381,25 @@ public abstract class EntityLivingBase extends Entity {
         if (mcc$entity != null && stack != null) mcc$living().playSound(net.minecraft.sounds.SoundEvents.ITEM_BREAK, 0.8F, 0.8F);
     }
 
+    /** Phantom field: the active effects by potion id; accesses are redirected to {@code mcc$get$activePotionsMap}. */
+    @Deprecated
+    public java.util.HashMap activePotionsMap;
+
+    /** A snapshot map (potion id to effect) of the live effects; entries put into it are applied by the setter. */
+    public static java.util.HashMap mcc$get$activePotionsMap(EntityLivingBase e) {
+        java.util.HashMap<Integer, legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect> map = new java.util.HashMap<>();
+        for (legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect pe : e.getActivePotionEffects()) map.put(pe.getPotionID(), pe);
+        return map;
+    }
+
+    public static void mcc$set$activePotionsMap(EntityLivingBase e, java.util.HashMap v) {
+        e.clearActivePotions();
+        if (v == null) return;
+        for (Object o : v.values()) {
+            if (o instanceof legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect pe) e.addPotionEffect(pe);
+        }
+    }
+
     public boolean isPotionActive(int potionId) {
         return mcc$entity != null && org.kylepitcock.legacyconnector.v1_7_10.bridge.PotionBridge.isActive(mcc$living(), potionId);
     }
