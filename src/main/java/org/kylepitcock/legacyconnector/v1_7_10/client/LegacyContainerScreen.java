@@ -136,6 +136,8 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
                 boolean[] textInput = {false};
                 failed = !ScreenGuard.run(this, () -> textInput[0] = legacy.mcc$keyPressed(legacyKey));
                 if (textInput[0]) return true;
+                // the legacy GuiContainer.keyTyped decides whether the inventory key closes (a text field of the GUI's own keeps it)
+                if (!failed && this.minecraft != null && this.minecraft.options.keyInventory.matches(key, scanCode)) return true;
             }
         }
         return super.keyPressed(key, scanCode, modifiers);
