@@ -85,6 +85,13 @@ if m:
         vanished[k] = int(v or 0)
 selftest = block_p is not None and item_p is not None
 
+# "Runtime problems" section of the report (core.problems.LegacyProblems): `  problems <ns>: missing_texture=2 ... total=N`
+runtime_p = {}
+rt = report.read_text(encoding="utf-8", errors="replace")
+rt = rt[rt.rfind("\nRuntime problems"):] if "\nRuntime problems" in rt else ""
+for m in re.finditer(r"(?m)^  problems (\S+): (.*) total=(\d+)\s*$", rt):
+    runtime_p[m.group(1)] = (int(m.group(3)), re.sub(r"\s*\b\w+=0\b", "", m.group(2)).strip())
+
 results = {}
 for modern, (legacy, name, version) in mods.items():
     items, blocks, entities = content.get(modern, (0, 0, 0))
@@ -105,6 +112,12 @@ for modern, (legacy, name, version) in mods.items():
         notes = (f"Self-tested in {label}: {what}; every block placed and used, every item used, every entity spawned"
                  + (" without errors." if bad == 0 else f"; {bad} threw errors ({share:.0%}).")
                  + (f" {vanished[modern]} blocks did not stay placed." if vanished.get(modern) else ""))
+    rtotal, rwhat = runtime_p.get(modern, (0, ""))
+    if rtotal:
+        # missing textures/models/names and dropped recipes seen while the game ran: a lot of them is not "works"
+        notes += f" Runtime problems: {rtotal} ({rwhat})."
+        if status == "works" and total and rtotal / total >= 0.10:
+            status = "partial"
     results[modern] = {"name": name, "version": version, "mc": mc, "source": "client", "date": date, "status": status, "notes": notes}
 
 data = json.loads(DATA.read_text(encoding="utf-8"))
