@@ -777,13 +777,15 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (legacy == null) return;
-        try {
+        // a throwing writeEntityToNBT must not fail the chunk save: the last good legacy keys are saved instead
+        lastGoodNbt = org.kylepitcock.legacyconnector.core.NbtSaveGuard.guardInPlace(tag, lastGoodNbt, () -> {
             legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
             legacy.mcc$writeCaps(new NBTTagCompound(tag));
-        } catch (RuntimeException | LinkageError e) {
-            Hosts1122.nbtFailure(this, "writing", e);
-        }
+        }, legacy, net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(getType()), blockPosition().toShortString());
     }
+
+    /** The legacy keys of this entity's last successful save (see NbtSaveGuard). */
+    private CompoundTag lastGoodNbt;
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {

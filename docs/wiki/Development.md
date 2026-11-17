@@ -362,6 +362,7 @@ Besides the offline resource check above, the layer records broken content while
 | `no_item_model`, `no_block_model` | a registered item has no inventory model, or a visible block has a blockstate without a model | client, same event |
 | `no_lang_name` | the display name equals the raw translation key (blocks, items, entity types) | client, same event |
 | `dropped_recipe` | a generated recipe was left out because an ingredient is a missing item (or its translation threw) | `RecipeBridge`, `RecipeBridge1122` (client and server) |
+| `nbt_failure` | a legacy tile entity or entity threw (or produced a tag the chunk writer rejects) while saving its NBT; the chunk saved normally with that object's last good data | `NbtSaveGuard` (hosts of every version; server) |
 
 Only plain vanilla-loader models are scanned for textures; models that draw by code (legacy renderers, wrappers) are not asked. Blocks with more than 64 states are sampled.
 
@@ -370,7 +371,7 @@ Section format (one `census` line per mod with registry counts, a `problems` lin
 ```
 Runtime problems (written 2026-11-16T12:00:00; ...)
   census examplemod: blocks=12 blocks_with_model=11 block_entities=2 block_entities_with_renderer=1 entities=3 entities_with_renderer=3 items=30 items_with_model=29
-  problems examplemod: missing_texture=1 missing_model=0 no_item_model=1 no_block_model=1 no_lang_name=0 dropped_recipe=2 total=5
+  problems examplemod: missing_texture=1 missing_model=0 no_item_model=1 no_block_model=1 no_lang_name=0 dropped_recipe=2 nbt_failure=0 total=5
     missing_texture examplemod:thing#facing=north: a face uses the missing texture
     dropped_recipe examplemod:gizmo: an ingredient cannot be expressed (missing item or empty ore name)
 total: 5 problem(s) in 1 mod(s)

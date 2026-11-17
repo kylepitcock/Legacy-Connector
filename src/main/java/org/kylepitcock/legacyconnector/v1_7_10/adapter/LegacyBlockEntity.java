@@ -305,6 +305,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         super.loadAdditional(tag, registries);
         if (tag.contains("legacy")) {
             CompoundTag data = atThisPosition(tag.getCompound("legacy"));
+            lastGood = data;
             if (legacy != null) {
                 try {
                     legacy.readFromNBT(new NBTTagCompound(data));
@@ -336,6 +337,8 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         return data;
     }
 
+    /** The legacy NBT of the last successful save or load (see NbtSaveGuard). */
+    private CompoundTag lastGood;
     private boolean nbtFailureLogged;
 
     /** A legacy tile entity throwing while its NBT is read or written must not crash the chunk load or save; log it once per block entity. */
@@ -350,13 +353,14 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         super.saveAdditional(tag, registries);
         TileEntity te = legacy();
         if (te != null) {
-            NBTTagCompound out = new NBTTagCompound();
-            try {
+            // a throwing writeToNBT (or a tag the chunk writer rejects) must neither fail the chunk save nor wipe the tile's data: save the last good copy
+            CompoundTag fresh = org.kylepitcock.legacyconnector.core.NbtSaveGuard.attempt(() -> {
+                NBTTagCompound out = new NBTTagCompound();
                 te.writeToNBT(out);
-            } catch (RuntimeException | LinkageError e) {
-                logNbtFailure("writing", e);
-            }
-            tag.put("legacy", out.mcc$modern());
+                return out.mcc$modern();
+            }, te, net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(getType()), getBlockPos().toShortString());
+            if (fresh != null) lastGood = fresh;
+            if (lastGood != null) tag.put("legacy", lastGood);
         } else if (pending != null) {
             tag.put("legacy", pending);
         }
