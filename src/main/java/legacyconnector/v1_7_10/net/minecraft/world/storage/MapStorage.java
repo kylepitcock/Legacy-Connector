@@ -21,7 +21,7 @@ public class MapStorage {
 
     public MapStorage(DimensionDataStorage storage) {
         this.storage = storage;
-        migrateLegacyFiles(storage);
+        org.kylepitcock.legacyconnector.core.SavedDataFiles.migrate(storage);
     }
 
     /**
@@ -48,57 +48,8 @@ public class MapStorage {
         return overworld.getDataStorage();
     }
 
-    /**
-     * The file of the saved data {@code name}: {@code data/<name>.dat}, as 1.7.10 named it. Mods find their data by listing that folder
-     * (Mystcraft lists {@code agedata_<id>.dat} at server start to register its ages), so the name must stay the mod's own. Names the
-     * modern game keeps for its own data (maps, id counters, scoreboard, raids ...) and names with odd characters keep the {@code legacy_} prefix.
-     */
     private static String file(String name) {
-        String clean = name.replaceAll("[^a-zA-Z0-9_.-]", "_");
-        return reserved(clean) || !clean.equals(name) ? "legacy_" + clean : clean;
-    }
-
-    private static boolean reserved(String name) {
-        return name.startsWith("legacy_") || name.equals("idcounts") || name.equals("scoreboard") || name.equals("chunks") || name.startsWith("raids")
-                || name.equals("random_sequences") || name.startsWith("command_storage_") || name.matches("map_-?\\d+")
-                || name.startsWith("minecraft") || name.startsWith("neoforge");
-    }
-
-    private static final java.util.Set<java.nio.file.Path> MIGRATED = java.util.concurrent.ConcurrentHashMap.newKeySet();
-
-    /**
-     * Earlier builds saved every legacy data file as {@code legacy_<name>.dat}: renames those to the mod's own name (once per folder)
-     * so a mod that lists its files finds them. A file under the new name wins.
-     */
-    private static void migrateLegacyFiles(DimensionDataStorage storage) {
-        if (storage == null) return;
-        try {
-            java.nio.file.Path folder = null;
-            for (var f : DimensionDataStorage.class.getDeclaredFields()) {
-                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
-                if (f.getType() == java.io.File.class) {
-                    f.setAccessible(true);
-                    folder = ((java.io.File) f.get(storage)).toPath();
-                } else if (f.getType() == java.nio.file.Path.class) {
-                    f.setAccessible(true);
-                    folder = (java.nio.file.Path) f.get(storage);
-                }
-                if (folder != null) break;
-            }
-            if (folder == null || !java.nio.file.Files.isDirectory(folder) || !MIGRATED.add(folder.toAbsolutePath().normalize())) return;
-            try (var files = java.nio.file.Files.list(folder)) {
-                for (java.nio.file.Path p : (Iterable<java.nio.file.Path>) files::iterator) {
-                    String n = p.getFileName().toString();
-                    if (!n.startsWith("legacy_") || !n.endsWith(".dat")) continue;
-                    String name = n.substring("legacy_".length(), n.length() - 4);
-                    if (name.isEmpty() || reserved(name) || !name.equals(name.replaceAll("[^a-zA-Z0-9_.-]", "_"))) continue;
-                    java.nio.file.Path target = folder.resolve(name + ".dat");
-                    if (!java.nio.file.Files.exists(target)) java.nio.file.Files.move(p, target);
-                }
-            }
-        } catch (Exception | LinkageError e) {
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/SavedData").warn("Could not rename the legacy saved data files ({})", e.toString());
-        }
+        return org.kylepitcock.legacyconnector.core.SavedDataFiles.file(name);
     }
 
     /** The saved data, or null if none was saved yet (mods then create it and call {@link #setData}). */

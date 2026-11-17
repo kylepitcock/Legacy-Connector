@@ -48,7 +48,7 @@ public class World implements IBlockAccess {
     /** Phantom: redirected to {@link #mcc$get$provider} (created on first use: mod providers need a usable world). */
     @Deprecated
     public WorldProvider provider;
-    private WorldProvider mcc$provider;
+    private volatile WorldProvider mcc$provider;
     public boolean scheduledUpdatesAreImmediate;
     /** Forge: how far an entity's box may reach past its chunk; collision and selection searches widen by it. */
     public static double MAX_ENTITY_RADIUS = 2.0D;
@@ -165,21 +165,32 @@ public class World implements IBlockAccess {
         if (p != null) return p;
         synchronized (w) {
             if (w.mcc$provider != null) return w.mcc$provider;
+            // the provider being built, for the mod's own registerWorldChunkManager (same thread, the lock is held); other threads (world
+            // generation workers, the level load event) wait for the lock instead of seeing a provider whose controller is not built yet
+            if (w.mcc$building != null) return w.mcc$building;
             Level full = w.mcc$fullLevel();
             WorldProvider created = full == null ? new WorldProvider(Level.OVERWORLD, true, false)
                     : org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.newProvider(full);
-            w.mcc$provider = created;
-            if (full != null && created.worldObj == null) {
-                try {
-                    created.registerWorld(w);
-                } catch (RuntimeException | LinkageError e) {
-                    w.mcc$providerFailed = true;
-                    throw e;
-                }
+            if (full == null || created.worldObj != null) {
+                w.mcc$provider = created;
+                return created;
             }
+            w.mcc$building = created;
+            try {
+                created.registerWorld(w);
+            } catch (RuntimeException | LinkageError e) {
+                w.mcc$providerFailed = true;
+                w.mcc$provider = created; // stays, half built
+                throw e;
+            } finally {
+                w.mcc$building = null;
+            }
+            w.mcc$provider = created;
             return created;
         }
     }
+
+    private WorldProvider mcc$building;
 
     /** True if the mod's world provider threw while being attached to this world (it stays, half built, as {@code provider}). */
     public boolean mcc$providerFailed;
