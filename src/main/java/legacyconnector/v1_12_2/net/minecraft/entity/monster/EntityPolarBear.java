@@ -62,6 +62,15 @@ public class EntityPolarBear extends legacyconnector.v1_12_2.net.minecraft.entit
         return m != null ? m.getStandingAnimationScale(partialTicks) : isStanding() ? 1.0F : 0.0F;
     }
 
+    private int mcc$warningSoundTicks;
+
+    /** The growl that warns before the bear attacks, at most once every two seconds (the bear's tick counts the delay down). */
+    protected void playWarningSound() {
+        if (mcc$warningSoundTicks > 0 && mcc$get$ticksExisted(this) < mcc$warningSoundTicks) return;
+        playSound(legacy(SoundEvents.POLAR_BEAR_WARNING), 1.0F, getSoundPitch());
+        mcc$warningSoundTicks = mcc$get$ticksExisted(this) + 40;
+    }
+
     @Override
     public boolean attackEntityAsMob(legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
         var damage = getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);

@@ -106,6 +106,11 @@ public class RegistryEvent<T extends IForgeRegistryEntry<T>> extends GenericEven
             this.registry = registry;
         }
 
+        /** The 1.12.0 form: the registry's name is given (the name is derived from the registry type, as in {@link #getName()}). */
+        public Register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name, IForgeRegistry<T> registry) {
+            this(registry);
+        }
+
         public IForgeRegistry<T> getRegistry() {
             return registry;
         }

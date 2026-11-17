@@ -72,6 +72,99 @@ public abstract class EntitySpellcasterIllager extends AbstractIllager {
         }
     }
 
+    /** The sound of the cast itself (1.12 abstract hook of the illager's spells; evokers use the cast sound). */
+    protected SoundEvent getSpellSound() {
+        return legacy(SoundEvents.EVOKER_CAST_SPELL);
+    }
+
+    /** Casting: while the spell ticks run the illager stands still and looks at its target (1.12 task, mods start it by their own spell task). */
+    public class AICastingApell extends legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAIBase {
+        public AICastingApell() {
+            setMutexBits(3);
+        }
+
+        @Override
+        public boolean shouldExecute() {
+            return spellTicks > 0;
+        }
+
+        @Override
+        public void startExecuting() {
+            super.startExecuting();
+            getNavigator().clearPath();
+        }
+
+        @Override
+        public void resetTask() {
+            super.resetTask();
+            setSpellType(SpellType.NONE);
+        }
+
+        @Override
+        public void updateTask() {
+            if (getAttackTarget() != null) {
+                getLookHelper().setLookPositionWithEntity(getAttackTarget(), (float) getHorizontalFaceSpeed(), (float) getVerticalFaceSpeed());
+            }
+        }
+    }
+
+    /** A spell task: waits for the cooldown, warms up, casts ({@link #castSpell()}) and starts the cooldown again (verbatim 1.12). */
+    public abstract class AIUseSpell extends legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAIBase {
+        protected int spellWarmup;
+        protected int spellCooldown;
+
+        protected AIUseSpell() {
+            setMutexBits(3);
+        }
+
+        @Override
+        public boolean shouldExecute() {
+            var target = getAttackTarget();
+            if (target == null || !target.isEntityAlive()) return false;
+            if (isSpellcasting()) return false;
+            return legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$ticksExisted(EntitySpellcasterIllager.this) >= spellCooldown;
+        }
+
+        @Override
+        public boolean shouldContinueExecuting() {
+            var target = getAttackTarget();
+            return target != null && target.isEntityAlive() && spellWarmup > 0;
+        }
+
+        @Override
+        public void startExecuting() {
+            spellWarmup = getCastWarmupTime();
+            spellTicks = getCastingTime();
+            spellCooldown = legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$ticksExisted(EntitySpellcasterIllager.this) + getCastingInterval();
+            SoundEvent prepare = getSpellPrepareSound();
+            if (prepare != null) playSound(prepare, 1.0F, 1.0F);
+            setSpellType(getSpellType());
+        }
+
+        @Override
+        public void updateTask() {
+            --spellWarmup;
+            if (spellWarmup == 0) {
+                castSpell();
+                playSound(getSpellSound(), 1.0F, 1.0F);
+            }
+        }
+
+        protected abstract void castSpell();
+
+        protected int getCastWarmupTime() {
+            return 20;
+        }
+
+        protected abstract int getCastingTime();
+
+        protected abstract int getCastingInterval();
+
+        protected abstract SoundEvent getSpellPrepareSound();
+
+        protected abstract SpellType getSpellType();
+    }
+
     @Override
     public IllagerArmPose getArmPose() {
         return isSpellcasting() ? IllagerArmPose.SPELLCASTING : super.getArmPose();

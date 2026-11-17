@@ -38,6 +38,8 @@ public class World implements IBlockAccess {
     private final Level level;
 
     public final boolean isRemote;
+    /** True while the world looks for a player's spawn point (1.12 sets it around its own search; mods read it to skip work). */
+    public boolean findingSpawnPoint;
     public final Random rand = new Random();
     /** 1.12's linear congruential generator state for random block ticks (mods step it: {@code updateLCG * 3 + 1013904223}). */
     protected int updateLCG = new Random().nextInt();

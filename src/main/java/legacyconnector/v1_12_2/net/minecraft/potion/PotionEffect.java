@@ -138,6 +138,11 @@ public class PotionEffect implements Comparable<PotionEffect> {
 
     private java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> mcc$curativeItems;
 
+    /** Applies the potion's effect to the entity once, if it has time left (1.12). */
+    public void performEffect(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        if (duration > 0 && potion != null) potion.performEffect(entity, amplifier);
+    }
+
     /** One tick on an entity: the potion acts when ready, then the duration counts down; false once it ran out. */
     public boolean onUpdate(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
         if (duration > 0) {

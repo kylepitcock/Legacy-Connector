@@ -146,9 +146,60 @@ public class Village {
         return null;
     }
 
+    /** Entities that attacked the village or its villagers and when (game time); they are forgotten after 300 ticks (1.12). */
+    private final java.util.List<Object[]> mcc$aggressors = new java.util.ArrayList<>();
+
+    /** The aggressor of the village nearest to the defender (1.12: the village's recorded attackers that are still alive and recent), or null. */
+    public legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase findNearestVillageAggressor(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase defender) {
+        var level = mcc$level();
+        long now = level == null ? 0L : level.getGameTime();
+        double best = Double.MAX_VALUE;
+        legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase found = null;
+        var it = mcc$aggressors.iterator();
+        while (it.hasNext()) {
+            var rec = it.next();
+            var who = (legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase) rec[0];
+            if (now - (Long) rec[1] > 300L || !who.isEntityAlive()) {
+                it.remove();
+                continue;
+            }
+            double d = who.getDistanceSq(defender);
+            if (d <= best) {
+                found = who;
+                best = d;
+            }
+        }
+        return found;
+    }
+
+    /** The nearest player whose reputation in the village is low enough to be attacked on sight by the village's defender, or null. */
+    public legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer getNearestTargetPlayer(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase defender) {
+        World w = mcc$world;
+        if (w == null || defender == null) return null;
+        double best = Double.MAX_VALUE;
+        legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer found = null;
+        for (var p : World.mcc$get$playerEntities(w)) {
+            if (p == null || !isPlayerReputationTooLow(p.getName()) && !isPlayerReputationTooLow(p.getUniqueID())) continue;
+            double d = p.getDistanceSq(defender);
+            if (d <= best) {
+                found = p;
+                best = d;
+            }
+        }
+        return found;
+    }
+
+    public boolean isPlayerReputationTooLow(java.util.UUID id) {
+        return getPlayerReputation(id) <= -15;
+    }
+
     public void addOrRenewAgressor(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
         var m = entity == null ? null : entity.mcc$entity;
         var level = mcc$level();
+        if (entity != null && level != null) {
+            mcc$aggressors.removeIf(rec -> rec[0] == entity);
+            mcc$aggressors.add(new Object[] {entity, level.getGameTime()});
+        }
         if (m instanceof net.minecraft.world.entity.LivingEntity l && level != null) {
             var c = center.mcc$modern();
             for (var golem : level.getEntitiesOfClass(net.minecraft.world.entity.animal.IronGolem.class, new net.minecraft.world.phys.AABB(c).inflate(villageRadius))) {

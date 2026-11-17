@@ -27,6 +27,8 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
     public long[] tickTimeArray;
     @Deprecated
     public java.io.File anvilFile;
+    /** The server's player-name cache file (1.12: {@code usercache.json} in the server directory). */
+    public static final java.io.File USER_CACHE_FILE = new java.io.File("usercache.json");
     @Deprecated
     public java.util.Hashtable<Integer, long[]> worldTickTimes;
 

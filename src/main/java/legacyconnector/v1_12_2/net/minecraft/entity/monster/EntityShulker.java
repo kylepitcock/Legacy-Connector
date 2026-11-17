@@ -58,6 +58,21 @@ public class EntityShulker extends EntityGolem implements IMob {
         return m != null ? m.getClientPeekAmount(partialTicks) : 0.0F;
     }
 
+    /**
+     * Sets how open the shell is (0 closed, up to 100 fully open): a closed shell takes the armour bonus and plays the close sound, an
+     * opened one the open sound (the modern shulker's own setter does all of it).
+     */
+    public void updateArmorModifier(int peek) {
+        var m = mcc$self();
+        if (m == null) return;
+        try {
+            var method = net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(net.minecraft.world.entity.monster.Shulker.class, "setRawPeekAmount", int.class);
+            method.invoke(m, peek);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // keeps the shell as it is
+        }
+    }
+
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();

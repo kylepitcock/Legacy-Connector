@@ -522,7 +522,8 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     public legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<Entity>[] getEntityLists() {
         var out = new legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap[16];
         for (int i = 0; i < 16; i++) out[i] = new legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<>(Entity.class);
-        if (world != null && world.mcc$level() != null) {
+        if (world != null && world.mcc$levelObject() != null) {
+            // presence check only: the entity query itself is guarded (empty off the server thread)
             int bx = x << 4, bz = z << 4;
             var box = new AxisAlignedBB(bx, -4096, bz, bx + 16, 4096, bz + 16);
             for (Object o : world.getEntitiesWithinAABB(Entity.class, box)) {
