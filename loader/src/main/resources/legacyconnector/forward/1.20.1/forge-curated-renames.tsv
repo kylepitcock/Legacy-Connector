@@ -158,3 +158,4 @@ net/minecraftforge/client/ForgeRenderTypes	net/neoforged/neoforge/client/NeoForg
 net/minecraftforge/common/crafting/conditions/IConditionBuilder	net/neoforged/neoforge/common/conditions/IConditionBuilder
 net/minecraftforge/common/crafting/conditions/ConditionContext	net/neoforged/neoforge/common/conditions/ConditionContext
 net/minecraftforge/gametest/ForgeGameTestHooks	net/neoforged/neoforge/gametest/GameTestHooks
+net/minecraftforge/client/model/ForgeFaceData	net/neoforged/neoforge/client/model/ExtraFaceData

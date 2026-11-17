@@ -26,4 +26,15 @@ public class SaplingGrowTreeEvent extends LevelEvent {
     public RandomSource getRandomSource() {
         return randomSource;
     }
+
+    private net.minecraft.core.Holder<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> feature;
+
+    /** The feature the tree would grow with (never fired here, so only what a handler set). */
+    public net.minecraft.core.Holder<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> getFeature() {
+        return feature;
+    }
+
+    public void setFeature(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> feature) {
+        this.feature = feature;
+    }
 }

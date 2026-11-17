@@ -37,6 +37,10 @@ public abstract class AbstractIngredient extends Ingredient {
     /** The serializer of this ingredient type (1.20.1 had it on {@code Ingredient}). */
     public abstract IIngredientSerializer<? extends Ingredient> getSerializer();
 
+    /** Forge cleared the cached stack list of the ingredient; the stack list is rebuilt on each call here, so there is nothing to drop. */
+    protected void invalidate() {
+    }
+
     /** The 1.20.1 JSON form; subclasses override it. */
     public JsonElement toJson() {
         return new JsonObject();
