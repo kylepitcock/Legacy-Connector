@@ -89,7 +89,11 @@ public final class ForwardMembers {
         else if (p[0].equals("F") && p.length >= 4) fields.put(p[1] + "." + p[2], p[3].strip());
         else if (p[0].equals("R") && p.length >= 5) calls.put(p[1] + "." + p[2] + p[3], p);
         else if (p[0].equals("G") && p.length >= 4) fieldCalls.put(p[1] + "." + p[2], p);
-        else if (p[0].equals("S") && p.length >= 7) fieldSets.put(p[1] + "." + p[2], p);
+        else if (p[0].equals("S") && p.length >= 7) {
+            // S owner field desc helperOwner helper helperDesc: a stray keyword column ("static", copied from a G row) made the helper owner "static"
+            if (p[4].indexOf('/') < 0 || !p[6].startsWith("(")) throw new IllegalStateException("Corrupt S rule in a forward member table: " + line);
+            fieldSets.put(p[1] + "." + p[2], p);
+        }
         else if (p[0].equals("C") && p.length >= 4) ctors.put(p[1] + ".<init>" + p[2], p);
     }
 

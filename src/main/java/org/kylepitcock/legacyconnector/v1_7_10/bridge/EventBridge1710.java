@@ -890,17 +890,35 @@ public final class EventBridge1710 {
     }
 
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
+    /** The connection ClientConnectedToServerEvent was last posted for (once per connection, before its first world or login, whichever comes first). */
+    private static volatile Object connectedPostedFor;
+
+    private static void postClientConnected(net.minecraft.network.Connection connection) {
+        if (connection == null || connectedPostedFor == connection) return;
+        connectedPostedFor = connection;
+        if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent.class)) {
+            fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent(
+                    legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(connection), "MODDED"));
+        }
+    }
+
     public static void registerClient(IEventBus gameBus) {
+        // 1.7.10 posted ClientConnectedToServerEvent when the connection opened, before the first world: a client level that loads
+        // first (joining a world inside a Mystcraft age) must see it too (Mystcraft creates its client-side storage there).
+        gameBus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (LevelEvent.Load e) -> {
+            if (!e.getLevel().isClientSide()) return;
+            var listener = net.minecraft.client.Minecraft.getInstance().getConnection();
+            postClientConnected(listener == null ? null : listener.getConnection());
+        });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingIn e) -> {
             var manager = legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection());
-            if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent.class)) {
-                fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent(manager, "MODDED"));
-            }
+            postClientConnected(e.getConnection());
             FmlChannelBridge.fireHandshake(legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT,
                     legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.get(manager),
                     legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut e) -> {
+            connectedPostedFor = null;
             if (!wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent.class)) return;
             fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent(
                     legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection())));
@@ -927,12 +945,10 @@ public final class EventBridge1710 {
             if (e.getAction() == org.lwjgl.glfw.GLFW.GLFW_REPEAT || net.minecraft.client.Minecraft.getInstance().screen != null) return;
             legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(org.kylepitcock.legacyconnector.v1_7_10.client.KeyCodes.fromGlfw(e.getKey()),
                     e.getAction() == org.lwjgl.glfw.GLFW.GLFW_PRESS, '\0');
-            try {
-                if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent.class)) {
-                    fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent());
-                }
-            } finally {
-                legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(0, false, '\0');
+            // LWJGL 2 kept the last event it had read until the next one: mods poll Keyboard.getEventKey()/getEventKeyState() from tick handlers
+            // (Legends' ability keys, together with KeyBinding.isPressed), so the event is NOT cleared after the KeyInputEvent
+            if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent.class)) {
+                fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent());
             }
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseButton.Post e) -> {
@@ -1086,6 +1102,7 @@ public final class EventBridge1710 {
      * wispy cotton). The modern level runs the weather itself, so only providers that declare their own are called.
      */
     private static void providerWeather(net.minecraft.world.level.Level level) {
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && isTemplateDimension(sl)) return;
         World world = World.mcc$wrap(level);
         var provider = world == null ? null : World.mcc$get$provider(world);
         if (provider == null || !OWN_WEATHER.get(provider.getClass())) return;

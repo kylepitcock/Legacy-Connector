@@ -11,3 +11,13 @@ net/minecraft/block/Block	isProvidingWeakPower	(Lnet/minecraft/world/IBlockAcces
 net/minecraft/block/Block	isProvidingStrongPower	(Lnet/minecraft/world/IBlockAccess;IIII)Z	isProvidingStrongPower	(Lnet/minecraft/world/IBlockAccess;IIII)I
 # 1.4.7 onBlockPlacedBy had no ItemStack (1.5 added it): the override is called with the 1.7.10 shaped arguments, the stack dropped
 net/minecraft/block/Block	onBlockPlacedBy	(Lnet/minecraft/world/World;IIILnet/minecraft/entity/EntityLivingBase;)V	onBlockPlacedBy	(Lnet/minecraft/world/World;IIILnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/item/ItemStack;)V
+# --- 1.4.7 hooks that returned nothing (void) where 1.5 asks whether the event was handled: the bridge answers true
+net/minecraft/block/Block	onBlockEventReceived	(Lnet/minecraft/world/World;IIIII)V	onBlockEventReceived	(Lnet/minecraft/world/World;IIIII)Z
+net/minecraft/tileentity/TileEntity	receiveClientEvent	(II)V	receiveClientEvent	(II)Z
+net/minecraft/world/WorldProvider	getMoonPhase	(JF)I	getMoonPhase	(J)I
+net/minecraft/entity/IRangedAttackMob	attackEntityWithRangedAttack	(Lnet/minecraft/entity/EntityLivingBase;)V	attackEntityWithRangedAttack	(Lnet/minecraft/entity/EntityLivingBase;F)V
+# the 1.4.7 command hook has no argument array: parameter 1 of the new one is the index
+net/minecraft/command/ICommand	isUsernameIndex	(I)Z	isUsernameIndex	([Ljava/lang/String;I)Z	1
+net/minecraft/command/CommandBase	isUsernameIndex	(I)Z	isUsernameIndex	([Ljava/lang/String;I)Z	1
+net/minecraft/entity/player/EntityPlayer	displayGUIEnchantment	(III)V	displayGUIEnchantment	(IIILjava/lang/String;)V
+net/minecraft/entity/player/EntityPlayer	displayGUIMerchant	(Lnet/minecraft/entity/IMerchant;)V	displayGUIMerchant	(Lnet/minecraft/entity/IMerchant;Ljava/lang/String;)V

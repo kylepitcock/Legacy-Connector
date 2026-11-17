@@ -239,7 +239,7 @@ public final class Forge1201Transformer {
                     ClassNode node = new ClassNode();
                     new ClassReader(in.readAllBytes()).accept(new ClassRemapper(node, mapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                     var info = new org.kylepitcock.legacyconnector.loader.shim.ClassInfo(node.name, node.superName, List.copyOf(node.interfaces), node.access);
-                    for (MethodNode m : node.methods) if (watched.contains(m.name)) info.methods.put(m.name + m.desc, m.access);
+                    for (MethodNode m : node.methods) if (watched.contains(m.name) || m.name.equals("getCapability")) info.methods.put(m.name + m.desc, m.access);
                     out.add(info);
                 } catch (RuntimeException ex) {
                     // reported when the jar itself is translated
@@ -303,7 +303,6 @@ public final class Forge1201Transformer {
         Datagen1201.Stats datagen = Datagen1201.apply(nodes);
         if (datagen.classes + datagen.methods > 0) result.notes.add("Data generation code dropped (dead in a running game): " + datagen);
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
-        java.util.concurrent.atomic.AtomicInteger modelLocationSites = new java.util.concurrent.atomic.AtomicInteger();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         mixinStats.refmaps = org.kylepitcock.legacyconnector.loader.transform.mixin1201.Refmaps.parse(other);
         Set<String> jarClasses = new HashSet<>();
@@ -316,12 +315,11 @@ public final class Forge1201Transformer {
         Map<String, ClassNode> nodeByName = new java.util.HashMap<>();
         for (ClassNode node : nodes) nodeByName.put(node.name, node);
         // super.getCapability(...) naming a class of the jar that does not declare it (nor an ancestor of the jar): Minecraft's parent has none either
+        java.util.Set<String> peerNames = peers == null ? java.util.Set.of() : peers.keySet();
         java.util.function.BiPredicate<String, String> baseIsMinecraft = (owner, desc) -> {
-            if (!nodeByName.containsKey(owner) || hierarchy.reachesUnknown(owner)) return false;
-            for (String c = owner; c != null && nodeByName.containsKey(c); c = nodeByName.get(c).superName) {
-                for (org.objectweb.asm.tree.MethodNode m : nodeByName.get(c).methods) if (m.name.equals("getCapability") && m.desc.equals(desc)) return false;
-            }
-            return true;
+            if (!nodeByName.containsKey(owner) && !peerNames.contains(owner)) return false;
+            // no class of this jar or of the other jars of the set declares it: Minecraft's parent has none either (an unknown class above is no answer)
+            return hierarchy.declaredIn(owner, "getCapability", desc) == Mc1201Hierarchy.Origin.MINECRAFT;
         };
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
@@ -386,6 +384,7 @@ public final class Forge1201Transformer {
             if (modEvents.test(node.name) && ForgeApiRewrites1201.markCancelable(node)) viaCalls++;
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
+            if (ForgeApiRewrites1201.fixBurnTime(node)) viaCalls++;
             rewrites += viaCalls;
             // Replace the removed SkinTextureCallback API before the generic soft-link pass.
             int palladiumPlayerSkinFetcherChange = PalladiumPlayerSkinFetcher1201.apply(node);
@@ -396,8 +395,10 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
-            int modelLocationChange = ModelLocation1201.apply(node);
-            modelLocationSites.addAndGet(modelLocationChange);
+            int forgeBusDefaults = ForgeBusDefault1201.apply(node, hierarchy, shim);
+            int vertexBridges = VertexConsumerBridge1201.apply(node);
+            rewrites += RegistryBufBridge1201.apply(node, hierarchy);
+            if (forgeBusDefaults > 0) result.notes.add(node.name.replace('/', '.') + ": " + forgeBusDefaults + " handler(s) of mod bus events on the default (FORGE) bus of @Mod.EventBusSubscriber never ran in Forge 1.20.1 and are inert here too");
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
@@ -432,7 +433,7 @@ public final class Forge1201Transformer {
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
             int mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, modelLocationChange + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+            migrated.put(node, vertexBridges + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
@@ -558,7 +559,6 @@ public final class Forge1201Transformer {
             result.softSymbols.addAll(soft.stats.symbolList());
         }
         if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
-        if (modelLocationSites.get() > 0) result.notes.add("ModelResourceLocation used as a ResourceLocation (a record in 1.21.1): " + modelLocationSites + " site(s) converted with id()");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (mc.widgetNarrationOverrides > 0) {
             result.notes.add("Minecraft 1.20.1 AbstractWidget.updateNarration() overrides migrated to the 1.21.1 updateWidgetNarration() hook: "
@@ -721,6 +721,9 @@ public final class Forge1201Transformer {
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
         if (dataStats.total() > 0) result.notes.add("Data and resources converted to the 1.21.1 formats: " + dataStats);
+        int[] shaderFiles = {0};
+        outResources = new LinkedHashMap<>(Shaders1201.convertAll(outResources, shaderFiles));
+        if (shaderFiles[0] > 0) result.notes.add("Core shaders given the 1.20.1 fog_distance overload: " + shaderFiles[0] + " file(s)");
         FunctionConverter1201.Stats functionStats = new FunctionConverter1201.Stats();
         outResources = new LinkedHashMap<>(FunctionConverter1201.convertAll(outResources, functionStats));
         if (functionStats.changedFiles > 0) {

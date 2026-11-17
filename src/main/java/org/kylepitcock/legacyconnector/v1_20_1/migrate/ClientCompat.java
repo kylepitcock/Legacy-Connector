@@ -68,6 +68,12 @@ public final class ClientCompat {
         return net.minecraft.client.renderer.MultiBufferSource.immediate(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256));
     }
 
+    /** {@code MultiBufferSource.immediateWithBuffers(Map, BufferBuilder)}: the per-layer builders and the fallback are byte buffers now (the old builders only supplied memory, layers get theirs on demand). */
+    public static net.minecraft.client.renderer.MultiBufferSource.BufferSource immediateWithBuffers(
+            java.util.Map<net.minecraft.client.renderer.RenderType, CompatBufferBuilder> ignoredMap, CompatBufferBuilder ignored) {
+        return net.minecraft.client.renderer.MultiBufferSource.immediateWithBuffers(new java.util.LinkedHashMap<>(), new com.mojang.blaze3d.vertex.ByteBufferBuilder(256));
+    }
+
     /** {@code DefaultPlayerSkin.getDefaultSkin(UUID)}: the skin texture of the default skin for that id. */
     public static net.minecraft.resources.ResourceLocation getDefaultSkin(java.util.UUID id) {
         return net.minecraft.client.resources.DefaultPlayerSkin.get(id).texture();

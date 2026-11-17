@@ -6992,8 +6992,8 @@
    "mc": "1.12.2",
    "source": "probe",
    "date": "2026-11-13",
-   "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (529 classes). But 32 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Not supported: replaces the whole vanilla chunk storage, world generation and lighting with 3D cubes (coremod and mixins into the core of the world). It bundles its own Mixin, so from mods/ NeoForge stops at start-up with a module resolution error (see Troubleshooting); from mods/1.12.2/ the layer skips it with a message."
   },
   {
    "name": "Cucumber Library",

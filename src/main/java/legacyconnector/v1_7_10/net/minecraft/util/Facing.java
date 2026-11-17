@@ -7,4 +7,9 @@ public class Facing {
     public static final int[] offsetsYForSide = {-1, 1, 0, 0, 0, 0};
     public static final int[] offsetsZForSide = {0, 0, -1, 1, 0, 0};
     public static final String[] facings = {"DOWN", "UP", "NORTH", "SOUTH", "WEST", "EAST"};
+
+    // Members125 batch 2
+
+    /** 1.4.7 and 1.2.5 called the table of opposite sides {@code faceToSide}. */
+    public static final int[] faceToSide = oppositeSide;
 }

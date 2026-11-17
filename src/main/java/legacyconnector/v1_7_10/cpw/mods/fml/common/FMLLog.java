@@ -74,6 +74,11 @@ public final class FMLLog {
         log(Level.DEBUG, format, data);
     }
 
+    /** java.util.logging's FINEST: below FINER, so it maps to log4j's TRACE like {@link #finer}. */
+    public static void finest(String format, Object... data) {
+        log(Level.TRACE, format, data);
+    }
+
     public static void finer(String format, Object... data) {
         log(Level.TRACE, format, data);
     }

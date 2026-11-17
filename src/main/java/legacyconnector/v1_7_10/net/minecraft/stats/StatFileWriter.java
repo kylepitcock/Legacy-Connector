@@ -87,4 +87,11 @@ public class StatFileWriter {
         if (stat instanceof Achievement a && hasAchievementUnlocked(a)) return Math.max(1, mcc$values.getOrDefault(stat.statId, 0));
         return mcc$values.getOrDefault(stat.statId, 0);
     }
+
+    // Members125 batch 3
+
+    /** 1.2.5 {@code readStat(stat, value)}: sets a statistic to a value read from the saved statistics. */
+    public void readStat(StatBase stat, int value) {
+        func_150873_a(null, stat, value);
+    }
 }

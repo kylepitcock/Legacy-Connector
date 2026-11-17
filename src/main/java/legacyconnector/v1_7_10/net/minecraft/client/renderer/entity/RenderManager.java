@@ -156,4 +156,12 @@ public class RenderManager {
     private static double lerp(double from, double to, float t) {
         return from + (to - from) * t;
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's form (no pointed entity: it came with 1.3's debug view). */
+    public void cacheActiveRenderInfo(World world, TextureManager textures, FontRenderer font, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase viewer,
+            legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings, float partialTicks) {
+        cacheActiveRenderInfo(world, textures, font, viewer, null, settings, partialTicks);
+    }
 }

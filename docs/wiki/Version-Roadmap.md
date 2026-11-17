@@ -13,7 +13,7 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 7 | 1.19.2 | Planned | Big modpack base, many mods stopped here | 1.19.2 to 1.20.1 renames and diffs on top of the 1.20.1 pipeline; measured 2026-11-16: mostly changed API, not renames ([estimate](Legacy-1.19.2-Estimate.md)) |
 | 8 | 1.18.2 | Planned | Same | Same, one step further back |
 | 9 | 1.16.5 | Planned | Many abandoned mods and packs; Forge 36 still used MCP names | Same pipeline plus the MCP to Mojang names step |
-| 10 | 1.2.5 | **Experimental, opt-in** (pulled forward by the maintainer on 2026-11-16, ahead of 1.19.2). Three small server builds load (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Not a new shim: Calamus + Feather mappings join the 1.2.5 names to the 1.4.7 layer, plus a `ModLoader`/`BaseMod`/ModLoaderMP/Forge 3.x facade ([design and status](Legacy-1.2.5.md), [corpus](Legacy-1.2.5-Corpus.md)) |
+| 10 | 1.2.5 | **Experimental, off by default (`experimental.minecraft125`)** (pulled forward by the maintainer on 2026-11-16, ahead of 1.19.2). Three small server builds load (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Not a new shim: Calamus + Feather mappings join the 1.2.5 names to the 1.4.7 layer, plus a `ModLoader`/`BaseMod`/ModLoaderMP/Forge 3.x facade ([design and status](Legacy-1.2.5.md), [corpus](Legacy-1.2.5-Corpus.md)) |
 
 ## Release 0.5.0
 

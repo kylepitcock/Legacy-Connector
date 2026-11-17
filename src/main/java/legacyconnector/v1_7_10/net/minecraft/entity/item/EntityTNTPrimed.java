@@ -50,4 +50,11 @@ public class EntityTNTPrimed extends Entity {
     protected void writeEntityToNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
         tag.setByte("Fuse", (byte) fuse);
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's constructor (the igniter did not exist before 1.4). */
+    public EntityTNTPrimed(World world, double x, double y, double z) {
+        this(world, x, y, z, null);
+    }
 }
