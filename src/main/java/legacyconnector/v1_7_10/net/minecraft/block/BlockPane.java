@@ -170,4 +170,11 @@ public class BlockPane extends legacyconnector.v1_7_10.net.minecraft.block.Block
     public boolean canPaneConnectTo(IBlockAccess world, int x, int y, int z, ForgeDirection direction) {
         return canPaneConnectToBlock(world.getBlock(x, y, z)) || world.isSideSolid(x, y, z, direction.getOpposite(), false);
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's {@code canThisPaneConnectToThisBlockID(id)}: whether a pane connects to the block with this id (glass, full blocks, other panes). */
+    public boolean canThisPaneConnectToThisBlockID(int id) {
+        return canPaneConnectToBlock(Block.getBlockById(id));
+    }
 }

@@ -817,28 +817,50 @@ def mc125Inputs = [
         mc125FeatherServer: '12d18726cbe65d5ca81e341aaa5458d2beb461fb44ee9dedca329ab17999960b',
         mc147Calamus      : 'ea236e1a1f6f6bf005a7bbe165c7c16c1f04eec6590b868d5a4879ce71271c37',
         mc147Feather      : '6353f8c8d066999cba4c5abc6585bee7fcaccb007d5197f05c77e50b12c2c092']
+// Shipped builds: bundleJar / installBundle (what nightly.yml, release.yml and publish.yml run) carry the table unless -PnoMappings125 is given,
+// LENIENTLY: when maven.ornithemc.net or the pinned inputs are unavailable the build goes on without the table and prints one warning
+// (the toggle experimental.minecraft125 then reports "no 1.2.5 name table"). -Pmappings125 stays the strict developer flag (failure fails the build).
+def mc125Strict = project.hasProperty('mappings125')
+def mc125Lenient = !mc125Strict && !project.hasProperty('noMappings125') && gradle.startParameter.taskNames.any { it.endsWith('bundleJar') || it.endsWith('installBundle') }
+rootProject.ext.mc125Warned = false
+def mc125Warn = { String why ->
+    rootProject.ext.mc125Warned = true
+    logger.warn("WARNING: the Minecraft 1.2.5 name table is NOT in this build (${why}); experimental.minecraft125 will report 'no 1.2.5 name table'. Build with network access to maven.ornithemc.net to include it, or pass -PnoMappings125 to silence this.")
+}
 tasks.register('genMappings125', JavaExec) {
     group = 'legacy'
-    description = 'Opt-in: joins Ornithe Calamus+Feather 1.2.5 (client, server) with 1.4.7 into build/generated/mappings125 (notch-to-147.tsv, join-report.txt).'
+    description = 'Joins Ornithe Calamus+Feather 1.2.5 (client, server) with 1.4.7 into build/generated/mappings125 (notch-to-147.tsv, join-report.txt); dependency of the jar with -Pmappings125 (strict) or of bundleJar (lenient).'
     dependsOn tasks.named('classes')
     classpath = sourceSets.main.output + configurations.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Mc125Mappings'
     def outDir = layout.buildDirectory.dir('generated/mappings125')
     outputs.dir(outDir)
+    ignoreExitValue = mc125Lenient
+    if (mc125Lenient) doFirst { outDir.get().file('legacyconnector/mappings/1.2.5/notch-to-147.tsv').asFile.delete() }
     argumentProviders.add({
-        def files = mc125Inputs.collect { name, sha ->
-            def f = configurations.getByName(name).singleFile
-            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString()
-            if (actual != sha) throw new GradleException("${name}: ${f.name} has SHA-256 ${actual}, expected ${sha}")
-            println "${name}: ${f.name} SHA-256 ${actual}"
-            f.absolutePath
+        try {
+            def files = mc125Inputs.collect { name, sha ->
+                def f = configurations.getByName(name).singleFile
+                def actual = java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString()
+                if (actual != sha) throw new GradleException("${name}: ${f.name} has SHA-256 ${actual}, expected ${sha}")
+                println "${name}: ${f.name} SHA-256 ${actual}"
+                f.absolutePath
+            }
+            return files + [outDir.get().asFile.absolutePath]
+        } catch (Throwable t) {
+            if (!mc125Lenient) throw t
+            mc125Warn("inputs not available: ${t.message ?: t.class.simpleName}")
+            return ['--skip', outDir.get().asFile.absolutePath]
         }
-        files + [outDir.get().asFile.absolutePath]
     } as CommandLineArgumentProvider)
+    doLast {
+        def table = outDir.get().file('legacyconnector/mappings/1.2.5/notch-to-147.tsv').asFile
+        if (mc125Lenient && !table.isFile() && !rootProject.ext.mc125Warned) mc125Warn('the join did not produce a table')
+    }
 }
 tasks.named('jar') { dependsOn genBetaMappings; from(betaMappingsDir) }
 // -Pmappings125 puts the 1.2.5 to 1.4.7 table into the loader jar (needed by -Dlegacyconnector.mc125=true at run time); a default build has none
-if (project.hasProperty('mappings125')) {
+if (mc125Strict || mc125Lenient) {
     tasks.named('jar') {
         dependsOn tasks.named('genMappings125')
         from(layout.buildDirectory.dir('generated/mappings125')) { include 'legacyconnector/**' }

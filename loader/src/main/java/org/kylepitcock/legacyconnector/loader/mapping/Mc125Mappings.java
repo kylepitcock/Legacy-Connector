@@ -128,6 +128,14 @@ public final class Mc125Mappings {
         return n;
     }
 
+    /** {@code kind|readable name} of every member of an official class. */
+    static java.util.Set<String> memberNames(Names n, String official) {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        String owner = n.classes.get(official);
+        for (String[] m : n.members) if (m[1].equals(official)) out.add(m[0] + "|" + memberName(m, owner));
+        return out;
+    }
+
     /** The readable member name of a {@link Names#members} row (its key is {@code owner.name desc}). */
     static String memberName(String[] row, String ownerReadable) {
         return row[4].substring(ownerReadable.length() + 1, row[4].indexOf(' ', ownerReadable.length()));
@@ -150,6 +158,11 @@ public final class Mc125Mappings {
      * args: calamus1.2.5-client feather1.2.5-client calamus1.2.5-server feather1.2.5-server calamus1.4.7 feather1.4.7 outDir
      */
     public static void main(String[] args) throws IOException {
+        if (args.length == 2 && args[0].equals("--skip")) {
+            // lenient bundle build whose inputs could not be fetched: leave no (possibly stale) table behind
+            Files.deleteIfExists(Path.of(args[1]).resolve("legacyconnector/mappings/1.2.5/notch-to-147.tsv"));
+            return;
+        }
         if (args.length != 7) throw new IllegalArgumentException("usage: <calamus125c> <feather125c> <calamus125s> <feather125s> <calamus147> <feather147> <outDir>");
         Names v147 = load(Path.of(args[4]), Path.of(args[5]));
         Map<String, String> readableTo147 = new HashMap<>();
@@ -157,7 +170,12 @@ public final class Mc125Mappings {
         // 1.4.7 members by owner, kind and readable name: the fallback for members whose descriptor changed in a game class type (see the join in main)
         Map<String, String> read147 = new HashMap<>(); // official owner|name|desc of 1.4.7 to its readable name
         for (String[] m : v147.members) read147.put(m[1] + "|" + m[2] + "|" + m[3], memberName(m, v147.classes.get(m[1])));
-        StringBuilder nameChanges = new StringBuilder(), rejectedChanges = new StringBuilder();
+        StringBuilder nameChanges = new StringBuilder(), rejectedChanges = new StringBuilder(), classChanges = new StringBuilder(), classRejected = new StringBuilder();
+        final char T = (char) 9, LF = (char) 10;
+        java.util.Set<String> reviewedClasses = new java.util.HashSet<>();
+        try (InputStream in = Mc125Mappings.class.getResourceAsStream("/legacyconnector/mappings/1.2.5/reviewed-class-pairs.tsv")) {
+            if (in != null) for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("" + LF)) if (!line.startsWith("#") && !line.isBlank()) reviewedClasses.add(line.replace("" + (char) 13, ""));
+        }
         java.util.Set<String> reviewed = new java.util.HashSet<>();
         try (InputStream in = Mc125Mappings.class.getResourceAsStream("/legacyconnector/mappings/1.2.5/reviewed-name-changes.tsv")) {
             if (in != null) for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) if (!line.startsWith("#") && !line.isBlank()) reviewed.add(line.replace("\r", ""));
@@ -167,7 +185,9 @@ public final class Mc125Mappings {
             if (in != null) {
                 for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
                     String[] p = line.replace("\r", "").split("\t");
-                    if (p.length == 4 && !line.startsWith("#")) aliases.put(p[0] + " " + p[1] + "." + p[2], p[3]);
+                    if (p.length == 3 && p[0].equals("s")) aliases.put("s " + p[1], p[2]); // a class of the shim with a name of its own
+                    else if (p.length == 4 && p[0].equals("s")) { aliases.put("s " + p[1], p[2]); aliases.put("S " + p[1], p[3]); } // ... and the readable 1.2.5 class whose supertypes it has
+                    else if (p.length == 4 && !line.startsWith("#")) aliases.put(p[0] + " " + p[1] + "." + p[2], p[3]);
                     else if (p.length == 3 && p[0].equals("c")) aliases.put("c " + p[1], p[2]); // a class that took over another one's role
                 }
             }
@@ -187,11 +207,41 @@ public final class Mc125Mappings {
                 int classesJoined = 0, membersJoined = 0, membersTotal = 0, joinedByErasure = 0, joinedByName = 0, joinedByInter = 0, joinedByAlias = 0;
                 Map<String, int[]> areaClasses = new TreeMap<>(); // area -> {classes, joined, members, joined members}
                 Map<String, List<String>> lostClasses = new TreeMap<>();
-                Map<String, String> class147 = new HashMap<>();
+                Map<String, String> class147 = new HashMap<>(), shimClasses = new HashMap<>();
                 for (var e : v125.classes.entrySet()) {
                     String readable = e.getValue();
                     String off147 = readableTo147.get(readable);
-                    if (off147 == null) off147 = v147.officialByInter.get(v125.interOf.get(e.getKey())); // same intermediary class, other readable name
+                    if (off147 == null) {
+                        // same Calamus intermediary id, other readable name or package. Intermediary ids are reused for other things (15 of 20 member joins by id were wrong), so a class pair is accepted
+                        // only when the members confirm it: at least half of the 1.2.5 class's readable members exist by name in the 1.4.7 class (all of them for a class of at most two members),
+                        // or somebody reviewed the pair (reviewed-class-pairs.tsv)
+                        String cand = v147.officialByInter.get(v125.interOf.get(e.getKey()));
+                        if (cand != null) {
+                            java.util.Set<String> mine = memberNames(v125, e.getKey()), theirs = memberNames(v147, cand);
+                            long common = mine.stream().filter(theirs::contains).count();
+                            double share = mine.isEmpty() ? 1.0 : common / (double) mine.size();
+                            String pair = readable + T + v147.classes.get(cand);
+                            boolean ok = mine.size() <= 2 ? common == mine.size() : share >= 0.5;
+                            if (reviewedClasses.contains(pair)) {
+                                off147 = cand;
+                                classChanges.append(sides[s]).append(T).append(pair).append(T).append(Math.round(share * 100)).append(T).append("reviewed").append(LF);
+                            } else {
+                                // a plausible pair nobody reviewed yet ("unreviewed": the audit test fails until it is looked at and added to reviewed-class-pairs.tsv), or one the members do not confirm ("weak")
+                                classRejected.append(sides[s]).append(T).append(pair).append(T).append(Math.round(share * 100)).append(T).append(ok ? "unreviewed" : "weak").append(LF);
+                            }
+                        }
+                    }
+                    // a class the shim has under a name of its own (BossEntity is net/minecraft/src/EntityDragonBase): the members are looked up there by their Feather names
+                    if (off147 == null && aliases.containsKey("s " + readable)) {
+                        off147 = aliases.get("s " + readable);
+                        shimClasses.put(e.getKey(), off147);
+                        String superReadable = aliases.get("S " + readable);
+                        if (superReadable != null) {
+                            for (var other : v125.classes.entrySet()) {
+                                if (other.getValue().equals(superReadable)) table.write("S" + T + sides[s] + T + e.getKey() + T + other.getKey() + LF);
+                            }
+                        }
+                    }
                     if (off147 == null && aliases.containsKey("c " + readable)) off147 = readableTo147.get(aliases.get("c " + readable)); // curated: the class that took the role over
                     int[] a = areaClasses.computeIfAbsent(area(readable), k -> new int[4]);
                     a[0]++;
@@ -211,7 +261,7 @@ public final class Mc125Mappings {
                     int[] a = areaClasses.computeIfAbsent(area(ownerReadable), k -> new int[4]);
                     a[2]++;
                     boolean method = m[0].equals("m");
-                    String[] to = (method ? v147.methods : v147.fields).get(m[4]);
+                    String[] to = shimClasses.containsKey(m[1]) ? new String[] {shimClasses.get(m[1]), memberName(m, ownerReadable), mapDesc(m[3], class147)} : (method ? v147.methods : v147.fields).get(m[4]);
                     if (to == null && class147.containsKey(m[1])) {
                         // the same member as in 1.4.7 under another readable name or with other class types: Calamus gave it the same intermediary name in both versions
                         to = v147.byInter.get(m[0] + "|" + m[5] + "|" + m[6]);
@@ -365,6 +415,8 @@ public final class Mc125Mappings {
         }
         Files.writeString(out.resolve("join-report.txt"), report.toString(), StandardCharsets.UTF_8);
         Files.writeString(out.resolve("join-name-changes.tsv"), nameChanges.toString(), StandardCharsets.UTF_8);
+        Files.writeString(out.resolve("join-class-changes.tsv"), classChanges.toString(), StandardCharsets.UTF_8);
+        Files.writeString(out.resolve("join-class-rejected.tsv"), classRejected.toString(), StandardCharsets.UTF_8);
         Files.writeString(out.resolve("join-name-rejected.tsv"), rejectedChanges.toString(), StandardCharsets.UTF_8);
         System.out.println("1.2.5 to 1.4.7 join written to " + out.toAbsolutePath());
         System.out.print(report.substring(0, Math.min(report.length(), 600)));

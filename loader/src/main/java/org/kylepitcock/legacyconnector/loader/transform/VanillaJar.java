@@ -21,8 +21,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Finds the original Minecraft client jar of a legacy version, which {@link CoremodHookScan} shows to legacy coremods. Legacy Connector does not ship
  * Minecraft's code: the jar is taken from where a launcher keeps it, from {@code .legacyconnector/vanilla/client-<version>.jar}, from the path in
- * {@code coremods.vanillaJar} (a jar, or a folder of {@code client-<version>.jar} / {@code <version>.jar} files), or (only with
- * {@code coremods.downloadVanilla=true}) downloaded once from Mojang's own server. Only the exact official file is accepted (SHA-1).
+ * {@code coremods.vanillaJar} (a jar, or a folder of {@code client-<version>.jar} / {@code <version>.jar} files), or, when none of those has it,
+ * downloaded once from Mojang's own server ({@code coremods.downloadVanilla}, on by default; {@code false} turns the download off). Only the exact
+ * official file is accepted (SHA-1).
  */
 public final class VanillaJar {
     private static final Logger LOG = LoggerFactory.getLogger("Legacy Connector");
@@ -85,7 +86,7 @@ public final class VanillaJar {
                 LOG.debug("Legacy Connector: {} could not be read: {}", p, e.toString());
             }
         }
-        if ("true".equalsIgnoreCase(config.getProperty("coremods.downloadVanilla", "false").trim())) {
+        if ("true".equalsIgnoreCase(config.getProperty("coremods.downloadVanilla", "true").trim())) {
             try {
                 Files.createDirectories(own.getParent());
                 Path part = own.resolveSibling(own.getFileName() + ".part");
@@ -106,7 +107,7 @@ public final class VanillaJar {
             }
         }
         LOG.info("Legacy Connector: legacy coremods that patch Minecraft's own classes are present, but the original Minecraft {} client jar was not found, so "
-                + "their hooks in Minecraft's code are not replayed. Install {} once in your launcher, copy its jar to {}, or set coremods.downloadVanilla=true.", mc, mc, own);
+                + "their hooks in Minecraft's code are not replayed. Install {} once in your launcher or copy its jar to {} (the download from Mojang is switched off or did not succeed: coremods.downloadVanilla).", mc, mc, own);
         return null;
     }
 

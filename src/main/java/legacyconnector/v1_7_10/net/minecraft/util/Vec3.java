@@ -108,4 +108,10 @@ public class Vec3 {
     public net.minecraft.world.phys.Vec3 mcc$modern() {
         return new net.minecraft.world.phys.Vec3(xCoord, yCoord, zCoord);
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code Vec3.resetPool()}: vectors are not pooled in this layer, so there is nothing to reset. */
+    public static void mcc125$resetPool() {
+    }
 }

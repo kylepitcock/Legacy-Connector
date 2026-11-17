@@ -5,7 +5,7 @@
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop mods built for Minecraft 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1 or
-Beta 1.7.3 into the folder of their version next to this mod. They are translated when the game loads and run as normal NeoForge mods, the
+Beta 1.7.3 into the folder of their version next to this mod (Minecraft 1.2.5 is an experiment you can switch on, see the table). They are translated when the game loads and run as normal NeoForge mods, the
 same way [Sinytra Connector](https://github.com/Sinytra/Connector) runs Fabric mods on NeoForge. The original jars are never modified. The
 point is mods that **only exist on these old versions** and never got a 1.21.1 port. Legacy content enters the game through the hooks a
 modern mod uses (biomes, placed features, loot tables, village pools, capabilities, data packs), so it works with the pack's other mods and
@@ -29,17 +29,19 @@ same as "works in play"; per-mod results are on the compatibility site. Details 
 | 1.4.7 | `mods/1.4.7/` | Alpha | RedPower 2, BuildCraft, ComputerCraft and Applied Energistics run in a real client | 45 of 49 |
 | Forge 1.20.1 | `mods/1.20.1/` | Alpha (on by default, `experimental.forge1201=false` turns it off) | Remapped in place onto 1.21.1. Server: a 108-mod subset of an ATM 9 pack loads with 0 failures. Client: single mods such as CoFH Core, Thermal Foundation, Redstone Arsenal and Ensorcellation reach a world, and Terramity, Palladium with its addon packs (contributed by kentvillamor08) and Another Furniture run; the combined ATM 9 set does not reach a world in a client yet. 141 of the 506 mods of the pack link, most other mods still have unresolved references | 99 of 494 (nightly: 152) |
 | Beta 1.7.3 | `mods/b1.7.3/` (jars or zips) | Alpha (contributor-maintained) | ModLoader and Forge 1.0 era mods (contributed by Zekken01): blocks, items, recipes, tile entities, GUIs and supported mob families; entities and world generation are still incomplete | 38 of 44, 20 of them through placeholder APIs |
-| 1.2.5 | `mods/1.2.5/` | **Experimental, opt-in** (build flag `-Pmappings125`, run flag `-Dlegacyconnector.mc125=true`) | ModLoader / early Forge mods are translated to the 1.4.7 layer. Three small server builds load on a server (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client ([status and limits](docs/wiki/Legacy-1.2.5.md)) | |
+| 1.2.5 | `mods/1.2.5/` | **Experimental, off by default** (`experimental.minecraft125=true` in the config turns it on) | ModLoader / early Forge mods are translated to the 1.4.7 layer. Three small server builds load on a server (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client, so expect mods that load and then do little ([status and limits](docs/wiki/Legacy-1.2.5.md)) | |
 | 1.19.2, 1.18.2, 1.16.5 | | Planned | A chain of stages on top of the 1.20.1 pipeline ([plan](docs/wiki/Legacy-1.16-1.19-Plan.md)) | |
 
 Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era. Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md); how the
 work is organised: [Work plan](docs/wiki/Work-Plan.md). Missing features and known problems: [Compatibility and status](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues).
 
-Recent changes: on 1.12.2, modern containers and items are visible to old mods (pipes of an old mod can use a modern barrel), legacy
-containers are capabilities for modern mods, and blocks drawn by a mod's own renderer through CodeChickenLib work (Thermal Dynamics ducts).
-On 1.20.1, mixins whose targets changed are repaired or dropped one by one instead of failing the mod, raw network channels deliver, item
-NBT in recipes and loot becomes data components, and a missing required dependency is shown on NeoForge's warnings screen. The
-[addon API](docs/wiki/Addon-API.md) 0.3 covers every supported version.
+Recent changes (0.4.15, 2026-11-16, and the nightly since): a boot crash in every pack with FerriteCore is fixed; Thermal Expansion works
+further on 1.7.10 (items no longer black, no freeze when placing) and on 1.4.7 (Tesseract GUIs, machine facing after a reload); CoFH Core,
+Thermal Foundation, Redstone Arsenal and Ensorcellation for 1.20.1 load into a world; CustomOreGen 1.12.2 generates its ores; ability keys of
+mods that register one packet class for both sides work (The Legends Mod); the original Minecraft jar that legacy coremods need is now
+downloaded from Mojang by default when no launcher has it (`coremods.downloadVanilla`); Minecraft 1.2.5 mods can be tried behind
+`experimental.minecraft125`. `checkLegacyMod` now verifies translated bytecode offline, which finds client-only load failures without
+starting the game. The [addon API](docs/wiki/Addon-API.md) 0.3 covers every supported version.
 
 ## Install
 
@@ -49,7 +51,7 @@ NBT in recipes and loot becomes data components, and a missing required dependen
    ```
    mods/
      legacyconnector-<version>.jar
-     1.7.10/   1.12.2/   1.6.4/   1.5.2/   1.4.7/   1.20.1/   b1.7.3/
+     1.7.10/   1.12.2/   1.6.4/   1.5.2/   1.4.7/   1.20.1/   b1.7.3/   1.2.5/ (experimental, off by default)
    ```
 
    Jars you drop into `mods/` itself are moved there on launch (`legacy.autoSortMods=false` turns that off).
@@ -91,6 +93,7 @@ Mods, Legacy Connector, Config). The important ones:
 | `legacy.autoSortMods` | `true` | Move legacy jars dropped into `mods/` into the folder of their Minecraft version on launch |
 | `mods.skip` | empty | Comma separated legacy mod ids to leave out entirely (read at startup) |
 | `bridges.<name>.enabled` | `true` | `baubles`, `waila`, `nei`, `cofhEnergy`, `patchouli`: `false` loads the legacy library instead of its modern replacement |
+| `experimental.minecraft125` | `false` | Experimental Minecraft 1.2.5 support (ModLoader / early Forge mods, translated to the 1.4.7 layer); off, such jars are only reported with a hint |
 | `experimental.forge1201` | `true` | Load Forge 1.20.1 mods (remapped in place); `false` leaves such jars alone |
 | `experimental.forge1201.softlink` | `true` | A reference to a 1.21.1 class or member that no longer exists becomes a stand-in that throws only when it runs, instead of keeping the mod from loading |
 | `legacy.deepWorld1122` | `true` | 1.12.2 mods can read and change blocks below y=0 down to the modern world bottom; `false` restores the 1.12 floor at y=0 for a mod that fails on negative y |
@@ -106,7 +109,7 @@ Mods, Legacy Connector, Config). The important ones:
 | `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld (`0` none in new chunks) |
 | `events.skip` | empty | Legacy event handlers to leave unregistered (`full.ClassName#method`), for tracking down a handler that misbehaves |
 | `coremods.vanillaJar` | empty | Path of the original Minecraft client jar of the legacy version (a jar, or a folder of `client-<version>.jar` files), when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
-| `coremods.downloadVanilla` | `false` | Download that jar once from Mojang when it is not found locally |
+| `coremods.downloadVanilla` | `true` | Download that jar once from Mojang when it is not found locally (`false` turns the download off) |
 
 All keys (energy conversion rates, `perf.*` switches, ...) are on the [Configuration](docs/wiki/Configuration.md) page.
 
@@ -128,7 +131,7 @@ All keys (energy conversion rates, `perf.*` switches, ...) are on the [Configura
 
 **Will mod X work?** Check the compatibility site, then `logs/legacyconnector-report.txt` after a launch. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and mods that replace Minecraft's classes wholesale (Better Than Wolves and other patched-`minecraft.jar` mods) cannot work.
 
-**Coremods.** Coremods that patch other mods run as they did. Coremods that patch *Minecraft's own* 1.7.10 classes (Fisk's Superheroes, Legends and the like) are partly supported, experimental: Legacy Connector shows their transformers the original 1.7.10 classes once, notes the hooks they insert, and calls those hooks from the matching places of the modern game (movement, gravity, natural healing, tick length, player attacks, weather, arm swing, sprint particles, entity removal, player model render and pose). Hooks in places with no modern counterpart yet do nothing; the log says how many are replayed. This needs the original Minecraft 1.7.10 client jar, which Legacy Connector does not ship: it is found when 1.7.10 is installed in your launcher (see `coremods.vanillaJar` and `coremods.downloadVanilla`). Without it the mods still load, without their hooks. 1.12.2 (AppleCore, Quark, Charm, RandomThings and the like), 1.6.4, 1.5.2 and 1.4.7 coremods are read the same way against their own client jar (1.12.2 has places for many hooks, the older versions for few). What works and what cannot: [Coremods](docs/wiki/Coremods.md).
+**Coremods.** Coremods that patch other mods run as they did. Coremods that patch *Minecraft's own* 1.7.10 classes (Fisk's Superheroes, Legends and the like) are partly supported, experimental: Legacy Connector shows their transformers the original 1.7.10 classes once, notes the hooks they insert, and calls those hooks from the matching places of the modern game (movement, gravity, natural healing, tick length, player attacks, weather, arm swing, sprint particles, entity removal, player model render and pose). Hooks in places with no modern counterpart yet do nothing; the log says how many are replayed. This needs the original Minecraft 1.7.10 client jar, which Legacy Connector does not ship: it is found when 1.7.10 is installed in your launcher, and otherwise downloaded once from Mojang (see `coremods.vanillaJar` and `coremods.downloadVanilla`). Without it the mods still load, without their hooks. 1.12.2 (AppleCore, Quark, Charm, RandomThings and the like), 1.6.4, 1.5.2 and 1.4.7 coremods are read the same way against their own client jar (1.12.2 has places for many hooks, the older versions for few). What works and what cannot: [Coremods](docs/wiki/Coremods.md).
 
 **Does it work on a dedicated server?** Yes. Legacy mods run on a dedicated server too; client-only mods are skipped there.
 

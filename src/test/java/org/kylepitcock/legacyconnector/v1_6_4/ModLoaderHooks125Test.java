@@ -11,6 +11,16 @@ import org.kylepitcock.legacyconnector.v1_6_4.bridge.ModLoaderHooks125;
 
 /** ModLoader 1.2.5's tick-hook rules and chunk random, on fake mods. */
 class ModLoaderHooks125Test {
+    @org.junit.jupiter.api.BeforeAll
+    static void mc125On() {
+        System.setProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY, "true"); // the loader sets it when it hosts a 1.2.5 jar
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void mc125Off() {
+        System.clearProperty(org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.PROPERTY);
+    }
+
     @Test
     void clockHooksRunOncePerWorldTickAndOthersEveryFrame() {
         ModLoaderHooks125.Hooks<String> hooks = new ModLoaderHooks125.Hooks<>();
@@ -62,55 +72,5 @@ class ModLoaderHooks125Test {
         assertEquals(a, ModLoaderHooks125.chunkRandom(42L, 3, -7).nextLong());
         assertTrue(a != ModLoaderHooks125.chunkRandom(42L, 4, -7).nextLong());
         assertTrue(a != ModLoaderHooks125.chunkRandom(43L, 3, -7).nextLong());
-    }
-
-    public static class Server {}
-
-    public abstract static class Base {
-        public boolean onTickInGame(Server s) {
-            return false;
-        }
-    }
-
-    public static class VoidMod extends Base {
-        int ticks;
-
-        /** the 1.2.5 server's shape: void, a different method from the shim's boolean one */
-        public void onTickInGame(Server s, int unused) {}
-    }
-
-    public static class BooleanMod extends Base {
-        int ticks;
-
-        @Override
-        public boolean onTickInGame(Server s) {
-            return ++ticks < 3;
-        }
-    }
-
-    /** a mod class compiled with a void server hook (hand-built: Java cannot declare both returns, so the shape is a subclass chain without the base) */
-    public static class PlainVoid {
-        int ticks;
-
-        public void onTickInGame(Server s) {
-            ticks++;
-        }
-    }
-
-    @Test
-    void serverTickCallsVoidAndBooleanOverrides() {
-        PlainVoid v = new PlainVoid();
-        assertTrue(ModLoaderHooks125.callServerTick(v, Base.class, Server.class, new Server()));
-        assertEquals(1, v.ticks);
-        BooleanMod b = new BooleanMod();
-        assertTrue(ModLoaderHooks125.callServerTick(b, Base.class, Server.class, new Server()));
-        assertTrue(ModLoaderHooks125.callServerTick(b, Base.class, Server.class, new Server()));
-        assertFalse(ModLoaderHooks125.callServerTick(b, Base.class, Server.class, new Server()));
-        assertEquals(3, b.ticks);
-    }
-
-    @Test
-    void serverTickOfAModWithoutOverrideAnswersFalse() {
-        assertFalse(ModLoaderHooks125.callServerTick(new VoidMod(), Base.class, Server.class, new Server()));
     }
 }

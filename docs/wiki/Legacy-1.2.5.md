@@ -1,6 +1,6 @@
 # Legacy 1.2.5 (ModLoader and early Forge): design
 
-Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an opt-in** (stages 1 to 3 below);
+Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an experimental toggle (`experimental.minecraft125`, off by default)** (stages 1 to 3 below);
 the corpus measurements are in [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
 (the forward layer this note recommends hosting on), [Version roadmap](Version-Roadmap.md).
 
@@ -143,7 +143,15 @@ itself), `client/resource` (21 of 40: 1.3 reworked resource loading), `client/wo
 (37 of 1051). A mod that touches only blocks, items, recipes, tile entities, entities and worldgen sees less than 5% unjoined members; the unjoined ones are the networking, the client game mode, the
 resource layer and the 1.3 world/chunk access.
 
-## Stage 3 status (2026-11-16): hosted behind an opt-in
+## Stage 3 status (2026-11-16): hosted behind an experimental toggle
+
+**User-facing toggle (since 2026-11-16):** `experimental.minecraft125=true` in `config/legacyconnector.properties` (default `false`; read by the loader through `Mc125Jars.enabled()`, the one
+method every caller uses; the system property `-Dlegacyconnector.mc125=true|false` wins when set and is what the test tooling uses). The release and nightly jars (`bundleJar`) carry the
+generated join table (`legacyconnector/mappings/1.2.5/notch-to-147.tsv`) by default; if maven.ornithemc.net cannot be reached the build still succeeds, prints one warning and the jar has no
+table (`-PnoMappings125` leaves it out on purpose; `verifyBundle125` fails the build when the table is missing and no warning was logged). Four cases: off, any build: 1.2.5 jars are reported
+as not supported yet with the key as the hint (also the ones in `mods/1.2.5/`); on with the table: hosted, one `EXPERIMENTAL` line in the log, every mod marked "experimental (Minecraft 1.2.5)"
+in `legacyconnector-report.txt`; on without the table: one error line, nothing hosted, jars reported. With the toggle off the run-time side stays inert: the loader sets the system property
+`legacyconnector.mc125.active` only when it hosts a 1.2.5 jar and the shared code that only 1.2.5 mods need asks `Mc125Host.active()`. For developers the opt-in below still applies:
 
 `-Dlegacyconnector.mc125=true` (and a build made with `-Pmappings125`): a detected 1.2.5 jar (or any jar in `mods/1.2.5/`) becomes a 1.4.7 jar for the rest of the pipeline.
 `LegacyVersion.V1_2_5` is a source version only (last in the enum, same prefixes and forward chain as 1.4.7); `LegacyJar.version` is `V1_4_7`, `sourceVersion` is `V1_2_5`, `notchSide` is the
@@ -200,6 +208,7 @@ Backpack server (`BaseModMp`: 1 item, 17 recipes, 0 failed), Elemental Creepers 
   - Server `onTick`: clock = overworld `getWorldTime`, hooks run when changed or `!useClock`, the callback is `void` (nothing unregisters).
   - ModLoaderMP: `BaseModMp.getId()` is `toString().hashCode()` (the hash of "name version", not of the class name; fixed); `registerGUI` keeps the first mod and logs "RegisterGUI error: inventoryType already registered." (fixed); the client's `handleGUI` opens the screen with `ModLoader.openGUI` and copies the window id from the open-window packet to `player.openContainer` (the layer's menu bridge does that part); packet types 0 and 1 of the id `"ModLoaderMP".hashCode()` are the mod check and the tile entity packet (`dataInt = {x, y, z, type, modId, ints...}` to `handleTileEntityPacket`, not implemented), `"Spawn".hashCode()` custom entity spawns (not implemented).
   - Forge 3.3.7 (`ForgeHooks`): **`IPickupHandler` returns true to continue** (false stops the pickup; so does a stack used up) and **`IEntityInteractHandler` true = continue, false = cancel**; both were inverted in the first version and are fixed. `onMinecartInteract(cart, player, canceled)` gets the running AND of the earlier answers and the cart blocks the interaction when the result is false (a handler returns "the player may interact"); chat handlers chain the message (`onServerChat`, `onServerCommandSay`, `onClientChatRecv`: each gets the previous result, null cancels); `onChatCommand`/`onServerCommand`/hoe/bonemeal/special spawn: first true wins; sleep: first non-null; chunk-load handlers all fill the same set (one ticker, union forced). `ArmorProperties.StandardizeList` and `compareTo` (`AbsorbMax * 100 / AbsorbRatio`, int difference) are now Forge's exact algorithm in the shared armour record (the layer's version was a simplified one; `ArmorDistribution125Test`). Still different: Forge 3.3's `ApplyArmor` returns `int` and keeps `entity.carryoverDamage`; the layer's returns the float left and has no carry-over.
+- **Hooks for overrides of unjoined members** (the loader emits them as `mcc125$<Feather name>` with the mod's own 1.2.5 descriptor; `Override125HooksTest` with synthetic subclasses): `Block.mcc125$updateMetadataOnPlaced(World, int, int, int, int side)` (called by `ItemBlock.placeBlockAt` after the block is set), `EntityAnimal.mcc125$makeChild(EntityAnimal)EntityAnimal` (reached from `createChild`), and the portal hooks `Teleporter.mcc125$onDimensionChanged/findNetherPortal/generateNetherPortal(World, Entity)` (Twilight Forest, Tropicraft): the layer's dimension travel calls `Teleporter.placeInPortal`, which runs 1.2.5's find, else generate and find again, with the forcer's world. Not run in a game.
 - **Forge 3.x handlers** (`forge/ForgeEvents`, `ForgeClientEvents`): each registration subscribes to the shim's event of the same purpose, in the order of how many corpus units reference it: `ISpecialArmor` (4 units besides the Forge zips; now the shim's own `ISpecialArmor`, so the layer's armour path
   `ApplyArmor` applies a 3.x piece, `ArmorProperties` is a subclass of the shared record, the covariant redeclaration gives the bridge method; parameter types are `EntityLivingBase` because the loader renames `EntityLiving` in a 1.2.5 jar's signatures), `ISleepHandler` (3 units; `PlayerSleepInBedEvent.result`, the interface now returns `EnumStatus`),
   `ISoundHandler` (3: sound manager setup on `SoundLoadEvent`, entity sounds on `PlaySoundAtEntityEvent`; the `SoundPoolEntry` members have no modern counterpart), `IChatHandler` (server chat, player and console commands, `say`, client chat), `IMinecartHandler` (Railcraft, 2: update, collision, interact events), `IChunkLoadHandler`
@@ -209,6 +218,57 @@ Backpack server (`BaseModMp`: 1 item, 17 recipes, 0 failed), Elemental Creepers 
   `BuiltinAdapters.inventory1710` before the generic inventory wrapper; the energy (IC2 1.103, BC 3.1 power) and liquid adapters were there.
 - **ModLoaderMP**: `registerGUI(mod, id)` registers an FML GUI handler (server element: the container the server staged with `ModLoader.openGUI(player, id, inventory, container)`, client element: the mod's `handleGUI(id)`); the channel ends are plain methods (`receiveOnClient`, `receiveOnServer`) and a loopback test sends encoded
   packet 230 to the right mod by id. Server-build `BaseMod` shapes: `receiveCustomPacket(packet, player)` (payload channels), `receiveChatPacket(text, player)`, `serverDisconnect(player)`. Tests: `ModLoaderHooks125Test`, `ModLoaderMpLoopbackTest`, `ForgeHandlers125Test`, `ChunkAnchors125Test`, `SpecialInventory125Test`.
+
+### Run time, round 3: classes with no 1.4.7 counterpart (2026-11-16)
+
+The loader worker's list of classes corpus mods name (`LegacyChunkCache`, `LoadWorldChunkPacket`, `AddItemPacket`, `BossEntity`, `WorldSaveConflictScreen`, `MultiplayerWorld$BlockReset`, `CommandHandler`, `ChunkCache`,
+`SaplingItem`, `LogItem`) counted every class that names them. Re-counted with the real Calamus/Feather names, the side taken from the jar and game-class copies excluded: only `BossEntity` (IC2 1.103 mining laser, Twilight
+Forest hydra, client and server), `CommandSource` (Mystcraft, PortalGun, server) and `ChunkCache` (Tropicraft's `World` subclass) are named by retained mod code; the rest only by patched game classes (Forge, ModLoader(MP),
+NEWTON, Mystcraft) that the loader drops, so they need nothing. `BossEntity` is `EntityDragonBase` in 1.2.5 (read with `javap` from the Mojang jar): the shim class `net/minecraft/src/EntityDragonBase` has its rules
+(constructor sets `maxHealth` 100, `takeDamage(part, source, int)` forwards to `attackEntityFrom`, which refuses, `doTakeDamage` is the living entity's own handling; `EntityDragonBase125Test`). Mapping the 1.2.5 class onto it, and a class
+tier by Calamus intermediary id (`CommandSource`, `ClientWorld`, `ServerChunkCache`, ... which Feather names differently in 1.4.7) are loader requests (`1.2.5-loader-requests-from-shim.md`, section 4). Not run in a game.
+
+### Run time, round 4: ModLoaderMP tile entity packets and custom entity spawns (2026-11-16; unit-tested, not run in a game)
+
+Read from the real classes (`javap -p -c` of `ModLoaderMP 1.2.5 v1.zip` client and `ModLoaderMP Server 1.2.5 v1.zip`: `ModLoaderMp`, `ISpawnable`, `NetClientHandlerEntity`, `EntityTrackerEntry2`, the patched `NetClientHandler` `adl` and `EntityTrackerEntry` `jj`):
+
+- **Tile entity packet.** `ModLoaderMp.getTileEntityPacket(mod, x, y, z, type, ints, floats, strings)` builds a packet with the reserved id `"ModLoaderMP".hashCode()`, type 1, `dataInt = {mod id, x, y, z, type, ints...}`; the mod returns it from
+  `getDescriptionPacket()` and `sendTileEntityPacket(tile)` sends `tile.getDescriptionPacket()` to everyone. The client's `handleAllPackets` hands type 1 to the mod whose `getId()` equals `dataInt[0]` (`handleTileEntityPacket(x, y, z, type, rest, floats, strings)`; fewer than 5 ints logs
+  "Bad TileEntityPacket received."). In the layer the packet is a custom payload on the channel `ModLoaderMP`, which the block entity sync (`LegacyBlockEntity.descriptionTag`, the same path 1.6.4 tiles use) already carries in the update tag and delivers on the client, also for chunk-load tags.
+- **Custom spawns.** `ISpawnable` is the interface of the mod's own entity (client build `spawn(Packet230ModLoader)`, server build `getSpawnPacket()`: both defaults in the shim). The server's `EntityTrackerEntry.getSpawnPacket` called `getSpawnPacket()` for an entity of a class registered with
+  `registerEntityTrackerEntry(class, hasOwner, id)`, set the id to `"Spawn".hashCode()` and the type to `id` (`id - 256` above 127); the client's `handleAllPackets` looked the type up in `registerNetClientHandlerEntity` (stored folded the same way; ids over 255 and duplicates are refused with the real messages) and called `spawn` on a new entity.
+  Here `ISpawnable extends IEntityAdditionalSpawnData`: the entity's native spawn packet (the layer's own entity-spawn path) carries the encoded packet, the client side reads it and calls `spawn`. Entities of unregistered classes, build without `getSpawnPacket` or null packets send nothing.
+  `hasOwner` entries of entities that are not `ISpawnable` (the vehicle spawn packet carried the owner's id, the client stored the entity in the public `owner` field) go through `LegacySpawnExtras` (a new provider hook of `LegacySpawnData`): owner id (the entity's own when `owner` is null) on the server, the field set on the client, with the real error messages. `registerEntityTracker(class, range, interval)` sets the type's tracking
+  range and update interval (`LegacyHosts.setTracking`, also after registration). Tests: `ModLoaderMpSpawnTileTest`. The owner path and the tracker settings are not unit-tested (they need a world and entity types).
+
+### Run time, round 5: differences from the real ModLoader and Forge 3.x code (2026-11-16; unit-tested, not run in a game)
+
+- **Server tick hook**: the loader's return-kind bridge (`return-bridges.tsv`) adds `onTickInGame(MinecraftServer)Z` next to a mod's `void` override, so the shim calls it directly; the reflection helper `ModLoaderHooks125.callServerTick` is gone.
+- **`ArmorProperties.ApplyArmor`** (Forge 3.3.7 source): returns `int` and keeps the fraction in `entity.carryoverDamage` (`damage += carry; carry = (int) damage % 25; return (int) (damage / 25)`, in 1/25 heart units). The shared method returns the float left, where nothing is lost, so the layer's own damage path needs no carry;
+  for a mod that calls the `...)I` method itself, `forge.ArmorProperties.mcc125$applyArmor` is that rule on top of the shared result (carry per entity). The loader's descriptor row still points `ApplyArmor(...)I` calls at the shared float method with `f2i`: pointing it at `mcc125$applyArmor` is a loader request (no corpus mod calls it, only Forge's dropped jars).
+- **Mod keys with a screen open**: `ModLoader.onTick` read `Keyboard.isKeyDown` for every registered key whatever screen was open; the modern key mappings are released when a screen opens. `bridge/ModKeys125` polls the raw state (GLFW) of every key registered with `registerKey`, from the client tick that runs even for a mod with no tick hook, and fires `keyboardEvent` on a press (every poll while held with `allowRepeat`) when a screen is open; the layer's key handler fires without one, and a key still held when a screen opens is not a new press.
+- **`registerAnimation` after a resource reload**: `registerAllTextureOverrides` cleared the animations and had every mod register again for each texture pack. `ModLoader.addAnimation` now records what mods add, and when the selected resource packs change the animations are dropped and every mod's `registerAnimation` runs again (a plain reload with the same packs keeps them: the animation looks its sprite up every tick, so it follows the re-stitched atlas).
+- **`IChunkLoadHandler.canUnloadChunk`** (`ChunkProvider.dropChunk`: false keeps the chunk): no native veto exists, so a chunk is asked when it loads and again every 100 ticks while refused, and a refused chunk is kept with the forced chunks together with the `addActiveChunks` ones. **`canUpdateEntity`** (entities next to an unloaded chunk may still update) has no counterpart: entities tick in loaded chunks only; the layer logs that once when a handler registers.
+- **`IMinecartCollisionHandler`**: the descriptor row for `EntityMinecart.setCollisionHandler(forge/IMinecartCollisionHandler)` landed in the loader (round 5); the 3.x interface has the four methods of the shared one and extends it (checked against the 3.3.7 source and `EntityMinecart` patch), so an installed handler is the one the minecart code consults.
+- **Achievement pages**: `forge.AchievementPage` now extends the shim's own page class and `MinecraftForge.registerAchievementPage` registers it there too (duplicate names throw with Forge's message), so the pages show in the achievements screen with the cycle button; achievements in no page stay on "Minecraft".
+- **Tracker settings** (`registerEntityTracker`) now apply to subclasses too, as `handleEntityTrackers`' `isInstance` did (a subclass with its own setting keeps it).
+- **Chat redirects** from the loader (`GuiIngame.clearChat()`, `translate(String)`, `Redirects125.clearChat/translate`, rows in `member-manual.tsv`): `clearChat` empties the chat history (the real method cleared its two line lists); `translate` translates the key with the language table and adds the result as a chat line (the real body).
+
+### Run time, round 6: capabilities by default for the 1.2.5-era APIs (2026-11-16; unit-tested on test doubles of the real interfaces, not run in a game)
+
+Interfaces read from the corpus jars with `javap` (IC2 1.103's `ic2.api.*`, Forestry 1.4.8.6's bundled BuildCraft 3.2 `buildcraft.api.liquids.*`, BuildCraft 3.1.5 core, Railcraft 5.0.0). What a capability can and cannot represent:
+
+| API | Exposed as | Notes |
+|---|---|---|
+| `ic2.api.IEnergySink` (existing) | energy storage, receive | the packet is now the tier of the block's output: an `IEnergyStorage` block takes `EnergyRates.packetForOutput(getOutput())` EU (BatBox 32, MFE 128, MFSU 512, never above 2048; a block without it keeps 32); a machine given a bigger packet explodes |
+| `ic2.api.IEnergyStorage` (`getStored`, `getCapacity`, `getOutput`; batboxes, MFE, MFSU) | real stored and capacity in FE on the sink adapter; a storage block that is no sink is a read-only meter (`EarlyEuMeter`: no receive, no extract) | rates: `energy.fePerEu` (readouts), `energy.fePerEu.in` (receiving), as before |
+| `IEnergySource`, `IEnergyConductor`, `IEnergyEmitter` | not exposed | a 1.103 source pushes into IC2's own energy net from its tick (`EnergyNet.emitEnergyFrom`), and the storage API has no setter, so nothing can be taken from it; a conductor is a net element with no energy of its own. Representing them needs the layer to join IC2's net as a tile, which would mean a generated `IEnergySink` per modern capability holder |
+| `buildcraft.api.ILiquidContainer` (existing; BuildCraft 3.1, Railcraft 5.0, Thermal Expansion, Forestry's copy) | fluid handler, one tank | the capacity is now the tile's own when it declares one (`getCapacity()` in Forestry's copy, the sum of `getLiquidSlots()` capacities in BuildCraft 3.1.5's), never below what it holds; before it was a bucket more than the contents |
+| `buildcraft.api.liquids.ITankContainer` + `ILiquidTank` (Forestry 1.4.8.6's bundled API; not Forge's later `net.minecraftforge.liquids.ITankContainer`) | fluid handler, one tank per `getTanks()` entry (`LiquidsBc32`) | fill and drain by side through `fill(Orientations, LiquidStack, boolean)` / `drain(Orientations, int, boolean)`; liquid ids map to fluids like the 1.5.2 liquids (`Liquids164`) |
+| `buildcraft.api.IPipeConnection`, `ILegacyPipeConnection` | not exposed | connection predicates only, no items or energy to hand over |
+| RedPower 2 | none in the corpus (only its NEI plugin) | nothing to adapt |
+
+Railcraft 5.0.0 ships only `ILiquidContainer`, `ISpecialInventory` and IC2's API, which the existing adapters cover (its tanks are `TileUtilityLiquid`, an `ILiquidContainer`). Tests: `Capabilities125Test`.
 
 ### Offline link probe over the real corpus (2026-11-16)
 
@@ -258,6 +318,25 @@ with different Feather names is "same Calamus intermediary id"; 20 such joins ex
 `handleSoundEvent`, ...) and 5 are Feather renames (`Item.MAP` to `FILLED_MAP`, `World.wakeUpAllPlayers`, ...). Only the reviewed pairs (`reviewed-name-changes.tsv`) are joined now, the rest is listed in
 `join-name-rejected.tsv`; `Mc125JoinAuditTest` fails on any accepted pair that is not in the reviewed list. Corpus archives that reference a wrong join: Smart Moving's standalone game patch, the Forge client and
 server zips, the ModLoader/ModLoaderMP zips and Mystcraft's server patch (all of them game-class copies the layer drops or API distributions it skips); no content mod referenced one, so the earlier link counts stand.
+
+**Round 5 (2026-11-16).** (1) Return-kind bridges: a mod override whose method has the right name and parameters but another return kind than the shim's (ModLoaderMP's server
+`BaseMod.onTickInGame(MinecraftServer)` is `void`, the shim's `boolean`) gets a bridge with the shim's descriptor (`return-bridges.tsv`; void to boolean returns true, boolean to void is dropped,
+numeric widening; anything else is refused); the same rule now applies to B rows. `descriptor-rewrites.tsv` rewrites calls whose descriptor names another type or result than the shim has
+(`EntityMinecart.setCollisionHandler(forge/IMinecartCollisionHandler)`, `ArmorProperties.ApplyArmor` returning int with an F2I after the float call). (2) Detection: a jar whose obfuscation resembles
+1.2.5 only partly (25 to 60% of its references, nothing else fits better; NEWTON gravity is a 1.2.3 mod) is reported as "Minecraft 1.2.x release other than 1.2.5 (not supported)" instead of being hosted;
+`probe.py` and `CheckJar` strip a single class folder and split install roots (SDKs Mods: `minecraft/`), which turned SDKs and herobrine's mod class from "unresolved" into ordinary links. Repacks:
+when two jars carry the same `mod_X` the one that is a pure module of the contested mods wins over a repack that also carries mods of its own (LogisticsPipes' client jar bundles older BuildCraft modules),
+then the one with more classes, then the file name; the loser gives up the ids AND the classes the winner carries (`LegacyJar.droppedClasses`, in the cache key, reported in its notes). The five BuildCraft 3.1.5
+modules link in the set and alone (`probe.py --only buildcraft`); LogisticsPipes links alone and in the set it fails on BuildCraft 3.1.5's API (`DefaultProps`...), a real version mismatch with the BuildCraft it
+bundles. (3) The renamer knows the class hierarchy of every 1.2.5 jar of the set (`Notch125To147.registerSet`): a mod class extending a class of another jar that extends a game class (BuildCraft's tile entities
+in its addons) is resolved through it; before, references through such a class kept their 1.2.5 letters and the 1.4.7 stage renamed them again (TileEntity `worldObj:I`). (4) Classes: the intermediary-id class tier
+is audited with member overlap (at least half of the 1.2.5 class's members exist by name in the 1.4.7 class, all for classes of at most two members) and a reviewed list (`reviewed-class-pairs.tsv`, 30 pairs:
+`MultiplayerWorld` to `ClientWorld`, `MapItem` to `FilledMapItem`, `PortalForcer`, `CommandSource`, the server console classes, ...; `RemoveEntityPacket` is rejected, its members do not match);
+`Mc125JoinAuditTest` fails on a pair the members confirm that nobody reviewed. `BossEntity` maps onto the shim class `net/minecraft/src/EntityDragonBase` (an `s` row in `manual-aliases.tsv`, members by Feather name,
+inherited ones through `MobEntity` via an `S` row), and a field retyped in 1.4.7 (`EnderDragonPart.dragon`: BossEntity, now `IEntityMultiPart`) gets a `checkcast` back to the old type after `getfield`. The Tropicraft
+`ChunkCache` case (a `World` subclass passing a `World` where the shim takes a `WorldServer`) is a run-time class check; the offline probe's `verifyFailures` stays 0 and cannot see it, so it needs a game run.
+Numbers: probe 43 linking / 3 unresolved (was 38 / 9), 388 distinct stubbed members (473 stubs) (was 1360 / 1606: most of the old count came from NEWTON, SDKs and herobrine, which were not 1.2.5 mods or were wrongly
+classified); ranked list in `tools/dev/agent-tasks/1.2.5-missing-members.md` (a 32, b 276, c 80).
 
 **Side-independent names for unjoined members.** The client and the server of 1.2.5 are obfuscated separately, so `mcc125$b` meant different members on the two sides. `genMappings125` now writes
 a `U` row (side, owner, letter, descriptor, Feather name) for every member that stayed unjoined and the loader names it `mcc125$<Feather name>` (`mcc125$draw`, `mcc125$onClickSlot`, `mcc125$item`);

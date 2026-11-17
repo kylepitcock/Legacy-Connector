@@ -16,23 +16,17 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimals {
     }
 
     /**
-     * Minecraft 1.2.5's breeding hook {@code makeChild(mate)}: the loader names a mod's override {@code mcc125$makeChild} (1.2.5 mods extend the
-     * animal class and implement only this). Two shapes because the join may type the parameter as the animal or the ageable.
+     * Minecraft 1.2.5's breeding hook {@code makeChild(mate)}: the loader names a mod's override {@code mcc125$makeChild(EntityAnimal)EntityAnimal}
+     * (checked against the translated classes of the corpus); 1.2.5 mods extend the animal class and implement only this.
      */
     public EntityAnimal mcc125$makeChild(EntityAnimal mate) {
-        return null;
-    }
-
-    public EntityAgeable mcc125$makeChild(EntityAgeable mate) {
         return null;
     }
 
     /** Breeding goes through the 1.2.5 hook of a mod animal that only has that. */
     @Override
     public EntityAgeable createChild(EntityAgeable mate) {
-        EntityAgeable child = mcc125$makeChild(mate);
-        if (child == null && mate instanceof EntityAnimal animal) child = mcc125$makeChild(animal);
-        return child;
+        return mate instanceof EntityAnimal animal ? mcc125$makeChild(animal) : null;
     }
 
     protected EntityAnimal(LivingEntity modern) {

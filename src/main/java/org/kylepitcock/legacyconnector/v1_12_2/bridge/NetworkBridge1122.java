@@ -50,6 +50,9 @@ public final class NetworkBridge1122 {
         private final Map<Class<?>, Integer> discriminators = new ConcurrentHashMap<>();
         private final Map<Integer, IMessageHandler<IMessage, IMessage>> serverHandlers = new ConcurrentHashMap<>();
         private final Map<Integer, IMessageHandler<IMessage, IMessage>> clientHandlers = new ConcurrentHashMap<>();
+        /** The same handlers by message class: FML picked the handler by the class and the receiving side, the discriminator only named the class (one class registered for both sides under two ids). */
+        private final Map<Class<?>, IMessageHandler<IMessage, IMessage>> serverByType = new ConcurrentHashMap<>();
+        private final Map<Class<?>, IMessageHandler<IMessage, IMessage>> clientByType = new ConcurrentHashMap<>();
 
         Channel(String name) {
             this.name = name;
@@ -60,6 +63,7 @@ public final class NetworkBridge1122 {
             types.put(discriminator, type);
             discriminators.putIfAbsent(type, discriminator);
             (side == Side.SERVER ? serverHandlers : clientHandlers).put(discriminator, (IMessageHandler<IMessage, IMessage>) handler);
+            (side == Side.SERVER ? serverByType : clientByType).put(type, (IMessageHandler<IMessage, IMessage>) handler);
         }
 
         private LegacyPayload encode(IMessage message) {
@@ -76,6 +80,7 @@ public final class NetworkBridge1122 {
             boolean toServer = context.player() instanceof ServerPlayer;
             var handler = (toServer ? serverHandlers : clientHandlers).get(payload.discriminator());
             Class<? extends IMessage> type = types.get(payload.discriminator());
+            if (handler == null && type != null) handler = (toServer ? serverByType : clientByType).get(type);
             if (handler == null || type == null) return;
             try {
                 var ctor = type.getDeclaredConstructor();

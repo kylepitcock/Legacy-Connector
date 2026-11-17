@@ -534,6 +534,17 @@ public final class CoremodSites {
         public static final Site ROTATE_CORPSE = site("player model rotations", new Class<?>[] {PLAYER, float.class},
                 "net/minecraft/client/renderer/entity/RenderPlayer.func_77043_a(Lnet/minecraft/client/entity/AbstractClientPlayer;FFF)V#tail");
 
+        /**
+         * RenderPlayer.renderLivingAt: the translation to the player (and, for a mod's giant or small characters, the scale of the model) that replaced the
+         * call of {@code RenderPlayer.renderPlayerAt}. 1.7.10 drew relative to the camera, here the pose is already at the player: the hook is given zeros.
+         * Values: the render (null here), the player, x, y, z.
+         */
+        public static final Site PLAYER_TRANSLATION = site("player render translation",
+                new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer.class,
+                        legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer.class, double.class, double.class, double.class},
+                "net/minecraft/client/renderer/entity/RenderPlayer.func_77039_a(Lnet/minecraft/entity/EntityLivingBase;DDD)V"
+                        + "#replace:func_77039_a(Lnet/minecraft/client/entity/AbstractClientPlayer;DDD)V");
+
         /** {@link #LIMB_SWING_RENDER} and {@link #LIMB_AMOUNT_RENDER}. */
         public static float limb(Site site, net.minecraft.world.entity.LivingEntity entity, float value) {
             return site.active() ? ((Number) site.modify(0, value, EntityBridge.wrap(entity))).floatValue() : value;

@@ -515,6 +515,10 @@ tasks.register('checkLegacyMod', JavaExec) {
     if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
     // -PkeepDir=<dir> keeps the translated jars there (input of textureReport)
     if (project.findProperty('keepDir')) systemProperty 'legacyconnector.check.keep', project.findProperty('keepDir').toString()
+    // -Pverify=false: skip the offline bytecode verification (BytecodeCheck, on by default); -PverifyFail=true: exit code 1 when it finds anything
+    if (project.findProperty('verify')) systemProperty 'legacyconnector.check.verify', project.findProperty('verify').toString()
+    if (project.findProperty('verifyFail')) systemProperty 'legacyconnector.check.verify.fail', project.findProperty('verifyFail').toString()
+    maxHeapSize = '3g'
     // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
     if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
     // -Pmappings125: host Minecraft 1.2.5 jars through the 1.4.7 chain (needs the generated join table, see docs/wiki/Legacy-1.2.5.md)
@@ -522,6 +526,17 @@ tasks.register('checkLegacyMod', JavaExec) {
     // -Pmc125Unresolved=<file>: append the game members of 1.2.5 jars the join table could not name (diagnostics)
     if (project.findProperty('mc125Unresolved')) systemProperty 'legacyconnector.mc125.unresolved', project.findProperty('mc125Unresolved').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
+}
+
+// Bytecode verification of class directories or jars (default: the layer's own classes): ./gradlew verifyClasses [-PverifyPath=dir,a.jar]
+tasks.register('verifyClasses', JavaExec) {
+    dependsOn tasks.named('classes')
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.BytecodeCheck'
+    maxHeapSize = '3g'
+    argumentProviders.add({
+        (project.findProperty('verifyPath') ?: sourceSets.main.java.classesDirectory.get().asFile.absolutePath).toString().split(',').findAll { it }
+    } as CommandLineArgumentProvider)
 }
 
 // What legacy coremods do to Minecraft's own classes: ./gradlew probeCoremodHooks -PlegacyJar=a.jar,b.jar [-PvanillaJar=client-1.7.10.jar] [-PsrgZip=srg.zip]
@@ -656,6 +671,32 @@ tasks.register('bundleJar', Jar) {
     }
 }
 tasks.named('assemble') { dependsOn 'bundleJar' }
+
+// The bundle carries the 1.2.5 name table (the experimental toggle experimental.minecraft125 needs it) or the build logged the warning that it does not
+// (offline / maven.ornithemc.net down); -PnoMappings125 opts out on purpose. A silent bundle without the table fails here.
+tasks.register('verifyBundle125') {
+    group = 'verification'
+    description = 'Asserts that bundleJar contains legacyconnector/mappings/1.2.5/notch-to-147.tsv or logged the missing-table warning.'
+    mustRunAfter 'bundleJar'
+    doLast {
+        def jarFile = tasks.named('bundleJar').get().archiveFile.get().asFile
+        boolean has = false
+        new java.util.zip.ZipFile(jarFile).withCloseable { z -> has = z.getEntry('legacyconnector/mappings/1.2.5/notch-to-147.tsv') != null }
+        boolean requested = project.hasProperty('mappings125') || gradle.startParameter.taskNames.any { it.endsWith('bundleJar') || it.endsWith('installBundle') }
+        if (has) {
+            println "bundleJar carries the 1.2.5 name table (${jarFile.name}: ${jarFile.length()} bytes)"
+        } else if (project.hasProperty('noMappings125')) {
+            println 'bundleJar has no 1.2.5 name table (opted out with -PnoMappings125)'
+        } else if (!requested) {
+            println 'bundleJar built as a dependency of another task: no 1.2.5 name table requested'
+        } else if (rootProject.ext.has('mc125Warned') && rootProject.ext.mc125Warned) {
+            println 'bundleJar has no 1.2.5 name table (warning logged above)'
+        } else {
+            throw new GradleException('bundleJar has no 1.2.5 name table and no warning was logged')
+        }
+    }
+}
+tasks.named('bundleJar') { finalizedBy 'verifyBundle125' }
 
 // ./gradlew installBundle -PmodsDir=<instance>/mods : builds the distributable jar and replaces any older Legacy Connector jar in that folder.
 tasks.register('installBundle', Copy) {

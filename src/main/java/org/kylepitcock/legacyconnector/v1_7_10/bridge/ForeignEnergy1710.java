@@ -59,6 +59,7 @@ public final class ForeignEnergy1710 {
         if (early.sink != null) return side != null && !early.accepts(tile, from) ? null : new EarlyEuStorage(tile, from, early);
         EarlyMj earlyMj = EARLY_MJ.get(tile.getClass());
         if (earlyMj.receptor != null) return new EarlyMjStorage(tile, from, earlyMj);
+        if (early.storage != null && org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return new EarlyEuMeter(tile, early);
         return null;
     }
 
@@ -370,9 +371,21 @@ public final class ForeignEnergy1710 {
         Method demands;
         Method inject;
         Method accepts;
+        /** {@code ic2.api.IEnergyStorage} (batboxes, MFE, MFSU): the stored EU, the capacity and the output, which is also the packet size the block takes. */
+        Class<?> storage;
+        Method stored;
+        Method capacity;
+        Method output;
 
         static EarlyEu of(Class<?> type) {
             EarlyEu e = new EarlyEu();
+            e.storage = named(type, "ic2.api.IEnergyStorage");
+            if (e.storage != null) {
+                e.stored = method(e.storage, "getStored");
+                e.capacity = method(e.storage, "getCapacity");
+                e.output = method(e.storage, "getOutput");
+                if (e.stored == null || e.capacity == null || e.output == null) e.storage = null;
+            }
             e.sink = named(type, "ic2.api.IEnergySink");
             if (e.sink == null) return e;
             try {
@@ -421,6 +434,23 @@ public final class ForeignEnergy1710 {
                 return false;
             }
         }
+
+        /** The EU a storage block holds / can hold / takes per packet, or -1 without the storage API (or when it throws). */
+        int units(Method m, TileEntity tile) {
+            if (storage == null || m == null) return -1;
+            try {
+                return ((Number) m.invoke(tile)).intValue();
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return -1;
+            }
+        }
+
+        /** The packet to offer: the tier of the block's output when it has one, else the low-voltage packet (32 EU). */
+        int packet(TileEntity tile) {
+            if (!org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host.active()) return 32; // the storage tiers are verified for Minecraft 1.2.5 only
+            int out = units(output, tile);
+            return out <= 0 ? 32 : EnergyRates.packetForOutput(out);
+        }
     }
 
     /** One packet at most (IC2 1.103's low-voltage packet is 32 EU), and only while the sink asks for energy. */
@@ -429,7 +459,7 @@ public final class ForeignEnergy1710 {
         public int receiveEnergy(int amount, boolean simulate) {
             int rate = LegacyConfig.fePerEuIn();
             if (rate <= 0 || !eu.accepts(tile, from) || !eu.demands(tile)) return 0;
-            int offer = (int) Math.min(32, EnergyRates.unitsFromFe(amount, rate));
+            int offer = (int) Math.min(eu.packet(tile), EnergyRates.unitsFromFe(amount, rate));
             if (offer <= 0) return 0;
             if (simulate) return EnergyRates.feFromUnits(offer, rate);
             try {
@@ -449,11 +479,13 @@ public final class ForeignEnergy1710 {
 
         @Override
         public int getEnergyStored() {
-            return 0;
+            return EnergyRates.feFromUnits(Math.max(0, eu.units(eu.stored, tile)), LegacyConfig.fePerEu());
         }
 
         @Override
         public int getMaxEnergyStored() {
+            int capacity = eu.units(eu.capacity, tile);
+            if (capacity >= 0) return EnergyRates.feFromUnits(capacity, LegacyConfig.fePerEu());
             return eu.demands(tile) ? EnergyRates.feFromUnits(32, LegacyConfig.fePerEu()) : 0;
         }
 
@@ -465,6 +497,42 @@ public final class ForeignEnergy1710 {
         @Override
         public boolean canReceive() {
             return LegacyConfig.fePerEuIn() > 0 && eu.accepts(tile, from);
+        }
+    }
+
+    /**
+     * An IC2 1.103 {@code IEnergyStorage} block that is no sink: its stored EU and capacity as a read-only energy storage (what energy readouts show). Its output is
+     * not extractable: IC2's sources push into IC2's own energy net from their own tick, and the 1.103 storage API has no way to take energy out.
+     */
+    private record EarlyEuMeter(TileEntity tile, EarlyEu eu) implements IEnergyStorage {
+        @Override
+        public int receiveEnergy(int amount, boolean simulate) {
+            return 0;
+        }
+
+        @Override
+        public int extractEnergy(int amount, boolean simulate) {
+            return 0;
+        }
+
+        @Override
+        public int getEnergyStored() {
+            return EnergyRates.feFromUnits(Math.max(0, eu.units(eu.stored, tile)), LegacyConfig.fePerEu());
+        }
+
+        @Override
+        public int getMaxEnergyStored() {
+            return EnergyRates.feFromUnits(Math.max(0, eu.units(eu.capacity, tile)), LegacyConfig.fePerEu());
+        }
+
+        @Override
+        public boolean canExtract() {
+            return false;
+        }
+
+        @Override
+        public boolean canReceive() {
+            return false;
         }
     }
 

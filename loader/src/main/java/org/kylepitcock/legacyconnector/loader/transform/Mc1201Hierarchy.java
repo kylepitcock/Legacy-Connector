@@ -128,6 +128,11 @@ public final class Mc1201Hierarchy {
             Map.entry(MIG + "LegacyDyeableHorseArmorItem", MIG + "LegacyHorseArmorItem"),
             Map.entry(MIG + "LegacyStemGrownBlock", "net/minecraft/world/level/block/Block"));
 
+    /** True for a class of the jar being translated, of another translated jar of the set, or of Minecraft/NeoForge. */
+    public boolean knows(String name) {
+        return mod.containsKey(name) || mc().containsKey(name) || peers.containsKey(name);
+    }
+
     /** True when {@code name} is {@code ancestor} or inherits from it through any mix of mod and Minecraft classes. */
     public boolean isSubclassOf(String name, String ancestor) {
         return walk(name, ancestor, new HashSet<>()) == 1;
@@ -202,7 +207,9 @@ public final class Mc1201Hierarchy {
 
     String commonSuperClass(String a, String b, java.util.function.Supplier<String> fallback) {
         if (a.equals(b)) return a;
-        boolean known = (mod.containsKey(a) || mc().containsKey(a)) && (mod.containsKey(b) || mc().containsKey(b));
+        // classes of the other jars of the set count as known: a mod method that merges two types of a library jar (ProjectRed: two CodeChickenLib
+        // Transformation subclasses at a branch target) otherwise got a frame typed Object, which the JVM rejects at the next call on it (VerifyError)
+        boolean known = (mod.containsKey(a) || mc().containsKey(a) || peers.containsKey(a)) && (mod.containsKey(b) || mc().containsKey(b) || peers.containsKey(b));
         if (!known) {
             try {
                 return fallback.get();
@@ -215,7 +222,7 @@ public final class Mc1201Hierarchy {
         String c = a;
         for (int guard = 0; guard < 64 && c != null; guard++) {
             ClassNode n = mod.get(c);
-            String sup = n != null ? n.superName : (mc().containsKey(c) ? mc().get(c).superName() : null);
+            String sup = n != null ? n.superName : (mc().containsKey(c) ? mc().get(c).superName() : (peers.containsKey(c) ? peers.get(c).superName : null));
             if (sup == null) break;
             if (isSubclassOf(b, sup)) return sup;
             c = sup;

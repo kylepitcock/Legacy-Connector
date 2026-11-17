@@ -63,6 +63,25 @@ public final class OverrideBridges {
         return new Plan(from, best[0][0]);
     }
 
+    private static int rank(Type t) {
+        return switch (t.getSort()) {
+            case Type.BOOLEAN, Type.BYTE, Type.CHAR, Type.SHORT, Type.INT -> 0;
+            case Type.LONG -> 1;
+            case Type.FLOAT -> 2;
+            case Type.DOUBLE -> 3;
+            default -> -1;
+        };
+    }
+
+    /** The conversion opcode of a numeric widening of an override's result (int to long, float to double, ...), 0 when none is needed, -1 when the pair is not a widening. */
+    public static int widenOp(Type from, Type to) {
+        int a = rank(from), b = rank(to);
+        if (a < 0 || b < 0 || a > b) return -1;
+        if (a == b) return from.getSort() == to.getSort() || (a == 0 && to.getSort() != Type.BOOLEAN && from.getSort() != Type.BOOLEAN) ? 0 : -1;
+        int[][] ops = {{0, Opcodes.I2L, Opcodes.I2F, Opcodes.I2D}, {0, 0, Opcodes.L2F, Opcodes.L2D}, {0, 0, 0, Opcodes.F2D}};
+        return ops[a][b];
+    }
+
     /** Return values that can be converted: equal primitives, any two references, void with anything. */
     public static boolean returnsCompatible(Type old, Type neu) {
         if (old.getSort() == Type.VOID || neu.getSort() == Type.VOID) return true;
@@ -77,7 +96,7 @@ public final class OverrideBridges {
      */
     public static Plan plan(String oldDesc, String newDesc, String[] reason) {
         Type[] o = Type.getArgumentTypes(oldDesc), n = Type.getArgumentTypes(newDesc);
-        if (!returnsCompatible(Type.getReturnType(oldDesc), Type.getReturnType(newDesc))) {
+        if (!returnsCompatible(Type.getReturnType(oldDesc), Type.getReturnType(newDesc)) && widenOp(Type.getReturnType(oldDesc), Type.getReturnType(newDesc)) < 0) {
             reason[0] = "result changed from " + Type.getReturnType(oldDesc).getClassName() + " to " + Type.getReturnType(newDesc).getClassName();
             return null;
         }
@@ -222,15 +241,14 @@ public final class OverrideBridges {
             mv.visitInsn(Opcodes.RETURN);
         } else {
             if (ro.getSort() == Type.VOID) {
-                switch (rn.getSort()) {
-                    case Type.LONG -> mv.visitInsn(Opcodes.LCONST_0);
-                    case Type.FLOAT -> mv.visitInsn(Opcodes.FCONST_0);
-                    case Type.DOUBLE -> mv.visitInsn(Opcodes.DCONST_0);
-                    case Type.ARRAY, Type.OBJECT -> mv.visitInsn(Opcodes.ACONST_NULL);
-                    default -> mv.visitInsn(Opcodes.ICONST_0);
-                }
+                // a hook that used to return nothing and now returns a boolean: true, "keep going / stay registered" (a tick hook returning false is dropped)
+                if (rn.getSort() == Type.BOOLEAN) mv.visitInsn(Opcodes.ICONST_1);
+                else pushDefault(mv, rn);
             } else if (rn.getSort() >= Type.ARRAY && !rn.equals(ro)) {
                 mv.visitTypeInsn(Opcodes.CHECKCAST, rn.getSort() == Type.ARRAY ? rn.getDescriptor() : rn.getInternalName());
+            } else if (rn.getSort() < Type.ARRAY && ro.getSort() < Type.ARRAY) {
+                int w = widenOp(ro, rn);
+                if (w > 0) mv.visitInsn(w);
             }
             mv.visitInsn(rn.getOpcode(Opcodes.IRETURN));
         }

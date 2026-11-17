@@ -56,4 +56,11 @@ public class GuiIngame extends Gui {
         if (pop > 0.0F) gui.pose().popPose();
         gui.renderItemDecorations(net.minecraft.client.Minecraft.getInstance().font, stack, x, y);
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code GuiIngame.clearChat()}: removes every chat line. */
+    public void mcc125$clearChat() {
+        getChatGUI().clearChatMessages();
+    }
 }

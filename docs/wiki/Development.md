@@ -282,10 +282,55 @@ start sending per-mod fixes, the next step is a plugin interface plus a separate
 
 ## Bytecode check (VerifyError smoke test without the game)
 
-`checkLegacyMod` also runs `loader/.../tools/BytecodeCheck` on every translated jar: ASM's data-flow analyzer over each method, with type relations answered by
-`Hierarchy` (translated mod, shim, synthesized API, libraries). It finds what the JVM rejects as a `VerifyError` when the class first loads (a retyped value
-used as the wrong type); methods touching a type nobody knows (a mod that is not installed) are skipped. The line `bytecode verification: N method(s)
-analysed, M failing` is printed per jar, and failures go into the JSON record as `verifyFailures` / `verifyErrors`.
+`checkLegacyMod` also runs `loader/.../tools/BytecodeCheck` on every translated jar (on by default; `-Pverify=false` skips it): ASM's data-flow analyzer
+over each method of every class, client-only classes included, with type relations answered by `Hierarchy` from class files (nothing is loaded or
+initialised): the translated jar and the other jars of the set, the shim, the synthesized API, and the classpath the task runs on (JDK, libraries,
+Minecraft/NeoForge client classes, the layer's runtime). It finds what the JVM rejects as a `VerifyError` when the class first loads, which the link check
+(owner/name/descriptor of references) cannot see: a value of one type passed where another is required (a 1.20.1 `ModelResourceLocation` handed to a
+`ResourceLocation` parameter, a mixin handler typed with a field's old type), a wrong slot kind, a stack underflow.
+
+- Findings are grouped by (expected type, found type): `found is not assignable to expected` once, with a site count and up to three example sites
+  (`class.method(desc) insn #N (line L) INVOKEVIRTUAL owner.name(desc)`; `N` is the instruction index in the method, not the byte offset; the analyzer
+  reports the first failing instruction per method).
+- Unresolvable types are not errors (the link check owns missing classes): they count as assignable and are tallied as "unknown types"; a method whose
+  control-flow merge needs an unknown class is skipped and tallied as "methods skipped".
+- Output per jar: `verify: N classes, M methods, K findings in J groups (...)`, then the groups; a closing `verify: ... (all jars)` line sums the set.
+  The JSON record (`-PcheckJson`, read by `tools/compat/probe.py`) gets `verify` (counts and `groups[]` with `problem`, `expected`, `found`, `sites`,
+  `examples`) next to the older `verifyFailures` (failing methods) and `verifyErrors` (first 25 messages).
+- `-PverifyFail=true` makes the task exit 1 when anything was found (CI). The check of a 100-jar set is bounded by the translation itself; the library
+  class index is cached across jars.
+- `./gradlew verifyClasses [-PverifyPath=dir,a.jar]` runs the same verifier over class directories or jars (default: the layer's own compiled classes), so
+  a defect in the shim or bridges is found the same way. Unit tests: `loader/src/test/.../tools/BytecodeCheckTest` (synthetic ASM classes).
+
+- Class structure (what the JVM raises as `IncompatibleClassChangeError` while linking): a class that `implements` a non-interface, `extends` an
+  interface, or `extends` a final class (1.20.1 `BlockSource` is an interface, 1.21.1's a record). `final` is ignored for game classes that an access
+  transformer opens (`public-f net.minecraft...` lines of the layer's own `accesstransformer.cfg`, of the set's jars, and of the checked jar), so
+  TerraBlender's `OverworldBiomeBuilder` subclass and the layer's `$LegacyItemPredicate` stand-in are clean.
+- The closing report groups over the whole set (the same type pair in several jars is one group, with the jars listed), then prints the number of
+  distinct unknown types by package: those are the places the verifier is blind. The non-legacy jars of the set (Curios, GeckoLib...) are read into the
+  hierarchy, so what remains unknown is mostly optional integrations with mods that are not in the set (JEI/REI/Jade/Waila/TOP APIs).
+- Negative control used when the verifier was validated (2026-11-16; the switch and the `ModelLocation1201` pass are gone since legacy model locations are a
+  `ResourceLocation` subclass again, see [1.20.1 client events](Legacy-1.20.1-Client-Events.md)): with the id() conversion pass left out,
+  `checkLegacyMod` on ChemLib, SuperMartijn642 core lib and Wireless Chargers reports exactly one group `ModelResourceLocation is not assignable to
+  ResourceLocation` (3 sites in 3 jars: `ChemLib ClientEventHandler.onModelRegister`, `ClientRegistrationHandler.registerModelOverwrite`,
+  `WirelessChargersClient.register`); without the switch it is silent.
+
+Measured (2026-11-16, Windows, `-Xmx3g`): the 108 ATM 9 jars and libraries of `atm9-1201-all` (22,801 classes, 157,263 methods) take about 85 s in
+total, of which the verification is roughly 10 to 25 s over the translation alone; 110 1.12.2 jars (37,215 classes, 242,738 methods) about 2 minutes;
+the `mixed` suite (1.7.10 and one 1.12.2 jar, 6,338 classes) about a minute. Findings on that data are in `tools/dev/agent-tasks/1.20.1-client-verify-findings.md`.
+Shim-hosted versions are quiet (0 findings on 1.7.10 and `mixed`) apart from the synthesized LWJGL GLU classes in 1.12.2.
+
+What it cannot see (so a clean run is not "the game works"):
+
+- **Runtime casts.** A `checkcast` is accepted by the verifier whatever the type; a `ModelResourceLocation` cast to `ResourceLocation` out of a generic
+  container (`Map<?, ResourceLocation>.get`), an `instanceof` that is never true after a type change, a `ClassCastException` from an unchecked
+  generic, reflection and `MethodHandle` lookups by name: all fail only when the code runs.
+- **Registration order, duplicate registrations**, event bus ordering, missing registry entries, mixin target changes and failed injections (the mixin
+  check is `-PmixinExport`), `NoSuchMethodError`/`NoSuchFieldError` of members that exist in the link index but not on the real class.
+- **Rendering and data**: models, textures, shaders, GUI layout, recipes and loot (see the resource check below).
+- Stack-map frames (recomputed by the analyzer, not read), access checks (private/package access across classes), and types the verifier cannot
+  resolve (unknown types count as assignable; an unresolved class in a control-flow merge skips that method).
+- Methods the analyzer skips because of its limits are counted in `methods skipped`; none were skipped in the sets above.
 
 ## Resource check (rendering smoke test without the game)
 

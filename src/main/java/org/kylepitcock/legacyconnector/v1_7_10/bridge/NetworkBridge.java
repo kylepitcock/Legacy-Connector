@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class NetworkBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Network");
+    /** {@code -Dlegacyconnector.traceMessages=true}: log (the first 400) legacy messages as they arrive, to tell "never sent" from "handler did nothing". */
+    public static volatile boolean TRACE = Boolean.getBoolean("legacyconnector.traceMessages");
+    private static int traced;
     private static final String VERSION = "1.7.10";
     private static final Map<String, Channel> CHANNELS = new ConcurrentHashMap<>();
 
@@ -54,6 +57,14 @@ public final class NetworkBridge {
         private final Map<Class<?>, Integer> discriminators = new ConcurrentHashMap<>();
         private final Map<Integer, IMessageHandler<IMessage, IMessage>> serverHandlers = new ConcurrentHashMap<>();
         private final Map<Integer, IMessageHandler<IMessage, IMessage>> clientHandlers = new ConcurrentHashMap<>();
+        /**
+         * The same handlers by message class. FML picked the handler of a message by its class and the side it arrives on; the discriminator only named the
+         * class. A mod that registers one class for both sides ({@code registerMessage(C, C, 5, CLIENT)} and {@code (C, C, 6, SERVER)}, Legends'
+         * {@code registerPacket}) gives the class two ids, and the message travels under one of them.
+         */
+        private final Map<Class<?>, IMessageHandler<IMessage, IMessage>> serverByType = new ConcurrentHashMap<>();
+        private final Map<Class<?>, IMessageHandler<IMessage, IMessage>> clientByType = new ConcurrentHashMap<>();
+        private final java.util.Set<String> unhandled = ConcurrentHashMap.newKeySet();
 
         Channel(String name) {
             this.name = name;
@@ -64,6 +75,7 @@ public final class NetworkBridge {
             types.put(discriminator, type);
             discriminators.putIfAbsent(type, discriminator);
             (side == Side.SERVER ? serverHandlers : clientHandlers).put(discriminator, (IMessageHandler<IMessage, IMessage>) handler);
+            (side == Side.SERVER ? serverByType : clientByType).put(type, (IMessageHandler<IMessage, IMessage>) handler);
         }
 
         private LegacyPayload encode(IMessage message) {
@@ -87,7 +99,14 @@ public final class NetworkBridge {
             boolean toServer = context.player() instanceof ServerPlayer;
             var handler = (toServer ? serverHandlers : clientHandlers).get(payload.discriminator());
             Class<? extends IMessage> type = types.get(payload.discriminator());
-            if (handler == null || type == null) return;
+            if (handler == null && type != null) handler = (toServer ? serverByType : clientByType).get(type);
+            if (handler == null || type == null) {
+                if (unhandled.add(toServer + ":" + payload.discriminator())) {
+                    LOG.warn("Legacy message #{} ({}) arrived {} on channel {}, which has no handler for it: dropped", payload.discriminator(),
+                            type == null ? "unknown type" : type.getName(), toServer ? "at the server" : "at the client", name);
+                }
+                return;
+            }
             try {
                 var ctor = type.getDeclaredConstructor();
                 ctor.setAccessible(true);
@@ -96,6 +115,7 @@ public final class NetworkBridge {
                 MessageContext ctx = toServer
                         ? new MessageContext(Side.SERVER, new NetHandlerPlayServer((EntityPlayerMP) EntityBridge.wrap(context.player())))
                         : new MessageContext(Side.CLIENT, null);
+                if (TRACE && traced++ < 400) LOG.info("Legacy message {} on channel {} arrived {} (player {})", type.getName(), name, toServer ? "at the server" : "at the client", context.player().getName().getString());
                 IMessage reply = handler.onMessage(message, ctx);
                 if (reply != null) context.reply(encode(reply));
             } catch (Exception e) {
@@ -104,6 +124,7 @@ public final class NetworkBridge {
         }
 
         public void sendToServer(IMessage message) {
+            if (TRACE && traced++ < 400) LOG.info("Legacy message {} on channel {} sent to the server", message.getClass().getName(), name);
             PacketDistributor.sendToServer(encode(message));
         }
 
