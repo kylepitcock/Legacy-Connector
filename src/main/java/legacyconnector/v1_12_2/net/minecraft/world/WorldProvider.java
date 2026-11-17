@@ -401,4 +401,8 @@ public abstract class WorldProvider {
         DENY,
         BED_EXPLODES
     }
+
+    /** Adjusts the lightmap colours of the dimension (client; vanilla leaves them). */
+    public void getLightmapColors(float partialTicks, float sunBrightness, float skyLight, float blockLight, float[] colors) {
+    }
 }

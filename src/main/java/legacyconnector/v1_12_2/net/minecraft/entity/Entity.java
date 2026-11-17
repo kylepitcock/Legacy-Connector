@@ -2379,4 +2379,14 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
             // not added
         }
     }
+
+    /** Moves the position to the bottom centre of the bounding box without marking the entity as teleported; true when it moved. */
+    public boolean setPositionNonDirty() {
+        AxisAlignedBB box = getEntityBoundingBox();
+        double x = (box.minX + box.maxX) / 2.0D;
+        double z = (box.minZ + box.maxZ) / 2.0D;
+        boolean moved = x != mcc$local_posX || box.minY != mcc$local_posY || z != mcc$local_posZ;
+        if (moved) setPosition(x, box.minY, z);
+        return moved;
+    }
 }

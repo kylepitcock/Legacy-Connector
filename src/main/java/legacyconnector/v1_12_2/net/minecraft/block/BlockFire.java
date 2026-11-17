@@ -172,4 +172,14 @@ public class BlockFire extends Block {
     public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
         return BlockFaceShape.UNDEFINED;
     }
+
+    /** The burn chance recorded for a block ({@link #setFireInfo}), 0 when none. */
+    public int getFlammability(Block blockIn) {
+        return mcc$flammability(blockIn);
+    }
+
+    /** Whether the block at a position can burn (any face). */
+    public boolean canCatchFire(IBlockAccess world, BlockPos pos) {
+        return canCatchFire(world, pos, EnumFacing.UP);
+    }
 }

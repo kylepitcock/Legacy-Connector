@@ -497,4 +497,10 @@ public class ForgeEventFactory {
         mcc$bus().post(event);
         return event.getList();
     }
+
+    /** Posts the start of an item use; the returned duration (zero when cancelled) is the one the use runs for. */
+    public static int onItemUseStart(EntityLivingBase entity, ItemStack item, int duration) {
+        if (entity == null || !(entity.mcc$modern() instanceof net.minecraft.world.entity.LivingEntity living)) return duration;
+        return EventHooks.onItemUseStart(living, Stacks1122.toModern(item), duration);
+    }
 }
