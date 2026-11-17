@@ -924,3 +924,7 @@ net/minecraft/core/cauldron/CauldronInteraction	interact	(Lnet/minecraft/world/l
 net/minecraft/world/effect/MobEffectInstance	getFactorData	()Ljava/util/Optional;	Round9Compat	getFactorData
 net/minecraft/world/effect/MobEffect	createFactorData	()Ljava/util/Optional;	Round9Compat	createFactorData
 net/minecraft/server/packs/repository/Pack$Metadata	<init>	(Lnet/minecraft/network/chat/Component;ILnet/minecraft/world/flag/FeatureFlagSet;)V	Round9Compat	newPackInfo
+net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	canBrew	(Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;[I)Z	LegacyBrewing	canBrew
+net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	brewPotions	(Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;[I)V	LegacyBrewing	brewPotions
+net/neoforged/neoforge/common/CommonHooks	hasNoElements	(Lnet/minecraft/world/item/crafting/Ingredient;)Z	Round9Compat	hasNoElements
+net/neoforged/fml/config/ModConfig	getHandler	()Llegacyconnector/v1_20_1/net/minecraftforge/fml/config/ConfigFileTypeHandler;	Round9Compat	configHandler

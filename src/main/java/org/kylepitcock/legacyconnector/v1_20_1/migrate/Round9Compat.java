@@ -193,4 +193,17 @@ public final class Round9Compat {
     public static Optional<LegacyFactorData> createFactorData(MobEffect effect) {
         return Optional.empty();
     }
+
+    // ---- Forge API leftovers ----------------------------------------------------------------------------------------------------------------
+
+    /** {@code CommonHooks.hasNoElements(ingredient)}: no item of the ingredient is a real stack. */
+    public static boolean hasNoElements(net.minecraft.world.item.crafting.Ingredient ingredient) {
+        for (ItemStack stack : ingredient.getItems()) if (!stack.isEmpty()) return false;
+        return true;
+    }
+
+    /** {@code ModConfig.getHandler()}: FML 4 reads the files itself; the 1.20.1 handler object answers nothing but is a valid value to pass around. */
+    public static legacyconnector.v1_20_1.net.minecraftforge.fml.config.ConfigFileTypeHandler configHandler(net.neoforged.fml.config.ModConfig config) {
+        return new legacyconnector.v1_20_1.net.minecraftforge.fml.config.ConfigFileTypeHandler();
+    }
 }
