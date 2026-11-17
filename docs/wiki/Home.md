@@ -1,6 +1,6 @@
 # Legacy Connector documentation
 
-Legacy Connector runs unmodified legacy Forge mods (1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, 1.20.1 and Beta 1.7.3; 1.2.5 is experimental and opt-in) on NeoForge 1.21.1 by translating them at load time. This is the
+Legacy Connector runs unmodified legacy Forge mods (1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, 1.20.1 and Beta 1.7.3; 1.2.5 is alpha) on NeoForge 1.21.1 by translating them at load time. This is the
 technical documentation; the [README](../../README.md) has installation and the status overview, and the
 [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists how each mod works.
 
@@ -40,7 +40,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.6.4 estimate](Legacy-1.6.4-Estimate.md) | Effort and approach for a 1.6.4 layer on top of the 1.7.10 shim |
 | [Legacy 1.6.4 corpus](Legacy-1.6.4-Corpus.md) | Measured API usage of 43 real 1.6.4 mods (numeric ids, old packets, renamed classes) |
 | [Legacy b1.7.3](Legacy-b1.7.3.md) | Beta 1.7.3 ModLoader / Forge 1.0 mods: status, how jars are deobfuscated and linked, plan |
-| [Legacy 1.2.5](Legacy-1.2.5.md) | 1.2.5 ModLoader / early Forge mods (experimental, opt-in): mappings (Calamus + Feather), host layer decision, stages, server test results |
+| [Legacy 1.2.5](Legacy-1.2.5.md) | 1.2.5 ModLoader / early Forge mods (alpha): mappings (Calamus + Feather), host layer decision, stages, server test results |
 | [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md) | Measured API usage of 91 real 1.2.5 archives (obfuscated names, ModLoader, ModLoaderMP, Forge 3.x) |
 | [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md) | Effort and approach for a 1.4.7 layer (obfuscated names, ModLoader, sprite sheets) over the 1.5.2/1.6.4 layers |
 | [Legacy 1.4.7 corpus](Legacy-1.4.7-Corpus.md) | Measured API usage of 65 real 1.4.7 mods (notch names, sprite sheets, ModLoader, numeric ids) |

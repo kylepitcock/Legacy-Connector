@@ -20,7 +20,7 @@ public enum LegacyVersion {
      */
     VB1_7_3("b1.7.3"),
     /**
-     * Added in API 0.3 (after Beta 1.7.3, PATCH-compatible): Minecraft 1.2.5 mods (ModLoader / early Forge), experimental and opt-in ({@code experimental.minecraft125}). They are
+     * Added in API 0.3 (after Beta 1.7.3, PATCH-compatible): Minecraft 1.2.5 mods (ModLoader / early Forge), alpha and on by default ({@code versions.minecraft125=false} turns it off). They are
      * translated to 1.4.7 and run on the same shim and bridges, so objects and numeric ids behave as for {@link #V1_4_7}; only the version
      * the mod was written for differs. Declared last so the ordinals of the other constants stay.
      */

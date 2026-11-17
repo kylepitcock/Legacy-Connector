@@ -13,13 +13,13 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 7 | 1.19.2 | Planned | Big modpack base, many mods stopped here | 1.19.2 to 1.20.1 renames and diffs on top of the 1.20.1 pipeline; measured 2026-11-16: mostly changed API, not renames ([estimate](Legacy-1.19.2-Estimate.md)) |
 | 8 | 1.18.2 | Planned | Same | Same, one step further back |
 | 9 | 1.16.5 | Planned | Many abandoned mods and packs; Forge 36 still used MCP names | Same pipeline plus the MCP to Mojang names step |
-| 10 | 1.2.5 | **Experimental, off by default (`experimental.minecraft125`)** (pulled forward by the maintainer on 2026-11-16, ahead of 1.19.2). Three small server builds load (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Not a new shim: Calamus + Feather mappings join the 1.2.5 names to the 1.4.7 layer, plus a `ModLoader`/`BaseMod`/ModLoaderMP/Forge 3.x facade ([design and status](Legacy-1.2.5.md), [corpus](Legacy-1.2.5-Corpus.md)) |
+| 10 | 1.2.5 | **Alpha, on by default since 0.5.0 (`versions.minecraft125=false` turns it off)** (pulled forward by the maintainer on 2026-11-16, ahead of 1.19.2). About a dozen small mods register and draw their content in a real client (Obsidian Hilt, BucketCraft, Magic Wands, Backpack, Elemental Creepers and others); none has been played in survival | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Not a new shim: Calamus + Feather mappings join the 1.2.5 names to the 1.4.7 layer, plus a `ModLoader`/`BaseMod`/ModLoaderMP/Forge 3.x facade ([design and status](Legacy-1.2.5.md), [corpus](Legacy-1.2.5-Corpus.md)) |
 
 ## Release 0.5.0
 
 Conditions agreed with the maintainer on 2026-11-16. Until both hold, every fix reaches players through the nightly build and no stable release is cut.
 
-- **(a)** 1.2.5 has a handful of playable content mods (today: three small server builds load, none has been run in a client).
+- **(a)** 1.2.5 has a handful of playable content mods (today: about a dozen small mods register and draw their content in a client, none has been played in survival; the maintainer asked to take 1.2.5 out of experimental once 0.5 is out).
 - **(b)** 1.20.1 has been played in a real client with an ATM 9 subset (today: single mods reach a world, the combined set does not).
 
 ## Estimates (wall-clock, 2026-11-06 evening; plus or minus 50%)

@@ -33,11 +33,31 @@ class Mc125ToggleTest {
     }
 
     @Test
-    void offByDefault() {
+    void onByDefault() {
         config(null);
-        assertFalse(Mc125Jars.enabled());
+        assertTrue(Mc125Jars.enabled());
         config("");
+        assertTrue(Mc125Jars.enabled());
+    }
+
+    /** The key of the experimental era is still honoured (an explicit false keeps 1.2.5 off), the new key wins when both are set. */
+    @Test
+    void oldExperimentalKeyIsHonoured() {
+        Properties p = new Properties();
+        p.setProperty(Mc125Jars.LEGACY_CONFIG_KEY, "false");
+        Mc125Jars.configure(p);
         assertFalse(Mc125Jars.enabled());
+        p.setProperty(Mc125Jars.CONFIG_KEY, "true");
+        Mc125Jars.configure(p);
+        assertTrue(Mc125Jars.enabled(), "the new key wins");
+        p.setProperty(Mc125Jars.CONFIG_KEY, "false");
+        p.setProperty(Mc125Jars.LEGACY_CONFIG_KEY, "true");
+        Mc125Jars.configure(p);
+        assertFalse(Mc125Jars.enabled());
+        Properties q = new Properties();
+        q.setProperty(Mc125Jars.LEGACY_CONFIG_KEY, "true");
+        Mc125Jars.configure(q);
+        assertTrue(Mc125Jars.enabled());
     }
 
     @Test
@@ -49,7 +69,7 @@ class Mc125ToggleTest {
         config("false");
         assertFalse(Mc125Jars.enabled());
         config("garbage");
-        assertFalse(Mc125Jars.enabled());
+        assertTrue(Mc125Jars.enabled(), "an unreadable value keeps the default");
     }
 
     @Test
@@ -61,16 +81,16 @@ class Mc125ToggleTest {
         System.setProperty(Mc125Jars.PROPERTY, "true");
         assertTrue(Mc125Jars.enabled());
         System.setProperty(Mc125Jars.PROPERTY, " ");
-        assertFalse(Mc125Jars.enabled(), "a blank property is ignored");
+        assertFalse(Mc125Jars.enabled(), "a blank property is ignored (the config says false)");
     }
 
     @Test
     void readFromTheConfigFileNextToTheModsFolder(@TempDir Path dir) throws IOException {
         Path mods = Files.createDirectories(dir.resolve("mods"));
         Files.createDirectories(dir.resolve("config"));
-        Files.writeString(dir.resolve("config").resolve("legacyconnector.properties"), Mc125Jars.CONFIG_KEY + "=true\n");
+        Files.writeString(dir.resolve("config").resolve("legacyconnector.properties"), Mc125Jars.CONFIG_KEY + "=false\n");
         Mc125Jars.configure(LibraryBridges.readConfig(mods));
-        assertTrue(Mc125Jars.enabled());
+        assertFalse(Mc125Jars.enabled());
     }
 
     private static Path emptyModLoaderJar(Path dir) throws IOException {
@@ -97,6 +117,7 @@ class Mc125ToggleTest {
     /** Toggle off (any build): reported with the hint, never hosted. */
     @Test
     void offReportsTheJarAndSaysHowToTurnItOn(@TempDir Path dir) throws IOException {
+        config("false");
         Path jar = emptyModLoaderJar(dir);
         assertNull(LegacyJarInspector.inspect(jar));
         String why = Mc125Jars.takeUnsupported(jar);
@@ -110,18 +131,16 @@ class Mc125ToggleTest {
     @Test
     void onWithTheTableHostsTheJar(@TempDir Path dir) throws IOException {
         org.junit.jupiter.api.Assumptions.assumeTrue(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "needs -Pmappings125 / a bundled table");
-        config("true");
         LegacyJar jar = LegacyJarInspector.inspect(emptyModLoaderJar(dir));
         assertNotNull(jar);
         assertEquals(LegacyVersion.V1_2_5, jar.sourceVersion);
-        assertTrue(Mc125Jars.EXPERIMENTAL_NOTE.contains("experimental (Minecraft 1.2.5)"));
+        assertTrue(Mc125Jars.EXPERIMENTAL_NOTE.contains("beta (Minecraft 1.2.5)"));
     }
 
     /** Toggle on, table absent: nothing hosted, the report names the missing table. */
     @Test
     void onWithoutTheTableHostsNothing(@TempDir Path dir) throws IOException {
         org.junit.jupiter.api.Assumptions.assumeFalse(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "build has the table");
-        config("true");
         Path jar = emptyModLoaderJar(dir);
         assertNull(LegacyJarInspector.inspect(jar));
         String why = Mc125Jars.takeUnsupported(jar);

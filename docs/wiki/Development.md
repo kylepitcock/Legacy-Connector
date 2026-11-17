@@ -251,7 +251,7 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
   Minecraft version with a source switch (default: the source whose latest run has the most mods), and `probe.py` compares a run (`vs`,
   `--fail-on-regression`) only with the previous run of the same version and source. Scheduled and manual CI runs record a nightly-style version
   (`<latest release>-nightly.<run>.<sha>`); the workflow skips `b1.7.3` when Modrinth yields fewer than 20 jars. `python tools/compat/probe.py --self-test` checks the run matching.
-- **1.2.5** (`--mc 1.2.5`, experimental and opt-in) passes `-Pmappings125` to `checkLegacyMod`; the jars are hosted through the 1.4.7 chain, so the records come back labelled 1.4.7 and `probe.py`
+- **1.2.5** (`--mc 1.2.5`, alpha) passes `-Pmappings125` to `checkLegacyMod`; the jars are hosted through the 1.4.7 chain, so the records come back labelled 1.4.7 and `probe.py`
   relabels them. Its history runs carry `stubCounts` (per mod: synthesized empty members it uses), `stubMembers` and `stubDistinct`, which the site shows in the Detail column and in a note on the 1.2.5 tab:
   "Ready to test" there includes calls of empty placeholders, so it is weak evidence. `python -I tools/compat/test_site_data.py` checks that every version in the data files is known to `site.js`, the issue template and the probe workflow.
 - **Corpus results.** `tools/compat/from_corpus.py <report> <latest.log> <mc> [date] --dry-run` prints what a run would change; without `--force` it refuses to write when entries of other mod versions would be
