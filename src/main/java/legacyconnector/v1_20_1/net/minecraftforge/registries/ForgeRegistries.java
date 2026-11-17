@@ -65,6 +65,8 @@ public final class ForgeRegistries {
     // a Supplier in Forge 1.20.1 (like FLUID_TYPES): mods read it as one
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static final java.util.function.Supplier<IForgeRegistry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.loot.IGlobalLootModifier>>> GLOBAL_LOOT_MODIFIER_SERIALIZERS = () -> new ForgeRegistryWrapper(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static final java.util.function.Supplier<IForgeRegistry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.world.BiomeModifier>>> BIOME_MODIFIER_SERIALIZERS = () -> new ForgeRegistryWrapper(NeoForgeRegistries.BIOME_MODIFIER_SERIALIZERS);
     public static final IForgeRegistry<net.neoforged.neoforge.common.world.BiomeModifier> BIOME_MODIFIERS = new ForgeRegistryWrapper(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
     public static final IForgeRegistry<net.neoforged.neoforge.registries.holdersets.HolderSetType> HOLDER_SET_TYPES = new ForgeRegistryWrapper<>(NeoForgeRegistries.HOLDER_SET_TYPES);
 
@@ -99,5 +101,16 @@ public final class ForgeRegistries {
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.world.StructureModifier>>> STRUCTURE_MODIFIER_SERIALIZERS = NeoForgeRegistries.Keys.STRUCTURE_MODIFIER_SERIALIZERS;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.common.world.StructureModifier>> STRUCTURE_MODIFIERS = NeoForgeRegistries.Keys.STRUCTURE_MODIFIERS;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.world.BiomeModifier>>> BIOME_MODIFIER_SERIALIZERS = NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.entity.ai.memory.MemoryModuleType<?>>> MEMORY_MODULE_TYPES = Registries.MEMORY_MODULE_TYPE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.entity.ai.sensing.SensorType<?>>> SENSOR_TYPES = Registries.SENSOR_TYPE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.entity.schedule.Schedule>> SCHEDULES = Registries.SCHEDULE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.entity.schedule.Activity>> ACTIVITIES = Registries.ACTIVITY;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.carver.WorldCarver<?>>> WORLD_CARVERS = Registries.CARVER;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.stats.StatType<?>>> STAT_TYPES = Registries.STAT_TYPE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.entity.decoration.PaintingVariant>> PAINTING_VARIANTS = Registries.PAINTING_VARIANT;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProviderType<?>>> BLOCK_STATE_PROVIDER_TYPES = Registries.BLOCK_STATE_PROVIDER_TYPE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType<?>>> FOLIAGE_PLACER_TYPES = Registries.FOLIAGE_PLACER_TYPE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType<?>>> TREE_DECORATOR_TYPES = Registries.TREE_DECORATOR_TYPE;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.registries.holdersets.HolderSetType>> HOLDER_SET_TYPES = NeoForgeRegistries.Keys.HOLDER_SET_TYPES;
     }
 }
