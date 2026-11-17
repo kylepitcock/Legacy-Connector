@@ -416,6 +416,39 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacyMobFinalizeSpawnBridgeReadsTheTagFromThisInstance() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode c = cls("test/MyMob", mob);
+        MethodNode legacy = method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new VarInsnNode(ALOAD, 4));
+        legacy.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).bridges);
+
+        MethodNode bridge = findDeclared(c, "finalizeSpawn", newDesc);
+        assertNotNull(bridge, "a legacy five-argument override needs a target four-argument bridge");
+        MethodInsnNode tag = find(bridge, MIGRATE + "SpawnContext", "currentTagFor");
+        assertNotNull(tag, "the bridge must query the active tag for this Mob");
+        assertEquals(INVOKESTATIC, tag.getOpcode());
+        assertEquals("(Ljava/lang/Object;)L" + CT + ";", tag.desc);
+        assertEquals(ALOAD, tag.getPrevious().getOpcode());
+        assertEquals(0, ((VarInsnNode) tag.getPrevious()).var);
+
+        MethodInsnNode dispatch = find(bridge, c.name, "finalizeSpawn");
+        assertNotNull(dispatch);
+        assertEquals(INVOKEVIRTUAL, dispatch.getOpcode(), "dispatch must reach the most-derived legacy override");
+        assertEquals(oldDesc, dispatch.desc);
+        verify(c);
+    }
+
+    @Test
     void bridgeIsNotAddedWhenTheModAlreadyUsesTheNewSignature() {
         ClassNode c = cls("test/NewBE", BE);
         method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V").instructions.add(new InsnNode(RETURN));
