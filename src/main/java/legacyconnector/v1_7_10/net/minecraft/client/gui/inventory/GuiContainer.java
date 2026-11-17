@@ -140,6 +140,28 @@ public abstract class GuiContainer extends GuiScreen {
         handleMouseClick(slot, slotId, button, shift ? 1 : 0);
     }
 
+    /**
+     * 1.7.10's GuiContainer closed on Escape and on the inventory key, so a screen that handles keys itself (a focused text
+     * field of its own) keeps the keystroke by not calling super. The hosting modern screen leaves the inventory key to this method
+     * when the legacy GUI overrides keyTyped (a name field would otherwise close the GUI on every "e").
+     */
+    @Override
+    protected void keyTyped(char c, int keyCode) {
+        if (keyCode == 0) return;
+        boolean inventoryKey = false;
+        try {
+            var settings = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(mc);
+            inventoryKey = settings != null && settings.keyBindInventory.getKeyCode() == keyCode;
+        } catch (RuntimeException | LinkageError ignored) {
+            // no settings yet
+        }
+        if (keyCode == 1 || inventoryKey) {
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player != null) player.closeContainer();
+            else super.keyTyped(c, keyCode);
+        }
+    }
+
     /** NEI's {@code containerKeyPress(char, key)}: hands a key to the container screen. */
     public void containerKeyPress(char typed, int key) {
         keyTyped(typed, key);
