@@ -10,11 +10,13 @@ import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.SMELT_RESULT}): 1.12.2 coremods put a hook after {@code TileEntityFurnace.smeltItem} looked up the
  * recipe's result; the hook answers the stack the furnace makes. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(AbstractFurnaceBlockEntity.class)
 public abstract class FurnaceResultHookMixin {
     @WrapOperation(method = "burn", at = @At(value = "INVOKE",

@@ -4169,12 +4169,12 @@
   },
   {
    "name": "Botania",
-   "version": "r1.10-364",
+   "version": "r1.10-363",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (1077 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (1076 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Botania r1.10-363",
@@ -8850,12 +8850,12 @@
   },
   {
    "name": "Enchantment Descriptions",
-   "version": "1.1.20",
+   "version": "1.1.15",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (3 classes). The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (3 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Enchantment ID Extender",
@@ -13799,12 +13799,12 @@
   },
   {
    "name": "Immersive Technology",
-   "version": "1.11.216",
+   "version": "1.9.100",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
-   "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (411 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: zmaster587.advancedRocketry.dimension.DimensionProperties.getPeakInsolationMultiplier()D, zmaster587.advancedRocketry.dimension.DimensionProperties.getPeakInsolationMultiplierWithoutAtmosphere()D."
   },
   {
    "name": "Immersive Vehicles (formerly MTS)",
@@ -14975,12 +14975,12 @@
   },
   {
    "name": "JAOPCA",
-   "version": "1.12.2-2.3.14.38",
+   "version": "1.12.2-2.2.8.103",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (478 classes). The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (153 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "JAOPCAGT5",
@@ -15100,12 +15100,12 @@
   },
   {
    "name": "JourneyMap",
-   "version": "1.12.2-6.0.10",
+   "version": "1.12.2-5.7.1",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (1711 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (2188 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "JourneyMap WebMap",
@@ -18565,12 +18565,12 @@
   },
   {
    "name": "Mod Tweaker",
-   "version": "4.0.19",
+   "version": "4.0.18",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (394 classes). The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (390 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Mod Tweaker 2",
@@ -19924,12 +19924,12 @@
   },
   {
    "name": "MTLib",
-   "version": "3.0.7",
+   "version": "3.0.6",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Multi-Piston",
@@ -21335,12 +21335,12 @@
   },
   {
    "name": "NuclearCraft",
-   "version": "2.19a",
+   "version": "@VERSION@",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
-   "status": "fails",
-   "notes": "Automated check 0.4.14-nightly: needs code from another mod or API that is not available or does not match: nc.integration.gtce.GTCERecipeHelper.addGTCERecipe(Ljava.lang.String;Lnc.recipe.ProcessorRecipe;)V."
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (1043 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NuclearCraft @VERSION@",
@@ -23612,12 +23612,12 @@
   },
   {
    "name": "Reach Fix",
-   "version": "1.1.3",
+   "version": "1.0.9",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (61 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (39 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ReactorCraft",
@@ -29865,12 +29865,12 @@
   },
   {
    "name": "WanionLib",
-   "version": "1.12.2-2.91",
+   "version": "1.12.2-2.5",
    "mc": "1.12.2",
    "source": "probe",
-   "date": "2026-11-13",
+   "date": "2026-11-16",
    "status": "loads",
-   "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (136 classes). The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (110 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "WarpTheory",
@@ -30915,6 +30915,33 @@
    "date": "2026-11-17",
    "status": "works",
    "notes": "Self-tested in 1.2.5 dedicated server self test: 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Applied Energistics",
+   "version": "rv12.a",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: ic2.api.recipe.IMachineRecipeManager.addRecipe(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.Object;)V, powercrystals.minefactoryreloaded.api.IDeepStorageUnit.setStoredItemType(III)V."
+  },
+  {
+   "name": "AtomicStryker Update Check Mod",
+   "version": "1.1.1",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (7 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "PortalGun",
+   "version": "2.0.2",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: iChunUtil. Everything else it uses links; the mod may still work without it."
   }
  ],
  "hidden": [

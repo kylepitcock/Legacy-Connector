@@ -92,6 +92,7 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
 
     private static final class Extension implements IExtension {
         private final ConcurrentHashMap<String, Boolean> legacyRoots = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, List<String>> pendingChecks = new ConcurrentHashMap<>();
         private volatile boolean rootsScanned;
         private java.lang.reflect.Field mixinsField;
 
@@ -182,9 +183,32 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
         }
 
         @Override
-        public void postApply(ITargetClassContext context) {}
+        public void postApply(ITargetClassContext context) {
+            try {
+                if (mixinsField == null) return;
+                List<String> ours = null;
+                for (Object m : (Collection<?>) mixinsField.get(context)) {
+                    IMixinInfo info = (IMixinInfo) m;
+                    if (MixinSelfCheck.CONFIGS.contains(info.getConfig().getName())) {
+                        if (ours == null) ours = new ArrayList<>();
+                        ours.add(info.getClassName().replace('.', '/'));
+                    }
+                }
+                // MixinExtras applies WrapOperation/ModifyExpressionValue/WrapMethod injections in its own postApply, possibly after this one: the scan waits for export()
+                if (ours != null) pendingChecks.put(context.getClassNode().name, ours);
+            } catch (Throwable t) {
+                // the self check must never disturb class loading
+            }
+        }
 
         @Override
-        public void export(MixinEnvironment env, String name, boolean force, ClassNode classNode) {}
+        public void export(MixinEnvironment env, String name, boolean force, ClassNode classNode) {
+            try {
+                List<String> ours = pendingChecks.remove(classNode.name);
+                if (ours != null) MixinSelfCheck.record(classNode, ours);
+            } catch (Throwable t) {
+                // the self check must never disturb class loading
+            }
+        }
     }
 }

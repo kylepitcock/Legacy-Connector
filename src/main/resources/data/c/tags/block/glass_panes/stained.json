@@ -1,0 +1,20 @@
+{
+  "values": [
+    "#c:glass_panes/white",
+    "#c:glass_panes/orange",
+    "#c:glass_panes/magenta",
+    "#c:glass_panes/light_blue",
+    "#c:glass_panes/yellow",
+    "#c:glass_panes/lime",
+    "#c:glass_panes/pink",
+    "#c:glass_panes/gray",
+    "#c:glass_panes/light_gray",
+    "#c:glass_panes/cyan",
+    "#c:glass_panes/purple",
+    "#c:glass_panes/blue",
+    "#c:glass_panes/brown",
+    "#c:glass_panes/green",
+    "#c:glass_panes/red",
+    "#c:glass_panes/black"
+  ]
+}

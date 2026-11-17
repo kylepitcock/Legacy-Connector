@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.SHULKER_INSERT}): 1.12.2 coremods replaced the "no shulker box in a shulker box" check of the slot (and
  * of the hopper side, {@code ShulkerBoxEntityInsertHookMixin}) by a hook that decides what a shulker box takes. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(ShulkerBoxSlot.class)
 public abstract class ShulkerBoxInsertHookMixin {
     @Inject(method = "mayPlace", at = @At("RETURN"), cancellable = true, require = 0)

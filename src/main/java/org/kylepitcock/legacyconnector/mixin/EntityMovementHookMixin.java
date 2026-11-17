@@ -9,11 +9,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.STEP_DOWN} and {@code NOCLIP_MOVE}): 1.7.10 coremods changed the vertical movement left after
  * {@code Entity.moveEntity}'s collisions (stepping down) and moved entities without collisions themselves. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(Entity.class)
 public abstract class EntityMovementHookMixin {
     @Inject(method = "collide", at = @At("RETURN"), cancellable = true, require = 0)

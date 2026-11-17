@@ -9,11 +9,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.NEIGHBORS_START}, {@code NEIGHBORS_STOP}, {@code NEIGHBOR_NOTIFIED}): 1.7.10 coremods put hooks around
  * {@code World.notifyBlocksOfNeighborChange} and first in {@code World.notifyBlockOfNeighborChange}. No-ops without such hooks.
  */
+@CoremodHook
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelNeighborHookMixin {
     @Inject(method = "updateNeighborsAt", at = @At("HEAD"), require = 0)

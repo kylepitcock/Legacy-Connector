@@ -26,7 +26,7 @@ public final class ModernFeatures1122 {
             net.minecraft.world.level.levelgen.feature.Feature<FC> feature, FC config, Random rand, BlockPos pos) {
         if (world == null || feature == null || pos == null) return false;
         WorldGenLevel level = level(world);
-        if (level == null || !(world.mcc$level() instanceof net.minecraft.server.level.ServerLevel server)) return false;
+        if (level == null || !(world.mcc$levelObject() instanceof net.minecraft.server.level.ServerLevel server)) return false;
         try {
             var random = net.minecraft.util.RandomSource.create(rand == null ? 0L : rand.nextLong());
             return feature.place(config, level, server.getChunkSource().getGenerator(), random, new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()));
@@ -38,7 +38,7 @@ public final class ModernFeatures1122 {
 
     public static boolean place(World world, ResourceKey<ConfiguredFeature<?, ?>> key, Random rand, BlockPos pos) {
         if (world == null || key == null || pos == null) return false;
-        if (!(world.mcc$access() instanceof WorldGenLevel level) || !(world.mcc$level() instanceof net.minecraft.server.level.ServerLevel server)) return false;
+        if (!(world.mcc$access() instanceof WorldGenLevel level) || !(world.mcc$levelObject() instanceof net.minecraft.server.level.ServerLevel server)) return false;
         try {
             var holder = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.CONFIGURED_FEATURE).getHolder(key);
             if (holder.isEmpty()) return false;

@@ -209,7 +209,7 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     }
 
     public int getLightFor(EnumSkyBlock type, BlockPos pos) {
-        if (world == null || world.mcc$level() == null) return type.defaultLightValue;
+        if (world == null || world.mcc$level() == null || world.mcc$access() instanceof net.minecraft.server.level.WorldGenRegion) return type.defaultLightValue;
         return world.mcc$level().getBrightness(type.mcc$modern(), absolute(pos.getX(), pos.getY(), pos.getZ()));
     }
 
@@ -217,7 +217,7 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     }
 
     public int getLightSubtracted(BlockPos pos, int amount) {
-        if (world == null || world.mcc$level() == null) return 0;
+        if (world == null || world.mcc$level() == null || world.mcc$access() instanceof net.minecraft.server.level.WorldGenRegion) return 0;
         var p = absolute(pos.getX(), pos.getY(), pos.getZ());
         return world.mcc$level().getRawBrightness(p, amount);
     }

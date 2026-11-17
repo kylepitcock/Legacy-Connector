@@ -36,6 +36,26 @@ public final class CompatBufferBuilder implements VertexConsumer {
         this.tesselator = tesselator;
     }
 
+    /** The mesh of a finished 1.21.1 draw, seen as a 1.20.1 builder that is "building" until {@link #end()} hands the mesh over (RenderType.end overrides). */
+    private MeshData finished;
+
+    private CompatBufferBuilder(ByteBufferBuilder memory) {
+        this.tesselator = null;
+        this.own = memory;
+    }
+
+    /** A builder over memory owned by someone else (a section buffer pack's {@code builder(RenderType)}). */
+    public static CompatBufferBuilder over(ByteBufferBuilder memory) {
+        return new CompatBufferBuilder(memory);
+    }
+
+    /** A builder that has already been filled and ended: {@link #end()} answers {@code mesh} once. */
+    public static CompatBufferBuilder ofMesh(MeshData mesh) {
+        CompatBufferBuilder b = new CompatBufferBuilder((Tesselator) null);
+        b.finished = mesh;
+        return b;
+    }
+
     /** {@code Tesselator.getBuilder()}. */
     public static synchronized CompatBufferBuilder of(Tesselator tesselator) {
         return OF_TESSELATOR.computeIfAbsent(tesselator, CompatBufferBuilder::new);
@@ -53,11 +73,16 @@ public final class CompatBufferBuilder implements VertexConsumer {
     }
 
     public boolean isBuilding() {
-        return real != null;
+        return real != null || finished != null;
     }
 
     /** 1.20.1 {@code end()} returned the {@code RenderedBuffer}; null when no vertex was written (1.21.1's {@code build()} contract). */
     public MeshData end() {
+        if (finished != null) {
+            MeshData m = finished;
+            finished = null;
+            return m;
+        }
         BufferBuilder b = real;
         if (b == null) throw new IllegalStateException("BufferBuilder not started");
         real = null;
@@ -156,4 +181,20 @@ public final class CompatBufferBuilder implements VertexConsumer {
     }
 
     public void endVertex() {}
+
+    /** {@code BufferBuilder.clear()}: drops what was written so far (the 1.21.1 builder cannot be reset; the memory is reused by the next {@code begin}). */
+    public void clear() {
+        discard();
+    }
+
+    /**
+     * {@code BufferBuilder.setQuadSorting(VertexSorting)}: 1.21.1 sorts a translucent mesh when it is built or uploaded, so the sorting is only remembered
+     * (APPROXIMATION: the quads of a mod-built translucent batch keep their written order).
+     */
+    public void setQuadSorting(com.mojang.blaze3d.vertex.VertexSorting sorting) {}
+
+    /** {@code DefaultedVertexConsumer.defaultColor(r, g, b, a)}: a colour for vertices that write none (APPROXIMATION: ignored; mods set colours explicitly). */
+    public void defaultColor(int r, int g, int b, int a) {}
+
+    public void unsetDefaultColor() {}
 }

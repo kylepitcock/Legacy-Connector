@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "org.kylepitcock.legacyconnector.mixin.compat",
   "compatibilityLevel": "JAVA_21",
+  "plugin": "org.kylepitcock.legacyconnector.mixinplugin.LegacyMixinPlugin",
   "mixins": [
     "ArchitecturyEventImplMixin",
     "HbmTagStackDisplayMixin",

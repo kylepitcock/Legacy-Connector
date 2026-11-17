@@ -130,7 +130,8 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
     @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 fogColor, float brightness) {
         WorldProvider p = provider();
-        if (p == null || !overrides(p, "getFogColor", float.class, float.class)) return fogColor.multiply(brightness * 0.94F + 0.06F, brightness * 0.94F + 0.06F, brightness * 0.91F + 0.09F);
+        // asked every frame: the reflective override check is cached and a provider whose fog colour failed is not asked again (an exception per frame)
+        if (p == null || FAILED.contains(p.getClass().getName() + ":getFogColor") || !overridesCached(p, "getFogColor", float.class, float.class)) return fogColor.multiply(brightness * 0.94F + 0.06F, brightness * 0.94F + 0.06F, brightness * 0.91F + 0.09F);
         try {
             float partial = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
             var legacy = p.getFogColor(Minecraft.getInstance().level.getTimeOfDay(partial), partial);

@@ -41,4 +41,21 @@ public abstract class BlockLog extends BlockRotatedPillar {
     public boolean canSustainLeaves(IBlockAccess world, int x, int y, int z) {
         return true;
     }
+
+    /** 1.7.10: a broken log tells the leaves within four blocks to check for another log (a mod's log; vanilla logs and leaves do it natively). */
+    @Override
+    public void breakBlock(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, Block block, int meta) {
+        super.breakBlock(world, x, y, z, block, meta);
+        if (mcc$vanilla != null) return;
+        int range = 4, reach = range + 1;
+        if (!world.checkChunksExist(x - reach, y - reach, z - reach, x + reach, y + reach, z + reach)) return;
+        for (int i = -range; i <= range; i++) {
+            for (int j = -range; j <= range; j++) {
+                for (int k = -range; k <= range; k++) {
+                    Block b = world.getBlock(x + i, y + j, z + k);
+                    if (b != null && b.isLeaves(world, x + i, y + j, z + k)) b.beginLeavesDecay(world, x + i, y + j, z + k);
+                }
+            }
+        }
+    }
 }

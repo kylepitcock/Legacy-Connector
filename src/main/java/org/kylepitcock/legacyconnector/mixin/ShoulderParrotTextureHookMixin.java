@@ -10,12 +10,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.SHOULDER_TEXTURE}): 1.12.2 coremods put a hook in {@code LayerEntityOnShoulder.renderEntityOnShoulder}
  * that answers the texture of the parrot from its saved tag. The tag of the shoulder being drawn is kept while the layer draws it, for
  * the parrot texture mixin. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(ParrotOnShoulderLayer.class)
 public abstract class ShoulderParrotTextureHookMixin {
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/player/Player;FFFFZ)V", at = @At("HEAD"), require = 0)

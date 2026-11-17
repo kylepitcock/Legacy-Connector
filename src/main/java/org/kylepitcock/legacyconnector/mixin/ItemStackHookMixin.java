@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.ITEM_TICK}, {@code ITEM_USED}): 1.7.10 coremods put hooks last in {@code ItemStack.updateAnimation}
  * (every stack of an inventory, each tick) and after a use on a block that counted in {@code ItemStack.tryPlaceItemIntoWorld}. No-ops without such hooks.
  */
+@CoremodHook
 @Mixin(ItemStack.class)
 public abstract class ItemStackHookMixin {
     @Inject(method = "inventoryTick", at = @At("TAIL"), require = 0)

@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.STACK_COMPONENT}): 1.12.2 coremods put a hook last in {@code ItemStack.getTextComponent} (the
  * bracketed, hoverable item name of chat) that answers the component. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(ItemStack.class)
 public abstract class ItemStackComponentHookMixin {
     @Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true, require = 0)

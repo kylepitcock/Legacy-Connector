@@ -9,12 +9,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites1122.ENCHANT_FITS} and {@code DAMAGE_ENCHANT_FITS}): 1.12.2 coremods put a hook last in
  * {@code Enchantment.canApply} (and the damage enchantments' own) that lets an enchantment fit an item the game says it does not. NeoForge's
  * {@code supportsEnchantment} is that question on 1.21.1 (the anvil asks it, and the enchanting table through {@code isPrimaryItemFor}). A no-op without such hooks.
  */
+@CoremodHook
 @Mixin(IItemExtension.class)
 public interface ItemSupportsEnchantmentHookMixin {
     @Inject(method = "supportsEnchantment", at = @At("RETURN"), cancellable = true, require = 0)
