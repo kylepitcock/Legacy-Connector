@@ -1,0 +1,10 @@
+1.5.2 Factorization-0.8
+1.5.2 EnchantingPlus
+1.5.2 backpacks
+1.5.2 CustomNPCs_1.5.2
+1.5.2 CodeChickenCore
+1.5.2 Translocator
+1.5.2 EnderStorage
+1.5.2 ChickenChunks
+1.5.2 Hats1.3
+1.5.2 MorePlayerModels_1.5.2
