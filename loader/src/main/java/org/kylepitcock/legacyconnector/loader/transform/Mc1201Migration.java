@@ -651,8 +651,8 @@ final class Mc1201Migration {
         for (Bridge b : t.bridges) {
             if (isMobFinalizeSpawnBridge(b)
                     && (h.isSubclassOf(node.name, b.owner()) || h.reachesUnknown(node.name))
-                    && h.hasNonSyntheticVirtualModDeclaration(node.name, b.oldName(), b.oldDesc())
-                    && h.hasNonSyntheticVirtualModDeclaration(node.name, b.newName(), b.newDesc())) {
+                    && h.hasNonSyntheticModDeclaration(node.name, b.oldName(), b.oldDesc())
+                    && h.hasNonSyntheticModDeclaration(node.name, b.newName(), b.newDesc())) {
                 throw new IllegalStateException(
                         "Cannot migrate legacy Mob.finalizeSpawn in " + node.name
                                 + ": a Forge 1.20.1 five-argument override and a non-synthetic "
