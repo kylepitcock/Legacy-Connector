@@ -39,6 +39,8 @@ public final class BlockSelfTest {
     private static final List<String> NAMES = new ArrayList<>();
     private static int ticks = -1;
     private static int placed;
+    private static final Map<String, Integer> tilesWritten = new java.util.TreeMap<>();
+    private static final Map<String, String> tilesWriteThrew = new java.util.TreeMap<>();
     private static int skipped;
     private static boolean stopping;
 
@@ -60,6 +62,11 @@ public final class BlockSelfTest {
 
     private static void start(MinecraftServer server) {
         ServerLevel level = server.overworld();
+        if (TileRoundTrip.mode().equals("check")) {
+            // second run over the saved world: nothing is placed, tick 60 looks the first run's tile entities up
+            ticks = 0;
+            return;
+        }
         BlockPos spawn = level.getSharedSpawnPos();
         int i = 0;
         // Inside the spawn chunks (already loaded): generating chunks one by one from here would take minutes.
@@ -289,6 +296,17 @@ public final class BlockSelfTest {
                 continue;
             }
             survived++;
+            // a tile entity must be able to write its NBT: a failing write saves nothing (the chunk keeps its last good data at best)
+            if (level.getBlockEntity(pos) instanceof LegacyBlockEntity l && l.legacy() != null) {
+                try {
+                    l.legacy().writeToNBT(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound());
+                    tilesWritten.merge(l.legacy().getClass().getSimpleName(), 1, Integer::sum);
+                    if (TileRoundTrip.mode().equals("place")) TileRoundTrip.fill(pos, name, l.legacy());
+                } catch (RuntimeException | LinkageError ex) {
+                    // not a problem of the layer by itself: a tile placed by setBlock lacks the state its item's placement sets (a null facing)
+                    tilesWriteThrew.putIfAbsent(name, describe(ex));
+                }
+            }
             try {
                 player.setPos(pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5);
                 var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
@@ -303,7 +321,10 @@ public final class BlockSelfTest {
             }
         }
         // (not while the server shuts down: mods' services are already stopped, and the world is discarded anyway)
-        if (!stopping) {
+        if (TileRoundTrip.mode().equals("place")) TileRoundTrip.idTest();
+        if (TileRoundTrip.mode().equals("place")) TileRoundTrip.write(server.getServerDirectory());
+        if (TileRoundTrip.mode().equals("check")) TileRoundTrip.check(level, server.getServerDirectory());
+        if (!stopping && !TileRoundTrip.mode().equals("place")) {
             for (BlockPos pos : PLACED) {
                 try {
                     level.removeBlock(pos, false);
@@ -312,6 +333,7 @@ public final class BlockSelfTest {
                 }
             }
         }
+        LOG.info("Tile entities that wrote their NBT: {}; whose write threw: {}", tilesWritten, tilesWriteThrew);
         LOG.info("Blocks gone after 60 ticks, per mod: {}", vanished);
         LOG.info("Blocks gone after 60 ticks: {}", goneNames);
         Map<String, String> itemProblems = itemTest(level, player);
