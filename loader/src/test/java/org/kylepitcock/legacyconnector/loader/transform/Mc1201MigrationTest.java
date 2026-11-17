@@ -10,12 +10,14 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -443,6 +445,49 @@ class Mc1201MigrationTest implements Opcodes {
         assertEquals(INVOKESTATIC, helper.getOpcode());
         assertEquals(helperDesc, helper.desc);
         assertNull(find(invoke, mob, "finalizeSpawn"));
+        verify(caller);
+    }
+
+    @Test
+    void virtualMobFinalizeSpawnMethodReferencesUseTheScopedSpawnHelper() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String helperDesc = "(L" + mob + ";L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData
+                + ";L" + CT + ";)L" + spawnData + ";";
+
+        ClassNode caller = cls("test/MobSpawnMethodReference", "java/lang/Object");
+        MethodNode method = method(caller, ACC_PUBLIC | ACC_STATIC, "make", "()Ljava/lang/Object;");
+        Handle bootstrap = new Handle(
+                H_INVOKESTATIC,
+                "java/lang/invoke/LambdaMetafactory",
+                "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                        + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)"
+                        + "Ljava/lang/invoke/CallSite;",
+                false);
+        Handle legacyReference = new Handle(H_INVOKEVIRTUAL, mob, "finalizeSpawn", oldDesc, false);
+        InvokeDynamicInsnNode indy = new InvokeDynamicInsnNode(
+                "apply",
+                "()Ljava/lang/Object;",
+                bootstrap,
+                Type.getMethodType("()Ljava/lang/Object;"),
+                legacyReference,
+                Type.getMethodType("()Ljava/lang/Object;"));
+        method.instructions.add(indy);
+        method.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(caller).calls);
+        assertTrue(indy.bsmArgs[1] instanceof Handle);
+        Handle migrated = (Handle) indy.bsmArgs[1];
+        assertEquals(H_INVOKESTATIC, migrated.getTag());
+        assertEquals(MIGRATE + "SpawnCompat", migrated.getOwner());
+        assertEquals("finalizeSpawn", migrated.getName());
+        assertEquals(helperDesc, migrated.getDesc());
         verify(caller);
     }
 
