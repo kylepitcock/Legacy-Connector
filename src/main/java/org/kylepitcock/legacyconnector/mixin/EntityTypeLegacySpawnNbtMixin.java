@@ -32,9 +32,12 @@ import org.spongepowered.asm.mixin.injection.At;
  */
 @Mixin(EntityType.class)
 public abstract class EntityTypeLegacySpawnNbtMixin {
-    @WrapMethod(method = "create(Lnet/minecraft/server/level/ServerLevel;Ljava/util/function/Consumer;"
+    @WrapMethod(
+            method = "create(Lnet/minecraft/server/level/ServerLevel;Ljava/util/function/Consumer;"
                     + "Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/MobSpawnType;ZZ)"
-                    + "Lnet/minecraft/world/entity/Entity;")
+                    + "Lnet/minecraft/world/entity/Entity;",
+            require = 1
+    )
     private Entity legacyconnector$trackCreateScope(
             ServerLevel level,
             Consumer<Entity> consumer,
