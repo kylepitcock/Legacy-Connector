@@ -379,3 +379,7 @@ net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINER	Ljava/util/func
 net/minecraft/world/level/block/LayeredCauldronBlock	RAIN	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronRain
 net/minecraft/world/level/block/LayeredCauldronBlock	SNOW	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronSnow
 net/minecraft/core/Direction	CODEC	Lnet/minecraft/util/StringRepresentable$EnumCodec;	-	none	Round6Compat.directionCodec
+# model locations (legacy ResourceLocation subclass in translated code, record in 1.21.1)
+net/minecraft/client/renderer/entity/ItemRenderer	TRIDENT_IN_HAND_MODEL	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;	-	Lnet/minecraft/client/resources/model/ModelResourceLocation;	ModelLocationCompat.constant
+net/minecraft/client/renderer/entity/ItemRenderer	SPYGLASS_IN_HAND_MODEL	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;	-	Lnet/minecraft/client/resources/model/ModelResourceLocation;	ModelLocationCompat.constant
+net/minecraft/client/resources/model/ModelBakery	MISSING_MODEL_LOCATION	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;	MISSING_MODEL_VARIANT	Lnet/minecraft/client/resources/model/ModelResourceLocation;	ModelLocationCompat.constant
