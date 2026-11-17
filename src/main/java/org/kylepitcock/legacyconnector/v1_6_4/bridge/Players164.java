@@ -36,6 +36,12 @@ public final class Players164 {
         listen();
     }
 
+    /** {@code GameRegistry.onPlayerChangedDimension(player)} (1.4.7 and 1.5.2): a mod that moved a player itself tells the registered trackers. */
+    public static void firePlayerChangedDimension(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (player == null) return;
+        for (IPlayerTracker t : TRACKERS) guard("onPlayerChangedDimension", () -> t.onPlayerChangedDimension(player));
+    }
+
     public static void registerConnectionHandler(IConnectionHandler handler) {
         if (handler == null) return;
         CONNECTIONS.add(handler);

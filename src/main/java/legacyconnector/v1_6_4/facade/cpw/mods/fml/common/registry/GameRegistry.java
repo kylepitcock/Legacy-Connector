@@ -94,6 +94,11 @@ public final class GameRegistry {
         legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().firePlayerSmeltedEvent(player, item);
     }
 
+    /** 1.4.7 and 1.5.2 {@code onPlayerChangedDimension(player)}: a mod that moved a player itself lets the registered player trackers know. */
+    public static void onPlayerChangedDimension(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Players164.firePlayerChangedDimension(player);
+    }
+
     public static void onPickupNotification(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem item) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().firePlayerItemPickupEvent(player, item);
     }

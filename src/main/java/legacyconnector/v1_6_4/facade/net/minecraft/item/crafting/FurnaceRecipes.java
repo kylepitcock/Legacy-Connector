@@ -50,6 +50,12 @@ public final class FurnaceRecipes {
         };
     }
 
+    /** 1.5.2's {@code getSmeltingResult(itemId)}: the result of smelting any damage of the item with that id, null when there is none. */
+    public static ItemStack getSmeltingResult(legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes self, int id) {
+        Item item = Ids.item(id);
+        return item == null ? null : self.getSmeltingResult(new ItemStack(item, 1, 0));
+    }
+
     public static void addSmelting(legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes self, int id, ItemStack output, float xp) {
         Item item = Ids.item(id);
         if (item != null) self.addSmeltingRecipe(new ItemStack(item, 1, 32767), output, xp);
