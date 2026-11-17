@@ -115,7 +115,11 @@ public class SimpleChannel {
         int index = buf.readByte() & 0xFF;
         IndexedMessageCodec.MessageHandler<?> h = byIndex.get(index);
         if (h == null) throw new IllegalStateException("Unknown message index " + index + " on channel " + name);
-        return new Payload(h, h.decode(buf));
+        // Forge kept the packet buffer alive for the handler (a decoder may keep it and retain() it later, SpectreLib's config sync does): the decoder reads an own
+        // copy of the rest of the packet, never the pooled network buffer that is released when this decode returns
+        net.minecraft.network.FriendlyByteBuf own = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.copiedBuffer(buf));
+        buf.skipBytes(buf.readableBytes());
+        return new Payload(h, h.decode(own));
     }
 
     private void handle(Payload payload, IPayloadContext ctx) {
