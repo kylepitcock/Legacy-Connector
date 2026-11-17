@@ -122,6 +122,7 @@ final class Mc1201Migration {
             addTriggerCodec(node, c);
             addInstanceValidate(node, c);
             addConditionCodec(node, c);
+            addSerializerCodec(node, c);
         }
         return c;
     }
@@ -149,6 +150,25 @@ final class Mc1201Migration {
     }
 
     /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */
+    /**
+     * A class implementing {@code EntityDataSerializer} with the 1.20.1 methods {@code write(FriendlyByteBuf, T)} / {@code read(FriendlyByteBuf)} gets the
+     * {@code codec()} 1.21.1 asks for: a stream codec that calls those two methods on the object (see {@code MiscCompat.serializerCodec}).
+     */
+    private static void addSerializerCodec(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/minecraft/network/syncher/EntityDataSerializer")) return;
+        String desc = "()Lnet/minecraft/network/codec/StreamCodec;";
+        if (declared(node, "codec", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiscCompat", "serializerCodec",
+                "(Ljava/lang/Object;)Lnet/minecraft/network/codec/StreamCodec;", false));
+        m.instructions.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = 1;
+        m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
+    }
+
     private static void addConditionCodec(ClassNode node, Counts c) {
         if (node.interfaces == null || !node.interfaces.contains("net/neoforged/neoforge/common/conditions/ICondition")) return;
         String desc = "()Lcom/mojang/serialization/MapCodec;";

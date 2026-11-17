@@ -183,18 +183,45 @@ public final class MiscCompat {
         return serializer.codec().decode(registryBuf(buf));
     }
 
+    /** The stream codec of a legacy {@code EntityDataSerializer} (a mod class with {@code write(FriendlyByteBuf, T)} and {@code read(FriendlyByteBuf)}). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.network.codec.StreamCodec serializerCodec(Object serializer) {
+        java.lang.reflect.Method write = null;
+        java.lang.reflect.Method read = null;
+        for (java.lang.reflect.Method m : serializer.getClass().getDeclaredMethods()) {
+            if (m.isBridge() || m.isSynthetic()) continue;
+            if (m.getName().equals("write") && m.getParameterCount() == 2 && net.minecraft.network.FriendlyByteBuf.class.isAssignableFrom(m.getParameterTypes()[0])) write = m;
+            if (m.getName().equals("read") && m.getParameterCount() == 1 && net.minecraft.network.FriendlyByteBuf.class.isAssignableFrom(m.getParameterTypes()[0])) read = m;
+        }
+        if (write == null || read == null) throw new IllegalStateException("legacy EntityDataSerializer without write/read: " + serializer.getClass());
+        final java.lang.reflect.Method w = write;
+        final java.lang.reflect.Method r = read;
+        w.setAccessible(true);
+        r.setAccessible(true);
+        return new net.minecraft.network.codec.StreamCodec<net.minecraft.network.FriendlyByteBuf, Object>() {
+            @Override
+            public Object decode(net.minecraft.network.FriendlyByteBuf buf) {
+                try {
+                    return r.invoke(serializer, buf);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void encode(net.minecraft.network.FriendlyByteBuf buf, Object value) {
+                try {
+                    w.invoke(serializer, buf, value);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
     /** {@code ModList.getModObjectById(id)} of 1.20.1: the mod instance of the container. */
     public static java.util.Optional<?> modObjectById(net.neoforged.fml.ModList list, String id) {
-        return list.getModContainerById(id).map(c -> {
-            try {
-                java.lang.reflect.Field f = net.neoforged.fml.javafmlmod.FMLModContainer.class.getDeclaredField("modInstance");
-                f.setAccessible(true);
-                Object o = f.get(c);
-                return o != null ? o : (Object) c;
-            } catch (ReflectiveOperationException | RuntimeException e) {
-                return (Object) c;
-            }
-        });
+        return list.getModContainerById(id).map(legacyconnector.v1_20_1.ForgeApi1201::modContainerGetMod);
     }
 
     public static int getMaxStackSize(Item item) {
