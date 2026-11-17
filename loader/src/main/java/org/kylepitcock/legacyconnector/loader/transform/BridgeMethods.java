@@ -37,7 +37,18 @@ import org.objectweb.asm.tree.VarInsnNode;
  */
 public final class BridgeMethods {
     /** One row of the table, relocated: {@code owner} is the shim class (or interface) the new method belongs to. */
-    record Rule(String owner, String oldName, String oldDesc, String newName, String newDesc) {}
+    record Rule(String owner, String oldName, String oldDesc, String newName, String newDesc, int[] from) {
+        /** The new parameter index each old parameter takes its value from (the table's optional sixth column, e.g. {@code 0,2}); positional when absent. */
+        int source(int oldIndex) {
+            return from == null ? oldIndex : from[oldIndex];
+        }
+
+        /** The old parameter fed by new parameter {@code newIndex}, or -1 when the old method has none (the call passes a default). */
+        int target(int newIndex, int oldCount) {
+            for (int i = 0; i < oldCount; i++) if (source(i) == newIndex) return i;
+            return -1;
+        }
+    }
 
     private static final Map<LegacyVersion, List<String[]>> RAW = new EnumMap<>(LegacyVersion.class);
 
@@ -93,15 +104,19 @@ public final class BridgeMethods {
         if (newArgs.length < oldArgs.length) return null;
         InsnList il = new InsnList();
         il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        int[] slots = new int[newArgs.length];
         int slot = 1;
-        int stack = 1;
         for (int i = 0; i < newArgs.length; i++) {
-            if (i < oldArgs.length) {
-                il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slot));
-                if (!convert(il, newArgs[i], oldArgs[i], h)) return null;
-                stack += Math.max(newArgs[i].getSize(), oldArgs[i].getSize()) + 1;
-            }
+            slots[i] = slot;
             slot += newArgs[i].getSize();
+        }
+        int stack = 1;
+        for (int i = 0; i < oldArgs.length; i++) {
+            int src = rule.source(i);
+            if (src < 0 || src >= newArgs.length) return null;
+            il.add(new VarInsnNode(newArgs[src].getOpcode(Opcodes.ILOAD), slots[src]));
+            if (!convert(il, newArgs[src], oldArgs[i], h)) return null;
+            stack += Math.max(newArgs[src].getSize(), oldArgs[i].getSize()) + 1;
         }
         boolean priv = (old.access & Opcodes.ACC_PRIVATE) != 0;
         il.add(new MethodInsnNode(priv ? Opcodes.INVOKESPECIAL : Opcodes.INVOKEVIRTUAL, node.name, rule.oldName(), rule.oldDesc(), false));
@@ -109,6 +124,9 @@ public final class BridgeMethods {
         Type newRet = Type.getReturnType(rule.newDesc());
         if (newRet.getSort() == Type.VOID) {
             if (oldRet.getSize() > 0) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+        } else if (oldRet.getSort() == Type.VOID) {
+            // an old void hook the engine now asks a result of (1.4.7 onBlockEventReceived/receiveClientEvent): "handled", true for a boolean, else the default
+            il.add(new InsnNode(newRet.getSort() == Type.BOOLEAN ? Opcodes.ICONST_1 : CtorChooser.defaultConst(newRet)));
         } else if (oldRet.getSort() == Type.INT && newRet.getSort() == Type.OBJECT && newRet.getInternalName().equals(h.relocate("net/minecraft/util/IIcon"))) {
             // 1.4.7's sprite sheet index -> the sprite of that index in the owner's sheet (the owner, this, is the block or item)
             il.add(new VarInsnNode(Opcodes.ALOAD, 0));
@@ -138,6 +156,14 @@ public final class BridgeMethods {
         }
         if (from.getSort() == Type.FLOAT && to.getSort() == Type.INT) {
             il.add(new InsnNode(Opcodes.F2I));
+            return true;
+        }
+        if (from.getSort() == Type.FLOAT && to.getSort() == Type.DOUBLE) {   // 1.5.2 speeds were floats, 1.6.4 made them doubles
+            il.add(new InsnNode(Opcodes.F2D));
+            return true;
+        }
+        if (from.getSort() == Type.DOUBLE && to.getSort() == Type.FLOAT) {
+            il.add(new InsnNode(Opcodes.D2F));
             return true;
         }
         if (from.getSort() == Type.BOOLEAN && to.getSort() == Type.INT) {   // 1.4.7's isProviding...Power returned a boolean: full strength
@@ -220,9 +246,10 @@ public final class BridgeMethods {
         Type oldRet = Type.getReturnType(m.desc);
         Type newRet = Type.getReturnType(rule.newDesc());
 
-        boolean needsConversion = newArgs.length != oldArgs.length;
+        boolean needsConversion = newArgs.length != oldArgs.length || rule.from() != null;
         for (int i = 0; i < oldArgs.length; i++) {
             needsConversion |= oldArgs[i].getSort() == Type.INT && (newArgs[i].getSort() == Type.OBJECT || newArgs[i].getSort() == Type.FLOAT);
+            needsConversion |= oldArgs[i].getSort() == Type.FLOAT && newArgs[i].getSort() == Type.DOUBLE;
         }
         InsnList pre = new InsnList();
         if (needsConversion) {
@@ -235,26 +262,31 @@ public final class BridgeMethods {
             }
             for (int i = oldArgs.length - 1; i >= 0; i--) pre.add(new VarInsnNode(oldArgs[i].getOpcode(Opcodes.ISTORE), slots[i]));
             int pushed = 0;
-            for (int i = 0; i < newArgs.length; i++) {
-                if (i < oldArgs.length) {
+            for (int j = 0; j < newArgs.length; j++) {
+                int i = rule.target(j, oldArgs.length);
+                if (i >= 0) {
                     pre.add(new VarInsnNode(oldArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
-                    if (oldArgs[i].getSort() == Type.INT && newArgs[i].getSort() == Type.OBJECT) {
-                        MethodInsnNode conv = fromId(h, newArgs[i].getInternalName());
+                    if (oldArgs[i].getSort() == Type.INT && newArgs[j].getSort() == Type.OBJECT) {
+                        MethodInsnNode conv = fromId(h, newArgs[j].getInternalName());
                         if (conv == null) return null;
                         pre.add(conv);
-                    } else if (oldArgs[i].getSort() == Type.INT && newArgs[i].getSort() == Type.FLOAT) {
+                    } else if (oldArgs[i].getSort() == Type.INT && newArgs[j].getSort() == Type.FLOAT) {
                         pre.add(new InsnNode(Opcodes.I2F));
+                    } else if (oldArgs[i].getSort() == Type.FLOAT && newArgs[j].getSort() == Type.DOUBLE) {
+                        pre.add(new InsnNode(Opcodes.F2D));
                     }
                 } else {
-                    pre.add(new InsnNode(CtorChooser.defaultConst(newArgs[i])));
+                    pre.add(new InsnNode(CtorChooser.defaultConst(newArgs[j])));
                 }
-                pushed += newArgs[i].getSize();
+                pushed += newArgs[j].getSize();
             }
             method.maxLocals = Math.max(method.maxLocals, slot);
             method.maxStack += pushed + 2;
         }
         InsnList post = new InsnList();
-        if (oldRet.getSort() != Type.VOID && !convert(post, newRet, oldRet, h)) return null;
+        if (oldRet.getSort() == Type.VOID) {
+            if (newRet.getSort() != Type.VOID) post.add(new InsnNode(newRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));   // the new method answers what the old one never did
+        } else if (!convert(post, newRet, oldRet, h)) return null;
         if (needsConversion) method.instructions.insertBefore(m, pre);
         m.name = rule.newName();
         m.desc = rule.newDesc();
@@ -274,7 +306,13 @@ public final class BridgeMethods {
         }
         List<Rule> out = new ArrayList<>(raw.size());
         for (String[] f : raw) {
-            out.add(new Rule(h.relocate(f[0]), f[1], relocateDesc(f[2], h), f[3], relocateDesc(f[4], h)));
+            int[] from = null;
+            if (f.length >= 6 && !f[5].isBlank()) {
+                String[] parts = f[5].split(",");
+                from = new int[parts.length];
+                for (int i = 0; i < parts.length; i++) from[i] = Integer.parseInt(parts[i].strip());
+            }
+            out.add(new Rule(h.relocate(f[0]), f[1], relocateDesc(f[2], h), f[3], relocateDesc(f[4], h), from));
         }
         return out;
     }

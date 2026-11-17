@@ -96,6 +96,8 @@ public final class BytecodeCheck {
     private final Hierarchy hierarchy;
     /** Internal names of game classes whose {@code final} an access transformer removes ({@code public-f net.minecraft.Foo}), see {@link #parseFinalRemovals}. */
     private Set<String> unfinal = Set.of();
+    /** Synthesized API types the checked classes implement: the synthesized jar makes them interfaces (see {@link #runClasses}). */
+    private final Set<String> synthInterfaces = new java.util.HashSet<>();
 
     /** The class-level {@code *-f <class>} lines of an access transformer file (member lines, which have a third token, do not touch the class). */
     public static void parseFinalRemovals(String accessTransformer, Set<String> into) {
@@ -157,6 +159,15 @@ public final class BytecodeCheck {
         }
         BytecodeCheck check = new BytecodeCheck(hierarchy);
         check.unfinal = unfinal;
+        // a synthesized API type (NEI 1.4.7's IContainerInputHandler...) is built as an interface exactly when a mod implements it; until then the hierarchy
+        // only knows a placeholder class, which would turn every such "implements" into a false finding
+        for (ClassNode n : nodes) {
+            if (n.interfaces == null) continue;
+            for (String i : n.interfaces) {
+                ClassInfo known = hierarchy.find(i);
+                if (hierarchy.isSynth(i) && known != null && (known.access & Opcodes.ACC_INTERFACE) == 0) check.synthInterfaces.add(i);
+            }
+        }
         for (ClassNode n : nodes) check.check(n);
         return check;
     }
@@ -210,7 +221,7 @@ public final class BytecodeCheck {
         if (cls.interfaces != null) {
             for (String i : cls.interfaces) {
                 ClassInfo info = hierarchy.find(i);
-                if (info != null && (info.access & Opcodes.ACC_INTERFACE) == 0) structure(cls, "implements non-interface " + i.replace('/', '.'));
+                if (info != null && (info.access & Opcodes.ACC_INTERFACE) == 0 && !synthInterfaces.contains(i)) structure(cls, "implements non-interface " + i.replace('/', '.'));
             }
         }
     }
@@ -338,7 +349,7 @@ public final class BytecodeCheck {
 
         @Override
         protected boolean isInterface(Type type) {
-            return (info(type).access & Opcodes.ACC_INTERFACE) != 0;
+            return (info(type).access & Opcodes.ACC_INTERFACE) != 0 || synthInterfaces.contains(type.getInternalName());
         }
 
         @Override
@@ -361,7 +372,7 @@ public final class BytecodeCheck {
             ClassInfo target = lookup(type.getInternalName());
             if (target == null) return true; // unknown: assumed assignable (the link check reports the missing class)
             if (other.getSort() == Type.ARRAY) return (target.access & Opcodes.ACC_INTERFACE) != 0; // arrays implement Cloneable/Serializable
-            if ((target.access & Opcodes.ACC_INTERFACE) != 0) return true; // the JVM verifier treats interface-typed values as Object
+            if ((target.access & Opcodes.ACC_INTERFACE) != 0 || synthInterfaces.contains(type.getInternalName())) return true; // the JVM verifier treats interface-typed values as Object
             for (String c = other.getInternalName(); c != null; ) {
                 if (c.equals(type.getInternalName())) return true;
                 ClassInfo ci = lookup(c);

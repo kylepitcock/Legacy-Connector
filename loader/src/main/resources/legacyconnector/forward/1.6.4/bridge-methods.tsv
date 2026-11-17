@@ -51,3 +51,12 @@ net/minecraft/block/BlockBasePressurePlate	getPowerSupply	(I)I	getPowerFromMeta	
 net/minecraft/block/BlockSlab	getFullSlabName	(I)Ljava/lang/String;	func_150002_b	(I)Ljava/lang/String;
 net/minecraft/item/Item	getPotionEffect	()Ljava/lang/String;	getPotionEffect	(Lnet/minecraft/item/ItemStack;)Ljava/lang/String;
 net/minecraft/item/Item	isPotionIngredient	()Z	isPotionIngredient	(Lnet/minecraft/item/ItemStack;)Z
+# --- hooks the 1.6.4 engine asked with another shape than the 1.7.10 shim (found by the descriptor enumeration of tools/dev/agent-tasks/hook-shapes.md)
+net/minecraft/entity/Entity	playStepSound	(IIII)V	playStepSound	(IIILnet/minecraft/block/Block;)V
+net/minecraft/world/biome/BiomeGenBase	getBiomeGrassColor	()I	getBiomeGrassColor	(III)I
+net/minecraft/world/biome/BiomeGenBase	getBiomeFoliageColor	()I	getBiomeFoliageColor	(III)I
+net/minecraft/world/biome/BiomeGenBase	getFloatTemperature	()F	getFloatTemperature	(III)F
+net/minecraft/block/ITileEntityProvider	createNewTileEntity	(Lnet/minecraft/world/World;)Lnet/minecraft/tileentity/TileEntity;	createNewTileEntity	(Lnet/minecraft/world/World;I)Lnet/minecraft/tileentity/TileEntity;
+net/minecraft/item/ItemFood	getHealAmount	()I	getHealAmount	(Lnet/minecraft/item/ItemStack;)I
+net/minecraft/item/ItemFood	getSaturationModifier	()F	getSaturationModifier	(Lnet/minecraft/item/ItemStack;)F
+net/minecraft/block/Block	idPicked	(Lnet/minecraft/world/World;III)I	getItem	(Lnet/minecraft/world/World;III)Lnet/minecraft/item/Item;

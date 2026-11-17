@@ -151,6 +151,24 @@ public final class ForwardCalls {
             case "static" -> {
                 if (m.getOpcode() == Opcodes.INVOKESPECIAL) return null; // super.x(): a helper that calls back into the override would loop
                 MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[5], rule[6], norm.linkDesc(rule[7]), false);
+                if (m.getOpcode() == Opcodes.INVOKESTATIC && Type.getArgumentTypes(helper.desc).length == Type.getArgumentTypes(m.desc).length + 1) {
+                    // the rule's helper takes the receiver first, but the original call is static (1.5.2's BlockChest.isOcelotBlockingChest, BlockFlowerPot.getMetaForPlant)
+                    // and left none on the stack: spill the arguments, push a null receiver below them
+                    Type[] args = Type.getArgumentTypes(m.desc);
+                    int slot = method.maxLocals;
+                    int[] slots = new int[args.length];
+                    for (int i = 0; i < args.length; i++) {
+                        slots[i] = slot;
+                        slot += args[i].getSize();
+                    }
+                    InsnList pre = new InsnList();
+                    for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
+                    pre.add(new InsnNode(Opcodes.ACONST_NULL));
+                    for (int i = 0; i < args.length; i++) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ILOAD), slots[i]));
+                    method.maxStack += 2 + (slot - method.maxLocals);
+                    method.maxLocals = slot;
+                    list.insertBefore(m, pre);
+                }
                 list.set(m, helper);
                 return helper;
             }

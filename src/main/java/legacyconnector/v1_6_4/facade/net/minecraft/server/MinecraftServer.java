@@ -15,6 +15,13 @@ public final class MinecraftServer {
         return server.getConfigurationManager();
     }
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("Minecraft-Server");
+
+    /** 1.4.7 and 1.5.2 {@code MinecraftServer.logger}: a java.util.logging logger (the 1.7.10 field is log4j's). */
+    public static java.util.logging.Logger mcc$get$logger() {
+        return LOGGER;
+    }
+
     /** {@code setDifficultyForAllWorlds(id)}: 0 peaceful to 3 hard. */
     public static void setDifficultyForAllWorlds(legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer self, int difficultyId) {
         self.mcc$modern().setDifficulty(net.minecraft.world.Difficulty.byId(difficultyId), true);
