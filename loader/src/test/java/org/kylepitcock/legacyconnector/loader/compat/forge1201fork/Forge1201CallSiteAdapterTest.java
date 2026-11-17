@@ -651,6 +651,143 @@ final class Forge1201CallSiteAdapterTest {
         assertThrows(IOException.class, () -> session.apply(node));
     }
 
+    @Test
+    void rewritesExplicitFrameOperandStackTypesAndPreservesOtherEntriesAfterRoundTrip() throws Exception {
+        String className = "sample/FrameStackFixture";
+        Path profileFile = writeProfile("""
+                {
+                  "schemaVersion": 1,
+                  "id": "synthetic-frame-stack-profile",
+                  "rules": [{
+                    "className": "sample/FrameStackFixture",
+                    "methodName": "run",
+                    "methodDescriptor": "()V",
+                    "operations": [{
+                      "type": "frame-stack-type",
+                      "stackIndex": 3,
+                      "sourceType": "sample/LegacyEffect",
+                      "replacementType": "sample/EffectHolder",
+                      "expectedMatches": 4
+                    }]
+                  }]
+                }
+                """);
+
+        ClassNode node = new ClassNode();
+        node.version = Opcodes.V17;
+        node.access = Opcodes.ACC_PUBLIC;
+        node.name = className;
+        node.superName = "java/lang/Object";
+
+        MethodNode method = new MethodNode(
+                Opcodes.ASM9, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "run", "()V", null, null);
+        List<FrameNode> matchingFrames = new ArrayList<>();
+        for (int index = 0; index < 4; index++) {
+            matchingFrames.add(appendNullStackFrame(method,
+                    "java/lang/Object", "java/lang/Object", "java/lang/Object", "sample/LegacyEffect"));
+        }
+        FrameNode unrelatedFrame = appendNullStackFrame(method,
+                "sample/LegacyEffect", "java/lang/Object", "java/lang/Object", "sample/OtherEffect");
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        method.maxStack = 4;
+        method.maxLocals = 0;
+        node.methods.add(method);
+
+        Forge1201CallSiteAdapter.Session session = new Forge1201CallSiteAdapter.Session(
+                Forge1201CallSiteAdapter.load(profileFile));
+        session.apply(node);
+        Forge1201CallSiteAdapter.Stats stats = session.finish();
+
+        assertEquals("synthetic-frame-stack-profile", stats.profileId());
+        assertEquals(1, stats.rulesApplied());
+        assertEquals(1, stats.operationsApplied());
+        assertEquals(5, frameNodes(method).size());
+        for (FrameNode frame : matchingFrames) {
+            assertEquals(List.of(
+                    "java/lang/Object", "java/lang/Object", "java/lang/Object", "sample/EffectHolder"),
+                    frame.stack);
+        }
+        assertEquals("sample/LegacyEffect", unrelatedFrame.stack.get(0),
+                "The same source type in a different stack position must remain unchanged.");
+        assertEquals("sample/OtherEffect", unrelatedFrame.stack.get(3),
+                "A different type at the selected stack position must remain unchanged.");
+
+        ClassWriter writer = new ClassWriter(0);
+        node.accept(writer);
+        ClassNode roundTripped = new ClassNode();
+        new ClassReader(writer.toByteArray()).accept(roundTripped, 0);
+        MethodNode writtenMethod = roundTripped.methods.stream()
+                .filter(candidate -> candidate.name.equals("run"))
+                .findFirst()
+                .orElseThrow();
+        List<FrameNode> writtenFrames = frameNodes(writtenMethod);
+        assertEquals(5, writtenFrames.size());
+        for (int index = 0; index < 4; index++) {
+            assertEquals("sample/EffectHolder", writtenFrames.get(index).stack.get(3));
+        }
+        assertEquals("sample/LegacyEffect", writtenFrames.get(4).stack.get(0));
+        assertEquals("sample/OtherEffect", writtenFrames.get(4).stack.get(3));
+    }
+
+    @Test
+    void failsClosedWhenRequestedFrameStackEntryDoesNotMatch() throws Exception {
+        Path profileFile = writeProfile("""
+                {
+                  "schemaVersion": 1,
+                  "id": "stale-frame-stack-profile",
+                  "rules": [{
+                    "className": "sample/FrameStackMismatchFixture",
+                    "methodName": "run",
+                    "methodDescriptor": "()V",
+                    "operations": [{
+                      "type": "frame-stack-type",
+                      "stackIndex": 3,
+                      "sourceType": "sample/Expected",
+                      "replacementType": "sample/Replacement",
+                      "expectedMatches": 1
+                    }]
+                  }]
+                }
+                """);
+
+        ClassNode node = new ClassNode();
+        node.name = "sample/FrameStackMismatchFixture";
+        MethodNode method = new MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "run", "()V", null, null);
+        method.instructions.add(new FrameNode(
+                Opcodes.F_FULL, 0, new Object[0], 4,
+                new Object[]{"java/lang/Object", "java/lang/Object", "java/lang/Object", "sample/Actual"}));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        node.methods.add(method);
+
+        Forge1201CallSiteAdapter.Session session = new Forge1201CallSiteAdapter.Session(
+                Forge1201CallSiteAdapter.load(profileFile));
+        assertThrows(IOException.class, () -> session.apply(node));
+    }
+
+    private static FrameNode appendNullStackFrame(MethodNode method, String... stackTypes) {
+        for (int index = 0; index < stackTypes.length; index++) {
+            method.instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+        }
+        LabelNode target = new LabelNode();
+        method.instructions.add(new JumpInsnNode(Opcodes.GOTO, target));
+        method.instructions.add(target);
+        FrameNode frame = new FrameNode(
+                Opcodes.F_FULL, 0, new Object[0], stackTypes.length, stackTypes);
+        method.instructions.add(frame);
+        for (int index = 0; index < stackTypes.length; index++) {
+            method.instructions.add(new InsnNode(Opcodes.POP));
+        }
+        return frame;
+    }
+
+    private static List<FrameNode> frameNodes(MethodNode method) {
+        List<FrameNode> result = new ArrayList<>();
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof FrameNode frame) result.add(frame);
+        }
+        return result;
+    }
+
     private static FrameNode findFrame(MethodNode method) {
         for (AbstractInsnNode instruction : method.instructions) {
             if (instruction instanceof FrameNode frame) return frame;
