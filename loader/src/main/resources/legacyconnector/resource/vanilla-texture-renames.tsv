@@ -244,6 +244,10 @@ block	red_nether_brick	red_nether_bricks
 block	red_sandstone_carved	chiseled_red_sandstone
 block	red_sandstone_normal	red_sandstone
 block	red_sandstone_smooth	cut_red_sandstone
+block	redstone_dust_cross	redstone_dust_dot
+block	redstone_dust_cross_overlay	redstone_dust_overlay
+block	redstone_dust_line	redstone_dust_line0
+block	redstone_dust_line_overlay	redstone_dust_overlay
 block	redstone_lamp_off	redstone_lamp
 block	redstone_torch_on	redstone_torch
 block	reeds	sugar_cane
