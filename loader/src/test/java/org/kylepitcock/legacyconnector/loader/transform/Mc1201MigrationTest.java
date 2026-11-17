@@ -459,8 +459,12 @@ class Mc1201MigrationTest implements Opcodes {
                 + ";)L" + spawnData + ";";
         String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
         ClassNode c = cls("test/MyMobWithOverload", mob);
-        method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc).instructions.add(new InsnNode(ACONST_NULL));
-        method(c, ACC_PUBLIC, "finalizeSpawn", newDesc).instructions.add(new InsnNode(ACONST_NULL));
+        MethodNode legacy = method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new InsnNode(ACONST_NULL));
+        legacy.instructions.add(new InsnNode(ARETURN));
+        MethodNode overload = method(c, ACC_PUBLIC, "finalizeSpawn", newDesc);
+        overload.instructions.add(new InsnNode(ACONST_NULL));
+        overload.instructions.add(new InsnNode(ARETURN));
 
         IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalStateException.class, () -> apply(c));
@@ -479,9 +483,13 @@ class Mc1201MigrationTest implements Opcodes {
                 + ";)L" + spawnData + ";";
         String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
         ClassNode parent = cls("test/BaseLegacyMob", mob);
-        method(parent, ACC_PUBLIC, "finalizeSpawn", oldDesc).instructions.add(new InsnNode(ACONST_NULL));
+        MethodNode legacy = method(parent, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new InsnNode(ACONST_NULL));
+        legacy.instructions.add(new InsnNode(ARETURN));
         ClassNode child = cls("test/ChildMobWithOverload", parent.name);
-        method(child, ACC_PUBLIC, "finalizeSpawn", newDesc).instructions.add(new InsnNode(ACONST_NULL));
+        MethodNode overload = method(child, ACC_PUBLIC, "finalizeSpawn", newDesc);
+        overload.instructions.add(new InsnNode(ACONST_NULL));
+        overload.instructions.add(new InsnNode(ARETURN));
 
         IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalStateException.class, () -> apply(parent, child));
