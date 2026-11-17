@@ -40,7 +40,7 @@ class MixinSelfCheckTest {
         // merged handlers as Mixin names them; "applied" ones are called from a target method, "dead" ones only exist
         c.methods.add(method("handler", false));
         c.methods.add(method("inject$zzz000$legacyconnector$onApplied", false));
-        c.methods.add(method("wrapoperation$zzz001$onWrapped", false));
+        c.methods.add(method("wrapOperation$zzz001$onWrapped", false));
         c.methods.add(method("inject$zzz002$onDead", false));
         c.methods.add(method("tick", true, calledHandlers));
         return c;
@@ -67,10 +67,10 @@ class MixinSelfCheckTest {
     @Test
     void countsCallSitesPerHandlerAndIgnoresPlainMethods() {
         Map<String, Integer> refs = MixinSelfCheck.handlerRefs(
-                target("inject$zzz000$legacyconnector$onApplied", "inject$zzz000$legacyconnector$onApplied", "wrapoperation$zzz001$onWrapped"));
+                target("inject$zzz000$legacyconnector$onApplied", "inject$zzz000$legacyconnector$onApplied", "wrapOperation$zzz001$onWrapped"));
         assertEquals(3, refs.size(), refs.toString());
         assertEquals(2, refs.get("inject$zzz000$legacyconnector$onApplied"));
-        assertEquals(1, refs.get("wrapoperation$zzz001$onWrapped"));
+        assertEquals(1, refs.get("wrapOperation$zzz001$onWrapped"));
         assertEquals(0, refs.get("inject$zzz002$onDead"));
     }
 
@@ -85,7 +85,7 @@ class MixinSelfCheckTest {
 
     @Test
     void evaluateSeparatesAppliedFeatureHookAndPending() {
-        ClassNode t = target("inject$zzz000$legacyconnector$onApplied", "wrapoperation$zzz001$onWrapped");
+        ClassNode t = target("inject$zzz000$legacyconnector$onApplied", "wrapOperation$zzz001$onWrapped");
         Map<String, MixinSelfCheck.TargetRecord> records = Map.of("net/minecraft/Target",
                 new MixinSelfCheck.TargetRecord(Set.of("pkg/FeatureMixin", "pkg/HookMixin"), MixinSelfCheck.handlerRefs(t)));
         MixinSelfCheck.MixinDesc feature = MixinSelfCheck.describe(mixin("pkg/FeatureMixin", false, "onApplied", "onWrapped", "onDead"), false, false);

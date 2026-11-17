@@ -40,8 +40,8 @@ public final class MixinSelfCheck {
     private static final String HOOK_DESC = Type.getDescriptor(CoremodHook.class);
     private static final Set<String> INJECTORS = Set.of("Inject", "Redirect", "ModifyArg", "ModifyArgs", "ModifyConstant", "ModifyVariable", "WrapOperation", "WrapMethod",
             "ModifyExpressionValue", "ModifyReturnValue", "WrapWithCondition", "ModifyReceiver");
-    /** {@code inject$zzz000$name}, {@code wrapoperation$zzz001$legacyconnector$name}: prefix, 3 letters of the class id, 3 hex digits of the method id. */
-    private static final Pattern HANDLER = Pattern.compile("^[a-z]+\\$[a-z]{3}[0-9a-f]{3}\\$(.+)$");
+    /** {@code inject$zzz000$name}, {@code wrapOperation$zzz001$legacyconnector$name}: prefix, 3 letters of the class id, 3 hex digits of the method id. */
+    private static final Pattern HANDLER = Pattern.compile("^[a-zA-Z]+\\$[a-z]{3}[0-9a-f]{3}\\$(.+)$");
 
     /** Per transformed target class (internal name): our mixin classes (internal names) applied to it and the call-site count of each merged handler method. */
     private static final Map<String, TargetRecord> RECORDS = new ConcurrentHashMap<>();
@@ -178,11 +178,22 @@ public final class MixinSelfCheck {
                 } else {
                     feature++;
                     warnings.add("mixin injector not applied: " + simple(mixin.name) + "." + inj.handler + " (@" + inj.kind + (inj.methods.isEmpty() ? "" : " " + inj.methods)
-                            + ") on " + loaded.get(0).replace('/', '.') + ": its feature silently does nothing");
+                            + ") on " + loaded.get(0).replace('/', '.') + ": its feature silently does nothing" + why(records.get(loaded.get(0)), mixin.name, inj.handler));
                 }
             }
         }
         return new Result(applied, feature, hookMissing, pending, warnings);
+    }
+
+    /** Why an injector counts as not applied: the mixin never reached the target, its handler was not merged, or it was merged without a call site. */
+    private static String why(TargetRecord rec, String mixin, String handler) {
+        if (!rec.mixins.contains(mixin)) return " (the mixin was not applied to the class)";
+        int merged = 0;
+        for (String k : rec.handlerRefs.keySet()) {
+            Matcher m = HANDLER.matcher(k);
+            if (m.matches() && (m.group(1).equals(handler) || m.group(1).endsWith("$" + handler))) merged++;
+        }
+        return merged == 0 ? " (the handler was not merged)" : " (the handler was merged but nothing calls it: injection point not found)";
     }
 
     /** Call sites of the merged handler for {@code name}: the merged method is {@code prefix$ABCdef0$[source$]name}. */

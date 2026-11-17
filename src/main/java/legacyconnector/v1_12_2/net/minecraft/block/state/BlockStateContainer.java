@@ -27,7 +27,7 @@ public class BlockStateContainer {
         Map<Map<IProperty<?>, Comparable<?>>, StateImplementation> byValues = new java.util.LinkedHashMap<>();
         for (StateImplementation s : states) byValues.put(s.getProperties(), s);
         for (StateImplementation s : states) {
-            s.link(states);
+            s.link(byValues);
             s.buildPropertyValueTable(byValues);
         }
         this.validStates = ImmutableList.copyOf(states);
@@ -184,19 +184,20 @@ public class BlockStateContainer {
             return property.getName() + "=" + name;
         }
 
-        void link(List<StateImplementation> all) {
-            for (StateImplementation other : all) {
-                if (other == this) continue;
-                // a neighbour differs from this state in exactly one property
-                IProperty<?> differing = null;
-                int diffs = 0;
-                for (var e : values.entrySet()) {
-                    if (!e.getValue().equals(other.values.get(e.getKey()))) {
-                        differing = e.getKey();
-                        diffs++;
-                    }
+        /**
+         * Fills the neighbour table: for every property and every other allowed value, the state that differs in exactly that property. One hash lookup per
+         * (property, value), not a scan of all states (a fence with many properties has tens of thousands of states: the scan took minutes).
+         */
+        void link(Map<Map<IProperty<?>, Comparable<?>>, StateImplementation> byValues) {
+            for (var entry : values.entrySet()) {
+                IProperty<?> property = entry.getKey();
+                for (Comparable<?> value : property.getAllowedValues()) {
+                    if (value.equals(entry.getValue())) continue;
+                    Map<IProperty<?>, Comparable<?>> wanted = new HashMap<>(values);
+                    wanted.put(property, value);
+                    StateImplementation other = byValues.get(wanted);
+                    if (other != null) neighbours.put(neighbourKey(property, value), other);
                 }
-                if (diffs == 1) neighbours.put(neighbourKey(differing, other.values.get(differing)), other);
             }
         }
 
