@@ -96,6 +96,8 @@ public final class NotchNames {
     private String[] upFromHierarchy(String owner) {
         if (hierarchy == null || owner.indexOf('/') < 0 && classes.containsKey(owner)) return null;
         var entry = hierarchy.get(owner);
+        // Forge 3.x's classes (forge/ISidedInventory) live in net/minecraft/src/forge of the shim; the API data lists the later package
+        if (entry == null && owner.startsWith("net/minecraft/src/forge/")) entry = hierarchy.get("net/minecraftforge/common/" + owner.substring("net/minecraft/src/forge/".length()));
         if (entry == null) return null;
         java.util.List<String> all = new java.util.ArrayList<>();
         if (entry.superName() != null) all.add(entry.superName());
