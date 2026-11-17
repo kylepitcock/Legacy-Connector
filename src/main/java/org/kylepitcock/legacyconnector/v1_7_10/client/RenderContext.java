@@ -168,7 +168,7 @@ public final class RenderContext {
     private static final boolean ITEM_LOCK = !"false".equals(System.getProperty("legacyconnector.itemLock"));
     private static final boolean RENDER_LOCK =Boolean.getBoolean("legacyconnector.renderLock");
     /** Fair when the render thread takes it too: chunk threads re-taking it back to back must not starve the frame. */
-    private static final java.util.concurrent.locks.ReentrantLock CAPTURE_LOCK = new java.util.concurrent.locks.ReentrantLock(RENDER_LOCK);
+    private static final java.util.concurrent.locks.ReentrantLock CAPTURE_LOCK = new java.util.concurrent.locks.ReentrantLock(true);
     /**
      * {@code -Dlegacyconnector.renderLock=true}: the render thread takes {@link #CAPTURE_LOCK} for every legacy render too, as
      * before the state was made per thread (a mod whose block renderer and tile/item renderer share static scratch state).
