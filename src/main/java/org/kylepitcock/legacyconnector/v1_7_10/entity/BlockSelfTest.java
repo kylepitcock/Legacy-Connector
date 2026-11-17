@@ -231,6 +231,45 @@ public final class BlockSelfTest {
         return root + where.toString();
     }
 
+    private static volatile String activationName;
+    private static volatile long activationStart;
+    private static volatile boolean watchdogStarted;
+
+    /**
+     * A legacy block's activation that never returns (a village spawner whose generator loops until it has found enough grass, which the test world
+     * lacks) would freeze the whole test silently: after 30 s the stuck server thread's stack is logged once, naming the block.
+     */
+    private static void activationWatchdog(String name) {
+        activationName = name;
+        activationStart = System.currentTimeMillis();
+        if (watchdogStarted) return;
+        watchdogStarted = true;
+        Thread server = Thread.currentThread();
+        Thread t = new Thread(() -> {
+            String reported = null;
+            while (true) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                String n = activationName;
+                if (n != null && !n.equals(reported) && System.currentTimeMillis() - activationStart > 30_000) {
+                    reported = n;
+                    StringBuilder sb = new StringBuilder();
+                    int frames = 0;
+                    for (StackTraceElement e : server.getStackTrace()) {
+                        sb.append("\n    at ").append(e);
+                        if (++frames == 14) break;
+                    }
+                    LOG.error("BLOCK SELF TEST: the activation of {} has not returned after 30 s (a legacy loop that needs terrain the test world lacks?){}", n, sb);
+                }
+            }
+        }, "legacyconnector-selftest-watchdog");
+        t.setDaemon(true);
+        t.start();
+    }
+
     private static void tick(MinecraftServer server) {
         if (ticks < 0 || ++ticks != 60) return;
         ServerLevel level = server.overworld();
@@ -252,11 +291,14 @@ public final class BlockSelfTest {
             try {
                 player.setPos(pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5);
                 var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+                activationWatchdog(name);
                 state.useWithoutItem(level, player, hit);
                 activated++;
                 player.closeContainer();
             } catch (RuntimeException | LinkageError ex) {
                 PROBLEMS.putIfAbsent(name, "activation threw " + describe(ex));
+            } finally {
+                activationName = null;
             }
         }
         // (not while the server shuts down: mods' services are already stopped, and the world is discarded anyway)

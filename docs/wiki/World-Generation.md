@@ -8,6 +8,10 @@ Legacy biomes (for example Biomes O' Plenty's) become real 1.21 biomes, generate
 ores, caves and small plants of the closest vanilla biome. Trees and grass come from the legacy biome itself: its
 decorator runs the legacy passes (the biome's own tree and plant generators) and its extra features, gated by Forge's
 terrain-gen events as on 1.7.10. Mods' `IWorldGenerator`s (ores, structures) run for every chunk.
+As on 1.7.10/1.12.2 they run in every dimension and filter by `world.provider` themselves; the `chunkGenerator` argument they get is an
+instance of the class the legacy game passed there (`ChunkProviderHell`/`ChunkGeneratorHell` in the Nether, `...End` in the End,
+`...Generate`/`...Overworld` or `...Flat` in the overworld; a do-nothing stand-in, `GeneratorProviders1710`/`1122`), because many mods
+split the dimensions with `instanceof` and let the overworld be the default branch.
 
 ### Where legacy biomes generate
 
