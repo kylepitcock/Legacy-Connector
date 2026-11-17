@@ -48,7 +48,7 @@ public class BlockLadder extends Block {
     }
 
     private static boolean canAttachTo(World world, BlockPos pos, EnumFacing facing) {
-        var level = world.mcc$level();
+        var level = world.mcc$access();
         var support = pos.offset(facing.getOpposite()).mcc$modern();
         return level.getBlockState(support).isFaceSturdy(level, support, facing.mcc$modern());
     }

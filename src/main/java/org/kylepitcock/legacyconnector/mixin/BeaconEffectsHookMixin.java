@@ -10,11 +10,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.BEACON_EFFECTS}): 1.12.2 coremods put a hook in {@code TileEntityBeacon.addEffectsToPlayers} that is
  * told the area, the effects, the duration and the amplifier the beacon gives. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(BeaconBlockEntity.class)
 public abstract class BeaconEffectsHookMixin {
     @Inject(method = "applyEffects", at = @At("HEAD"), require = 0)

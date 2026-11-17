@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.COLLISION_BOXES}): 1.7.10 coremods took {@code World.getCollidingBoundingBoxes} over (a hook answers the
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * collision shapes of the blocks in a region ({@code getBlockCollisions}: movement, free-space checks); the hook's boxes are those shapes. Only the block
  * part is replaced (the entities' own collisions stay the game's). A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(CollisionGetter.class)
 public interface CollisionGetterHookMixin {
     @Inject(method = "getBlockCollisions", at = @At("HEAD"), cancellable = true, require = 0)

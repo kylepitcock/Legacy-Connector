@@ -196,6 +196,12 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void clientProxies() {
         String names = System.getProperty("legacyconnector.assetsClientProxies");
         if (names == null || names.isEmpty()) return;
+        // the client posts ModelRegistryEvent (mods' @EventBusSubscriber handlers register state mappers and item models there)
+        try {
+            Platform1122.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("ModelRegistryEvent failed: {}", e.toString());
+        }
         for (String name : names.split(",")) {
             try {
                 Class<?> c = Class.forName(name.trim(), true, Thread.currentThread().getContextClassLoader());

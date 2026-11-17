@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.CLOSEST_VULNERABLE}): 1.7.10 coremods replaced the world's "closest player a mob may attack" lookup.
  * Where a mob's nearest-target goal looks for players, the hook's answer is the target. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(NearestAttackableTargetGoal.class)
 public abstract class NearestTargetPlayerHookMixin extends TargetGoal {
     @Shadow

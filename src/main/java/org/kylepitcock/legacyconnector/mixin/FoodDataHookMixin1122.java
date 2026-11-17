@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites1122.FOOD_*} and {@code EXHAUSTION_ADDED/CAP}): 1.12.2 coremods that rework hunger (the 20 food points,
  * the 40 exhaustion, the tick) put hooks into {@code FoodStats}; the shim's food stats are views of this class, so the hooks run here. No-ops without hooks.
  */
+@CoremodHook
 @Mixin(FoodData.class)
 public abstract class FoodDataHookMixin1122 {
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true, require = 0)

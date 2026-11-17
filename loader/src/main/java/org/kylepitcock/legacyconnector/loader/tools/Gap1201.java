@@ -197,6 +197,8 @@ public final class Gap1201 {
 
     // ---- renaming -------------------------------------------------------------------------------------------------------------
 
+    private static final boolean TRANSLATED = Boolean.getBoolean("gap.translate");
+
     private String cls(String name) {
         if (name == null) return null;
         if (name.startsWith("[")) return desc(name);
@@ -204,6 +206,9 @@ public final class Gap1201 {
             String facade = "legacyconnector/v1_20_1/" + name;
             if (target.containsKey(facade)) return facade;
         }
+        // a translated jar already carries the final names: a class that exists in 1.21.1 under this very name is that class, not a legacy name to rename
+        // (the layer's own migration helpers take the real ModelResourceLocation although the mod-facing name is the LegacyModelResourceLocation stand-in)
+        if (TRANSLATED && target.containsKey(name)) return name;
         String r = classRenames.get(name);
         if (r != null) return r;
         int dollar = name.indexOf('$');
