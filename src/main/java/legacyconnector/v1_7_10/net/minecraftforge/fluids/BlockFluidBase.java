@@ -18,7 +18,7 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
  * by scheduled updates ({@link BlockFluidClassic}, {@link BlockFluidFinite}).
  */
 public abstract class BlockFluidBase extends Block implements IFluidBlock {
-    protected static final Map<Block, Boolean> defaultDisplacements = new HashMap<>();
+    public static final Map<Block, Boolean> defaultDisplacements = new HashMap<>();
 
     static {
         defaultDisplacements.put(Blocks.wooden_door, false);

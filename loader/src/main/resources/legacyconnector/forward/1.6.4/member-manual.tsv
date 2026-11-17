@@ -199,3 +199,15 @@ M	net/minecraft/item/ItemDye	func_96603_a	(Lnet/minecraft/world/World;IIII)V	fun
 R	net/minecraft/client/renderer/texture/TextureAtlasSprite	getFrameTextureData	(I)[I	static	legacyconnector/v1_6_4/forward/Forward164	getFrameTextureData	(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;I)[I
 M	net/minecraft/item/ItemStack	func_111282_a	(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/EntityLivingBase;)Z	interactWithEntity
 G	net/minecraft/stats/StatBase	statGuid	Ljava/lang/String;	field	statId	Ljava/lang/String;
+# 1.6.4 gap round (2026-11-17): obfuscated names and fields the 1.7.10 shim carries under their MCP names
+M	net/minecraft/entity/passive/EntityTameable	func_70907_r	()Lnet/minecraft/entity/ai/EntityAISit;	getAISit
+M	net/minecraft/entity/passive/EntitySheep	func_70894_j	(F)F	getHeadRotationPointY
+M	net/minecraft/entity/passive/EntitySheep	func_70890_k	(F)F	getHeadRotationAngleX
+M	net/minecraft/inventory/Slot	func_111238_b	()Z	canBeHovered
+M	net/minecraft/client/gui/GuiButton	func_82252_a	()Z	isMouseOver
+F	net/minecraft/entity/projectile/EntityFishHook	bobber	caughtEntity
+M	net/minecraft/entity/projectile/EntityFishHook	catchFish	()I	handleHookRetraction
+G	net/minecraft/entity/projectile/EntityFishHook	inTile	I	static	legacyconnector/v1_6_4/forward/Forward164	fishHookInTile	(Lnet/minecraft/entity/projectile/EntityFishHook;)I
+R	net/minecraft/tileentity/TileEntityPiston	getStoredBlockID	()I	static	legacyconnector/v1_6_4/forward/Forward164	pistonStoredBlockId	(Lnet/minecraft/tileentity/TileEntityPiston;)I
+G	net/minecraft/stats/Achievement	statName	Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	statName	(Lnet/minecraft/stats/StatBase;)Ljava/lang/String;
+S	net/minecraft/world/World	difficultySetting	I	legacyconnector/v1_6_4/forward/Forward164	setDifficultySetting	(Lnet/minecraft/world/World;I)V

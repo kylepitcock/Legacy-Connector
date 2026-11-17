@@ -42,6 +42,11 @@ public final class Players164 {
         listen();
     }
 
+    /** The 1.6.4 {@code GameRegistry.onPlayerChangedDimension}: runs the trackers' callback for a player a mod moved itself. */
+    public static void changedDimension(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        for (IPlayerTracker t : TRACKERS) guard("onPlayerChangedDimension", () -> t.onPlayerChangedDimension(player));
+    }
+
     private static void listen() {
         if (LISTENING.compareAndSet(false, true)) FMLCommonHandler.instance().bus().register(new Listener());
     }

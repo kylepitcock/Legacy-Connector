@@ -97,4 +97,14 @@ public final class GameRegistry {
     public static void onPickupNotification(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem item) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().firePlayerItemPickupEvent(player, item);
     }
+
+    /** {@code removeBiome(biome)}: Forge 1.6.4 took the biome off the default world type's biome list. */
+    public static void removeBiome(legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome) {
+        if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.removeBiome(biome);
+    }
+
+    /** {@code onPlayerChangedDimension(player)}: tells the registered player trackers the player arrived in another dimension. */
+    public static void onPlayerChangedDimension(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Players164.changedDimension(player);
+    }
 }

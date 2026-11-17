@@ -41,4 +41,9 @@ public final class IBlockAccess {
         legacyconnector.v1_7_10.net.minecraft.block.Block b = self.getBlock(x, y, z);
         return b == null ? legacyconnector.v1_7_10.net.minecraft.block.material.Material.air : b.getMaterial();
     }
+
+    /** 1.6.4 {@code doesBlockHaveSolidTopSurface(x, y, z)} on the block access: the top face is solid. */
+    public static boolean doesBlockHaveSolidTopSurface(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {
+        return legacyconnector.v1_7_10.net.minecraft.world.World.doesBlockHaveSolidTopSurface(self, x, y, z);
+    }
 }

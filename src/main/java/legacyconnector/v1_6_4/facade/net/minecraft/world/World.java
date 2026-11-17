@@ -114,4 +114,54 @@ public final class World {
     public static void scheduleBlockUpdate(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id, int delay) {
         self.scheduleBlockUpdate(x, y, z, blockOf(id), delay);
     }
+
+    // ------------------------------------------------------------------ 1.6.4 gap round (2026-11-17)
+
+    /** 1.6.4 {@code getBrightness(x, y, z, minLight)}: the light curve of the dimension at the block light there, raised to {@code minLight}. */
+    public static float getBrightness(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int minLight) {
+        int light = self.getBlockLightValue(x, y, z);
+        if (light < minLight) light = minLight;
+        float[] table = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(self).lightBrightnessTable;
+        return table[Math.max(0, Math.min(table.length - 1, light))];
+    }
+
+    /** 1.6.4 {@code canSnowAtBody(x, y, z)}: the biome is cold enough and the light dim (1.7.10 asks whether the light counts). */
+    public static boolean canSnowAtBody(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z) {
+        return self.canSnowAtBody(x, y, z, true);
+    }
+
+    /** 1.6.4 {@code isBlockTickScheduledThisTick(x, y, z, blockId)}. */
+    public static boolean isBlockTickScheduledThisTick(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id) {
+        return self.isBlockTickScheduledThisTick(x, y, z, blockOf(id));
+    }
+
+    /** 1.6.4 {@code scheduleBlockUpdateFromLoad(x, y, z, blockId, delay, priority)}: a tick restored from the save. */
+    public static void scheduleBlockUpdateFromLoad(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id, int delay, int priority) {
+        self.scheduleBlockUpdateWithPriority(x, y, z, blockOf(id), delay, priority);
+    }
+
+    /** 1.6.4 {@code scheduleBlockUpdateWithPriority(x, y, z, blockId, delay, priority)}. */
+    public static void scheduleBlockUpdateWithPriority(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id, int delay, int priority) {
+        self.scheduleBlockUpdateWithPriority(x, y, z, blockOf(id), delay, priority);
+    }
+
+    /** 1.6.4 {@code blockGetRenderType(x, y, z)}: the render type of the block there, -1 for air. */
+    public static int blockGetRenderType(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z) {
+        Block b = self.getBlock(x, y, z);
+        return b == null || b == legacyconnector.v1_7_10.net.minecraft.init.Blocks.air ? -1 : b.getRenderType();
+    }
+
+    /**
+     * 1.6.4 {@code World.isBlockTopFacingSurfaceSolid(block, metadata)}: whether a block of this metadata has a solid top face (opaque full
+     * blocks, upside-down stairs, upper half slabs, hoppers and a full snow layer).
+     */
+    public static boolean isBlockTopFacingSurfaceSolid(Block block, int meta) {
+        if (block == null) return false;
+        if (block.getMaterial().isOpaque() && block.renderAsNormalBlock()) return true;
+        if (block instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockStairs) return (meta & 4) != 0;
+        if (block instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockSlab) return (meta & 8) != 0;
+        if (block instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockHopper) return true;
+        if (block instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockSnow) return (meta & 7) == 7;
+        return false;
+    }
 }

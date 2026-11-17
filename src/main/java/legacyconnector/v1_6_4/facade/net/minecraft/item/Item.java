@@ -893,4 +893,9 @@ public final class Item {
     }
 
     // END GENERATED
+
+    /** 1.6.4 {@code Item.getStatName()}: the localized name the statistics screen shows. */
+    public static String getStatName(legacyconnector.v1_7_10.net.minecraft.item.Item self) {
+        return legacyconnector.v1_7_10.net.minecraft.util.StatCollector.translateToLocal(self.getUnlocalizedName() + ".name");
+    }
 }

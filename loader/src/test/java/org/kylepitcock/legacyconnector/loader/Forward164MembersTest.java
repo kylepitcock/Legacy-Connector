@@ -178,4 +178,14 @@ class Forward164MembersTest {
         assertEquals(1, t.fieldCallRules().size());
         assertEquals(1, t.constructorRules().size());
     }
+
+    @Test
+    void gapRoundRowsResolve() {
+        ForwardMembers t = ForwardMembers.forVersion(V);
+        assertEquals("getAISit", t.method("net/minecraft/entity/passive/EntityWolf", "func_70907_r", "()Lnet/minecraft/entity/ai/EntityAISit;", null));
+        assertEquals("getHeadRotationPointY", t.method("net/minecraft/entity/passive/EntitySheep", "func_70894_j", "(F)F", null));
+        assertEquals("canBeHovered", t.method("net/minecraft/inventory/SlotFurnace", "func_111238_b", "()Z", null));
+        assertEquals("handleHookRetraction", t.method("net/minecraft/entity/projectile/EntityFishHook", "catchFish", "()I", null));
+        assertEquals("caughtEntity", t.field("net/minecraft/entity/projectile/EntityFishHook", "bobber", null));
+    }
 }
