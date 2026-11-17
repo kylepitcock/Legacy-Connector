@@ -857,9 +857,16 @@ public class World implements IBlockAccess {
         Level level = mcc$fullLevel();
         net.minecraft.server.MinecraftServer server = level instanceof ServerLevel s ? s.getServer() : null;
         // a client world in single player (1.2.5-1.6.4 mods read Minecraft.theWorld.saveHandler to find the save folder): the integrated server's
-        if (server == null && level != null && level.isClientSide()) server = net.minecraft.client.Minecraft.getInstance().getSingleplayerServer();
+        if (server == null && level != null && level.isClientSide() && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) server = ClientServers.integrated();
         java.io.File dir = server != null ? server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile() : new java.io.File(".");
         return new legacyconnector.v1_7_10.net.minecraft.world.storage.SaveHandler(dir, dir.getName());
+    }
+
+    /** Client-only lookup in its own class: a dedicated server must never load the client classes. */
+    private static final class ClientServers {
+        static net.minecraft.server.MinecraftServer integrated() {
+            return net.minecraft.client.Minecraft.getInstance().getSingleplayerServer();
+        }
     }
 
     /** The {@code saveHandler} field of 1.2.5 to 1.7.10's World (a phantom, see {@link #saveHandler}). */
