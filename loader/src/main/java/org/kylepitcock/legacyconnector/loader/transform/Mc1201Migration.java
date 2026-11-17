@@ -654,7 +654,7 @@ final class Mc1201Migration {
                     && h.hasNonSyntheticModDeclaration(node.name, b.newName(), b.newDesc())) {
                 throw new IllegalStateException(
                         "Cannot migrate Mob.finalizeSpawn in " + node.name
-                                + ": a non-synthetic source declaration with the target four-argument "
+                                + ": a non-synthetic four-argument finalizeSpawn declaration with the target "
                                 + "descriptor exists in this Mob hierarchy. In Forge 1.20.1 that descriptor "
                                 + "was only an overload, not an override point; on NeoForge 1.21.1 it would "
                                 + "become the Mob override and alter vanilla/legacy dispatch.");
