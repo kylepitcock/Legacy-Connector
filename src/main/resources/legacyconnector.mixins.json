@@ -23,6 +23,7 @@
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",
+    "EntityTypeLegacySpawnNbtMixin",
     "ItemStackLegacyNbtMixin",
     "MobBucketItemLegacyNbtMixin",
     "JigsawStructureLegacyVillageMixin",
