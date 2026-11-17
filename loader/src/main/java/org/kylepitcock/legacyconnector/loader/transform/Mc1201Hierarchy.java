@@ -123,20 +123,20 @@ public final class Mc1201Hierarchy {
      * Generated compatibility bridges are synthetic and must not be treated
      * as source declarations when detecting signature collisions.
      */
-    boolean hasNonSyntheticModDeclaration(String owner, String name, String desc) {
-        return hasNonSyntheticModDeclaration(owner, name, desc, new HashSet<>());
+    boolean hasNonSyntheticVirtualModDeclaration(String owner, String name, String desc) {
+        return hasNonSyntheticVirtualModDeclaration(owner, name, desc, new HashSet<>());
     }
 
-    private boolean hasNonSyntheticModDeclaration(String owner, String name, String desc, Set<String> seen) {
+    private boolean hasNonSyntheticVirtualModDeclaration(String owner, String name, String desc, Set<String> seen) {
         if (owner == null || !seen.add(owner)) return false;
         ClassNode node = mod.get(owner);
         if (node == null) return false;
         for (MethodNode method : node.methods) {
             if (method.name.equals(name) && method.desc.equals(desc)
-                    && (method.access & Opcodes.ACC_SYNTHETIC) == 0) return true;
+                    && (method.access & (Opcodes.ACC_SYNTHETIC | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) == 0) return true;
         }
         for (String parent : supers(owner)) {
-            if (hasNonSyntheticModDeclaration(parent, name, desc, seen)) return true;
+            if (hasNonSyntheticVirtualModDeclaration(parent, name, desc, seen)) return true;
         }
         return false;
     }
