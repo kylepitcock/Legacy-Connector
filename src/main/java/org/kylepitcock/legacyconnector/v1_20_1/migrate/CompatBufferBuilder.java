@@ -76,13 +76,33 @@ public final class CompatBufferBuilder implements VertexConsumer {
         return b == null ? null : b.real;
     }
 
+    /**
+     * The 1.21.1 builder a mod's {@code ParticleRenderType.begin(builder, textures)} started, handed to the particle engine: the engine builds and draws it
+     * itself, so this wrapper lets go of it (a mod's 1.20.1 {@code end} is never called by 1.21.1; keeping it would make the next frame's begin fail with
+     * "Already building!").
+     */
+    public static BufferBuilder handOver(Tesselator tesselator) {
+        CompatBufferBuilder b;
+        synchronized (CompatBufferBuilder.class) {
+            b = OF_TESSELATOR.get(tesselator);
+        }
+        if (b == null) return null;
+        BufferBuilder started = b.real;
+        b.real = null;
+        return started;
+    }
+
     /** Takes over a builder that 1.21.1 code started ({@code ParticleRenderType.begin(Tesselator, TextureManager)}): a mod's 1.20.1 code then fills and ends it. */
     public void adopt(BufferBuilder started) {
         this.real = started;
     }
 
+    private static final boolean DIAG = Boolean.getBoolean("legacyconnector.bufferDiag");
+    private Throwable beganAt;
+
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
-        if (real != null) throw new IllegalStateException("Already building!");
+        if (real != null) throw new IllegalStateException("Already building!", beganAt);
+        if (DIAG) beganAt = new Throwable("previous begin");
         real = tesselator != null ? tesselator.begin(mode, format) : new BufferBuilder(own, mode, format);
     }
 

@@ -28,30 +28,6 @@ public final class ApiCompatClient {
         return tracker.getGameTimeDeltaPartialTick(false);
     }
 
-    /** {@code new RenderLevelStageEvent(stage, renderer, poseStack, projection, tick, partialTick, camera, frustum)} of 1.20.1: the model-view matrix is the stack's, the float becomes a tracker. */
-    public static RenderLevelStageEvent newLevelStageEvent(RenderLevelStageEvent.Stage stage, net.minecraft.client.renderer.LevelRenderer renderer,
-            com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Matrix4f projection, int tick, float partialTick, net.minecraft.client.Camera camera,
-            net.minecraft.client.renderer.culling.Frustum frustum) {
-        DeltaTracker tracker = new DeltaTracker() {
-            @Override
-            public float getGameTimeDeltaTicks() {
-                return partialTick;
-            }
-
-            @Override
-            public float getGameTimeDeltaPartialTick(boolean ignoreFrozenGame) {
-                return partialTick;
-            }
-
-            @Override
-            public float getRealtimeDeltaTicks() {
-                return partialTick;
-            }
-        };
-        org.joml.Matrix4f modelView = pose == null ? new org.joml.Matrix4f() : new org.joml.Matrix4f(pose.last().pose());
-        return new RenderLevelStageEvent(stage, renderer, pose, modelView, projection, tick, tracker, camera, frustum);
-    }
-
     /** The float partial tick of a 1.21.1 {@code DeltaTracker} (library callbacks that took the float in 1.20.1). */
     public static float deltaPartial(DeltaTracker tracker) {
         return tracker.getGameTimeDeltaPartialTick(false);

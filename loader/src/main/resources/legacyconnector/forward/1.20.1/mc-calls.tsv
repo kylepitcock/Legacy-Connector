@@ -903,7 +903,6 @@ net/minecraft/client/User	getGameProfile	()Lcom/mojang/authlib/GameProfile;	Roun
 com/mojang/blaze3d/platform/Lighting	setupLevel	(Lorg/joml/Matrix4f;)V	Round8ClientCompat	setupLevelLighting
 net/minecraft/client/resources/MobEffectTextureManager	get	(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;	Round8ClientCompat	effectSprite
 net/minecraft/client/renderer/LevelRenderer	renderSky	(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V	MiscCompat	renderSky	-
-net/neoforged/neoforge/client/event/RenderLevelStageEvent	<init>	(Lnet/neoforged/neoforge/client/event/RenderLevelStageEvent$Stage;Lnet/minecraft/client/renderer/LevelRenderer;Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;IFLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;)V	ApiCompatClient	newLevelStageEvent	-
 net/minecraft/client/renderer/SectionBufferBuilderPack	builder	(Lnet/minecraft/client/renderer/RenderType;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;	Round9ClientCompat	packBuilder	-
 net/minecraft/client/renderer/RenderType	end	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;Lcom/mojang/blaze3d/vertex/VertexSorting;)V	Round9ClientCompat	end	-
 net/minecraft/world/entity/animal/Chicken	$put$FOOD_ITEMS	(Lnet/minecraft/world/item/crafting/Ingredient;)V	AnimalFood1201	setChicken	(Lnet/minecraft/world/item/crafting/Ingredient;)V
