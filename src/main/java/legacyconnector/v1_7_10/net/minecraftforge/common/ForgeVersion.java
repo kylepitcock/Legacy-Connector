@@ -67,6 +67,16 @@ public class ForgeVersion {
         return PENDING;
     }
 
+    /** Forge's own update status: the layer runs no online check and reports the version it presents as current. */
+    public static Status getStatus() {
+        return Status.UP_TO_DATE;
+    }
+
+    /** The newest Forge version known (the one presented). */
+    public static ComparableVersion getTarget() {
+        return new ComparableVersion(getVersion());
+    }
+
     public static int getMajorVersion() {
         return majorVersion;
     }

@@ -33,7 +33,23 @@ public class ItemInWorldManager {
         return mcc$player != null ? mcc$player.blockInteractionRange() : 5.0D;
     }
 
+    /** The player's block reach: the host's block-interaction-range attribute, which also bounds what the server accepts. */
     public void setBlockReachDistance(double distance) {
+        if (mcc$player == null) return;
+        var attribute = mcc$player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE);
+        if (attribute != null) attribute.setBaseValue(Math.max(0.0D, Math.min(distance, 1024.0D)));
+    }
+
+    /** Phantom: redirected to {@link #mcc$get$blockReachDistance} / {@link #mcc$set$blockReachDistance} (Forge made the field public). */
+    @Deprecated
+    public double blockReachDistance;
+
+    public static double mcc$get$blockReachDistance(ItemInWorldManager m) {
+        return m.getBlockReachDistance();
+    }
+
+    public static void mcc$set$blockReachDistance(ItemInWorldManager m, double distance) {
+        m.setBlockReachDistance(distance);
     }
 
     public boolean isCreative() {
