@@ -15,9 +15,11 @@ import net.minecraft.nbt.CompoundTag;
  * Scoped, nest-safe context for the CompoundTag that Forge 1.20.1 passed to
  * EntityType spawn/create and Mob.finalizeSpawn.
  *
- * <p>Pending scopes associate an old tag with one EntityType invocation.
- * Every target EntityType.create call opens a Create scope, even when it has
- * no matching Pending scope. This masks an outer scope from nested creates.
+ * <p>Pending scopes associate an old tag with at most one matching
+ * EntityType.create invocation. The matching Create claims the pending frame,
+ * so later reentrant creates cannot reuse it. Every target EntityType.create
+ * call opens a Create scope, even when it has no matching Pending scope. This
+ * masks an outer scope from nested creates.
  * The exact Mob.finalizeSpawn invocation opens an Active scope for that Mob.
  * A generated legacy override bridge reads the active tag using
  * {@link #currentTagFor(Object)}.</p>
@@ -37,6 +39,7 @@ public final class SpawnContext {
         private final Kind kind;
         private final Object owner;
         private final CompoundTag tag;
+        private boolean claimed;
 
         private Frame(Kind kind, Object owner, CompoundTag tag) {
             this.kind = kind;
@@ -70,7 +73,8 @@ public final class SpawnContext {
         CompoundTag tag = null;
         if (frames != null) {
             Frame top = frames.peek();
-            if (top != null && top.kind == Kind.PENDING && top.owner == entityType) {
+            if (top != null && top.kind == Kind.PENDING && top.owner == entityType && !top.claimed) {
+                top.claimed = true;
                 tag = top.tag;
             }
         }
