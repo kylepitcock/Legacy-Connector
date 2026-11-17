@@ -159,6 +159,6 @@ class MixinSelfCheckTest {
             return;
         }
         assertTrue(b >= 0 && e > b, "docs/wiki/Mixin-Audit.md has no coremod-hooks section");
-        assertEquals(generated, text.substring(b, e + END.length()), "docs/wiki/Mixin-Audit.md is out of date: run this test with MIXIN_DOCS_UPDATE=1");
+        assertEquals(generated, text.substring(b, e + END.length()).replace("\r\n", "\n"), "docs/wiki/Mixin-Audit.md is out of date: run this test with MIXIN_DOCS_UPDATE=1");
     }
 }
