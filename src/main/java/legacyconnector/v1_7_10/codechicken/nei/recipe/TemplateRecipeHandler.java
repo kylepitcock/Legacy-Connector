@@ -56,6 +56,16 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
     public void drawExtras(int recipe) {
     }
 
+    /** NEI 1.4.7's form of {@link #drawExtras(int)} (handlers of that version override this one; the others get the 1.7.10 call). */
+    public void drawExtras(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int recipe) {
+        drawExtras(recipe);
+    }
+
+    /** NEI 1.4.7: {@link #drawProgressBar(int, int, int, int, int, int, int, int)} through the manager. */
+    public void drawProgressBar(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int x, int y, int tx, int ty, int w, int h, int ticks, int direction) {
+        drawProgressBar(x, y, tx, ty, w, h, ticks, direction);
+    }
+
     /** NEI: a bar filling over {@code ticks} ticks, restarting (driven by {@link #cycleticks}). */
     public void drawProgressBar(int x, int y, int tx, int ty, int w, int h, int ticks, int direction) {
         drawProgressBar(x, y, tx, ty, w, h, ticks <= 0 ? 0.0F : (cycleticks % ticks) / (float) ticks, direction);
@@ -154,7 +164,7 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
         legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDisable(2896); // GL_LIGHTING
         mcc$changeTexture(getGuiTexture());
-        drawExtras(recipe);
+        drawExtras(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.INSTANCE, recipe);
     }
 
     @Override
