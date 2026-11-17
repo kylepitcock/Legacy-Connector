@@ -48,7 +48,18 @@ public final class Colors1122 {
             try {
                 IBlockState legacy = StatesBridge1122.toLegacy(state);
                 BlockPos lp = pos == null ? null : new BlockPos(pos.getX(), pos.getY(), pos.getZ());
-                return handler.colorMultiplier(legacy, level == null ? null : world(), lp, tint) | 0xFF000000;
+                IBlockAccess access = level == null ? null : world();
+                // 1.12 handed the colour handler the ACTUAL state (the chunk renderer expanded it): a block that keeps its colour in a tile entity
+                // reports it as a property of getActualState (Colored Redstone's dust reads its COLOR property there)
+                if (legacy != null && access != null && lp != null) {
+                    try {
+                        IBlockState actual = legacy.getBlock().getActualState(legacy, access, lp);
+                        if (actual != null) legacy = actual;
+                    } catch (RuntimeException e) {
+                        // the plain state stands in
+                    }
+                }
+                return handler.colorMultiplier(legacy, access, lp, tint) | 0xFF000000;
             } catch (RuntimeException | LinkageError e) {
                 RenderErrors1122.report("a legacy block colour handler", e);
                 return -1;
