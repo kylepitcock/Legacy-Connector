@@ -64,6 +64,39 @@ public class EntityFireworkRocket extends legacyconnector.v1_12_2.net.minecraft.
         }
     }
 
+    /** Phantom: the ticks the rocket flies before it explodes ({@link #mcc$get$lifetime}; the modern rocket's {@code lifetime}). */
+    @Deprecated
+    public int lifetime;
+    private static final java.lang.reflect.Field MCC$LIFETIME = mcc$lifetimeField();
+
+    private static java.lang.reflect.Field mcc$lifetimeField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.projectile.FireworkRocketEntity.class, "lifetime");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static int mcc$get$lifetime(EntityFireworkRocket e) {
+        var m = e.mcc$self();
+        if (m == null || MCC$LIFETIME == null) return 0;
+        try {
+            return MCC$LIFETIME.getInt(m);
+        } catch (IllegalAccessException ex) {
+            return 0;
+        }
+    }
+
+    public static void mcc$set$lifetime(EntityFireworkRocket e, int v) {
+        var m = e.mcc$self();
+        if (m == null || MCC$LIFETIME == null) return;
+        try {
+            MCC$LIFETIME.setInt(m, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the flight time
+        }
+    }
+
     protected net.minecraft.world.entity.projectile.FireworkRocketEntity mcc$self() {
         return !mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.projectile.FireworkRocketEntity m ? m : null;
     }

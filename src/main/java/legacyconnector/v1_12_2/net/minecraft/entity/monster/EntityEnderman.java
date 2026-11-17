@@ -94,6 +94,27 @@ public class EntityEnderman extends EntityMob {
         return attemptTeleport(x, y, z);
     }
 
+    /** Teleports to a spot about sixteen blocks from where it stands, on the side away from the entity (1.12: how an enderman dodges a thrown thing). */
+    protected boolean teleportToEntity(legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
+        double dx = mcc$x() - mcc$get$posX(target);
+        double dy = mcc$y() + getEyeHeight() / 2.0D - (mcc$get$posY(target) + target.getEyeHeight());
+        double dz = mcc$z() - mcc$get$posZ(target);
+        double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (len > 0.0D) {
+            dx /= len;
+            dy /= len;
+            dz /= len;
+        }
+        double x = mcc$x() + (rand.nextDouble() - 0.5D) * 8.0D - dx * 16.0D;
+        double y = mcc$y() + (rand.nextInt(16) - 8) - dy * 16.0D;
+        double z = mcc$z() + (rand.nextDouble() - 0.5D) * 8.0D - dz * 16.0D;
+        return attemptTeleport(x, y, z);
+    }
+
+    /** The blocks an enderman picks up, live: reads and writes go to the registry {@link #setCarriable} fills. */
+    public static final java.util.Set<legacyconnector.v1_12_2.net.minecraft.block.Block> CARRIABLE_BLOCKS =
+            new org.kylepitcock.legacyconnector.v1_12_2.bridge.CarriableView1122();
+
     @Override
     public float getEyeHeight() {
         return 2.55F;
