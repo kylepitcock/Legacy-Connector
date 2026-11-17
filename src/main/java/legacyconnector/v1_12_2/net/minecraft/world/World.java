@@ -121,6 +121,9 @@ public class World implements IBlockAccess {
 
     /** The full level (also for a generation region's view), or null for a detached world. */
     public Level mcc$level() {
+        if (org.kylepitcock.legacyconnector.core.worldgen.RealLevelGuard.enabled() && acc() != null && !(acc() instanceof Level)) {
+            org.kylepitcock.legacyconnector.core.worldgen.RealLevelGuard.reached("mcc$level()");
+        }
         return level;
     }
 
@@ -1696,7 +1699,7 @@ public class World implements IBlockAccess {
     public boolean canBlockFreezeBody(BlockPos pos, boolean noWaterAdj) {
         if (level == null) return false;
         var p = modern(pos);
-        return level.getBiome(p).value().shouldFreeze(level, p, !noWaterAdj);
+        return acc().getBiome(p).value().shouldFreeze(acc(), p, !noWaterAdj);
     }
 
     public boolean canSnowAt(BlockPos pos, boolean checkLight) {
@@ -1707,7 +1710,7 @@ public class World implements IBlockAccess {
         if (level == null) return false;
         var p = modern(pos);
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.worldAnswer(
-                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.SNOW_AT, this, pos, level.getBiome(p).value().shouldSnow(level, p));
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.SNOW_AT, this, pos, acc().getBiome(p).value().shouldSnow(acc(), p));
     }
 
     public void updateWeatherBody() {

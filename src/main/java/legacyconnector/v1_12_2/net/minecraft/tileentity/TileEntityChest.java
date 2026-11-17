@@ -158,7 +158,7 @@ public class TileEntityChest extends TileEntityLockableLoot implements ITickable
     private boolean isChestAt(BlockPos posIn) {
         if (world == null) return false;
         if (mcc$chest != null) {
-            var level = world.mcc$level();
+            var level = world.mcc$access();
             if (level == null) return false;
             var here = mcc$chest.getBlockState();
             var there = level.getBlockState(new net.minecraft.core.BlockPos(posIn.getX(), posIn.getY(), posIn.getZ()));

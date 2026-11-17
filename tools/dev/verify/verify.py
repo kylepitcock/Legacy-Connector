@@ -10,18 +10,18 @@ import os
 import re
 import sys
 
-BAD = ["b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors", "mixins_not_applied"]
+BAD = ["b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors", "real_level_sites", "mixins_not_applied"]
 GOOD = ["mixins_applied", "b173_mods_constructed", "b173_blocks", "mods_loaded_1201", "blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest"]
 TOLERANCE = 0.02
 # alive/removed after the entity self test is not deterministic (random despawns; Traincraft varies 308 to 319 between identical runs)
 TOLERANCES = {"entities_alive": 0.10}
 COLUMNS = ["b173_mods_constructed", "b173_blocks", "b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "mods_loaded_1201", "blocks_placed", "blocks_ok", "blocks_problems", "entities_alive", "entities_failed", "entities_not_spawned",
            "silent_failed", "placement_placed", "placement_total", "content_items", "content_blocks", "content_entities",
-           "crash_reports", "verify_errors", "mixins_applied", "mixins_not_applied", "reached_selftest"]
+           "crash_reports", "verify_errors", "real_level_sites", "mixins_applied", "mixins_not_applied", "reached_selftest"]
 SHORT = {"b173_mods_constructed": "b173Mod", "b173_blocks": "b173Blk", "b173_callbacks_failed": "b173CbF", "b173_tests_failed": "b173TstF", "mods_failed": "modF", "mods_failed_1201": "modF21", "mods_loaded_1201": "mod21", "blocks_placed": "blkP", "blocks_ok": "blkOk", "blocks_problems": "blkBad", "entities_alive": "entOk",
          "entities_failed": "entF", "entities_not_spawned": "entNS", "silent_failed": "silF", "placement_placed": "plcP",
          "placement_total": "plcT", "content_items": "items", "content_blocks": "blocks", "content_entities": "ents",
-         "crash_reports": "crash", "verify_errors": "verr", "mixins_applied": "mixOk", "mixins_not_applied": "mixBad", "reached_selftest": "test"}
+         "crash_reports": "crash", "verify_errors": "verr", "real_level_sites": "rlSite", "mixins_applied": "mixOk", "mixins_not_applied": "mixBad", "reached_selftest": "test"}
 
 # (regex, [(metric, group)])
 PATTERNS = [
@@ -49,6 +49,8 @@ def parse_log(text, crash_dir=None):
                 for name, idx in groups:
                     m[name] = int(hit.group(idx))  # the last occurrence wins
     m["verify_errors"] = text.count("VerifyError")
+    # the real-level guard (core/worldgen/RealLevelGuard): call sites that reached the real level from a worldgen thread
+    m["real_level_sites"] = text.count("REAL LEVEL GUARD: ")
     # Beta 1.7.3: mods constructed, and the server self tests that logged their own failure (the test names are the logger names)
     constructed = len(re.findall(r"b1\.7\.3 mod \S+ .*constructed", text))
     if constructed or "B1.7.3 BEHAVIOUR TEST" in text:

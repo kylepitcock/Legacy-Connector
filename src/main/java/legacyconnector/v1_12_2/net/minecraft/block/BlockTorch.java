@@ -52,7 +52,7 @@ public class BlockTorch extends Block {
 
     /** Whether the block on that side of the position holds a torch (its facing side is sturdy; fences and walls hold standing ones). */
     private static boolean canPlaceOn(World world, BlockPos pos, EnumFacing facing) {
-        var level = world.mcc$level();
+        var level = world.mcc$access();
         var support = pos.offset(facing.getOpposite()).mcc$modern();
         var state = level.getBlockState(support);
         if (facing == EnumFacing.UP) return net.minecraft.world.level.block.Block.canSupportCenter(level, support, net.minecraft.core.Direction.UP);

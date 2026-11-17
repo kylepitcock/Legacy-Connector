@@ -643,7 +643,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         var entity = new net.minecraft.world.entity.item.ItemEntity(level, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz,
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack));
         entity.setDefaultPickUpDelay();
-        level.addFreshEntity(entity);
+        world.mcc$access().addFreshEntity(entity); // the region while a chunk generates
     }
 
     /** What a player who breaks the block gets: the silk touch stack or the drops (the modern block handles harvesting itself). */
@@ -703,7 +703,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public boolean rotateBlock(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing axis) {
-        var level = world == null ? null : world.mcc$level();
+        var level = world == null ? null : world.mcc$access();
         if (level == null) return false;
         var mp = pos.mcc$modern();
         var state = level.getBlockState(mp);
