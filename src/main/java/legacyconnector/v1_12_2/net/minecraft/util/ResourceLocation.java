@@ -59,8 +59,13 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
 
     @Override
     public String toString() {
-        return namespace + ":" + path;
+        // mods call it per lookup (registry keys, maps keyed by the string); the parts never change, so build it once
+        String s = mcc$string;
+        if (s == null) mcc$string = s = namespace + ":" + path;
+        return s;
     }
+
+    private String mcc$string;
 
     @Override
     public boolean equals(Object o) {

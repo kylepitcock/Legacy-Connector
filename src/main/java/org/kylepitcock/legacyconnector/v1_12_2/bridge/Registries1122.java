@@ -193,6 +193,7 @@ public final class Registries1122 {
             ResourceLocation name = value.getRegistryName();
             byName.putIfAbsent(name, value);
             byValue.putIfAbsent(value, name);
+            valuesSnapshot = null;
         }
 
         /** Types a registry whose entry class is synthesized: the class is looked up by its legacy name once. */
@@ -213,6 +214,8 @@ public final class Registries1122 {
         /** Numeric ids are registration order; the numbering is rebuilt after the registry grows, so lookups stay O(1). */
         private java.util.List<V> byId;
         private Map<V, Integer> idOf;
+        /** The answer of {@link #getValues()} until the next change (cleared by every write to {@link #byName}). */
+        private java.util.List<V> valuesSnapshot;
 
         private void numbering() {
             ensureVanilla();
@@ -256,6 +259,7 @@ public final class Registries1122 {
             V v = byName.remove(key);
             if (v != null) byValue.remove(v);
             byId = null;
+            valuesSnapshot = null;
             return v;
         }
 
@@ -280,6 +284,7 @@ public final class Registries1122 {
             }
             byName.put(name, value);
             byValue.put(value, name);
+            valuesSnapshot = null;
             onRegister.accept(value);
             mcc$added(value);
             if (value instanceof legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry entry) entry.mcc$registered();
@@ -348,7 +353,11 @@ public final class Registries1122 {
         @Override
         public synchronized java.util.List<V> getValues() {
             ensureVanilla();
-            return Collections.unmodifiableList(new ArrayList<>(byName.values()));
+            // one immutable snapshot per change of the registry: mods scan it per call (EntityList.getKey per entity per tick), and a copy per call
+            // was a fifth of the server thread of a 1.12.2 pack
+            var s = valuesSnapshot;
+            if (s == null) valuesSnapshot = s = Collections.unmodifiableList(new ArrayList<>(byName.values()));
+            return s;
         }
 
         @Override
