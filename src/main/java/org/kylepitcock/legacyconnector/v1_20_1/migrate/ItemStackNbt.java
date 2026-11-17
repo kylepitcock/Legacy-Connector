@@ -99,7 +99,33 @@ public final class ItemStackNbt {
         if (stack.isEmpty()) return new CompoundTag();
         CompoundTag legacy = getTagCopy(stack, provider);
         if (legacy == null) legacy = new CompoundTag();
+        return appendEntityStackComponents(stack, legacy);
+    }
 
+    /**
+     * Reconstructs the nullable 1.20.1 ItemStack root tag used by EntityType.spawn(ItemStack).
+     *
+     * <p>Unlike MobBucketItem's post-spawn getOrCreateTag path, EntityType.spawn(ItemStack)
+     * called getTag(), which returned null when the stack had no legacy root data. Preserve
+     * that distinction while also projecting BUCKET_ENTITY_DATA and ENTITY_DATA into their
+     * old root-tag locations. The returned tag is detached and the stack is never mutated.</p>
+     */
+    public static CompoundTag getSpawnTag(ItemStack stack, HolderLookup.Provider provider) {
+        if (stack.isEmpty()) return null;
+
+        CompoundTag legacy = getTagCopy(stack, provider);
+        CustomData bucketData = stack.get(DataComponents.BUCKET_ENTITY_DATA);
+        CustomData entityData = stack.get(DataComponents.ENTITY_DATA);
+        boolean hasBucketData = bucketData != null && !bucketData.isEmpty();
+        boolean hasEntityData = entityData != null && !entityData.isEmpty();
+
+        if (legacy == null && !hasBucketData && !hasEntityData) return null;
+        if (legacy == null) legacy = new CompoundTag();
+        return appendEntityStackComponents(stack, legacy);
+    }
+
+    /** Applies dedicated bucket/entity data components to a detached legacy root-tag view. */
+    private static CompoundTag appendEntityStackComponents(ItemStack stack, CompoundTag legacy) {
         CustomData bucketData = stack.get(DataComponents.BUCKET_ENTITY_DATA);
         if (bucketData != null && !bucketData.isEmpty()) {
             CompoundTag bucket = bucketData.copyTag();
