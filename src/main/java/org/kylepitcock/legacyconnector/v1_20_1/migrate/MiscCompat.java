@@ -224,6 +224,11 @@ public final class MiscCompat {
         return list.getModContainerById(id).map(legacyconnector.v1_20_1.ForgeApi1201::modContainerGetMod);
     }
 
+    /** {@code ItemStackLinkedSet.createTypeAndTagSet()} of 1.20.1: a set of stacks compared by item and tag (1.21.1: item and components). */
+    public static java.util.Set<net.minecraft.world.item.ItemStack> typeAndTagSet() {
+        return net.minecraft.world.item.ItemStackLinkedSet.createTypeAndComponentsSet();
+    }
+
     public static int getMaxStackSize(Item item) {
         return item.getDefaultMaxStackSize();
     }

@@ -972,3 +972,5 @@ net/minecraft/world/item/enchantment/EnchantmentHelper	isEnchantmentCompatible	(
 net/minecraft/world/level/BlockAndTintGetter	getModelDataManager	()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;	Round10Compat	modelDataManager
 net/minecraft/world/level/BlockGetter	getModelDataManager	()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;	Round10Compat	modelDataManager
 net/minecraft/world/entity/projectile/ProjectileUtil	getMobArrow	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;	Round10Compat	mobArrow
+net/minecraft/world/item/ArmorItem	$get$material	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;	ArmorCompat	getMaterial	-
+net/minecraft/world/item/ItemStackLinkedSet	createTypeAndTagSet	()Ljava/util/Set;	MiscCompat	typeAndTagSet	-
