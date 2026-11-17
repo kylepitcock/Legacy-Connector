@@ -574,7 +574,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
             Map<LegacyVersion, Set<String>> bundledElsewhere = classesOfOtherVersions(legacy);
             transformer.bundledByOtherVersions(bundledElsewhere);
-            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion, bundledElsewhere);
+            var modernLibs = modernRequiredLibraries(loading, legacy, List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
+            transformer.modernLibraries(modernLibs);
+            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion, bundledElsewhere, modernLibs);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
             List<RiskyMods.Entry> risky = new ArrayList<>();
@@ -651,6 +653,18 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     keep.add(riskFile);
                     RiskyMods.Summary risk = RiskyMods.read(riskFile);
                     if (risk != null) risky.add(RiskyMods.entry(jar, risk));
+                    if (risk != null) {
+                        for (String lib : risk.libs()) {
+                            String id = lib.substring(0, lib.indexOf(':'));
+                            String message = (jar.mods.isEmpty() ? jar.fileName() : jar.mods.get(0).name != null && !jar.mods.get(0).name.isBlank() ? jar.mods.get(0).name : jar.mods.get(0).legacyId)
+                                    + " requires " + id + " (required dependency): only a modern mod with that id is installed and it lacks " + lib.substring(lib.indexOf(':') + 1)
+                                    + " class(es) of the legacy API this mod was built for; install the legacy " + id + " jar for Minecraft " + jar.version.id() + " in mods/" + jar.version.id() + "/";
+                            LOG.warn("Legacy Connector: {}", message);
+                            MISSING_DEPENDENCIES.computeIfAbsent(jar, k -> new ArrayList<>()).add(message);
+                            String lines = System.getProperty("legacyconnector.missingDependencies", "");
+                            System.setProperty("legacyconnector.missingDependencies", lines + (jar.mods.isEmpty() ? "" : jar.mods.get(0).legacyId) + "\t" + message + "\n");
+                        }
+                    }
                     outcomes.put(jar, sideBySideNotes.getOrDefault(jar, "") + (Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n"));
                     translated.add(out);
                     if (jar.version != null && jar.version.flatNames()) ownerKeeping.add(out);
@@ -756,7 +770,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return out.classes();
     }
 
-    private static final java.util.regex.Pattern TOML_MOD_ID = java.util.regex.Pattern.compile("(?m)^\s*modId\s*=\s*\"([^\"]+)\"");
+    private static final java.util.regex.Pattern TOML_MOD_ID = java.util.regex.Pattern.compile("(?m)^\\s*modId\\s*=\\s*\"([^\"]+)\"");
 
     /**
      * Legacy modern ids that a modern jar of the pack declares or names as a dependency, mapped to the FML id the legacy
@@ -815,19 +829,67 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return out;
     }
 
-    /** The class packages that jars of more than one legacy version define (see {@link CrossVersionPackages}). */
-    private static org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersionPackages(List<LegacyJar> jars, List<LegacyJar> allLegacy, List<Path> modernDirs) {
-        var out = new org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages();
+    /**
+     * The modern mods (jars of the mods folders) whose id some legacy mod lists as a REQUIRED dependency, with the packages they define. A required id
+     * that a modern mod of the same name satisfies is not proof that the mod's API is there (CodeChickenLib 1.21.1 for a 1.12.2 mod): the link check
+     * then resolves such references class by class and member by member in that jar (see {@link org.kylepitcock.legacyconnector.loader.transform.ModernLibraries}).
+     */
+    private static org.kylepitcock.legacyconnector.loader.transform.ModernLibraries modernRequiredLibraries(List<LegacyJar> loading, List<LegacyJar> allLegacy, List<Path> dirs) {
+        Set<String> required = new HashSet<>();
+        for (LegacyJar j : loading) {
+            for (LegacyModDecl m : j.mods) {
+                for (LegacyDependencies.Dep d : LegacyDependencies.parse(m.dependencies)) {
+                    if (d.required()) required.add(LibraryBridges.alias(d.id()).toLowerCase(java.util.Locale.ROOT));
+                }
+            }
+        }
+        required.removeAll(Set.of("forge", "fml", "minecraft", "minecraftforge", "mcp", "*"));
+        if (required.isEmpty()) return org.kylepitcock.legacyconnector.loader.transform.ModernLibraries.NONE;
         Set<Path> legacyPaths = new HashSet<>();
-        Set<String> modPackages = new HashSet<>();
         for (LegacyJar j : allLegacy) {
             legacyPaths.add(j.path.toAbsolutePath().normalize());
             legacyPaths.add(j.existing().toAbsolutePath().normalize());
         }
-        for (LegacyJar j : jars) {
-            for (LegacyModDecl m : j.mods) {
-                if (m.mainClass != null && m.mainClass.lastIndexOf('/') > 0) modPackages.add(m.mainClass.substring(0, m.mainClass.lastIndexOf('/')));
+        Map<String, org.kylepitcock.legacyconnector.loader.transform.ModernLibraries.Lib> out = new HashMap<>();
+        for (Path dir : dirs) {
+            if (!Files.isDirectory(dir)) continue;
+            try (Stream<Path> files = Files.list(dir)) {
+                for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar")).sorted().toList()) {
+                    if (p.getFileName().toString().toLowerCase().startsWith("legacyconnector") || legacyPaths.contains(p.toAbsolutePath().normalize())) continue;
+                    try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(p.toFile())) {
+                        var e = zip.getEntry("META-INF/neoforge.mods.toml");
+                        if (e == null) continue;
+                        String toml = new String(zip.getInputStream(e).readAllBytes(), StandardCharsets.UTF_8);
+                        Set<String> ids = new HashSet<>();
+                        var m = TOML_MOD_ID.matcher(toml);
+                        while (m.find()) if (required.contains(m.group(1).toLowerCase(java.util.Locale.ROOT))) ids.add(m.group(1).toLowerCase(java.util.Locale.ROOT));
+                        if (ids.isEmpty()) continue;
+                        Set<String> packages = new HashSet<>();
+                        var en = zip.entries();
+                        while (en.hasMoreElements()) {
+                            String n = en.nextElement().getName();
+                            if (!n.endsWith(".class") || n.startsWith("META-INF/") || n.lastIndexOf('/') <= 0) continue;
+                            packages.add(n.substring(0, n.lastIndexOf('/')));
+                        }
+                        for (String id : ids) out.putIfAbsent(id, new org.kylepitcock.legacyconnector.loader.transform.ModernLibraries.Lib(id, p, packages));
+                    } catch (IOException | RuntimeException e) {
+                        LOG.debug("Legacy Connector: could not read the mod ids of {}", p, e);
+                    }
+                }
+            } catch (IOException e) {
+                LOG.debug("Legacy Connector: could not list {}", dir, e);
             }
+        }
+        return new org.kylepitcock.legacyconnector.loader.transform.ModernLibraries(out);
+    }
+
+    /** The class packages that jars of more than one legacy version define (see {@link CrossVersionPackages}). */
+    private static org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersionPackages(List<LegacyJar> jars, List<LegacyJar> allLegacy, List<Path> modernDirs) {
+        var out = new org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages();
+        Set<Path> legacyPaths = new HashSet<>();
+        for (LegacyJar j : allLegacy) {
+            legacyPaths.add(j.path.toAbsolutePath().normalize());
+            legacyPaths.add(j.existing().toAbsolutePath().normalize());
         }
         for (LegacyJar jar : jars) {
             try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
@@ -847,7 +909,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         // modern mods' packages, as internal names (the scan reports a.b.c)
         Set<String> modern = new HashSet<>();
         for (String pkg : BundledLibraries.scanProviders(modernDirs, legacyPaths).keySet()) modern.add(pkg.replace('.', '/'));
-        out.modern(modern, modPackages);
+        out.modern(modern, Set.of()); // @Mod class packages move too: the entrypoint follows (LegacyJarTransformer.relocateBundled)
         return out.done();
     }
 
@@ -883,7 +945,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static Map<LegacyVersion, byte[]> modSetDigests(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges,
-            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion, Map<LegacyVersion, Set<String>> bundledElsewhere) throws IOException {
+            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion, Map<LegacyVersion, Set<String>> bundledElsewhere,
+            org.kylepitcock.legacyconnector.loader.transform.ModernLibraries modernLibs) throws IOException {
         Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : legacy) {
             MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
@@ -894,7 +957,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         }
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
         byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds()) + "|" + SideBySide.current().fingerprint()
-                + "|fallbackLibs=" + org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.fallbackRootsKey()).getBytes(StandardCharsets.UTF_8);
+                + "|fallbackLibs=" + org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.fallbackRootsKey() + "|modernLibs=" + modernLibs.fingerprint()).getBytes(StandardCharsets.UTF_8);
         digests.forEach((v, md) -> md.update(shared));
         // the classes of the other versions' jars decide which optional references are stubbed as absent
         digests.forEach((v, md) -> md.update(Integer.toString(bundledElsewhere.getOrDefault(v, Set.of()).hashCode()).getBytes(StandardCharsets.UTF_8)));

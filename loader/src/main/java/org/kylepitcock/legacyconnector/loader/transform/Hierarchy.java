@@ -69,6 +69,33 @@ public final class Hierarchy {
         this.bundledElsewhere = names;
     }
 
+    private ModernLibraries requiredLibs = ModernLibraries.NONE;
+    private final Map<String, Optional<ClassInfo>> requiredLibCache = new HashMap<>();
+
+    /** Modern mods this jar's mods list as required dependencies: a class in their packages must exist there (with the member) to link. */
+    public void requiredLibraries(ModernLibraries libs) {
+        this.requiredLibs = libs;
+    }
+
+    /** The id of the required modern mod whose package {@code name} is in, or null. */
+    public String requiredLibrary(String name) {
+        ModernLibraries.Lib l = requiredLibs.ownerOfPackage(name);
+        return l == null ? null : l.id();
+    }
+
+    private ClassInfo modernRequired(String name) {
+        if (requiredLibs.isEmpty()) return null;
+        return requiredLibCache.computeIfAbsent(name, n -> {
+            byte[] b = requiredLibs.read(n);
+            if (b == null) return Optional.empty();
+            try {
+                return Optional.of(ShimIndexGenerator.read(new ClassReader(b)));
+            } catch (RuntimeException e) {
+                return Optional.empty();
+            }
+        }).orElse(null);
+    }
+
     public boolean isPeer(String name) {
         return peers.containsKey(name);
     }
@@ -147,7 +174,8 @@ public final class Hierarchy {
             return info;
         }
         if (name.startsWith("[")) return null;
-        return LIBRARY_CACHE.computeIfAbsent(name, this::loadLibrary).orElse(null);
+        info = LIBRARY_CACHE.computeIfAbsent(name, this::loadLibrary).orElse(null);
+        return info != null ? info : modernRequired(name);
     }
 
     /** Packages of libraries the game itself ships, which mods commonly bundle (shaded or not). */

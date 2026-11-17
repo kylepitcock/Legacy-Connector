@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 175;
+    public static final int TRANSFORMER_VERSION = 178;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -64,6 +64,25 @@ public final class LegacyJarTransformer {
     private CrossVersionPackages crossVersion = CrossVersionPackages.NONE;
 
     /** Packages that jars of several legacy versions define; each version links to its own copy. */
+    private ModernLibraries modernLibraries = ModernLibraries.NONE;
+
+    /** Modern mods whose ids legacy mods may list as required dependencies (see {@link ModernLibraries}). */
+    public LegacyJarTransformer modernLibraries(ModernLibraries libs) {
+        this.modernLibraries = libs;
+        return this;
+    }
+
+    /** Lower-case ids of the required dependencies ({@code required-after:...}) of the mods of {@code jar}. */
+    private static java.util.Set<String> requiredIds(LegacyJar jar) {
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (LegacyModDecl mod : jar.mods) {
+            for (var dep : org.kylepitcock.legacyconnector.loader.LegacyDependencies.parse(mod.dependencies)) {
+                if (dep.required()) ids.add(org.kylepitcock.legacyconnector.loader.LibraryBridges.alias(dep.id()).toLowerCase(java.util.Locale.ROOT));
+            }
+        }
+        return ids;
+    }
+
     public LegacyJarTransformer crossVersion(CrossVersionPackages crossVersion) {
         this.crossVersion = crossVersion;
         return this;
@@ -332,6 +351,13 @@ public final class LegacyJarTransformer {
                 mod.mainClass = privateRoot + mod.mainClass;
             }
         }
+        // A mod class in a package that another version's jar or a modern mod also defines moved with the package (CodeChickenLib's codechicken.lib.CodeChickenLib
+        // exists in the 1.21.1 CodeChickenLib too): the entrypoint must name the moved copy.
+        for (LegacyModDecl mod : jar.mods) {
+            if (mod.mainClass == null || !classes.containsKey(mod.mainClass)) continue;
+            String moved = crossVersion.map(jar.version, mod.mainClass);
+            if (moved != null) mod.mainClass = moved;
+        }
         return dropped;
     }
 
@@ -473,6 +499,7 @@ public final class LegacyJarTransformer {
 
         // Pass 1: relocate + rename, build the jar-local half of the class hierarchy.
         Hierarchy hierarchy = new Hierarchy(shim, libraries, peers, version);
+        if (!modernLibraries.isEmpty()) hierarchy.requiredLibraries(modernLibraries.restrictedTo(requiredIds(jar)));
         hierarchy.bundledElsewhere(bundledByOtherVersions.getOrDefault(version, java.util.Set.of()));
         Map<String, ClassNode> nodes = new LinkedHashMap<>();
         java.util.Set<String> serializable = SerialUids.serializable(classes);
@@ -525,7 +552,7 @@ public final class LegacyJarTransformer {
         for (ClassNode node : nodes.values()) Am2SpellBookFix.apply(node);
         for (ClassNode node : nodes.values()) Am2LecternFix.apply(node);
         int absent = 0;
-        for (ClassNode node : nodes.values()) absent += AbsentDependencyStubber.apply(node, hierarchy);
+        for (ClassNode node : nodes.values()) absent += AbsentDependencyStubber.apply(node, hierarchy, result.links);
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
         BetaCombatProvenance.apply(nodes,hierarchy,version,result.notes);
         int buildHeightChecks = 0;
