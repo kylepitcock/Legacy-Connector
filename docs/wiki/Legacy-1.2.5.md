@@ -442,3 +442,18 @@ Real client (`tools/dev/session125.sh <jar...>` starts a control session with `-
 | BlockHelper | not re-run | | | | unverified |
 
 Defects found and fixed (generic): `stack.itemID = x` on a stack in a slot did not change the slot's stack (master fixed it in parallel); `Block.collisionRayTrace` used the modern clip, which misses from a start on a face (BucketCraft walks its own ray cell by cell); `World.saveHandler` was an unmapped field reading null (Backpack); `EntityCreeper(World)` had no AI tasks (every mod creeper stood still); a 1.2.5 mod's item callbacks ran a second time on the client world (single player had one world), they now run once on the server (`Mc125Host.registerSingleWorld`, `ItemCallbacks`).
+
+## Save and reload checks (2026-11-17)
+
+One game process per world: `tools/dev/session125.sh <jar>` creates a world and is driven with `ctl.sh`/`jsl.sh` (crafting through the real menu, `dump()` of inventory and chest with legacy damage, `ids()` of the numeric item ids), `save-all flush` and `ctl.sh quit`; then `LOADWORLD=<save folder> tools/dev/session125.sh <jar>` opens the same world as saved (scenario `controlkeep`, `-PshotLoadWorld`) in a new process.
+
+| Mod | Survives save and reload | Evidence (before the quit, after the restart) |
+|---|---|---|
+| Obsidian Hilt | yes | Weak Water Sword `d95` in the inventory and a hilt in the chest identical; ids 4096-4103 identical; the hilt taken from the chest after the restart still drains water and becomes a sword |
+| BucketCraft | yes | filled wood bucket in the inventory, gold bucket in the chest, ids 4096-4116 identical; the water bucket places water (a wood bucket burns to 3 sticks, the mod's rule) and the gold bucket from the chest still fills (`d21` as in the first session) |
+| Craftable Mob Spawners | yes | spawner items in inventory and chest identical, ids 4096-4119 identical; the placed spawner is still a `minecraft:spawner` with `SpawnData` pig and spawns pigs after the restart |
+| Magic Wands | yes | wand `d1` in the inventory, another in the chest; the already broken box stays gone, the untouched box is still there; the wand works after the restart (`d2`) |
+| Elemental Creepers | yes | cookie, ice (named) and friendly creepers (NoAI) at the same positions with the same health after the restart; the ice creeper awake again explodes. Their `/mob/*.png` textures drew as missing before this change (see below) |
+| Backpack | yes | two backpacks (legacy meta 16 in the inventory, 17 in a chest) keep their contents (5 diamonds + 3 apples, 20 cobblestone) after a full restart |
+
+Fixed on the way (generic): a mod's own `/mob/<name>.png` texture path fell on `minecraft:textures/entity/<name>.png` and drew as missing (`Textures152` now reads it from the mod's class path when that is no vanilla asset); 1.2.5 code that reads `world.isRemote` now asks `Mc125Host.isRemote` (loader `SingleWorldRemote`, transformer 165), which says false for the single-player client world while the integrated server's thread runs the mod, so Backpack's `if (mc.theWorld.isRemote) return;` before its storage reload no longer skips (before: contents lost at every restart); `World.getSaveHandler` of a client world is the integrated server's save folder. The "1.2.5 mods' item callbacks run once, on the server" change was checked with an A/B on Magic Wands in one session: with it the box breaks, without it (`-Dlegacyconnector.mc125.clientCallbacks=true`, settable live) nothing happens, so it stays.

@@ -535,6 +535,7 @@ public final class LegacyJarTransformer {
         int livingCasts = 0;
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
+            if (jar.sourceVersion == LegacyVersion.V1_2_5) result.compatRedirects += SingleWorldRemote.apply(node);
             result.compatRedirects += ForwardRedirects.apply(node, version);
             InterfaceFlags.apply(node, hierarchy);
             int bridged = BridgeMethods.apply(node, hierarchy, version);
