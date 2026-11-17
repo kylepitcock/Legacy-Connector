@@ -32,6 +32,7 @@ class SpawnContext1201Test {
                 try (Scope factory = SpawnContext.enterFactory(entityType)) {
                     assertNull(SpawnContext.currentTagFor(mob));
                     SpawnContext.bindCreatedEntity(entityType, mob);
+                    SpawnContext.bindCreatedEntity(entityType, otherMob);
                 }
 
                 assertSame(tag, SpawnContext.currentTagFor(mob));
