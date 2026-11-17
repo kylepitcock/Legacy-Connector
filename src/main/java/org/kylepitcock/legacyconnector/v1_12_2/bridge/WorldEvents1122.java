@@ -78,11 +78,12 @@ public final class WorldEvents1122 {
             if (!listens(ChunkEvent.Unload.class) || !(e.getLevel() instanceof Level l)) return;
             post(new ChunkEvent.Unload(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world(l), e.getChunk())));
         });
-        b.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
+        // like Save: a modern ChunkDataEvent listener is a hook other mods see (ByePregen and C2ME check for one), so hook it once a 1.12.2 mod listens
+        bus().mcc$whenListened(ChunkDataEvent.Load.class, () -> b.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
             if (!listens(ChunkDataEvent.Load.class) || !(e.getLevel() instanceof Level l)) return;
             post(new ChunkDataEvent.Load(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world(l), e.getChunk()),
                     new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(e.getData())));
-        });
+        }));
         // a modern ChunkDataEvent.Save listener makes C2ME turn off optimizations: only hook it once a 1.12.2 mod listens
         bus().mcc$whenListened(ChunkDataEvent.Save.class, () -> b.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
             if (!listens(ChunkDataEvent.Save.class) || !(e.getLevel() instanceof Level l)) return;

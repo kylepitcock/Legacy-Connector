@@ -491,12 +491,13 @@ public final class EventBridge1710 {
             bus.post(event);
             if (event.getResult() == Event.Result.DENY) e.setCanceled(true);
         });
-        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
+        // like Save: hook the modern event only once a 1.7.10 mod listens (other mods, ByePregen and C2ME among them, look for ChunkDataEvent listeners)
+        forge().mcc$whenListened(legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load.class, () -> gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
             forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load(
                     new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk()),
                     new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));
-        });
+        }));
         // a modern ChunkDataEvent.Save listener makes C2ME turn off optimizations: only hook it once a 1.7.10 mod listens
         forge().mcc$whenListened(legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class, () -> gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)
