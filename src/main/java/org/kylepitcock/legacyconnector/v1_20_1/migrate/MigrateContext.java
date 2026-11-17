@@ -56,6 +56,11 @@ public final class MigrateContext {
         return remembered != null ? remembered : RegistryAccess.EMPTY;
     }
 
+    /** The builder of the {@code defineSynchedData} call in progress on this thread, or null outside one. */
+    public static SynchedEntityData.Builder currentBuilder() {
+        return BUILDER.get();
+    }
+
     /** The builder of the {@code defineSynchedData} call in progress on this thread; a throwaway when called outside one. */
     public static SynchedEntityData.Builder builder() {
         SynchedEntityData.Builder b = BUILDER.get();
