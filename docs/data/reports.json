@@ -865,18 +865,6 @@
    "open": true
   },
   {
-   "issue": 292,
-   "mod": "IC2Classic-1.7.10-1.2.6",
-   "mc": "1.7.10",
-   "status": "partial",
-   "details": "I have not yet tested every feature in depth Haven't tried: Nuclear system Crop system Works at first glance: World gen features Energy system & tiers Machines & generators Cabling Tree tapping Wrenching Recipes Upgrades Painting, cf foam Fluid cells Hazmat protection Tesla coils Mod boats functional Radiation potion effect Bugged: Cables do not drop when mined Uninsulated cables do not shock ent…",
-   "lc": "0.4.14",
-   "neoforge": "21.1.266",
-   "link": "https://www.curseforge.com/minecraft/mc-mods/ic2-classic/files/8014397",
-   "date": "2026-11-15",
-   "open": false
-  },
-  {
    "issue": 295,
    "mod": "CustomOreGen-1.12-1.8.1",
    "mc": "1.12.2",
@@ -1029,6 +1017,18 @@
    "lc": "0.4.15-nightly.89.180be0b",
    "neoforge": "21.1.265",
    "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-17",
+   "open": true
+  },
+  {
+   "issue": 312,
+   "mod": "Redpower 2.0pr5b2",
+   "mc": "1.2.5 (experimental, opt-in)",
+   "status": "fails",
+   "details": "Game recognises the mods. Instead of sorting them into a 1.2.5 folder it sorts them into a 1.4.7 folder Tried it twice first with the mods in the 1.4.7 folder that legacyconnector sorted them into. Then second try I manually changed the folder number to 1.2.5",
+   "lc": "0.5.0",
+   "neoforge": "21.1265",
+   "link": "https://www.curseforge.com/minecraft/modpacks/full-retro/files/all?page=1&pageSize=20&showAlphaFiles=show",
    "date": "2026-11-17",
    "open": true
   }
