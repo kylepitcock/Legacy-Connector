@@ -29,6 +29,8 @@ public final class LegacyModelMap extends AbstractMap<ResourceLocation, BakedMod
         ModelResourceLocation m = ModelLocationCompat.modern(key);
         if (m == null) return null;
         if (real.containsKey(m)) return m;
+        ModelResourceLocation side = ModelLocationCompat.sideLoaded(m);
+        if (side != null && real.containsKey(side)) return side;
         if (!(key instanceof LegacyModelResourceLocation) && !(key instanceof ModelResourceLocation) && key instanceof ResourceLocation r) {
             ModelResourceLocation inv = ModelResourceLocation.inventory(m.id());
             if (real.containsKey(inv)) return inv;
@@ -51,6 +53,8 @@ public final class LegacyModelMap extends AbstractMap<ResourceLocation, BakedMod
     public BakedModel put(ResourceLocation key, BakedModel value) {
         ModelResourceLocation m = ModelLocationCompat.modern(key);
         if (m == null) throw new NullPointerException("model location");
+        ModelResourceLocation side = ModelLocationCompat.sideLoaded(m);
+        if (side != null && !real.containsKey(m)) m = side; // a model the mod side-loaded under this name lives under its standalone record
         return real.put(m, value);
     }
 

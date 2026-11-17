@@ -397,6 +397,7 @@ public final class Forge1201Transformer {
             mc.add(changed);
             int forgeBusDefaults = ForgeBusDefault1201.apply(node, hierarchy, shim);
             int vertexBridges = VertexConsumerBridge1201.apply(node);
+            rewrites += RegistryBufBridge1201.apply(node, hierarchy);
             if (forgeBusDefaults > 0) result.notes.add(node.name.replace('/', '.') + ": " + forgeBusDefaults + " handler(s) of mod bus events on the default (FORGE) bus of @Mod.EventBusSubscriber never ran in Forge 1.20.1 and are inert here too");
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
@@ -720,6 +721,9 @@ public final class Forge1201Transformer {
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
         if (dataStats.total() > 0) result.notes.add("Data and resources converted to the 1.21.1 formats: " + dataStats);
+        int[] shaderFiles = {0};
+        outResources = new LinkedHashMap<>(Shaders1201.convertAll(outResources, shaderFiles));
+        if (shaderFiles[0] > 0) result.notes.add("Core shaders given the 1.20.1 fog_distance overload: " + shaderFiles[0] + " file(s)");
         FunctionConverter1201.Stats functionStats = new FunctionConverter1201.Stats();
         outResources = new LinkedHashMap<>(FunctionConverter1201.convertAll(outResources, functionStats));
         if (functionStats.changedFiles > 0) {

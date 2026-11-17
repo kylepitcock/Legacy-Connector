@@ -31,6 +31,19 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 public final class ModelLocationCompat {
     private ModelLocationCompat() {}
 
+    /**
+     * Models a legacy mod side-loaded under a location WITH a variant: 1.21.1 only side-loads {@code standalone} ones ("Side-loaded models must use the
+     * 'standalone' variant"). 1.20.1 loaded {@code models/item/<path>} for {@code ns:path#inventory}, so that model is registered as the standalone
+     * {@code ns:item/path}, and the legacy record is remembered here so lookups of {@code ns:path#inventory} find it (when no real item owns that key).
+     */
+    private static final Map<ModelResourceLocation, ModelResourceLocation> SIDE_LOADED = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<ModelResourceLocation, ModelResourceLocation> SIDE_LOADED_BACK = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The standalone record that holds the model a legacy mod side-loaded under {@code m}, or null. */
+    static ModelResourceLocation sideLoaded(ModelResourceLocation m) {
+        return m == null ? null : SIDE_LOADED.get(m);
+    }
+
     /** The record for a key a legacy mod uses (a legacy model location, a plain location = standalone model, or already a record). */
     public static ModelResourceLocation modern(Object key) {
         if (key instanceof LegacyModelResourceLocation l) return new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(l.getNamespace(), l.getPath()), l.getVariant());
@@ -46,7 +59,11 @@ public final class ModelLocationCompat {
     /** The key legacy code sees for a record: a plain location for a standalone model, a legacy model location otherwise. */
     public static ResourceLocation legacy(ModelResourceLocation m) {
         if (m == null) return null;
-        if (ModelResourceLocation.STANDALONE_VARIANT.equals(m.variant())) return m.id();
+        if (ModelResourceLocation.STANDALONE_VARIANT.equals(m.variant())) {
+            ModelResourceLocation named = SIDE_LOADED_BACK.get(m);
+            if (named != null) return new LegacyModelResourceLocation(named.id().getNamespace(), named.id().getPath(), named.variant());
+            return m.id();
+        }
         return new LegacyModelResourceLocation(m.id().getNamespace(), m.id().getPath(), m.variant());
     }
 
@@ -68,12 +85,24 @@ public final class ModelLocationCompat {
 
     /** {@code ModelEvent.RegisterAdditional.register(ResourceLocation)}. */
     public static void registerAdditional(ModelEvent.RegisterAdditional event, ResourceLocation model) {
+        if (model instanceof LegacyModelResourceLocation l) {
+            if (!"inventory".equals(l.getVariant())) return; // a block state variant: 1.21.1 loads those with the block's states, nothing to side-load
+            ModelResourceLocation named = modern(l);
+            ModelResourceLocation standalone = ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(l.getNamespace(), "item/" + l.getPath()));
+            SIDE_LOADED.put(named, standalone);
+            SIDE_LOADED_BACK.put(standalone, named);
+            event.register(standalone);
+            return;
+        }
         event.register(modern(model));
     }
 
     /** {@code ModelManager.getModel(ModelResourceLocation)}. */
     public static BakedModel getModel(ModelManager manager, LegacyModelResourceLocation location) {
-        return manager.getModel(modern(location));
+        ModelResourceLocation m = modern(location);
+        BakedModel model = manager.getModel(m);
+        ModelResourceLocation side = SIDE_LOADED.get(m);
+        return side != null && model == manager.getMissingModel() ? manager.getModel(side) : model;
     }
 
     /** {@code ModelManager.getModel(ResourceLocation)} (Forge): a standalone model, else the inventory variant of the location. */
