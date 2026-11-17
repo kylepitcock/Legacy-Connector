@@ -8,7 +8,7 @@
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
-  var PLANNED = ["1.6.4", "1.5.2", "1.4.7", "1.20.1", "1.19.2", "1.18.2", "1.16.5", "1.2.5", "b1.7.3"]; // roadmap order (docs/wiki/Version-Roadmap.md)
+  var PLANNED = ["1.6.4", "1.5.2", "1.4.7", "1.2.5", "b1.7.3", "1.20.1", "1.19.2", "1.18.2", "1.16.5"]; // roadmap order (docs/wiki/Version-Roadmap.md)
   // Plain-language result categories of the automated check (probe.py "kind"). "unresolved" is the older, unsplit cause of runs made before the split.
   var KINDS = [
     { key: "links", label: "Ready to test", color: "var(--links)", hint: "translates, and nothing it needs is missing" },
@@ -369,7 +369,7 @@
   function versionNote(host, mc) {
     if (!host) return;
     host.textContent = "";
-    host.hidden = mc !== "1.20.1" && mc !== "b1.7.3";
+    host.hidden = mc !== "1.20.1" && mc !== "b1.7.3" && mc !== "1.2.5";
     if (host.hidden) return;
     function p(parts) {
       var e = el("p");
@@ -378,6 +378,11 @@
     }
     function code(t) { return el("code", null, t); }
     function b(t) { return el("b", null, t); }
+    if (mc === "1.2.5") {
+      host.appendChild(p([b("Experimental, opt-in. "), "Minecraft 1.2.5 (ModLoader and early Forge mods) is hosted through the 1.4.7 layer and is off by default: it needs a build made with ", code("-Pmappings125"), " and the run flag ", code("-Dlegacyconnector.mc125=true"), ". Put the jars in ", code("mods/1.2.5/"), ". Three small server builds (MagicWands, Backpack, Elemental Creepers) loaded on a server; nothing has been run in a client."]));
+      host.appendChild(p([b("Read “Ready to test” with care here. "), "For 1.2.5 it means the jar translates and every reference resolves, but the references include many game members that exist only as empty placeholders (the layer synthesizes them so the jar links; in the 1.2.5 corpus about 1,400 distinct members, 385 of them used by the mods of the latest run). A mod can therefore link and still do nothing in the places that matter. The automated-check table shows how many placeholders each mod uses; a high number is a warning, and none of these results is a test that the mod works."]));
+      return;
+    }
     if (mc === "b1.7.3") {
       host.appendChild(p([b("Alpha (server-tested). "), "Beta 1.7.3 ModLoader and Forge 1.0 mods go in ", code("mods/b1.7.3/"), ". The layer was contributed by Zekken01. The results here come from that contributor's headless server tests (the mods translate, load, register their content and run their own callbacks); none was tested in a graphical client yet."]));
       host.appendChild(p([b("Archive audit. "), "An offline scan of a 1,040-file Beta 1.7.3 mod archive (1,222 mod payloads) found 544 payloads that need ModLoader, 74 ModLoaderMP and 42 Forge; 548 payloads replace no base game classes (the easiest to support), 572 replace some, 54 are libraries or resources and 20 bundle API patches. The full summary is in ", code("docs/data/b173-archive-audit-summary.json"), "."]));
@@ -731,6 +736,12 @@
       tr.appendChild(el("td", "col-ver", m[1]));
       var td = el("td"); td.appendChild(el("span", "res " + m[2], RESLABEL[m[2]] || m[2])); tr.appendChild(td);
       var why = el("td", "why", m[3] || "");
+      var sc = run.stubCounts && run.stubCounts[m[0]];
+      if (sc && String(m[3] || "").indexOf("synthesized") < 0) {   // 1.2.5: how much of what the mod uses is an empty placeholder
+        var stubs = el("div", "small");
+        stubs.textContent = "Also uses " + sc + " empty placeholder feature" + (sc === 1 ? "" : "s");
+        why.appendChild(stubs);
+      }
       // rendering smoke test (m[4] lost in translation, m[5] missing in the mod's own jar too, m[6] examples)
       if (m[4]) {
         var lost = el("div", "small");

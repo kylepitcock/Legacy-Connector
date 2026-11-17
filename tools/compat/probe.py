@@ -246,8 +246,19 @@ def asset_note(rec):
     return f" Resource check: {a['layer']} model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. " + "; ".join(ex) + "."
 
 
+PLACEHOLDER_HEAVY = ("1.2.5",)   # versions whose "links" is only a weak signal: the join to 1.4.7 leaves many game members as empty synthesized stubs
+
+
+def stub_note(rec):
+    """1.2.5 only: how many empty placeholders a jar uses, also when it is not a "links" row (the table of a failed jar would otherwise hide it)."""
+    n = rec.get("synthesizedMembers", 0)
+    if rec.get("mc") not in PLACEHOLDER_HEAVY or not n or kind(rec) in ("links", "stubs"):
+        return ""
+    return f" It also uses {n} empty placeholder feature(s) of the 1.2.5 layer."
+
+
 def note(rec, layer):
-    return note_links(rec, layer) + asset_note(rec)
+    return note_links(rec, layer) + stub_note(rec) + asset_note(rec)
 
 
 def note_links(rec, layer):
@@ -260,6 +271,8 @@ def note_links(rec, layer):
             text += f" But {stubs} features it uses are empty placeholders, so large parts probably do nothing."
         elif stubs:
             text += f" {stubs} minor feature(s) it uses are empty placeholders."
+        if rec.get("mc") in PLACEHOLDER_HEAVY:
+            text += " For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing."
         return text + " The game was not started: this only shows the jar translates, not that it works."
     if k == "gap_dep":
         if rec.get("linksWithoutDependency"):
@@ -450,6 +463,12 @@ def history(records, mc, date, layer, source=""):
                 row += [a.get("layer", 0), a.get("mod", 0), [e for e in a.get("examples", []) if e.startswith("[layer]")][:2]]
         rows.append(row)
     rows.sort(key=lambda x: x[0].lower())
+    stub_counts = {}
+    if mc in PLACEHOLDER_HEAVY:   # per-mod count of synthesized (empty) members: the site shows it next to the result so "links" is not read as "works"
+        for r in records:
+            n = r.get("synthesizedMembers", 0)
+            if r.get("mc") == mc and r.get("mods") and n:
+                stub_counts[(r["mods"][0].get("name") or r["mods"][0]["id"]).strip()] = n
     h = json.loads(HISTORY.read_text(encoding="utf-8")) if HISTORY.exists() else {"runs": []}
     # a run is identified by version, date and source: results of different populations (the local corpus plus Modrinth, or Modrinth only in CI)
     # never replace or get compared with each other
@@ -457,6 +476,10 @@ def history(records, mc, date, layer, source=""):
     prior = previous_runs(h["runs"], mc, source)
     vs = compare(prior[-1], rows) if prior else None
     run = {"mc": mc, "date": date, "version": layer, "counts": counts, "env": environment(layer, len(records)), "mods": rows}
+    if stub_counts:
+        run["stubCounts"] = stub_counts
+        run["stubMembers"] = sum(stub_counts.values())
+        run["stubDistinct"] = len({m for r in records if r.get("mc") == mc and r.get("mods") for m in r.get("stubbed", [])})
     if assets["checked"]:
         run["assets"] = assets
     if source:
@@ -499,6 +522,10 @@ def main():
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    if a.mc == "1.2.5":   # 1.2.5 jars are hosted through the 1.4.7 chain, so checkLegacyMod labels them 1.4.7: they are 1.2.5 results
+        for r in records:
+            if r.get("mc") == "1.4.7":
+                r["mc"] = "1.2.5"
     counts = {}
     for r in records:
         counts[r["result"]] = counts.get(r["result"], 0) + 1
