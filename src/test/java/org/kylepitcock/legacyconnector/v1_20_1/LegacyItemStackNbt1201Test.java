@@ -121,6 +121,52 @@ class LegacyItemStackNbt1201Test {
     }
 
     @Test
+    void spawnTagRetainsNullSemanticsWhenNoLegacyRootDataExists() {
+        ItemStack plain = new ItemStack(Items.STONE);
+        assertNull(ItemStackNbt.getSpawnTag(plain, RegistryAccess.EMPTY));
+
+        ItemStack ordinaryName = new ItemStack(Items.STONE);
+        ordinaryName.set(DataComponents.ITEM_NAME, Component.literal("not a legacy custom name"));
+        assertNull(ItemStackNbt.getSpawnTag(ordinaryName, RegistryAccess.EMPTY));
+    }
+
+    @Test
+    void spawnTagProjectsBucketEntityDataEntityDataAndLegacyRootWithoutMutatingStack() {
+        ItemStack stack = new ItemStack(Items.COD_BUCKET);
+
+        CompoundTag residual = new CompoundTag();
+        residual.putString("spawnRootKey", "retained");
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(residual));
+
+        CompoundTag bucket = new CompoundTag();
+        bucket.putInt("Age", 12);
+        bucket.putString("bucketOnly", "flattened");
+        stack.set(DataComponents.BUCKET_ENTITY_DATA, CustomData.of(bucket));
+
+        CompoundTag entity = new CompoundTag();
+        entity.putString("id", "minecraft:cod");
+        entity.putInt("Variant", 7);
+        stack.set(DataComponents.ENTITY_DATA, CustomData.of(entity));
+        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Named Cod"));
+
+        CompoundTag legacy = ItemStackNbt.getSpawnTag(stack, RegistryAccess.EMPTY);
+
+        assertNotNull(legacy);
+        assertEquals("retained", legacy.getString("spawnRootKey"));
+        assertEquals(12, legacy.getInt("Age"));
+        assertEquals("flattened", legacy.getString("bucketOnly"));
+        assertEquals("minecraft:cod", legacy.getCompound("EntityTag").getString("id"));
+        assertEquals(7, legacy.getCompound("EntityTag").getInt("Variant"));
+        assertTrue(legacy.getCompound("display").getString("Name").contains("Named Cod"));
+
+        // The projection is detached and all source components remain untouched.
+        legacy.putString("spawnRootKey", "mutated projection");
+        assertEquals("retained", stack.get(DataComponents.CUSTOM_DATA).copyTag().getString("spawnRootKey"));
+        assertEquals(12, stack.get(DataComponents.BUCKET_ENTITY_DATA).copyTag().getInt("Age"));
+        assertEquals("minecraft:cod", stack.get(DataComponents.ENTITY_DATA).copyTag().getString("id"));
+    }
+
+    @Test
     void bucketTagPreservesLegacyBucketFieldsInResidualCustomData() {
         ItemStack stack = new ItemStack(Items.AXOLOTL_BUCKET);
         CompoundTag residual = new CompoundTag();
