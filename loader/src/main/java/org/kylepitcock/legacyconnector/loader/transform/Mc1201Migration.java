@@ -651,14 +651,13 @@ final class Mc1201Migration {
         for (Bridge b : t.bridges) {
             if (isMobFinalizeSpawnBridge(b)
                     && (h.isSubclassOf(node.name, b.owner()) || h.reachesUnknown(node.name))
-                    && h.hasNonSyntheticModDeclaration(node.name, b.oldName(), b.oldDesc())
                     && h.hasNonSyntheticModDeclaration(node.name, b.newName(), b.newDesc())) {
                 throw new IllegalStateException(
-                        "Cannot migrate legacy Mob.finalizeSpawn in " + node.name
-                                + ": a Forge 1.20.1 five-argument override and a non-synthetic "
-                                + "four-argument finalizeSpawn declaration coexist in the mod hierarchy. "
-                                + "The four-argument declaration was not an override point in Forge 1.20.1, "
-                                + "so automatically choosing one would change dispatch semantics.");
+                        "Cannot migrate Mob.finalizeSpawn in " + node.name
+                                + ": a non-synthetic source declaration with the target four-argument "
+                                + "descriptor exists in this Mob hierarchy. In Forge 1.20.1 that descriptor "
+                                + "was only an overload, not an override point; on NeoForge 1.21.1 it would "
+                                + "become the Mob override and alter vanilla/legacy dispatch.");
             }
             MethodNode old = declared(node, b.oldName(), b.oldDesc());
             if (old == null || (old.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
