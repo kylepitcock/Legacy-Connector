@@ -508,6 +508,57 @@ final class Mc1201Migration {
 
     private static final java.util.Set<String> CLASSES_THAT_WERE_INTERFACES = java.util.Set.of("software/bernie/geckolib/cache/object/GeoBone");
 
+    /**
+     * A lambda or method reference for a library functional interface whose method changed its parameters (Architectury's {@code ClientGuiEvent.RenderHud}:
+     * {@code (GuiGraphics, float)} became {@code (GuiGraphics, DeltaTracker)}): lib-lambdas.tsv rows. The metafactory gets a generated static adapter with the
+     * new signature that converts the parameters (a static helper per changed parameter, {@code Class.method} in the migrate package, or {@code -}) and calls
+     * the original implementation.
+     */
+    private static boolean adaptLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d, Mc1201Tables t, Counts c) {
+        if (t.lambdas.isEmpty() || c.current == null || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3
+                || !(d.bsmArgs[0] instanceof Type sam) || !(d.bsmArgs[1] instanceof org.objectweb.asm.Handle impl)) return false;
+        String[] row = t.lambdas.get(Type.getReturnType(d.desc).getInternalName() + "." + d.name + sam.getDescriptor());
+        if (row == null) return false;
+        Type newSam = Type.getMethodType(row[3]);
+        Type[] oldParams = sam.getArgumentTypes();
+        Type[] newParams = newSam.getArgumentTypes();
+        String[] conv = row.length > 4 ? row[4].split(",") : new String[0];
+        Type[] captured = Type.getArgumentTypes(d.desc);
+        StringBuilder desc = new StringBuilder("(");
+        for (Type ct : captured) desc.append(ct.getDescriptor());
+        for (Type np : newParams) desc.append(np.getDescriptor());
+        String adapterDesc = desc.append(')').append(newSam.getReturnType().getDescriptor()).toString();
+        String name = "mcc$lambda$" + c.trampolines.size() + "$" + d.name;
+        int op = switch (impl.getTag()) {
+            case Opcodes.H_INVOKESTATIC -> Opcodes.INVOKESTATIC;
+            case Opcodes.H_INVOKEINTERFACE -> Opcodes.INVOKEINTERFACE;
+            case Opcodes.H_INVOKESPECIAL, Opcodes.H_INVOKEVIRTUAL -> Opcodes.INVOKEVIRTUAL;
+            default -> -1;
+        };
+        if (op < 0) return false;
+        MethodNode a = new MethodNode(Opcodes.ASM9, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, name, adapterDesc, null, null);
+        int slot = 0;
+        for (Type ct : captured) { a.visitVarInsn(ct.getOpcode(Opcodes.ILOAD), slot); slot += ct.getSize(); }
+        for (int i = 0; i < newParams.length; i++) {
+            a.visitVarInsn(newParams[i].getOpcode(Opcodes.ILOAD), slot);
+            slot += newParams[i].getSize();
+            String cv = i < conv.length ? conv[i] : "-";
+            if (!cv.equals("-")) {
+                int dot = cv.lastIndexOf('.');
+                a.visitMethodInsn(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/" + cv.substring(0, dot), cv.substring(dot + 1),
+                        "(" + newParams[i].getDescriptor() + ")" + oldParams[i].getDescriptor(), false);
+            }
+        }
+        a.visitMethodInsn(op, impl.getOwner(), impl.getName(), impl.getDesc(), impl.isInterface());
+        a.visitInsn(newSam.getReturnType().getOpcode(Opcodes.IRETURN));
+        a.visitMaxs(0, 0);
+        c.trampolines.add(a);
+        d.bsmArgs[0] = newSam;
+        d.bsmArgs[1] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, c.current.name, name, adapterDesc, (c.current.access & Opcodes.ACC_INTERFACE) != 0);
+        d.bsmArgs[2] = newSam;
+        return true;
+    }
+
     /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */
     private static final java.util.Set<String> REGISTRY_BUFFER_INTERFACES = java.util.Set.of("net/neoforged/neoforge/network/IContainerFactory");
 
