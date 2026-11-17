@@ -12,6 +12,13 @@ public class ChunkPosition {
         this.chunkPosZ = z;
     }
 
+    /** The block position containing the point. */
+    public ChunkPosition(legacyconnector.v1_7_10.net.minecraft.util.Vec3 point) {
+        this(legacyconnector.v1_7_10.net.minecraft.util.MathHelper.floor_double(point.xCoord),
+                legacyconnector.v1_7_10.net.minecraft.util.MathHelper.floor_double(point.yCoord),
+                legacyconnector.v1_7_10.net.minecraft.util.MathHelper.floor_double(point.zCoord));
+    }
+
     @Override
     public boolean equals(Object o) {
         return o instanceof ChunkPosition p && p.chunkPosX == chunkPosX && p.chunkPosY == chunkPosY && p.chunkPosZ == chunkPosZ;

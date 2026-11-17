@@ -28,6 +28,16 @@ public class EntityTrackerEntry {
         this.myEntity = entity;
     }
 
+    /** 1.7.10's constructor of the tracker: how far (blocks), how often (ticks) and whether velocity updates are sent; the modern tracker owns the real values. */
+    public EntityTrackerEntry(Entity entity, int blocksDistanceThreshold, int updateFrequency, boolean sendVelocityUpdates) {
+        this.myEntity = entity;
+        this.blocksDistanceThreshold = blocksDistanceThreshold;
+        this.updateFrequency = updateFrequency;
+        this.sendVelocityUpdates = sendVelocityUpdates;
+    }
+
+    public boolean sendVelocityUpdates = true;
+
     public static Set mcc$get$trackingPlayers(EntityTrackerEntry e) {
         return EntityTracker.mcc$trackingPlayers(e.myEntity);
     }

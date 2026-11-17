@@ -623,7 +623,13 @@ public abstract class EntityLivingBase extends Entity {
     protected void dropRareDrop(int looting) {
     }
 
+    /** {@code func_146066_aG} (MCP {@code canDropLoot}): whether the entity drops its loot when it dies (mods turn it off per entity). */
+    protected boolean func_146066_aG() {
+        return true;
+    }
+
     public final void mcc$dropLoot(boolean recentlyHit, int looting) {
+        if (!func_146066_aG()) return;
         dropFewItems(recentlyHit, looting);
         dropEquipment(recentlyHit, looting);
         if (recentlyHit && getRNG().nextFloat() < 0.025F + looting * 0.01F) dropRareDrop(looting);
@@ -797,5 +803,44 @@ public abstract class EntityLivingBase extends Entity {
 
     public final void mcc$onDeathUpdate() {
         onDeathUpdate();
+    }
+
+    /** Plays the hurt animation (the red flash and tilt) without damaging: ten ticks of hurt time. */
+    public void performHurtAnimation() {
+        mcc$set$hurtTime(this, 10);
+        if (mcc$entity instanceof LivingEntity l) l.hurtDuration = 10;
+    }
+
+    /** The client's side of an effect ending: removes the effect with that id from this view. */
+    public void removePotionEffectClient(int potionId) {
+        removePotionEffect(potionId);
+    }
+
+    /** Pushes the entities this one overlaps (a 0.2 block margin sideways), as 1.7.10 did every living update. */
+    protected void collideWithNearbyEntities() {
+        legacyconnector.v1_7_10.net.minecraft.world.World world = mcc$world();
+        if (world == null) return;
+        java.util.List list = world.getEntitiesWithinAABBExcludingEntity(this, mcc$get$boundingBox(this).expand(0.2D, 0.0D, 0.2D));
+        if (list == null || list.isEmpty()) return;
+        for (Object o : list) {
+            Entity other = (Entity) o;
+            if (other.canBePushed()) collideWithEntity(other);
+        }
+    }
+
+    /**
+     * {@code func_110146_f} (MCP {@code func_110146_f(bodyYaw, movement)}, the body turn): eases the body yaw towards the given yaw,
+     * keeps it within 75 degrees of the head and returns the movement, negated when the head faces away from the body.
+     */
+    protected float func_110146_f(float yaw, float movement) {
+        float diff = legacyconnector.v1_7_10.net.minecraft.util.MathHelper.wrapAngleTo180_float(yaw - mcc$get$renderYawOffset(this));
+        mcc$set$renderYawOffset(this, mcc$get$renderYawOffset(this) + diff * 0.3F);
+        float headRel = legacyconnector.v1_7_10.net.minecraft.util.MathHelper.wrapAngleTo180_float(mcc$get$rotationYaw(this) - mcc$get$renderYawOffset(this));
+        boolean behind = headRel < -90.0F || headRel >= 90.0F;
+        if (headRel < -75.0F) headRel = -75.0F;
+        if (headRel >= 75.0F) headRel = 75.0F;
+        mcc$set$renderYawOffset(this, mcc$get$rotationYaw(this) - headRel);
+        if (headRel * headRel > 2500.0F) mcc$set$renderYawOffset(this, mcc$get$renderYawOffset(this) + headRel * 0.2F);
+        return behind ? -movement : movement;
     }
 }

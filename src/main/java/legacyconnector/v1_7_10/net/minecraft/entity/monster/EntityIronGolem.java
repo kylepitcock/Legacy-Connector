@@ -59,6 +59,14 @@ public class EntityIronGolem extends EntityGolem {
 
     private int mcc$holdRoseTick;
 
+    private int mcc$attackTimer;
+
+    /** Ticks since the golem started its swing (the arm animation); a mod's golem counts it down itself. */
+    public int getAttackTimer() {
+        var g = mcc$golem();
+        return g != null ? g.getAttackAnimationTick() : mcc$attackTimer;
+    }
+
     /** Ticks left that the golem holds out a poppy to a villager child (0 when it does not). */
     public int getHoldRoseTick() {
         var g = mcc$golem();
