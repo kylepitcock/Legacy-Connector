@@ -182,4 +182,49 @@ public class EntityPainting extends EntityHanging {
             return null;
         }
     }
+
+    // Members125 batch 1
+
+    /** Phantom fields of 1.2.5's painting: the block it hangs on and its facing (1.3 moved them to EntityHanging). */
+    public static int mcc$get$mcc125$blockX(EntityPainting p) {
+        return EntityHanging.mcc$get$field_146063_b(p);
+    }
+
+    public static void mcc$set$mcc125$blockX(EntityPainting p, int v) {
+        EntityHanging.mcc$set$field_146063_b(p, v);
+    }
+
+    public static int mcc$get$mcc125$blockY(EntityPainting p) {
+        return EntityHanging.mcc$get$field_146064_c(p);
+    }
+
+    public static void mcc$set$mcc125$blockY(EntityPainting p, int v) {
+        EntityHanging.mcc$set$field_146064_c(p, v);
+    }
+
+    public static int mcc$get$mcc125$blockZ(EntityPainting p) {
+        return EntityHanging.mcc$get$field_146062_d(p);
+    }
+
+    public static void mcc$set$mcc125$blockZ(EntityPainting p, int v) {
+        EntityHanging.mcc$set$field_146062_d(p, v);
+    }
+
+    public static int mcc$get$mcc125$dir(EntityPainting p) {
+        return EntityHanging.mcc$get$hangingDirection(p);
+    }
+
+    public static void mcc$set$mcc125$dir(EntityPainting p, int v) {
+        EntityHanging.mcc$set$hangingDirection(p, v);
+    }
+
+    /** 1.2.5 {@code EntityPainting.setDirection(dir)}. */
+    public void mcc125$setDirection(int direction) {
+        setDirection(direction);
+    }
+
+    /** 1.2.5 {@code EntityPainting.canSurvive()}: whether the wall behind it still holds it. */
+    public boolean mcc125$canSurvive() {
+        return onValidSurface();
+    }
 }

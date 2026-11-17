@@ -334,4 +334,15 @@ public class WorldProvider {
     public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getEntrancePortalLocation() {
         return dimensionId == 1 ? new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(100, 50, 0) : null;
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5 {@code WorldProvider.getWelcomeMessage()}: the line shown while entering the dimension (the Nether and the End announced themselves). */
+    public String getWelcomeMessage() {
+        return switch (dimensionId) {
+            case -1 -> "Entering the Nether";
+            case 1 -> "Entering the End";
+            default -> null;
+        };
+    }
 }

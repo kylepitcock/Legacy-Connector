@@ -129,36 +129,40 @@ public class MinecraftForge {
         });
     }
 
-    // stored for mods that read them back; the layer has no equivalent event for these
+    // Forge 3.x's handler registrations; each is a subscriber of the shim's event of the same purpose (see ForgeEvents)
 
     private static final List<Object> OTHER_HANDLERS = new CopyOnWriteArrayList<>();
 
     public static void registerSleepHandler(ISleepHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ForgeEvents.sleep(handler);
     }
 
     public static void registerHoeHandler(IHoeHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ForgeEvents.hoe(handler);
     }
 
     public static void registerDestroyToolHandler(IDestroyToolHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ForgeEvents.destroyTool(handler);
     }
 
     public static void registerMinecartHandler(IMinecartHandler handler) {
         MINECART.add(handler);
+        ForgeEvents.minecart(handler);
     }
 
     public static void registerChunkLoadHandler(IChunkLoadHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ForgeEvents.chunkLoad(handler);
     }
 
     public static void registerChatHandler(IChatHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ForgeEvents.chat(handler);
+        if (legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().getSide() == legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT) {
+            ForgeClientEvents.chat(handler);
+        }
     }
 
     public static void registerSpecialMobSpawnHandler(ISpecialMobSpawnHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ForgeEvents.specialSpawn(handler);
     }
 
     static final List<IArrowNockHandler> ARROW_NOCK = new CopyOnWriteArrayList<>();
@@ -300,7 +304,12 @@ public class MinecraftForge {
     // ---- achievements, minecarts
 
     public static void registerAchievementPage(AchievementPage page) {
+        if (getAchievementPage(page.getName()) != null) {
+            throw new RuntimeException("Duplicate achievement page name \"" + page.getName() + "\"!");
+        }
         PAGES.add(page);
+        // the achievements screen lists the shim's pages
+        legacyconnector.v1_7_10.net.minecraftforge.common.AchievementPage.registerAchievementPage(page);
     }
 
     public static AchievementPage getAchievementPage(int index) {

@@ -22,7 +22,27 @@ public class Teleporter {
     }
 
     public void placeInPortal(Entity entity, double x, double y, double z, float yaw) {
-        // Vanilla would look for or create a portal; arriving entities stay where they were put.
+        // Vanilla would look for or create a portal; arriving entities stay where they were put. A 1.2.5 mod teleporter (Twilight Forest, Tropicraft)
+        // overrides the three hooks below, which the 1.2.5 game called with the world and the entity; the layer's dimension travel reaches them here.
+        mcc125$onDimensionChanged(worldServerInstance, entity);
+    }
+
+    /** 1.2.5's {@code placeInPortal(world, entity)}: find a portal, else make one and find it. A mod's override is emitted by the loader under this name. */
+    public void mcc125$onDimensionChanged(World world, Entity entity) {
+        if (!mcc125$findNetherPortal(world, entity)) {
+            mcc125$generateNetherPortal(world, entity);
+            mcc125$findNetherPortal(world, entity);
+        }
+    }
+
+    /** 1.2.5's {@code placeInExistingPortal(world, entity)}: true when the entity was put at a portal. */
+    public boolean mcc125$findNetherPortal(World world, Entity entity) {
+        return false;
+    }
+
+    /** 1.2.5's {@code makePortal(world, entity)}. */
+    public boolean mcc125$generateNetherPortal(World world, Entity entity) {
+        return false;
     }
 
     public boolean placeInExistingPortal(Entity entity, double x, double y, double z, float yaw) {

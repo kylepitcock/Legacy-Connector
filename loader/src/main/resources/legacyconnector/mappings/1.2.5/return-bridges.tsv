@@ -1,0 +1,3 @@
+# Overrides of methods of the ModLoader / Forge API (not game classes: no join rows) whose RETURN KIND differs between the 1.2.5 class and the shim's. owner, name, 1.2.5 descriptor, shim descriptor (1.2.5 class names).
+# The mod's method stays; a method with the shim's descriptor (same name and parameters, other return) is added that calls it (void to boolean: true, boolean to void: dropped, numeric widening).
+BaseMod	onTickInGame	(Lnet/minecraft/server/MinecraftServer;)V	(Lnet/minecraft/server/MinecraftServer;)Z

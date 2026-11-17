@@ -28,7 +28,8 @@ class Mc125CorpusBridgesTest {
         assumeTrue(Notch125To147.available(), "built without -Pmappings125");
         Path dir = Path.of(System.getProperty("mc125.corpus", "Y:/Programming/Minecraft/Retrofit/test-mods-mcarchive/1.2.5"));
         assumeTrue(Files.isDirectory(dir), "no corpus at " + dir);
-        int changed = 0, bridged = 0, units = 0;
+        int changed = 0, bridged = 0, units = 0, never = 0, renamedU = 0, leftU = 0;
+        Map<String, Integer> adaptedJars = new TreeMap<>(), unadaptedJars = new TreeMap<>();
         Map<String, Integer> reasons = new TreeMap<>();
         StringBuilder report = new StringBuilder();
         List<Path> files = new ArrayList<>();
@@ -59,6 +60,11 @@ class Mc125CorpusBridgesTest {
             units++;
             changed += c[0];
             bridged += c[1];
+            never += Notch125To147.lastUnbridged().size();
+            renamedU += Notch125To147.lastUnjoinedOverrides()[0];
+            leftU += Notch125To147.lastUnjoinedOverrides()[1];
+            for (String k : Notch125To147.lastAdaptedCalls().keySet()) adaptedJars.merge(k, 1, Integer::sum);
+            for (String k : Notch125To147.lastUnadaptedCalls().keySet()) unadaptedJars.merge(k, 1, Integer::sum);
             for (String u : Notch125To147.lastUnbridged()) {
                 String reason = u.substring(u.indexOf(": ") + 2);
                 reasons.merge(reason.replaceAll("\\d+", "N"), 1, Integer::sum);
@@ -66,11 +72,12 @@ class Mc125CorpusBridgesTest {
             }
             if (c[0] > 0) report.append(p.getFileName()).append(": ").append(c[0]).append(" overrides, ").append(c[1]).append(" bridged\n");
         }
-        String summary = units + " units: " + changed + " overrides of changed-signature methods, " + bridged + " bridged; not bridged by reason " + reasons;
+        String summary = units + " units: " + changed + " overrides of changed-signature methods, " + bridged + " bridged; overrides never called: " + never + " (by reason " + reasons + "); overrides of unjoined members: " + renamedU + " renamed, " + leftU + " left; calls of changed-signature game methods adapted: " + adaptedJars.size() + " distinct, not adaptable: " + unadaptedJars.size() + " distinct";
         System.out.println("MC125 BRIDGES: " + summary);
         Path out = Path.of("build", "reports", "mc125-bridges.txt");
         Files.createDirectories(out.getParent());
         Files.writeString(out, summary + "\n" + report);
+        assertTrue(leftU == 0, "every override of an unjoined member carries mcc125$<Feather name>: " + summary);
         assertTrue(bridged * 10 >= changed * 7, "most overrides should be bridgeable: " + summary);
     }
 }

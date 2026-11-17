@@ -454,4 +454,11 @@ public class Minecraft {
     public void loadWorld(WorldClient world, String loadingMessage) {
         loadWorld(world);
     }
+
+    // Members125 batch 3
+
+    /** 1.2.5's static version string ({@code Minecraft.C()}; the loader names it by its intermediary id). */
+    public static String mcc125$m_5378799() {
+        return "1.2.5";
+    }
 }

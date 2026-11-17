@@ -256,4 +256,11 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
     protected float func_70183_g() {
         return 0.0F;
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code EntityThrowable.thrown(x, y, z, speed, spread)} (1.3: {@code setThrowableHeading}). */
+    public void mcc125$thrown(double x, double y, double z, float speed, float spread) {
+        setThrowableHeading(x, y, z, speed, spread);
+    }
 }

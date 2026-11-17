@@ -49,6 +49,23 @@ public final class Mc125Jars {
 
     private Mc125Jars() {}
 
+    /** Evidence prefix of a jar whose obfuscation is close to 1.2.5's but not 1.2.5's. */
+    static final String OTHER_VERSION = "other version: ";
+    /** Share of the member references that must resolve in the 1.2.5 names for a jar of a neighbouring 1.2.x release (the obfuscation changes a little between them). */
+    static final double NEAR_SHARE = 0.25;
+
+    /**
+     * Evidence when the jar names the game by an obfuscation that is close to 1.2.5's without being it (a 1.2.1 to 1.2.4 mod: NEWTON gravity enabler is for 1.2.3): between
+     * {@link #NEAR_SHARE} and {@link #MIN_SHARE} of the references resolve and no other supported release fits clearly better. Null otherwise.
+     */
+    static String detectNear(ZipFile zip, java.util.function.Supplier<double[]> othersSupplier) {
+        double share = score(zip);
+        if (share < NEAR_SHARE || share >= MIN_SHARE) return null;
+        double[] others = othersSupplier.get();
+        if (others != null) for (double o : others) if (o + 0.2 >= share) return null;
+        return OTHER_VERSION + "obfuscated names resemble Minecraft 1.2.5 only partly (" + Math.round(share * 100) + "% of the member references), so the jar is for another 1.2.x release";
+    }
+
     /**
      * A CraftBukkit / MCPC build ({@code *_bukkit.zip}, {@code *-mcpc.jar}): it names the game by MCP names ({@code net/minecraft/server/World}) instead of 1.2.5's obfuscation, so the join
      * table does not apply. At least five distinct {@code net/minecraft/server/} classes other than {@code MinecraftServer} (the one class a notch server jar names there) are referenced.
@@ -116,7 +133,8 @@ public final class Mc125Jars {
 
     /** The line the compatibility report shows for such a jar. */
     public static String reportLine(String fileName, String evidence) {
-        return fileName + ": Minecraft 1.2.5 (not supported yet): " + evidence + "; not loaded";
+        if (evidence.startsWith(OTHER_VERSION)) return fileName + ": Minecraft 1.2.x release other than 1.2.5 (not supported): " + evidence.substring(OTHER_VERSION.length()) + "; not loaded";
+        return fileName + ": Minecraft 1.2.5 (not supported yet): " + evidence + "; not loaded" + (enabled() || evidence.contains("no 1.2.5 name table") ? "" : " (" + HOW_TO_ENABLE + ")");
     }
 
     static void record(Path path, String evidence) {
@@ -169,8 +187,19 @@ public final class Mc125Jars {
         return measure(zip)[0];
     }
 
+    private static ZipFile lastZip;
+    private static double[] lastMeasure;
+
     /** {share, side}: the share of {@link #score} and the side it was reached on (0 client, 1 server), {-1, 0} when it cannot be told. */
-    static double[] measure(ZipFile zip) {
+    static synchronized double[] measure(ZipFile zip) {
+        if (zip == lastZip && lastMeasure != null) return lastMeasure;
+        double[] m = measure0(zip);
+        lastZip = zip;
+        lastMeasure = m;
+        return m;
+    }
+
+    private static double[] measure0(ZipFile zip) {
         Side[] s = sides();
         if (s[0].members.isEmpty()) return new double[] {-1, 0}; // table missing from this build
         Set<String> own = new HashSet<>();
@@ -224,10 +253,42 @@ public final class Mc125Jars {
      * Evidence text when the jar is a 1.2.5 jar (fingerprint at least {@link #MIN_SHARE} and clearly better than the 1.4.7, 1.5.2 and 1.6.4 tables), else null.
      * {@code others} are those tables' scores ({@code NotchFingerprint.scores}) or null.
      */
-    /** Opt-in to host 1.2.5 jars through the 1.4.7 chain ({@code -Dlegacyconnector.mc125=true}); off by default. */
-    public static boolean optedIn() {
-        return Boolean.getBoolean("legacyconnector.mc125");
+    /** Config key of the experimental toggle (off by default); the system property {@link #PROPERTY} wins when set. */
+    public static final String CONFIG_KEY = "experimental.minecraft125";
+    public static final String PROPERTY = "legacyconnector.mc125";
+    /** Value of {@link #CONFIG_KEY} read from config/legacyconnector.properties by {@link #configure}. */
+    private static volatile boolean configured;
+
+    /** Reads the toggle from the layer's config (next to the mods folder); called once per startup by the locator. */
+    public static void configure(java.util.Properties config) {
+        configured = parse(config.getProperty(CONFIG_KEY), false);
+        System.clearProperty(ACTIVE_PROPERTY);
     }
+
+    /** Set (to "true") once a 1.2.5 jar is hosted: the run-time side asks it through {@code v1_6_4.bridge.Mc125Host.active()}. */
+    public static final String ACTIVE_PROPERTY = "legacyconnector.mc125.active";
+
+    static void markHosting() {
+        System.setProperty(ACTIVE_PROPERTY, "true");
+    }
+
+    private static boolean parse(String value, boolean def) {
+        if (value == null || value.isBlank()) return def;
+        return Boolean.parseBoolean(value.trim());
+    }
+
+    /** THE question "is Minecraft 1.2.5 hosting on": system property when set, else the config key; default false. Every caller goes through this. */
+    public static boolean enabled() {
+        String prop = System.getProperty(PROPERTY);
+        if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
+        return configured;
+    }
+
+    /** How to turn the experiment on (appended to the report line and log of a 1.2.5 jar while it is off). */
+    public static final String HOW_TO_ENABLE = "experimental Minecraft 1.2.5 support is off: set " + CONFIG_KEY + "=true in config/legacyconnector.properties to try it";
+
+    /** Marker of a hosted 1.2.5 mod in the report. */
+    public static final String EXPERIMENTAL_NOTE = "experimental (Minecraft 1.2.5): linked members may still be empty placeholders, expect a mod that loads and then does little";
 
     /** The side ('c' or 's') whose 1.2.5 names the jar fits better. */
     static char sideOf(ZipFile zip) {

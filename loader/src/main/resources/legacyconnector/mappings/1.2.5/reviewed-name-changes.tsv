@@ -1,0 +1,6 @@
+# Joins by the same Calamus intermediary id whose Feather names differ, accepted after review (readable owner, name 1.2.5, name 1.4.7). Everything else of that kind is rejected:
+# the intermediary id was reused for another member (PlayerManager.unban joined to removeFromWhitelist, Snooper.report to init, ProjectileAttackGoal.projectileType to cooldown, ...).
+net/minecraft/item/Item	MAP	FILLED_MAP
+net/minecraft/world/World	wakeUpAllPlayers	updatePlayersSleepingStatus
+net/minecraft/client/Minecraft	initLicenseCheckThread	initTimerHackThread
+net/minecraft/client/MultiplayerInteractionManager	sendSelectedHotbarSlot	updateSelectedHotbarSlot

@@ -186,4 +186,15 @@ public class EntityItem extends Entity {
     public boolean combineItems(EntityItem other) {
         return false;
     }
+
+    // Members125 batch 1
+
+    /** Phantom field {@code EntityItem.item} of 1.2.5 (the stack the entity carries; 1.3 hid it behind {@code getEntityItem}). */
+    public static ItemStack mcc$get$mcc125$item(EntityItem e) {
+        return e.getEntityItem();
+    }
+
+    public static void mcc$set$mcc125$item(EntityItem e, ItemStack stack) {
+        e.setEntityItemStack(stack);
+    }
 }
