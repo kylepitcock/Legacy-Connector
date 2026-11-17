@@ -53,7 +53,7 @@ NeoForge checks file names before any mod runs, so Legacy Connector cannot sort 
 
 ## "Warnings while loading mods": a missing dependency
 
-When a legacy mod needs a library or mod that is not installed, NeoForge's "Warnings while loading mods" screen names the mod, the missing dependency and the folder to put its jar into (`mods/<version>/`). The mod is still loaded and may fail or miss features without it. The same lines are in `logs/legacyconnector-report.txt`, which also lists per jar what was detected, what could not be linked and what was synthesized.
+When a legacy mod needs a library or mod that is not installed, NeoForge's "Warnings while loading mods" screen names the mod, the missing dependency and the folder to put its jar into (`mods/<version>/`). The mod is still loaded and may fail or miss features without it. The same lines are in `logs/legacyconnector-report.txt`, which also lists per jar what was detected, what could not be linked and what was synthesized. Its last section, "Runtime problems", lists per mod the missing textures and models, items and blocks without a model or a name, and recipes dropped because of a missing item, seen while the game ran; `/legacyconnector problems` shows the same counts in chat (see [Development](Development.md)).
 
 ## Reporting
 

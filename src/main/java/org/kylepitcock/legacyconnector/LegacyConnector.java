@@ -130,12 +130,17 @@ public final class LegacyConnector {
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
         BETA_ENTITIES.register(modBus);
-        if (!System.getProperty("legacyconnector.forge1201.mods", "").isEmpty()) org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.init(modBus);
+        if (!System.getProperty("legacyconnector.forge1201.mods", "").isEmpty()) {
+            org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.init(modBus);
+            // translated 1.20.1 jars are plain NeoForge mods: the problems collector knows them by id
+            for (String id : org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.modIds()) org.kylepitcock.legacyconnector.core.problems.LegacyProblems.markLegacyNamespace(id);
+        }
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
         org.kylepitcock.legacyconnector.core.LegacyLogFilter.install();
         org.kylepitcock.legacyconnector.core.EntityCensus.register();
+        org.kylepitcock.legacyconnector.core.problems.LegacyProblems.register(modBus);
         org.kylepitcock.legacyconnector.core.LegacyCrashInfo.register();
         org.kylepitcock.legacyconnector.core.SilentFailureChecks.register();
         LegacyMods.registerPlatform(new Platform1710());
