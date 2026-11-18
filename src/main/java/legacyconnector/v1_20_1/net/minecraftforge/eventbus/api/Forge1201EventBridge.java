@@ -67,7 +67,7 @@ public final class Forge1201EventBridge {
     /** Non-virtual equivalent of Forge Event.isCancelable(). */
     public static boolean baseIsCancelable(Event event) {
         Objects.requireNonNull(event, "event");
-        return event instanceof Forge1201CancelableEventMarker || event instanceof ICancellableEvent;
+        return event instanceof Forge1201CancelableEventMarker;
     }
 
     /** Non-virtual equivalent of Forge Event.isCanceled(): read the base Event state. */
