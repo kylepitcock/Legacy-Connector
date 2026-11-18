@@ -1621,7 +1621,10 @@ PlayerEvents.tick(e => {
             int diagnosticTickCount = occurrences(
                     normalized,
                     "            if (entity.isPlayer() && entry.getPropertyByName(\"debug_mode\")) {");
-            if (legacyStateCount == 1 && diagnosticStateCount == 0
+            if (legacyStateCount == 0 && diagnosticStateCount == 0
+                    && tickAnchorCount == 0 && diagnosticTickCount == 0) {
+                // Focused compatibility tests may provide only the target-filter slice.
+            } else if (legacyStateCount == 1 && diagnosticStateCount == 0
                     && tickAnchorCount == 1 && diagnosticTickCount == 0) {
                 normalized = normalized.replace(legacyState, diagnosticState)
                         .replace(tickAnchor, diagnosticTick);
