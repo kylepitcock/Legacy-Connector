@@ -6,6 +6,12 @@ import legacyconnector.v1_7_10.net.minecraft.world.WorldServer;
 import net.minecraft.server.level.ServerPlayer;
 
 public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7_10.net.minecraft.inventory.ICrafting {
+    /** The chat setting the player's client reported (full, commands only, hidden). */
+    public EntityPlayer.EnumChatVisibility func_147096_v() {
+        var info = mcc$serverPlayer().clientInformation();
+        return EntityPlayer.EnumChatVisibility.mcc$of(info == null ? null : info.chatVisibility());
+    }
+
     /** Resets the idle timer (nothing to do: the modern server tracks activity itself). */
     public void markPlayerActive() {
     }
