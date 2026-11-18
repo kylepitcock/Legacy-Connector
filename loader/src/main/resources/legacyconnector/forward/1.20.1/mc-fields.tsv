@@ -468,3 +468,7 @@ net/minecraft/server/level/ChunkHolder	UNLOADED_LEVEL_CHUNK	Lcom/mojang/datafixe
 net/minecraft/client/gui/components/AbstractWidget	WIDGETS_LOCATION	Lnet/minecraft/resources/ResourceLocation;	-	none	Round12ClientCompat.widgetsLocation
 net/minecraft/world/item/ArmorItem	ARMOR_MODIFIER_UUID_PER_TYPE	Ljava/util/EnumMap;	-	none	Round12Compat.armorModifierUuids
 net/minecraft/world/level/block/entity/Hopper	INSIDE	Lnet/minecraft/world/phys/shapes/VoxelShape;	-	none	Round12Compat.hopperInside
+net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_ARMOR_GLINT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER	-	-
+net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_GLINT_DIRECT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_GLINT_SHADER	-	-
+net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	RENDERTYPE_ARMOR_GLINT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER	-	-
+net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	RENDERTYPE_GLINT_DIRECT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_GLINT_SHADER	-	-
