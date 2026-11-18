@@ -35,6 +35,28 @@ public final class IBlockAccess {
         return self.isSideSolid(x, y, z, side, _default);
     }
 
+    /** 1.5.2's {@code doesBlockHaveSolidTopSurface(x, y, z)}: whether the block below something can carry it (1.7.10: a static of World). */
+    public static boolean doesBlockHaveSolidTopSurface(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {
+        return legacyconnector.v1_7_10.net.minecraft.world.World.doesBlockHaveSolidTopSurface(self, x, y, z);
+    }
+
+    /**
+     * 1.5.2's {@code getBrightness(x, y, z, minLight)}: the light curve's brightness (0-1) of the block light at a position, raised to {@code minLight}
+     * when that is brighter (what a light-emitting block adds to its own surroundings).
+     */
+    public static float getBrightness(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z, int minLight) {
+        int level;
+        if (self instanceof legacyconnector.v1_7_10.net.minecraft.world.World world) {
+            level = world.getBlockLightValue(x, y, z);
+        } else {
+            int packed = self.getLightBrightnessForSkyBlocks(x, y, z, 0);
+            level = Math.max(packed >> 20 & 15, packed >> 4 & 15);
+        }
+        level = Math.max(Math.min(level, 15), Math.min(Math.max(minLight, 0), 15));
+        float dark = 1.0F - level / 15.0F;
+        return (1.0F - dark) / (dark * 3.0F + 1.0F);
+    }
+
     /** The material of the block at a position. */
     public static legacyconnector.v1_7_10.net.minecraft.block.material.Material getBlockMaterial(
             legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {

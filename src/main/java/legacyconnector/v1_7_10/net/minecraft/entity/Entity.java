@@ -1002,6 +1002,15 @@ public abstract class Entity implements ICommandSender {
         return mcc$entity == null ? mcc$localId : mcc$entity.getId();
     }
 
+    /** What the entity holds and wears (held item, boots, leggings, chestplate, helmet): none for entities that carry nothing (living ones override). */
+    public legacyconnector.v1_7_10.net.minecraft.item.ItemStack[] getLastActiveItems() {
+        return null;
+    }
+
+    /** Credits {@code score} points for killing {@code killed}; only players keep a score (living entities override). */
+    public void addToPlayerScore(Entity killed, int score) {
+    }
+
     /** Phantom field: accesses are redirected to {@code mcc$get$entityId} (mods put it in packets; the plain field stayed 0). */
     @Deprecated
     public int entityId;

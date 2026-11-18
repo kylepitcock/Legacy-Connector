@@ -61,6 +61,14 @@ public final class Forward164 {
         return java.util.logging.Logger.getLogger(id != null ? id : "ForgeModLoader");
     }
 
+    // ------------------------------------------------------------------ villages
+
+    /** 1.4.7 to 1.6.4 {@code ComponentVillage.startPiece} (a village building's village start; 1.7.10 components do not keep it). */
+    public static legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Start villageStartPiece(
+            legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Village village) {
+        return village.mcc$startPiece();
+    }
+
     // ------------------------------------------------------------------ sound: Minecraft.sndManager and its 1.6.4 methods
 
     /** 1.6.4 {@code Minecraft.sndManager}: the sound manager (1.7.10 reaches it through the sound handler). */
@@ -439,5 +447,23 @@ public final class Forward164 {
     /** 1.6.4 {@code EntityPlayerMP.incrementWindowID()}: the next container window id (1-100). */
     public static void incrementWindowID(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
         player.getNextWindowId();
+    }
+
+    // ------------------------------------------------------------------ 1.6.4 gap round (2026-11-17)
+
+    /** 1.6.4 {@code EntityFishHook.inTile}: the id of the block the bobber is stuck in (0 for none). */
+    public static int fishHookInTile(legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook hook) {
+        return legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(hook.inTile);
+    }
+
+    /** 1.6.4 {@code TileEntityPiston.getStoredBlockID()}: the id of the block the piston moves. */
+    public static int pistonStoredBlockId(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityPiston piston) {
+        return legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(piston.getStoredBlockID());
+    }
+
+    /** 1.6.4 {@code world.difficultySetting = n}: 0 peaceful to 3 hard (1.7.10 keeps an enum; the world's difficulty is the server's). */
+    public static void setDifficultySetting(legacyconnector.v1_7_10.net.minecraft.world.World world, int difficulty) {
+        legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer server = legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.getServer();
+        if (server != null) server.setDifficultyForAllWorlds(legacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty.getDifficultyEnum(difficulty));
     }
 }

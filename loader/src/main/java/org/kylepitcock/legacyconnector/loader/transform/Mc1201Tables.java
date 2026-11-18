@@ -22,7 +22,7 @@ import java.util.Map;
  *   <li>{@code mc-bridges.tsv}: methods a mod overrides whose signature changed (bridge method generation).</li>
  * </ul>
  */
-final class Mc1201Tables {
+public final class Mc1201Tables {
     static final String HELPER_PACKAGE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/";
     private static final String DIR = "legacyconnector/forward/1.20.1/";
 
@@ -44,6 +44,8 @@ final class Mc1201Tables {
     final List<Bridge> bridges = new ArrayList<>();
     /** Overrides of methods that became final in 1.21.1: owner, name, descriptor, new name ({@code -}: no replacement, the override is disabled). */
     final List<String[]> overrides = new ArrayList<>();
+    /** lib-lambdas.tsv: functional interface + sam name + old descriptor to its row (interface, sam, old descriptor, new descriptor, converters). */
+    final java.util.Map<String, String[]> lambdas = new java.util.HashMap<>();
 
     private Map<String, Call> specialByDesc;
 
@@ -84,6 +86,29 @@ final class Mc1201Tables {
     }
 
     private static volatile Mc1201Tables instance;
+    /** Package roots (internal names, trailing slash) of libraries whose 1.20.1 jar is translated as the fallback: their {@code lib-*.tsv} rows are off. */
+    private static volatile Set<String> fallbackRoots = Set.of();
+
+    /**
+     * The 1.20.1 build of a library (GeckoLib 4.8) that the pack carries instead of the native 1.21.1 one is the API its callers link against: the
+     * {@code lib-*.tsv} rows that reshape calls to the NATIVE build's API (GeckoLib 4.9) must not apply to it or to the mods calling it, or those
+     * call sites would reference members the jar does not have. Set once per launch by the locator, before any jar is translated.
+     */
+    public static synchronized void setFallbackRoots(Set<String> roots) {
+        if (roots.equals(fallbackRoots)) return;
+        fallbackRoots = Set.copyOf(roots);
+        instance = null;
+    }
+
+    public static String fallbackRootsKey() {
+        return new java.util.TreeSet<>(fallbackRoots).toString();
+    }
+
+    private static boolean ofFallbackLibrary(String name) {
+        if (name.startsWith("L")) name = name.substring(1);
+        for (String r : fallbackRoots) if (name.startsWith(r)) return true;
+        return false;
+    }
 
     static Mc1201Tables get() {
         Mc1201Tables t = instance;
@@ -106,6 +131,7 @@ final class Mc1201Tables {
         }
         for (String[] f : rows("mc-fields.tsv", 6)) t.fields.put(f[0] + "." + f[1] + ":" + f[2], new Field(f[0], f[1], f[2], f[3], f[4], f[5]));
         t.overrides.addAll(rows("mc-overrides.tsv", 4));
+        for (String[] f : rows("lib-lambdas.tsv", 4)) t.lambdas.put(f[0] + "." + f[1] + f[2], f);
         for (String[] f : rows("mc-bridges.tsv", 8)) {
             List<String> args = f[5].equals("-") ? List.of() : List.of(f[5].split(","));
             t.bridges.add(new Bridge(f[0], f[1], f[2], f[3], f[4], args, f[6].equals("-") ? null : f[6], f[7].equals("-") ? -1 : Integer.parseInt(f[7])));
@@ -127,7 +153,12 @@ final class Mc1201Tables {
     /** The rows of {@code mc-X.tsv} followed by those of {@code lib-X.tsv} (the 1.20.1 library bridges: same formats, kept in their own files). */
     private static List<String[]> rows(String file, int min) {
         List<String[]> out = rows1(file, min);
-        if (file.startsWith("mc-")) out.addAll(rows1("lib-" + file.substring(3), min));
+        if (file.startsWith("mc-")) {
+            for (String[] f : rows1("lib-" + file.substring(3), min)) {
+                if (!fallbackRoots.isEmpty() && (ofFallbackLibrary(f[0]) || file.equals("mc-classes.tsv") && ofFallbackLibrary(f[1]))) continue;
+                out.add(f);
+            }
+        }
         return out;
     }
 

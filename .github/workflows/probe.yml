@@ -81,10 +81,10 @@ jobs:
           done
           echo "REGRESSED=$REGRESSED" >> "$GITHUB_ENV"
 
-      # Minecraft 1.2.5 is experimental and opt-in: its jars come from MCArchive (Modrinth has none) and the probe needs the 1.2.5 to 1.4.7 table, which
+      # Minecraft 1.2.5 is beta (on by default since 0.5.0): its jars come from MCArchive (Modrinth has none) and the probe needs the 1.2.5 to 1.4.7 table, which
       # :loader:genMappings125 downloads at build time (Ornithe Calamus + Feather, SHA-256 pinned in loader/build.gradle). This step can never fail the
       # workflow: if the mappings or the archive are unavailable it warns and the other versions' results are still published.
-      - name: Probe 1.2.5 (experimental, opt-in)
+      - name: Probe 1.2.5 (beta)
         continue-on-error: true
         run: |
           if ! ./gradlew -q :loader:genMappings125; then
@@ -92,7 +92,7 @@ jobs:
           fi
           python3 tools/compat/fetch_mcarchive_mods.py 1.2.5 "$RUNNER_TEMP/jars-1.2.5" --limit 120 || true
           if [ -z "$(ls "$RUNNER_TEMP/jars-1.2.5" 2>/dev/null)" ]; then echo "::warning::1.2.5 skipped: no jars from MCArchive"; exit 0; fi
-          # no --fail-on-regression: an experimental version must not turn the weekly run red
+          # no --fail-on-regression: a beta version must not turn the weekly run red
           python3 tools/compat/probe.py "$RUNNER_TEMP/jars-1.2.5" --mc 1.2.5 --version "$PROBE_VERSION" --source mcarchive || echo "::warning::1.2.5 probe failed"
 
       - name: Publish to the site-data branch

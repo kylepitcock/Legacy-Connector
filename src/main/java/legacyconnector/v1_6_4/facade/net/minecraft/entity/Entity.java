@@ -19,4 +19,9 @@ public final class Entity {
         Item item = Ids.item(itemId);
         return item == null ? null : self.dropItem(item, count);
     }
+
+    /** 1.6.4 {@code Entity.addToPlayerScore(killed, score)}: only living entities and players keep a score (1.7.10 moved it down). */
+    public static void addToPlayerScore(legacyconnector.v1_7_10.net.minecraft.entity.Entity self, legacyconnector.v1_7_10.net.minecraft.entity.Entity killed, int score) {
+        if (self instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase living) living.addToPlayerScore(killed, score);
+    }
 }

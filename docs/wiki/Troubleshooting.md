@@ -55,15 +55,23 @@ NeoForge checks file names before any mod runs, so Legacy Connector cannot sort 
 
 When a legacy mod needs a library or mod that is not installed, NeoForge's "Warnings while loading mods" screen names the mod, the missing dependency and the folder to put its jar into (`mods/<version>/`). The mod is still loaded and may fail or miss features without it. The same lines are in `logs/legacyconnector-report.txt`, which also lists per jar what was detected, what could not be linked and what was synthesized. Its last section, "Runtime problems", lists per mod the missing textures and models, items and blocks without a model or a name, and recipes dropped because of a missing item, seen while the game ran; `/legacyconnector problems` shows the same counts in chat (see [Development](Development.md)).
 
+## A required legacy library is missing but a modern mod with the same name is installed
+
+Legacy mods list required libraries (`required-after:codechickenlib`). A modern mod with the same id (CodeChickenLib 1.21.1) satisfies the id, but its API is another
+generation: classes the legacy mod needs (`codechicken.lib.block.property.unlisted.UnlistedGenericTile`) are not in it. Legacy Connector checks every reference into the
+package root of such a modern mod class by class and member by member; what is missing counts as unresolved. The report shows `Required library 'codechickenlib': only a modern
+mod with that id is installed and it lacks N class(es) ...` with the classes, the loading warning and the chat notice name the library, and the mod's own failure message
+repeats it. The fix is the library's jar for the legacy Minecraft version in `mods/<version>/` (for example `mods/1.12.2/CodeChickenLib-1.12.2-3.2.3.358-universal.jar`); it
+loads as `codechickenlib_legacy` next to the modern one.
+
 ## Minecraft 1.2.5 jars are reported but not loaded
 
-Minecraft 1.2.5 support is experimental and off by default. With the toggle off, 1.2.5 jars (detected by their names, or any jar in `mods/1.2.5/`) are listed in `logs/legacyconnector-report.txt` under "Mods of a Minecraft version that is not supported yet" and are never loaded. To try them:
+Minecraft 1.2.5 support is alpha and on by default. A 1.2.5 jar (detected by its names, or any jar in `mods/1.2.5/`) lands in `logs/legacyconnector-report.txt` under "Mods of a Minecraft version that is not supported yet" and is not loaded in two cases:
 
-1. Put the jars (the server build of a mod on a server) into `mods/1.2.5/`.
-2. Set `experimental.minecraft125=true` in `config/legacyconnector.properties` and restart. The log prints one `EXPERIMENTAL Minecraft 1.2.5 support is ON` line and the report marks each such mod "experimental (Minecraft 1.2.5)".
-3. The jars are renamed to Minecraft 1.4.7's names through a table that the release and nightly jars carry (it is generated at build time from Ornithe's Calamus and Feather mappings, downloaded from maven.ornithemc.net when the mod is built, and never committed). A build without the table logs an error and hosts nothing: use a release or nightly jar, or build with network access.
+1. `versions.minecraft125=false` (or the older `experimental.minecraft125=false`) is set in `config/legacyconnector.properties`: remove the line or set it to `true` and restart.
+2. The build has no 1.2.5 name table (the line says "not supported in this build"): the jars are renamed to Minecraft 1.4.7's names through a table that the release and nightly jars carry (generated at build time from Ornithe's Calamus and Feather mappings, downloaded from maven.ornithemc.net when the mod is built, and never committed). Use a release or nightly jar, or build with network access.
 
-Expect mods that load and then do little: only three small server builds are known to load and nothing has been run in a client. Details: [Legacy 1.2.5](Legacy-1.2.5.md), the toggle: [Configuration](Configuration.md).
+Put the jars (the server build of a mod on a server) into `mods/1.2.5/`. Expect mods that load and then do little: small mods register their content and draw it in a real client, six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart, and the big Forge-era mods are only link-probed. Details: [Legacy 1.2.5](Legacy-1.2.5.md), the toggle: [Configuration](Configuration.md).
 
 ## Reporting
 

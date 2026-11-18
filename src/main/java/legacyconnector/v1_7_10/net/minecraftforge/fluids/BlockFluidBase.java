@@ -28,7 +28,7 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
         defaultDisplacements.put(Blocks.reeds, false);
     }
 
-    protected Map<Block, Boolean> displacements = new HashMap<>(defaultDisplacements);
+    public Map<Block, Boolean> displacements = new HashMap<>(defaultDisplacements);
 
     protected int quantaPerBlock = 8;
     protected float quantaPerBlockFloat = 8F;

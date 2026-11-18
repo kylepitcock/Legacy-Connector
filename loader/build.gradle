@@ -819,13 +819,13 @@ def mc125Inputs = [
         mc147Feather      : '6353f8c8d066999cba4c5abc6585bee7fcaccb007d5197f05c77e50b12c2c092']
 // Shipped builds: bundleJar / installBundle (what nightly.yml, release.yml and publish.yml run) carry the table unless -PnoMappings125 is given,
 // LENIENTLY: when maven.ornithemc.net or the pinned inputs are unavailable the build goes on without the table and prints one warning
-// (the toggle experimental.minecraft125 then reports "no 1.2.5 name table"). -Pmappings125 stays the strict developer flag (failure fails the build).
+// (versions.minecraft125 then reports "no 1.2.5 name table"). -Pmappings125 stays the strict developer flag (failure fails the build).
 def mc125Strict = project.hasProperty('mappings125')
 def mc125Lenient = !mc125Strict && !project.hasProperty('noMappings125') && gradle.startParameter.taskNames.any { it.endsWith('bundleJar') || it.endsWith('installBundle') }
 rootProject.ext.mc125Warned = false
 def mc125Warn = { String why ->
     rootProject.ext.mc125Warned = true
-    logger.warn("WARNING: the Minecraft 1.2.5 name table is NOT in this build (${why}); experimental.minecraft125 will report 'no 1.2.5 name table'. Build with network access to maven.ornithemc.net to include it, or pass -PnoMappings125 to silence this.")
+    logger.warn("WARNING: the Minecraft 1.2.5 name table is NOT in this build (${why}); 1.2.5 jars will be reported as 'no 1.2.5 name table'. Build with network access to maven.ornithemc.net to include it, or pass -PnoMappings125 to silence this.")
 }
 tasks.register('genMappings125', JavaExec) {
     group = 'legacy'
@@ -859,7 +859,7 @@ tasks.register('genMappings125', JavaExec) {
     }
 }
 tasks.named('jar') { dependsOn genBetaMappings; from(betaMappingsDir) }
-// -Pmappings125 puts the 1.2.5 to 1.4.7 table into the loader jar (needed by -Dlegacyconnector.mc125=true at run time); a default build has none
+// -Pmappings125 puts the 1.2.5 to 1.4.7 table into the loader jar (needed to host 1.2.5 jars at run time); a default build has none (1.2.5 jars are then reported as unsupported in that build)
 if (mc125Strict || mc125Lenient) {
     tasks.named('jar') {
         dependsOn tasks.named('genMappings125')

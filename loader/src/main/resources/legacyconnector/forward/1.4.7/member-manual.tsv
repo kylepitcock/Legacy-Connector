@@ -73,3 +73,24 @@ R	net/minecraft/item/ItemStack	mcc125$is	(Lnet/minecraft/item/ItemStack;)Z	stati
 R	net/minecraft/item/crafting/FurnaceRecipes	addSmelting	(IILnet/minecraft/item/ItemStack;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	addSmelting	(Lnet/minecraft/item/crafting/FurnaceRecipes;IILnet/minecraft/item/ItemStack;)V
 R	net/minecraft/client/Minecraft	installResource	(Ljava/lang/String;Ljava/io/File;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	installResource	(Lnet/minecraft/client/Minecraft;Ljava/lang/String;Ljava/io/File;)V
 G	net/minecraft/entity/item/EntityItem	mcc125$item	Lnet/minecraft/item/ItemStack;	=	getEntityItem	()Lnet/minecraft/item/ItemStack;
+# 1.2.5 (FML 2.x and Forge 3.x members the later versions reshaped): helpers in Redirects125
+R	cpw/mods/fml/common/FMLCommonHandler	registerTickHandler	(Lcpw/mods/fml/common/ITickHandler;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	registerTickHandler	(Lcpw/mods/fml/common/FMLCommonHandler;Lcpw/mods/fml/common/ITickHandler;)V
+R	cpw/mods/fml/common/FMLCommonHandler	registerWorldGenerator	(Lcpw/mods/fml/common/IWorldGenerator;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	registerWorldGenerator	(Lcpw/mods/fml/common/FMLCommonHandler;Lcpw/mods/fml/common/IWorldGenerator;)V
+R	cpw/mods/fml/common/FMLCommonHandler	handleWorldGeneration	(IIJ[Ljava/lang/Object;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	handleWorldGeneration	(Lcpw/mods/fml/common/FMLCommonHandler;IIJ[Ljava/lang/Object;)V
+R	cpw/mods/fml/common/FMLCommonHandler	registerChannel	(Lcpw/mods/fml/common/ModContainer;Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	registerChannel	(Lcpw/mods/fml/common/FMLCommonHandler;Lcpw/mods/fml/common/ModContainer;Ljava/lang/String;)V
+R	net/minecraft/item/Item	setTextureFile	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	setItemTextureFile	(Lnet/minecraft/item/Item;Ljava/lang/String;)V
+R	net/minecraft/block/Block	setTextureFile	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	setBlockTextureFile	(Lnet/minecraft/block/Block;Ljava/lang/String;)V
+G	net/minecraft/entity/EntityLivingBase	prevHealth	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	prevHealth	(Lnet/minecraft/entity/EntityLivingBase;)I
+S	net/minecraft/entity/EntityLivingBase	prevHealth	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setPrevHealth	(Lnet/minecraft/entity/EntityLivingBase;I)V
+R	net/minecraft/client/renderer/texture/TextureManager	getTextureContents	(Ljava/lang/String;)[I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	textureContents	(Lnet/minecraft/client/renderer/texture/TextureManager;Ljava/lang/String;)[I
+G	net/minecraft/item/ItemTool	damageVsEntity	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	toolDamageVsEntity	(Lnet/minecraft/item/ItemTool;)I
+S	net/minecraft/item/ItemTool	damageVsEntity	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setToolDamageVsEntity	(Lnet/minecraft/item/ItemTool;I)V
+# 1.2.5 round 2: EntityLiving.lastDamage was an int (1.7.10: float, the modern entity's lastHurt)
+G	net/minecraft/entity/EntityLivingBase	lastDamage	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	lastDamage	(Lnet/minecraft/entity/EntityLivingBase;)I
+S	net/minecraft/entity/EntityLivingBase	lastDamage	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setLastDamage	(Lnet/minecraft/entity/EntityLivingBase;I)V
+# 1.2.5 round 2: Forge 3.x DimensionManager.getWorlds() returned World[]; MapGenStructure.structureMap was a HashMap
+R	net/minecraft/src/forge/DimensionManager	getWorlds	()[Lnet/minecraft/world/World;	call	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	dimensionWorlds	()[Lnet/minecraft/world/World;
+G	net/minecraft/world/gen/structure/MapGenStructure	structureMap	Ljava/util/HashMap;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	structureMap	(Lnet/minecraft/world/gen/structure/MapGenStructure;)Ljava/util/HashMap;
+R	net/minecraft/entity/item/EntityMinecart	getDamage	()I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	minecartDamage	(Lnet/minecraft/entity/item/EntityMinecart;)I
+G	net/minecraft/world/storage/MapData	dimension	B	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	mapDimension	(Lnet/minecraft/world/storage/MapData;)B
+S	net/minecraft/world/storage/MapData	dimension	B	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setMapDimension	(Lnet/minecraft/world/storage/MapData;B)V

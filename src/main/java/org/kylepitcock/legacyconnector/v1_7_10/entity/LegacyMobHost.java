@@ -162,6 +162,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
         clearBossBar();
+        legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker.mcc$noteRemoved(legacy, level());
         super.remove(reason);
     }
 
@@ -709,14 +710,16 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (legacy != null) {
-            try {
+            // a throwing writeEntityToNBT must not fail the chunk save: the last good legacy keys are saved instead
+            lastGoodNbt = org.kylepitcock.legacyconnector.core.NbtSaveGuard.guardInPlace(tag, lastGoodNbt, () -> {
                 legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
                 legacy.mcc$saveExtended(new NBTTagCompound(tag));
-            } catch (RuntimeException | LinkageError e) {
-                LegacyHosts.nbtFailure(this, "writing", e);
-            }
+            }, legacy, net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(getType()), blockPosition().toShortString());
         }
     }
+
+    /** The legacy keys of this entity's last successful save (see NbtSaveGuard). */
+    private CompoundTag lastGoodNbt;
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {

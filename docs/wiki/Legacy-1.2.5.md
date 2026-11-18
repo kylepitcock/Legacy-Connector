@@ -1,6 +1,6 @@
 # Legacy 1.2.5 (ModLoader and early Forge): design
 
-Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **hosted behind an experimental toggle (`experimental.minecraft125`, off by default)** (stages 1 to 3 below);
+Design note for Minecraft 1.2.5 support, pulled forward by the maintainer on 2026-11-16 (the roadmap had it last). Back to [Home](Home.md). Status: **alpha, on by default since 0.5.0 (`versions.minecraft125=false` turns it off)**: small mods register and draw their content in a real client, and six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart (section "Save and reload checks"; stages 1 to 3 below, first client runs at the end);
 the corpus measurements are in [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md). Related: [Legacy b1.7.3](Legacy-b1.7.3.md) (the ModLoader-era layer that exists), [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md)
 (the forward layer this note recommends hosting on), [Version roadmap](Version-Roadmap.md).
 
@@ -143,21 +143,23 @@ itself), `client/resource` (21 of 40: 1.3 reworked resource loading), `client/wo
 (37 of 1051). A mod that touches only blocks, items, recipes, tile entities, entities and worldgen sees less than 5% unjoined members; the unjoined ones are the networking, the client game mode, the
 resource layer and the 1.3 world/chunk access.
 
-## Stage 3 status (2026-11-16): hosted behind an experimental toggle
+## Stage 3 status (2026-11-16): hosting, and its toggle (on by default since 0.5.0)
 
-**User-facing toggle (since 2026-11-16):** `experimental.minecraft125=true` in `config/legacyconnector.properties` (default `false`; read by the loader through `Mc125Jars.enabled()`, the one
-method every caller uses; the system property `-Dlegacyconnector.mc125=true|false` wins when set and is what the test tooling uses). The release and nightly jars (`bundleJar`) carry the
+**User-facing toggle:** `versions.minecraft125` in `config/legacyconnector.properties` (default `true` since 0.5.0, when 1.2.5 left the experimental state; until then the key was `experimental.minecraft125`, default `false`, and it is still read when `versions.minecraft125` is absent: an explicit `false` there keeps 1.2.5 off, the new key wins when both are set). It is read by the loader through `Mc125Jars.enabled()`, the one
+method every caller uses; the system property `-Dlegacyconnector.mc125=true|false` wins when set and is what the test tooling uses. The release and nightly jars (`bundleJar`) carry the
 generated join table (`legacyconnector/mappings/1.2.5/notch-to-147.tsv`) by default; if maven.ornithemc.net cannot be reached the build still succeeds, prints one warning and the jar has no
-table (`-PnoMappings125` leaves it out on purpose; `verifyBundle125` fails the build when the table is missing and no warning was logged). Four cases: off, any build: 1.2.5 jars are reported
-as not supported yet with the key as the hint (also the ones in `mods/1.2.5/`); on with the table: hosted, one `EXPERIMENTAL` line in the log, every mod marked "experimental (Minecraft 1.2.5)"
-in `legacyconnector-report.txt`; on without the table: one error line, nothing hosted, jars reported. With the toggle off the run-time side stays inert: the loader sets the system property
-`legacyconnector.mc125.active` only when it hosts a 1.2.5 jar and the shared code that only 1.2.5 mods need asks `Mc125Host.active()`. For developers the opt-in below still applies:
+table (`-PnoMappings125` leaves it out on purpose; `verifyBundle125` fails the build when the table is missing and no warning was logged). Four cases: toggle on with the table (the default): hosted, one info line in the log, the report shows each mod's version evidence ("Minecraft 1.2.5, ... hosted as 1.4.7");
+off, any build: 1.2.5 jars are reported as "support is switched off" with the key as the hint (also the ones in `mods/1.2.5/`); on without the table (a developer build without `-Pmappings125`): one info line, nothing hosted, jars reported as "not supported in this build", never an error. A pack with no 1.2.5 jar costs nothing: the name
+tables are read only when a jar without FML annotations has to be told from another version, and the rest of the layer stays inert: the loader sets the system property
+`legacyconnector.mc125.active` only when it hosts a 1.2.5 jar and the shared code that only 1.2.5 mods need asks `Mc125Host.active()`. Because detection is always active, a jar that fits Beta 1.7.3's names
+(`BetaJars.betaShare`, about 100% for a Beta jar and below 10% for a 1.2.5 one) is never taken as 1.2.5, and `Mc125CorpusDetectionTest` checks the real archives: none of the 46 1.4.7, 33 1.5.2, 45 1.6.4 and 68 Beta 1.7.3 jars is claimed, 74 of 90 real 1.2.5 archives are recognised.
+For developers the opt-in below still applies:
 
 `-Dlegacyconnector.mc125=true` (and a build made with `-Pmappings125`): a detected 1.2.5 jar (or any jar in `mods/1.2.5/`) becomes a 1.4.7 jar for the rest of the pipeline.
 `LegacyVersion.V1_2_5` is a source version only (last in the enum, same prefixes and forward chain as 1.4.7); `LegacyJar.version` is `V1_4_7`, `sourceVersion` is `V1_2_5`, `notchSide` is the
 client or server obfuscation the jar uses. `transform/Notch125To147` runs first in `LegacyJarTransformer.readPatched` (right where `BetaDeobfuscator` runs for Beta jars): game classes, fields
 and methods to 1.4.7's names through the join table, resolved up the supertypes (jar classes first, then the 1.4.7 hierarchy of `notch.txt`) because obfuscated member names are unique only per class;
-overrides in mod classes are renamed with the game method; copies of game classes are dropped and reported. Without the opt-in, or in a build without the table, a 1.2.5 jar is only reported as before.
+overrides in mod classes are renamed with the game method; copies of game classes are dropped and reported. With the toggle off, or in a build without the table, a 1.2.5 jar is only reported.
 
 The capitalised `ModLoader`/`BaseMod` facade is a **rename**, not a second class: the 1.4.7 shim's `ModLoader` already has the lower-case statics (`addName`, `registerBlock`, `addRecipe`, ...), so the
 capitalised calls (only Beta mods spell them so; 1.2.5 itself is lower case, see above) (`AddName`, `RegisterBlock`, `AddRecipe`, `AddShapelessRecipe`, `AddSmelting`, `SetInGameHook`, ...; set `Notch125To147.MODLOADER_STATICS`, 34 names) are rewritten to them, and
@@ -393,7 +395,7 @@ Client builds only load on a client (their game classes fit the client names); a
 
 ## First client runs and a wider server sweep (2026-11-17)
 
-Toggle on (`-Pmappings125`, `experimental.minecraft125=true`), one mod per run, fresh config, world and cache, jars from the MCArchive corpus. Server runs: `tools/dev/run125.sh <label> <jar>`
+Toggle on (`-Pmappings125`, default on since 0.5.0), one mod per run, fresh config, world and cache, jars from the MCArchive corpus. Server runs: `tools/dev/run125.sh <label> <jar>`
 (`run125-batch.sh label=jar ...`, `RATE=1` also writes `docs/data/mods.json` through `tools/compat/from_client.py ... 1.2.5`). Client runs: `tools/dev/run125-client.sh label=jar ...`
 (`tools/dev/quick-shots.sh` on the Windows desktop, superflat world, perf mods off unless `PERF=1`; ObsidianHilt was also run with the perf mods and renders the same). Screenshots (full-colour JPEG)
 are in `docs/screenshots/old-versions/1.2.5/`. **These are the first 1.2.5 mods that ran in a real client.**
@@ -422,6 +424,47 @@ Fixed on the way (generic): Forge 3.4's `IEntityLivingHandler` (death hook, thro
 `net.minecraft.src.SidedProxy` (FML 2.x's ModLoader-style annotation, default package in a mod jar) is now FML's `@SidedProxy` so the platform injects it (`Notch125To147`, transformer 145);
 Forge 3's `FurnaceRecipes.metaSmeltingList` field exists (keyed by item id and damage). Also: `screenshotTest` passes `legacyconnector.mc125` with `-Pmappings125`.
 
-What blocks "playable" (the 0.5.0 condition, a handful of playable 1.2.5 content mods): the mods above register and draw their content, but none was played in survival yet (use, craft, place, save and
+What blocks "playable" (the 0.5.0 condition, a handful of playable 1.2.5 content mods): at the time of this section the mods above registered and drew their content, but none had been played in survival; since 2026-11-17 six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart (see "Save and reload checks"). What "playable" asked for (use, craft, place, save and
 reload), the most common mod type with custom block sheets (a `getTextureFile` that points at a sheet the jar lacks, More Pistons) still draws missing textures, and the big Forge-era mods (IC2,
 BuildCraft, Forestry, Railcraft, Thaumcraft) are only link-probed.
+
+## Survival sessions (2026-11-17)
+
+Real client (`tools/dev/session125.sh <jar...>` starts a control session with `-Pmappings125`; `tools/dev/ctl.sh` sends player verbs, `tools/dev/jsl.sh` evaluates JavaScript with crafting/inventory helpers), survival mode, superflat world, one mod set at a time. "Playable" means craft, use, place/break and save/reload all worked.
+
+| Mod | Craft | Use / place | Mob / GUI | Save and reload | Result |
+|---|---|---|---|---|---|
+| Obsidian Hilt | 4 obsidian make the hilt | holding right-click over water turns the hilt into a Weak Water Sword (drains the pool); the sword hits mobs and takes damage | - | not tested separately | works (fire sword/Drain key not tried) |
+| BucketCraft | wood and gold buckets crafted | wood bucket picks up water from a source (infinite-water rule refills it) | - | not tested | works (placing, lava, milk not tried) |
+| Craftable Mob Spawners | Pig spawner from 4 mossy cobblestone, 4 iron, porkchop | the item places a spawner with the mob set; it spawns pigs | pigs | not tested | works |
+| Magic Wands | Break wand crafted | click start corner, hold X, click end corner: the box is removed | - | not tested | works for the break wand |
+| Backpack | red backpack crafted | sneak + right-click opens a 54 slot GUI; items stay when closed and reopened | - | saved to `backpacks.dat` on close; a reload through the harness (switching worlds in one process) is confounded by the mod's static storage, not confirmed | partial |
+| Elemental Creepers | - | - | fire creeper chases, swells, explodes (damage, 100+ fire blocks) | not tested | works (the other 14 types not each tried) |
+| More Pistons | (not crafted) | (not placed) | - | - | not playable: its blocks use `/morePistons/blocks/block_textures.png`, a sheet the distributed zip lacks, so the original draws missing textures too |
+| BlockHelper | not re-run | | | | unverified |
+
+Defects found and fixed (generic): `stack.itemID = x` on a stack in a slot did not change the slot's stack (master fixed it in parallel); `Block.collisionRayTrace` used the modern clip, which misses from a start on a face (BucketCraft walks its own ray cell by cell); `World.saveHandler` was an unmapped field reading null (Backpack); `EntityCreeper(World)` had no AI tasks (every mod creeper stood still); a 1.2.5 mod's item callbacks ran a second time on the client world (single player had one world), they now run once on the server (`Mc125Host.registerSingleWorld`, `ItemCallbacks`).
+
+## Save and reload checks (2026-11-17)
+
+One game process per world: `tools/dev/session125.sh <jar>` creates a world and is driven with `ctl.sh`/`jsl.sh` (crafting through the real menu, `dump()` of inventory and chest with legacy damage, `ids()` of the numeric item ids), `save-all flush` and `ctl.sh quit`; then `LOADWORLD=<save folder> tools/dev/session125.sh <jar>` opens the same world as saved (scenario `controlkeep`, `-PshotLoadWorld`) in a new process.
+
+| Mod | Survives save and reload | Evidence (before the quit, after the restart) |
+|---|---|---|
+| Obsidian Hilt | yes | Weak Water Sword `d95` in the inventory and a hilt in the chest identical; ids 4096-4103 identical; the hilt taken from the chest after the restart still drains water and becomes a sword |
+| BucketCraft | yes | filled wood bucket in the inventory, gold bucket in the chest, ids 4096-4116 identical; the water bucket places water (a wood bucket burns to 3 sticks, the mod's rule) and the gold bucket from the chest still fills (`d21` as in the first session) |
+| Craftable Mob Spawners | yes | spawner items in inventory and chest identical, ids 4096-4119 identical; the placed spawner is still a `minecraft:spawner` with `SpawnData` pig and spawns pigs after the restart |
+| Magic Wands | yes | wand `d1` in the inventory, another in the chest; the already broken box stays gone, the untouched box is still there; the wand works after the restart (`d2`) |
+| Elemental Creepers | yes | cookie, ice (named) and friendly creepers (NoAI) at the same positions with the same health after the restart; the ice creeper awake again explodes. Their `/mob/*.png` textures drew as missing before this change (see below) |
+| Backpack | yes | two backpacks (legacy meta 16 in the inventory, 17 in a chest) keep their contents (5 diamonds + 3 apples, 20 cobblestone) after a full restart |
+
+Fixed on the way (generic): a mod's own `/mob/<name>.png` texture path fell on `minecraft:textures/entity/<name>.png` and drew as missing (`Textures152` now reads it from the mod's class path when that is no vanilla asset); 1.2.5 code that reads `world.isRemote` now asks `Mc125Host.isRemote` (loader `SingleWorldRemote`, transformer 165), which says false for the single-player client world while the integrated server's thread runs the mod, so Backpack's `if (mc.theWorld.isRemote) return;` before its storage reload no longer skips (before: contents lost at every restart); `World.getSaveHandler` of a client world is the integrated server's save folder. The "1.2.5 mods' item callbacks run once, on the server" change was checked with an A/B on Magic Wands in one session: with it the box breaks, without it (`-Dlegacyconnector.mc125.clientCallbacks=true`, settable live) nothing happens, so it stays.
+## API gaps, round 2 (2026-11-17)
+Link level only (`checkLegacyMod` over the 98 corpus files plus the RedPower 2.0pr5b2 zips; no game was started). Before: 50 jars link, 3 unresolved (other mods' API), 279 distinct stubbed members; after: the same jars, 219 distinct stubbed members (60 gone, no new stub). The list with what each fix is and what was left (with reasons) is `tools/dev/agent-tasks/1.2.5-gaps.md`.
+Defect classes fixed in the loader (transformer 200):
+- **A game member inherited through a class that 1.2.5 does not have.** The member walk of `Notch125To147` (`lookup`) went from a class to its 1.4.7 superclass only when that class existed in 1.2.5 too; 1.4.2 put the abstract `EntityFireball` between the ghast fireball and `Entity`, so the fireball's own position fields (Herobrine, Tale of Kingdoms) ended as `mcc125$o`. The walk now continues through 1.4.7-only classes (their names are kept apart from the 1.2.5 rows: the short letters repeat between versions).
+- **A game member inherited through an FML or Forge class.** A mod class that extends `cpw.mods.fml.client.FMLTextureFX` reads `TextureFX`'s fields under their 1.2.5 letters; the walk had no way from the FML class into the game class, the letter survived and the 1.4.7 stage renamed it a second time (Forestry and IC2 read `anaglyphEnabled` where they meant the pixel array). The walk asks `NotchNames.apiSupertypes` (the API data of 1.4.7) for classes that are neither game nor mod classes; the forward member walk (`ForwardMembers`) also knows Forge 3.x's `net/minecraft/src/forge/ISidedInventory` as the interface it is (LogisticsPipes' `openChest` and the others).
+- A class that moved between 1.6.4 and 1.7.10 under the same simple name was missing from the class table (`LoadingScreenRenderer`, `RecipeSorter`); the rest of the 1.6.4 classes without a 1.7.10 counterpart have other simple names.
+- `@SidedProxy` written as the default-package annotation of the ModLoader era (`LSidedProxy;`) was not collected by the inspector, so the runtime never injected the proxy (BlockHelper).
+Shim (1.7.10 classes the forward layers share): the minecart class has the 1.2.x single-class shape (the kind constructor, `minecartType`, `fuel`, `pushX/Z`, `cargoItems`, `isStorageCart`, `getDrag` that the rolling drag now asks, `setMaxSpeedRail`, `getItemsDropped`, `setInventorySlotContents`; `getMinecartType` is not abstract any more, so a mod's cart class that never heard of it can be created); `Block.blockStrength`, the int-side `getFlammability` (the ForgeDirection shape asks it), `Options.SOUND/MUSIC`, `RenderGlobal.updateClouds`, the F3 lines of `Minecraft`, `TextureManager.createTextureFromBytes`, `WorldChunkManager.getTemperatures`, `EntityLivingBase.lastDamage` over the modern `lastHurt`, and a dozen server-side members (`getPlayerEntity`, `sendPacket(name, packet)`, the FML root directory, ...). Retyped fields and results go through G/S/R rows of `forward/1.4.7/member-manual.tsv` (`lastDamage`, `MapData.dimension` byte, `MapGenStructure.structureMap` HashMap, `DimensionManager.getWorlds` as `World[]`, `EntityMinecart.getDamage` int).
+Findings that need no change: More Pistons' blocks name `/morePistons/blocks/block_textures.png`, which the zip does not contain (the 14 tile PNGs it has are all `addOverride` tiles, present), so the original draws missing textures as well; CustomRecipes calls `ModLoader.addRecipe(Laan;...)` with a class that is not 1.2.5's ItemStack, so it is built against another obfuscation and cannot link (13 junk members).

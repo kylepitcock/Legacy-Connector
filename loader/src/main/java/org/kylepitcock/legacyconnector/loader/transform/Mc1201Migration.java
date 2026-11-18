@@ -122,6 +122,7 @@ final class Mc1201Migration {
             addTriggerCodec(node, c);
             addInstanceValidate(node, c);
             addConditionCodec(node, c);
+            addSerializerCodec(node, c);
         }
         return c;
     }
@@ -149,6 +150,25 @@ final class Mc1201Migration {
     }
 
     /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */
+    /**
+     * A class implementing {@code EntityDataSerializer} with the 1.20.1 methods {@code write(FriendlyByteBuf, T)} / {@code read(FriendlyByteBuf)} gets the
+     * {@code codec()} 1.21.1 asks for: a stream codec that calls those two methods on the object (see {@code MiscCompat.serializerCodec}).
+     */
+    private static void addSerializerCodec(ClassNode node, Counts c) {
+        if (node.interfaces == null || node.interfaces.stream().noneMatch(i -> i.startsWith("net/minecraft/network/syncher/EntityDataSerializer"))) return;
+        String desc = "()Lnet/minecraft/network/codec/StreamCodec;";
+        if (declared(node, "codec", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiscCompat", "serializerCodec",
+                "(Ljava/lang/Object;)Lnet/minecraft/network/codec/StreamCodec;", false));
+        m.instructions.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = 1;
+        m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
+    }
+
     private static void addConditionCodec(ClassNode node, Counts c) {
         if (node.interfaces == null || !node.interfaces.contains("net/neoforged/neoforge/common/conditions/ICondition")) return;
         String desc = "()Lcom/mojang/serialization/MapCodec;";
@@ -455,6 +475,7 @@ final class Mc1201Migration {
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
                 registryBufferLambda(d);
+                if (adaptLambda(d, t, c)) c.calls++;
                 redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
                 // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
@@ -507,6 +528,66 @@ final class Mc1201Migration {
     private static final java.util.Set<String> CLASSES_THAT_BECAME_INTERFACES = java.util.Set.of("com/mojang/serialization/DataResult");
 
     private static final java.util.Set<String> CLASSES_THAT_WERE_INTERFACES = java.util.Set.of("software/bernie/geckolib/cache/object/GeoBone");
+
+    /**
+     * A lambda or method reference for a library functional interface whose method changed its parameters (Architectury's {@code ClientGuiEvent.RenderHud}:
+     * {@code (GuiGraphics, float)} became {@code (GuiGraphics, DeltaTracker)}): lib-lambdas.tsv rows. The metafactory gets a generated static adapter with the
+     * new signature that converts the parameters (a static helper per changed parameter, and one more entry for the result, {@code Class.method} in the migrate package, or {@code -}; Round 9's {@code CauldronInteraction} is a row too) and calls
+     * the original implementation.
+     */
+    private static boolean adaptLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d, Mc1201Tables t, Counts c) {
+        if (t.lambdas.isEmpty() || c.current == null || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3
+                || !(d.bsmArgs[0] instanceof Type sam) || !(d.bsmArgs[1] instanceof org.objectweb.asm.Handle impl)) return false;
+        String[] row = t.lambdas.get(Type.getReturnType(d.desc).getInternalName() + "." + d.name + sam.getDescriptor());
+        if (row == null) return false;
+        Type newSam = Type.getMethodType(row[3]);
+        Type[] oldParams = sam.getArgumentTypes();
+        Type[] newParams = newSam.getArgumentTypes();
+        String[] conv = row.length > 4 ? row[4].split(",") : new String[0];
+        Type[] captured = Type.getArgumentTypes(d.desc);
+        StringBuilder desc = new StringBuilder("(");
+        for (Type ct : captured) desc.append(ct.getDescriptor());
+        for (Type np : newParams) desc.append(np.getDescriptor());
+        String adapterDesc = desc.append(')').append(newSam.getReturnType().getDescriptor()).toString();
+        String name = "mcc$lambda$" + c.trampolines.size() + "$" + d.name;
+        int op = switch (impl.getTag()) {
+            case Opcodes.H_INVOKESTATIC -> Opcodes.INVOKESTATIC;
+            case Opcodes.H_INVOKEINTERFACE -> Opcodes.INVOKEINTERFACE;
+            case Opcodes.H_INVOKESPECIAL, Opcodes.H_INVOKEVIRTUAL -> Opcodes.INVOKEVIRTUAL;
+            default -> -1;
+        };
+        if (op < 0) return false;
+        MethodNode a = new MethodNode(Opcodes.ASM9, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, name, adapterDesc, null, null);
+        int slot = 0;
+        for (Type ct : captured) { a.visitVarInsn(ct.getOpcode(Opcodes.ILOAD), slot); slot += ct.getSize(); }
+        for (int i = 0; i < newParams.length; i++) {
+            a.visitVarInsn(newParams[i].getOpcode(Opcodes.ILOAD), slot);
+            slot += newParams[i].getSize();
+            String cv = i < conv.length ? conv[i] : "-";
+            if (cv.equals("-") && !newParams[i].equals(oldParams[i]) && oldParams[i].getSort() == Type.OBJECT) {
+                a.visitTypeInsn(Opcodes.CHECKCAST, oldParams[i].getInternalName());   // the interface is generic now: the impl keeps its own type
+            }
+            if (!cv.equals("-")) {
+                int dot = cv.lastIndexOf('.');
+                a.visitMethodInsn(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/" + cv.substring(0, dot), cv.substring(dot + 1),
+                        "(" + newParams[i].getDescriptor() + ")" + oldParams[i].getDescriptor(), false);
+            }
+        }
+        a.visitMethodInsn(op, impl.getOwner(), impl.getName(), impl.getDesc(), impl.isInterface());
+        String rc = conv.length > newParams.length ? conv[newParams.length] : "-";
+        if (!rc.equals("-")) {   // one more converter than parameters: the result (old return type to the new one)
+            int dot = rc.lastIndexOf('.');
+            a.visitMethodInsn(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/" + rc.substring(0, dot), rc.substring(dot + 1),
+                    "(" + sam.getReturnType().getDescriptor() + ")" + newSam.getReturnType().getDescriptor(), false);
+        }
+        a.visitInsn(newSam.getReturnType().getOpcode(Opcodes.IRETURN));
+        a.visitMaxs(0, 0);
+        c.trampolines.add(a);
+        d.bsmArgs[0] = newSam;
+        d.bsmArgs[1] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, c.current.name, name, adapterDesc, (c.current.access & Opcodes.ACC_INTERFACE) != 0);
+        d.bsmArgs[2] = newSam;
+        return true;
+    }
 
     /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */
     private static final java.util.Set<String> REGISTRY_BUFFER_INTERFACES = java.util.Set.of("net/neoforged/neoforge/network/IContainerFactory");
@@ -965,6 +1046,19 @@ final class Mc1201Migration {
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
             int i = Integer.parseInt(b.ret().substring(4));
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+        } else if (b.ret() != null && b.ret().startsWith("call:")) {
+            // the 1.21.1 method answers what the old (void) method left behind: a static helper of the migrate package takes new parameter N and returns the new result
+            // (ParticleRenderType.begin: the builder the mod's begin(builder, textureManager) started on the tesselator)
+            if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+            String spec = b.ret().substring(5);
+            int at = spec.indexOf('@');
+            int i = Integer.parseInt(spec.substring(at + 1));
+            String helper = spec.substring(0, at);
+            int dot = helper.lastIndexOf('.');
+            String cls = helper.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), "(" + newArgs[i].getDescriptor() + ")" + newRet.getDescriptor(), false));
         } else if (b.ret() != null && (b.ret().equals("const:true") || b.ret().equals("const:false"))) {
             // the 1.21.1 method returns a boolean the old (void or other) method had no answer for: the constant, after the old result is dropped
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));

@@ -845,6 +845,33 @@ public abstract class EntityLivingBase extends Entity {
     }
 
 
+    /** Phantom: the tick the entity was last hurt by a mob ({@link #mcc$get$revengeTimer}; the modern living entity's own timestamp). */
+    @Deprecated
+    public int revengeTimer;
+    private static final java.lang.reflect.Field MCC$REVENGE = mcc$revengeField();
+
+    private static java.lang.reflect.Field mcc$revengeField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "lastHurtByMobTimestamp");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static int mcc$get$revengeTimer(EntityLivingBase e) {
+        return e.getRevengeTimer();
+    }
+
+    public static void mcc$set$revengeTimer(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l == null || MCC$REVENGE == null) return;
+        try {
+            MCC$REVENGE.setInt(l, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the modern timestamp
+        }
+    }
+
     public int getRevengeTimer() {
         var l = mcc$living();
         return l != null ? l.getLastHurtByMobTimestamp() : 0;

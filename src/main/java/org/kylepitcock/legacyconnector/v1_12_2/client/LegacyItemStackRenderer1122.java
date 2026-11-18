@@ -42,7 +42,7 @@ public final class LegacyItemStackRenderer1122 extends BlockEntityWithoutLevelRe
             item.getMetadata(view);
             TileEntityItemStackRenderer teisr = item.getTileEntityItemStackRenderer();
             if (teisr != null && teisr != TileEntityItemStackRenderer.instance) {
-                teisr.renderByItem(view, 1.0F);
+                teisr.renderByItem(view); // 1.12 called the one-argument form (it forwards to the two-argument one): Mekanism overrides only that, so its generators, energy cubes and jetpacks drew nothing
                 return;
             }
             Class<?> cls = legacyconnector.v1_12_2.net.minecraftforge.client.ForgeHooksClient.mcc$tesrItem(item, view.getMetadata());

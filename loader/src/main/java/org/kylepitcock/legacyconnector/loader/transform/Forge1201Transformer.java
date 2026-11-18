@@ -172,7 +172,27 @@ public final class Forge1201Transformer {
         return name;
     }
 
+    /**
+     * A table rename that would fold two classes of the jar being translated into one name: the 1.20.1 build of a library that the table maps to its
+     * 1.21.1 shape (GeckoLib 4.8's {@code CoreGeoModel}, an interface the model class implements, is {@code GeoModel} in 4.9) translated as the fallback
+     * when the pack has no 1.21.1 build. Renaming there made {@code GeoModel} implement itself, which the JVM rejects with a ClassCircularityError when
+     * the class is defined. The jar keeps both names (its own classes agree with each other); the OTHER jars' references still follow the table.
+     */
+    static boolean mergesOwnClasses(Set<String> own, String from, String to) {
+        return own.contains(from) && own.contains(to);
+    }
+
     private final class Mapper extends Remapper {
+        private final Set<String> own;
+
+        Mapper() {
+            this(ownClasses);
+        }
+
+        Mapper(Set<String> own) {
+            this.own = own;
+        }
+
         @Override
         public String map(String internalName) {
             String moved = plan.isEmpty() ? null : plan.mapClass(VER, internalName);
@@ -180,7 +200,7 @@ public final class Forge1201Transformer {
             String r = mapClass(internalName);
             // mc-classes.tsv is keyed by the name after the Forge renames (a NeoForge class that has no counterpart in 1.21.1 maps on to a stand-in)
             String mc = Mc1201Tables.get().classes.get(r);
-            return mc != null ? mc : r;
+            return mc != null && !mergesOwnClasses(own, r, mc) ? mc : r;
         }
 
         @Override
@@ -228,9 +248,14 @@ public final class Forge1201Transformer {
      */
     public List<org.kylepitcock.legacyconnector.loader.shim.ClassInfo> scan(LegacyJar jar) throws IOException {
         Set<String> watched = Mc1201Tables.get().watchedMethodNames();
-        Mapper mapper = new Mapper();
         List<org.kylepitcock.legacyconnector.loader.shim.ClassInfo> out = new ArrayList<>();
         try (ZipFile zip = new ZipFile(jar.existing().toFile())) {
+            Set<String> names = new HashSet<>();
+            for (Enumeration<? extends ZipEntry> en = zip.entries(); en.hasMoreElements(); ) {
+                String n = en.nextElement().getName();
+                if (n.endsWith(".class") && !n.startsWith("META-INF/")) names.add(n.substring(0, n.length() - 6));
+            }
+            Mapper mapper = new Mapper(names);
             for (Enumeration<? extends ZipEntry> en = zip.entries(); en.hasMoreElements(); ) {
                 ZipEntry e = en.nextElement();
                 String name = e.getName();
@@ -559,6 +584,11 @@ public final class Forge1201Transformer {
             result.notes.addAll(soft.stats.lines());
             result.softLinked = soft.stats.symbols();
             result.softSymbols.addAll(soft.stats.symbolList());
+            result.softMixinSymbols.addAll(soft.stats.mixinSymbols);
+            if (!soft.stats.mixinSymbols.isEmpty()) {
+                result.notes.add("Mixin warning: " + soft.stats.mixinSymbols.size() + " reference(s) inside mixin handler bodies do not exist in 1.21.1 and were replaced by stand-ins (that handler misbehaves or throws when it runs): "
+                        + String.join(", ", soft.stats.mixinSymbols.stream().limit(12).map(x -> x.replace('/', '.')).toList()));
+            }
         }
         if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
@@ -654,7 +684,9 @@ public final class Forge1201Transformer {
                     data = jarJarMetadata(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
                 }
             }
-            if (name.equals("META-INF/mods.toml")) {
+            // a jar that ships both files (Terralith) is converted from mods.toml; a data pack with only neoforge.mods.toml pinning 1.20.x goes the same way
+            if (name.equals("META-INF/neoforge.mods.toml") && other.containsKey("META-INF/mods.toml")) continue;
+            if (name.equals("META-INF/mods.toml") || name.equals("META-INF/neoforge.mods.toml")) {
                 // a manifest may list a config that lives in ANOTHER jar (Cataclysm lists the Lionfish API one): registering it here would register it twice
                 List<String> ownConfigs = new ArrayList<>(mixinConfigs(manifest));
                 ownConfigs.removeIf(c -> !other.containsKey(c));

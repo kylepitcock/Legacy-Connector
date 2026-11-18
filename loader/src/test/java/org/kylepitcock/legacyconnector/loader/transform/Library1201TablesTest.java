@@ -101,4 +101,49 @@ class Library1201TablesTest implements Opcodes {
         assertTrue(NativeLibraries1201.table().containsKey("curios"));
         assertTrue(Files.exists(Path.of(".")));
     }
+
+    @Test
+    void fallbackLibraryRowsAreOff() {
+        try {
+            Mc1201Tables.setFallbackRoots(Set.of("software/bernie/geckolib/"));
+            Mc1201Tables off = Mc1201Tables.load();
+            assertNull(off.classes.get("software/bernie/geckolib/core/animatable/GeoAnimatable"), "the jar keeps its own class names");
+            assertNull(off.calls.get("software/bernie/geckolib/renderer/DyeableGeoArmorRenderer.renderCubesOfBone(Lcom/mojang/blaze3d/vertex/PoseStack;"
+                    + "Lsoftware/bernie/geckolib/cache/object/GeoBone;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"));
+            assertNotNull(off.classes.get("dev/architectury/platform/forge/EventBuses"), "other libraries keep their rows");
+            assertNotNull(off.calls.get("net/minecraft/world/item/ItemStack.getTag()Lnet/minecraft/nbt/CompoundTag;"));
+        } finally {
+            Mc1201Tables.setFallbackRoots(Set.of());
+        }
+        assertEquals("software/bernie/geckolib/animatable/GeoAnimatable", Mc1201Tables.load().classes.get("software/bernie/geckolib/core/animatable/GeoAnimatable"));
+    }
+
+    @Test
+    void superRenderToBufferKeepsTheSuperCall() {
+        ClassNode n = new ClassNode();
+        n.version = V17;
+        n.access = ACC_PUBLIC;
+        n.name = "mod/MyModel";
+        n.superName = "net/minecraft/client/model/Model";
+        String desc = "(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V";
+        MethodNode m = new MethodNode(ACC_PUBLIC, "renderToBuffer", desc, null, null);
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new VarInsnNode(ILOAD, 3));
+        m.instructions.add(new VarInsnNode(ILOAD, 4));
+        for (int i = 0; i < 4; i++) m.instructions.add(new VarInsnNode(FLOAD, 5 + i));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, "net/minecraft/client/model/Model", "renderToBuffer", desc, false));
+        m.instructions.add(new InsnNode(RETURN));
+        m.maxStack = 10;
+        m.maxLocals = 9;
+        n.methods.add(m);
+        Mc1201Migration.apply(n, new Mc1201Hierarchy());
+        MethodInsnNode sup = null;
+        for (var in : m.instructions) if (in instanceof MethodInsnNode c && c.name.equals("renderToBuffer")) sup = c;
+        assertNotNull(sup);
+        assertEquals(INVOKESPECIAL, sup.getOpcode(), "a static helper calling the virtual method would run the override again (StackOverflowError)");
+        assertEquals("net/minecraft/client/model/Model", sup.owner);
+        assertEquals("(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", sup.desc);
+    }
 }

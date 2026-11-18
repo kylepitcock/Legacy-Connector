@@ -5,7 +5,7 @@
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop mods built for Minecraft 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1 or
-Beta 1.7.3 into the folder of their version next to this mod (Minecraft 1.2.5 is an experiment you can switch on, see the table). They are translated when the game loads and run as normal NeoForge mods, the
+Beta 1.7.3 into the folder of their version next to this mod (Minecraft 1.2.5 is alpha, see the table). They are translated when the game loads and run as normal NeoForge mods, the
 same way [Sinytra Connector](https://github.com/Sinytra/Connector) runs Fabric mods on NeoForge. The original jars are never modified. The
 point is mods that **only exist on these old versions** and never got a 1.21.1 port. Legacy content enters the game through the hooks a
 modern mod uses (biomes, placed features, loot tables, village pools, capabilities, data packs), so it works with the pack's other mods and
@@ -29,7 +29,7 @@ same as "works in play"; per-mod results are on the compatibility site. Details 
 | 1.4.7 | `mods/1.4.7/` | Alpha | RedPower 2, BuildCraft, ComputerCraft and Applied Energistics run in a real client | 45 of 49 |
 | Forge 1.20.1 | `mods/1.20.1/` | Alpha (on by default, `experimental.forge1201=false` turns it off) | Remapped in place onto 1.21.1. Server: a 108-mod subset of an ATM 9 pack loads with 0 failures. Client: single mods such as CoFH Core, Thermal Foundation, Redstone Arsenal and Ensorcellation reach a world, and Terramity, Palladium with its addon packs (contributed by kentvillamor08) and Another Furniture run; the combined ATM 9 set does not reach a world in a client yet. 141 of the 506 mods of the pack link, most other mods still have unresolved references | 99 of 494 (nightly: 152) |
 | Beta 1.7.3 | `mods/b1.7.3/` (jars or zips) | Alpha (contributor-maintained) | ModLoader and Forge 1.0 era mods (contributed by Zekken01): blocks, items, recipes, tile entities, GUIs and supported mob families; entities and world generation are still incomplete | 38 of 44, 20 of them through placeholder APIs |
-| 1.2.5 | `mods/1.2.5/` | **Experimental, off by default** (`experimental.minecraft125=true` in the config turns it on) | ModLoader / early Forge mods are translated to the 1.4.7 layer. Three small server builds load on a server (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client, so expect mods that load and then do little ([status and limits](docs/wiki/Legacy-1.2.5.md)) | |
+| 1.2.5 | `mods/1.2.5/` | Alpha (on by default, `versions.minecraft125=false` turns it off) | ModLoader / early Forge mods are translated to the 1.4.7 layer. About a dozen small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Backpack, Elemental Creepers, Timber, Smoking Chimney) register their content and draw it in a real client; six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart; the big Forge-era mods (IC2, BuildCraft, Railcraft) are only link-probed, so expect mods that load and then do little ([status and limits](docs/wiki/Legacy-1.2.5.md)) | |
 | 1.19.2, 1.18.2, 1.16.5 | | Planned | A chain of stages on top of the 1.20.1 pipeline ([plan](docs/wiki/Legacy-1.16-1.19-Plan.md)) | |
 
 Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era. Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md); how the
@@ -51,7 +51,7 @@ starting the game. The [addon API](docs/wiki/Addon-API.md) 0.3 covers every supp
    ```
    mods/
      legacyconnector-<version>.jar
-     1.7.10/   1.12.2/   1.6.4/   1.5.2/   1.4.7/   1.20.1/   b1.7.3/   1.2.5/ (experimental, off by default)
+     1.7.10/   1.12.2/   1.6.4/   1.5.2/   1.4.7/   1.20.1/   b1.7.3/   1.2.5/ (alpha)
    ```
 
    Jars you drop into `mods/` itself are moved there on launch (`legacy.autoSortMods=false` turns that off).
@@ -93,7 +93,7 @@ Mods, Legacy Connector, Config). The important ones:
 | `legacy.autoSortMods` | `true` | Move legacy jars dropped into `mods/` into the folder of their Minecraft version on launch |
 | `mods.skip` | empty | Comma separated legacy mod ids to leave out entirely (read at startup) |
 | `bridges.<name>.enabled` | `true` | `baubles`, `waila`, `nei`, `cofhEnergy`, `patchouli`: `false` loads the legacy library instead of its modern replacement |
-| `experimental.minecraft125` | `false` | Experimental Minecraft 1.2.5 support (ModLoader / early Forge mods, translated to the 1.4.7 layer); off, such jars are only reported with a hint |
+| `versions.minecraft125` | `true` | Minecraft 1.2.5 support (ModLoader / early Forge mods, translated to the 1.4.7 layer); `false` leaves such jars alone (reported, not loaded). The older key `experimental.minecraft125` is still read when this one is absent |
 | `experimental.forge1201` | `true` | Load Forge 1.20.1 mods (remapped in place); `false` leaves such jars alone |
 | `experimental.forge1201.softlink` | `true` | A reference to a 1.21.1 class or member that no longer exists becomes a stand-in that throws only when it runs, instead of keeping the mod from loading |
 | `legacy.deepWorld1122` | `true` | 1.12.2 mods can read and change blocks below y=0 down to the modern world bottom; `false` restores the 1.12 floor at y=0 for a mod that fails on negative y |

@@ -1,0 +1,4 @@
+1.5.2 forestry-2.2.8
+1.5.2 CoFHCore-1.5.2
+1.5.2 MineFactoryReloaded-2.6
+1.5.2 mystcraft-uni-1.5.2

@@ -687,6 +687,256 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void hurtingProjectilePowerFieldsBecomeHelperCalls() {
+        String proj = "net/minecraft/world/entity/projectile/AbstractHurtingProjectile";
+        ClassNode c = cls("test/Fireball", proj);
+        MethodNode m = method(c, ACC_PUBLIC, "aim", "(D)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new FieldInsnNode(GETFIELD, "test/Fireball", "xPower", "D"));
+        m.instructions.add(new VarInsnNode(DLOAD, 1));
+        m.instructions.add(new InsnNode(DADD));
+        m.instructions.add(new FieldInsnNode(PUTFIELD, "test/Fireball", "xPower", "D"));
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(2, apply(c).fields);
+        MethodInsnNode get = find(m, MIGRATE + "Round10Compat", "getXPower");
+        MethodInsnNode set = find(m, MIGRATE + "Round10Compat", "setXPower");
+        assertNotNull(get);
+        assertNotNull(set);
+        assertEquals("(L" + proj + ";)D", get.desc);
+        assertEquals("(L" + proj + ";D)V", set.desc);
+    }
+
+    @Test
+    void particleRenderTypeImplementationGetsTheTesselatorBeginBridge() {
+        String type = "net/minecraft/client/particle/ParticleRenderType";
+        String builder = MIGRATE + "CompatBufferBuilder";
+        String tm = "net/minecraft/client/renderer/texture/TextureManager";
+        ClassNode c = cls("test/GlowType", "java/lang/Object");
+        c.interfaces.add(type);
+        method(c, ACC_PUBLIC, "begin", "(L" + builder + ";L" + tm + ";)V").instructions.add(new InsnNode(RETURN));
+        method(c, ACC_PUBLIC, "end", "(Lcom/mojang/blaze3d/vertex/Tesselator;)V").instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(c).bridges);
+        MethodNode bridge = findDeclared(c, "begin", "(Lcom/mojang/blaze3d/vertex/Tesselator;L" + tm + ";)Lcom/mojang/blaze3d/vertex/BufferBuilder;");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, builder, "of"));
+        assertNotNull(find(bridge, "test/GlowType", "begin"));
+        assertNotNull(find(bridge, builder, "handOver"));
+        verify(c);
+    }
+
+    @Test
+    void particleRenderTypeCallsAndMaxZoomGoToHelpers() {
+        String type = "net/minecraft/client/particle/ParticleRenderType";
+        String builder = MIGRATE + "CompatBufferBuilder";
+        String tm = "net/minecraft/client/renderer/texture/TextureManager";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "go", "(L" + type + ";L" + builder + ";L" + tm + ";Lnet/minecraft/client/Camera;)D");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new MethodInsnNode(INVOKEINTERFACE, type, "begin", "(L" + builder + ";L" + tm + ";)V", true));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(4.0D));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraft/client/Camera", "getMaxZoom", "(D)D", false));
+        m.instructions.add(new InsnNode(DRETURN));
+        assertEquals(2, apply(c).calls);
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "particleBegin"));
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "cameraMaxZoom"));
+    }
+
+    @Test
+    void cauldronInteractionImplementationAndLambdaReturnTheItemResult() {
+        String cauldron = "net/minecraft/core/cauldron/CauldronInteraction";
+        String args = "(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;"
+                + "Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)";
+        ClassNode impl = cls("test/Fill", "java/lang/Object");
+        impl.interfaces.add(cauldron);
+        method(impl, ACC_PUBLIC, "interact", args + "Lnet/minecraft/world/InteractionResult;").instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(impl).bridges);
+        MethodNode bridge = findDeclared(impl, "interact", args + "Lnet/minecraft/world/ItemInteractionResult;");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, MIGRATE + "Round9Compat", "itemResult"));
+
+        // a lambda: the metafactory's types and the handle move to a generated adapter
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        method(c, ACC_PRIVATE | ACC_STATIC, "lambda$fill$0", args + "Lnet/minecraft/world/InteractionResult;").instructions.add(new InsnNode(RETURN));
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "()L" + cauldron + ";");
+        org.objectweb.asm.Handle bsm = new org.objectweb.asm.Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;"
+                        + "Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false);
+        org.objectweb.asm.Type sam = org.objectweb.asm.Type.getMethodType(args + "Lnet/minecraft/world/InteractionResult;");
+        m.instructions.add(new org.objectweb.asm.tree.InvokeDynamicInsnNode("interact", "()L" + cauldron + ";", bsm, sam,
+                new org.objectweb.asm.Handle(H_INVOKESTATIC, "test/Mod", "lambda$fill$0", sam.getDescriptor(), false), sam));
+        m.instructions.add(new InsnNode(ARETURN));
+        apply(c);
+        org.objectweb.asm.tree.InvokeDynamicInsnNode indy = null;
+        for (AbstractInsnNode in : m.instructions) if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) indy = d;
+        assertNotNull(indy);
+        assertTrue(((org.objectweb.asm.Type) indy.bsmArgs[0]).getDescriptor().endsWith(")Lnet/minecraft/world/ItemInteractionResult;"));
+        org.objectweb.asm.Handle adapted = (org.objectweb.asm.Handle) indy.bsmArgs[1];
+        assertTrue(adapted.getDesc().endsWith(")Lnet/minecraft/world/ItemInteractionResult;"));
+        MethodNode tramp = findDeclared(c, adapted.getName(), adapted.getDesc());
+        assertNotNull(tramp);
+        assertNotNull(find(tramp, MIGRATE + "Round9Compat", "itemResult"));
+    }
+
+    @Test
+    void paddingConstantsAndElementConstructorGoToHelpers() {
+        String dvf = "com/mojang/blaze3d/vertex/DefaultVertexFormat";
+        String vfe = "com/mojang/blaze3d/vertex/VertexFormatElement";
+        String usage = vfe + "$Usage";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "()L" + vfe + ";");
+        m.instructions.add(new FieldInsnNode(GETSTATIC, dvf, "ELEMENT_PADDING", "L" + vfe + ";"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new TypeInsnNode(NEW, vfe));
+        m.instructions.add(new InsnNode(DUP));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, vfe + "$Type", "BYTE", "L" + vfe + "$Type;"));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, usage, "PADDING", "L" + usage + ";"));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, vfe, "<init>", "(IL" + vfe + "$Type;L" + usage + ";I)V", false));
+        m.instructions.add(new InsnNode(ARETURN));
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(1, counts.constructors);
+        assertEquals(2, counts.fields);
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "elementPadding"));
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "usagePadding"));
+        assertNotNull(find(m, MIGRATE + "Round10ClientCompat", "newElement"));
+    }
+
+    @Test
+    void networkRegistryAbsentChannelDataFieldAndPackCreateAreRewritten() {
+        String registry = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkRegistry";
+        String channelData = "legacyconnector/v1_20_1/net/minecraftforge/network/ServerStatusPing$ChannelData";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "absent", "()Ljava/lang/String;");
+        m.instructions.add(new FieldInsnNode(GETSTATIC, registry, "ABSENT", "L" + channelData + ";"));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, channelData, "version", "()Ljava/lang/String;", false));
+        m.instructions.add(new InsnNode(ARETURN));
+        assertEquals(1, apply(c).fields);
+        FieldInsnNode f = null;
+        for (AbstractInsnNode in : m.instructions) if (in instanceof FieldInsnNode fi) f = fi;
+        assertNotNull(f);
+        assertEquals("ABSENT_DATA", f.name);
+        assertEquals("L" + channelData + ";", f.desc);
+
+        // a read of the String field of older builds stays
+        ClassNode old = cls("test/Old", "java/lang/Object");
+        MethodNode om = method(old, ACC_PUBLIC | ACC_STATIC, "absent", "()Ljava/lang/String;");
+        om.instructions.add(new FieldInsnNode(GETSTATIC, registry, "ABSENT", "Ljava/lang/String;"));
+        om.instructions.add(new InsnNode(ARETURN));
+        assertEquals(0, apply(old).fields);
+    }
+
+    @Test
+    void packCreateRecipeGhostMapRenderAndModelBakerCallsGoToHelpers() {
+        String pack = "net/minecraft/server/packs/repository/Pack";
+        String supplier = MIGRATE + "LegacyResourcesSupplier";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "(Ljava/lang/String;Lnet/minecraft/network/chat/Component;L" + supplier + ";L" + pack + "$Metadata;)L" + pack + ";");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/minecraft/server/packs/PackType", "SERVER_DATA", "Lnet/minecraft/server/packs/PackType;"));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, pack + "$Position", "TOP", "L" + pack + "$Position;"));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, pack + "Source", "DEFAULT", "L" + pack + "Source;"));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, pack, "create", "(Ljava/lang/String;Lnet/minecraft/network/chat/Component;ZL" + supplier + ";L" + pack
+                + "$Metadata;Lnet/minecraft/server/packs/PackType;L" + pack + "$Position;ZL" + pack + "Source;)L" + pack + ";", false));
+        m.instructions.add(new InsnNode(ARETURN));
+        apply(c);
+        assertNotNull(find(m, MIGRATE + "RoundCompat", "createPack"));
+
+        ClassNode d = cls("test/Maps", "java/lang/Object");
+        String renderer = "net/minecraft/client/gui/MapRenderer";
+        MethodNode r = method(d, ACC_PUBLIC | ACC_STATIC, "draw", "(L" + renderer + ";Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IL"
+                + "net/minecraft/world/level/saveddata/maps/MapItemSavedData;ZI)V");
+        r.instructions.add(new VarInsnNode(ALOAD, 0));
+        r.instructions.add(new VarInsnNode(ALOAD, 1));
+        r.instructions.add(new VarInsnNode(ALOAD, 2));
+        r.instructions.add(new VarInsnNode(ILOAD, 3));
+        r.instructions.add(new VarInsnNode(ALOAD, 4));
+        r.instructions.add(new VarInsnNode(ILOAD, 5));
+        r.instructions.add(new VarInsnNode(ILOAD, 6));
+        r.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, renderer, "render", "(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IL"
+                + "net/minecraft/world/level/saveddata/maps/MapItemSavedData;ZI)V", false));
+        r.instructions.add(new InsnNode(RETURN));
+        apply(d);
+        assertNotNull(find(r, MIGRATE + "Round10ClientCompat", "mapRender"));
+    }
+
+    @Test
+    void mapSkullAndStemCallsGoToHelpers() {
+        String data = "net/minecraft/world/level/saveddata/maps/MapItemSavedData";
+        String skull = "net/minecraft/world/level/block/entity/SkullBlockEntity";
+        String block = "net/minecraft/world/level/block/Block";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "go", "(L" + CT + ";L" + skull + ";L" + block + ";Lnet/minecraft/world/level/Level;L" + data + ";)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, data, "load", "(L" + CT + ";)L" + data + ";", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, skull, "getOwnerProfile", "()Lcom/mojang/authlib/GameProfile;", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, block, "getStem", "()Lnet/minecraft/world/level/block/StemBlock;", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new org.objectweb.asm.tree.LdcInsnNode("map_3"));
+        m.instructions.add(new VarInsnNode(ALOAD, 4));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraft/world/level/Level", "setMapData", "(Ljava/lang/String;L" + data + ";)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(4, apply(c).calls);
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "mapLoad"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "skullOwner"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "stemOf"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "setMapData"));
+    }
+
+    @Test
+    void melonBlockAndEnchantmentSubclassesAreRenamedToStandIns() {
+        // class renames are applied by the remapper before the migration: the table must name stand-ins that exist
+        Mc1201Tables t = Mc1201Tables.get();
+        assertEquals(MIGRATE + "LegacyMelonBlock", t.classes.get("net/minecraft/world/level/block/MelonBlock"));
+        assertEquals(MIGRATE + "LegacyDigDurabilityEnchantment", t.classes.get("net/minecraft/world/item/enchantment/DigDurabilityEnchantment"));
+        assertEquals(MIGRATE + "LegacyArrowPiercingEnchantment", t.classes.get("net/minecraft/world/item/enchantment/ArrowPiercingEnchantment"));
+    }
+
+    @Test
+    void combatEnchantmentSlotTextureAndBannerCallsGoToHelpers() {
+        String block = "net/minecraft/world/level/BlockAndTintGetter";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "go", "(L" + block + ";)F");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(INVOKEINTERFACE, block, "getModelDataManager", "()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;", true));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/minecraft/world/inventory/InventoryMenu", "TEXTURE_EMPTY_SLOTS", "[Lnet/minecraft/resources/ResourceLocation;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/world/damagesource/CombatRules", "getDamageAfterAbsorb", "(FFF)F", false));
+        m.instructions.add(new InsnNode(FRETURN));
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(2, counts.calls);
+        assertEquals(1, counts.fields);
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "modelDataManager"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "emptySlotTextures"));
+        assertNotNull(find(m, MIGRATE + "Round10Compat", "damageAfterAbsorb"));
+    }
+
+    @Test
+    void toastIdFieldIsRenamedThroughThe1201ClassName() {
+        // the members table is keyed by the 1.20.1 name of the owner (SystemToastIds), the class rename happens elsewhere
+        assertEquals("PERIODIC_NOTIFICATION", Mc1201Tables.get().renamedMember(
+                "net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds", "TUTORIAL_HINT", ":Lnet/minecraft/client/gui/components/toasts/SystemToast$SystemToastId;"));
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");
@@ -703,5 +953,28 @@ class Mc1201MigrationTest implements Opcodes {
         c.accept(w);
         assertTrue(w.toByteArray().length > 0);
         new ClassReader(w.toByteArray()).accept(new ClassNode(), 0);
+    }
+
+    /** Issue 302: ClientboundSetEntityMotionPacket.getXa/Ya/Za returned the int field in 1.20.1 and a double in 1.21.1; the rows apply inside mixin classes too. */
+    @Test
+    void motionPacketGettersAreRewrittenInsideAMixinClass() {
+        String packet = "net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket";
+        ClassNode c = cls("test/mixin/ListenerMixin", "java/lang/Object");
+        c.visitAnnotation("Lorg/spongepowered/asm/mixin/Mixin;", false);
+        MethodNode m = method(c, ACC_PUBLIC, "handle", "(L" + packet + ";)V");
+        for (String g : new String[] {"getXa", "getYa", "getZa"}) {
+            m.instructions.add(new VarInsnNode(ALOAD, 1));
+            m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, packet, g, "()I", false));
+            m.instructions.add(new InsnNode(POP));
+        }
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(3, apply(c).total());
+        for (String[] pair : new String[][] {{"getXa", "motionXa"}, {"getYa", "motionYa"}, {"getZa", "motionZa"}}) {
+            assertNull(find(m, packet, pair[0]), pair[0] + " is gone");
+            MethodInsnNode h = find(m, MIGRATE + "GapCompat", pair[1]);
+            assertNotNull(h, pair[1]);
+            assertEquals(INVOKESTATIC, h.getOpcode());
+            assertEquals("(L" + packet + ";)I", h.desc);
+        }
     }
 }

@@ -161,6 +161,74 @@ public final class MiscCompat {
         MigrateContext.builder().define(accessor, value);
     }
 
+    /** 1.20.1 {@code LevelRenderer.renderSky(PoseStack, projection, partialTick, camera, foggy, fogSetup)}: 1.21.1 takes the model-view matrix instead of the stack. */
+    public static void renderSky(net.minecraft.client.renderer.LevelRenderer renderer, com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Matrix4f projection,
+            float partialTick, net.minecraft.client.Camera camera, boolean foggy, Runnable fogSetup) {
+        renderer.renderSky(pose.last().pose(), projection, partialTick, camera, foggy, fogSetup);
+    }
+
+    private static net.minecraft.network.RegistryFriendlyByteBuf registryBuf(net.minecraft.network.FriendlyByteBuf buf) {
+        return buf instanceof net.minecraft.network.RegistryFriendlyByteBuf r ? r : new net.minecraft.network.RegistryFriendlyByteBuf(buf, MigrateContext.registries());
+    }
+
+    /** {@code EntityDataSerializer.write(FriendlyByteBuf, value)} of 1.20.1: 1.21.1 has a stream codec over the registry buffer (a plain buffer is wrapped). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void serializerWrite(net.minecraft.network.syncher.EntityDataSerializer serializer, net.minecraft.network.FriendlyByteBuf buf, Object value) {
+        serializer.codec().encode(registryBuf(buf), value);
+    }
+
+    /** {@code EntityDataSerializer.read(FriendlyByteBuf)} of 1.20.1. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Object serializerRead(net.minecraft.network.syncher.EntityDataSerializer serializer, net.minecraft.network.FriendlyByteBuf buf) {
+        return serializer.codec().decode(registryBuf(buf));
+    }
+
+    /** The stream codec of a legacy {@code EntityDataSerializer} (a mod class with {@code write(FriendlyByteBuf, T)} and {@code read(FriendlyByteBuf)}). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.network.codec.StreamCodec serializerCodec(Object serializer) {
+        java.lang.reflect.Method write = null;
+        java.lang.reflect.Method read = null;
+        for (java.lang.reflect.Method m : serializer.getClass().getDeclaredMethods()) {
+            if (m.isBridge() || m.isSynthetic()) continue;
+            if (m.getName().equals("write") && m.getParameterCount() == 2 && net.minecraft.network.FriendlyByteBuf.class.isAssignableFrom(m.getParameterTypes()[0])) write = m;
+            if (m.getName().equals("read") && m.getParameterCount() == 1 && net.minecraft.network.FriendlyByteBuf.class.isAssignableFrom(m.getParameterTypes()[0])) read = m;
+        }
+        if (write == null || read == null) throw new IllegalStateException("legacy EntityDataSerializer without write/read: " + serializer.getClass());
+        final java.lang.reflect.Method w = write;
+        final java.lang.reflect.Method r = read;
+        w.setAccessible(true);
+        r.setAccessible(true);
+        return new net.minecraft.network.codec.StreamCodec<net.minecraft.network.FriendlyByteBuf, Object>() {
+            @Override
+            public Object decode(net.minecraft.network.FriendlyByteBuf buf) {
+                try {
+                    return r.invoke(serializer, buf);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void encode(net.minecraft.network.FriendlyByteBuf buf, Object value) {
+                try {
+                    w.invoke(serializer, buf, value);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    /** {@code ModList.getModObjectById(id)} of 1.20.1: the mod instance of the container. */
+    public static java.util.Optional<?> modObjectById(net.neoforged.fml.ModList list, String id) {
+        return list.getModContainerById(id).map(legacyconnector.v1_20_1.ForgeApi1201::modContainerGetMod);
+    }
+
+    /** {@code ItemStackLinkedSet.createTypeAndTagSet()} of 1.20.1: a set of stacks compared by item and tag (1.21.1: item and components). */
+    public static java.util.Set<net.minecraft.world.item.ItemStack> typeAndTagSet() {
+        return net.minecraft.world.item.ItemStackLinkedSet.createTypeAndComponentsSet();
+    }
+
     public static int getMaxStackSize(Item item) {
         return item.getDefaultMaxStackSize();
     }

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Unattended regression runner for the headless server self test. See docs/wiki/Development.md ("Regression suites").
-# usage: tools/dev/verify.sh [--update] [suite ...]      (no suite = all of tools/dev/verify/suites/*.txt)
+# usage: tools/dev/verify.sh [--update] [--list] [suite ...]      (no suite = all of tools/dev/verify/suites/*.txt)
+# --list: dry run, only prints which jar each suite line resolves to (status ok|missing|setup, see tools/dev/verify/picker.py); starts nothing.
 # Env: GRADLE_EXTRA (extra Gradle arguments, e.g. "-Pjfr=C:/tmp/a.jfr -PmsptLog=600 -PmemoryLog"), JAR_ROOT (main checkout holding the gitignored jar folders), AUTOSTOP (ticks, default 700), SUITE_TIMEOUT (seconds, default 900).
 set -u
 cd "$(dirname "$0")/../.."
@@ -17,8 +18,8 @@ SEARCH="test-mods-issues/298 test-mods-issues test-mods test-mods2 test-mods3 te
 ATM9_MODS="${ATM9_MODS:-X:/Modded games/Prism Launcher/instances/ATM 9 20026/minecraft/mods}"
 ATM10_MODS="${ATM10_MODS:-X:/Modded games/Prism Launcher/instances/ATM10 2026/minecraft/mods}"
 
-update=""; names=()
-for a in "$@"; do if [ "$a" = "--update" ]; then update="--update"; else names+=("$a"); fi; done
+update=""; listonly=""; names=()
+for a in "$@"; do case "$a" in --update) update="--update";; --list) listonly=1;; *) names+=("$a");; esac; done
 if [ ${#names[@]} -eq 0 ]; then for f in $SUITES_DIR/*.txt; do names+=("$(basename "$f" .txt)"); done; fi
 
 mkdir -p build/devtools run-verify
@@ -26,22 +27,13 @@ RESULTS=build/devtools/verify-results.json
 echo "[" > "$RESULTS"
 first=1
 
-# find_jar <fragment>: first file (jar/zip/litemod) whose name contains the fragment, case-insensitively, searching the folders in order
-find_jar() {
-  local frag="$1" dir="${2:-}" r f
-  frag="${frag//\[/?}"; frag="${frag//\]/?}"   # glob brackets in a jar name match any character
-  for r in ${dir:+__dir__} $SEARCH __big1122__ __atm9__; do
-    case "$r" in
-      __dir__) r="$dir";;
-      __atm9__) r="$ATM9_MODS";;
-      __big1122__) r="$JAR_ROOT/1.12.2 test mods";;
-      *) r="$JAR_ROOT/$r";;
-    esac
-    [ -d "$r" ] || continue
-    f=$(find "$r" -type f \( -iname "*.jar" -o -iname "*.zip" -o -iname "*.litemod" \) -iname "*$frag*" 2>/dev/null | sort | head -1)
-    if [ -n "$f" ]; then echo "$f"; return 0; fi
-  done
-  return 1
+# resolve_suites <suite file ...>: TSV `suite status ver fragment path note`, one line per suite line. The picker (tools/dev/verify/picker.py)
+# prefers jars from a folder or file name of the line's Minecraft version, never picks a jar labelled with another version, and reports
+# `setup` when a pick is ambiguous (see its docstring).
+resolve_suites() {
+  local search=() d
+  for d in $SEARCH; do search+=("$JAR_ROOT/$d"); done
+  "$PY" tools/dev/verify/picker.py resolve --search "${search[@]}" --big "$JAR_ROOT/1.12.2 test mods" --atm9 "$ATM9_MODS" --lib "$ATM10_MODS" -- "$@"
 }
 
 # kill only the server java of THIS worktree (its program-args file lives under this checkout's build directory)
@@ -55,25 +47,36 @@ emit() { # emit <json object>
   echo "$1" >> "$RESULTS"
 }
 
+if [ -n "$listonly" ]; then
+  files=(); for s in "${names[@]}"; do if [ -f "$SUITES_DIR/$s.txt" ]; then files+=("$SUITES_DIR/$s.txt"); else echo "unknown suite $s" >&2; fi; done
+  [ ${#files[@]} -gt 0 ] && resolve_suites "${files[@]}" | tr -d '\r' | awk -F'\t' '{printf "%-18s %-8s %-7s %-34s %s%s\n", $1, $2, $3, $4, $5, ($6==""?"":"   NOTE: " $6)}'
+  exit 0
+fi
+
 idx=0
 for s in "${names[@]}"; do
   idx=$((idx+1))
   file="$SUITES_DIR/$s.txt"
   if [ ! -f "$file" ]; then echo "unknown suite $s" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"suite file\"}"; continue; fi
   echo "=== suite $s" >&2
-  jars=(); missing=""
-  while read -r ver frag _; do
-    frag="${frag%$'\r'}"; ver="${ver%$'\r'}"
-    case "$ver" in ""|\#*) continue;; esac
-    if [ "$ver" = "lib" ]; then j=$(find_jar "$frag" "$ATM10_MODS") || { missing="$missing $frag"; continue; }
-    else j=$(find_jar "$frag") || { missing="$missing $frag"; continue; }; fi
-    jars+=("$ver|$j")
-  done < "$file"
+  jars=(); missing=""; setup=""
+  chosen="build/devtools/verify-$s-jars.txt"; : > "$chosen"
+  while IFS=$'\t' read -r _ status ver frag j note; do
+    j="${j%$'\r'}"; note="${note%$'\r'}"
+    echo "  jar [$status] $ver $frag -> ${j:-<none>}${note:+   NOTE: $note}" | tee -a "$chosen" >&2
+    case "$status" in
+      missing) missing="$missing $frag";;
+      setup) setup="$setup $frag";;
+      *) jars+=("$ver|$j");;
+    esac
+  done < <(resolve_suites "$file")
+  if [ -n "$setup" ]; then echo "  SETUP: ambiguous jar pick for:$setup (see the NOTE lines above; fix the suite file)" >&2; emit "{\"suite\":\"$s\",\"setup\":\"${setup# }\"}"; continue; fi
   if [ -n "$missing" ]; then echo "  skipped, missing:$missing" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"${missing# }\"}"; continue; fi
 
   D="run-verify/$s"
   rm -rf "$D/mods" "$D/world" "$D/config" "$D/crash-reports" "$D/logs" "$D/.legacyconnector/cache"
   mkdir -p "$D/mods" "$D/logs"
+  cp -f "$chosen" "$D/logs/verify-jars.txt"
   for e in "${jars[@]}"; do
     ver="${e%%|*}"; j="${e#*|}"
     if [ "$ver" = "lib" ]; then cp -f "$j" "$D/mods/"; else mkdir -p "$D/mods/$ver"; cp -f "$j" "$D/mods/$ver/"; fi
@@ -88,7 +91,7 @@ for s in "${names[@]}"; do
   # the dimension self test of big packs blocks the main thread for longer than the 60 s watchdog: never let it kill the test run
   sed -i '/^max-tick-time=/d' "$D/server.properties"; echo "max-tick-time=-1" >> "$D/server.properties"
 
-  # Minecraft 1.2.5 is experimental and off by default: -Pmappings125 puts the name table on the classpath and switches the toggle on for the run
+  # Minecraft 1.2.5 is on by default; a dev build has no join table unless -Pmappings125 puts it on the classpath
   extra=(); for e in "${jars[@]}"; do [ "${e%%|*}" = "1.2.5" ] && extra=("-Pmappings125"); done
   glog="build/devtools/verify-$s-gradle.log"
   ./gradlew runServerSubTest "-PsubTestDir=$D" "-PautostopTicks=$AUTOSTOP" ${extra[@]+"${extra[@]}"} ${GRADLE_EXTRA:-} > "$glog" 2>&1 &

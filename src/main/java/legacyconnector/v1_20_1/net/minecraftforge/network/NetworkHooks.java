@@ -29,4 +29,21 @@ public final class NetworkHooks {
         var tracker = new net.minecraft.server.level.ServerEntity(level, entity, entity.getType().updateInterval(), entity.getType().trackDeltas(), p -> {});
         return (net.minecraft.network.protocol.Packet) new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(entity, tracker);
     }
+
+    /**
+     * {@code NetworkHooks.getConnectionData(connection)}: the mods and channels the other end announced. APPROXIMATION: this game's own loaded mods (id, name,
+     * version) and no channels; NeoForge 1.21.1 keeps no per-connection list (see {@link ConnectionData}).
+     */
+    public static ConnectionData getConnectionData(net.minecraft.network.Connection connection) {
+        java.util.Map<String, java.util.Map.Entry<String, String>> mods = new java.util.LinkedHashMap<>();
+        for (var info : net.neoforged.fml.ModList.get().getMods()) {
+            mods.put(info.getModId(), java.util.Map.entry(info.getDisplayName(), String.valueOf(info.getVersion())));
+        }
+        return new ConnectionData(mods, java.util.Map.of());
+    }
+
+    /** {@code NetworkHooks.isVanillaConnection(connection)}: every connection of this game is a modded one. */
+    public static boolean isVanillaConnection(net.minecraft.network.Connection connection) {
+        return false;
+    }
 }

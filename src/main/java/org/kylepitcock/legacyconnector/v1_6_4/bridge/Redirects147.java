@@ -248,4 +248,41 @@ public final class Redirects147 {
             legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
         return w.canPlaceEntityOnSide(block(id), x, y, z, ignoreEntities, side, entity, null);
     }
+
+    /** {@code ItemTool.damageVsEntity} was an int (1.7.10: float). */
+    public static int toolDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.item.ItemTool tool) {
+        return (int) tool.damageVsEntity;
+    }
+
+    public static void setToolDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.item.ItemTool tool, int damage) {
+        tool.damageVsEntity = damage;
+    }
+
+    /** {@code MapData.dimension} was a byte (Forge widened it to an int for dimension ids above 127). */
+    public static byte mapDimension(legacyconnector.v1_7_10.net.minecraft.world.storage.MapData map) {
+        return (byte) map.dimension;
+    }
+
+    public static void setMapDimension(legacyconnector.v1_7_10.net.minecraft.world.storage.MapData map, byte dimension) {
+        map.dimension = dimension;
+    }
+
+    /** {@code EntityLiving.lastDamage} was an int (1.7.10: float): the damage of the last hit, as the modern entity keeps it. */
+    public static int lastDamage(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e) {
+        return (int) legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$get$lastDamage(e);
+    }
+
+    public static void setLastDamage(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e, int value) {
+        legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$set$lastDamage(e, value);
+    }
+
+    /** {@code EntityLiving.prevHealth} was an int (1.7.10 made health a float): the health one tick ago, as the layer knows it. */
+    public static int prevHealth(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e) {
+        return (int) legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$get$prevHealth(e);
+    }
+
+    /** Writes to {@code prevHealth} change nothing: the layer derives it from the health the entity has now (the client's damage flash reads the real one). */
+    public static void setPrevHealth(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e, int value) {
+        legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$set$prevHealth(e, value);
+    }
 }

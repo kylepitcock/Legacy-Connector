@@ -68,6 +68,12 @@ public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         return world.mcc$blockTint(x, y, z, 1);
     }
 
+    /**
+     * 1.2.x's working array of the decay search (32 x 32 x 32 entries, made on first use): a mod's own leaves class that copies the decay code reads and fills it. The shim's own
+     * decay does not need it.
+     */
+    public int[] adjacentTreeBlocks;
+
     /** The wood names of the leaf types, by metadata bits 0-1 (subclasses list theirs). */
     public String[] func_150125_e() {
         return new String[] {"oak", "spruce", "birch", "jungle"};
@@ -108,6 +114,16 @@ public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.Blo
     public void beginLeavesDecay(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
         if (mcc$vanilla != null) return;
         world.setBlockMetadataWithNotify(x, y, z, world.getBlockMetadata(x, y, z) | 8, 4);
+    }
+
+    /** A leaf that decays drops what it would drop when broken, then goes. */
+    protected void removeLeaves(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+        world.setBlockToAir(x, y, z);
+    }
+
+    /** Hook for extra drops of a decaying leaf (the oak's apples): nothing by default. */
+    protected void func_150124_c(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int meta, int chance) {
     }
 
     /** Breaking a leaf tells the leaves around it to check again. */

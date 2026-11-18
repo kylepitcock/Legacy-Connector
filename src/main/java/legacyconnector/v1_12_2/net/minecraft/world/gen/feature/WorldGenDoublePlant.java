@@ -15,6 +15,11 @@ public class WorldGenDoublePlant extends WorldGenerator {
         super(false);
     }
 
+    /** Selects the plant that {@link #generate} scatters (1.12 signature of {@link #mcc$setPlantType}). */
+    public void setPlantType(legacyconnector.v1_12_2.net.minecraft.block.BlockDoublePlant.EnumPlantType plantType) {
+        mcc$setPlantType(plantType == null ? null : plantType.name());
+    }
+
     /** The legacy plant type by its constant name (SUNFLOWER, SYRINGA, GRASS, FERN, ROSE, PAEONIA). */
     public void mcc$setPlantType(String name) {
         this.mcc$plant = name == null ? null : switch (name) {

@@ -82,6 +82,10 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
 - `./gradlew compileJava --rerun` is the compile check (compileJava is non-incremental: the shim access widener rewrites class files), then
   `./gradlew generateShimIndex`, which catches "phantom field access" errors: shim code must read legacy fields that exist only as virtual
   fields through the `mcc$get$`/`mcc$set$` accessors.
+- `./gradlew checkShimMembers` (part of `check`) compares the public/protected members of the shim with `tools/dev/shim-members.txt.gz`:
+  members may be added, never silently removed or changed (name, descriptor, static or instance), because a mod that linked against one turns
+  into an unresolved reference (`gap_shim` in the probe). Accept an intended removal or record additions with
+  `python tools/dev/check_shim_members.py --update` and say so in the commit.
 - `tools/dev/run-corpus.sh [dir]` runs the server self test over a whole directory of jars. Run only one server at a time and never compile
   while one runs.
 - Translation results are cached per jar and mod set (`run-*/.legacyconnector/cache`). After changing the loader, linker, stubber or shim,
@@ -154,9 +158,14 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
 - **Suites** are `tools/dev/verify/suites/<name>.txt`, one `<version-folder> <jar-name-fragment>` per line (`1.7.10`, `1.12.2`, `1.6.4`, `1.5.2`,
   `1.4.7`, `1.20.1`, `b1.7.3`; the fragment is matched case-insensitively against jar file names; `#` starts a comment). Use a version in the
   fragment when other versions ship the same mod name (`CodeChickenCore-1.7.10`).
-- **Jars** are never downloaded or committed. They are looked up (first match wins) in the gitignored folders of the main checkout
+- **Jars** are never downloaded or committed. They are looked up in the gitignored folders of the main checkout
   (`JAR_ROOT`, default `Y:/Programming/Minecraft/Retrofit`: `test-mods*`, `run-subtest/mods`, `run-screenshots/mods`, ...; the list is `SEARCH` in the
-  script). A suite with a missing jar is reported as SKIP with the missing fragment, not as a failure.
+  script) by `tools/dev/verify/picker.py`. Each jar has an inferred Minecraft version (a version token in its file name, else its folder such as
+  `test-mods-164` or `1.12.2 test mods`); a line's version prefers jars of that version, never takes a jar of another version, and the picker
+  reports SETUP (the suite is not run and counts as a failure) when the pick is ambiguous (differently named unlabelled jars compete, or a `lib` line
+  matches several versions). `tools/dev/verify.sh --list [suite ...]` is the dry run that prints the pick per line without starting anything; a
+  real run prints the picks into the suite log (`build/devtools/verify-<suite>-jars.txt`, `run-verify/<suite>/logs/verify-jars.txt`). A suite
+  with a missing jar is reported as SKIP with the missing fragment, not as a failure. Fragments take `*` and `[`/`]` as wildcards.
 - **Run:** each suite gets a fresh game directory `run-verify/<suite>` (mods copied into `mods/<version>/`, eula and `server.properties` taken from the
   main checkout's `run-subtest` with a free port, no world, no translation cache) and runs `./gradlew runServerSubTest -PsubTestDir=... -PautostopTicks=700`
   (`AUTOSTOP`, `SUITE_TIMEOUT` override). Only the server of this checkout is killed on a timeout (`verify/kill-server.ps1`).
@@ -251,7 +260,7 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
   Minecraft version with a source switch (default: the source whose latest run has the most mods), and `probe.py` compares a run (`vs`,
   `--fail-on-regression`) only with the previous run of the same version and source. Scheduled and manual CI runs record a nightly-style version
   (`<latest release>-nightly.<run>.<sha>`); the workflow skips `b1.7.3` when Modrinth yields fewer than 20 jars. `python tools/compat/probe.py --self-test` checks the run matching.
-- **1.2.5** (`--mc 1.2.5`, experimental and opt-in) passes `-Pmappings125` to `checkLegacyMod`; the jars are hosted through the 1.4.7 chain, so the records come back labelled 1.4.7 and `probe.py`
+- **1.2.5** (`--mc 1.2.5`, alpha) passes `-Pmappings125` to `checkLegacyMod`; the jars are hosted through the 1.4.7 chain, so the records come back labelled 1.4.7 and `probe.py`
   relabels them. Its history runs carry `stubCounts` (per mod: synthesized empty members it uses), `stubMembers` and `stubDistinct`, which the site shows in the Detail column and in a note on the 1.2.5 tab:
   "Ready to test" there includes calls of empty placeholders, so it is weak evidence. `python -I tools/compat/test_site_data.py` checks that every version in the data files is known to `site.js`, the issue template and the probe workflow.
 - **Corpus results.** `tools/compat/from_corpus.py <report> <latest.log> <mc> [date] --dry-run` prints what a run would change; without `--force` it refuses to write when entries of other mod versions would be
@@ -362,6 +371,7 @@ Besides the offline resource check above, the layer records broken content while
 | `no_item_model`, `no_block_model` | a registered item has no inventory model, or a visible block has a blockstate without a model | client, same event |
 | `no_lang_name` | the display name equals the raw translation key (blocks, items, entity types) | client, same event |
 | `dropped_recipe` | a generated recipe was left out because an ingredient is a missing item (or its translation threw) | `RecipeBridge`, `RecipeBridge1122` (client and server) |
+| `nbt_failure` | a legacy tile entity or entity threw (or produced a tag the chunk writer rejects) while saving its NBT; the chunk saved normally with that object's last good data | `NbtSaveGuard` (hosts of every version; server) |
 
 Only plain vanilla-loader models are scanned for textures; models that draw by code (legacy renderers, wrappers) are not asked. Blocks with more than 64 states are sampled.
 
@@ -370,7 +380,7 @@ Section format (one `census` line per mod with registry counts, a `problems` lin
 ```
 Runtime problems (written 2026-11-16T12:00:00; ...)
   census examplemod: blocks=12 blocks_with_model=11 block_entities=2 block_entities_with_renderer=1 entities=3 entities_with_renderer=3 items=30 items_with_model=29
-  problems examplemod: missing_texture=1 missing_model=0 no_item_model=1 no_block_model=1 no_lang_name=0 dropped_recipe=2 total=5
+  problems examplemod: missing_texture=1 missing_model=0 no_item_model=1 no_block_model=1 no_lang_name=0 dropped_recipe=2 nbt_failure=0 total=5
     missing_texture examplemod:thing#facing=north: a face uses the missing texture
     dropped_recipe examplemod:gizmo: an ingredient cannot be expressed (missing item or empty ore name)
 total: 5 problem(s) in 1 mod(s)

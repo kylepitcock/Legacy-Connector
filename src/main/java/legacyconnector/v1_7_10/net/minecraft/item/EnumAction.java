@@ -10,6 +10,7 @@ public enum EnumAction {
             case drink -> net.minecraft.world.item.UseAnim.DRINK;
             case block -> net.minecraft.world.item.UseAnim.BLOCK;
             case bow -> net.minecraft.world.item.UseAnim.BOW;
+            default -> net.minecraft.world.item.UseAnim.NONE; // an action a mod added with EnumHelper
         };
     }
 }

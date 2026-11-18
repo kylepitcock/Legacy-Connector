@@ -528,7 +528,7 @@ public final class ShimLinker {
     private static void checkLibrary(Hierarchy hierarchy, LinkReport report, String from, String owner, String member, Hierarchy.Lookup l) {
         if (l == null) return;
         if (l == Hierarchy.Lookup.MISSING_CLASS) {
-            report.externalClass(owner, from);
+            report.absentClass(hierarchy, owner, from);
         } else if (l == Hierarchy.Lookup.MISSING_MEMBER) {
             report.missingMember(owner, member, from, false);
         }

@@ -193,10 +193,14 @@ public class ForgeHooks {
         return event;
     }
 
-    /** Posts the attack event; false when a handler cancelled the attack. */
+    /**
+     * Posts the attack event; true when a handler cancelled the attack. 1.7.10's {@code EntityLivingBase.attackEntityFrom} starts with
+     * {@code if (ForgeHooks.onLivingAttack(this, source, amount)) return false;}, and mods that re-implement that method (HBM's
+     * {@code EntityDamageUtil}) copy the test. The result was inverted before, so such a mod saw every attack as cancelled.
+     */
     public static boolean onLivingAttack(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
             legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, float amount) {
-        return !MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingAttackEvent(entity, source, amount));
+        return MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingAttackEvent(entity, source, amount));
     }
 
     /** Posts the death event; true when a handler cancelled the death (the entity stays alive). */

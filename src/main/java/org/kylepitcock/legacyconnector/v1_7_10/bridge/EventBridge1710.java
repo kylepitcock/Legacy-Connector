@@ -491,12 +491,13 @@ public final class EventBridge1710 {
             bus.post(event);
             if (event.getResult() == Event.Result.DENY) e.setCanceled(true);
         });
-        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
+        // like Save: hook the modern event only once a 1.7.10 mod listens (other mods, ByePregen and C2ME among them, look for ChunkDataEvent listeners)
+        forge().mcc$whenListened(legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load.class, () -> gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
             forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load(
                     new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk()),
                     new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));
-        });
+        }));
         // a modern ChunkDataEvent.Save listener makes C2ME turn off optimizations: only hook it once a 1.7.10 mod listens
         forge().mcc$whenListened(legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class, () -> gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)
@@ -890,6 +891,69 @@ public final class EventBridge1710 {
         }
     }
 
+    /**
+     * What a RenderPlayerEvent.Pre handler did to the legacy player model's parts ({@code showModel = false}: Legends' Kiryu hides the whole biped
+     * and draws its own mech) carries over to the modern model the game draws; the game sets every part visible again at the start of each render.
+     */
+    private static void syncHiddenParts(net.minecraft.client.model.PlayerModel<?> model,
+            legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped legacy) {
+        if (legacy == null) return;
+        if (!legacy.bipedHead.showModel) model.head.visible = false;
+        if (!legacy.bipedHeadwear.showModel) model.hat.visible = false;
+        if (!legacy.bipedBody.showModel) {
+            model.body.visible = false;
+            model.jacket.visible = false;
+        }
+        if (!legacy.bipedRightArm.showModel) {
+            model.rightArm.visible = false;
+            model.rightSleeve.visible = false;
+        }
+        if (!legacy.bipedLeftArm.showModel) {
+            model.leftArm.visible = false;
+            model.leftSleeve.visible = false;
+        }
+        if (!legacy.bipedRightLeg.showModel) {
+            model.rightLeg.visible = false;
+            model.rightPants.visible = false;
+        }
+        if (!legacy.bipedLeftLeg.showModel) {
+            model.leftLeg.visible = false;
+            model.leftPants.visible = false;
+        }
+    }
+
+    /** Whether a legacy handler wants RenderPlayerEvent.Specials (so the specials layer does any work). */
+    public static boolean wantsPlayerSpecials() {
+        return wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre.class)
+                || wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post.class);
+    }
+
+    /**
+     * RenderPlayerEvent.Specials.Pre and Post for a player's model, posted with the pose the specials layer draws in: 1.7.10 fired them from
+     * {@code renderSpecials}, inside the model's matrix (translated to the player, turned to its body, flipped and lifted by 24/16), where the handlers
+     * draw (Legends' Kiryu rotates 180 degrees about X and draws its mech model at 0, -1.625, 0).
+     */
+    public static void postPlayerSpecials(net.minecraft.world.entity.player.Player player, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
+            net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        if (!wantsPlayerSpecials()) return;
+        if (!(EntityBridge.wrap(player) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer legacy)) return;
+        double[] at = legacyRenderPos(pose, player, partial);
+        double x = at[0], y = at[1], z = at[2];
+        viewerShiftY = player == net.minecraft.client.Minecraft.getInstance().player ? frameShiftY : 0;
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginWorld(pose, buffers, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        double renderPosY = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY;
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY - viewerShiftY;
+        try {
+            var renderer = legacyRenderPlayer();
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(legacy, renderer, partial, x, y, z));
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(legacy, renderer, partial, x, y, z));
+        } finally {
+            viewerShiftY = 0;
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY;
+            org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.end();
+        }
+    }
+
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     /** The connection ClientConnectedToServerEvent was last posted for (once per connection, before its first world or login, whichever comes first). */
     private static volatile Object connectedPostedFor;
@@ -985,8 +1049,7 @@ public final class EventBridge1710 {
             }
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre e) -> {
-            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre.class)
-                    && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre.class)) return;
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre.class)) return;
             if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
             float partial = e.getPartialTick();
             double[] at = legacyRenderPos(e.getPoseStack(), e.getEntity(), partial);
@@ -998,23 +1061,20 @@ public final class EventBridge1710 {
                     e.setCanceled(true);
                     return;
                 }
-                postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(player, legacyRenderPlayer(), partial, x, y, z),
-                        e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
+                // Specials.Pre/Post are posted from the specials layer (inside the model's matrix, as 1.7.10's renderSpecials did), see postPlayerSpecials
+                syncHiddenParts(e.getRenderer().getModel(), legacyRenderPlayer().modelBipedMain);
             } finally {
                 viewerShiftY = 0;
             }
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Post e) -> {
-            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post.class)
-                    && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post.class)) return;
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post.class)) return;
             if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
             float partial = e.getPartialTick();
             double[] at = legacyRenderPos(e.getPoseStack(), e.getEntity(), partial);
             double x = at[0], y = at[1], z = at[2];
             viewerShiftY = e.getEntity() == net.minecraft.client.Minecraft.getInstance().player ? frameShiftY : 0;
             try {
-                postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(player, legacyRenderPlayer(), partial, x, y, z),
-                        e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
                 postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z),
                         e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
             } finally {

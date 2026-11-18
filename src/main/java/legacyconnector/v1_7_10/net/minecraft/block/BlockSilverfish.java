@@ -49,6 +49,18 @@ public class BlockSilverfish extends Block {
         return 0;
     }
 
+    /** {@code func_150197_b}: the block and metadata a silverfish block with the given metadata imitates (stone for 0). */
+    public static org.apache.commons.lang3.tuple.ImmutablePair<Block, Integer> func_150197_b(int meta) {
+        return switch (meta) {
+            case 1 -> new org.apache.commons.lang3.tuple.ImmutablePair<>(Blocks.cobblestone, 0);
+            case 2 -> new org.apache.commons.lang3.tuple.ImmutablePair<>(Blocks.stonebrick, 0);
+            case 3 -> new org.apache.commons.lang3.tuple.ImmutablePair<>(Blocks.stonebrick, 1);
+            case 4 -> new org.apache.commons.lang3.tuple.ImmutablePair<>(Blocks.stonebrick, 2);
+            case 5 -> new org.apache.commons.lang3.tuple.ImmutablePair<>(Blocks.stonebrick, 3);
+            default -> new org.apache.commons.lang3.tuple.ImmutablePair<>(Blocks.stone, 0);
+        };
+    }
+
     @Override
     public IIcon getIcon(int side, int meta) {
         if (mcc$vanilla != null) return super.getIcon(side, meta);

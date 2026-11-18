@@ -6,9 +6,12 @@
 # without the log growing. Exit status: 0 the run finished by itself, 2 failure marker, 3 stalled. The marker line and the last log lines are printed.
 cd "$(dirname "$0")/../.." || exit 1
 NAME="$(basename "$(pwd)")"   # the worktree directory name is in the command line of this checkout's game (-Dfml.modFolders=...)
-LOG="run-screenshots/logs/latest.log"
+GAME_DIR="run-screenshots"   # -PshotDir=<dir> in EXTRA (as for quick-shots.sh) moves the game directory
+for a in ${EXTRA:-}; do case "$a" in -PshotDir=*) GAME_DIR="${a#-PshotDir=}";; esac; done
+LOG="$GAME_DIR/logs/latest.log"
 STALL="${STALL:-360}"
-MARKERS='broken mod state|Mod loading issue|Preparing crash report|Failed to wait for future|Caught exception during event|Failed to create mod instance|Crash Report'
+MAXRUN="${MAXRUN:-600}"   # the game is stopped after this many seconds in any case (no boot sits idle)
+MARKERS='broken mod state|Mod loading issue|Preparing crash report|Failed to wait for future|Caught exception during event|Failed to create mod instance|Crash Report|Exception caught in connection|Couldn.t place player'
 
 # Where this run's text starts in the log: the whole file once the game has replaced the previous run's log (its first line changed; comparing sizes is
 # wrong as soon as the new log outgrows the old one), else behind what was there when the run began.
@@ -54,6 +57,11 @@ while kill -0 $runner 2>/dev/null; do
       break
     fi
   fi
+  if [ $((SECONDS-start)) -ge "$MAXRUN" ]; then
+    echo "client-once: maximum run time $MAXRUN s reached, stopping the game"
+    status=4
+    break
+  fi
   if [ $((SECONDS-last_change)) -ge "$STALL" ]; then
     echo "client-once: no log progress for $STALL s, killing the game"
     status=3
@@ -67,6 +75,6 @@ if [ $status -ne 0 ]; then
   wait $runner 2>/dev/null
 fi
 kill_game   # a game that crashed in play can hang in its shutdown after the runner has returned: never leave it behind
-echo "client-once: status $status after $((SECONDS-start)) s; shots: $(ls run-screenshots/shots 2>/dev/null | wc -l)"
+echo "client-once: status $status after $((SECONDS-start)) s; shots: $(ls $GAME_DIR/shots 2>/dev/null | wc -l)"
 tail -3 build/client-once.out | cut -c1-200
 exit $status

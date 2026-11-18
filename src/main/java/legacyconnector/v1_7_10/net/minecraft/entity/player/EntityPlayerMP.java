@@ -138,6 +138,11 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
         return mcc$serverPlayer().isRespawnForced();
     }
 
+    /** The per-tick update of the player (the host's: containers, health, experience and chunk data are sent). */
+    public void onUpdateEntity() {
+        mcc$serverPlayer().doTick();
+    }
+
     /** Counts the distance moved into the walking, swimming, climbing and flying statistics. */
     public void addMovementStat(double dx, double dy, double dz) {
         mcc$serverPlayer().checkMovementStatistics(dx, dy, dz);

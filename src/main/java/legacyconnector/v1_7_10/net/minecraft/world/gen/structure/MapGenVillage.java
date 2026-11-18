@@ -13,6 +13,11 @@ public class MapGenVillage extends MapGenStructure {
     public MapGenVillage(Map options) {
     }
 
+    /** 1.2.5 and 1.3: {@code new MapGenVillage(terrainType)} (0 normal, 1 superflat villages). */
+    public MapGenVillage(int terrainType) {
+        this.terrainType = terrainType;
+    }
+
     @Override
     public String getStructureName() {
         return "Village";

@@ -63,9 +63,21 @@ public final class RecipeCompat {
     /** {@code Recipe.getId()}: recipes do not know their id in 1.21.1; it is found through the server's recipe manager (null for a recipe it does not hold). */
     public static net.minecraft.resources.ResourceLocation getId(net.minecraft.world.item.crafting.Recipe<?> recipe) {
         net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return null;
-        for (net.minecraft.world.item.crafting.RecipeHolder<?> h : server.getRecipeManager().getRecipes()) if (h.value() == recipe) return h.id();
+        if (server != null) {
+            for (net.minecraft.world.item.crafting.RecipeHolder<?> h : server.getRecipeManager().getRecipes()) if (h.value() == recipe) return h.id();
+        }
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) { net.minecraft.resources.ResourceLocation id = ClientIds.find(recipe); return id != null ? id : UNKNOWN_ID; }
         return null;
+    }
+
+    /** The client's own recipe manager (a mod's info book reads recipes on the render thread, before or without an integrated server being current). */
+    private static final class ClientIds {
+        static net.minecraft.resources.ResourceLocation find(net.minecraft.world.item.crafting.Recipe<?> recipe) {
+            net.minecraft.client.multiplayer.ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+            if (level == null) return null;
+            for (net.minecraft.world.item.crafting.RecipeHolder<?> h : level.getRecipeManager().getRecipes()) if (h.value() == recipe) return h.id();
+            return null;
+        }
     }
 
     // ---- recipe serializers: 1.20.1 JSON / FriendlyByteBuf form bridged to the codec pair of 1.21.1 -------------------------------

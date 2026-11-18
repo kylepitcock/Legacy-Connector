@@ -67,9 +67,48 @@ public final class CompatBufferBuilder implements VertexConsumer {
         if (mesh != null) BufferUploader.drawWithShader(mesh);
     }
 
+    /** The 1.21.1 builder a mod's 1.20.1 {@code ParticleRenderType.begin(builder, textureManager)} started on the tesselator's builder (null when it started none). */
+    public static BufferBuilder startedOf(Tesselator tesselator) {
+        CompatBufferBuilder b;
+        synchronized (CompatBufferBuilder.class) {
+            b = OF_TESSELATOR.get(tesselator);
+        }
+        return b == null ? null : b.real;
+    }
+
+    /**
+     * The 1.21.1 builder a mod's {@code ParticleRenderType.begin(builder, textures)} started, handed to the particle engine: the engine builds and draws it
+     * itself, so this wrapper lets go of it (a mod's 1.20.1 {@code end} is never called by 1.21.1; keeping it would make the next frame's begin fail with
+     * "Already building!").
+     */
+    public static BufferBuilder handOver(Tesselator tesselator) {
+        CompatBufferBuilder b;
+        synchronized (CompatBufferBuilder.class) {
+            b = OF_TESSELATOR.get(tesselator);
+        }
+        if (b == null) return null;
+        BufferBuilder started = b.real;
+        b.real = null;
+        return started;
+    }
+
+    /** Takes over a builder that 1.21.1 code started ({@code ParticleRenderType.begin(Tesselator, TextureManager)}): a mod's 1.20.1 code then fills and ends it. */
+    public void adopt(BufferBuilder started) {
+        this.real = started;
+    }
+
+    private static final boolean DIAG = Boolean.getBoolean("legacyconnector.bufferDiag");
+    private Throwable beganAt;
+
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
-        if (real != null) throw new IllegalStateException("Already building!");
+        if (real != null) throw new IllegalStateException("Already building!", beganAt);
+        if (DIAG) beganAt = new Throwable("previous begin");
         real = tesselator != null ? tesselator.begin(mode, format) : new BufferBuilder(own, mode, format);
+    }
+
+    /** The tesselator this builder belongs to ({@code Tesselator.getBuilder()}), or null for a private builder. */
+    public Tesselator tesselator() {
+        return tesselator;
     }
 
     public boolean isBuilding() {
@@ -87,6 +126,21 @@ public final class CompatBufferBuilder implements VertexConsumer {
         if (b == null) throw new IllegalStateException("BufferBuilder not started");
         real = null;
         return b.build();
+    }
+
+    /** {@code BufferBuilder.endOrDiscardIfEmpty()}: the mesh, or null when nothing was written (1.21.1's {@code build()} answers null for an empty mesh, and frees it). */
+    public MeshData endOrDiscardIfEmpty() {
+        return real == null && finished == null ? null : end();
+    }
+
+    /** {@code BufferBuilder.building()} (the 1.20.1 spelling of {@link #isBuilding}). */
+    public boolean building() {
+        return isBuilding();
+    }
+
+    /** {@code vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz)}: one full vertex (and the 1.20.1 {@code endVertex}, which 1.21.1 does not need). */
+    public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {
+        b().addVertex(x, y, z).setColor(r, g, b, a).setUv(u, v).setOverlay(overlay).setLight(light).setNormal(nx, ny, nz);
     }
 
     public void discard() {

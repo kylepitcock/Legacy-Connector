@@ -25,6 +25,40 @@ public final class Item {
         if (self.iconIndex < 0) self.iconIndex = 0;
     }
 
+    private static final ClassValue<java.lang.reflect.Method> ICON_FROM_DAMAGE = new ClassValue<>() {
+        @Override
+        protected java.lang.reflect.Method computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null && c != legacyconnector.v1_7_10.net.minecraft.item.Item.class; c = c.getSuperclass()) {
+                try {
+                    java.lang.reflect.Method m = c.getDeclaredMethod("getIconFromDamage", int.class);
+                    if (m.getReturnType() == int.class) {
+                        m.setAccessible(true);
+                        return m;
+                    }
+                } catch (ReflectiveOperationException | RuntimeException ignored) {
+                    // not declared here: look further up
+                }
+            }
+            return null;
+        }
+    };
+
+    /**
+     * 1.4.7 {@code getIconFromDamage(damage)}: the tile of the item's sprite sheet for that damage. A mod item that overrides it answers itself; any other
+     * item has the one tile it was given ({@code iconIndex}).
+     */
+    public static int getIconFromDamage(legacyconnector.v1_7_10.net.minecraft.item.Item self, int damage) {
+        java.lang.reflect.Method override = ICON_FROM_DAMAGE.get(self.getClass());
+        if (override != null) {
+            try {
+                return (Integer) override.invoke(self, damage);
+            } catch (ReflectiveOperationException | RuntimeException ignored) {
+                // fall back to the plain tile
+            }
+        }
+        return Math.max(self.iconIndex, 0);
+    }
+
     /** The id an Item constructor was given: {@code new Item(id)} puts the item at 256 + id. */
     public static void mcc$claimId(legacyconnector.v1_7_10.net.minecraft.item.Item self, int constructorId) {
         Ids.claimItem(self, constructorId);
@@ -893,4 +927,9 @@ public final class Item {
     }
 
     // END GENERATED
+
+    /** 1.6.4 {@code Item.getStatName()}: the localized name the statistics screen shows. */
+    public static String getStatName(legacyconnector.v1_7_10.net.minecraft.item.Item self) {
+        return legacyconnector.v1_7_10.net.minecraft.util.StatCollector.translateToLocal(self.getUnlocalizedName() + ".name");
+    }
 }

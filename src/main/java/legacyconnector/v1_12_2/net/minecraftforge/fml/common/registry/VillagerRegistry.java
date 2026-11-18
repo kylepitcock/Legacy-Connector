@@ -50,9 +50,9 @@ public class VillagerRegistry {
      * Forge's hook of the village generator: asks each registered creation handler for its piece weight and adds the ones that may
      * spawn to the list. The layer's own village assembly (extra pieces of the vanilla village) asks the handlers the same way.
      */
-    public void addExtraVillageComponents(List<legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight> existing,
+    public static void addExtraVillageComponents(List<legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight> existing,
             Random random, int size) {
-        for (IVillageCreationHandler handler : mcc$villageCreationHandlers()) {
+        for (IVillageCreationHandler handler : INSTANCE.mcc$villageCreationHandlers()) {
             var weight = handler.getVillagePieceWeight(random, size);
             if (weight != null) existing.add(weight);
         }

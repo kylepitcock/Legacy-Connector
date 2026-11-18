@@ -64,6 +64,10 @@ public class World implements IBlockAccess {
     @Deprecated
     public List loadedTileEntityList;
 
+    /** Phantom: redirected to {@link #mcc$get$saveHandler}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler saveHandler;
+
     /** Phantom: redirected to {@link #mcc$get$mapStorage}. Global (overworld) saved data. */
     @Deprecated
     public legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mapStorage;
@@ -83,11 +87,11 @@ public class World implements IBlockAccess {
     }
 
     public static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$mapStorage(World w) {
-        return storage(w.mcc$fullLevel() instanceof ServerLevel s ? s.getServer().overworld() : null);
+        return storage(w.mcc$levelObject() instanceof ServerLevel s ? s.getServer().overworld() : null);
     }
 
     public static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$perWorldStorage(World w) {
-        return storage(w.mcc$fullLevel() instanceof ServerLevel s ? s : null);
+        return storage(w.mcc$levelObject() instanceof ServerLevel s ? s : null);
     }
 
     public WorldSavedData loadItemData(Class<?> type, String name) {
@@ -262,7 +266,7 @@ public class World implements IBlockAccess {
 
     /** The level's scoreboard (the server's, or the copy the server keeps a client in sync with). */
     public legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard getScoreboard() {
-        Level full = mcc$fullLevel();
+        Level full = mcc$levelObject();
         return full == null ? null : legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.mcc$wrap(full.getScoreboard());
     }
 
@@ -857,8 +861,23 @@ public class World implements IBlockAccess {
 
     public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler getSaveHandler() {
         Level level = mcc$fullLevel();
-        java.io.File dir = level instanceof ServerLevel s ? s.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile() : new java.io.File(".");
+        net.minecraft.server.MinecraftServer server = level instanceof ServerLevel s ? s.getServer() : null;
+        // a client world in single player (1.2.5-1.6.4 mods read Minecraft.theWorld.saveHandler to find the save folder): the integrated server's
+        if (server == null && level != null && level.isClientSide() && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) server = ClientServers.integrated();
+        java.io.File dir = server != null ? server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile() : new java.io.File(".");
         return new legacyconnector.v1_7_10.net.minecraft.world.storage.SaveHandler(dir, dir.getName());
+    }
+
+    /** Client-only lookup in its own class: a dedicated server must never load the client classes. */
+    private static final class ClientServers {
+        static net.minecraft.server.MinecraftServer integrated() {
+            return net.minecraft.client.Minecraft.getInstance().getSingleplayerServer();
+        }
+    }
+
+    /** The {@code saveHandler} field of 1.2.5 to 1.7.10's World (a phantom, see {@link #saveHandler}). */
+    public static legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler mcc$get$saveHandler(World w) {
+        return w.getSaveHandler();
     }
 
     /** Whether the player may break blocks here; the provider decides (by default {@link #canMineBlockBody}: spawn protection). */
@@ -1616,11 +1635,11 @@ public class World implements IBlockAccess {
     }
 
     public void setWorldTime(long time) {
-        if (mcc$fullLevel() instanceof ServerLevel s) s.setDayTime(time);
+        if (mcc$levelObject() instanceof ServerLevel s) s.setDayTime(time);
     }
 
     public boolean isDaytime() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level != null && level.isDay();
     }
 
@@ -1636,12 +1655,12 @@ public class World implements IBlockAccess {
     private final java.util.List<IWorldAccess> worldAccesses = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public boolean isRaining() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level != null && level.isRaining();
     }
 
     public boolean isThundering() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level != null && level.isThundering();
     }
 
@@ -1651,7 +1670,7 @@ public class World implements IBlockAccess {
     }
 
     public float getRainStrength(float partial) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level == null ? 0 : level.getRainLevel(partial);
     }
 
@@ -1665,7 +1684,7 @@ public class World implements IBlockAccess {
 
     public long getSeed() {
         if (lvl() instanceof WorldGenLevel g) return g.getSeed();
-        return mcc$fullLevel() instanceof ServerLevel s ? s.getSeed() : 0L;
+        return mcc$levelObject() instanceof ServerLevel s ? s.getSeed() : 0L;
     }
 
     private legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo mcc$info;
@@ -1676,7 +1695,7 @@ public class World implements IBlockAccess {
     }
 
     public ChunkCoordinates getSpawnPoint() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         BlockPos spawn = level == null ? BlockPos.ZERO : level.getSharedSpawnPos();
         return new ChunkCoordinates(spawn.getX(), spawn.getY(), spawn.getZ());
     }
@@ -2164,7 +2183,7 @@ public class World implements IBlockAccess {
     }
 
     public void setSpawnLocation(int x, int y, int z) {
-        if (mcc$fullLevel() instanceof ServerLevel s) s.setDefaultSpawnPos(new BlockPos(x, y, z), 0.0F);
+        if (mcc$levelObject() instanceof ServerLevel s) s.setDefaultSpawnPos(new BlockPos(x, y, z), 0.0F);
     }
 
     /**
@@ -2227,7 +2246,7 @@ public class World implements IBlockAccess {
     }
 
     public GameRules getGameRules() {
-        return GameRules.mcc$of(mcc$fullLevel());
+        return GameRules.mcc$of(mcc$levelObject());
     }
 
     /** Whether any block overlapping the box has the given material (vanilla: water checks of items, entities). */
@@ -2556,6 +2575,26 @@ public class World implements IBlockAccess {
     }
 
     public static void mcc$set$mcc125$isNew(World w, boolean v) {
+    }
+
+    /** 1.2.5 {@code World.isSolidRender(x, y, z)} (Feather name; {@code isBlockOpaqueCube}): the block there is a full opaque cube. */
+    public boolean mcc125$isSolidRender(int x, int y, int z) {
+        Block block = getBlock(x, y, z);
+        return block != null && block.isOpaqueCube();
+    }
+
+    private int mcc$lastSaveTime;
+
+    /**
+     * Phantom field {@code lastSaveTime} (1.2.5's autosave countdown of a world: mods push it forward so the world does not save while a sleep fast-forwards the clock). The modern server
+     * autosaves on its own schedule that a mod cannot move, so the value is kept per world and has no other effect.
+     */
+    public static int mcc$get$mcc125$lastSaveTime(World w) {
+        return w.mcc$lastSaveTime;
+    }
+
+    public static void mcc$set$mcc125$lastSaveTime(World w, int v) {
+        w.mcc$lastSaveTime = v;
     }
 
     /** 1.2.5 {@code World.save(flush, progress)}: saves the world's chunks and level data of a server world; a client world has nothing to save. */

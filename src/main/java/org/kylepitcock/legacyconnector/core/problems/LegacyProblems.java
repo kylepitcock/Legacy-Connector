@@ -61,7 +61,8 @@ public final class LegacyProblems {
         NO_ITEM_MODEL("no_item_model", "item without a model"),
         NO_BLOCK_MODEL("no_block_model", "block without a model"),
         NO_LANG_NAME("no_lang_name", "no display name"),
-        DROPPED_RECIPE("dropped_recipe", "recipe dropped");
+        DROPPED_RECIPE("dropped_recipe", "recipe dropped"),
+        NBT_FAILURE("nbt_failure", "NBT save failed (last good data kept)");
 
         public final String key;
         public final String label;

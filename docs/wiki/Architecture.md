@@ -82,7 +82,10 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   (dev) tests this path with the libraries read from `build/legacy-libs`.
 - APIs shaded by legacy jars that a modern mod of the pack also ships (DragonAPI carries the 1.7.10 AE2 API, `appeng.api.*`, next to modern AE2)
   are relocated in every legacy jar to `legacyconnector_relocated/<version>/...` (`CrossVersionPackages.modern`), so the two never export the same
-  package. Classes only the modern mod has keep their name; packages of `@Mod` classes are never relocated.
+  package. Classes only the modern mod has keep their name. The package of a legacy `@Mod` class moves too when a modern mod defines it (CodeChickenLib 1.12.2 and
+  1.21.1 both have `codechicken.lib.CodeChickenLib`), and the generated entrypoint names the moved class. A legacy mod whose FML id a modern mod also uses loads as
+  `<id>_legacy` (the id check reads the modern jar's `neoforge.mods.toml`, tab or space indented), so a 1.12.2 CodeChickenLib in `mods/1.12.2/` runs next to the
+  1.21.1 one.
 - Coremods: their plugins are constructed and set up as FML did (construct all, then `getASMTransformerClass` /
   `injectData` / setup hook by sorting index; mod containers count as loaded mods). Their class transformers run over
   the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so

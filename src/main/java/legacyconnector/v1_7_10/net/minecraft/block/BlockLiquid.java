@@ -55,6 +55,11 @@ public class BlockLiquid extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         return meta >= 8 ? 0 : meta;
     }
 
+    /** 1.7.10's private {@code getFlowVector}: the direction the liquid flows in at a position (see {@link #mcc$flowVector}). */
+    protected legacyconnector.v1_7_10.net.minecraft.util.Vec3 getFlowVector(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        return mcc$flowVector(world, x, y, z);
+    }
+
     /** The direction the liquid flows in at a position (the downhill gradient of its levels). */
     public legacyconnector.v1_7_10.net.minecraft.util.Vec3 mcc$flowVector(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
         legacyconnector.v1_7_10.net.minecraft.util.Vec3 vec = legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(0.0D, 0.0D, 0.0D);

@@ -142,6 +142,9 @@ public final class CheckJar {
                 records.add(r);
             } else jars.add(jar);
         }
+        // a 1.20.1 library jar in the set is the fallback its callers link against (as the locator decides in the game)
+        org.kylepitcock.legacyconnector.loader.transform.Mc1201Tables.setFallbackRoots(
+                org.kylepitcock.legacyconnector.loader.NativeLibraries1201.fallbackRoots(jars, java.util.Set.of()));
         // b1.7.3 client + server builds of one mod: offline the client build is checked (as on a client)
         Map<LegacyJar, String> otherBuilds = BetaJars.selectBuilds(jars, "CLIENT");
         for (var e : otherBuilds.entrySet()) {

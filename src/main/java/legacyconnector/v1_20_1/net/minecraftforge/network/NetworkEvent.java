@@ -28,7 +28,7 @@ public class NetworkEvent extends Event {
         return () -> context;
     }
 
-    /** Forge's event for a custom payload that reached the client: posted to the listeners of an {@code EventNetworkChannel} with the raw bytes. */
+    /** Forge's event for a custom payload SENT BY THE CLIENT (it reaches the server; Forge names these events after the sender): posted to the listeners of an {@code EventNetworkChannel} with the raw bytes. */
     public static class ClientCustomPayloadEvent extends NetworkEvent {
         public ClientCustomPayloadEvent(Context context) {
             super(context);
@@ -39,7 +39,7 @@ public class NetworkEvent extends Event {
         }
     }
 
-    /** A custom payload that reached the server (see {@link ClientCustomPayloadEvent}). */
+    /** A custom payload sent by the server (it reaches the client; see {@link ClientCustomPayloadEvent}). */
     public static class ServerCustomPayloadEvent extends NetworkEvent {
         public ServerCustomPayloadEvent(Context context) {
             super(context);

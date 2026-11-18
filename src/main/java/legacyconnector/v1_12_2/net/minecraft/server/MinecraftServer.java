@@ -1,7 +1,7 @@
 package legacyconnector.v1_12_2.net.minecraft.server;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import legacyconnector.v1_12_2.net.minecraft.command.CommandHandler;
+import legacyconnector.v1_12_2.net.minecraft.command.ServerCommandManager;
 import legacyconnector.v1_12_2.net.minecraft.command.ICommandManager;
 
 /**
@@ -14,7 +14,7 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
     private static final MinecraftServer INSTANCE = net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER
             ? new legacyconnector.v1_12_2.net.minecraft.server.dedicated.DedicatedServer()
             : new legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer();
-    public final ICommandManager commandManager = new CommandHandler();
+    public final ICommandManager commandManager = new ServerCommandManager();
     private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList playerList =
             new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList(this);
     private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCache =
@@ -27,6 +27,8 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
     public long[] tickTimeArray;
     @Deprecated
     public java.io.File anvilFile;
+    /** The server's player-name cache file (1.12: {@code usercache.json} in the server directory). */
+    public static final java.io.File USER_CACHE_FILE = new java.io.File("usercache.json");
     @Deprecated
     public java.util.Hashtable<Integer, long[]> worldTickTimes;
 

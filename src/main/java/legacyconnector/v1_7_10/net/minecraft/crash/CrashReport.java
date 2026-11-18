@@ -42,11 +42,19 @@ public class CrashReport {
         return cause;
     }
 
+    private java.io.File saveFile;
+
+    /** The file the report was written to (null until {@link #saveToFile} succeeded). */
+    public java.io.File getFile() {
+        return saveFile;
+    }
+
     /** Writes the report to a file; false when that fails. */
     public boolean saveToFile(java.io.File file) {
         try {
             if (file.getParentFile() != null) file.getParentFile().mkdirs();
             java.nio.file.Files.writeString(file.toPath(), getCompleteReport());
+            this.saveFile = file;
             return true;
         } catch (java.io.IOException e) {
             return false;

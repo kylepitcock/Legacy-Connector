@@ -31,6 +31,8 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
 
     private BlockEntity legacy;
     private CompoundTag pending;
+    /** The legacy NBT of the last successful save or load (see NbtSaveGuard). */
+    private CompoundTag lastGood;
     private boolean tickFailed;
 
     public LegacyB173BlockEntity(BlockPos pos, BlockState state) {
@@ -201,13 +203,13 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         super.saveAdditional(tag, registries);
         BlockEntity te = legacy;
         if (te != null) {
-            try {
+            CompoundTag fresh = org.kylepitcock.legacyconnector.core.NbtSaveGuard.attempt(() -> {
                 NbtCompound nbt = new NbtCompound();
                 te.writeNbt(nbt);
-                tag.put("legacy", NbtB173.toModern(nbt));
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("b1.7.3 tile entity {} at {} could not be saved: {}", te.getClass().getName(), worldPosition, e.toString());
-            }
+                return NbtB173.toModern(nbt);
+            }, te, net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(getType()), worldPosition.toShortString());
+            if (fresh != null) lastGood = fresh;
+            if (lastGood != null) tag.put("legacy", lastGood);
         } else if (pending != null) {
             tag.put("legacy", pending);
         }
@@ -218,6 +220,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         super.loadAdditional(tag, registries);
         if (!tag.contains("legacy")) return;
         CompoundTag nbt = tag.getCompound("legacy");
+        lastGood = nbt;
         BlockEntity te = legacy;
         // a tile entity drawn by its own renderer is made again from each update: loading in place would keep what has left it (items in a pipe)
         boolean redrawn = te != null && level != null && level.isClientSide && ContentB173.tileEntityRenderer(te.getClass()) != null;

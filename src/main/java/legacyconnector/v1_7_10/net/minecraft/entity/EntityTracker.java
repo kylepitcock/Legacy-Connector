@@ -22,16 +22,44 @@ public class EntityTracker {
     public IntHashMap trackedEntityIDs;
     public java.util.Set trackedEntities = new java.util.HashSet<>();
 
+    /** 1.7.10's constructor takes the server world. */
+    public EntityTracker(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world) {
+        this((World) world);
+    }
+
     public EntityTracker(World world) {
         this.mcc$world = world;
         final Map<Integer, EntityTrackerEntry> entries = new HashMap<>();
         this.trackedEntityIDs = new IntHashMap() {
             @Override
             public Object lookup(int id) {
-                Entity entity = mcc$world.getEntityByID(id);
+                Entity live = mcc$world.getEntityByID(id);
+                final Entity entity = live != null ? live : mcc$recentlyRemoved(id);
                 return entity == null ? null : entries.computeIfAbsent(id, k -> new EntityTrackerEntry(entity));
             }
         };
+    }
+
+    // 1.7.10 keeps a dead entity in the world (and its tracker entry) until the end of that tick; the modern level drops it from its lookup
+    // at once. Code that kills an entity and then asks the tracker for it in the same tick (HBM's bullets: an explosion kills the bullet,
+    // then the bullet's own setDead sends a teleport packet through the entry) would find nothing and throw.
+    private static final Map<Integer, Entity> REMOVED = new HashMap<>();
+    private static long removedTime = Long.MIN_VALUE;
+
+    /** A hosted legacy entity is being removed from its level: remembers it for the rest of this game tick. */
+    public static synchronized void mcc$noteRemoved(Entity legacy, net.minecraft.world.level.Level level) {
+        if (legacy == null || level == null || level.isClientSide()) return;
+        long now = level.getGameTime();
+        if (now != removedTime) {
+            REMOVED.clear();
+            removedTime = now;
+        }
+        REMOVED.put(legacy.getEntityId(), legacy);
+    }
+
+    private static synchronized Entity mcc$recentlyRemoved(int id) {
+        Entity e = REMOVED.get(id);
+        return e != null && e.mcc$entity != null && e.mcc$entity.level().getGameTime() == removedTime ? e : null;
     }
 
     /** The players the modern server currently sends this entity to (not the entity itself). */

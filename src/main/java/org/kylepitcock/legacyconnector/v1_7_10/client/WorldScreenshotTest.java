@@ -268,6 +268,16 @@ public final class WorldScreenshotTest {
         int tour = intProp("legacyconnector.shotTour", 6);
         int perModBlocks = intProp("legacyconnector.shotBlocksPerMod", 24);
         int perModItems = intProp("legacyconnector.shotItemsPerMod", 36);
+        if ("controlkeep".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            // reload checks: the world is opened as saved (no game mode, time or position change), then RemoteControl takes over
+            var control = new RemoteControl(new File(dir.getParentFile(), "control"));
+            add(waitForWorld(), wait(60));
+            add(mc -> {
+                control.tick(mc);
+                return false;
+            });
+            return;
+        }
         add(waitForWorld(), wait(40),
                 command("gamemode spectator"), command("time set noon"), command("weather clear"),
                 command("gamerule doDaylightCycle false"), command("gamerule doMobSpawning false"), command("gamerule doWeatherCycle false"),
@@ -884,7 +894,7 @@ public final class WorldScreenshotTest {
             mc.stop();
             return;
         }
-        if (++ticks > WATCHDOG_TICKS && !"control".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if (++ticks > WATCHDOG_TICKS && !System.getProperty("legacyconnector.shotScenario", "").startsWith("control")) {
             LOG.error("Screenshot test timed out");
             mc.stop();
             return;

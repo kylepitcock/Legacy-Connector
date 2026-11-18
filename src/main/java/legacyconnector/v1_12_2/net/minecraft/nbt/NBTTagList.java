@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 
+@com.google.gson.annotations.JsonAdapter(org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyGson1122.ListAdapter.class)
 public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     private final ListTag mcc$list;
 

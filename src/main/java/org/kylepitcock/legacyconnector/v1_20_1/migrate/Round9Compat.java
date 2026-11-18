@@ -110,6 +110,13 @@ public final class Round9Compat {
         return path;
     }
 
+    /** {@code BannerPattern.getHashname()}: the short code of the pattern ({@code "bs"}); the asset's path for a pattern the old list never had. */
+    public static String hashname(BannerPattern pattern) {
+        String path = pattern.assetId().getPath();
+        for (Map.Entry<String, String> e : PATTERN_CODES.entrySet()) if (e.getValue().equals(path)) return e.getKey();
+        return path;
+    }
+
     /** {@code BannerBlockEntity.createPatterns(base, listTag)}: the layers of the old {@code [{Pattern, Color}]} list, the base colour first. */
     public static List<Pair<Holder<BannerPattern>, DyeColor>> createPatterns(DyeColor base, ListTag tags) {
         List<Pair<Holder<BannerPattern>, DyeColor>> out = new ArrayList<>();
@@ -179,6 +186,18 @@ public final class Round9Compat {
             case CONSUME_PARTIAL -> InteractionResult.CONSUME_PARTIAL;
             case FAIL -> InteractionResult.FAIL;
             default -> InteractionResult.PASS;
+        };
+    }
+
+    /** A mod's own {@code CauldronInteraction} (1.20.1 return type) as the 1.21.1 interface wants it: the inverse of {@link #cauldronInteract}. PASS lets the block's default interaction run. */
+    public static ItemInteractionResult itemResult(InteractionResult result) {
+        if (result == null) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return switch (result) {
+            case SUCCESS -> ItemInteractionResult.SUCCESS;
+            case CONSUME -> ItemInteractionResult.CONSUME;
+            case CONSUME_PARTIAL -> ItemInteractionResult.CONSUME_PARTIAL;
+            case FAIL -> ItemInteractionResult.FAIL;
+            default -> ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         };
     }
 

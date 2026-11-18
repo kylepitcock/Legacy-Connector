@@ -109,8 +109,9 @@ public class ModLoader {
 
     public static void registerBlock(Block block, Class<? extends ItemBlock> itemclass) {
         String n = block.getUnlocalizedName();
-        if (n == null) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
-        if (n.startsWith("tile.")) n = n.substring(5);
+        if (n != null && n.startsWith("tile.")) n = n.substring(5);
+        // a block never given a name (RedPower's appliance/machine blocks name their metadata variants through their own setItemName): unique by id
+        if (n == null || n.isEmpty() || n.equals("null")) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         GameRegistry.registerBlock(block, itemclass, n);
     }
 

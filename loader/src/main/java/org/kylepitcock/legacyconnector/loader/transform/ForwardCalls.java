@@ -42,6 +42,12 @@ public final class ForwardCalls {
                 if (insn instanceof MethodInsnNode m && !m.owner.startsWith("[")) {
                     // a bridge method (BridgeMethods) calls the mod's own method of the same name under its old descriptor: that call stays
                     if ((method.access & Opcodes.ACC_SYNTHETIC) != 0 && m.owner.equals(node.name) && m.name.equals(method.name)) continue;
+                    // ... also when the new name differs (getIcon(world, x, y, z, side) calling the mod's int getBlockTexture(world, x, y, z, side)): redirecting that
+                    // call sent it through Redirects147.blockTexture, which asks the block's getIcon again; its re-entry guard then answered the plain
+                    // blockIndexInTexture, so every position-dependent texture of a 1.4.7 block (Thermal Expansion's machines: one texture on every machine) was lost
+                    if ((method.access & (Opcodes.ACC_SYNTHETIC | Opcodes.ACC_BRIDGE | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) == Opcodes.ACC_SYNTHETIC
+                            && m.owner.equals(node.name) && (m.getOpcode() == Opcodes.INVOKEVIRTUAL || m.getOpcode() == Opcodes.INVOKESPECIAL)
+                            && !m.name.equals(method.name) && !m.name.startsWith("mcc$")) continue;
                     AbstractInsnNode last = m.name.equals("<init>") ? constructor(method, m, table, norm) : call(method, m, table, norm);
                     if (last != null) {
                         insn = last;
@@ -222,6 +228,9 @@ public final class ForwardCalls {
                 drop.add(new InsnNode(Opcodes.DUP2_X1));
                 drop.add(new InsnNode(Opcodes.POP2));
                 drop.add(new InsnNode(Opcodes.POP));
+                // dup2_x1 holds two more slots than the operands: a method whose own stack was exactly that deep (RedPower's BluePowerConductor.writeToNBT,
+                // new NBTTagDouble(null, value) inside an array store) failed verification, and every tile entity class using it could not be created
+                method.maxStack += 2;
             }
             default -> {
                 return null;

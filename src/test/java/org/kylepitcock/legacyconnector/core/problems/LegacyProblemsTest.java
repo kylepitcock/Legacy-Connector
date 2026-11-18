@@ -47,7 +47,7 @@ class LegacyProblemsTest {
         assertEquals(LegacyProblems.CAP, stored);
         assertTrue(lines.contains("    dropped_recipe ...(+25 more)"), lines.toString());
         assertTrue(lines.contains("  problems alpha: missing_texture=0 missing_model=0 no_item_model=0 no_block_model=0 no_lang_name=0 dropped_recipe="
-                + n + " total=" + n));
+                + n + " nbt_failure=0 total=" + n));
     }
 
     @Test

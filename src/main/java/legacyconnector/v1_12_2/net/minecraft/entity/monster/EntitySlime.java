@@ -31,6 +31,12 @@ public class EntitySlime extends legacyconnector.v1_12_2.net.minecraft.entity.En
                 : net.minecraft.sounds.SoundEvents.SLIME_JUMP);
     }
 
+    /** The sound of the body hitting the ground (smaller for small slimes). */
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getSquishSound() {
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(isSmallSlime() ? net.minecraft.sounds.SoundEvents.SLIME_SQUISH_SMALL
+                : net.minecraft.sounds.SoundEvents.SLIME_SQUISH);
+    }
+
     protected net.minecraft.world.entity.monster.Slime mcc$self() {
         return mcc$entity instanceof net.minecraft.world.entity.monster.Slime m ? m : null;
     }

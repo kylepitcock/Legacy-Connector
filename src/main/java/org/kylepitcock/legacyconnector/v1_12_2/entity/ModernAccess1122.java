@@ -110,6 +110,17 @@ public final class ModernAccess1122 {
         setInt(NO_JUMP_DELAY, e, v);
     }
 
+    private static final Field LAST_HURT = find(LivingEntity.class, "lastHurt");
+
+    /** LivingEntity.lastHurt: the damage of the last hit (the invulnerability window compares the next hit against it; legacy EntityLivingBase.lastDamage). */
+    public static float lastHurt(LivingEntity e) {
+        return getFloat(LAST_HURT, e);
+    }
+
+    public static void setLastHurt(LivingEntity e, float v) {
+        setFloat(LAST_HURT, e, v);
+    }
+
     /** LivingEntity.dead: the death was handled (1.12 EntityLivingBase.dead). */
     public static boolean dead(LivingEntity e) {
         return getBoolean(DEAD, e);

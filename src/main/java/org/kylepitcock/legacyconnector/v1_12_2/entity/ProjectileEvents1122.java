@@ -18,7 +18,13 @@ public final class ProjectileEvents1122 {
         else event = new ProjectileImpactEvent(projectile, result);
         if (!bus.mcc$hasListeners(event.getClass())) return false;
         try {
-            return bus.post(event);
+            // Forge's ForgeHooks.onThrowableImpact posts the old ThrowableImpactEvent next to the ProjectileImpactEvent
+            boolean old = false;
+            if (projectile instanceof legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityThrowable t) {
+                var oldEvent = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.ThrowableImpactEvent(t, result);
+                old = bus.mcc$hasListeners(oldEvent.getClass()) && bus.post(oldEvent);
+            }
+            return bus.post(event) | old;
         } catch (RuntimeException | LinkageError e) {
             return false;
         }

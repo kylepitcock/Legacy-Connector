@@ -9,7 +9,26 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * {@code Structures1122}).
  */
 public class MapGenMineshaft extends MapGenStructure {
+    /** The kind of mineshaft: the ordinary one (oak) or the badlands one (dark oak, rails). */
+    public enum Type {
+        NORMAL, MESA;
+
+        public static Type byId(int id) {
+            return id >= 0 && id < values().length ? values()[id] : NORMAL;
+        }
+    }
+
+    private Type mcc$type = Type.NORMAL;
+
     public MapGenMineshaft() {
+    }
+
+    public Type getMineshaftType() {
+        return mcc$type;
+    }
+
+    public void setMineshaftType(Type type) {
+        mcc$type = type == null ? Type.NORMAL : type;
     }
 
     public MapGenMineshaft(java.util.Map<String, String> options) {

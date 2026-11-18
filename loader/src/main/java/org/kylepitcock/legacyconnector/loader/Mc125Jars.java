@@ -24,7 +24,7 @@ import java.util.zip.ZipFile;
  * Minecraft 1.2.5 (ModLoader / early Forge) jars: detection only, see {@code docs/wiki/Legacy-1.2.5.md}. Such a jar names the game by obfuscated
  * (notch) names that only match 1.2.5 (the obfuscation is re-randomized with every release), so the share of its member references that resolve in the
  * 1.2.5 table ({@code detect/notch-1.2.5.txt.gz}, client and server, written by {@code tools/gen_notch_125.py}) tells it from 1.4.7, 1.5.2, 1.6.4 and
- * Beta 1.7.3 jars. A match is reported as "1.2.5 (not supported yet)" and the jar is not hosted; without this the 1.4.7 chooser would take it
+ * Beta 1.7.3 jars. A match is hosted through the 1.4.7 chain, or reported (and not hosted) when support is switched off or this build has no name table without this the 1.4.7 chooser would take it
  * (any bare {@code BaseMod} jar without other evidence is "the oldest supported version").
  */
 public final class Mc125Jars {
@@ -55,12 +55,21 @@ public final class Mc125Jars {
     static final double NEAR_SHARE = 0.25;
 
     /**
+     * Beta 1.7.3's obfuscation shares many short names with 1.2.5's, so a Beta jar can reach a high 1.2.5 share; Beta's own names tell them apart (a Beta jar resolves at
+     * about 100% in them, a 1.2.5 jar below 10%). A jar that fits Beta is never taken as 1.2.5.
+     */
+    static boolean fitsBeta(ZipFile zip) {
+        return BetaJars.betaShare(zip) >= BetaJars.MIN_RESOLVED;
+    }
+
+    /**
      * Evidence when the jar names the game by an obfuscation that is close to 1.2.5's without being it (a 1.2.1 to 1.2.4 mod: NEWTON gravity enabler is for 1.2.3): between
      * {@link #NEAR_SHARE} and {@link #MIN_SHARE} of the references resolve and no other supported release fits clearly better. Null otherwise.
      */
     static String detectNear(ZipFile zip, java.util.function.Supplier<double[]> othersSupplier) {
         double share = score(zip);
         if (share < NEAR_SHARE || share >= MIN_SHARE) return null;
+        if (fitsBeta(zip)) return null;
         double[] others = othersSupplier.get();
         if (others != null) for (double o : others) if (o + 0.2 >= share) return null;
         return OTHER_VERSION + "obfuscated names resemble Minecraft 1.2.5 only partly (" + Math.round(share * 100) + "% of the member references), so the jar is for another 1.2.x release";
@@ -134,7 +143,8 @@ public final class Mc125Jars {
     /** The line the compatibility report shows for such a jar. */
     public static String reportLine(String fileName, String evidence) {
         if (evidence.startsWith(OTHER_VERSION)) return fileName + ": Minecraft 1.2.x release other than 1.2.5 (not supported): " + evidence.substring(OTHER_VERSION.length()) + "; not loaded";
-        return fileName + ": Minecraft 1.2.5 (not supported yet): " + evidence + "; not loaded" + (enabled() || evidence.contains("no 1.2.5 name table") ? "" : " (" + HOW_TO_ENABLE + ")");
+        if (evidence.contains("no 1.2.5 name table")) return fileName + ": Minecraft 1.2.5 (not supported in this build, which has no 1.2.5 name table; use a release or nightly build): " + evidence + "; not loaded";
+        return fileName + ": Minecraft 1.2.5 (" + (enabled() ? "not supported" : "support is switched off") + "): " + evidence + "; not loaded" + (enabled() ? "" : " (" + HOW_TO_ENABLE + ")");
     }
 
     static void record(Path path, String evidence) {
@@ -253,15 +263,19 @@ public final class Mc125Jars {
      * Evidence text when the jar is a 1.2.5 jar (fingerprint at least {@link #MIN_SHARE} and clearly better than the 1.4.7, 1.5.2 and 1.6.4 tables), else null.
      * {@code others} are those tables' scores ({@code NotchFingerprint.scores}) or null.
      */
-    /** Config key of the experimental toggle (off by default); the system property {@link #PROPERTY} wins when set. */
-    public static final String CONFIG_KEY = "experimental.minecraft125";
+    /** Config key of the toggle (on by default since 0.5.0; {@code false} turns 1.2.5 support off); the system property {@link #PROPERTY} wins when set. */
+    public static final String CONFIG_KEY = "versions.minecraft125";
+    /** The key of the experimental era (before 0.5.0, off by default): still honoured when the new key is absent, so an explicit {@code false} keeps 1.2.5 off. */
+    public static final String LEGACY_CONFIG_KEY = "experimental.minecraft125";
     public static final String PROPERTY = "legacyconnector.mc125";
-    /** Value of {@link #CONFIG_KEY} read from config/legacyconnector.properties by {@link #configure}. */
-    private static volatile boolean configured;
+    /** Value read from config/legacyconnector.properties by {@link #configure}. */
+    private static volatile boolean configured = true;
 
     /** Reads the toggle from the layer's config (next to the mods folder); called once per startup by the locator. */
     public static void configure(java.util.Properties config) {
-        configured = parse(config.getProperty(CONFIG_KEY), false);
+        String v = config.getProperty(CONFIG_KEY);
+        if (v == null || v.isBlank()) v = config.getProperty(LEGACY_CONFIG_KEY);
+        configured = parse(v, true);
         System.clearProperty(ACTIVE_PROPERTY);
     }
 
@@ -274,30 +288,75 @@ public final class Mc125Jars {
 
     private static boolean parse(String value, boolean def) {
         if (value == null || value.isBlank()) return def;
-        return Boolean.parseBoolean(value.trim());
+        String t = value.trim();
+        if (t.equalsIgnoreCase("true")) return true;
+        if (t.equalsIgnoreCase("false")) return false;
+        return def; // garbage keeps the default
     }
 
-    /** THE question "is Minecraft 1.2.5 hosting on": system property when set, else the config key; default false. Every caller goes through this. */
+    /** THE question "is Minecraft 1.2.5 hosting on": system property when set, else the config key ({@link #CONFIG_KEY}, or the older {@link #LEGACY_CONFIG_KEY}); default true. Every caller goes through this. */
     public static boolean enabled() {
         String prop = System.getProperty(PROPERTY);
         if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
         return configured;
     }
 
-    /** How to turn the experiment on (appended to the report line and log of a 1.2.5 jar while it is off). */
-    public static final String HOW_TO_ENABLE = "experimental Minecraft 1.2.5 support is off: set " + CONFIG_KEY + "=true in config/legacyconnector.properties to try it";
+    /** How to turn 1.2.5 support back on (appended to the report line and log of a 1.2.5 jar while it is off). */
+    public static final String HOW_TO_ENABLE = "Minecraft 1.2.5 support is switched off: set " + CONFIG_KEY + "=true in config/legacyconnector.properties";
 
     /** Marker of a hosted 1.2.5 mod in the report. */
-    public static final String EXPERIMENTAL_NOTE = "experimental (Minecraft 1.2.5): linked members may still be empty placeholders, expect a mod that loads and then does little";
+    public static final String EXPERIMENTAL_NOTE = "beta (Minecraft 1.2.5): linked members may still be empty placeholders, expect a mod that loads and then does little";
 
     /** The side ('c' or 's') whose 1.2.5 names the jar fits better. */
     static char sideOf(ZipFile zip) {
         return measure(zip)[1] == 1 ? 's' : 'c';
     }
 
+    /**
+     * True when the jar names the pre-1.3 Forge API (the {@code forge/*} package of Forge 3.x, {@code net/minecraft/src/forge/*}) or ModLoaderMP ({@code BaseModMp}, {@code ModLoaderMp}) without
+     * holding those classes itself: Forge 4+ (1.3.2 onward) moved to {@code net.minecraftforge} and FML, so only Minecraft 1.2.5 and older jars reference them.
+     */
+    static boolean usesPre13Forge(ZipFile zip) {
+        boolean[] hit = {false};
+        Set<String> own = new HashSet<>();
+        Enumeration<? extends ZipEntry> en = zip.entries();
+        while (en.hasMoreElements()) {
+            String n = en.nextElement().getName();
+            if (n.endsWith(".class")) own.add(n.substring(0, n.length() - 6));
+        }
+        en = zip.entries();
+        while (en.hasMoreElements() && !hit[0]) {
+            ZipEntry entry = en.nextElement();
+            if (entry.isDirectory() || !entry.getName().endsWith(".class")) continue;
+            try (InputStream in = zip.getInputStream(entry)) {
+                new ClassReader(in).accept(new org.objectweb.asm.commons.ClassRemapper(new ClassVisitor(Opcodes.ASM9) {}, new org.objectweb.asm.commons.Remapper() {
+                    @Override
+                    public String map(String internalName) {
+                        if (!own.contains(internalName) && (internalName.startsWith("forge/") || internalName.startsWith("net/minecraft/src/forge/")
+                                || internalName.equals("BaseModMp") || internalName.equals("ModLoaderMp"))) hit[0] = true;
+                        return internalName;
+                    }
+                }), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            } catch (IOException | RuntimeException e) {
+                // an unreadable class does not count
+            }
+        }
+        return hit[0];
+    }
+
     static String detect(ZipFile zip, java.util.function.Supplier<double[]> othersSupplier) {
         double share = score(zip);
-        if (share < MIN_SHARE) return null;
+        if (share < MIN_SHARE) {
+            // few game references of its own (a mod that mostly calls its own classes and the Forge API): the pre-1.3 Forge API is evidence enough next to a partial or unknown fingerprint
+            if ((share < 0 || share >= NEAR_SHARE) && usesPre13Forge(zip) && !fitsBeta(zip)) {
+                double[] others = othersSupplier.get();
+                boolean other = false;
+                if (others != null) for (double o : others) if (o >= MIN_SHARE || (share >= 0 && o + 0.15 >= share)) other = true;
+                if (!other) return "references the pre-1.3 Forge API (forge/*, ModLoaderMP), which only Minecraft 1.2.5 and older jars do" + (share >= 0 ? " (" + Math.round(share * 100) + "% of the member references match)" : "");
+            }
+            return null;
+        }
+        if (fitsBeta(zip)) return null;
         double[] others = othersSupplier.get();
         if (others != null) for (double o : others) if (o + 0.15 >= share) return null;
         return "obfuscated names match Minecraft 1.2.5 (" + Math.round(share * 100) + "% of the member references)";

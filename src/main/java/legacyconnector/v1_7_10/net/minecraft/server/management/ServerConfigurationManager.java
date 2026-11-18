@@ -33,6 +33,14 @@ public class ServerConfigurationManager {
         return out;
     }
 
+    /** 1.2.5 {@code PlayerManager.sendPacket(name, packet)} (Feather name): sends the packet to the player of that name; false when nobody of that name is online. */
+    public boolean mcc125$sendPacket(String name, legacyconnector.v1_7_10.net.minecraft.network.Packet packet) {
+        EntityPlayerMP player = getPlayerByUsername(name);
+        if (player == null) return false;
+        legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP.mcc$get$playerNetServerHandler(player).sendPacket(packet);
+        return true;
+    }
+
     public EntityPlayerMP getPlayerByUsername(String name) {
         var p = mcc$server.mcc$modern().getPlayerList().getPlayerByName(name);
         return p == null ? null : (EntityPlayerMP) EntityBridge.wrap(p);
@@ -396,6 +404,17 @@ public class ServerConfigurationManager {
     public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound readPlayerDataFromFile(EntityPlayerMP player) {
         var handler = mcc$server.worldServerForDimension(0).getSaveHandler().getSaveHandler();
         return handler == null ? null : handler.readPlayerData(player);
+    }
+
+    /** The profiles of the players that are online. */
+    public com.mojang.authlib.GameProfile[] getAllProfiles() {
+        return mcc$server.mcc$modern().getPlayerList().getPlayers().stream().map(p -> p.getGameProfile()).toArray(com.mojang.authlib.GameProfile[]::new);
+    }
+
+    /** Disconnects every player (the server is shutting down or a mod restarts the world). */
+    public void removeAllPlayers() {
+        net.minecraft.network.chat.Component reason = net.minecraft.network.chat.Component.translatable("multiplayer.disconnect.server_shutdown");
+        for (var p : new ArrayList<>(mcc$server.mcc$modern().getPlayerList().getPlayers())) p.connection.disconnect(reason);
     }
 
     /** Sends the player the chunks around their position again (after a teleport the mod did itself). */

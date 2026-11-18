@@ -72,6 +72,28 @@ public class EntityRabbit extends EntityAnimal {
         dataManager.set(RABBIT_TYPE, type);
     }
 
+    private int mcc$jumpTicks;
+    private int mcc$jumpDuration;
+
+    /** How far through its hop the rabbit is (0 on the ground, 1 at the end of the hop): the modern rabbit's own hop animation. */
+    public float getJumpCompletion(float partialTicks) {
+        var m = mcc$self();
+        if (m != null) return m.getJumpCompletion(partialTicks);
+        return mcc$jumpDuration == 0 ? 0.0F : ((float) mcc$jumpTicks + partialTicks) / (float) mcc$jumpDuration;
+    }
+
+    /** Starts a hop (1.12: sets jumping and a ten tick hop animation). */
+    public void startJumping() {
+        var m = mcc$self();
+        if (m != null) {
+            m.startJumping();
+            return;
+        }
+        setJumping(true);
+        mcc$jumpDuration = 10;
+        mcc$jumpTicks = 0;
+    }
+
     @Override
     protected void writeEntityToNBT(NBTTagCompound tag) {
         super.writeEntityToNBT(tag);

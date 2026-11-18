@@ -30,7 +30,12 @@ public class MinecraftServer implements ICommandSender, Runnable {
 
     protected MinecraftServer(net.minecraft.server.MinecraftServer server) {
         this.mcc$server = server;
-        this.configurationManager = new ServerConfigurationManager(this);
+        this.configurationManager = mcc$createPlayerList();
+    }
+
+    /** The dedicated server answers with its {@code DedicatedPlayerList}. */
+    protected ServerConfigurationManager mcc$createPlayerList() {
+        return new ServerConfigurationManager(this);
     }
 
     public static synchronized MinecraftServer mcc$wrap(net.minecraft.server.MinecraftServer server) {
@@ -161,6 +166,7 @@ public class MinecraftServer implements ICommandSender, Runnable {
 
     /** The build height limit (the level's maximum build height). */
     public int getBuildLimit() {
+        if (mcc$buildLimit != null) return mcc$buildLimit;
         var overworld = mcc$server == null ? null : mcc$server.overworld();
         return overworld == null ? 256 : overworld.getMaxBuildHeight();
     }
@@ -361,5 +367,86 @@ public class MinecraftServer implements ICommandSender, Runnable {
     /** Whether players may fly in survival without being kicked. */
     public void setAllowFlight(boolean allow) {
         if (mcc$server != null) mcc$server.setFlightAllowed(allow);
+    }
+
+    private Integer mcc$buildLimit;
+    private Boolean mcc$spawnAnimals;
+    private Boolean mcc$spawnNpcs;
+
+    /** The build height mods read back (a mod may lower it; the host's world height itself is fixed by the dimension type). */
+    public void setBuildLimit(int limit) {
+        mcc$buildLimit = limit;
+    }
+
+    /** The difficulty of the world. */
+    public legacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty getDifficulty() {
+        return mcc$server == null ? legacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty.NORMAL
+                : legacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty.mcc$of(mcc$server.getWorldData().getDifficulty());
+    }
+
+    /** The game mode new players start in. */
+    public legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType getGameType() {
+        return mcc$server == null ? legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.SURVIVAL
+                : legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(mcc$server.getDefaultGameType().getId());
+    }
+
+    public boolean isHardcore() {
+        return mcc$server != null && mcc$server.getWorldData().isHardcore();
+    }
+
+    /** The port the server listens on (a singleplayer world not opened to the LAN: -1, as the host reports). */
+    public int getServerPort() {
+        return mcc$server == null ? -1 : mcc$server.getPort();
+    }
+
+    /** Whether the main loop is running (the server has started and is not shutting down). */
+    public boolean serverIsInRunLoop() {
+        return mcc$server != null && mcc$server.isRunning();
+    }
+
+    /** Whether an achievement is announced in chat (the host's {@code announceAdvancements} rule). */
+    public boolean isAnnouncingPlayerAchievements() {
+        return mcc$server == null || mcc$server.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_ANNOUNCE_ADVANCEMENTS);
+    }
+
+    public boolean getCanSpawnAnimals() {
+        return mcc$spawnAnimals != null ? mcc$spawnAnimals : mcc$server == null || mcc$server.isSpawningAnimals();
+    }
+
+    public boolean getCanSpawnNPCs() {
+        return mcc$spawnNpcs != null ? mcc$spawnNpcs : mcc$server == null || mcc$server.areNpcsEnabled();
+    }
+
+    /** Switches passive-animal spawning in every dimension that is loaded. */
+    public void setCanSpawnAnimals(boolean allow) {
+        mcc$spawnAnimals = allow;
+        if (mcc$server == null) return;
+        for (ServerLevel level : mcc$server.getAllLevels()) {
+            level.setSpawnSettings(mcc$server.isSpawningMonsters(), allow);
+        }
+    }
+
+    /** Villager spawning (kept for {@link #getCanSpawnNPCs}; the host spawns villagers through structures, not a per-server switch). */
+    public void setCanSpawnNPCs(boolean allow) {
+        mcc$spawnNpcs = allow;
+    }
+
+    /** The commands (and the arguments the command offers) that complete a typed command line. */
+    public java.util.List getPossibleCompletions(ICommandSender sender, String line) {
+        java.util.List out = new java.util.ArrayList();
+        if (line == null) return out;
+        boolean slash = line.startsWith("/");
+        if (slash) line = line.substring(1);
+        String[] words = line.split(" ", -1);
+        if (words.length <= 1) {
+            for (Object name : getCommandManager().getPossibleCommands(sender, words.length == 0 ? "" : words[0])) out.add(slash ? "/" + name : name);
+        } else {
+            Object command = getCommandManager().getCommands().get(words[0]);
+            if (command instanceof legacyconnector.v1_7_10.net.minecraft.command.ICommand c) {
+                java.util.List options = c.addTabCompletionOptions(sender, java.util.Arrays.copyOfRange(words, 1, words.length));
+                if (options != null) out.addAll(options);
+            }
+        }
+        return out;
     }
 }
