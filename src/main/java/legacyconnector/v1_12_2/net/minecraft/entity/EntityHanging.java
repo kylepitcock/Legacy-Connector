@@ -62,6 +62,13 @@ public abstract class EntityHanging extends Entity {
         if (h == null || h.isAddedToLevel() || pos == null || facing == null) return;
         var tag = new net.minecraft.nbt.CompoundTag();
         h.saveWithoutId(tag);
+        // The entity is read back against its own position (HangingEntity.readAdditionalSaveData rejects a wall more than 16 blocks away
+        // and logs "Block-attached entity at invalid position"): a new entity sits at the origin, so move it to the wall first.
+        var posTag = new net.minecraft.nbt.ListTag();
+        posTag.add(net.minecraft.nbt.DoubleTag.valueOf(pos.getX() + 0.5D));
+        posTag.add(net.minecraft.nbt.DoubleTag.valueOf(pos.getY() + 0.5D));
+        posTag.add(net.minecraft.nbt.DoubleTag.valueOf(pos.getZ() + 0.5D));
+        tag.put("Pos", posTag);
         tag.putInt("TileX", pos.getX());
         tag.putInt("TileY", pos.getY());
         tag.putInt("TileZ", pos.getZ());
@@ -129,10 +136,14 @@ public abstract class EntityHanging extends Entity {
     /** The wall behind is solid over the whole width and height and no other hanging entity overlaps (1.12). */
     public boolean onValidSurface() {
         var h = mcc$hanging();
-        if (h != null) return h.survives();
+        // a modern entity in the world asks itself; one a mod just made (Twilight Forest's tower wings, while their chunk generates) is checked here
+        // against the world the mod gave it: the modern check reads the real level, which from a generator thread waits on chunks that wait for it
+        if (h != null && h.isAddedToLevel()) return h.survives();
         var m = mcc$entity;
         if (m == null || mcc$facing == null || mcc$hangingPosition == null) return true;
-        var level = m.level();
+        var given = mcc$get$world(this);
+        net.minecraft.world.level.LevelAccessor level = given == null ? null : given.mcc$access();
+        if (level == null) level = m.level();
         if (!level.noCollision(m)) return false;
         int w = Math.max(1, getWidthPixels() / 16);
         int hh = Math.max(1, getHeightPixels() / 16);

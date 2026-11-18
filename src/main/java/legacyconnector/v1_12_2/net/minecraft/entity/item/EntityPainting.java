@@ -19,6 +19,15 @@ public class EntityPainting extends EntityHanging {
 
     public EntityPainting(World world, BlockPos pos, EnumFacing facing) {
         super(world, pos);
+        // 1.12 chose, among the arts that fit the wall (onValidSurface), a random one; generators (Twilight Forest's tower wings) rely on that and
+        // only test for collisions afterwards. Without a wall (no world yet) the first art stays.
+        java.util.List<EnumArt> fitting = new java.util.ArrayList<>();
+        for (EnumArt a : EnumArt.values()) {
+            mcc$set$art(this, a);
+            updateFacingWithBoundingBox(facing);
+            if (onValidSurface()) fitting.add(a);
+        }
+        if (!fitting.isEmpty()) mcc$set$art(this, fitting.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(fitting.size())));
         updateFacingWithBoundingBox(facing);
     }
 

@@ -8,9 +8,11 @@ import java.util.List;
  * annotation table built from the game's scan data and the candidates it found per package.
  */
 public class ModDiscoverer {
-    private final ASMDataTable discoveredTable = ASMDataTable.mcc$get();
+    private ASMDataTable discoveredTable;
 
     public ASMDataTable getASMTable() {
+        // built on first use: the table scans the mod list, which does not exist yet when FML's Loader is constructed
+        if (discoveredTable == null) discoveredTable = ASMDataTable.mcc$get();
         return discoveredTable;
     }
 
