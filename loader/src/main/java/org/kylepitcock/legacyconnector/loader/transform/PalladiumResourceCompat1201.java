@@ -71,6 +71,8 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/fire_absorb.js";
     static final String ALIEN_EVO_GLIDE =
             "addon/alienevo/kubejs_scripts/glide.js";
+    static final String ALIEN_EVO_STINKFLY_ANIMATION =
+            "assets/alienevo/animations/stinkfly.animation.json";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
@@ -253,6 +255,7 @@ final class PalladiumResourceCompat1201 {
         rewriteDiamondShardTexture(resources);
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
+        rewriteAlienEvoStinkflyFlightAnimation(resources);
         removeDuplicateMalformedGeckoLibAnimation(resources);
         addMissingAlienEvoMachineScrollTag(resources);
         rewriteLegacyScriptApis(resources);
@@ -543,7 +546,32 @@ final class PalladiumResourceCompat1201 {
     }
 
     /**
-     * GeckoLib 4 discovers animation JSON assets by the .animation.json suffix.
+     * Stinkfly's flight render layer selects animation.stinkfly.flight, but the
+     * original flight animation gives both wing bones fixed rotations. Unlike
+     * the idle animation, those constant vectors never flap. Keep the existing
+     * flight pose and add a mirrored sinusoidal wing beat while that controller
+     * is active.
+     */
+    private static int rewriteAlienEvoStinkflyFlightAnimation(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_STINKFLY_ANIMATION, new String[][] {
+                {
+                        "\"vector\": [7, 23, 21]",
+                        "\"vector\": [\"7+(math.sin(query.anim_time*75)*12)\", "
+                                + "\"23+(math.sin(query.anim_time*75)*15)\", "
+                                + "\"21+(math.sin(query.anim_time*75)*20)\"]",
+                        "1"
+                },
+                {
+                        "\"vector\": [7, -23, -21]",
+                        "\"vector\": [\"7+(math.sin(query.anim_time*75)*12)\", "
+                                + "\"-23-(math.sin(query.anim_time*75)*15)\", "
+                                + "\"-21-(math.sin(query.anim_time*75)*20)\"]",
+                        "1"
+                }
+        });
+    }
+
+
      * AlienEvo 1.1.3 contains two animation files with older/nonstandard names
      * and its render-layer JSON points directly at those names. Keep the source
      * assets under the expected names, update the two inspected render-layer
