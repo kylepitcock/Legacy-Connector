@@ -21,6 +21,10 @@ final class PalladiumResourceCompat1201 {
             "data/alienevo/kubejs_scripts/slam.js";
     static final String ALIEN_EVO_MOTION_TO_ENTITY =
             "addon/alienevo/kubejs_scripts/motion_to_entity.js";
+    static final String ALIEN_EVO_CANNONBOLT_POWER =
+            "data/alienevo_aliens/palladium/powers/arburian_pelarota.json";
+    static final String ALIEN_EVO_XLR8_POWER =
+            "data/alienevo_aliens/palladium/powers/kineceleran.json";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
     static final String ALIEN_EVO_BLOCK_PARTICLES =
@@ -273,6 +277,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoSlamAttributeOperations(resources);
         rewriteAlienEvoSlamLandingState(resources);
         rewriteAlienEvoMotionToEntityTargetChecks(resources);
+        rewriteAlienEvoMotionToEntityDiagnostics(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -1577,6 +1582,116 @@ PlayerEvents.tick(e => {
                 .replace(legacyCheck, migratedCheck);
         String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
         resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * Temporary diagnostics for the two inspected AlienEvo abilities that
+     * share motion_to_entity: XLR8 Punch Barrage and Cannonbolt Assault.
+     *
+     * The ability resources ship with debug_mode=false, which suppresses the
+     * target script's own error messages. Enable them and report only ability
+     * enabled-state transitions so testing can distinguish a failed Palladium
+     * activation from a target-query/runtime failure. No target or chain logic
+     * is changed by this diagnostic migration.
+     */
+    private static int rewriteAlienEvoMotionToEntityDiagnostics(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_MOTION_TO_ENTITY);
+        int changed = 0;
+        if (original != null) {
+            String script = new String(original, StandardCharsets.UTF_8);
+            String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+            String normalized = script.replace("\r\n", "\n");
+
+            String legacyState = "    let lastTargetTimes = new Map();\n";
+            String diagnosticState = legacyState + "    let lastEnabledStates = new Map();\n";
+            String tickAnchor = "        .tick((entity, entry, holder, enabled) => {\n";
+            String diagnosticTick = tickAnchor
+                    + "            if (entity.isPlayer() && entry.getPropertyByName(\"debug_mode\")) {\n"
+                    + "                let previousEnabled = lastEnabledStates.get(entity.id);\n"
+                    + "                if (previousEnabled !== enabled) {\n"
+                    + "                    lastEnabledStates.set(entity.id, enabled);\n"
+                    + "                    entity.tell(\"[Legacy Connector target debug] motion_to_entity enabled=\" + enabled);\n"
+                    + "                }\n"
+                    + "            }\n";
+
+            int legacyStateCount = occurrences(normalized, legacyState);
+            int diagnosticStateCount = occurrences(normalized, "    let lastEnabledStates = new Map();\n");
+            int tickAnchorCount = occurrences(normalized, tickAnchor);
+            int diagnosticTickCount = occurrences(
+                    normalized,
+                    "            if (entity.isPlayer() && entry.getPropertyByName(\"debug_mode\")) {");
+            if (legacyStateCount == 1 && diagnosticStateCount == 0
+                    && tickAnchorCount == 1 && diagnosticTickCount == 0) {
+                normalized = normalized.replace(legacyState, diagnosticState)
+                        .replace(tickAnchor, diagnosticTick);
+                changed = 1;
+            } else if (legacyStateCount == 1 && diagnosticStateCount == 1
+                    && tickAnchorCount == 0 && diagnosticTickCount == 1) {
+                // Already instrumented; keep it byte-for-byte stable.
+            } else {
+                throw new IllegalStateException(
+                        "AlienEvo motion_to_entity.js has an unexpected diagnostic insertion shape: "
+                                + "state=" + legacyStateCount + "/" + diagnosticStateCount
+                                + ", tick=" + tickAnchorCount + "/" + diagnosticTickCount);
+            }
+
+            if (changed == 1) {
+                String output = lineEnding.equals("\n") ? normalized : normalized.replace("\n", lineEnding);
+                resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+
+        changed += enableAlienEvoMotionPowerDebugMode(
+                resources, ALIEN_EVO_CANNONBOLT_POWER, "multi_hit");
+        changed += enableAlienEvoMotionPowerDebugMode(
+                resources, ALIEN_EVO_XLR8_POWER, "punch_barrage");
+        return changed;
+    }
+
+    private static int enableAlienEvoMotionPowerDebugMode(
+            Map<String, byte[]> resources, String path, String abilityName) {
+        byte[] original = resources.get(path);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String normalized = script.replace("\r\n", "\n");
+        String abilityAnchor = "\"" + abilityName + "\": {\n"
+                + "      \"type\": \"alienevo:motion_to_entity\",\n";
+        if (occurrences(normalized, abilityAnchor) != 1) {
+            throw new IllegalStateException(
+                    "AlienEvo power " + path + " has an unexpected " + abilityName + " definition.");
+        }
+
+        int start = normalized.indexOf(abilityAnchor);
+        int end = normalized.indexOf("\n    },", start);
+        if (end < 0) {
+            throw new IllegalStateException(
+                    "AlienEvo power " + path + " has no closing block for " + abilityName + ".");
+        }
+
+        String block = normalized.substring(start, end);
+        String debugFalse = "      \"debug_mode\": false,";
+        String debugTrue = "      \"debug_mode\": true,";
+        int falseCount = occurrences(block, debugFalse);
+        int trueCount = occurrences(block, debugTrue);
+        if (falseCount == 1 && trueCount == 0) {
+            block = block.replace(debugFalse, debugTrue);
+        } else if (falseCount == 0 && trueCount == 1) {
+            return 0;
+        } else if (falseCount == 0 && trueCount == 0) {
+            block = block.replace(abilityAnchor,
+                    abilityAnchor + debugTrue + "\n");
+        } else {
+            throw new IllegalStateException(
+                    "AlienEvo power " + path + " has ambiguous debug_mode for " + abilityName
+                            + ": false=" + falseCount + ", true=" + trueCount);
+        }
+
+        String migrated = normalized.substring(0, start) + block + normalized.substring(end);
+        String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
+        resources.put(path, output.getBytes(StandardCharsets.UTF_8));
         return 1;
     }
 
