@@ -3,6 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.item;
 import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
 
 /** 1.12.2 {@code ItemStack}: an item, a count, a damage/metadata value and a tag. Converted to the modern stack at the boundaries. */
+@com.google.gson.annotations.JsonAdapter(org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyGson1122.ItemStackAdapter.class)
 public final class ItemStack {
     public static final ItemStack EMPTY = new ItemStack((Item) null);
 

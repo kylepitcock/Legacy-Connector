@@ -115,6 +115,8 @@ class ForwardCallsTest {
         assertEquals(List.of("op95", "op87", "183 " + P + "net/minecraft/nbt/NBTTagString.<init>(Ljava/lang/String;)V",
                 "op93", "op88", "op87", "183 " + P + "net/minecraft/nbt/NBTTagDouble.<init>(D)V",
                 "op87", "183 " + P + "net/minecraft/nbt/NBTTagCompound.<init>()V"), body(node));
+        // the dup2_x1 that drops the name under a double needs two stack slots the method may not have had (VerifyError "Operand stack overflow")
+        assertEquals(2, node.methods.get(0).maxStack);
     }
 
     @Test

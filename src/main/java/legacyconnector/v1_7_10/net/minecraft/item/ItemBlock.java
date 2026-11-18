@@ -149,6 +149,14 @@ public class ItemBlock extends Item {
     @Override
     public void getSubItems(Item item, CreativeTabs tab, List list) {
         if (blockInstance != null) blockInstance.getSubBlocks(item, tab, list);
+        // an ItemBlock subclass that lists its own stacks through the Forge item hook (RedPower's ItemMicro: wires, tubes, covers, from its placers); only ever adds
+        java.util.ArrayList<ItemStack> own = new java.util.ArrayList<>();
+        addCreativeItems(own);
+        for (ItemStack s : own) {
+            boolean known = false;
+            for (Object o : list) if (o instanceof ItemStack t && t.getItem() == s.getItem() && t.getItemDamage() == s.getItemDamage()) known = true;
+            if (!known) list.add(s);
+        }
     }
 
     @Override

@@ -1,0 +1,2 @@
+# Terralith 1.20.x (data-only mod with both mods.toml and neoforge.mods.toml pinning Minecraft [1.20,1.21)): worldgen data converted from 1.20.1
+1.20.1 Terralith_1.20.x

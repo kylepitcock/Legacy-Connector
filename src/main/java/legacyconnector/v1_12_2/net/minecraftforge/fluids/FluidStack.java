@@ -3,6 +3,7 @@ package legacyconnector.v1_12_2.net.minecraftforge.fluids;
 import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
 
 /** An amount of a fluid (in millibuckets) with an optional tag. */
+@com.google.gson.annotations.JsonAdapter(org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyGson1122.FluidStackAdapter.class)
 public class FluidStack {
     public int amount;
     public NBTTagCompound tag;
