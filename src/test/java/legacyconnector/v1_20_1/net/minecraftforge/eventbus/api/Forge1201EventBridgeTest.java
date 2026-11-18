@@ -43,6 +43,30 @@ final class Forge1201EventBridgeTest {
         assertTrue(event.overrideObserved);
     }
 
+
+    @Test
+    void customIsCancelableOverrideDoesNotChangeBaseSuperAnnotationLookup() {
+        CustomOverrideOnly event = new CustomOverrideOnly();
+
+        assertTrue(Forge1201EventBridge.isCancelable(event));
+        assertFalse(Forge1201EventBridge.baseIsCancelable(event),
+                "The source Forge Event superclass checks @Cancelable, not the synthetic target interface.");
+        Forge1201EventBridge.setCanceled(event, true);
+        assertTrue(event.superValue);
+        assertTrue(Forge1201EventBridge.isCanceled(event));
+    }
+
+    private static final class CustomOverrideOnly extends PlainEvent
+            implements ICancellableEvent, Forge1201CustomCancelableOverrideMarker {
+        private boolean superValue;
+
+        @Override
+        public boolean isCancelable() {
+            superValue = super.isCancelable();
+            return true;
+        }
+    }
+
     private static class PlainEvent extends Event implements Forge1201EventCompat {
         @Override
         public boolean isCancelable() {
