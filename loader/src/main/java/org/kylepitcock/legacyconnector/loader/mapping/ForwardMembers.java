@@ -163,6 +163,8 @@ public final class ForwardMembers {
             String hit = table.get(ForwardRenames.flat(version, c) + "." + key);
             if (hit != null) return hit;
             var entry = data.get(c);
+            // Forge 3.x's classes (forge/ISidedInventory of a 1.2.5 mod) live in net/minecraft/src/forge of the shim; the API data lists the later package
+            if (entry == null && c.startsWith("net/minecraft/src/forge/")) entry = data.get("net/minecraftforge/common/" + c.substring("net/minecraft/src/forge/".length()));
             if (entry != null) {
                 if (entry.superName() != null) todo.add(entry.superName());
                 todo.addAll(entry.interfaces());

@@ -61,6 +61,36 @@ public class RenderGlobal {
         if (renderer != null) renderer.destroyBlockProgress(breakerId, new net.minecraft.core.BlockPos(x, y, z), stage);
     }
 
+    /**
+     * 1.2.5 {@code RenderGlobal.updateClouds()}: one tick of cloud drift ({@code cloudTickCounter++}). The modern renderer drifts its clouds with its own tick counter, which is advanced
+     * here, so a mod that ticks the world faster (sleeping) moves the clouds with it.
+     */
+    public void updateClouds() {
+        Clouds.advance();
+    }
+
+    private static final class Clouds {
+        private static final java.lang.reflect.Field TICKS = find();
+
+        private static java.lang.reflect.Field find() {
+            try {
+                return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.client.renderer.LevelRenderer.class, "ticks");
+            } catch (RuntimeException e) {
+                return null;
+            }
+        }
+
+        static void advance() {
+            var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+            if (renderer == null || TICKS == null) return;
+            try {
+                TICKS.setInt(renderer, TICKS.getInt(renderer) + 1);
+            } catch (IllegalAccessException ignored) {
+                // the cloud drift stays as it was
+            }
+        }
+    }
+
     /** The modern renderer tracks block entities and entities itself. */
     public void onStaticEntitiesChanged() {
     }
