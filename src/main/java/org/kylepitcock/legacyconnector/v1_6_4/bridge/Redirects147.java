@@ -258,6 +258,15 @@ public final class Redirects147 {
         tool.damageVsEntity = damage;
     }
 
+    /** {@code EntityLiving.lastDamage} was an int (1.7.10: float): the damage of the last hit, as the modern entity keeps it. */
+    public static int lastDamage(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e) {
+        return (int) legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$get$lastDamage(e);
+    }
+
+    public static void setLastDamage(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e, int value) {
+        legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$set$lastDamage(e, value);
+    }
+
     /** {@code EntityLiving.prevHealth} was an int (1.7.10 made health a float): the health one tick ago, as the layer knows it. */
     public static int prevHealth(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase e) {
         return (int) legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$get$prevHealth(e);

@@ -2577,6 +2577,20 @@ public class World implements IBlockAccess {
     public static void mcc$set$mcc125$isNew(World w, boolean v) {
     }
 
+    private int mcc$lastSaveTime;
+
+    /**
+     * Phantom field {@code lastSaveTime} (1.2.5's autosave countdown of a world: mods push it forward so the world does not save while a sleep fast-forwards the clock). The modern server
+     * autosaves on its own schedule that a mod cannot move, so the value is kept per world and has no other effect.
+     */
+    public static int mcc$get$mcc125$lastSaveTime(World w) {
+        return w.mcc$lastSaveTime;
+    }
+
+    public static void mcc$set$mcc125$lastSaveTime(World w, int v) {
+        w.mcc$lastSaveTime = v;
+    }
+
     /** 1.2.5 {@code World.save(flush, progress)}: saves the world's chunks and level data of a server world; a client world has nothing to save. */
     public void mcc125$save(boolean flush, legacyconnector.v1_7_10.net.minecraft.util.IProgressUpdate progress) {
         if (this instanceof WorldServer server) server.saveAllChunks(flush, progress);
