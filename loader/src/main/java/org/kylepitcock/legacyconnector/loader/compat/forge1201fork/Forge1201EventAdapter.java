@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ConstantDynamic;
@@ -53,27 +54,30 @@ public final class Forge1201EventAdapter {
             "legacyconnector/v1_20_1/net/minecraftforge/event/");
 
     /**
-     * Pinned Forge 47.3.0 classes whose cancellation methods are inherited from Event.
-     * These may be safely rewritten to the non-virtual source-base helpers.
-     *
-     * <p>Do not expand this list based on package name alone. Each entry must be verified
-     * against the source class bytecode for all three method signatures.</p>
+     * Pinned Forge 47.3.0 event types whose isCancelable/isCanceled implementations
+     * are inherited from Event. The two interaction classes with their own setCanceled
+     * overrides are handled by the separate target-super preservation set below.
      */
-    private static final Set<String> SOURCE_EVENT_TYPES_INHERITING_CANCELLATION_METHODS = Set.of(
+    private static final Set<String> SOURCE_EVENT_TYPES_WITH_INHERITED_BASE_ACCESSORS = Set.of(
             "net/minecraftforge/event/entity/player/PlayerEvent",
             "net/minecraftforge/event/entity/player/PlayerInteractEvent",
             "net/minecraftforge/event/entity/player/PlayerInteractEvent$EntityInteract",
             "net/minecraftforge/event/entity/player/PlayerInteractEvent$EntityInteractSpecific",
             "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock",
-            "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickItem");
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickItem",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$LeftClickBlock");
 
     /**
-     * Source owner/method pairs whose exact target equivalent has been audited and must
-     * retain invokespecial dispatch. RightClickBlock overrides setCanceled to update its
-     * useBlock/useItem result state; target 21.1.258 retains that override.
+     * These exact target superclasses override setCanceled to maintain interaction state.
+     * A transformed child must inherit their native override instead of receiving a
+     * synthetic compatibility method that would shadow the side effects.
      */
+    private static final Set<String> TARGET_SUPERCLASSES_WITH_AUDITED_SET_CANCELED = Set.of(
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$LeftClickBlock");
+
     private static boolean hasAuditedTargetSuperImplementation(String owner, String name, String descriptor) {
-        return "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock".equals(owner)
+        return TARGET_SUPERCLASSES_WITH_AUDITED_SET_CANCELED.contains(owner)
                 && METHOD_SET_CANCELED.equals(name)
                 && SET_CANCELED_DESCRIPTOR.equals(descriptor);
     }
@@ -106,8 +110,26 @@ public final class Forge1201EventAdapter {
      *                     an impossible event-method invocation shape
      */
     public static Stats apply(ClassNode classNode) throws IOException {
+        return apply(classNode, Forge1201EventAdapter::isForgeEventApiType);
+    }
+
+    /**
+     * Transforms a class when the caller can resolve its source Forge Event ancestry.
+     * The predicate receives the source-named superclass and must return true only when
+     * that superclass is proven to extend Forge Event, possibly through mod-defined bases.
+     * A missing superclass must resolve false; callers must not guess from a method name.
+     */
+    public static Stats apply(ClassNode classNode, Predicate<String> sourceEventSuperclass) throws IOException {
         Objects.requireNonNull(classNode, "classNode");
-        boolean eventRoot = isForgeEventBase(classNode.superName);
+        Objects.requireNonNull(sourceEventSuperclass, "sourceEventSuperclass");
+
+        // Forge API parents are target-native classes after remapping and therefore need
+        // the compatibility methods injected into this transformed child. A mod-defined
+        // event parent is transformed separately and already supplies the inherited
+        // compatibility surface; only ancestry-sensitive markers need to be added here.
+        boolean extendsForgeEventApiType = isForgeEventApiType(classNode.superName);
+        boolean sourceForgeEventDescendant = extendsForgeEventApiType
+                || (classNode.superName != null && sourceEventSuperclass.test(classNode.superName));
         boolean directlyCancelable = removeCancelableAnnotation(classNode);
         boolean declaresCancelableOverride = declaresInstanceMethod(
                 classNode, METHOD_IS_CANCELABLE, IS_CANCELABLE_DESCRIPTOR);
@@ -115,23 +137,27 @@ public final class Forge1201EventAdapter {
         if (directlyCancelable && (classNode.access & (Opcodes.ACC_INTERFACE | Opcodes.ACC_ANNOTATION)) != 0) {
             throw new IOException("Forge @Cancelable was found on non-class type " + classNode.name);
         }
+        if (directlyCancelable && !sourceForgeEventDescendant) {
+            throw new IOException("Forge @Cancelable class has no proven Forge Event ancestry: " + classNode.name
+                    + " extends " + classNode.superName);
+        }
 
-        if (eventRoot || directlyCancelable) {
+        if (extendsForgeEventApiType || directlyCancelable) {
             addInterface(classNode, COMPAT_INTERFACE);
         }
 
         if (directlyCancelable) {
             addInterface(classNode, CANCELABLE_MARKER);
             addInterface(classNode, TARGET_CANCELLABLE);
-        } else if (declaresCancelableOverride) {
-            // A custom isCancelable override may return true without @Cancelable.
-            // Implement the target contract so NeoForge can observe its cancel state,
-            // while recording that this interface did not come from source annotation.
+        } else if (declaresCancelableOverride && sourceForgeEventDescendant) {
+            // A real Forge Event descendant may override isCancelable without using
+            // @Cancelable. An unrelated class with a same-named method must not become
+            // an ICancellableEvent: Bus default listener wrappers cast to target Event.
             addInterface(classNode, TARGET_CANCELLABLE);
         }
 
         int roots = 0;
-        if (eventRoot) {
+        if (extendsForgeEventApiType) {
             injectMissingSourceMethods(classNode);
             roots = 1;
         }
@@ -149,7 +175,7 @@ public final class Forge1201EventAdapter {
                             continue;
                         }
                         if (!(SOURCE_EVENT.equals(call.owner)
-                                || SOURCE_EVENT_TYPES_INHERITING_CANCELLATION_METHODS.contains(call.owner))
+                                || SOURCE_EVENT_TYPES_WITH_INHERITED_BASE_ACCESSORS.contains(call.owner))
                                 || !eventRoot) {
                             throw new IOException("Unverified Forge event superclass override for non-virtual "
                                     + "cancellation call in " + classNode.name + "." + method.name + method.desc
@@ -177,7 +203,7 @@ public final class Forge1201EventAdapter {
         return new Stats(roots, directlyCancelable ? 1 : 0, callSites, superCalls);
     }
 
-    private static boolean isForgeEventBase(String internalName) {
+    private static boolean isForgeEventApiType(String internalName) {
         return internalName != null && (SOURCE_EVENT.equals(internalName)
                 || SOURCE_EVENT_BASE_PREFIXES.stream().anyMatch(internalName::startsWith));
     }
@@ -242,7 +268,10 @@ public final class Forge1201EventAdapter {
             classNode.methods.add(method);
         }
 
-        if (!declaresAnyMethod(classNode, METHOD_SET_CANCELED, SET_CANCELED_DESCRIPTOR)) {
+        if (!declaresAnyMethod(classNode, METHOD_SET_CANCELED, SET_CANCELED_DESCRIPTOR)
+                && !TARGET_SUPERCLASSES_WITH_AUDITED_SET_CANCELED.contains(classNode.superName)) {
+            // RightClickBlock and LeftClickBlock already implement the target override.
+            // Inheriting it is required to retain their useBlock/useItem cancellation side effects.
             MethodNode method = new MethodNode(
                     Opcodes.ASM9, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, METHOD_SET_CANCELED, SET_CANCELED_DESCRIPTOR, null, null);
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
