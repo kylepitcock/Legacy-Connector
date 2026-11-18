@@ -246,6 +246,19 @@ public class Item {
         return new CreativeTabs[] {getCreativeTab()};
     }
 
+    /** Whether the mod's own class (not the shim) overrides {@code getCreativeTabs}. */
+    public boolean mcc$overridesCreativeTabs() {
+        for (Class<?> c = getClass(); c != null && c != Object.class && !c.getName().startsWith("legacyconnector."); c = c.getSuperclass()) {
+            try {
+                c.getDeclaredMethod("getCreativeTabs");
+                return true;
+            } catch (NoSuchMethodException e) {
+                // next superclass
+            }
+        }
+        return false;
+    }
+
     private boolean mcc$vanillaContainerResolved;
 
     public Item getContainerItem() {
