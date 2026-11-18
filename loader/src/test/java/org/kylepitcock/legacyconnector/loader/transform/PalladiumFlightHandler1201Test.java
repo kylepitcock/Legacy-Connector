@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,7 +12,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.util.List;
 
 /** Regression tests for Palladium FlightHandler's 1.21.1 access and Survival takeoff behavior. */
 class PalladiumFlightHandler1201Test implements Opcodes {
@@ -31,7 +29,7 @@ class PalladiumFlightHandler1201Test implements Opcodes {
 
     private static ClassNode takeoffFixture() {
         ClassNode node = new ClassNode();
-        node.version = V17;
+        node.version = V21;
         node.access = ACC_PUBLIC;
         node.name = PalladiumFlightHandler1201.FLIGHT_HANDLER;
         node.superName = "java/lang/Object";
