@@ -57,6 +57,37 @@ public final class DimensionSounds1710 {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A PlaySoundEvent handler failed: {}", ex.toString());
             }
         });
+        // 1.5.2 to 1.6.4's PlayStreamingEvent (a disc playing in a jukebox) and PlayBackgroundMusicEvent (a music track starting); result null silences the sound
+        gameBus.addListener((PlaySoundEvent e) -> {
+            SoundInstance sound = e.getSound();
+            var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (sound == null) return;
+            SoundSource source = sound.getSource();
+            boolean record = source == SoundSource.RECORDS;
+            boolean music = source == SoundSource.MUSIC;
+            if (!record && !music) return;
+            if (record && !forge.mcc$hasListeners(legacyconnector.v1_6_4.net.minecraftforge.client.event.sound.PlayStreamingEvent.class)) return;
+            if (music && !forge.mcc$hasListeners(legacyconnector.v1_6_4.net.minecraftforge.client.event.sound.PlayBackgroundMusicEvent.class)) return;
+            String path = sound.getLocation().getPath();
+            String name = path.substring(path.lastIndexOf('.') + 1);
+            try {
+                if (record) {
+                    var event = new legacyconnector.v1_6_4.net.minecraftforge.client.event.sound.PlayStreamingEvent(
+                            legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager.INSTANCE, name,
+                            (float) sound.getX(), (float) sound.getY(), (float) sound.getZ());
+                    forge.post(event);
+                    if (event.result == null) e.setSound(null);
+                } else {
+                    var event = new legacyconnector.v1_6_4.net.minecraftforge.client.event.sound.PlayBackgroundMusicEvent(
+                            legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager.INSTANCE,
+                            new legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPoolEntry(name, null));
+                    forge.post(event);
+                    if (event.result == null) e.setSound(null);
+                }
+            } catch (RuntimeException | LinkageError ex) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A streaming sound handler failed: {}", ex.toString());
+            }
+        });
         // 1.7.10's source events: a sound's channel started (uuid names it while it plays)
         gameBus.addListener((net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e) -> {
             var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;

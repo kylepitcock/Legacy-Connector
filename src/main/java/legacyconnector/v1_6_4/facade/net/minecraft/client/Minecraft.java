@@ -38,4 +38,14 @@ public final class Minecraft {
         var settings = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(self);
         return settings != null && settings.showDebugInfo;
     }
+
+    /** 1.6.4 {@code Minecraft.pointedEntityLiving}: the crosshair's entity when it is a living one (the shim keeps one pointed entity), else null. */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase mcc$get$pointedEntityLiving(legacyconnector.v1_7_10.net.minecraft.client.Minecraft self) {
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity pointed = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$pointedEntity(self);
+        return pointed instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase living ? living : null;
+    }
+
+    /** Write of {@code Minecraft.pointedEntityLiving}: the crosshair target is picked by the game every frame (a mod only mirrored it), so a write changes nothing. */
+    public static void mcc$set$pointedEntityLiving(legacyconnector.v1_7_10.net.minecraft.client.Minecraft self, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase value) {
+    }
 }

@@ -164,4 +164,9 @@ public final class World {
         if (block instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockSnow) return (meta & 7) == 7;
         return false;
     }
+
+    /** The instance form of {@link #isBlockTopFacingSurfaceSolid(Block, int)} (1.6.4 mods called it through a world as well as through the class). */
+    public static boolean isBlockTopFacingSurfaceSolid(legacyconnector.v1_7_10.net.minecraft.world.World self, Block block, int meta) {
+        return isBlockTopFacingSurfaceSolid(block, meta);
+    }
 }

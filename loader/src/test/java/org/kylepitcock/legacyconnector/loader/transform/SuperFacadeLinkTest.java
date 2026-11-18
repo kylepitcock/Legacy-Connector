@@ -19,7 +19,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 /**
  * A {@code super.} call of an override of a legacy method the shim lacks (1.4.7's {@code getIconFromDamage(I)I}, 1.5.2's sprite {@code init}) goes to the facade's
- * {@code mcc$super$<name>} (the default body); a plain facade method of the same name is for virtual calls only, since it may dispatch back to the override.
+ * {@code mcc$super$<name>} (the default body) when the facade has one (its plain method may dispatch back to the override), else to the plain facade method as master's generic super rewrite does.
  */
 class SuperFacadeLinkTest implements Opcodes {
     private static final String P7 = "legacyconnector/v1_7_10/net/minecraft/";
@@ -73,8 +73,7 @@ class SuperFacadeLinkTest implements Opcodes {
     }
 
     @Test
-    void superCallWithoutASuperDefaultIsNotSentToTheDispatchingFacade() {
-        List<String> calls = link(hierarchy(false), INVOKESPECIAL);
-        for (String c : calls) assertEquals(false, c.contains(P6 + "item/Item.getIconFromDamage"), c);
+    void superCallWithoutASuperDefaultUsesThePlainFacade() {
+        assertEquals(List.of(INVOKESTATIC + " " + P6 + "item/Item.getIconFromDamage(L" + ITEM + ";I)I"), link(hierarchy(false), INVOKESPECIAL));
     }
 }

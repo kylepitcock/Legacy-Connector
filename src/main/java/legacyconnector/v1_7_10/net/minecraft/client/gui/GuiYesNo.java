@@ -5,6 +5,11 @@ import legacyconnector.v1_7_10.net.minecraft.util.StatCollector;
 /** A two-line question with a confirm and a cancel button. */
 public class GuiYesNo extends GuiScreen {
     protected GuiYesNoCallback parentScreen;
+
+    /** The callback asked ({@code parentScreen}); the 1.6.4 facade reads it as the screen that opened this one. */
+    public GuiYesNoCallback mcc$callback() {
+        return parentScreen;
+    }
     protected String messageLine1;
     private final String messageLine2;
     protected String confirmButtonText;

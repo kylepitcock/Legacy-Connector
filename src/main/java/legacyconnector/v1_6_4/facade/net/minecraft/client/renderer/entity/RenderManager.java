@@ -15,4 +15,9 @@ public final class RenderManager {
             legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float partialTicks) {
         self.renderEntitySimple(entity, partialTicks);
     }
+
+    /** 1.6.4 {@code RenderManager.field_96451_i} (the living entity the world is rendered for): the shim's {@code livingPlayer}. */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase mcc$get$field_96451_i(legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager self) {
+        return self.livingPlayer;
+    }
 }
