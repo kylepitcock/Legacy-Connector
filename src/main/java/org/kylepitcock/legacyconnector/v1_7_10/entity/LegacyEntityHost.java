@@ -61,6 +61,12 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
         if (accessor == WATCHER && legacy != null && level().isClientSide()) legacy.mcc$dataWatcher().mcc$fromTag(entityData.get(WATCHER));
     }
 
+    @Override
+    public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
+        legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker.mcc$noteRemoved(legacy, level());
+        super.remove(reason);
+    }
+
     // ------------------------------------------------------------------ ticking
 
     @Override
