@@ -1,15 +1,10 @@
 # 1.12.2: stub ranking (synthesized members by number of jars)
 
-Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 723 jar(s) (656 links, 31 unresolved, 24 missing-dependency, 12 obsolete); 783 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
+Generated 2026-11-18 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 723 jar(s) (656 links, 31 unresolved, 24 missing-dependency, 12 obsolete); 700 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
-## server-side API (top 150 of 328)
+## server-side API (top 150 of 251)
 
 ```
-  3  net.minecraft.entity.player.EntityPlayerMP.<init>(Lnet.minecraft.server.MinecraftServer;Lnet.minecraft.world.WorldServer;Lcom.mojang.authlib.GameProfile;Lnet.minecraft.server.management.PlayerInteractionManager;)V -> (Lnet.minecraft.world.World;)V  # DoubleSlabs-1.12-0.12.2.jar, Galacticraft-1.12.2-4.0.6.jar, Morph-1.12.2-7.2.1.jar
-  3  net.minecraft.network.NetHandlerPlayServer.update()V  # AdHooks-1.12.2-3.3.0.0-build.0528.jar, Call to Battle 3.jar, Call to Battle Vehicles.jar
-  3  net.minecraftforge.fluids.Fluid.<init>(Ljava.lang.String;Lnet.minecraft.util.ResourceLocation;Lnet.minecraft.util.ResourceLocation;Ljava.awt.Color;)V -> (Ljava.lang.String;Lnet.minecraft.util.ResourceLocation;Lnet.minecraft.util.ResourceLocation;)V  # NTM-CE-1.12.2-2.6.1.0.jar, _NTM-Extended-1.12.2-3.0.3.jar, hbm-1.8.4a-G.jar
-  2  net.minecraft.entity.EntityCreature.blockUsingShield(Lnet.minecraft.entity.EntityLivingBase;)V  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
-  2  net.minecraft.entity.ai.EntityAIBreakDoor.entity:Lnet.minecraft.entity.EntityLiving;  # Fish's Undead Rising-1.4.2.jar, firmalife-0.5.1.jar
   2  net.minecraft.entity.ai.EntityAIWander.y:D  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
   2  net.minecraft.entity.ai.EntityAIWander.z:D  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
   2  net.minecraft.entity.passive.EntityTameable.NO_ANIMATION:Lnet.ilexiconn.llibrary.server.animation.Animation;  # lepidodendron-1.12.2-63.02.jar, rats-3.2.13-1.12.2.jar
@@ -29,10 +24,8 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.util.IStringSerializable.PURE_FLAT:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.util.IStringSerializable.SIM_BIG:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.util.IStringSerializable.SIM_FLAT:Lcom.dhanantry.scapeandrunparasites.block.BlockGore$EnumType;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
-  2  net.minecraft.world.World.scheduledUpdatesAreImmediate:Z  # _NTM-Extended-1.12.2-3.0.3.jar, hbm-1.8.4a-G.jar
   2  net.minecraft.world.storage.WorldSavedData.get(Lnet.minecraft.world.World;)Lcom.dhanantry.scapeandrunparasites.world.SRPSaveData;  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
   2  net.minecraft.world.storage.WorldSavedData.setTotalKills(IIZLnet.minecraft.world.World;Z)Z  # SRPExtra-1.9.8.jar, srpcotesia-1.12.2-1.3.4h1.jar
-  2  net.minecraftforge.common.ForgeModContainer.zombieBabyChance:F  # OceanicExpanse-1.2.2.jar, moreplanets-mc1.12.2-v2.4.1.jar
   2  net.minecraftforge.common.capabilities.ICapabilityProvider.canConnect(Lnet.minecraft.util.EnumFacing;)Z  # EnderIO-1.12.2-5.3.70.jar, EnderIO-1.12.2-5.3.72.jar
   2  net.minecraftforge.common.capabilities.ICapabilityProvider.node()Lli.cil.oc.api.network.Node;  # EnderIO-1.12.2-5.3.70.jar, EnderIO-1.12.2-5.3.72.jar
   2  net.minecraftforge.common.capabilities.ICapabilityProvider.node(Lcom.enderio.core.common.util.DyeColor;)Lli.cil.oc.api.network.Node;  # EnderIO-1.12.2-5.3.70.jar, EnderIO-1.12.2-5.3.72.jar
@@ -40,7 +33,6 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraftforge.common.capabilities.ICapabilityProvider.onDisconnect(Lli.cil.oc.api.network.Node;)V  # EnderIO-1.12.2-5.3.70.jar, EnderIO-1.12.2-5.3.72.jar
   2  net.minecraftforge.common.capabilities.ICapabilityProvider.onMessage(Lli.cil.oc.api.network.Message;)V  # EnderIO-1.12.2-5.3.70.jar, EnderIO-1.12.2-5.3.72.jar
   2  net.minecraftforge.common.capabilities.ICapabilityProvider.sidedNode(Lnet.minecraft.util.EnumFacing;)Lli.cil.oc.api.network.Node;  # EnderIO-1.12.2-5.3.70.jar, EnderIO-1.12.2-5.3.72.jar
-  2  net.minecraftforge.fluids.FluidUtil.tryFillContainerAndStow(Lnet.minecraft.item.ItemStack;Lnet.minecraftforge.fluids.capability.IFluidHandler;Lnet.minecraftforge.items.IItemHandler;ILnet.minecraft.entity.player.EntityPlayer;)Lnet.minecraftforge.fluids.FluidActionResult;  # CoFHCore-1.12.2-4.6.6.1-universal.jar, Galacticraft-1.12.2-4.0.6.jar
   2  net.minecraftforge.fml.common.Loader.setupTestHarness([Lnet.minecraftforge.fml.common.ModContainer;)V  # Dimensional Doors-3.2.3.jar, DimensionalDoors-1.12.2-3.0.12.jar
   2  net.minecraftforge.fml.common.event.FMLStateEvent.<init>([Ljava.lang.Object;)V -> ()V  # RebornCore-1.12.2-3.19.5-universal.jar, RebornCore-FORK-1.12.2-3.19.5-universal.jar
   2  net.minecraftforge.fml.common.network.internal.NetworkModHolder.testVanillaAcceptance()V  # Customized-Dungeon-Loot-1.12 -(v.1.0.3).jar, RecurrentComplex-1.4.8.2.jar
@@ -50,103 +42,34 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraftforge.fml.relauncher.libraries.Repository.resolveAll(Lnet.minecraftforge.fml.relauncher.libraries.Artifact;)Lnet.minecraftforge.fml.relauncher.libraries.Artifact;  # !mixinbooter-12.4.jar, `FermiumBooter-1.6.5.jar
   1  net.minecraft.advancements.AdvancementList.loadAdvancements(Ljava.util.Map;)V  # Placebo-1.12.2-1.6.0.jar
   1  net.minecraft.advancements.AdvancementTreeNode.layout(Lnet.minecraft.advancements.Advancement;)V  # Placebo-1.12.2-1.6.0.jar
-  1  net.minecraft.advancements.CriteriaTriggers.CHANGED_DIMENSION:Lnet.minecraft.advancements.critereon.ChangeDimensionTrigger;  # collective-1.12.2-2.25.jar
-  1  net.minecraft.advancements.CriteriaTriggers.PLAYER_KILLED_ENTITY:Lnet.minecraft.advancements.critereon.KilledTrigger;  # Placebo-1.12.2-1.6.0.jar
   1  net.minecraft.advancements.FunctionManager.functions:Ljava.util.Map;  # tombstone-4.1.2-1.12.2.jar
-  1  net.minecraft.advancements.critereon.ChangeDimensionTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.world.DimensionType;Lnet.minecraft.world.DimensionType;)V  # collective-1.12.2-2.25.jar
   1  net.minecraft.advancements.critereon.ConstructBeaconTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.tileentity.TileEntityBeacon;)V  # Atum-1.12.2-2.0.20.jar
-  1  net.minecraft.advancements.critereon.ImpossibleTrigger$Instance.<init>()V  # Cherry_on-1.12.2-1.3.35.jar
-  1  net.minecraft.advancements.critereon.KilledTrigger$Instance.<init>(Lnet.minecraft.util.ResourceLocation;Lnet.minecraft.advancements.critereon.EntityPredicate;Lnet.minecraft.advancements.critereon.DamageSourcePredicate;)V  # Placebo-1.12.2-1.6.0.jar
   1  net.minecraft.block.BlockChorusFlower.canSurvive(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;)Z  # simplytea-1.6.jar
   1  net.minecraft.block.BlockContainer.getBlockLiquidHeight(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.block.material.Material;)F  # ExtraCells-1.12.2-2.6.7.jar
   1  net.minecraft.block.BlockContainer.getStateAtViewpoint(Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.util.math.Vec3d;)Lnet.minecraft.block.state.IBlockState;  # ExtraCells-1.12.2-2.6.7.jar
-  1  net.minecraft.block.BlockDragonEgg.<init>()V  # Galacticraft-1.12.2-4.0.6.jar
   1  net.minecraft.block.BlockRailBase$Rail.<init>(Lnet.minecraft.block.BlockRailBase;Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;)V  # StevesCarts-1.12.2-2.4.32.137.jar
   1  net.minecraft.block.BlockRailBase$Rail.place(ZZ)Lnet.minecraft.block.BlockRailBase$Rail;  # StevesCarts-1.12.2-2.4.32.137.jar
-  1  net.minecraft.command.CommandHelp.<init>()V  # FTBLib-5.4.7.2.jar
-  1  net.minecraft.command.CommandLocate.<init>()V  # LucraftCore-1.12.2-2.4.17.jar
-  1  net.minecraft.command.CommandReplaceItem.<init>()V  # ExtraBitManipulation-1.12.2-3.4.1.jar
-  1  net.minecraft.enchantment.EnchantmentFireAspect.<init>(Lnet.minecraft.enchantment.Enchantment$Rarity;[Lnet.minecraft.inventory.EntityEquipmentSlot;)V  # Inspirations-1.12.2-0.2.9.jar
-  1  net.minecraft.enchantment.EnchantmentKnockback.<init>(Lnet.minecraft.enchantment.Enchantment$Rarity;[Lnet.minecraft.inventory.EntityEquipmentSlot;)V  # Inspirations-1.12.2-0.2.9.jar
   1  net.minecraft.entity.Entity.getOwner()Lnet.minecraft.entity.EntityLivingBase;  # srpcotesia-1.12.2-1.3.4h1.jar
   1  net.minecraft.entity.Entity.makeFlySound()Z  # Modern-Warfare-Cubed-0.1.9.jar
   1  net.minecraft.entity.Entity.playFlySound(F)F  # Modern-Warfare-Cubed-0.1.9.jar
   1  net.minecraft.entity.Entity.setOwner(Lnet.minecraft.entity.EntityLivingBase;)V  # srpcotesia-1.12.2-1.3.4h1.jar
   1  net.minecraft.entity.EntityLiving.inventoryArmor:Lnet.minecraft.util.NonNullList;  # ThaumicAugmentation-1.12.2-2.1.8.jar
   1  net.minecraft.entity.EntityLivingBase.FLAGS:Lnet.minecraft.network.datasync.DataParameter;  # bbs-fs-2.8-1.12.2-alpha.1.jar
-  1  net.minecraft.entity.ai.EntityAIBreakDoor.doorPosition:Lnet.minecraft.util.math.BlockPos;  # firmalife-0.5.1.jar
   1  net.minecraft.entity.ai.attributes.AttributeModifier.initShrinkingModifier()V  # Artifacts-1.12.2-1.2.3.jar
-  1  net.minecraft.entity.boss.dragon.phase.PhaseChargingPlayer.setTarget(Lnet.minecraft.util.math.Vec3d;)V  # ProgressiveBosses-1.5.4-mc1.12.x.jar
   1  net.minecraft.entity.item.EntityBoat.FLAGS:Lnet.minecraft.network.datasync.DataParameter;  # immersivepetroleum-1.12.2-1.1.9.jar
-  1  net.minecraft.entity.item.EntityBoat.applyYawToEntity(Lnet.minecraft.entity.Entity;)V  # Cherry_on-1.12.2-1.3.35.jar
-  1  net.minecraft.entity.item.EntityBoat.getBoatGlide()F  # industrialcraft-2-2.8.222-ex112.jar
-  1  net.minecraft.entity.item.EntityFireworkRocket.<init>(Lnet.minecraft.world.World;Lnet.minecraft.item.ItemStack;Lnet.minecraft.entity.EntityLivingBase;)V -> (Lnet.minecraft.world.World;DDDLnet.minecraft.item.ItemStack;)V  # Trinkets and Baubles-Forge-1.12.2-0.33.4.jar
-  1  net.minecraft.entity.item.EntityMinecart.getCurrentCartSpeedCapOnRail()F  # terracartreloaded-1.12.2-1.2.3.jar
   1  net.minecraft.entity.monster.EntityElderGuardian.setGhost()V  # JustEnoughResources-1.12.2-0.9.2.60.jar
   1  net.minecraft.entity.monster.EntityGuardian.wander:Lnet.minecraft.entity.ai.EntityAIWander;  # moreplanets-mc1.12.2-v2.4.1.jar
   1  net.minecraft.entity.monster.EntityMob.attackEntityAsMobMinimum(Lnet.minecraft.entity.EntityLivingBase;)Z  # srpcotesia-1.12.2-1.3.4h1.jar
   1  net.minecraft.entity.monster.EntityMob.getFeral()Lcom.dhanantry.scapeandrunparasites.entity.ai.misc.EntityPFeral;  # SRPExtra-1.9.8.jar
   1  net.minecraft.entity.monster.EntityMob.isBeingPossessed()Z  # srpcotesia-1.12.2-1.3.4h1.jar
-  1  net.minecraft.entity.monster.EntityMob.isOnScoreboardTeam(Lnet.minecraft.scoreboard.Team;)Z  # ThaumicAugmentation-1.12.2-2.1.8.jar
   1  net.minecraft.entity.monster.EntityMob.setBurrowed(Z)V  # srpcotesia-1.12.2-1.3.4h1.jar
-  1  net.minecraft.entity.monster.EntityZombie.isOnScoreboardTeam(Lnet.minecraft.scoreboard.Team;)Z  # OceanicExpanse-1.2.2.jar
-  1  net.minecraft.entity.passive.AbstractChestHorse.playGallopSound(Lnet.minecraft.block.SoundType;)V  # horse_colors-1.12.2-1.4.0.1.jar
-  1  net.minecraft.entity.passive.EntityChicken.TEMPTATION_ITEMS:Ljava.util.Set;  # rustic-1.2.0.jar
-  1  net.minecraft.entity.passive.EntityChicken.setChickenJockey(Z)V  # moreplanets-mc1.12.2-v2.4.1.jar
   1  net.minecraft.entity.passive.EntityHorse.getVariantTexturePaths()[Ljava.lang.String;  # journeymap-1.12.2-5.7.1.jar
   1  net.minecraft.entity.passive.EntityTameable.getAnimation()Lnet.ilexiconn.llibrary.server.animation.Animation;  # lepidodendron-1.12.2-63.02.jar
   1  net.minecraft.entity.passive.EntityVillager$ListEnchantedBookForEmeralds.<init>()V  # moreplanets-mc1.12.2-v2.4.1.jar
-  1  net.minecraft.entity.passive.HorseArmorType.isHorseArmor(Lnet.minecraft.item.ItemStack;)Z  # horse_colors-1.12.2-1.4.0.1.jar
-  1  net.minecraft.entity.player.EntityPlayer.addMovementStat(DDD)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.addPrefix(Lnet.minecraft.util.text.ITextComponent;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.addShoulderEntity(Lnet.minecraft.nbt.NBTTagCompound;)Z  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.addSuffix(Lnet.minecraft.util.text.ITextComponent;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.getCommandStats()Lnet.minecraft.command.CommandResultStats;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.getPitchYaw()Lnet.minecraft.util.math.Vec2f;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.getPrefixes()Ljava.util.Collection;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.getSuffixes()Ljava.util.Collection;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.openEditStructure(Lnet.minecraft.tileentity.TileEntityStructure;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.randomYawVelocity:F  # srpcotesia-1.12.2-1.3.4h1.jar
-  1  net.minecraft.entity.player.EntityPlayer.resetRecipes(Ljava.util.List;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.sendEndCombat()V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.sendEnterCombat()V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.setCommandStats(Lnet.minecraft.entity.Entity;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.shouldRiderFaceForward(Lnet.minecraft.entity.player.EntityPlayer;)Z  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayer.sleeping:Z  # Galacticraft-1.12.2-4.0.6.jar
-  1  net.minecraft.entity.player.EntityPlayer.unlockRecipes([Lnet.minecraft.util.ResourceLocation;)V  # DoubleSlabs-1.12-0.12.2.jar
   1  net.minecraft.entity.player.EntityPlayer.updateCape()V  # MenuMobs-1.12.2-1.21.jar
   1  net.minecraft.entity.player.EntityPlayerMP.addEntity(Lnet.minecraft.entity.Entity;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.addMovementStat(DDD)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.addPrefix(Lnet.minecraft.util.text.ITextComponent;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.addSelfToInternalCraftingInventory()V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.addShoulderEntity(Lnet.minecraft.nbt.NBTTagCompound;)Z  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.addSuffix(Lnet.minecraft.util.text.ITextComponent;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.copyFrom(Lnet.minecraft.entity.player.EntityPlayerMP;Z)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.getCommandStats()Lnet.minecraft.command.CommandResultStats;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.getEnteredNetherPosition()Lnet.minecraft.util.math.Vec3d;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.getPitchYaw()Lnet.minecraft.util.math.Vec2f;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.getPrefixes()Ljava.util.Collection;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.getSuffixes()Ljava.util.Collection;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.getTabListDisplayName()Lnet.minecraft.util.text.ITextComponent;  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.loadResourcePack(Ljava.lang.String;Ljava.lang.String;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.mcServer:Lnet.minecraft.server.MinecraftServer;  # hbm-1.8.4a-G.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.onUpdateEntity()V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.openEditStructure(Lnet.minecraft.tileentity.TileEntityStructure;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.queuedEndExit:Z  # collective-1.12.2-2.25.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.recipeBook:Lnet.minecraft.stats.RecipeBookServer;  # FastWorkbench-1.12.2-1.7.3.jar
   1  net.minecraft.entity.player.EntityPlayerMP.removeEntity(Lnet.minecraft.entity.Entity;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.resetRecipes(Ljava.util.List;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.sendEndCombat()V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.sendEnterCombat()V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.setCommandStats(Lnet.minecraft.entity.Entity;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.setEntityActionState(FFZZ)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.shouldRiderFaceForward(Lnet.minecraft.entity.player.EntityPlayer;)Z  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.EntityPlayerMP.unlockRecipes([Lnet.minecraft.util.ResourceLocation;)V  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.player.InventoryPlayer.add(ILnet.minecraft.item.ItemStack;)Z  # DoubleSlabs-1.12-0.12.2.jar
-  1  net.minecraft.entity.projectile.EntityFireball.registerFixesFireball(Lnet.minecraft.util.datafix.DataFixer;Ljava.lang.String;)V  # Fish's Undead Rising-1.4.2.jar
   1  net.minecraft.inventory.Container.loadBaubles(Lnet.minecraft.entity.player.EntityPlayer;)V  # IC2Classic-1.12.2-1.5.15.jar
-  1  net.minecraft.inventory.ContainerHorseInventory.<init>(Lnet.minecraft.inventory.IInventory;Lnet.minecraft.inventory.IInventory;Lnet.minecraft.entity.passive.AbstractHorse;Lnet.minecraft.entity.player.EntityPlayer;)V  # horse_colors-1.12.2-1.4.0.1.jar
-  1  net.minecraft.inventory.ContainerHorseInventory.horse:Lnet.minecraft.entity.passive.AbstractHorse;  # InventoryTweaks-1.63.jar
   1  net.minecraft.item.Item.getAmulet(Lnet.minecraft.entity.player.EntityPlayer;)Lnet.minecraft.item.ItemStack;  # Atum-1.12.2-2.0.20.jar
   1  net.minecraft.item.Item.getBauble(Lnet.minecraft.entity.player.EntityPlayer;Ljava.util.List;)V  # DarkUtils-1.12.2-1.8.230.jar
   1  net.minecraft.item.Item.getBaublesInventory(Lnet.minecraft.entity.player.EntityPlayer;)Lnet.minecraft.inventory.IInventory;  # Atum-1.12.2-2.0.20.jar
@@ -155,9 +78,86 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.item.Item.min:Lcom.creativemd.littletiles.common.util.place.PlacementPosition;  # LittleTiles_v1.5.58_mc1.12.2.jar
   1  net.minecraft.item.ItemBow.findDragonBoneArrow(Lnet.minecraft.entity.player.EntityPlayer;)Lnet.minecraft.item.ItemStack;  # spartanfire_rlcraft-1.4.0.jar
   1  net.minecraft.item.ItemBow.isDragonboneArrow(Lnet.minecraft.item.ItemStack;)Z  # spartanfire_rlcraft-1.4.0.jar
+  1  net.minecraft.item.ItemSimpleFoiled.<init>()V  # defiledlands-1.12.2-1.4.3.jar
+  1  net.minecraft.item.ItemSword.shouldProc(Lnet.minecraft.item.ItemStack;D)Z  # srpcotesia-1.12.2-1.3.4h1.jar
+  1  net.minecraft.item.crafting.CraftingManager.getRecipeById(I)Lnet.minecraft.item.crafting.IRecipe;  # calcmod-forge-1.12.2-1.3.0.jar
+  1  net.minecraft.item.crafting.RecipeTippedArrow.<init>()V  # bewitchment-1.12.2-0.0.22.64.jar
+  1  net.minecraft.item.crafting.ShapedRecipes.deserializeIngredient(Lcom.google.gson.JsonElement;)Lnet.minecraft.item.crafting.Ingredient;  # srpcotesia-1.12.2-1.3.4h1.jar
+  1  net.minecraft.launchwrapper.IClassNameTransformer.unmapClassName(Ljava.lang.String;)Ljava.lang.String;  # !mixinbooter-12.4.jar
+  1  net.minecraft.nbt.NBTTagCompound.readNBT(BLjava.lang.String;Ljava.io.DataInput;ILnet.minecraft.nbt.NBTSizeTracker;)Lnet.minecraft.nbt.NBTBase;  # Chocolate_Quest_Repoured-1.12.2-2.6.15B.jar
+  1  net.minecraft.network.EnumConnectionState.STATES_BY_CLASS:Ljava.util.Map;  # Galacticraft-1.12.2-4.0.6.jar
+  1  net.minecraft.network.EnumConnectionState.directionMaps:Ljava.util.Map;  # Galacticraft-1.12.2-4.0.6.jar
+  1  net.minecraft.network.NetHandlerPlayServer.lastPositionUpdate:I  # iChunUtil-1.12.2-7.2.2.jar
+  1  net.minecraft.network.NetHandlerPlayServer.networkTickCount:I  # iChunUtil-1.12.2-7.2.2.jar
+  1  net.minecraft.network.NetworkManager.acceptInboundMessage(Ljava.lang.Object;)Z  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelActive(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelInactive(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelRead(Lio.netty.channel.ChannelHandlerContext;Ljava.lang.Object;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelReadComplete(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelRegistered(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelUnregistered(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.channelWritabilityChanged(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.enableEncryption(Ljavax.crypto.SecretKey;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.exceptionCaught(Lio.netty.channel.ChannelHandlerContext;Ljava.lang.Throwable;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.getExitMessage()Lnet.minecraft.util.text.ITextComponent;  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.handleDisconnection()V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.handlerAdded(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.handlerRemoved(Lio.netty.channel.ChannelHandlerContext;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.isSharable()Z  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.sendPacket(Lnet.minecraft.network.Packet;Lio.netty.util.concurrent.GenericFutureListener;[Lio.netty.util.concurrent.GenericFutureListener;)V  # IntegratedTunnels-1.12.2-1.6.14.jar
+  1  net.minecraft.network.NetworkManager.setCompressionThreshold(I)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.NetworkManager.userEventTriggered(Lio.netty.channel.ChannelHandlerContext;Ljava.lang.Object;)V  # OpenComputers-MC1.12.2-1.7.5.192.jar
+  1  net.minecraft.network.play.INetHandlerPlayClient.handleDisconnect(Lnet.minecraft.network.play.server.SPacketDisconnect;)V  # ForgeMultipart-1.12.2-2.6.2.83-universal.jar
+  1  net.minecraft.network.play.server.SPacketBlockChange.blockState:Lnet.minecraft.block.state.IBlockState;  # IndustrialUpgrade-1.12.2-3.3.0.43.jar
+  1  net.minecraft.network.play.server.SPacketCamera.<init>(Lnet.minecraft.entity.Entity;)V  # srpcotesia-1.12.2-1.3.4h1.jar
+  1  net.minecraft.network.play.server.SPacketRecipeBook$State.ADD:Lnet.minecraft.network.play.server.SPacketRecipeBook$State;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketRecipeBook$State.INIT:Lnet.minecraft.network.play.server.SPacketRecipeBook$State;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketRecipeBook$State.REMOVE:Lnet.minecraft.network.play.server.SPacketRecipeBook$State;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketRecipeBook$State.values()[Lnet.minecraft.network.play.server.SPacketRecipeBook$State;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketTabComplete.getMatches()[Ljava.lang.String;  # brigo_forge-1.1.1+1.12.x.jar
+  1  net.minecraft.network.play.server.SPacketWorldBorder$Action.LERP_SIZE:Lnet.minecraft.network.play.server.SPacketWorldBorder$Action;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketWorldBorder$Action.SET_CENTER:Lnet.minecraft.network.play.server.SPacketWorldBorder$Action;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketWorldBorder$Action.SET_SIZE:Lnet.minecraft.network.play.server.SPacketWorldBorder$Action;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketWorldBorder$Action.SET_WARNING_BLOCKS:Lnet.minecraft.network.play.server.SPacketWorldBorder$Action;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketWorldBorder$Action.SET_WARNING_TIME:Lnet.minecraft.network.play.server.SPacketWorldBorder$Action;  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.network.play.server.SPacketWorldBorder.<init>(Lnet.minecraft.world.border.WorldBorder;Lnet.minecraft.network.play.server.SPacketWorldBorder$Action;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.server.MinecraftServer.<init>(Ljava.io.File;Ljava.net.Proxy;Lnet.minecraft.util.datafix.DataFixer;Lcom.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;Lcom.mojang.authlib.minecraft.MinecraftSessionService;Lcom.mojang.authlib.GameProfileRepository;Lnet.minecraft.server.management.PlayerProfileCache;)V -> ()V  # lan-properties_forge-1.0.0+1.12-1.12.2.jar
+  1  net.minecraft.server.MinecraftServer.getMaxWorldSize()I  # lan-properties_forge-1.0.0+1.12-1.12.2.jar
+  1  net.minecraft.server.MinecraftServer.getNetworkCompressionThreshold()I  # lan-properties_forge-1.0.0+1.12-1.12.2.jar
+  1  net.minecraft.server.MinecraftServer.reload()V  # FTBLib-5.4.7.2.jar
+  1  net.minecraft.server.MinecraftServer.setPlayerIdleTimeout(I)V  # lan-properties_forge-1.0.0+1.12-1.12.2.jar
+  1  net.minecraft.server.MinecraftServer.setPlayerList(Lnet.minecraft.server.management.PlayerList;)V  # FastWorkbench-1.12.2-1.7.3.jar
+  1  net.minecraft.server.MinecraftServer.setResourcePack(Ljava.lang.String;Ljava.lang.String;)V  # lan-properties_forge-1.0.0+1.12-1.12.2.jar
+  1  net.minecraft.server.MinecraftServer.stopServer()V  # WorldgenBlockReplacer-1.12.2-2.2.0.jar
+  1  net.minecraft.server.dedicated.DedicatedPlayerList.<init>(Lnet.minecraft.server.dedicated.DedicatedServer;)V  # FastWorkbench-1.12.2-1.7.3.jar
+  1  net.minecraft.server.dedicated.DedicatedPlayerList.initializeConnectionToPlayer(Lnet.minecraft.network.NetworkManager;Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.network.NetHandlerPlayServer;)V  # FastWorkbench-1.12.2-1.7.3.jar
+  1  net.minecraft.server.integrated.IntegratedPlayerList.<init>(Lnet.minecraft.server.integrated.IntegratedServer;)V  # FastWorkbench-1.12.2-1.7.3.jar
+  1  net.minecraft.server.integrated.IntegratedPlayerList.initializeConnectionToPlayer(Lnet.minecraft.network.NetworkManager;Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.network.NetHandlerPlayServer;)V  # FastWorkbench-1.12.2-1.7.3.jar
+  1  net.minecraft.server.integrated.IntegratedServer.getWorldIconFile()Ljava.io.File;  # JurassicReborn-1.12.2-1.3.4.jar
+  1  net.minecraft.server.integrated.IntegratedServer.isWorldIconSet()Z  # JurassicReborn-1.12.2-1.3.4.jar
+  1  net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(Ljava.lang.String;Ljava.lang.String;JLnet.minecraft.world.WorldType;Ljava.lang.String;)V  # Chunk Pregenerator-V1.12-2.5.0.jar
+  1  net.minecraft.server.integrated.IntegratedServer.startServerThread()V  # Chunk Pregenerator-V1.12-2.5.0.jar
+  1  net.minecraft.server.management.PlayerList.readPlayerDataFromFile(Lnet.minecraft.entity.player.EntityPlayerMP;)Lnet.minecraft.nbt.NBTTagCompound;  # Morph-1.12.2-7.2.1.jar
+  1  net.minecraft.server.management.PlayerProfileCache.getByUUID(Ljava.util.UUID;)Lnet.minecraft.server.management.PlayerProfileCache$ProfileEntry;  # _supermartijn642corelib-1.1.26b-forge-mc1.12.jar
+  1  net.minecraft.tileentity.TileEntity.addTileToENet()V  # nuclearcraft-1.12.2-2.19.jar
+  1  net.minecraft.tileentity.TileEntity.addToIc2EnergyNetwork()V  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.deregister()V  # Mekanism-1.12.2-9.8.3.390.jar
+  1  net.minecraft.tileentity.TileEntity.getEUCapability(Lnet.minecraftforge.common.capabilities.Capability;Lnet.minecraft.util.EnumFacing;)Ljava.lang.Object;  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.getRFCapability(Lnet.minecraftforge.common.capabilities.Capability;Lnet.minecraft.util.EnumFacing;)Ljava.lang.Object;  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.getRSChance(B)D  # srpcotesia-1.12.2-1.3.4h1.jar
+  1  net.minecraft.tileentity.TileEntity.getTeslaCapability(Lnet.minecraftforge.common.capabilities.Capability;Lnet.minecraft.util.EnumFacing;)Ljava.lang.Object;  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.hasEUCapability(Lnet.minecraftforge.common.capabilities.Capability;Lnet.minecraft.util.EnumFacing;)Z  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.hasRFCapability(Lnet.minecraftforge.common.capabilities.Capability;Lnet.minecraft.util.EnumFacing;)Z  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.hasTeslaCapability(Lnet.minecraftforge.common.capabilities.Capability;Lnet.minecraft.util.EnumFacing;)Z  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.receiveUpdatePacket(Lnet.minecraft.nbt.NBTTagCompound;)V  # CreativeCore_v1.10.70_mc1.12.2.jar
+  1  net.minecraft.tileentity.TileEntity.register()V  # Mekanism-1.12.2-9.8.3.390.jar
+  1  net.minecraft.tileentity.TileEntity.removeFromIc2EnergyNetwork()V  # omlib-1.12.2-3.1.4-249.jar
+  1  net.minecraft.tileentity.TileEntity.removeTileFromENet()V  # nuclearcraft-1.12.2-2.19.jar
+  1  net.minecraft.tileentity.TileEntity.transferToRFMachine(Lnet.minecraft.tileentity.TileEntity;ILnet.minecraft.util.EnumFacing;)I  # _NTM-Extended-1.12.2-3.0.3.jar
+  1  net.minecraft.tileentity.TileEntityShulkerBox.<init>(Lnet.minecraft.item.EnumDyeColor;)V -> ()V  # srpcotesia-1.12.2-1.3.4h1.jar
 ```
 
-## client-side API (top 150 of 414)
+## client-side API (top 150 of 408)
 
 ```
   7  net.minecraft.client.renderer.chunk.RenderChunk.getCompiledChunk()Lnet.minecraft.client.renderer.chunk.CompiledChunk;  # LittleTiles_v1.5.58_mc1.12.2.jar, NTM-CE-1.12.2-2.6.1.0.jar, SCP Lockdown-1.12.2-2.4.3-release.jar ...
@@ -189,9 +189,6 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  net.minecraft.client.renderer.chunk.CompiledChunk.DUMMY:Lnet.minecraft.client.renderer.chunk.CompiledChunk;  # LittleTiles_v1.5.58_mc1.12.2.jar, SCP Lockdown-1.12.2-2.4.3-release.jar, [1.12.2] SecurityCraft v1.10.1.jar
   3  net.minecraft.client.renderer.chunk.CompiledChunk.isLayerStarted(Lnet.minecraft.util.BlockRenderLayer;)Z  # LittleTiles_v1.5.58_mc1.12.2.jar, SCP Lockdown-1.12.2-2.4.3-release.jar, iChunUtil-1.12.2-7.2.2.jar
   3  net.minecraft.client.renderer.chunk.RenderChunk.multModelviewMatrix()V  # NTM-CE-1.12.2-2.6.1.0.jar, _NTM-Extended-1.12.2-3.0.3.jar, hbm-1.8.4a-G.jar
-  3  net.minecraft.client.resources.ResourcePackFileNotFoundException.<init>(Ljava.io.File;Ljava.lang.String;)V  # industrialcraft-2-2.8.222-ex112.jar, modularwarfare-2.4.2f.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar
-  3  net.minecraft.util.MouseFilter.<init>()V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, 永爱之刃-v11削弱.jar
-  3  net.minecraft.util.MouseFilter.smooth(FF)F  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, 永爱之刃-v11削弱.jar
   3  net.minecraftforge.client.ForgeHooksClient.getFogDensity(Lnet.minecraft.client.renderer.EntityRenderer;Lnet.minecraft.entity.Entity;Lnet.minecraft.block.state.IBlockState;FF)F  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, 永爱之刃-v11削弱.jar
   3  net.minecraftforge.client.ForgeHooksClient.loadEntityShader(Lnet.minecraft.entity.Entity;Lnet.minecraft.client.renderer.EntityRenderer;)V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, 永爱之刃-v11削弱.jar
   3  net.minecraftforge.client.ForgeHooksClient.onDrawBlockHighlight(Lnet.minecraft.client.renderer.RenderGlobal;Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.util.math.RayTraceResult;IF)Z  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, 永爱之刃-v11削弱.jar
@@ -247,7 +244,6 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.client.renderer.entity.layers.LayerVillagerArmor.<init>(Lnet.minecraft.client.renderer.entity.RenderLivingBase;)V  # VillageNames-1.12.2-4.1.5.jar, VillageNames-1.12.2-4.4.13.jar
   2  net.minecraft.client.tutorial.Tutorial.<init>(Lnet.minecraft.client.Minecraft;)V  # ElenaiDodge2-1.12.2-1.0.8b.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar
   2  net.minecraft.client.tutorial.Tutorial.openInventory()V  # modularwarfare-2.4.2f.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar
-  2  net.minecraft.util.MouseFilter.reset()V  # JurassicReborn-1.12.2-1.3.4.jar, 永爱之刃-v11削弱.jar
   2  net.minecraft.util.MovementInputFromOptions.<init>(Lnet.minecraft.client.settings.GameSettings;)V  # Chisel-MC1.12.2-1.0.2.45.jar, MenuMobs-1.12.2-1.21.jar
   2  net.minecraftforge.client.ForgeHooksClient.putQuadColor(Lnet.minecraft.client.renderer.BufferBuilder;Lnet.minecraft.client.renderer.block.model.BakedQuad;I)V  # ModularPowersuits-1.12.2-1.0.46.jar, Trinkets and Baubles-Forge-1.12.2-0.33.4.jar
   2  net.minecraftforge.client.ForgeHooksClient.renderLitItem(Lnet.minecraft.client.renderer.RenderItem;Lnet.minecraft.client.renderer.block.model.IBakedModel;ILnet.minecraft.item.ItemStack;)V  # GalaxySpace-1.12.2-2.2.0.jar, ThaumicAdditions-1.12.2-12.7.8.jar
@@ -284,7 +280,6 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.client.entity.AbstractClientPlayer.rotateElytraY:F  # ThaumicAugmentation-1.12.2-2.1.8.jar
   1  net.minecraft.client.entity.AbstractClientPlayer.rotateElytraZ:F  # ThaumicAugmentation-1.12.2-2.1.8.jar
   1  net.minecraft.client.entity.EntityPlayerSP.closeScreenAndDropStack()V  # _supermartijn642corelib-1.1.26b-forge-mc1.12.jar
-  1  net.minecraft.client.entity.EntityPlayerSP.getPitchYaw()Lnet.minecraft.util.math.Vec2f;  # hitindication-1.12.2-2.0.jar
   1  net.minecraft.client.entity.EntityPlayerSP.interpTargetPitch:D  # Galacticraft-1.12.2-4.0.6.jar
   1  net.minecraft.client.entity.EntityPlayerSP.interpTargetX:D  # Galacticraft-1.12.2-4.0.6.jar
   1  net.minecraft.client.entity.EntityPlayerSP.interpTargetY:D  # Galacticraft-1.12.2-4.0.6.jar
@@ -292,7 +287,6 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.client.entity.EntityPlayerSP.interpTargetZ:D  # Galacticraft-1.12.2-4.0.6.jar
   1  net.minecraft.client.entity.EntityPlayerSP.isCurrentViewEntity()Z  # Galacticraft-1.12.2-4.0.6.jar
   1  net.minecraft.client.entity.EntityPlayerSP.newPosRotationIncrements:I  # Galacticraft-1.12.2-4.0.6.jar
-  1  net.minecraft.client.entity.EntityPlayerSP.randomYawVelocity:F  # Galacticraft-1.12.2-4.0.6.jar
   1  net.minecraft.client.entity.EntityPlayerSP.recipeBook:Lnet.minecraft.stats.RecipeBook;  # FastWorkbench-1.12.2-1.7.3.jar
   1  net.minecraft.client.entity.EntityPlayerSP.setPermissionLevel(I)V  # bbs-2.5-1.12.2.jar
   1  net.minecraft.client.gui.FontRenderer.renderEngine:Lnet.minecraft.client.renderer.texture.TextureManager;  # BrandonsCore-1.12.2-2.4.20.162-universal.jar
@@ -310,6 +304,12 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.client.gui.GuiIngame.renderHotbar(Lnet.minecraft.client.gui.ScaledResolution;F)V  # 永爱之刃-v11削弱.jar
   1  net.minecraft.client.gui.GuiIngame.renderPlayerStats(Lnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
   1  net.minecraft.client.gui.GuiIngame.renderPortal(FLnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.client.gui.GuiIngame.renderPotionEffects(Lnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.client.gui.GuiIngame.renderPumpkinOverlay(Lnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.client.gui.GuiIngame.renderScoreboard(Lnet.minecraft.scoreboard.ScoreObjective;Lnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.client.gui.GuiIngame.renderSelectedItem(Lnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.client.gui.GuiIngame.renderVignette(FLnet.minecraft.client.gui.ScaledResolution;)V  # 永爱之刃-v11削弱.jar
+  1  net.minecraft.client.gui.GuiOverlayDebug.<init>(Lnet.minecraft.client.Minecraft;)V  # 永爱之刃-v11削弱.jar
 ```
 
 ## mod-side API (top 25 of 25)
