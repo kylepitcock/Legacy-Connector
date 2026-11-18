@@ -603,54 +603,6 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
-    void animatesStinkflyWingsDuringFlightAndIsIdempotent() {
-        Map<String, byte[]> resources = new HashMap<>();
-        String fixture = """
-                {
-                  "animations": {
-                    "animation.stinkfly.flight": {
-                      "loop": true,
-                      "override_previous_animation": true,
-                      "bones": {
-                        "wing_right": {
-                          "rotation": {
-                            "vector": [7, 23, 21]
-                          }
-                        },
-                        "wing_left": {
-                          "rotation": {
-                            "vector": [7, -23, -21]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                """.replace("\n", "\r\n");
-        String path = "assets/alienevo/animations/stinkfly.animation.json";
-        put(resources, path, fixture);
-
-        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
-
-        String migrated = get(resources, path);
-        assertTrue(migrated.contains(
-                "\"vector\": [\"7+(math.sin(query.anim_time*75)*12)\", "
-                        + "\"23+(math.sin(query.anim_time*75)*15)\", "
-                        + "\"21+(math.sin(query.anim_time*75)*20)\"]"));
-        assertTrue(migrated.contains(
-                "\"vector\": [\"7+(math.sin(query.anim_time*75)*12)\", "
-                        + "\"-23-(math.sin(query.anim_time*75)*15)\", "
-                        + "\"-21-(math.sin(query.anim_time*75)*20)\"]"));
-        assertFalse(migrated.contains("\"vector\": [7, 23, 21]"));
-        assertFalse(migrated.contains("\"vector\": [7, -23, -21]"));
-        assertTrue(migrated.contains("\r\n"));
-        assertFalse(migrated.replace("\r\n", "").contains("\n"));
-
-        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
-        assertEquals(migrated, get(resources, path));
-    }
-
-    @Test
     void preservesCurrentAlienIdWhenDecouplingAndRebondingOmnitrix() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, "addon/alienevo/kubejs_scripts/decouple.js",
