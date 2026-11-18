@@ -19,6 +19,17 @@ public class IntegratedServer extends legacyconnector.v1_12_2.net.minecraft.serv
         return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
     }
 
+    /** The world's icon file (icon.png of the world folder). */
+    public java.io.File getWorldIconFile() {
+        var m = mcc$server();
+        return m == null ? null : m.getWorldPath(net.minecraft.world.level.storage.LevelResource.ICON_FILE).toFile();
+    }
+
+    public boolean isWorldIconSet() {
+        java.io.File f = getWorldIconFile();
+        return f != null && f.isFile();
+    }
+
     /** Whether the world is open to LAN. */
     public boolean getPublic() {
         var m = mcc$server();

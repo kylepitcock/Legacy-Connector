@@ -33,6 +33,14 @@ public class NBTTagCompound extends NBTBase {
         return 10;
     }
 
+    /** 1.12's private tag reader: the payload of a tag of type {@code id} (the key and depth are only for the legacy size tracker). */
+    public static NBTBase readNBT(byte id, String key, java.io.DataInput input, int depth, NBTSizeTracker sizeTracker) throws java.io.IOException {
+        if (id == 0) return new NBTTagEnd();
+        var type = net.minecraft.nbt.TagTypes.getType(id);
+        var accounter = sizeTracker == null ? net.minecraft.nbt.NbtAccounter.unlimitedHeap() : sizeTracker.mcc$accounter();
+        return NBTBase.mcc$wrap(type.load(input, accounter), null);
+    }
+
     public Set<String> getKeySet() {
         return mcc$tag.getAllKeys();
     }
