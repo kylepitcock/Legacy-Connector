@@ -1,13 +1,12 @@
 # 1.7.10: stub ranking (synthesized members by number of jars)
 
-Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 642 jar(s) (520 links, 69 missing-dependency, 32 unresolved, 21 obsolete); 1237 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
+Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 642 jar(s) (520 links, 69 missing-dependency, 32 unresolved, 21 obsolete); 1168 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
-## server-side API (top 150 of 364)
+## server-side API (top 150 of 296)
 
 ```
   3  net.minecraft.item.crafting.IRecipe.input:[Ljava.lang.Object;  # Factorization-1.7.10-0.8.109.jar, UniDict-1.7.10-2.9.2.jar, immibis-core-59.1.4.jar
   3  net.minecraft.network.NetworkManager.provideLanClient(Ljava.net.InetAddress;I)Lnet.minecraft.network.NetworkManager;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, ServerUtilities-2.5.4.jar, tabfaces-1.0.16.jar
-  3  net.minecraft.potion.Potion.<init>(Lnet.minecraft.util.ResourceLocation;ZI)V -> (IZI)V  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, Xaeros_Minimap_21.10.44_Forge_1.7.10.jar, Xaeros_Minimap_FP21.10.40_Forge_1.7.10.jar
   3  net.minecraft.server.MinecraftServer.getNetworkSystem()Lnet.minecraft.network.NetworkSystem;  # EasyLAN-v1.5-[1.7.10].jar, MiddleEarth-Tweaks-1.6.22.jar, mcheli-d4e3692.jar
   2  cpw.mods.fml.common.InjectedModContainer.<init>(Lcpw.mods.fml.common.ModContainer;Ljava.io.File;)V  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.common.LoadController.<init>(Lcpw.mods.fml.common.Loader;)V -> ()V  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
@@ -29,14 +28,10 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  cpw.mods.fml.common.registry.EntityRegistry.tryTrackingEntity(Lnet.minecraft.entity.EntityTracker;Lnet.minecraft.entity.Entity;)Z  # EntityRenderDistanceExtender-1.0c.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.common.registry.GameData$GameDataSnapshot.idMap:Ljava.util.Map;  # Additions to the Outer Rim-1.3.6-BETA (1).jar, schematica_plus-1.0.0-beta.4.jar
   2  cpw.mods.fml.common.registry.GameData.buildItemDataList()Lcpw.mods.fml.common.registry.GameData$GameDataSnapshot;  # Additions to the Outer Rim-1.3.6-BETA (1).jar, schematica_plus-1.0.0-beta.4.jar
-  2  net.minecraft.entity.EntityTrackerEntry.sendEventsToPlayers(Ljava.util.List;)V  # optimizationsandtweaks-V1.18.0.jar, zombieplague2.jar
   2  net.minecraft.item.ItemArmor.getVisDiscount(Lnet.minecraft.item.ItemStack;Lnet.minecraft.entity.player.EntityPlayer;Lthaumcraft.api.aspects.Aspect;)I  # AM2PlayGround-Beta-0.12.1.jar, Alfheim-67.jar
   2  net.minecraft.item.crafting.IRecipe.expand(Ljava.lang.Object;)Ljava.util.List;  # Factorization-1.7.10-0.8.109.jar, immibis-core-59.1.4.jar
   2  net.minecraft.launchwrapper.IClassNameTransformer.remapClassName(Ljava.lang.String;)Ljava.lang.String;  # forgeessentials-1.7.10-7.5.3-server.jar, optimizationsandtweaks-V1.18.0.jar
   2  net.minecraft.launchwrapper.IClassNameTransformer.unmapClassName(Ljava.lang.String;)Ljava.lang.String;  # forgeessentials-1.7.10-7.5.3-server.jar, optimizationsandtweaks-V1.18.0.jar
-  2  net.minecraft.network.Packet.generatePacket(Lcom.google.common.collect.BiMap;I)Lnet.minecraft.network.Packet;  # Factorization-1.7.10-0.8.109.jar, hfr-1.0.2.2+mc1.7.10-forge.jar
-  2  net.minecraft.potion.PotionHelper.func_77905_c(I)Ljava.lang.String;  # Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar
-  2  net.minecraftforge.common.config.Configuration.get(Ljava.lang.String;Ljava.lang.String;[Ljava.lang.String;Ljava.lang.String;Ljava.util.regex.Pattern;)Lnet.minecraftforge.common.config.Property;  # campfirebackport-1.7.10-1.11.3.jar, torchkey-mc1.7.10-1.0.1.jar
   1  cpw.mods.fml.common.DuplicateModsFoundException.<init>(Lcom.google.common.collect.SetMultimap;)V  # optimizationsandtweaks-V1.18.0.jar
   1  cpw.mods.fml.common.FMLCommonHandler.computeBranding()V  # BetterTitleScreen-1.7.10-1.1.jar
   1  cpw.mods.fml.common.FMLCommonHandler.handleWorldDataSave(Lnet.minecraft.world.storage.SaveHandler;Lnet.minecraft.world.storage.WorldInfo;Lnet.minecraft.nbt.NBTTagCompound;)V  # forgeessentials-1.7.10-7.5.3-server.jar
@@ -147,17 +142,22 @@ Generated 2026-11-17 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.block.Block.isAir(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.BlockPos;)Z  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
   1  net.minecraft.block.BlockButton.updateNeighbor(Lnet.minecraft.world.World;IIII)V  # Alfheim-67.jar
   1  net.minecraft.block.BlockContainer.dropAvaritiaClusters(Lcom.jaquadro.minecraft.storagedrawers.block.tile.TileEntityDrawers;Lnet.minecraft.world.World;III)V  # StorageDrawers-2.3.0-GTNH.jar
-  1  net.minecraft.block.BlockEnderChest.<init>()V  # manametalmod-8.0.9.jar
-  1  net.minecraft.block.BlockEventData.func_151340_a()I  # manametalmod-8.0.9.jar
-  1  net.minecraft.block.BlockEventData.func_151341_c()I  # manametalmod-8.0.9.jar
-  1  net.minecraft.block.BlockEventData.func_151342_b()I  # manametalmod-8.0.9.jar
-  1  net.minecraft.block.BlockFire.func_149842_a(III)V  # mod_cobalt-1.7.10-1.5.7.1.jar
   1  net.minecraft.block.BlockFire.rebuildFireInfo()V  # Improving Minecraft-1.7.10-v5.jar
-  1  net.minecraft.block.BlockOldLeaf.field_150131_O:[Ljava.lang.String;  # Game of Thrones 24.08.29.jar
-  1  net.minecraft.block.BlockQuartz.<init>()V  # [1.7.10] SecurityCraft v1.8.13.jar
+  1  net.minecraft.block.state.IBlockState.getBlock()Lnet.minecraft.block.Block;  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
+  1  net.minecraft.command.CommandBase.setAdminCommander(Lnet.minecraft.command.IAdminCommand;)V  # RecurrentComplex-0.9.7.1.2.jar
+  1  net.minecraft.entity.Entity.getRot()Z  # zHavenCoreCustomForms-Public-3.1.0 BETA.jar
+  1  net.minecraft.entity.EntityFlying.getSyncDataCompound()Lnet.minecraft.nbt.NBTTagCompound;  # vintagedamageindicators-0.9.4.jar
+  1  net.minecraft.entity.EntityList.func_151514_a()V  # 1.7.10-ASJCore-1.7.0.3.jar
+  1  net.minecraft.entity.EntityLivingBase.preparePlayerToSpawn()V  # aquaacrobatics-0.0.6-1-7-10.44+6fc0f073fd-dirty.jar
+  1  net.minecraft.entity.EntityTrackerEntry.sendLocationToAllClients(Ljava.util.List;)V  # optimizationsandtweaks-V1.18.0.jar
+  1  net.minecraft.entity.boss.EntityDragon.setNewTarget()V  # LoTAS1.7.10-2.0.0.jar
+  1  net.minecraft.entity.boss.EntityWither.onChangedPotionEffect(Lnet.minecraft.potion.PotionEffect;Z)V  # manametalmod-8.0.9.jar
+  1  net.minecraft.entity.boss.EntityWither.onNewPotionEffect(Lnet.minecraft.potion.PotionEffect;)V  # manametalmod-8.0.9.jar
+  1  net.minecraft.entity.item.EntityItem.deliverItemViaDrone(DDD)V  # BloodMagic-1.7.10-1.3.3-17.jar
+  1  net.minecraft.entity.monster.EntityBlaze.resetEntityId()V  # inventorypets-1.7.10-1.5.2.jar
 ```
 
-## client-side API (top 150 of 457)
+## client-side API (top 150 of 456)
 
 ```
   8  net.minecraft.client.renderer.entity.RenderPlayer.doRender(Lnet.minecraft.client.entity.AbstractClientPlayer;DDDFF)V  # AM2.5-LTS-1.6.7.jar, ApolloClient-v1.3.1.b21-2026-11-06.jar, MorePlayerModels-Plus-4.2.jar ...
