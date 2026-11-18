@@ -19,10 +19,33 @@ public class Mouse {
         }
     }
 
+    /**
+     * What {@link #setCursorPosition} moved the pointer by, relative to the game's own tracked position. GLFW delivers the cursor callback
+     * later (and not at all while the pointer is grabbed, where the tracked position is a free-running virtual one: values like -4549), so
+     * LWJGL 2's "set, then read back what was set" is kept by remembering the difference and applying it to what the game reports.
+     */
+    private static volatile double offsetX;
+    private static volatile double offsetY;
+    private static volatile double baseX = Double.NaN;
+    private static volatile double baseY = Double.NaN;
+
+    /** The offset while it still applies: until the game's own position moved on (the pointer is free), always while the pointer is grabbed. */
+    private static double offsetX() {
+        var h = net.minecraft.client.Minecraft.getInstance().mouseHandler;
+        if (!h.isMouseGrabbed() && h.xpos() != baseX) offsetX = 0;
+        return offsetX;
+    }
+
+    private static double offsetY() {
+        var h = net.minecraft.client.Minecraft.getInstance().mouseHandler;
+        if (!h.isMouseGrabbed() && h.ypos() != baseY) offsetY = 0;
+        return offsetY;
+    }
+
     public static int getX() {
         try {
             var mc = net.minecraft.client.Minecraft.getInstance();
-            return (int) mc.mouseHandler.xpos();
+            return (int) (mc.mouseHandler.xpos() + offsetX());
         } catch (RuntimeException | LinkageError e) {
             return 0;
         }
@@ -32,7 +55,7 @@ public class Mouse {
     public static int getY() {
         try {
             var mc = net.minecraft.client.Minecraft.getInstance();
-            return mc.getWindow().getHeight() - (int) mc.mouseHandler.ypos() - 1;
+            return (int) (mc.getWindow().getHeight() - (int) mc.mouseHandler.ypos() - 1 + offsetY());
         } catch (RuntimeException | LinkageError e) {
             return 0;
         }
@@ -150,6 +173,16 @@ public class Mouse {
         var window = net.minecraft.client.Minecraft.getInstance().getWindow();
         if (window == null) return;
         org.lwjgl.glfw.GLFW.glfwSetCursorPos(window.getWindow(), x, window.getScreenHeight() - y);
+        try {
+            var handler = net.minecraft.client.Minecraft.getInstance().mouseHandler;
+            baseX = handler.xpos();
+            baseY = handler.ypos();
+            offsetX = x - handler.xpos();
+            offsetY = y - (window.getHeight() - (int) handler.ypos() - 1);
+        } catch (RuntimeException | LinkageError e) {
+            offsetX = 0;
+            offsetY = 0;
+        }
     }
 
     private static volatile Cursor nativeCursor;

@@ -8,6 +8,18 @@ import java.util.Date;
 public class ScreenShotHelper {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
 
+    /** 1.7.10's file name of a screenshot: {@code <dir>/<yyyy-MM-dd_HH.mm.ss>.png}, with {@code _2}, {@code _3}... when it exists. */
+    public static File getTimestampedPNGFileForDirectory(File directory) {
+        String stamp;
+        synchronized (DATE_FORMAT) {
+            stamp = DATE_FORMAT.format(new Date());
+        }
+        int n = 1;
+        File file;
+        while ((file = new File(directory, stamp + (n == 1 ? "" : "_" + n) + ".png")).exists()) n++;
+        return file;
+    }
+
     /**
      * Saves the game's frame buffer as {@code screenshots/<date>.png} under {@code gameDirectory} and returns the chat message the game shows
      * ("Saved screenshot as ..."), synchronously as 1.7.10 did. The legacy frame buffer is not the one the modern game draws to, so the width,

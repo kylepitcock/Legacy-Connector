@@ -15,7 +15,7 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
             ? new legacyconnector.v1_12_2.net.minecraft.server.dedicated.DedicatedServer()
             : new legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer();
     public final ICommandManager commandManager = new ServerCommandManager();
-    private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList playerList =
+    private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList playerList =
             new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList(this);
     private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCache =
             new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache();
@@ -31,6 +31,18 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
     public static final java.io.File USER_CACHE_FILE = new java.io.File("usercache.json");
     @Deprecated
     public java.util.Hashtable<Integer, long[]> worldTickTimes;
+
+    public MinecraftServer() {
+    }
+
+    /**
+     * 1.12's constructor (world folder, proxy, data fixer, authentication services, profile cache): a mod's own server class extends this one;
+     * the game runs the real server, so the arguments are not used.
+     */
+    public MinecraftServer(java.io.File anvilFileIn, java.net.Proxy proxyIn, legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer dataFixerIn,
+            com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService authServiceIn, com.mojang.authlib.minecraft.MinecraftSessionService sessionServiceIn,
+            com.mojang.authlib.GameProfileRepository profileRepoIn, legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCacheIn) {
+    }
 
     public static MinecraftServer mcc$instance() {
         return INSTANCE;
@@ -82,6 +94,17 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
 
     public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList getPlayerList() {
         return playerList;
+    }
+
+    /** Replaces the player list the mods see (a mod's own list class; the game keeps its own list for the real work). */
+    public void setPlayerList(legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList list) {
+        if (list != null) this.playerList = list;
+    }
+
+    /** Reloads the data packs (resources, recipes, functions) of the running server, like /reload. */
+    public void reload() {
+        var m = modern();
+        if (m != null) m.reloadResources(m.getPackRepository().getSelectedIds());
     }
 
     public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache getPlayerProfileCache() {

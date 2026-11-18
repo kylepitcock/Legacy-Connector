@@ -15,4 +15,13 @@ public final class Property {
     public static void mcc$set$value(legacyconnector.v1_7_10.net.minecraftforge.common.config.Property self, String value) {
         self.set(value);
     }
+
+    /** Property.valueList: the values of a list property (Forge up to 1.6 had it as a public array). */
+    public static String[] mcc$get$valueList(legacyconnector.v1_7_10.net.minecraftforge.common.config.Property self) {
+        return self.getStringList();
+    }
+
+    public static void mcc$set$valueList(legacyconnector.v1_7_10.net.minecraftforge.common.config.Property self, String[] values) {
+        self.set(values);
+    }
 }

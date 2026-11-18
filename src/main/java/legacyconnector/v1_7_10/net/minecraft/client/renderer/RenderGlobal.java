@@ -2,6 +2,17 @@ package legacyconnector.v1_7_10.net.minecraft.client.renderer;
 
 /** The world renderer; mods only ask it to redraw blocks after their tile entities changed. */
 public class RenderGlobal {
+    public RenderGlobal() {
+    }
+
+    /** 1.6.4 shape {@code new RenderGlobal(mc)}: the modern renderer is the game's own. */
+    public RenderGlobal(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+    }
+
+    /** 1.5.2 shape {@code new RenderGlobal(mc, textureManager)}. */
+    public RenderGlobal(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures) {
+    }
+
     /**
      * Block-breaking progress by breaker id: a live view of the modern renderer's (mods find the 1.7.10 field by reflection and
      * read the cracking blocks from it).

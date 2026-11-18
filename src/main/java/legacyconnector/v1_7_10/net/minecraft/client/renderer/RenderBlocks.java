@@ -73,6 +73,13 @@ public class RenderBlocks {
     public Minecraft minecraftRB = net.neoforged.fml.loading.FMLEnvironment.dist.isClient() ? Minecraft.getMinecraft() : null;
     public int uvRotateEast, uvRotateWest, uvRotateSouth, uvRotateNorth, uvRotateTop, uvRotateBottom;
     public boolean enableAO;
+    /**
+     * 1.4.7's ambient-occlusion scratch state (the lit-grass flags of the 12 edge neighbours and the 6 face light values): mods that copy the smooth-lighting
+     * renderer (Immibis's Microblocks) read and write them. The modern renderer does its own lighting, so nothing here is read by the game.
+     */
+    public boolean aoGrassXYZCNN, aoGrassXYZCNP, aoGrassXYZCPN, aoGrassXYZCPP, aoGrassXYZNCN, aoGrassXYZNCP, aoGrassXYZNNC, aoGrassXYZNPC, aoGrassXYZPCN,
+            aoGrassXYZPCP, aoGrassXYZPNC, aoGrassXYZPPC;
+    public float aoLightValueXNeg, aoLightValueXPos, aoLightValueYNeg, aoLightValueYPos, aoLightValueZNeg, aoLightValueZPos;
     public float aoLightValueScratchXYZNNN, aoLightValueScratchXYNN, aoLightValueScratchXYZNNP, aoLightValueScratchYZNN, aoLightValueScratchYZNP,
             aoLightValueScratchXYZPNN, aoLightValueScratchXYPN, aoLightValueScratchXYZPNP, aoLightValueScratchXYZNPN, aoLightValueScratchXYNP,
             aoLightValueScratchXYZNPP, aoLightValueScratchYZPN, aoLightValueScratchXYZPPN, aoLightValueScratchXYPP, aoLightValueScratchYZPP,
