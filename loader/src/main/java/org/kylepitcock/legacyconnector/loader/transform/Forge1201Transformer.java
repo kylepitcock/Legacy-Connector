@@ -296,6 +296,7 @@ public final class Forge1201Transformer {
         int palladiumPlayerSkinChanges = 0;
         int palladiumPlayerSkinFetcherChanges = 0;
         int palladiumFlightHandlerChanges = 0;
+        int palladiumFlightTakeoffGraceChanges = 0;
         int palladiumCustomProjectileChanges = 0;
         int palladiumProjectileExplosionChanges = 0;
         int palladiumCustomProjectileRendererChanges = 0;
@@ -347,6 +348,8 @@ public final class Forge1201Transformer {
             mc.add(changed);
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
+            int palladiumFlightTakeoffGraceChange = PalladiumFlightHandler1201.applyGroundTakeoffGrace(node);
+            palladiumFlightTakeoffGraceChanges += palladiumFlightTakeoffGraceChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
             palladiumCustomProjectileChanges += palladiumCustomProjectileChange;
             int palladiumProjectileExplosionChange = PalladiumProjectileExplosion1201.apply(node);
@@ -386,7 +389,7 @@ public final class Forge1201Transformer {
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
-                    + palladiumFlightHandlerChange + palladiumCustomProjectileChange
+                    + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
         }
@@ -414,6 +417,10 @@ public final class Forge1201Transformer {
         if (palladiumFlightHandlerChanges > 0) {
             result.notes.add("Palladium FlightHandler EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
                     + palladiumFlightHandlerChanges + " field read(s)");
+        }
+        if (palladiumFlightTakeoffGraceChanges > 0) {
+            result.notes.add("Palladium FlightHandler now gives a newly activated grounded flyer up to six ticks to lift off, then preserves its original landing cancellation: "
+                    + palladiumFlightTakeoffGraceChanges + " FlightHandler class(es)");
         }
         if (palladiumCustomProjectileChanges > 0) {
             result.notes.add("Palladium CustomProjectile EntityDimensions.width field access migrated to the public 1.21.1 record accessor: "
