@@ -36,6 +36,18 @@ public class MultiItemRange {
         return this;
     }
 
+    /** NEI 1.4.7 / 1.5.2: a range of ids. */
+    public MultiItemRange add(ItemRange range) {
+        if (range != null) stacks.addAll(range.stacks());
+        return this;
+    }
+
+    /** NEI 1.4.7 / 1.5.2: a collection of {@link ItemRange}s. */
+    public MultiItemRange add(java.util.Collection<?> ranges) {
+        if (ranges != null) for (Object o : ranges) if (o instanceof ItemRange r) add(r);
+        return this;
+    }
+
     public List<ItemStack> mcc$stacks() {
         return stacks;
     }

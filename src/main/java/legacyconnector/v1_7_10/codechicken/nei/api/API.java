@@ -75,6 +75,27 @@ public class API {
     public static void addSubset(String name, ItemFilter filter) {
     }
 
+    /** NEI 1.4.7 / 1.5.2: the root tag of a mod's subsets in the item panel's tree (kept, nothing draws it under JEI). */
+    private static final legacyconnector.v1_7_10.codechicken.nei.SubSetRangeTag RANGE_ROOT = new legacyconnector.v1_7_10.codechicken.nei.SubSetRangeTag("root");
+
+    public static legacyconnector.v1_7_10.codechicken.nei.SubSetRangeTag getRangeTag(String name) {
+        return RANGE_ROOT.getTag(name);
+    }
+
+    /** NEI 1.4.7 / 1.5.2: hides a collection of item ids (JEI hides every damage value of the items too); stacks and items are accepted as well. */
+    public static void hideItems(java.util.Collection<?> items) {
+        if (items == null) return;
+        for (Object o : items) {
+            if (o instanceof Integer id) hideItem(legacyconnector.v1_6_4.net.minecraft.util.Ids.item(id));
+            else if (o instanceof ItemStack stack) hideItem(stack);
+            else if (o instanceof Item item) hideItem(item);
+        }
+    }
+
+    /** NEI 1.4.7 / 1.5.2: a key binding by name, description and default key (JEI's input is its own; accepted and ignored). */
+    public static void addKeyBind(String id, String description, int defaultKey) {
+    }
+
     public static void addKeyBind(String name, int defaultKey) {
         legacyconnector.v1_7_10.codechicken.nei.NEIClientConfig.addKeyBinding(name, defaultKey);
     }

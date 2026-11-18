@@ -92,13 +92,23 @@ public final class NotchNames {
         return n;
     }
 
+    private static final Map<String, String> NEI_SCREENS = Map.of(
+            "codechicken/nei/recipe/GuiRecipe", "net/minecraft/client/gui/inventory/GuiContainer",
+            "codechicken/nei/recipe/GuiCraftingRecipe", "net/minecraft/client/gui/inventory/GuiContainer",
+            "codechicken/nei/recipe/GuiUsageRecipe", "net/minecraft/client/gui/inventory/GuiContainer");
+
     /** The supertypes of a class this table does not list (a Forge class such as ISidedInventory), in notch names where they have one: from the version's API data. */
     private String[] upFromHierarchy(String owner) {
         if (hierarchy == null || owner.indexOf('/') < 0 && classes.containsKey(owner)) return null;
         var entry = hierarchy.get(owner);
         // Forge 3.x's classes (forge/ISidedInventory) live in net/minecraft/src/forge of the shim; the API data lists the later package
         if (entry == null && owner.startsWith("net/minecraft/src/forge/")) entry = hierarchy.get("net/minecraftforge/common/" + owner.substring("net/minecraft/src/forge/".length()));
-        if (entry == null) return null;
+        if (entry == null) {
+            // NEI's own screens extend a vanilla one (NEI's coremod made them GuiContainers): the fields a handler reads off them (xSize, width, ...) are the vanilla ones
+            String vanilla = NEI_SCREENS.get(owner);
+            String notchSuper = vanilla == null ? null : byMcp.get(vanilla);
+            return notchSuper == null ? null : new String[] {notchSuper};
+        }
         java.util.List<String> all = new java.util.ArrayList<>();
         if (entry.superName() != null) all.add(entry.superName());
         all.addAll(entry.interfaces());

@@ -8,6 +8,11 @@ public class DefaultOverlayRenderer implements IRecipeOverlayRenderer {
     public final List<PositionedStack> ingreds;
     public final IStackPositioner positioner;
 
+    /** NEI 1.4.7 / 1.5.2 took an ArrayList. */
+    public DefaultOverlayRenderer(java.util.ArrayList<PositionedStack> ingreds, IStackPositioner positioner) {
+        this((List<PositionedStack>) ingreds, positioner);
+    }
+
     public DefaultOverlayRenderer(List<PositionedStack> ingreds, IStackPositioner positioner) {
         this.ingreds = ingreds;
         this.positioner = positioner;

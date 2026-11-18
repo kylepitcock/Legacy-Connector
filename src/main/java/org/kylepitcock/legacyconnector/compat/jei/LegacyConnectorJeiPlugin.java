@@ -21,6 +21,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.kylepitcock.legacyconnector.compat.nei.NeiBridge;
+import org.kylepitcock.legacyconnector.compat.nei.RecipeScreen;
 
 /**
  * NEI -> JEI bridge, JEI half: every legacy NEI recipe handler becomes a JEI category showing its recipes as NEI drew them
@@ -35,6 +36,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
     private static final int HEIGHT = 65;
     /** Handlers whose drawing threw (logged once each). */
     private static final java.util.Set<Class<?>> DRAW_FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final java.util.Set<Class<?>> TOOLTIP_FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private final List<Category> categories = new ArrayList<>();
 
     @Override
@@ -192,6 +194,27 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             for (NeiBridge.Slot s : recipe.inputs()) builder.addSlot(RecipeIngredientRole.INPUT, s.x(), s.y()).addItemStacks(s.stacks());
             for (NeiBridge.Slot s : recipe.outputs()) builder.addSlot(RecipeIngredientRole.OUTPUT, s.x(), s.y()).addItemStacks(s.stacks());
             for (NeiBridge.Slot s : recipe.others()) builder.addSlot(RecipeIngredientRole.CATALYST, s.x(), s.y()).addItemStacks(s.stacks());
+        }
+
+        /**
+         * NEI asked a handler for tooltip lines while the mouse was over its recipe ({@code handleTooltip(gui, lines, recipe)}: the energy
+         * gauge of a machine says how much it holds). The handler gets a stand-in for its recipe screen holding the mouse in the recipe's
+         * frame (see {@link RecipeScreen}).
+         */
+        @Override
+        public List<Component> getTooltipStrings(NeiBridge.Recipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+            TemplateRecipeHandler h = recipe.handler();
+            if (h == null) return List.of();
+            try {
+                List<String> tips = h.handleTooltip(new RecipeScreen(h, (int) mouseX, (int) mouseY), new ArrayList<>(), recipe.index());
+                if (tips == null || tips.isEmpty()) return List.of();
+                List<Component> out = new ArrayList<>(tips.size());
+                for (String line : tips) out.add(Component.literal(line));
+                return out;
+            } catch (RuntimeException | LinkageError e) {
+                if (TOOLTIP_FAILED.add(h.getClass())) LOG.warn("NEI handler {} failed to give a tooltip: {}", h.getClass().getName(), e.toString());
+                return List.of();
+            }
         }
 
         /**

@@ -55,6 +55,22 @@ public abstract class GuiContainer extends GuiScreen {
         return mouseX >= x - 1 && mouseX < x + w + 1 && mouseY >= y - 1 && mouseY < y + h + 1;
     }
 
+    /** NEI 1.4.7 / 1.5.2 patched {@code GuiContainer} with a {@code manager} field (see {@link #mcc$get$manager}). */
+    public legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager;
+    /** The manager a stand-in screen was given (the recipe screen of the JEI bridge); other screens get theirs from the manager table. */
+    public legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager mcc$manager;
+
+    /** The virtual {@code GuiContainer.manager} of NEI 1.4.7 / 1.5.2: the screen's drawing hub. */
+    public static legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager mcc$get$manager(GuiContainer self) {
+        if (self != null && self.mcc$manager != null) return self.mcc$manager;
+        return legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.getManager(self);
+    }
+
+    /** The slot under GUI coordinates (x, y), or null. */
+    public Slot mcc$slotAt(int x, int y) {
+        return inventorySlots == null ? null : getSlotAtPosition(x, y);
+    }
+
     protected Slot getSlotAtPosition(int x, int y) {
         for (Object o : inventorySlots.inventorySlots) {
             Slot s = (Slot) o;

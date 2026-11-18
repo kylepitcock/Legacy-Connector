@@ -22,3 +22,9 @@ net/minecraft/entity/IEntityMultiPart	attackEntityFromPart	(Lnet/minecraft/entit
 net/minecraft/item/Item	itemInteractionForEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/EntityLivingBase;)Z	itemInteractionForEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/EntityLivingBase;)Z	0,2
 net/minecraft/entity/ai/EntityMoveHelper	setMoveTo	(DDDF)V	setMoveTo	(DDDD)V
 net/minecraft/entity/ai/EntityMoveHelper	getSpeed	()F	getSpeed	()D
+# NEI 1.4.7 / 1.5.2 recipe handlers (bridged to JEI): the API returned ArrayList where the shim (NEI 1.6/1.7's shape) returns List
+codechicken/nei/recipe/IRecipeHandler	getIngredientStacks	(I)Ljava/util/ArrayList;	getIngredientStacks	(I)Ljava/util/List;
+codechicken/nei/recipe/IRecipeHandler	getOtherStacks	(I)Ljava/util/ArrayList;	getOtherStacks	(I)Ljava/util/List;
+codechicken/nei/recipe/TemplateRecipeHandler$CachedRecipe	getIngredients	()Ljava/util/ArrayList;	getIngredients	()Ljava/util/List;
+codechicken/nei/recipe/TemplateRecipeHandler$CachedRecipe	getOtherStacks	()Ljava/util/ArrayList;	getOtherStacks	()Ljava/util/List;
+codechicken/nei/recipe/TemplateRecipeHandler$CachedRecipe	getCycledIngredients	(ILjava/util/ArrayList;)Ljava/util/ArrayList;	getCycledIngredients	(ILjava/util/List;)Ljava/util/List;
