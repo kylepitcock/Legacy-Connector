@@ -2429,7 +2429,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     /** The entity's rotation as (pitch, yaw). */
     public legacyconnector.v1_12_2.net.minecraft.util.math.Vec2f getPitchYaw() {
-        return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec2f(rotationPitch, rotationYaw);
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec2f(mcc$get$rotationPitch(this), mcc$get$rotationYaw(this));
     }
 
     /** Whether a player riding this entity turns to face its heading (boats do, everything else keeps looking where the player looks). */
