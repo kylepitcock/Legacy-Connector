@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Ranks the synthesized (placeholder) members of a probe run by the number of jars using them.
 
-usage: make_stub_ranking.py <mc> <raw.json> [<raw.json> ...] [--top 150] [--notes notes.tsv] > stub-ranking-<mc>.md
+usage: make_stub_ranking.py <mc> <raw.json> [<raw.json> ...] [--top 150] [--notes notes.tsv] [--full-server full.tsv] > stub-ranking-<mc>.md
 
 Input: `tools/compat/probe.py <dir> --mc <mc> --dry-run --no-history --json raw.json`. Members are split into server-side API and client-only API
 (by class/package heuristics, see CLIENT_HINTS). `--notes` is a TSV `member-substring<TAB>reason` of members that cannot have a faithful implementation;
@@ -31,6 +31,9 @@ def main():
     notes = {}
     if "--top" in a:
         i = a.index("--top"); top = int(a[i + 1]); del a[i:i + 2]
+    full = None
+    if "--full-server" in a:
+        i = a.index("--full-server"); full = a[i + 1]; del a[i:i + 2]
     if "--notes" in a:
         i = a.index("--notes"); f = a[i + 1]; del a[i:i + 2]
         for line in open(f, encoding="utf-8"):
@@ -56,6 +59,11 @@ def main():
           f"({', '.join(f'{v} {k}' for k, v in results.most_common())}); {len(ranked)} distinct synthesized members. "
           "Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.")
     print()
+    if full:   # the whole common side, no row cut: count<TAB>member<TAB>jars
+        with open(full, "w", encoding="utf-8", newline="\n") as out:
+            for m, js in live:
+                if side(m) == "server":
+                    out.write("\t".join((str(len(js)), m, ", ".join(sorted(js)))) + "\n")
     for sd in ("server", "client", "mod"):
         sel = [(m, js) for m, js in live if side(m) == sd][:top]
         print(f"## {sd}-side API (top {len(sel)} of {sum(1 for m, _ in live if side(m) == sd)})")
