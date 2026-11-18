@@ -128,8 +128,6 @@ public final class Forge1201EventAdapter {
             // A custom isCancelable override may return true without @Cancelable.
             // Implement the target contract so NeoForge can observe its cancel state,
             // while recording that this interface did not come from source annotation.
-            addInterface(classNode,
-                    "legacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Forge1201CustomCancelableOverrideMarker");
             addInterface(classNode, TARGET_CANCELLABLE);
         }
 
