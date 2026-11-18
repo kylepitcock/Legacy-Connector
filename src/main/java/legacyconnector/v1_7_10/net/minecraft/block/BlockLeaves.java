@@ -68,6 +68,12 @@ public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         return world.mcc$blockTint(x, y, z, 1);
     }
 
+    /**
+     * 1.2.x's working array of the decay search (32 x 32 x 32 entries, made on first use): a mod's own leaves class that copies the decay code reads and fills it. The shim's own
+     * decay does not need it.
+     */
+    public int[] adjacentTreeBlocks;
+
     /** The wood names of the leaf types, by metadata bits 0-1 (subclasses list theirs). */
     public String[] func_150125_e() {
         return new String[] {"oak", "spruce", "birch", "jungle"};

@@ -79,6 +79,11 @@ public class FMLCommonHandler {
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks.mcc$addContainer(container);
     }
 
+    /** FML 2.x {@code getMinecraftRootDirectory()}: the game directory the mods keep their config and data in (the layer's run directory). */
+    public java.io.File getMinecraftRootDirectory() {
+        return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
+    }
+
     public java.io.File getSavesDirectory() {
         return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve("saves").toFile();
     }

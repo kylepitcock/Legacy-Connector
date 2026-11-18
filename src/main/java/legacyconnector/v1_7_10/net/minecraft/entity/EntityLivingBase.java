@@ -196,6 +196,18 @@ public abstract class EntityLivingBase extends Entity {
     public static void mcc$set$prevHealth(EntityLivingBase e, float v) {
     }
 
+    /** Phantom field: the damage of the last hit, the modern entity's {@code lastHurt} (the hit cooldown compares the next hit against it). */
+    @Deprecated
+    public float lastDamage;
+
+    public static float mcc$get$lastDamage(EntityLivingBase e) {
+        return e.mcc$entity == null ? 0 : org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.lastHurt(e.mcc$living());
+    }
+
+    public static void mcc$set$lastDamage(EntityLivingBase e, float v) {
+        if (e.mcc$entity != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setLastHurt(e.mcc$living(), v);
+    }
+
     /** How far the arm swing has got, 0..1 (renderers pose the arm with it). */
     public float getSwingProgress(float partialTicks) {
         return mcc$entity == null ? 0 : mcc$living().getAttackAnim(partialTicks);
