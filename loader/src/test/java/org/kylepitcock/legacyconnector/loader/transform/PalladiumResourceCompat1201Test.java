@@ -780,6 +780,78 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void addsTemporaryMotionToEntityDiagnosticsWithoutChangingTargetChain() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, String.join("\r\n",
+                "StartupEvents.registry('palladium:abilities', event => {",
+                "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');",
+                "    let recentTargets = new Map();",
+                "    let currentTargets = new Map();",
+                "    let lastTargetTimes = new Map();",
+                "    event.create('alienevo:motion_to_entity')",
+                "        .tick((entity, entry, holder, enabled) => {",
+                "            if (enabled && entity.isPlayer()) {",
+                "                nearbyEntities.forEach(nearby => {",
+                "                    if (!(nearby instanceof LivingEntity)) return;",
+                "                });",
+                "                nearestEntity = null;",
+                "                nearestDistance = searchRadius + 1;",
+                "                nearbyEntities.forEach(nearby => {",
+                "                    if (!(nearby instanceof LivingEntity) || playerTargets.has(nearby.id)) return;",
+                "                });",
+                "            }",
+                "        });",
+                "});"));
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER, String.join("\r\n",
+                "{",
+                "  \"abilities\": {",
+                "    \"multi_hit\": {",
+                "      \"type\": \"alienevo:motion_to_entity\",",
+                "      \"title\": {",
+                "        \"translate\": \"ability.alienevo_aliens.11.assault\"",
+                "      }",
+                "    },",
+                "    \"other_ability\": {",
+                "      \"type\": \"palladium:dummy\"",
+                "    }",
+                "  }",
+                "}"));
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER, String.join("\r\n",
+                "{",
+                "  \"abilities\": {",
+                "    \"punch_barrage\": {",
+                "      \"type\": \"alienevo:motion_to_entity\",",
+                "      \"debug_mode\": false,",
+                "      \"motion_strength\": 2.5",
+                "    },",
+                "    \"other_ability\": {",
+                "      \"type\": \"palladium:dummy\"",
+                "    }",
+                "  }",
+                "}"));
+
+        assertEquals(3, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY);
+        assertFalse(migrated.contains("const LivingEntity = Java.loadClass("));
+        assertEquals(2, occurrences(migrated, "!nearby.isLiving()"));
+        assertTrue(migrated.contains("let lastEnabledStates = new Map();"));
+        assertTrue(migrated.contains("entry.getPropertyByName(\"debug_mode\")"));
+        assertTrue(migrated.contains("[Legacy Connector target debug] motion_to_entity enabled="));
+        assertEquals(2, occurrences(migrated, "nearbyEntities.forEach(nearby => {"));
+        assertTrue(migrated.contains("playerTargets.has(nearby.id)"));
+
+        String cannonbolt = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER);
+        assertTrue(cannonbolt.contains("\"debug_mode\": true,"));
+        String xlr8 = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER);
+        assertTrue(xlr8.contains("\"debug_mode\": true,"));
+        assertFalse(xlr8.contains("\"debug_mode\": false,"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY));
+    }
+
+    @Test
     void migratesCannonboltSlamLandingTrackingAndPreservesCrLf() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\r\n",
