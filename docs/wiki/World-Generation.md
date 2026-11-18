@@ -83,7 +83,24 @@ modern feature:
 
 ### The deep layer
 
-1.7.10 worlds ended at y=0 (bedrock); modern ones reach down to -64. Each legacy `IWorldGenerator` therefore runs a
+**Modes (`deepLayer.mode`, [Configuration](Configuration.md)).** Default `shifted`, for 1.7.10 and 1.12.2: each legacy generator with
+ores runs the normal pass (as the mod expects, legacy y = modern y) and ONE extra full-height pass with legacy y=0 at the world
+bottom (-64), the same run with the same random seed moved down by the difference of the world bottoms. The extra pass keeps only
+the ore writes (natural overworld stone, deepslate counted as stone, replaced by another block); the normal pass refuses exactly
+those writes and keeps everything else (surface plants, trees, structures, lakes), so every ore comes from the shifted pass, whole
+veins are never cut at y=0 (nothing is chosen per cell), a generator keyed to bedrock-relative heights fills the real bottom, and the
+ore count per chunk is the mod's own. The cost: ore heights are the mod's numbers + (-64), so an ore meant for y 0-63 lands in
+-64..-1 and ore meant above 64 sits 64 lower; surface-relative ores follow the same shift (use `deepLayer.splitMods` for a mod
+where that is wrong, or whose generators build stone-replacing structures: the normal pass refuses their stone-replacing blocks and the
+shifted pass places them 64 lower). 1.7.10 mod dimensions keep `split`. `split` is the previous scheme, kept as the fallback and
+described below (for 1.12.2 it means no ores below y=0, as before this mode existed). The shifted pass is a placed feature per
+generator, `<modid>:legacy_worldgen_deep/<name>` (type `legacyconnector:legacy_generator_deep` for 1.12.2; `legacyconnector:legacy_worldgen_deep` for
+1.7.10), step `underground_ores`, placed `above_bottom 0`.
+
+The probe `tools/dev/ore-probe.sh` (with `tools/dev/server-scripts/ore-connectivity.js`, `tools/dev/render_ore_slice.py`) counts ores and
+measures vein connectivity over 11x11 chunks of one seed, for before/after comparisons.
+
+**The split scheme.** 1.7.10 worlds ended at y=0 (bedrock); modern ones reach down to -64. Each legacy `IWorldGenerator` therefore runs a
 second time per chunk with the world shifted so that legacy y=0 is the dimension's bottom: ores, bedrock ores and
 underground structures land in the deep layer too (the generator sees deepslate as stone, everything from modern y=0 up as
 solid rock, air above legacy y=256; only ore writes are kept above y=0, and only up to y=15, so a vein of the deep pass that reaches 0

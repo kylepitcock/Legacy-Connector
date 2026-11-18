@@ -93,6 +93,7 @@ public final class Animations147 {
             String id = SpriteSheets147.spriteId(e.sheet, Math.max(0, fx.iconIndex), !items);
             e.sprite = ResourceLocation.tryParse(id);
         }
+        uploadToImage(mc, e);
         if (e.sprite == null) return;
         TextureAtlas atlas = mc.getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
         TextureAtlasSprite sprite = atlas.getSprite(e.sprite);
@@ -102,6 +103,38 @@ public final class Animations147 {
         }
         upload(atlas, sprite, fx.imageData, mc.options.mipmapLevels().get());
         if (e.frames++ == 0) LOG.log(System.Logger.Level.INFO, "Texture animation " + fx.getClass().getName() + " animates " + e.sprite + " (tile " + fx.iconIndex + " of " + e.sheet + ")");
+    }
+
+    /**
+     * A mod's own sheet that renderers draw directly (Thermal Expansion's {@code liquid_textures.png}: the image in the jar is transparent, its tiles exist only as
+     * {@code TextureFX} animations): the frame goes into the class path texture that {@code bindTexture(path)} binds, at the tile of the sheet, so direct draws of the
+     * sheet (energy cell and Tesseract centres, conduit liquid, the portable tank) show the animation as well as the atlas tile does.
+     */
+    private static void uploadToImage(Minecraft mc, Entry e) {
+        String path = e.sheet;
+        if (path == null || !org.kylepitcock.legacyconnector.v1_7_10.client.ClasspathTextures.isClasspath(path)) return;
+        var location = org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path);
+        if (location == null || !location.getResourcePath().startsWith("/")) return;
+        var texture = mc.getTextureManager().getTexture(org.kylepitcock.legacyconnector.v1_7_10.client.ClasspathTextures.location(path), null);
+        if (!(texture instanceof net.minecraft.client.renderer.texture.DynamicTexture dynamic)) return;
+        NativeImage pixels = dynamic.getPixels();
+        if (pixels == null) return;
+        byte[] rgba = e.fx.imageData;
+        int size = (int) Math.round(Math.sqrt(rgba.length / 4.0));
+        int tile = pixels.getWidth() / 16;
+        if (size <= 0 || size * size * 4 != rgba.length || tile <= 0 || pixels.getHeight() < tile * 16) return;
+        int index = Math.max(0, e.fx.iconIndex);
+        int x0 = (index & 15) * tile, y0 = (index >> 4) * tile;
+        if (y0 + tile > pixels.getHeight()) return;
+        for (int y = 0; y < tile; y++) {
+            for (int x = 0; x < tile; x++) {
+                int o = ((y * size / tile) * size + (x * size / tile)) * 4;
+                int r = rgba[o] & 255, g = rgba[o + 1] & 255, b = rgba[o + 2] & 255, a = rgba[o + 3] & 255;
+                pixels.setPixelRGBA(x0 + x, y0 + y, a << 24 | b << 16 | g << 8 | r);
+            }
+        }
+        RenderSystem.assertOnRenderThread();
+        dynamic.upload();
     }
 
     /** The sheet the tile is on: whatever {@code bindImage} binds or asks the engine for ({@code /terrain.png} when it does neither). */
