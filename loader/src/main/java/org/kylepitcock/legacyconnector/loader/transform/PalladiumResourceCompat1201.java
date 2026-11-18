@@ -1630,7 +1630,7 @@ PlayerEvents.tick(e => {
                         .replace(tickAnchor, diagnosticTick);
                 changed = 1;
             } else if (legacyStateCount == 1 && diagnosticStateCount == 1
-                    && tickAnchorCount == 0 && diagnosticTickCount == 1) {
+                    && tickAnchorCount == 1 && diagnosticTickCount == 1) {
                 // Already instrumented; keep it byte-for-byte stable.
             } else {
                 throw new IllegalStateException(
