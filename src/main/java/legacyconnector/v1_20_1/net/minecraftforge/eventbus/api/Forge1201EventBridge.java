@@ -28,7 +28,8 @@ public final class Forge1201EventBridge {
             "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteract",
             "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteractSpecific",
             "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$RightClickBlock",
-            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$RightClickItem");
+            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$RightClickItem",
+            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$LeftClickBlock");
 
     static {
         try {
