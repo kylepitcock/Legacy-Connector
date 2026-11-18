@@ -52,6 +52,7 @@ public final class ObjectHolders1201 {
     /** Called at load complete: what is still unfilled stays null (as in Forge), logged once. */
     public static synchronized void finish() {
         inject();
+        legacyconnector.v1_20_1.net.minecraftforge.registries.ObjectHolderRegistry.applyObjectHolders();   // handlers libraries added (Forge ran them after each refresh)
         for (Holder h : pending) {
             LOG.debug("Object holder {}.{} ({}): nothing registered as {}", h.field.getDeclaringClass().getSimpleName(), h.field.getName(),
                     h.registry.isEmpty() ? "by type" : h.registry, h.key);
