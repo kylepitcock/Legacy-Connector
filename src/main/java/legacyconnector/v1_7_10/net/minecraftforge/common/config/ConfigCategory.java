@@ -38,6 +38,11 @@ public class ConfigCategory implements Map<String, Property> {
         return parent == null ? name : parent.getQualifiedName() + Configuration.CATEGORY_SPLITTER + name;
     }
 
+    /** Forge: the dotted name {@code name} would have under {@code parent}. */
+    public static String getQualifiedName(String name, ConfigCategory parent) {
+        return parent == null ? name : parent.getQualifiedName() + Configuration.CATEGORY_SPLITTER + name;
+    }
+
     public ConfigCategory getFirstParent() {
         return parent == null ? this : parent.getFirstParent();
     }

@@ -76,6 +76,17 @@ public abstract class Packet {
         return mcc$idOf(getClass());
     }
 
+    /** 1.7.10 {@code generatePacket}: a new packet of the class registered under {@code id}, or null when there is none or it cannot be built. */
+    public static Packet generatePacket(com.google.common.collect.BiMap<Integer, Class<?>> map, int id) {
+        try {
+            Class<?> type = map.get(id);
+            return type == null ? null : (Packet) type.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Packets").error("Couldn't create packet {}", id, e);
+            return null;
+        }
+    }
+
     public void processPacket(INetHandler handler) {
     }
 
