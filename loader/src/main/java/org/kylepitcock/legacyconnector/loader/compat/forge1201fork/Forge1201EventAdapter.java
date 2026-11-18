@@ -170,8 +170,8 @@ public final class Forge1201EventAdapter {
                         && isSourceEventCancellationMethod(call.owner, call.name, call.desc)) {
                     if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
                         if (hasAuditedTargetSuperImplementation(call.owner, call.name, call.desc)) {
-                            // Preserve the target's corresponding override (currently the
-                            // PlayerInteractEvent.RightClickBlock setCanceled special case).
+                            // Preserve the target's corresponding interaction override:
+                            // RightClickBlock and LeftClickBlock both update useBlock/useItem.
                             continue;
                         }
                         if (!(SOURCE_EVENT.equals(call.owner)
