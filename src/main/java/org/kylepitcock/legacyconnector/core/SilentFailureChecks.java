@@ -55,6 +55,8 @@ public final class SilentFailureChecks {
         check("network: LegacyPayload encoding is idempotent", this::payloadIdempotent);
         check("registry: entity host ids match their registry keys", this::hostRegistryKeys);
         check("registry: non-vanilla blocks, items, sounds resolve", this::registrySanity);
+        check("1.7.10 forge hooks: onLivingAttack is true only when an attack was cancelled", this::livingAttackHook);
+        check("1.7.10 entity tracker: an entity removed this tick can still be looked up", this::trackerRemovedEntity);
         LOG.info("SILENT FAILURE CHECKS: {} passed, {} failed", passed, failures.size());
         for (String f : failures) LOG.error("SILENT FAILURE CHECK FAILED: {}", f);
         if (Boolean.getBoolean("legacyconnector.selfTestFailFast") && !failures.isEmpty()) {
@@ -81,6 +83,43 @@ public final class SilentFailureChecks {
     private static String cap(List<String> names) {
         return names.size() <= MAX_NAMES ? String.join("; ", names)
                 : String.join("; ", names.subList(0, MAX_NAMES)) + "; ... and " + (names.size() - MAX_NAMES) + " more";
+    }
+
+    // ---------------------------------------------------------------- legacy API semantics
+
+    /**
+     * 1.7.10 {@code ForgeHooks.onLivingAttack} returns true when the attack was CANCELLED (EntityLivingBase.attackEntityFrom starts with
+     * {@code if (ForgeHooks.onLivingAttack(...)) return false}); mods that re-implement that method copy the test. With no handler it must be false.
+     */
+    private List<String> livingAttackHook() {
+        var level = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().overworld();
+        var pig = EntityType.PIG.create(level);
+        if (pig == null) return List.of("could not create a pig");
+        var view = (legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(pig);
+        boolean cancelled = legacyconnector.v1_7_10.net.minecraftforge.common.ForgeHooks.onLivingAttack(view,
+                legacyconnector.v1_7_10.net.minecraft.util.DamageSource.generic, 1.0F);
+        return cancelled ? List.of("onLivingAttack reported a cancelled attack with no handler registered") : List.of();
+    }
+
+    /** 1.7.10 kept a dead entity (and its tracker entry) until the end of the tick; HBM's bullets send their teleport packet after an explosion killed them. */
+    private List<String> trackerRemovedEntity() {
+        var level = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().overworld();
+        var pig = EntityType.PIG.create(level);
+        if (pig == null) return List.of("could not create a pig");
+        pig.moveTo(0.5, 100, 0.5, 0, 0);
+        level.addFreshEntity(pig);
+        try {
+            var view = org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(pig);
+            var world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+            var tracker = new legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker(world);
+            int id = view.getEntityId();
+            if (tracker.trackedEntityIDs.lookup(id) == null) return List.of("a live entity has no tracker entry");
+            legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker.mcc$noteRemoved(view, level);
+            pig.discard();
+            return tracker.trackedEntityIDs.lookup(id) == null ? List.of("an entity removed this tick has no tracker entry") : List.of();
+        } finally {
+            pig.discard();
+        }
     }
 
     // ---------------------------------------------------------------- attributes
