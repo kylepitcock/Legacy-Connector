@@ -102,6 +102,72 @@ final class Forge1201EventAdapterTest {
     }
 
 
+
+    @Test
+    void auditedPlayerInteractBaseSuperCallBecomesSourceBaseBridge() throws Exception {
+        ClassNode node = new ClassNode();
+        node.version = Opcodes.V17;
+        node.access = Opcodes.ACC_PUBLIC;
+        node.name = "sample/CustomInteractEvent";
+        node.superName = "net/minecraftforge/event/entity/player/PlayerInteractEvent";
+        MethodNode method = new MethodNode(
+                Opcodes.ASM9, Opcodes.ACC_PUBLIC, "setCanceled", "(Z)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+        method.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESPECIAL,
+                "net/minecraftforge/event/entity/player/PlayerInteractEvent",
+                "setCanceled",
+                "(Z)V",
+                false));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        method.maxStack = 2;
+        method.maxLocals = 2;
+        node.methods.add(method);
+
+        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(node);
+
+        assertEquals(1, stats.superCallsRewritten());
+        MethodInsnNode rewritten = firstMethodCall(method);
+        assertEquals(Opcodes.INVOKESTATIC, rewritten.getOpcode());
+        assertEquals(Forge1201EventAdapter.BRIDGE, rewritten.owner);
+        assertEquals("baseSetCanceled", rewritten.name);
+    }
+
+    @Test
+    void auditedRightClickBlockSetCanceledSuperCallKeepsTargetOverrideDispatch() throws Exception {
+        ClassNode node = new ClassNode();
+        node.version = Opcodes.V17;
+        node.access = Opcodes.ACC_PUBLIC;
+        node.name = "sample/CustomRightClickBlockEvent";
+        node.superName = "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock";
+        MethodNode method = new MethodNode(
+                Opcodes.ASM9, Opcodes.ACC_PUBLIC, "setCanceled", "(Z)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+        method.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESPECIAL,
+                "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock",
+                "setCanceled",
+                "(Z)V",
+                false));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        method.maxStack = 2;
+        method.maxLocals = 2;
+        node.methods.add(method);
+
+        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(node);
+
+        assertEquals(0, stats.superCallsRewritten());
+        MethodInsnNode preserved = firstMethodCall(method);
+        assertEquals(Opcodes.INVOKESPECIAL, preserved.getOpcode());
+        assertEquals(
+                "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock",
+                preserved.owner);
+        assertEquals("setCanceled", preserved.name);
+        assertEquals("(Z)V", preserved.desc);
+    }
+
     @Test
     void unverifiedIntermediateForgeEventSuperCallFailsClosed() {
         ClassNode node = new ClassNode();
