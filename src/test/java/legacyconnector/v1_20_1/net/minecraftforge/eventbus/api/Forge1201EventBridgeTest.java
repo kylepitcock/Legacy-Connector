@@ -58,7 +58,7 @@ final class Forge1201EventBridgeTest {
     }
 
     private static final class CustomOverrideOnly extends PlainEvent
-            implements ICancellableEvent, Forge1201CustomCancelableOverrideMarker {
+            implements ICancellableEvent {
         private boolean superValue;
 
         @Override
