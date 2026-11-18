@@ -50,7 +50,6 @@ public final class Forge1201EventAdapter {
 
     private static final List<String> SOURCE_EVENT_BASE_PREFIXES = List.of(
             "net/minecraftforge/event/",
-            "net/minecraftforge/eventbus/api/",
             "legacyconnector/v1_20_1/net/minecraftforge/event/");
 
     /**
