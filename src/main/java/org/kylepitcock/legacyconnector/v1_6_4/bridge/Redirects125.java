@@ -192,6 +192,22 @@ public final class Redirects125 {
         item.setTextureFile(file);
     }
 
+    /** 1.2.x {@code EntityMinecart.getDamage()} returned the damage the cart took as an int (the shim's float is the 1.7.10 result). */
+    public static int minecartDamage(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart cart) {
+        return (int) cart.getDamage();
+    }
+
+    /** Forge 3.x {@code DimensionManager.getWorlds()} returned {@code World[]} (the registry's class is {@code WorldServer[]}: Java cannot overload on the result). */
+    public static World[] dimensionWorlds() {
+        return legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager.getWorlds();
+    }
+
+    /** {@code MapGenStructure.structureMap} was a {@code HashMap} (the shim's field is the {@code Map} it always holds a HashMap in). */
+    public static java.util.HashMap structureMap(legacyconnector.v1_7_10.net.minecraft.world.gen.structure.MapGenStructure gen) {
+        java.util.Map map = legacyconnector.v1_7_10.net.minecraft.world.gen.structure.MapGenStructure.mcc$structureMap(gen);
+        return map instanceof java.util.HashMap h ? h : new java.util.HashMap(map);
+    }
+
     /** Forge 3.x {@code Block.setTextureFile(file)}, void like the item's. */
     public static void setBlockTextureFile(Block block, String file) {
         block.setTextureFile(file);

@@ -496,27 +496,51 @@ public final class Notch125To147 {
             return name;
         }
 
+        /** Queues a 1.4.7 class name as its 1.2.5 name, or (a class 1.2.5 does not have) as a 1.4.7-only entry whose supertypes are walked without member rows. */
+        private void enqueue(List<String> queue, Set<String> only147, String name147) {
+            String back = table.classesBack.get(name147);
+            if (back != null) {
+                queue.add(back);
+            } else {
+                queue.add(name147);
+                only147.add(name147);
+            }
+        }
+
         /** The table row ({owner147, name147, desc147}) of {@code kind owner.name desc} on the class or its supertypes (jar classes first, then 1.4.7's hierarchy), or null. */
         String[] lookup(String kind, String owner, String name, String desc) {
             Set<String> seen = new HashSet<>();
+            Set<String> only147Names = new HashSet<>();
             List<String> queue = new ArrayList<>(List.of(owner));
             for (int i = 0; i < queue.size() && i < 64; i++) {
                 String cls = queue.get(i);
                 if (!seen.add(cls)) continue;
-                String[] hit = table.members.get(kind + " " + cls + "." + name + " " + desc);
+                boolean only147 = only147Names.contains(cls); // a 1.4.7 name in the queue: 1.2.5 rows are keyed by 1.2.5 names, which repeat the same short letters
+                String[] hit = only147 ? null : table.members.get(kind + " " + cls + "." + name + " " + desc);
                 if (hit != null) return hit;
                 Local l = local.get(cls);
-                if (l != null) {
+                if (only147) {
+                    // a class of 1.4.7 that 1.2.5 has no counterpart of (the abstract fireball base of 1.4.2 sits between the ghast fireball and Entity): its supertypes are walked
+                    // as well, else every member inherited through it (the fireball's own posX) is lost
+                    String[] up = n147.supertypes(cls);
+                    if (up != null) for (String s : up) if (s != null) enqueue(queue, only147Names, s);
+                } else if (l != null) {
                     if (l.superName() != null) queue.add(l.superName());
                     queue.addAll(List.of(l.interfaces()));
                 } else if (cls.equals("forge/ISidedInventory")) {
                     // Forge 3.x's interface extends the game's IInventory (client obfuscation io, server ni; read from the Forge 1.2.5 3.3.7 zips)
                     queue.add(isServer() ? "ni" : "io");
-                } else if (table.classes.containsKey(cls)) {
-                    String[] up = n147.supertypes(table.classes.get(cls));
-                    if (up != null) for (String s : up) if (s != null) queue.add(table.classesBack.getOrDefault(s, s));
+                } else {
+                    String c147 = table.classes.get(cls);
+                    String[] up = c147 == null ? null : n147.supertypes(c147);
+                    if (up != null) for (String s : up) if (s != null) enqueue(queue, only147Names, s);
                     String extra = table.extraSupers.get(cls);
                     if (extra != null) queue.add(extra);
+                    // Forge's and FML's own classes (FMLTextureFX extends TextureFX, forge/ISidedInventory extends IInventory): the shim has them, the join table does not
+                    if (c147 == null) {
+                        String[] api = n147.apiSupertypes(cls);
+                        if (api != null) for (String s : api) if (s != null) enqueue(queue, only147Names, s);
+                    }
                 }
             }
             return null;
