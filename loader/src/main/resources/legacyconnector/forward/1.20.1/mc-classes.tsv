@@ -131,3 +131,13 @@ net/minecraft/client/gui/screens/inventory/BookViewScreen$WrittenBookAccess	net/
 net/minecraft/world/item/enchantment/DigDurabilityEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDigDurabilityEnchantment
 net/minecraft/world/item/enchantment/ArrowPiercingEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArrowPiercingEnchantment
 net/minecraft/world/level/block/MelonBlock	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMelonBlock
+# gap round 11: 1.20.1 looting loot classes are the enchanted-bonus ones of 1.21.1 (an instanceof test or a builder call keeps its meaning)
+net/minecraft/world/level/storage/loot/functions/LootingEnchantFunction	net/minecraft/world/level/storage/loot/functions/EnchantedCountIncreaseFunction
+net/minecraft/world/level/storage/loot/functions/LootingEnchantFunction$Builder	net/minecraft/world/level/storage/loot/functions/EnchantedCountIncreaseFunction$Builder
+net/minecraft/world/level/storage/loot/predicates/LootItemRandomChanceWithLootingCondition	net/minecraft/world/level/storage/loot/predicates/LootItemRandomChanceWithEnchantedBonusCondition
+net/minecraft/client/gui/components/TextAndImageButton	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTextAndImageButton
+net/minecraft/client/gui/components/TextAndImageButton$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTextAndImageButton$Builder
+com/mojang/blaze3d/vertex/BufferBuilder$DrawState	com/mojang/blaze3d/vertex/MeshData$DrawState
+net/minecraft/world/level/chunk/status/ChunkStatus$ChunkType	net/minecraft/world/level/chunk/status/ChunkType
+net/minecraft/world/level/chunk/ChunkStatus$ChunkType	net/minecraft/world/level/chunk/status/ChunkType
+net/neoforged/neoforge/common/crafting/StrictNBTIngredient$Serializer	legacyconnector/v1_20_1/net/minecraftforge/common/crafting/VanillaIngredientSerializer
