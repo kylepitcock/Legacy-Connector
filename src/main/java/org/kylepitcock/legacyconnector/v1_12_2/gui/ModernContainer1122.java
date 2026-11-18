@@ -80,6 +80,21 @@ public class ModernContainer1122 extends Container {
     @Override
     public void detectAndSendChanges() {
         modern.broadcastChanges();
+        // legacy listeners added to the player's container (inventoryContainer.addListener) hear about changed slots, as 1.12's did
+        if (!listeners.isEmpty()) {
+            mcc$sync();
+            super.detectAndSendChanges();
+        }
+    }
+
+    /** The per-tick call of a server player's open menu: runs {@link #detectAndSendChanges} when a legacy mod listens on its view. */
+    public static void mcc$tickListeners(AbstractContainerMenu menu) {
+        if (menu == null || menu instanceof LegacyMenu1122) return;
+        ModernContainer1122 view;
+        synchronized (VIEWS) {
+            view = VIEWS.get(menu);
+        }
+        if (view != null && !view.listeners.isEmpty()) view.detectAndSendChanges();
     }
 
     @Override

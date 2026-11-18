@@ -67,7 +67,12 @@ public final class EventBridge1122 {
         bus.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Pre e) -> worldTick(e.getLevel(), TickEvent.Phase.START));
         bus.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Post e) -> worldTick(e.getLevel(), TickEvent.Phase.END));
         bus.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre e) -> playerTick(e.getEntity(), TickEvent.Phase.START));
-        bus.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post e) -> playerTick(e.getEntity(), TickEvent.Phase.END));
+        bus.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post e) -> {
+            // EntityPlayerMP.onUpdate told the open container's listeners about changed slots (mods keep client-side counters from it)
+            if (e.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp)
+                org.kylepitcock.legacyconnector.v1_12_2.gui.ModernContainer1122.mcc$tickListeners(sp.containerMenu);
+            playerTick(e.getEntity(), TickEvent.Phase.END);
+        });
 
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) -> {
             if (wants(PlayerEvent.PlayerLoggedInEvent.class) && player(e.getEntity()) != null) post(new PlayerEvent.PlayerLoggedInEvent(player(e.getEntity())));
