@@ -79,6 +79,12 @@ public final class LegacyJarInspector {
             // (multi-loader jars also carry fabric.mod.json / quilt.mod.json: those are dropped when the jar is translated)
             // (not when mods.toml is a template left in a 1.7.x jar: mcmod.info, no minecraft dependency, cpw.mods.fml code and no net.minecraftforge.fml code)
             boolean templateToml = strayTemplateModsToml(zip);
+            // A 1.20.x jar that ships neoforge.mods.toml too (Terralith: both files, the same text, Minecraft pinned to [1.20,1.21)) is no NeoForge 1.21.1 mod:
+            // NeoForge would reject it or ignore its data. Decided by the Minecraft range the neoforge file declares.
+            if (!templateToml && zip.getEntry("META-INF/neoforge.mods.toml") != null) {
+                LegacyJar pinned = inspectPinnedNeoForgeToml(zip, path);
+                if (pinned != null) return pinned;
+            }
             if (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("META-INF/mods.toml") != null && !templateToml) {
                 LegacyJar forge = inspectForge1201(zip, path);
                 if (forge != null) return forge;
@@ -304,8 +310,52 @@ public final class LegacyJarInspector {
      * Returns null for everything else (Forge mods of other versions, NeoForge 1.20.1 mods, Kotlin/Scala loaders).
      */
     static LegacyJar inspectForge1201(ZipFile zip, Path path) throws IOException {
+        return inspectForge1201(zip, path, "META-INF/mods.toml");
+    }
+
+    /** Native jars (neoforge.mods.toml) whose Minecraft range excludes 1.21.1 and that were left alone: listed in the report (the game rejects them). */
+    private static final java.util.List<String> PINNED_NATIVE = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    static java.util.List<String> pinnedNativeNotes() {
+        return PINNED_NATIVE;
+    }
+
+    /**
+     * A jar with {@code neoforge.mods.toml} whose {@code minecraft} dependency excludes 1.21.1 but names 1.20.x. With a {@code mods.toml} next to it, or without
+     * any code (a data pack), it is a 1.20.1 jar for this layer; a NeoForge 1.20.2+ jar with code is left to the game and reported. A range that accepts
+     * 1.21.1, or none, is a native mod.
+     */
+    private static LegacyJar inspectPinnedNeoForgeToml(ZipFile zip, Path path) throws IOException {
+        String neo;
+        try (InputStream in = zip.getInputStream(zip.getEntry("META-INF/neoforge.mods.toml"))) {
+            neo = new String(in.readAllBytes(), StandardCharsets.UTF_8).replaceAll("(?s)'''.*?'''|\"\"\".*?\"\"\"", "\"\"");
+        }
+        String mc = dependencyRange(neo, "minecraft");
+        if (mc == null || mc.isBlank() || rangeContains(mc, new int[] {1, 21, 1})) return null;
+        if (!rangeContains(mc, new int[] {1, 20, 1}) && !rangeContains(mc, new int[] {1, 20})) return null;
+        boolean forgeToml = zip.getEntry("META-INF/mods.toml") != null;
+        boolean hasCode = false;
+        for (var en = zip.entries(); en.hasMoreElements(); ) {
+            String n = en.nextElement().getName();
+            if (n.endsWith(".class") && !n.startsWith("META-INF/")) {
+                hasCode = true;
+                break;
+            }
+        }
+        if (forgeToml || !hasCode) {
+            LegacyJar jar = inspectForge1201(zip, path, forgeToml ? "META-INF/mods.toml" : "META-INF/neoforge.mods.toml");
+            if (jar != null) {
+                jar.versionEvidence = "neoforge.mods.toml pins minecraft " + mc + (forgeToml ? " (mods.toml present too)" : " (data pack)") + "; " + jar.versionEvidence;
+                return jar;
+            }
+        }
+        PINNED_NATIVE.add(path.getFileName() + ": neoforge.mods.toml pins minecraft " + mc + ", which excludes 1.21.1; NeoForge rejects or ignores it");
+        return null;
+    }
+
+    static LegacyJar inspectForge1201(ZipFile zip, Path path, String tomlEntry) throws IOException {
         String text;
-        try (InputStream in = zip.getInputStream(zip.getEntry("META-INF/mods.toml"))) {
+        try (InputStream in = zip.getInputStream(zip.getEntry(tomlEntry))) {
             text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
         // multi-line strings (descriptions) can contain anything, including lines that look like tables or keys

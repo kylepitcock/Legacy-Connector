@@ -680,4 +680,44 @@ class DataConverter1201Test {
         assertTrue(!in.toString().contains("partial_nbt") && (in.has("item") || in.has("items")), in.toString());
         assertEquals("m:x", r.getAsJsonObject().getAsJsonObject("output").get("item").getAsString());
     }
+
+    @Test
+    void biomeParticleOptionsGetTheirTypedFields() {
+        JsonElement fallingDust = one("data/m/worldgen/biome/a.json",
+                "{\"effects\":{\"particle\":{\"options\":{\"type\":\"minecraft:falling_dust\",\"value\":{\"Name\":\"minecraft:sand\",\"Properties\":{}}},\"probability\":0.005}}}", "data/m/worldgen/biome/a.json");
+        same("{\"effects\":{\"particle\":{\"options\":{\"type\":\"minecraft:falling_dust\",\"block_state\":{\"Name\":\"minecraft:sand\",\"Properties\":{}}},\"probability\":0.005}}}", fallingDust);
+        JsonElement transition = one("data/m/worldgen/biome/b.json",
+                "{\"effects\":{\"particle\":{\"options\":{\"type\":\"minecraft:dust_color_transition\",\"fromColor\":[1.0,0.5,0.0],\"toColor\":[0.0,0.0,1.0],\"scale\":1.0},\"probability\":0.1}}}", "data/m/worldgen/biome/b.json");
+        same("{\"effects\":{\"particle\":{\"options\":{\"type\":\"minecraft:dust_color_transition\",\"from_color\":[1.0,0.5,0.0],\"to_color\":[0.0,0.0,1.0],\"scale\":1.0},\"probability\":0.1}}}", transition);
+        JsonElement item = one("data/m/worldgen/biome/c.json",
+                "{\"effects\":{\"particle\":{\"options\":{\"type\":\"item\",\"value\":{\"id\":\"minecraft:snowball\",\"Count\":1}},\"probability\":0.1}}}", "data/m/worldgen/biome/c.json");
+        same("{\"effects\":{\"particle\":{\"options\":{\"type\":\"item\",\"item\":{\"id\":\"minecraft:snowball\",\"count\":1}},\"probability\":0.1}}}", item);
+    }
+
+    @Test
+    void numberProvidersWithoutNamespaceAndTrapezoidsAreFlattened() {
+        JsonElement carver = one("data/m/worldgen/configured_carver/c.json",
+                "{\"type\":\"minecraft:canyon\",\"config\":{\"radius\":{\"type\":\"uniform\",\"value\":{\"min_inclusive\":1,\"max_inclusive\":3}},"
+                        + "\"thickness\":{\"type\":\"minecraft:trapezoid\",\"value\":{\"min\":0,\"max\":8,\"plateau\":2}}}}", "data/m/worldgen/configured_carver/c.json");
+        same("{\"type\":\"minecraft:canyon\",\"config\":{\"radius\":{\"type\":\"uniform\",\"min_inclusive\":1,\"max_inclusive\":3},"
+                + "\"thickness\":{\"type\":\"minecraft:trapezoid\",\"min\":0,\"max\":8,\"plateau\":2}}}", carver);
+    }
+
+    @Test
+    void overlaysOfTheNewestDeclaredFormatAreMergedIntoThePack() {
+        Map<String, byte[]> in = new LinkedHashMap<>();
+        in.put("pack.mcmeta", ("{\"pack\":{\"pack_format\":15,\"supported_formats\":[15,41]},\"overlays\":{\"entries\":["
+                + "{\"formats\":[18,41],\"directory\":\"o-18\"},{\"formats\":41,\"directory\":\"o-41\"},{\"formats\":[60,70],\"directory\":\"o-60\"}]}}").getBytes(StandardCharsets.UTF_8));
+        in.put("data/m/worldgen/biome/a.json", "{\"base\":true}".getBytes(StandardCharsets.UTF_8));
+        in.put("o-18/data/m/worldgen/biome/a.json", "{\"o18\":true}".getBytes(StandardCharsets.UTF_8));
+        in.put("o-41/data/m/worldgen/biome/a.json", "{\"o41\":true}".getBytes(StandardCharsets.UTF_8));
+        in.put("o-41/data/m/worldgen/biome/b.json", "{\"o41b\":true}".getBytes(StandardCharsets.UTF_8));
+        in.put("o-60/data/m/worldgen/biome/c.json", "{\"o60\":true}".getBytes(StandardCharsets.UTF_8));
+        Map<String, byte[]> out = DataConverter1201.convertAll(in, new DataConverter1201.Stats());
+        assertEquals("{\"o41\":true}", new String(out.get("data/m/worldgen/biome/a.json"), StandardCharsets.UTF_8));
+        assertTrue(out.containsKey("data/m/worldgen/biome/b.json"));
+        assertTrue(!out.containsKey("data/m/worldgen/biome/c.json"));
+        assertTrue(out.keySet().stream().noneMatch(k -> k.startsWith("o-")), out.keySet().toString());
+        assertTrue(!new String(out.get("pack.mcmeta"), StandardCharsets.UTF_8).contains("overlays"));
+    }
 }
