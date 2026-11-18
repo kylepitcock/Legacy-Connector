@@ -48,7 +48,7 @@ public final class Forge1201EventBridge {
         if (event instanceof Forge1201EventCompat compatible) {
             return compatible.isCancelable();
         }
-        return event instanceof ICancellableEvent;
+        return isKnownSourceCancelableBuiltin(event);
     }
 
     /** Equivalent to a normal virtual call to the source Forge Event method. */
@@ -70,11 +70,16 @@ public final class Forge1201EventBridge {
             compatible.setCanceled(canceled);
             return;
         }
+        if (!isCancelable(event)) {
+            throw notCancelable(event);
+        }
         if (event instanceof ICancellableEvent cancellable) {
             cancellable.setCanceled(canceled);
             return;
         }
-        throw notCancelable(event);
+        throw new IllegalStateException(
+                "Cancelable source Forge event has no target ICancellableEvent implementation: "
+                        + event.getClass().getName());
     }
 
     /** Non-virtual equivalent of Forge Event.isCancelable(). */
@@ -84,15 +89,22 @@ public final class Forge1201EventBridge {
             return true;
         }
 
-        // Transformed source custom event parents inherit the connector marker.
-        // Known NeoForge built-in replacements are handled by an exact type table,
-        // not by assuming every target ICancellableEvent was source @Cancelable.
-        Class<?> superclass = event.getClass().getSuperclass();
-        while (superclass != null && Event.class.isAssignableFrom(superclass)) {
-            if (BUILTIN_SOURCE_CANCELABLE_TARGET_TYPES.contains(superclass.getName().replace('.', '/'))) {
+        return isKnownSourceCancelableBuiltin(event);
+    }
+
+    /**
+     * Exact fallback for target built-ins that replace source Forge event classes.
+     * ICancellableEvent alone is deliberately insufficient: target interface
+     * membership is not proof that the corresponding Forge 1.20.1 class had
+     * @Cancelable.
+     */
+    private static boolean isKnownSourceCancelableBuiltin(Event event) {
+        Class<?> type = event.getClass();
+        while (type != null && Event.class.isAssignableFrom(type)) {
+            if (BUILTIN_SOURCE_CANCELABLE_TARGET_TYPES.contains(type.getName().replace('.', '/'))) {
                 return true;
             }
-            superclass = superclass.getSuperclass();
+            type = type.getSuperclass();
         }
         return false;
     }
