@@ -35,6 +35,12 @@ public class TileEntityBrewingStand extends VanillaInventoryTile {
         VanillaOps.setInt(mcc$stand, net.minecraft.world.level.block.entity.BrewingStandBlockEntity.class, "brewTime", ticks);
     }
 
+    /** The potion value after the ingredient in {@code stack} is added to {@code meta}: unchanged when the item is no ingredient. */
+    public int func_145936_c(int meta, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        if (stack == null) return meta;
+        return stack.getItem().isPotionIngredient(stack) ? legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.applyIngredient(meta, stack.getItem().getPotionEffect(stack)) : meta;
+    }
+
     /** MCP name of {@link #getBrewTime}. */
     public int func_145935_i() {
         return getBrewTime();

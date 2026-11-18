@@ -56,6 +56,31 @@ public class Property {
         this(name, value, type, false, new String[0], langKey);
     }
 
+    /** Forge: a single value with its valid values and language key. */
+    public Property(String name, String value, Type type, String[] validValues, String langKey) {
+        this(name, value, type, false, validValues, langKey);
+    }
+
+    /** Forge: a list with its language key. */
+    public Property(String name, String[] values, Type type, String langKey) {
+        this(name, values, type, false, new String[0], langKey);
+    }
+
+    /** Forge: a list with its valid values and language key. */
+    public Property(String name, String[] values, Type type, String[] validValues, String langKey) {
+        this(name, values, type, false, validValues, langKey);
+    }
+
+    /** Whether the current value (or every value of a list) matches the validation pattern; true when there is none. */
+    public boolean isValid() {
+        if (validationPattern == null) return true;
+        if (isList) {
+            for (String v : values) if (v == null || !validationPattern.matcher(v).matches()) return false;
+            return true;
+        }
+        return value != null && validationPattern.matcher(value).matches();
+    }
+
     Property(String name, String value, Type type, boolean read, String[] validValues, String langKey) {
         setName(name);
         this.value = value;

@@ -128,7 +128,7 @@ public final class LegacyBrewing {
     // ---- reads ------------------------------------------------------------------------------------------------------------------------------
 
     /** The brewing registry in use: the running server's, else the client level's (null before either exists). */
-    private static PotionBrewing current() {
+    public static PotionBrewing current() {
         var server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) return server.potionBrewing();
         return FMLEnvironment.dist.isClient() ? ClientBrewing.current() : null;
