@@ -24,7 +24,11 @@ public class DimensionManager {
     /** FML's name and type (HEE reads the table by reflection to verify its End provider replaced the vanilla one). */
     private static final java.util.Hashtable<Integer, Class<?>> providers = new java.util.Hashtable<>();
     private static final Map<Integer, Boolean> SPAWN_LOADED = new ConcurrentHashMap<>();
-    private static final Map<Integer, Integer> DIMENSIONS = new TreeMap<>();
+    /** FML's dimension id to provider type table. */
+    public static final java.util.Hashtable<Integer, Integer> dimensions = new java.util.Hashtable<>();
+    private static final Map<Integer, Integer> DIMENSIONS = dimensions;
+    /** Ids the world's save recorded as used (Forge keeps them so ids of removed dimensions are not handed out again). */
+    private static final java.util.BitSet dimensionMap = new java.util.BitSet();
 
     static {
         providers.put(0, WorldProvider.class);
@@ -51,6 +55,26 @@ public class DimensionManager {
             for (var e : DIMENSIONS.entrySet()) if (e.getValue() == providerId) dims.add(e.getKey());
         }
         return dims.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    /**
+     * Reads the used dimension ids a world's save recorded ({@code DimensionArray}: one bit per id), or, with no data, those registered now.
+     * The ids stay reserved for {@link #getNextFreeDimId}.
+     */
+    public static void loadDimensionDataMap(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound compound) {
+        dimensionMap.clear();
+        if (compound == null) {
+            synchronized (DIMENSIONS) {
+                for (int id : DIMENSIONS.keySet()) if (id >= 0) dimensionMap.set(id);
+            }
+            return;
+        }
+        int[] words = compound.getIntArray("DimensionArray");
+        for (int i = 0; i < words.length; i++) {
+            for (int j = 0; j < 32; j++) {
+                if ((words[i] & 1 << j) != 0) dimensionMap.set(i * 32 + j);
+            }
+        }
     }
 
     public static void init() {
@@ -126,14 +150,14 @@ public class DimensionManager {
 
     public static Integer[] getStaticDimensionIDs() {
         synchronized (DIMENSIONS) {
-            return DIMENSIONS.keySet().toArray(Integer[]::new);
+            return new TreeMap<>(DIMENSIONS).keySet().toArray(Integer[]::new);
         }
     }
 
     public static int getNextFreeDimId() {
         synchronized (DIMENSIONS) {
             int next = 0;
-            while (DIMENSIONS.containsKey(next)) next++;
+            while (DIMENSIONS.containsKey(next) || dimensionMap.get(next)) next++;
             return next;
         }
     }

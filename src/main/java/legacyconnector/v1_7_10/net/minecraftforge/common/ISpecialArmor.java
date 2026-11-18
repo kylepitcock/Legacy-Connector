@@ -101,6 +101,11 @@ public interface ISpecialArmor {
          * sorts by priority, then per priority group scales the ratios down when they add up to more than all the damage, caps each at its maximum
          * and hands what is left to the next priority level.
          */
+        /** Forge's public name of the distribution step (mods that run their own armour pass call it). */
+        public static void StandardizeList(ArmorProperties[] armor, double damage) {
+            standardizeList(armor, damage);
+        }
+
         static void standardizeList(ArmorProperties[] armor, double damage) {
             java.util.Arrays.sort(armor);
             int start = 0;

@@ -103,7 +103,182 @@ public abstract class BlockRailBase extends Block {
 
     /** Connects the rail to its neighbours (the modern rail places itself; a mod rail keeps the shape it was given). */
     protected IBlockState updateDir(World worldIn, BlockPos pos, IBlockState state, boolean initialPlacement) {
-        return state;
+        return worldIn.isRemote ? state : new Rail(worldIn, pos, state).place(worldIn.isBlockPowered(pos), initialPlacement).getBlockState();
+    }
+
+    /** 1.12's rail connection logic: finds the neighbouring rails of a rail and picks its shape from them (mods' carts and rails use it). */
+    public class Rail {
+        private final World world;
+        private final BlockPos pos;
+        private final BlockRailBase block;
+        private IBlockState state;
+        private final boolean isPowered;
+        private final java.util.List<BlockPos> connectedRails = new java.util.ArrayList<>();
+        private final boolean canMakeSlopes;
+
+        public Rail(World worldIn, BlockPos pos, IBlockState state) {
+            this.world = worldIn;
+            this.pos = pos;
+            this.state = state;
+            this.block = (BlockRailBase) state.getBlock();
+            EnumRailDirection dir = block.getRailDirection(worldIn, pos, state, null);
+            this.isPowered = !block.isFlexibleRail(worldIn, pos);
+            this.canMakeSlopes = block.canMakeSlopes(worldIn, pos);
+            updateConnectedRails(dir);
+        }
+
+        public java.util.List<BlockPos> getConnectedRails() {
+            return connectedRails;
+        }
+
+        private void updateConnectedRails(EnumRailDirection dir) {
+            connectedRails.clear();
+            switch (dir) {
+                case NORTH_SOUTH: connectedRails.add(pos.north()); connectedRails.add(pos.south()); break;
+                case EAST_WEST: connectedRails.add(pos.west()); connectedRails.add(pos.east()); break;
+                case ASCENDING_EAST: connectedRails.add(pos.west()); connectedRails.add(pos.east().up()); break;
+                case ASCENDING_WEST: connectedRails.add(pos.west().up()); connectedRails.add(pos.east()); break;
+                case ASCENDING_NORTH: connectedRails.add(pos.north().up()); connectedRails.add(pos.south()); break;
+                case ASCENDING_SOUTH: connectedRails.add(pos.north()); connectedRails.add(pos.south().up()); break;
+                case SOUTH_EAST: connectedRails.add(pos.east()); connectedRails.add(pos.south()); break;
+                case SOUTH_WEST: connectedRails.add(pos.west()); connectedRails.add(pos.south()); break;
+                case NORTH_WEST: connectedRails.add(pos.west()); connectedRails.add(pos.north()); break;
+                case NORTH_EAST: connectedRails.add(pos.east()); connectedRails.add(pos.north()); break;
+                default: break;
+            }
+        }
+
+        private void removeSoftConnections() {
+            for (int i = 0; i < connectedRails.size(); ++i) {
+                Rail rail = findRailAt(connectedRails.get(i));
+                if (rail != null && rail.isConnectedToRail(this)) connectedRails.set(i, rail.pos);
+                else connectedRails.remove(i--);
+            }
+        }
+
+        private boolean hasRailAt(BlockPos p) {
+            return isRailBlock(world, p) || isRailBlock(world, p.up()) || isRailBlock(world, p.down());
+        }
+
+        private Rail findRailAt(BlockPos p) {
+            IBlockState s = world.getBlockState(p);
+            if (isRailBlock(s)) return new Rail(world, p, s);
+            BlockPos l = p.up();
+            s = world.getBlockState(l);
+            if (isRailBlock(s)) return new Rail(world, l, s);
+            l = p.down();
+            s = world.getBlockState(l);
+            return isRailBlock(s) ? new Rail(world, l, s) : null;
+        }
+
+        private boolean isConnectedToRail(Rail rail) {
+            return isConnectedTo(rail.pos);
+        }
+
+        private boolean isConnectedTo(BlockPos p) {
+            for (BlockPos c : connectedRails) {
+                if (c.getX() == p.getX() && c.getZ() == p.getZ()) return true;
+            }
+            return false;
+        }
+
+        protected int countAdjacentRails() {
+            int n = 0;
+            for (EnumFacing f : EnumFacing.Plane.HORIZONTAL.facings()) {
+                if (hasRailAt(pos.offset(f))) ++n;
+            }
+            return n;
+        }
+
+        private boolean canConnectTo(Rail rail) {
+            return isConnectedToRail(rail) || connectedRails.size() != 2;
+        }
+
+        private EnumRailDirection slopes(EnumRailDirection dir, BlockPos n, BlockPos s, BlockPos w, BlockPos e) {
+            if (dir == EnumRailDirection.NORTH_SOUTH && canMakeSlopes) {
+                if (isRailBlock(world, n.up())) dir = EnumRailDirection.ASCENDING_NORTH;
+                if (isRailBlock(world, s.up())) dir = EnumRailDirection.ASCENDING_SOUTH;
+            }
+            if (dir == EnumRailDirection.EAST_WEST && canMakeSlopes) {
+                if (isRailBlock(world, e.up())) dir = EnumRailDirection.ASCENDING_EAST;
+                if (isRailBlock(world, w.up())) dir = EnumRailDirection.ASCENDING_WEST;
+            }
+            return dir == null ? EnumRailDirection.NORTH_SOUTH : dir;
+        }
+
+        private void connectTo(Rail rail) {
+            connectedRails.add(rail.pos);
+            BlockPos n = pos.north(), s = pos.south(), w = pos.west(), e = pos.east();
+            boolean cn = isConnectedTo(n), cs = isConnectedTo(s), cw = isConnectedTo(w), ce = isConnectedTo(e);
+            EnumRailDirection dir = null;
+            if (cn || cs) dir = EnumRailDirection.NORTH_SOUTH;
+            if (cw || ce) dir = EnumRailDirection.EAST_WEST;
+            if (!isPowered) {
+                if (cs && ce && !cn && !cw) dir = EnumRailDirection.SOUTH_EAST;
+                if (cs && cw && !cn && !ce) dir = EnumRailDirection.SOUTH_WEST;
+                if (cn && cw && !cs && !ce) dir = EnumRailDirection.NORTH_WEST;
+                if (cn && ce && !cs && !cw) dir = EnumRailDirection.NORTH_EAST;
+            }
+            dir = slopes(dir, n, s, w, e);
+            state = state.withProperty(block.getShapeProperty(), dir);
+            world.setBlockState(pos, state, 3);
+        }
+
+        private boolean hasNeighborRail(BlockPos p) {
+            Rail rail = findRailAt(p);
+            if (rail == null) return false;
+            rail.removeSoftConnections();
+            return rail.canConnectTo(this);
+        }
+
+        public Rail place(boolean powered, boolean initialPlacement) {
+            BlockPos n = pos.north(), s = pos.south(), w = pos.west(), e = pos.east();
+            boolean hn = hasNeighborRail(n), hs = hasNeighborRail(s), hw = hasNeighborRail(w), he = hasNeighborRail(e);
+            EnumRailDirection dir = null;
+            if ((hn || hs) && !hw && !he) dir = EnumRailDirection.NORTH_SOUTH;
+            if ((hw || he) && !hn && !hs) dir = EnumRailDirection.EAST_WEST;
+            if (!isPowered) {
+                if (hs && he && !hn && !hw) dir = EnumRailDirection.SOUTH_EAST;
+                if (hs && hw && !hn && !he) dir = EnumRailDirection.SOUTH_WEST;
+                if (hn && hw && !hs && !he) dir = EnumRailDirection.NORTH_WEST;
+                if (hn && he && !hs && !hw) dir = EnumRailDirection.NORTH_EAST;
+            }
+            if (dir == null) {
+                if (hn || hs) dir = EnumRailDirection.NORTH_SOUTH;
+                if (hw || he) dir = EnumRailDirection.EAST_WEST;
+                if (!isPowered) {
+                    if (powered) {
+                        if (hs && he) dir = EnumRailDirection.SOUTH_EAST;
+                        if (hw && hs) dir = EnumRailDirection.SOUTH_WEST;
+                        if (he && hn) dir = EnumRailDirection.NORTH_EAST;
+                        if (hn && hw) dir = EnumRailDirection.NORTH_WEST;
+                    } else {
+                        if (hn && hw) dir = EnumRailDirection.NORTH_WEST;
+                        if (he && hn) dir = EnumRailDirection.NORTH_EAST;
+                        if (hw && hs) dir = EnumRailDirection.SOUTH_WEST;
+                        if (hs && he) dir = EnumRailDirection.SOUTH_EAST;
+                    }
+                }
+            }
+            dir = slopes(dir, n, s, w, e);
+            updateConnectedRails(dir);
+            state = state.withProperty(block.getShapeProperty(), dir);
+            if (initialPlacement || !world.getBlockState(pos).equals(state)) {
+                world.setBlockState(pos, state, 3);
+                for (int i = 0; i < connectedRails.size(); ++i) {
+                    Rail rail = findRailAt(connectedRails.get(i));
+                    if (rail != null) {
+                        rail.removeSoftConnections();
+                        if (rail.canConnectTo(this)) rail.connectTo(this);
+                    }
+                }
+            }
+            return this;
+        }
+
+        public IBlockState getBlockState() {
+            return state;
+        }
     }
 
     @Override

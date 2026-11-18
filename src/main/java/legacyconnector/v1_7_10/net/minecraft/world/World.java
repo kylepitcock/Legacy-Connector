@@ -160,6 +160,22 @@ public class World implements IBlockAccess {
         return w.mcc$villages;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$villageSiegeObj}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.village.VillageSiege villageSiegeObj;
+
+    private legacyconnector.v1_7_10.net.minecraft.village.VillageSiege mcc$siege;
+
+    /** The world's siege object (1.7.10 created it with the world); the modern game runs its own sieges, so nothing ticks this one. */
+    public static legacyconnector.v1_7_10.net.minecraft.village.VillageSiege mcc$get$villageSiegeObj(World w) {
+        if (w.mcc$siege == null) w.mcc$siege = new legacyconnector.v1_7_10.net.minecraft.village.VillageSiege(w);
+        return w.mcc$siege;
+    }
+
+    public static void mcc$set$villageSiegeObj(World w, legacyconnector.v1_7_10.net.minecraft.village.VillageSiege siege) {
+        w.mcc$siege = siege;
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.village.VillageCollection getVillageCollection() {
         return mcc$get$villageCollectionObj(this);
     }

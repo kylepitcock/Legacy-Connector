@@ -79,7 +79,30 @@ public abstract class GuiContainer extends GuiScreen {
         return null;
     }
 
+    /** The slot under the pointer, as the hosting modern screen tracks it (1.7.10's private {@code theSlot}). */
+    public java.util.function.Supplier<legacyconnector.v1_7_10.net.minecraft.inventory.Slot> mcc$hovered;
+
+    private legacyconnector.v1_7_10.net.minecraft.inventory.Slot mcc$theSlot() {
+        return mcc$hovered == null ? null : mcc$hovered.get();
+    }
+
+    /**
+     * A number key over a slot swaps that slot with the hotbar slot of the key (click mode 2), while the cursor holds nothing; true when it did
+     * (1.7.10's {@code checkHotbarKeys}). The hosting screen hands every key to a GUI that overrides {@code keyTyped}, so the swap the modern
+     * screen would do itself is done here, where the GUI's own {@code super.keyTyped} call reaches it.
+     */
     protected boolean checkHotbarKeys(int key) {
+        var player = net.minecraft.client.Minecraft.getInstance().player;
+        var slot = mcc$theSlot();
+        if (player == null || slot == null || !player.containerMenu.getCarried().isEmpty()) return false;
+        var settings = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(mc);
+        if (settings == null) return false;
+        for (int j = 0; j < 9; j++) {
+            if (key == settings.keyBindsHotbar[j].getKeyCode()) {
+                handleMouseClick(slot, slot.slotNumber, j, 2);
+                return true;
+            }
+        }
         return false;
     }
 
@@ -175,6 +198,22 @@ public abstract class GuiContainer extends GuiScreen {
             var player = net.minecraft.client.Minecraft.getInstance().player;
             if (player != null) player.closeContainer();
             else super.keyTyped(c, keyCode);
+            return;
+        }
+        // as 1.7.10's GuiContainer.keyTyped after the close checks: hotbar swap, pick block and drop over a slot holding a stack
+        checkHotbarKeys(keyCode);
+        var slot = mcc$theSlot();
+        if (slot != null && slot.getHasStack()) {
+            try {
+                var settings = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(mc);
+                if (settings != null && keyCode == settings.keyBindPickBlock.getKeyCode()) {
+                    handleMouseClick(slot, slot.slotNumber, 0, 3);
+                } else if (settings != null && keyCode == settings.keyBindDrop.getKeyCode()) {
+                    handleMouseClick(slot, slot.slotNumber, isCtrlKeyDown() ? 1 : 0, 4);
+                }
+            } catch (RuntimeException | LinkageError ignored) {
+                // no settings yet
+            }
         }
     }
 

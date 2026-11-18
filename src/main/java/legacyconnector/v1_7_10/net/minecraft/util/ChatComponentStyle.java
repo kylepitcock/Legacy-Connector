@@ -37,6 +37,22 @@ public abstract class ChatComponentStyle implements IChatComponent {
         return style;
     }
 
+    /**
+     * 1.7.10's iterator over copies: every component of the given ones and of their siblings (depth first), each a copy
+     * carrying a deep copy of its style, so the caller may change them without touching the originals.
+     */
+    public static Iterator createDeepCopyIterator(Iterable components) {
+        List<IChatComponent> out = new ArrayList<>();
+        for (Object o : components) {
+            for (IChatComponent c : (IChatComponent) o) {
+                IChatComponent copy = c.createCopy();
+                copy.setChatStyle(copy.getChatStyle().createDeepCopy());
+                out.add(copy);
+            }
+        }
+        return out.iterator();
+    }
+
     @Override
     public Iterator<IChatComponent> iterator() {
         List<IChatComponent> all = new ArrayList<>();

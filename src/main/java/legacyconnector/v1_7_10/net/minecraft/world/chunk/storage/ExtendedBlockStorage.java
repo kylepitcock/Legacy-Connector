@@ -205,6 +205,15 @@ public class ExtendedBlockStorage {
         return out;
     }
 
+    /**
+     * 1.7.10's {@code createBlockMSBArray}: gives the section an array for the high bits of its block ids and returns it.
+     * The view derives the bits from the real blocks, so the array it hands out is a copy of that (zeroes when no id passes 255).
+     */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray createBlockMSBArray() {
+        legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray out = getBlockMSBArray();
+        return out != null ? out : new legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray(4096, 4);
+    }
+
     /** The high four bits of the legacy ids above 255 (null when every id fits in eight bits, as 1.7.10 left it); a copy. */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getBlockMSBArray() {
         legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray out = null;

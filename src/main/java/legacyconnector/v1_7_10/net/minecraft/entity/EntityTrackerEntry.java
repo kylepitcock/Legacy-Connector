@@ -70,6 +70,11 @@ public class EntityTrackerEntry {
         for (int i = 0; i < players.size(); i++) tryStartWachingThis((EntityPlayerMP) players.get(i));
     }
 
+    /** 1.7.10's {@code sendLocationToAllClients}: refreshes who tracks the entity from the given players (the modern tracker owns the ranges). */
+    public void sendLocationToAllClients(java.util.List players) {
+        sendEventsToPlayers(players);
+    }
+
     /** Starts sending the entity to the player if in range; the modern tracker does this every tick by itself. */
     public void tryStartWachingThis(EntityPlayerMP player) {
     }
