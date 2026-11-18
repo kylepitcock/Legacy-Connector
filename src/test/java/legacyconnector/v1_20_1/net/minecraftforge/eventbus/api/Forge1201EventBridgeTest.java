@@ -57,6 +57,19 @@ final class Forge1201EventBridgeTest {
         assertTrue(Forge1201EventBridge.isCanceled(event));
     }
 
+
+    @Test
+    void targetOnlyCancellableInterfaceDoesNotImplySourceForgeCancelable() {
+        TargetOnlyCancelableEvent event = new TargetOnlyCancelableEvent();
+
+        assertFalse(Forge1201EventBridge.isCancelable(event));
+        assertThrows(UnsupportedOperationException.class,
+                () -> Forge1201EventBridge.setCanceled(event, true));
+    }
+
+    private static final class TargetOnlyCancelableEvent extends Event implements ICancellableEvent {
+    }
+
     private static final class CustomOverrideOnly extends PlainEvent
             implements ICancellableEvent {
         private boolean superValue;
