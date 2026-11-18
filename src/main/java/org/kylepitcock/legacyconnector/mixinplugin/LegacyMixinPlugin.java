@@ -55,7 +55,42 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
     @Override
     public List<String> getMixins() {
         install();
-        return null;
+        // Mixins whose target is a NeoForge class. Other mods (Sinytra Connector's updateModuleReads loads classes through the game layer very early) may have
+        // loaded that class before Mixin prepares this config, and Mixin then throws MixinTargetAlreadyLoadedException, a critical error that stops the game.
+        // They are therefore listed here, not in the json, and dropped with a warning when the target is already loaded.
+        List<String> out = new ArrayList<>();
+        for (String[] m : GUARDED) {
+            if (isLoaded(m[1])) {
+                System.err.println("[LegacyConnector] mixin " + m[0] + " skipped: its target " + m[1] + " was already loaded by another mod (feature degraded, game continues)");
+            } else {
+                out.add(m[0]);
+            }
+        }
+        return out;
+    }
+
+    /** {mixin class (relative to the mixin package), target class}. */
+    static final String[][] GUARDED = {
+        {"ConfigValueUnloadedMixin", "net.neoforged.neoforge.common.ModConfigSpec$ConfigValue"},
+        {"CreativeTabDuplicateMixin", "net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent"},
+        {"ItemSupportsEnchantmentHookMixin", "net.neoforged.neoforge.common.extensions.IItemExtension"},
+    };
+
+    static boolean isLoaded(String className) {
+        try {
+            Object tracker = org.spongepowered.asm.service.MixinService.getService().getClassTracker();
+            if (tracker != null && ((org.spongepowered.asm.service.IClassTracker) tracker).isClassLoaded(className)) return true;
+        } catch (Throwable ignored) {
+            // fall through to the reflective probe
+        }
+        try {
+            ClassLoader cl = LegacyMixinPlugin.class.getClassLoader();
+            Method m = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+            m.setAccessible(true);
+            return m.invoke(cl, className) != null;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     @Override
