@@ -193,6 +193,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `textures.modernLeaves` | `true` | Rebuilds mod leaves that recolour the old vanilla leaves in the modern leaf pattern, keeping the mod's colours |
 | `deepLayer.enabled` | `true` | Spreads legacy ores down below y=0 without adding any: you get the same amount as the original mod |
 | `deepLayer.excludeGenerators` | empty | Generators that shouldn't run below y=0 |
+| `deepLayer.mode` | `shifted` | `shifted`: a mod's ores are generated once, moved down to the new world bottom, so veins aren't cut at y=0; `split`: the older two-pass scheme. `deepLayer.splitMods` / `deepLayer.shiftedMods` (mod ids) choose per mod |
 | `blocks.flattenSubtypes` | `true` | Gives each legacy block subtype with its own item a block of its own, as in the 1.13 flattening, so modern mods see the right subtype |
 | `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village pools; `false` leaves villages vanilla |
 | `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld |

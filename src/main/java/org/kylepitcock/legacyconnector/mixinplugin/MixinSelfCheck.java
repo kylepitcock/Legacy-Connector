@@ -260,7 +260,7 @@ public final class MixinSelfCheck {
         Matcher pkg = Pattern.compile("\"package\"\\s*:\\s*\"([^\"]+)\"").matcher(json);
         if (!pkg.find()) return out;
         String prefix = pkg.group(1).replace('.', '/') + "/";
-        Matcher arrays = Pattern.compile("\"(mixins|client|server)\"\\s*:\\s*\\[([^\\]]*)\\]").matcher(json);
+        Matcher arrays = Pattern.compile("\"(mixins|client|server|legacyconnector_guarded)\"\\s*:\\s*\\[([^\\]]*)\\]").matcher(json);
         while (arrays.find()) {
             String kind = arrays.group(1);
             Matcher names = Pattern.compile("\"([^\"]+)\"").matcher(arrays.group(2));

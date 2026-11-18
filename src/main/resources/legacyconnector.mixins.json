@@ -16,7 +16,6 @@
     "BlockEntityNullStateMixin",
     "RegistryLegacyNamesMixin",
     "StateHolderPropertyEqualsMixin",
-    "ConfigValueUnloadedMixin",
     "TranslatableArgumentsMixin",
     "MappedRegistryLazyViewMixin",
     "ItemStackOversizedResultMixin",
@@ -85,7 +84,6 @@
     "FurnaceResultHookMixin",
     "LoomLayersHookMixin",
     "BeaconEffectsHookMixin",
-    "ItemSupportsEnchantmentHookMixin",
     "BannerTooltipLayersHookMixin",
     "ItemStackComponentHookMixin",
     "SlimeChunkHookMixin",
@@ -104,10 +102,8 @@
     "PlayerClassTravelB173Mixin",
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
-    "CreativeTabDuplicateMixin",
     "ItemStackLegacyNbtMixin",
     "BlockLootSupplierMixin",
-    "ConfigValueUnloadedMixin",
     "JigsawStructureLegacyVillageMixin",
     "ServerLevelBlockFamilyMixin",
     "LevelChunkBlockFamilyMixin",
@@ -156,6 +152,11 @@
     "ClientLanguageLegacyKeysMixin",
     "CustomHeadLayerLegacyArmorMixin",
     "BlockExpressionModelMixin"
+  ],
+  "legacyconnector_guarded": [
+    "ConfigValueUnloadedMixin",
+    "CreativeTabDuplicateMixin",
+    "ItemSupportsEnchantmentHookMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -83,6 +83,19 @@ public final class DeepLayer1710 {
         return null;
     }
 
+    /** The deep layer mode of a generator (config): its mod id is the namespace of its feature id. */
+    public static LegacyConfig.DeepMode mode(Generator g) {
+        return LegacyConfig.deepLayerMode(g.id.substring(0, g.id.indexOf(':')), g.className());
+    }
+
+    /** The mode for a registered legacy generator (decided by class when unknown). */
+    public static LegacyConfig.DeepMode mode(IWorldGenerator generator) {
+        synchronized (DeepLayer1710.class) {
+            for (Generator g : GENERATORS) if (g.generator == generator) return mode(g);
+        }
+        return LegacyConfig.deepLayerMode(null, generator.getClass().getName());
+    }
+
     /** Whether the generator's deep pass runs at all (config). */
     public static boolean allowed(Generator g) {
         return LegacyConfig.deepLayerEnabled() && LegacyConfig.deepLayerAllows(g.className());
@@ -131,7 +144,8 @@ public final class DeepLayer1710 {
         World world = World.mcc$wrap(level);
         Random random = new Random();
         long chunkSeed = chunkSeed(level.getSeed(), chunkX, chunkZ);
-        World.mcc$enterDeepPass(shift);
+        if (mode(g) == LegacyConfig.DeepMode.SHIFTED) World.mcc$enterShiftedPass(shift);
+        else World.mcc$enterDeepPass(shift);
         try {
             run(g, random, chunkSeed, chunkX, chunkZ, world);
         } finally {
@@ -149,24 +163,23 @@ public final class DeepLayer1710 {
         if (bottom >= 0 || !LegacyConfig.deepLayerEnabled()) return;
         List<Generator> gens = generators();
         Random random = new Random();
-        boolean entered = false;
-        try {
-            for (Generator g : gens) {
-                if (!modDimension && FEATURED.contains(g.id) || !allowed(g)) continue;
-                if (!entered) {
-                    World.mcc$enterDeepPass(bottom);
-                    entered = true;
-                }
+        for (Generator g : gens) {
+            if (!modDimension && FEATURED.contains(g.id) || !allowed(g)) continue;
+            // a mod dimension's world is not a generation region: its shifted pass cannot tell ores from other writes, so it stays split
+            if (!modDimension && mode(g) == LegacyConfig.DeepMode.SHIFTED) World.mcc$enterShiftedPass(bottom);
+            else World.mcc$enterDeepPass(bottom);
+            try {
                 run(g, random, chunkSeed, chunkX, chunkZ, world);
+            } finally {
+                World.mcc$leaveDeepPass();
             }
-        } finally {
-            if (entered) World.mcc$leaveDeepPass();
         }
     }
 
     /** One generator's deep pass with the seeding the catch-all used (FML's chunk seed ^ {@link #DEEP_SEED}). */
     private static void run(Generator g, Random random, long chunkSeed, int chunkX, int chunkZ, World world) {
-        random.setSeed(chunkSeed ^ DEEP_SEED);
+        // the shifted pass is the mod's own run (its seed), moved down; the split pass is a second, independent run
+        random.setSeed(World.mcc$inShiftedPass() ? chunkSeed : chunkSeed ^ DEEP_SEED);
         try {
             LegacyModLocks.generation(g.lock, () -> g.generator.generate(random, chunkX, chunkZ, world, WorldGenBridge.providerFor(world), world.getChunkProvider()));
         } catch (RuntimeException | LinkageError ex) {
