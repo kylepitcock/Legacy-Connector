@@ -10,6 +10,18 @@ public class SPacketBlockChange implements Packet<INetHandlerPlayClient> {
     private net.minecraft.world.level.block.state.BlockState state;
     private legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos blockPosition;
 
+    /** Phantom field: accesses are redirected to the accessors below. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState blockState;
+
+    public static legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState mcc$get$blockState(SPacketBlockChange p) {
+        return p.getBlockState();
+    }
+
+    public static void mcc$set$blockState(SPacketBlockChange p, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        p.state = state == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(state);
+    }
+
     public SPacketBlockChange() {
     }
 

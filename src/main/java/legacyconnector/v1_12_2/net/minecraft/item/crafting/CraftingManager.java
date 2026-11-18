@@ -15,6 +15,11 @@ public class CraftingManager {
         return REGISTRY.getObject(name);
     }
 
+    /** The recipe with the given raw registry id (its position in the registry), or null. */
+    public static IRecipe getRecipeById(int id) {
+        return REGISTRY.getObjectById(id);
+    }
+
     public static ResourceLocation getNameForRecipe(IRecipe recipe) {
         return REGISTRY.getNameForObject(recipe);
     }

@@ -13,6 +13,27 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
     @Deprecated
     public int floatingTickCount;
 
+    /** Phantom fields: the tick counters of the 1.12 handler; they follow the server tick count. */
+    @Deprecated
+    public int networkTickCount;
+    @Deprecated
+    public int lastPositionUpdate;
+
+    public static int mcc$get$networkTickCount(NetHandlerPlayServer h) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server == null ? 0 : server.getTickCount();
+    }
+
+    public static void mcc$set$networkTickCount(NetHandlerPlayServer h, int value) {
+    }
+
+    public static int mcc$get$lastPositionUpdate(NetHandlerPlayServer h) {
+        return mcc$get$networkTickCount(h);
+    }
+
+    public static void mcc$set$lastPositionUpdate(NetHandlerPlayServer h, int value) {
+    }
+
     public NetHandlerPlayServer(EntityPlayerMP player) {
         this.player = player;
     }
