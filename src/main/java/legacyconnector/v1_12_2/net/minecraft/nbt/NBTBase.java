@@ -22,8 +22,8 @@ import net.minecraft.nbt.Tag;
 public abstract class NBTBase {
     public static final String[] NBTTypes = {"END", "BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"};
 
-    NBTBase mcc$parent;
-    Runnable mcc$onChange;
+    transient NBTBase mcc$parent;
+    transient Runnable mcc$onChange;
 
     public abstract byte getId();
 
