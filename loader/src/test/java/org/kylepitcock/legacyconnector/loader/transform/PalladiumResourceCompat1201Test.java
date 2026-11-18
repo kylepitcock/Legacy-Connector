@@ -810,6 +810,9 @@ class PalladiumResourceCompat1201Test {
                 "      \"title\": {",
                 "        \"translate\": \"ability.alienevo_aliens.11.assault\"",
                 "      }",
+                "    },",
+                "    \"other_ability\": {",
+                "      \"type\": \"palladium:dummy\"",
                 "    }",
                 "  }",
                 "}"));
@@ -820,6 +823,9 @@ class PalladiumResourceCompat1201Test {
                 "      \"type\": \"alienevo:motion_to_entity\",",
                 "      \"debug_mode\": false,",
                 "      \"motion_strength\": 2.5",
+                "    },",
+                "    \"other_ability\": {",
+                "      \"type\": \"palladium:dummy\"",
                 "    }",
                 "  }",
                 "}"));
