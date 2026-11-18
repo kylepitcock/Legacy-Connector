@@ -119,13 +119,12 @@ public final class Forge1201EventAdapter {
                 if (instruction instanceof MethodInsnNode call
                         && isSourceEventCancellationMethod(call.owner, call.name, call.desc)) {
                     if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
-                        if (!isForgeEventBase(call.owner)) {
-                            continue;
-                        }
-                        if (!eventRoot) {
-                            throw new IOException("Cannot safely rewrite non-root Event super call in "
-                                    + classNode.name + "." + method.name + method.desc
-                                    + ": owner=" + call.owner + "." + call.name + call.desc);
+                        if (!SOURCE_EVENT.equals(call.owner) || !eventRoot) {
+                            throw new IOException("Unverified Forge event superclass override for non-virtual "
+                                    + "cancellation call in " + classNode.name + "." + method.name + method.desc
+                                    + ": owner=" + call.owner + "." + call.name + call.desc
+                                    + ". Only direct calls to Forge Event are currently adapted; intermediate "
+                                    + "event superclass behavior requires a pinned source hierarchy audit.");
                         }
                         rewriteSuperCall(call);
                         superCalls++;
