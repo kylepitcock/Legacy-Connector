@@ -55,13 +55,10 @@ public class TileEntity {
     }
 
     public static void addMapping(Class<?> cls, String id) {
-        if (nameToClassMap.containsKey(id) && nameToClassMap.get(id) != cls) {
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").warn("Duplicate tile entity id {} ({} and {})", id, nameToClassMap.get(id).getName(), cls.getName());
-            return;
-        }
-        nameToClassMap.put(id, cls);
-        classToNameMap.put(cls, id);
-        TileEntityBridge.addMapping(cls, id);
+        // the bridge answers the id the class is saved under (the given one unless another class holds it)
+        String used = TileEntityBridge.addMapping(cls, id);
+        nameToClassMap.putIfAbsent(used, cls);
+        classToNameMap.put(cls, used);
     }
 
     public static TileEntity createAndLoadEntity(NBTTagCompound tag) {
@@ -75,8 +72,8 @@ public class TileEntity {
     }
 
     public void writeToNBT(NBTTagCompound tag) {
-        String id = TileEntityBridge.idOf(getClass());
-        if (id == null) throw new RuntimeException(getClass() + " is missing a mapping! This is a bug!");
+        // 1.7.10 threw "is missing a mapping" for a class nothing registered, and the tile saved nothing; it saves under a fallback id instead
+        String id = TileEntityBridge.idOrFallback(getClass());
         tag.setString("id", id);
         tag.setInteger("x", xCoord);
         tag.setInteger("y", yCoord);

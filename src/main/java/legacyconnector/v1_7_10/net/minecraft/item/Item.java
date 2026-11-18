@@ -91,7 +91,11 @@ public class Item {
     }
 
     public static Item getItemFromBlock(Block block) {
-        return ItemBridge.fromBlock(block);
+        Item item = ItemBridge.fromBlock(block);
+        // an id-based version's block that has no item (a mod never registered it, or registered it as a block only) still had an ItemBlock in 1.6.4
+        if (item == null && block != null && block.mcc$vanilla == null
+                && org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.registerImplicitNow(block)) item = ItemBridge.fromBlock(block);
+        return item;
     }
 
     public static void registerItems() {

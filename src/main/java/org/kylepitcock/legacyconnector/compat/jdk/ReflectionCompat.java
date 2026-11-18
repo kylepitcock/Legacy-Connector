@@ -94,6 +94,8 @@ public final class ReflectionCompat {
                     // report the name the mod asked for
                 }
             }
+            java.lang.reflect.Method notch = notchMethod(owner, name, true, types);
+            if (notch != null) return notch;
             throw e;
         }
     }
@@ -175,6 +177,39 @@ public final class ReflectionCompat {
      * names built at run time are mapped here when the plain lookup fails, then looked up again the same way.
      */
 
+    /**
+     * Libraries of the 1.4.7-1.6.4 coremod era (CodeChickenLib's ObfMapping, which ForgeMultipart reads {@code TileEntity.classToNameMap} with) ask for
+     * game members by their notch names, as the obfuscated game they were written for has them. Not a mapping the layer can pretend away: the shim has
+     * MCP names, so a failed short name is translated with the loader's notch tables ({@link NotchNames}).
+     */
+    private static boolean maybeNotch(String name) {
+        return name.length() <= 3 && !name.isEmpty();
+    }
+
+    private static Field notchField(Class<?> owner, String name, boolean declared) {
+        if (!maybeNotch(name)) return null;
+        String mcp = NotchNames.field(owner, name);
+        if (mcp == null) return null;
+        try {
+            if (declared) return owner.getDeclaredField(mcp);
+            return owner.getField(mcp);
+        } catch (NoSuchFieldException e) {
+            return null;
+        }
+    }
+
+    private static java.lang.reflect.Method notchMethod(Class<?> owner, String name, boolean declared, Class<?>[] types) {
+        if (!maybeNotch(name)) return null;
+        for (String mcp : NotchNames.methods(owner, name)) {
+            try {
+                return declared ? owner.getDeclaredMethod(mcp, types) : owner.getMethod(mcp, types);
+            } catch (NoSuchMethodException next) {
+                // another overload
+            }
+        }
+        return null;
+    }
+
     public static Field getDeclaredField(Class<?> owner, String name) throws NoSuchFieldException {
         if (owner == Field.class && name.equals("modifiers")) return MODIFIERS_PLACEHOLDER;
         try {
@@ -188,6 +223,8 @@ public final class ReflectionCompat {
                     // report the name the mod asked for
                 }
             }
+            Field notch = notchField(owner, name, true);
+            if (notch != null) return notch;
             throw e;
         }
     }
@@ -204,6 +241,8 @@ public final class ReflectionCompat {
                     // report the name the mod asked for
                 }
             }
+            Field notch = notchField(owner, name, false);
+            if (notch != null) return notch;
             throw e;
         }
     }
@@ -237,6 +276,8 @@ public final class ReflectionCompat {
                     // report the name the mod asked for
                 }
             }
+            java.lang.reflect.Method notch = notchMethod(owner, name, false, types);
+            if (notch != null) return notch;
             throw e;
         }
     }
