@@ -4,6 +4,7 @@ import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 import legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound;
 
 /** An amount (mB) of a fluid, with optional NBT. NBT format matches Forge 1.7.10 ("FluidName", "Amount", "Tag"). */
+@com.google.gson.annotations.JsonAdapter(org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyGson1710.FluidStackAdapter.class)
 public class FluidStack {
     /** Not final: legacy code sets {@link #fluidID}, which in 1.7.10 was the stack's identity. */
     public Fluid fluid;
