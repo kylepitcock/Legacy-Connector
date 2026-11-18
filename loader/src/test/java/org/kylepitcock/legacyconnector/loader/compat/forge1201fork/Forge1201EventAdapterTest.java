@@ -77,7 +77,7 @@ final class Forge1201EventAdapterTest {
         node.visibleAnnotations = new ArrayList<>();
         node.visibleAnnotations.add(new AnnotationNode(Forge1201EventAdapter.SOURCE_CANCELABLE_DESCRIPTOR));
 
-        Forge1201EventAdapter.apply(node, parent -> "sample/PlainEvent".equals(parent));
+        Forge1201EventAdapter.apply(node, parent -> "sample/PlainEvent".equals(parent), parent -> false);
 
         assertTrue(node.interfaces.contains(Forge1201EventAdapter.COMPAT_INTERFACE));
         assertTrue(node.interfaces.contains(Forge1201EventAdapter.CANCELABLE_MARKER));
@@ -140,7 +140,10 @@ final class Forge1201EventAdapterTest {
         method.maxLocals = 2;
         node.methods.add(method);
 
-        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(node);
+        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(
+                node,
+                parent -> "net/minecraftforge/event/entity/player/PlayerInteractEvent".equals(parent),
+                parent -> "net/minecraftforge/event/entity/player/PlayerInteractEvent".equals(parent));
 
         assertEquals(1, stats.superCallsRewritten());
         MethodInsnNode rewritten = firstMethodCall(method);
@@ -171,7 +174,10 @@ final class Forge1201EventAdapterTest {
         method.maxLocals = 2;
         node.methods.add(method);
 
-        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(node);
+        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(
+                node,
+                parent -> parent.equals(node.superName),
+                parent -> parent.equals(node.superName));
 
         assertEquals(0, stats.superCallsRewritten());
         MethodInsnNode preserved = firstMethodCall(method);
@@ -205,7 +211,10 @@ final class Forge1201EventAdapterTest {
         method.maxLocals = 2;
         node.methods.add(method);
 
-        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(node);
+        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(
+                node,
+                parent -> parent.equals(node.superName),
+                parent -> parent.equals(node.superName));
 
         assertEquals(0, stats.superCallsRewritten());
         MethodInsnNode preserved = firstMethodCall(method);
@@ -228,7 +237,10 @@ final class Forge1201EventAdapterTest {
             node.name = "sample/Custom" + parent.substring(parent.lastIndexOf('$') + 1);
             node.superName = parent;
 
-            Forge1201EventAdapter.apply(node);
+            Forge1201EventAdapter.apply(
+                    node,
+                    candidate -> candidate.equals(parent),
+                    candidate -> candidate.equals(parent));
 
             assertTrue(hasMethod(node, "isCancelable", "()Z"));
             assertTrue(hasMethod(node, "isCanceled", "()Z"));
@@ -273,7 +285,10 @@ final class Forge1201EventAdapterTest {
         custom.maxLocals = 1;
         node.methods.add(custom);
 
-        Forge1201EventAdapter.apply(node, parent -> "sample/ModDefinedEventBase".equals(parent));
+        Forge1201EventAdapter.apply(
+                node,
+                parent -> "sample/ModDefinedEventBase".equals(parent),
+                parent -> false);
 
         assertTrue(node.interfaces.contains(Forge1201EventAdapter.TARGET_CANCELLABLE));
     }
@@ -299,7 +314,10 @@ final class Forge1201EventAdapterTest {
         method.maxLocals = 2;
         node.methods.add(method);
 
-        IOException failure = assertThrows(IOException.class, () -> Forge1201EventAdapter.apply(node));
+        IOException failure = assertThrows(IOException.class, () -> Forge1201EventAdapter.apply(
+                node,
+                parent -> "net/minecraftforge/event/entity/EntityEvent".equals(parent),
+                parent -> "net/minecraftforge/event/entity/EntityEvent".equals(parent)));
         assertTrue(failure.getMessage().contains("Unverified Forge event superclass override"));
     }
 
