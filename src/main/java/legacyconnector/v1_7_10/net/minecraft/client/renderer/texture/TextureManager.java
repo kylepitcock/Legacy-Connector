@@ -116,10 +116,33 @@ public class TextureManager implements ITickable {
         return real;
     }
 
+    /**
+     * 1.2.5 {@code RenderEngine.createTextureFromBytes(pixels, width, height, textureId)} (Twilight Forest's animated tiles): puts ARGB pixels into the texture that
+     * {@link #allocateAndSetupTexture} handed out. Without a GL context (mods load) the pixels replace the handle's image, uploaded when the texture is first used.
+     */
+    public void createTextureFromBytes(int[] pixels, int width, int height, int textureId) {
+        if (pixels == null || width <= 0 || height <= 0 || pixels.length < width * height) return;
+        java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, width, height, pixels, 0, width);
+        if (textureId >= 0x50000000 && textureId < 0x60000000) {
+            mcc$images.put(textureId, image);
+            Integer real = mcc$uploaded.remove(textureId);
+            if (real != null && com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+                mcc$uploadInto(real, image);
+                mcc$uploaded.put(textureId, real);
+            }
+        } else if (textureId > 0 && com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+            mcc$uploadInto(textureId, image);
+        }
+    }
+
     private int mcc$upload(java.awt.image.BufferedImage image) {
+        return mcc$uploadInto(com.mojang.blaze3d.platform.TextureUtil.generateTextureId(), image);
+    }
+
+    private int mcc$uploadInto(int id, java.awt.image.BufferedImage image) {
         int w = image.getWidth(), h = image.getHeight();
         int[] argb = image.getRGB(0, 0, w, h, null, 0, w);
-        int id = com.mojang.blaze3d.platform.TextureUtil.generateTextureId();
         com.mojang.blaze3d.platform.GlStateManager._bindTexture(id);
         com.mojang.blaze3d.platform.TextureUtil.prepareImage(id, 0, w, h);
         try (var nat = new com.mojang.blaze3d.platform.NativeImage(w, h, false)) {

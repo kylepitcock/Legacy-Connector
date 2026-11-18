@@ -168,6 +168,8 @@ public class GameSettings {
             case CHAT_HEIGHT_UNFOCUSED -> o.chatHeightUnfocused().get().floatValue();
             case MIPMAP_LEVELS -> o.mipmapLevels().get();
             case ANISOTROPIC_FILTERING -> 1.0F;
+            case SOUND -> o.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MASTER).get().floatValue();
+            case MUSIC -> o.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MUSIC).get().floatValue();
             default -> 0.0F;
         };
     }
@@ -185,6 +187,8 @@ public class GameSettings {
             case CHAT_WIDTH -> o.chatWidth().set((double) value);
             case CHAT_HEIGHT_FOCUSED -> o.chatHeightFocused().set((double) value);
             case CHAT_HEIGHT_UNFOCUSED -> o.chatHeightUnfocused().set((double) value);
+            case SOUND -> o.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MASTER).set((double) value);
+            case MUSIC -> o.getSoundSourceOptionInstance(net.minecraft.sounds.SoundSource.MUSIC).set((double) value);
             default -> {
             }
         }
@@ -262,7 +266,11 @@ public class GameSettings {
         STREAM_SEND_METADATA("options.stream.sendMetadata", false, true),
         STREAM_CHAT_ENABLED("options.stream.chat.enabled", false, false),
         STREAM_CHAT_USER_FILTER("options.stream.chat.userFilter", false, false),
-        STREAM_MIC_TOGGLE_BEHAVIOR("options.stream.micToggleBehavior", false, false);
+        STREAM_MIC_TOGGLE_BEHAVIOR("options.stream.micToggleBehavior", false, false),
+        /** Minecraft 1.2.5 to 1.6.4: the master volume slider (1.7 moved it to the sound categories). Last, so the ordinals of the others stay. */
+        SOUND("options.sound", true, false),
+        /** Minecraft 1.2.5 to 1.6.4: the music volume slider. */
+        MUSIC("options.music", true, false);
 
         private final boolean enumFloat;
         private final boolean enumBoolean;
