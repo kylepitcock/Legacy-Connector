@@ -51,6 +51,27 @@ public class DefaultOverlayHandler implements IOverlayHandler {
         return slot.getHasStack();
     }
 
+    /**
+     * NEI: for each ingredient of the recipe the slots of the screen's container that sit where the ingredient is drawn (the recipe's origin
+     * plus this handler's offset), so the ingredient can be moved there. There is no NEI transfer under JEI; handlers of 1.4.7 / 1.5.2 call it
+     * from their own overlay code.
+     */
+    public Slot[][] mapIngredSlots(GuiContainer gui, List<legacyconnector.v1_7_10.codechicken.nei.PositionedStack> ingredients) {
+        Slot[][] map = new Slot[ingredients.size()][];
+        for (int i = 0; i < map.length; i++) {
+            legacyconnector.v1_7_10.codechicken.nei.PositionedStack stack = ingredients.get(i);
+            List<Slot> found = new ArrayList<>();
+            if (gui != null && gui.inventorySlots != null) {
+                for (Object o : gui.inventorySlots.inventorySlots) {
+                    Slot slot = (Slot) o;
+                    if (slot.xDisplayPosition == stack.relx + offsetx && slot.yDisplayPosition == stack.rely + offsety) found.add(slot);
+                }
+            }
+            map[i] = found.toArray(new Slot[0]);
+        }
+        return map;
+    }
+
     /** The entry of the list that holds the same item as the stack, or null. */
     public DistributedIngred findIngred(List<DistributedIngred> ingredients, ItemStack stack) {
         for (DistributedIngred ingred : ingredients) {

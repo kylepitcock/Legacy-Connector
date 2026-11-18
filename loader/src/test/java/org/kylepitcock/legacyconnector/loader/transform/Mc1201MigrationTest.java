@@ -1023,7 +1023,7 @@ class Mc1201MigrationTest implements Opcodes {
         assertNotNull(bridge);
         assertNotNull(find(bridge, builder, "of"));
         assertNotNull(find(bridge, "test/GlowType", "begin"));
-        assertNotNull(find(bridge, builder, "startedOf"));
+        assertNotNull(find(bridge, builder, "handOver"));
         verify(c);
     }
 
@@ -1238,6 +1238,67 @@ class Mc1201MigrationTest implements Opcodes {
                 "net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds", "TUTORIAL_HINT", ":Lnet/minecraft/client/gui/components/toasts/SystemToast$SystemToastId;"));
     }
 
+    /** Gap round 11: static calls, instance calls and reads of changed fields reach their helpers. */
+    @Test
+    void round11RowsReachTheirHelpers() {
+        String lootDir = "net/minecraft/world/level/storage/loot/";
+        ClassNode c = cls("test/Round11", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC, "run", "(L" + lootDir + "entries/LootItem;Lnet/minecraft/client/gui/components/EditBox;)V");
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new InsnNode(ICONST_2));
+        m.instructions.add(new InsnNode(ICONST_3));
+        m.instructions.add(new InsnNode(ICONST_4));
+        m.instructions.add(new InsnNode(ICONST_5));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/server/level/ChunkMap", "isChunkInRange", "(IIIII)Z", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, lootDir + "entries/LootItem", "item", "Lnet/minecraft/world/item/Item;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, lootDir + "entries/LootItem", "conditions", "[L" + lootDir + "predicates/LootItemCondition;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraft/client/gui/components/EditBox", "moveCursorTo", "(I)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(2, counts.fields);
+        assertEquals(2, counts.calls);
+        assertNotNull(find(m, MIGRATE + "Round11Compat", "isChunkInRange"));
+        assertNotNull(find(m, MIGRATE + "Round11Compat", "lootItemItem"));
+        assertNotNull(find(m, MIGRATE + "Round11Compat", "entryConditions"));
+        assertNotNull(find(m, MIGRATE + "Round11ClientCompat", "moveCursorTo"));
+    }
+
+    @Test
+    void round11LootingClassesAreRenamed() {
+        assertEquals("net/minecraft/world/level/storage/loot/functions/EnchantedCountIncreaseFunction",
+                Mc1201Tables.get().classes.get("net/minecraft/world/level/storage/loot/functions/LootingEnchantFunction"));
+    }
+
+    /** Gap round 11: a subclass of MobEffectInstance calling the 5-argument super constructor keeps its call and gets a holder for the effect. */
+    @Test
+    void mobEffectInstanceSuperConstructorTakesAHolder() {
+        String eff = "net/minecraft/world/effect/MobEffectInstance";
+        ClassNode c = cls("test/MyEffect", eff);
+        MethodNode m = method(c, ACC_PUBLIC, "<init>", "(Lnet/minecraft/world/effect/MobEffect;)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, eff, "<init>", "(Lnet/minecraft/world/effect/MobEffect;IIZZ)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode call = null;
+        for (var in : m.instructions) if (in instanceof MethodInsnNode mi && mi.name.equals("<init>")) call = mi;
+        assertNotNull(call);
+        assertEquals(INVOKESPECIAL, call.getOpcode());
+        assertEquals("(Lnet/minecraft/core/Holder;IIZZ)V", call.desc);
+        assertNotNull(find(m, MIGRATE + "HolderCompat", "holder"));
+    }
+
     @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
@@ -1255,5 +1316,28 @@ class Mc1201MigrationTest implements Opcodes {
         c.accept(w);
         assertTrue(w.toByteArray().length > 0);
         new ClassReader(w.toByteArray()).accept(new ClassNode(), 0);
+    }
+
+    /** Issue 302: ClientboundSetEntityMotionPacket.getXa/Ya/Za returned the int field in 1.20.1 and a double in 1.21.1; the rows apply inside mixin classes too. */
+    @Test
+    void motionPacketGettersAreRewrittenInsideAMixinClass() {
+        String packet = "net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket";
+        ClassNode c = cls("test/mixin/ListenerMixin", "java/lang/Object");
+        c.visitAnnotation("Lorg/spongepowered/asm/mixin/Mixin;", false);
+        MethodNode m = method(c, ACC_PUBLIC, "handle", "(L" + packet + ";)V");
+        for (String g : new String[] {"getXa", "getYa", "getZa"}) {
+            m.instructions.add(new VarInsnNode(ALOAD, 1));
+            m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, packet, g, "()I", false));
+            m.instructions.add(new InsnNode(POP));
+        }
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(3, apply(c).total());
+        for (String[] pair : new String[][] {{"getXa", "motionXa"}, {"getYa", "motionYa"}, {"getZa", "motionZa"}}) {
+            assertNull(find(m, packet, pair[0]), pair[0] + " is gone");
+            MethodInsnNode h = find(m, MIGRATE + "GapCompat", pair[1]);
+            assertNotNull(h, pair[1]);
+            assertEquals(INVOKESTATIC, h.getOpcode());
+            assertEquals("(L" + packet + ";)I", h.desc);
+        }
     }
 }

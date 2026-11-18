@@ -25,4 +25,15 @@ public final class ForgeHooksClient {
         }
         return defaultTexture;
     }
+
+    /**
+     * Forge 1.5.2 {@code getArmorTexture(entity, armor, default, slot, layer)}: the item's own armor texture ({@code Item.getArmorTexture}; layer 0 is the armor, 1 its
+     * overlay) when it names one, else the default path.
+     */
+    public static String getArmorTexture(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, legacyconnector.v1_7_10.net.minecraft.item.ItemStack armor,
+            String defaultTexture, int slot, int layer) {
+        if (armor == null || armor.getItem() == null) return defaultTexture;
+        String own = armor.getItem().getArmorTexture(armor, entity, slot, layer == 1 ? "overlay" : null);
+        return own != null ? own : defaultTexture;
+    }
 }

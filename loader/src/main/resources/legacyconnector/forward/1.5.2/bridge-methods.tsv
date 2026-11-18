@@ -22,3 +22,16 @@ net/minecraft/entity/IEntityMultiPart	attackEntityFromPart	(Lnet/minecraft/entit
 net/minecraft/item/Item	itemInteractionForEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/EntityLivingBase;)Z	itemInteractionForEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/EntityLivingBase;)Z	0,2
 net/minecraft/entity/ai/EntityMoveHelper	setMoveTo	(DDDF)V	setMoveTo	(DDDD)V
 net/minecraft/entity/ai/EntityMoveHelper	getSpeed	()F	getSpeed	()D
+# NEI 1.4.7 / 1.5.2 recipe handlers (bridged to JEI): the API returned ArrayList where the shim (NEI 1.6/1.7's shape) returns List
+codechicken/nei/recipe/IRecipeHandler	getIngredientStacks	(I)Ljava/util/ArrayList;	getIngredientStacks	(I)Ljava/util/List;
+codechicken/nei/recipe/IRecipeHandler	getOtherStacks	(I)Ljava/util/ArrayList;	getOtherStacks	(I)Ljava/util/List;
+codechicken/nei/recipe/TemplateRecipeHandler$CachedRecipe	getIngredients	()Ljava/util/ArrayList;	getIngredients	()Ljava/util/List;
+codechicken/nei/recipe/TemplateRecipeHandler$CachedRecipe	getOtherStacks	()Ljava/util/ArrayList;	getOtherStacks	()Ljava/util/List;
+codechicken/nei/recipe/TemplateRecipeHandler$CachedRecipe	getCycledIngredients	(ILjava/util/ArrayList;)Ljava/util/ArrayList;	getCycledIngredients	(ILjava/util/List;)Ljava/util/List;
+# --- API gap round 2 (2026-11-17): Forge hooks of 1.4.7 and 1.5.2 blocks whose 1.7.10 form is another method (the call is rewritten too, so `super.` calls reach the shim's default)
+# a ladder was asked per World position; 1.7.10 also names the climbing entity (the old call passes null)
+net/minecraft/block/Block	isLadder	(Lnet/minecraft/world/World;III)Z	isLadder	(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraft/entity/EntityLivingBase;)Z	0,1,2,3
+# Forge's isBlockSolidOnSide(world, x, y, z, ForgeDirection) is 1.7.10's isSideSolid
+net/minecraft/block/Block	isBlockSolidOnSide	(Lnet/minecraft/world/World;IIILnet/minecraftforge/common/ForgeDirection;)Z	isSideSolid	(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraftforge/common/util/ForgeDirection;)Z
+# mob spawning on a block took the world, 1.7.10 an IBlockAccess
+net/minecraft/block/Block	canCreatureSpawn	(Lnet/minecraft/entity/EnumCreatureType;Lnet/minecraft/world/World;III)Z	canCreatureSpawn	(Lnet/minecraft/entity/EnumCreatureType;Lnet/minecraft/world/IBlockAccess;III)Z

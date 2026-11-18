@@ -13,9 +13,21 @@ public interface IRecipeHandler {
 
     int numRecipes();
 
-    void drawBackground(int recipe);
+    /** NEI 1.6/1.7 shape. A handler of the 1.4.7/1.5.2 shape ({@link #drawBackground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager, int)}) is reached through here. */
+    default void drawBackground(int recipe) {
+        drawBackground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.INSTANCE, recipe);
+    }
 
-    void drawForeground(int recipe);
+    default void drawForeground(int recipe) {
+        drawForeground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.INSTANCE, recipe);
+    }
+
+    /** NEI 1.4.7 / 1.5.2 shape: the handler draws through the manager it is handed ({@link TemplateRecipeHandler} has NEI's defaults). */
+    default void drawBackground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int recipe) {
+    }
+
+    default void drawForeground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int recipe) {
+    }
 
     List<PositionedStack> getIngredientStacks(int recipe);
 

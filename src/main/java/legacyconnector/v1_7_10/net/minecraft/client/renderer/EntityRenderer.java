@@ -96,6 +96,32 @@ public class EntityRenderer implements legacyconnector.v1_7_10.net.minecraft.cli
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE, null, null, location);
     }
 
+    /** How bright night vision makes the world, 0 to 1 (flashes when the effect is about to end). */
+    public float getNightVisionBrightness(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, float partialTicks) {
+        return player != null && player.mcc$entity instanceof net.minecraft.world.entity.LivingEntity living
+                ? net.minecraft.client.renderer.GameRenderer.getNightVisionScale(living, partialTicks) : 0.0F;
+    }
+
+    /** The per-tick update of the renderer (the modern renderer's tick: light, item in hand, rain). */
+    public void updateRenderer() {
+        var gameRenderer = net.minecraft.client.Minecraft.getInstance().gameRenderer;
+        if (gameRenderer != null) gameRenderer.tick();
+        rendererUpdateCount++;
+    }
+
+    /** The camera shake of a hit: tilts the current matrix as the player's damage animation does. */
+    public void hurtCameraEffect(float partialTicks) {
+        var pose = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.pose();
+        if (pose != null) net.minecraft.client.Minecraft.getInstance().gameRenderer.bobHurt(pose, partialTicks);
+    }
+
+    /** The walking sway of the camera: rotates and offsets the current matrix as the view bobbing option does (nothing when it is off). */
+    public void setupViewBobbing(float partialTicks) {
+        var pose = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.pose();
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (pose != null && mc.options.bobView().get()) mc.gameRenderer.bobView(pose, partialTicks);
+    }
+
     public void disableLightmap(double partialTicks) {
     }
 

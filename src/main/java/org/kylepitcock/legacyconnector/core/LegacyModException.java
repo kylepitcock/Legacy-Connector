@@ -10,7 +10,7 @@ public final class LegacyModException extends RuntimeException {
     }
 
     public LegacyModException(LegacyModRecord mod, String phase, Throwable cause) {
-        super(missing(mod) + "Legacy mod " + mod.legacyId + " (" + mod.version + ", from " + safeFile(mod) + ") failed during " + phase
+        super(missing(mod) + "Legacy mod " + mod.legacyId + " (" + mod.displayVersion() + ", from " + safeFile(mod) + ") failed during " + phase
                 + ": " + rootMessage(cause), cause);
         this.phase = phase;
     }

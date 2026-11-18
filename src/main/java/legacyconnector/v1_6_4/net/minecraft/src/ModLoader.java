@@ -109,8 +109,9 @@ public class ModLoader {
 
     public static void registerBlock(Block block, Class<? extends ItemBlock> itemclass) {
         String n = block.getUnlocalizedName();
-        if (n == null) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
-        if (n.startsWith("tile.")) n = n.substring(5);
+        if (n != null && n.startsWith("tile.")) n = n.substring(5);
+        // a block never given a name (RedPower's appliance/machine blocks name their metadata variants through their own setItemName): unique by id
+        if (n == null || n.isEmpty() || n.equals("null")) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         GameRegistry.registerBlock(block, itemclass, n);
     }
 
@@ -408,7 +409,17 @@ public class ModLoader {
     }
 
     public static <T, E> T getPrivateValue(Class<? super E> instanceclass, E instance, int fieldindex) {
-        return ObfuscationReflectionHelper.getPrivateValue(instanceclass, instance, fieldindex);
+        T value = ObfuscationReflectionHelper.getPrivateValue(instanceclass, instance, fieldindex);
+        // 1.4.7 / 1.5.2 mods (NEI furnace handlers) read FurnaceRecipes' smelting list by field index as a HashMap keyed by item id
+        // (the shim's is keyed by input stack): hand them a snapshot in the legacy shape.
+        if (instance instanceof legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes fr && value instanceof java.util.Map<?, ?> m
+                && !m.isEmpty() && m.keySet().iterator().next() instanceof ItemStack) {
+            java.util.HashMap<Object, Object> byId = new java.util.HashMap<>();
+            for (Object o : legacyconnector.v1_6_4.facade.net.minecraft.item.crafting.FurnaceRecipes.mcc$legacy$getSmeltingList(fr).entrySet()) byId.put(((java.util.Map.Entry<?, ?>) o).getKey(), ((java.util.Map.Entry<?, ?>) o).getValue());
+            @SuppressWarnings("unchecked") T snapshot = (T) byId;
+            return snapshot;
+        }
+        return value;
     }
 
     public static <T, E> T getPrivateValue(Class<? super E> instanceclass, E instance, String field) {

@@ -10,6 +10,17 @@ import legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary;
 
 /** NEI's stack helpers (the ones mods call). */
 public class NEIServerUtils {
+    /** NEI 1.4.7 / 1.5.2: orders stacks by item, then damage, then count (null last). */
+    public static int compareStacks(ItemStack a, ItemStack b) {
+        if (a == b) return 0;
+        if (a == null || b == null) return a == null ? -1 : 1;
+        int ida = Item.getIdFromItem(a.getItem());
+        int idb = Item.getIdFromItem(b.getItem());
+        if (ida != idb) return ida - idb;
+        if (a.getItemDamage() != b.getItemDamage()) return a.getItemDamage() - b.getItemDamage();
+        return ItemStack.mcc$get$stackSize(a) - ItemStack.mcc$get$stackSize(b);
+    }
+
     public static boolean areStacksSameType(ItemStack a, ItemStack b) {
         return a != null && b != null && a.getItem() == b.getItem()
                 && (!a.getHasSubtypes() || a.getItemDamage() == b.getItemDamage()) && ItemStack.areItemStackTagsEqual(b, a);

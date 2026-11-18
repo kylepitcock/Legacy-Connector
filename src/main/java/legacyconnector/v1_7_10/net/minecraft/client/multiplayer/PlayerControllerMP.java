@@ -53,6 +53,18 @@ public class PlayerControllerMP {
     public void sendSlotPacket(ItemStack stack, int slot) {
     }
 
+    /** Tells the server which hotbar slot is selected (the modern game does it every tick; mods call it right after changing the slot). */
+    public void syncCurrentPlayItem() {
+        var m = mode();
+        if (m != null) m.ensureHasSentCarriedItem();
+    }
+
+    /** A left click on a block in creative mode: breaks it at once (as the game's creative click does). */
+    public static void clickBlockCreative(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, PlayerControllerMP controller, int x, int y, int z,
+            int side) {
+        controller.clickBlock(x, y, z, side);
+    }
+
     public float getBlockReachDistance() {
         var player = net.minecraft.client.Minecraft.getInstance().player;
         return player == null ? 4.5F : (float) player.blockInteractionRange();
@@ -100,6 +112,18 @@ public class PlayerControllerMP {
         var at = hit == null ? net.minecraft.world.phys.Vec3.atCenterOf(pos) : new net.minecraft.world.phys.Vec3(hit.xCoord, hit.yCoord, hit.zCoord);
         var face = net.minecraft.core.Direction.from3DDataValue(side);
         return m.useItemOn(local, net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.phys.BlockHitResult(at, face, pos, false)).consumesAction();
+    }
+
+    /** Minecraft 1.3+ {@code gameIsSurvivalOrAdventure()}: the player is not in creative mode (spectators do not exist before 1.8). */
+    public boolean gameIsSurvivalOrAdventure() {
+        return isNotCreative();
+    }
+
+    /** 1.2.5 {@code sendPacketDropItem(stack)}: in creative mode the client tells the server that it threw the stack away (the server spawns the item); survival drops go through the inventory. */
+    public void sendPacketDropItem(ItemStack stack) {
+        var m = mode();
+        if (m == null || stack == null || !isInCreativeMode()) return;
+        m.handleCreativeModeItemDrop(stack.mcc$modern());
     }
 
     /** Uses the held item in the air; true when it did something. */

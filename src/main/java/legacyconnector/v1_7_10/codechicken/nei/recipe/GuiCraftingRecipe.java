@@ -13,5 +13,6 @@ public class GuiCraftingRecipe {
 
     public static void registerRecipeHandler(ICraftingHandler handler) {
         craftinghandlers.add(handler);
+        org.kylepitcock.legacyconnector.compat.nei.NeiBridge.registerCraftingHandler(handler);
     }
 }

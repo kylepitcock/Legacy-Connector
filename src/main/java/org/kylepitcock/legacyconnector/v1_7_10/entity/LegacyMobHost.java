@@ -162,6 +162,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
         clearBossBar();
+        legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker.mcc$noteRemoved(legacy, level());
         super.remove(reason);
     }
 

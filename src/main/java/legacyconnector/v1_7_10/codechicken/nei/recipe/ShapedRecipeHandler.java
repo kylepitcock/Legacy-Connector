@@ -20,6 +20,11 @@ public class ShapedRecipeHandler extends TemplateRecipeHandler {
             setIngredients(width, height, items);
         }
 
+        /** NEI 1.4.7 / 1.5.2: a vanilla shaped recipe. */
+        public CachedShapedRecipe(legacyconnector.v1_7_10.net.minecraft.item.crafting.ShapedRecipes recipe) {
+            this(recipe.recipeWidth, recipe.recipeHeight, recipe.recipeItems, recipe.getRecipeOutput());
+        }
+
         public void setIngredients(int width, int height, Object[] items) {
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {

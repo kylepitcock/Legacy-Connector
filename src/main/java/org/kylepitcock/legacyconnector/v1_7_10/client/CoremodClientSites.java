@@ -32,6 +32,7 @@ public final class CoremodClientSites {
                 }
             });
         }
+        if (CoremodSites.Client.FIRST_PERSON_ARM.listed()) gameBus.addListener(net.neoforged.bus.api.EventPriority.LOW, CoremodClientSites::onRenderArm);
         if (CoremodSites.Client.GAME_STARTED.listed()) {
             gameBus.addListener((ClientTickEvent.Post e) -> {
                 // 1.7.10's startGame, last thing: the first tick on which the mods' classes can be called
@@ -47,6 +48,23 @@ public final class CoremodClientSites {
                     CoremodSites.Client.CONTAINER_KEY.fire((char) 0, KeyCodes.fromGlfw(e.getKeyCode()));
                 }
             });
+        }
+    }
+
+    /** {@link CoremodSites.Client#FIRST_PERSON_ARM}: the main arm of the local player, drawn by the hook in the legacy render context at the arm's pose. */
+    private static void onRenderArm(net.neoforged.neoforge.client.event.RenderArmEvent e) {
+        var player = e.getPlayer();
+        if (e.isCanceled() || handFailures > 5 || player != net.minecraft.client.Minecraft.getInstance().player || e.getArm() != player.getMainArm()
+                || !CoremodSites.Client.FIRST_PERSON_ARM.active()) return;
+        if (!(EntityBridge.wrap(player) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer legacy)) return;
+        var renderer = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.instance.mcc$playerRenderer();
+        RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        try {
+            if (CoremodSites.Client.FIRST_PERSON_ARM.cancels(renderer, legacy)) e.setCanceled(true);
+        } catch (RuntimeException | LinkageError ex) {
+            if (handFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").warn("A coremod hook failed (first person arm)", ex);
+        } finally {
+            RenderContext.end();
         }
     }
 

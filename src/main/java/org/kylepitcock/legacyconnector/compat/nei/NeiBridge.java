@@ -86,6 +86,7 @@ public final class NeiBridge {
         if (configsLoaded) return;
         configsLoaded = true;
         fillItemList();
+        legacyconnector.v1_7_10.codechicken.nei.recipe.FurnaceRecipeHandler.mcc$findFuels();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         int n = 0;
         for (var file : ModList.get().getModFiles()) {

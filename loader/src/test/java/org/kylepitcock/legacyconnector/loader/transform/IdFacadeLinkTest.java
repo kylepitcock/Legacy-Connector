@@ -203,4 +203,25 @@ class IdFacadeLinkTest implements Opcodes {
         });
         assertEquals(List.of(P6 + "item/Item.mcc$fromId(I)L" + ITEM + ";", STACK + ".<init>(L" + ITEM + ";II)V"), calls(n.methods.get(0)));
     }
+
+    @Test
+    void superCallOfAFacadeServedMethodBecomesAStaticFacadeCallWithThis() {
+        Hierarchy h = hierarchy();
+        ClassNode n = mod(h, c -> {
+            c.superName = WORLD;
+            MethodNode m = new MethodNode(ACC_PUBLIC, "at", "()I", null, null);
+            c.methods.add(m);
+            m.visitVarInsn(ALOAD, 0);
+            m.visitInsn(ICONST_1);
+            m.visitInsn(ICONST_2);
+            m.visitInsn(ICONST_3);
+            m.visitMethodInsn(INVOKESPECIAL, WORLD, "getBlockId", "(III)I", false);
+            m.visitInsn(IRETURN);
+        });
+        MethodNode m = n.methods.get(0);
+        assertEquals(List.of(P6 + "world/IBlockAccess.getBlockId(L" + ACCESS + ";III)I"), calls(m));
+        for (AbstractInsnNode i = m.instructions.getFirst(); i != null; i = i.getNext()) {
+            if (i instanceof MethodInsnNode c) assertEquals(INVOKESTATIC, c.getOpcode());
+        }
+    }
 }

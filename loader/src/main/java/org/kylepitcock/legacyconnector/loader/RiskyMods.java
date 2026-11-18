@@ -34,10 +34,18 @@ final class RiskyMods {
     static final String NOTICE_FILE = "pending-risk-notice.txt";
 
     /** One mod's (or jar's) risk. {@code kind} is {@code unresolved} or {@code stubs}. */
-    record Entry(String id, String version, String kind, int count, List<String> symbols) {}
+    record Entry(String id, String version, String kind, int count, List<String> symbols, List<String> libs) {
+        Entry(String id, String version, String kind, int count, List<String> symbols) {
+            this(id, version, kind, count, symbols, List.of());
+        }
+    }
 
     /** What the link report of one jar says; {@code null} when the jar is not risky. */
-    record Summary(int errors, int stubs, List<String> symbols) {}
+    record Summary(int errors, int stubs, List<String> symbols, List<String> libs) {
+        Summary(int errors, int stubs, List<String> symbols) {
+            this(errors, stubs, symbols, List.of());
+        }
+    }
 
     private RiskyMods() {}
 
@@ -47,13 +55,15 @@ final class RiskyMods {
         if (errors == 0 && stubs < STUB_LIMIT) return null;
         List<String> symbols = new ArrayList<>();
         if (errors > 0) {
-            for (Map<String, ?> m : List.of(links.missingClasses, links.missingShimMembers, links.missingLibraryMembers)) {
+            for (Map<String, ?> m : List.of(links.missingRequiredLibClasses, links.missingClasses, links.missingShimMembers, links.missingLibraryMembers)) {
                 for (String k : m.keySet()) if (symbols.size() < 2) symbols.add(shorten(k));
             }
         } else {
             for (String k : links.stubbedMembers.keySet()) if (symbols.size() < 2) symbols.add(shorten(k));
         }
-        return new Summary(errors, stubs, symbols);
+        List<String> libs = new ArrayList<>();
+        links.missingRequiredLibs().forEach((lib, n) -> libs.add(lib + ":" + n));
+        return new Summary(errors, stubs, symbols, libs);
     }
 
     /** {@code a/b/C.m(Ljava/lang/String;)V} -> {@code a.b.C.m(...)}; fields lose their type; the shim's package prefix is dropped. */
@@ -70,6 +80,7 @@ final class RiskyMods {
         if (s != null) {
             sb.append("errors=").append(s.errors()).append('\n').append("stubs=").append(s.stubs()).append('\n');
             for (String sym : s.symbols()) sb.append("sym=").append(sym).append('\n');
+            for (String lib : s.libs()) sb.append("lib=").append(lib).append('\n');
         }
         Files.writeString(file, sb.toString(), StandardCharsets.UTF_8);
     }
@@ -80,12 +91,14 @@ final class RiskyMods {
             if (!Files.isRegularFile(file)) return null;
             int errors = 0, stubs = 0;
             List<String> symbols = new ArrayList<>();
+            List<String> libs = new ArrayList<>();
             for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
                 if (line.startsWith("errors=")) errors = Integer.parseInt(line.substring(7).trim());
                 else if (line.startsWith("stubs=")) stubs = Integer.parseInt(line.substring(6).trim());
                 else if (line.startsWith("sym=")) symbols.add(line.substring(4));
+                else if (line.startsWith("lib=")) libs.add(line.substring(4));
             }
-            return errors == 0 && stubs < STUB_LIMIT ? null : new Summary(errors, stubs, symbols);
+            return errors == 0 && stubs < STUB_LIMIT ? null : new Summary(errors, stubs, symbols, libs);
         } catch (IOException | RuntimeException e) {
             return null;
         }
@@ -99,7 +112,7 @@ final class RiskyMods {
             if (d.legacyId != null && !d.legacyId.isBlank()) id = d.legacyId;
             if (d.version != null) version = d.version;
         }
-        return s.errors() > 0 ? new Entry(id, version, "unresolved", s.errors(), s.symbols())
+        return s.errors() > 0 ? new Entry(id, version, "unresolved", s.errors(), s.symbols(), s.libs())
                 : new Entry(id, version, "stubs", s.stubs(), s.symbols());
     }
 
@@ -132,6 +145,8 @@ final class RiskyMods {
             if (!e.version().isEmpty()) sb.append(' ').append(e.version());
             sb.append(": ").append(e.count()).append("unresolved".equals(e.kind()) ? " unresolved reference(s)" : " stubbed API member(s)");
             if (!e.symbols().isEmpty()) sb.append(", e.g. ").append(String.join(", ", e.symbols()));
+            for (String lib : e.libs()) sb.append("; the modern ").append(lib.substring(0, lib.indexOf(':'))).append(" that is installed lacks ").append(lib.substring(lib.indexOf(':') + 1))
+                    .append(" class(es) of it: install the legacy ").append(lib.substring(0, lib.indexOf(':'))).append(" jar of this Minecraft version in mods/<version>/");
         }
         if (sorted.size() > LISTED) sb.append("\n...and ").append(sorted.size() - LISTED).append(" more, see logs/legacyconnector-report.txt");
         else sb.append("\nDetails: logs/legacyconnector-report.txt");

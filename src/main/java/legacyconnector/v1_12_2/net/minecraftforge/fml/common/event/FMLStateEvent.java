@@ -5,6 +5,9 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader;
 import legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side;
 
 public abstract class FMLStateEvent extends FMLEvent {
+    public FMLStateEvent(Object... data) {
+    }
+
     public abstract legacyconnector.v1_12_2.net.minecraftforge.fml.common.LoaderState.ModState getModState();
 
     public Side getSide() {

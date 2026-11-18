@@ -98,6 +98,8 @@ neoForge {
             // -PmsptLog=<ticks>: a "MSPT over N ticks" line (mean, p50, p99, max, heap) every N server ticks; -PmemoryLog logs heap and direct memory every 10 s
             if (project.hasProperty('msptLog')) systemProperty 'legacyconnector.msptLog', project.property('msptLog')
             if (project.hasProperty('memoryLog')) systemProperty 'legacyconnector.memoryLog', 'true'
+            // -PtileRoundTrip=place, then =check on a second run over the same world: legacy tile entities keep their items over a save and restart
+            if (project.hasProperty('tileRoundTrip')) systemProperty 'legacyconnector.tileRoundTrip', project.property('tileRoundTrip')
             // runs the client blockstate translation on the server too (logs "1.12.2 blockstates: N translated, M fell back"); -PassetsDump=<dir> writes it
             systemProperty 'legacyconnector.assetsSelfTest', project.findProperty('assetsDump') ?: 'true'
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
@@ -308,6 +310,19 @@ def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
     outputs.file shimIndexFile
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + classDirs.files.collect { it.absolutePath } } as CommandLineArgumentProvider)
 }
+// Members of the hand-written shim may be added, never silently removed or changed (a mod that linked against one would turn into an
+// unresolved reference, "gap_shim" in the probe): compared with tools/dev/shim-members.txt.gz; accept an intended removal with
+// `python tools/dev/check_shim_members.py --update`.
+def checkShimMembers = tasks.register('checkShimMembers', Exec) {
+    dependsOn generateShimIndex
+    inputs.file shimIndexFile
+    inputs.file layout.projectDirectory.file('tools/dev/shim-members.txt.gz')
+    inputs.file layout.projectDirectory.file('tools/dev/check_shim_members.py')
+    outputs.upToDateWhen { false }
+    def isWin = System.getProperty('os.name').toLowerCase().contains('win')
+    commandLine isWin ? ['python', 'tools/dev/check_shim_members.py'] : ['python3', 'tools/dev/check_shim_members.py']
+}
+tasks.named('check') { dependsOn checkShimMembers }
 sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
 tasks.named('processResources') {
     dependsOn generateShimIndex

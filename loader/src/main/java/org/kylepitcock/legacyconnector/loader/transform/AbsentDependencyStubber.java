@@ -27,10 +27,15 @@ public final class AbsentDependencyStubber {
     private AbsentDependencyStubber() {}
 
     public static int apply(ClassNode node, Hierarchy hierarchy) {
+        return apply(node, hierarchy, null);
+    }
+
+    /** {@code report}: a class of a required modern library that is missing there is an unresolved link, not an optional integration; may be null. */
+    public static int apply(ClassNode node, Hierarchy hierarchy, LinkReport report) {
         int stubbed = 0;
         for (MethodNode m : node.methods) {
             if (m.instructions.size() == 0 || guarded(m)) continue;
-            if (stubMethod(m, hierarchy)) stubbed++;
+            if (stubMethod(m, hierarchy, report, node.name)) stubbed++;
         }
         return stubbed;
     }
@@ -40,7 +45,7 @@ public final class AbsentDependencyStubber {
      * followed it (up to the next stack map frame, i.e. the next jump target). The code before it stays, so the
      * mod's own "is the other mod loaded" guards (an early return) keep working.
      */
-    private static boolean stubMethod(MethodNode m, Hierarchy hierarchy) {
+    private static boolean stubMethod(MethodNode m, Hierarchy hierarchy, LinkReport report, String owner) {
         boolean changed = false;
         AbstractInsnNode insn = m.instructions.getFirst();
         while (insn != null) {
@@ -51,6 +56,7 @@ public final class AbsentDependencyStubber {
                 continue;
             }
             changed = true;
+            if (report != null) report.absentRequiredLibClass(hierarchy, missing.replace('.', '/'), owner);
             InsnList body = new InsnList();
             body.add(new TypeInsnNode(Opcodes.NEW, "java/lang/NoClassDefFoundError"));
             body.add(new InsnNode(Opcodes.DUP));

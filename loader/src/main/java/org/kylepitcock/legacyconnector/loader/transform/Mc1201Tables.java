@@ -44,6 +44,8 @@ public final class Mc1201Tables {
     final List<Bridge> bridges = new ArrayList<>();
     /** Overrides of methods that became final in 1.21.1: owner, name, descriptor, new name ({@code -}: no replacement, the override is disabled). */
     final List<String[]> overrides = new ArrayList<>();
+    /** lib-lambdas.tsv: functional interface + sam name + old descriptor to its row (interface, sam, old descriptor, new descriptor, converters). */
+    final java.util.Map<String, String[]> lambdas = new java.util.HashMap<>();
 
     private Map<String, Call> specialByDesc;
 
@@ -129,6 +131,7 @@ public final class Mc1201Tables {
         }
         for (String[] f : rows("mc-fields.tsv", 6)) t.fields.put(f[0] + "." + f[1] + ":" + f[2], new Field(f[0], f[1], f[2], f[3], f[4], f[5]));
         t.overrides.addAll(rows("mc-overrides.tsv", 4));
+        for (String[] f : rows("lib-lambdas.tsv", 4)) t.lambdas.put(f[0] + "." + f[1] + f[2], f);
         for (String[] f : rows("mc-bridges.tsv", 8)) {
             List<String> args = f[5].equals("-") ? List.of() : List.of(f[5].split(","));
             t.bridges.add(new Bridge(f[0], f[1], f[2], f[3], f[4], args, f[6].equals("-") ? null : f[6], f[7].equals("-") ? -1 : Integer.parseInt(f[7])));

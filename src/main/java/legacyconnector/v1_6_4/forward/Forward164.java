@@ -61,6 +61,14 @@ public final class Forward164 {
         return java.util.logging.Logger.getLogger(id != null ? id : "ForgeModLoader");
     }
 
+    // ------------------------------------------------------------------ villages
+
+    /** 1.4.7 to 1.6.4 {@code ComponentVillage.startPiece} (a village building's village start; 1.7.10 components do not keep it). */
+    public static legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Start villageStartPiece(
+            legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Village village) {
+        return village.mcc$startPiece();
+    }
+
     // ------------------------------------------------------------------ sound: Minecraft.sndManager and its 1.6.4 methods
 
     /** 1.6.4 {@code Minecraft.sndManager}: the sound manager (1.7.10 reaches it through the sound handler). */
@@ -82,13 +90,10 @@ public final class Forward164 {
         m.playSound(legacyconnector.v1_7_10.net.minecraft.client.audio.PositionedSoundRecord.createPositionedSoundRecord(soundLocation(name), volume, pitch, x, y, z));
     }
 
-    /** 1.6.4 {@code playEntitySound}: a one-shot sound at the entity (the sound does not follow it). */
+    /** 1.6.4 {@code playEntitySound}: a sound that follows the entity until it ends, the entity dies or {@code stopEntitySound} (see {@link EntitySounds164}). */
     public static void playEntitySound(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager m, String name,
             legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float volume, float pitch, boolean loop) {
-        if (entity == null) return;
-        playSound(m, name, (float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posX(entity),
-                (float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posY(entity),
-                (float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posZ(entity), volume, pitch);
+        EntitySounds164.play(m, name, entity, volume, pitch);
     }
 
     /** 1.6.4 {@code playStreaming(name, x, y, z)} (records and music): a record sound at the position; a null name stops the music. */
@@ -108,11 +113,14 @@ public final class Forward164 {
         legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool.SOUNDS.addSound(name);
     }
 
-    /** 1.6.4 {@code setEntitySoundPitch}: entity sounds are one-shots here and cannot be changed after the start. */
+    /** 1.6.4 {@code setEntitySoundPitch}: the pitch of the entity's sounds, read by the engine on the next tick. */
     public static void setEntitySoundPitch(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager m, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float pitch) {
+        EntitySounds164.setPitch(entity, pitch);
     }
 
+    /** 1.6.4 {@code setEntitySoundVolume}: the volume of the entity's sounds, read by the engine on the next tick. */
     public static void setEntitySoundVolume(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager m, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float volume) {
+        EntitySounds164.setVolume(entity, volume);
     }
 
     /** 1.6.4 {@code GameSettings.soundVolume}: the master volume slider. */

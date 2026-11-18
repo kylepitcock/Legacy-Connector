@@ -239,6 +239,17 @@ bind them through DragonAPI's `ReikaTextureHelper` (raw GL ids, see [Rendering](
 manager anyway (`new ResourceLocation("/Reika/...")`) it is read from the mods' class path with its original case and
 registered once as `legacyconnector:classpath/<path>` (a missing file gets the missing texture once, never a lookup per frame).
 
+## Creative listing of 1.4.7 to 1.6.4 mods
+
+A 1.4.7 to 1.6.4 block or item has a creative tab only when the mod called `setCreativeTab`. RedPower 2's world blocks (ores, rubber
+wood, leaves, sapling) set none and list their stacks through the Forge hook `Block.addCreativeItems(ArrayList)` (or `getSubBlocks`),
+which NEI and the search list read; no tab did. The modern creative screen and JEI only show what a tab lists, so those items existed but
+could not be found. Rule (`CreativeTabBridge.registerUnlistedTabs`): for mods of source version 1.4.7, 1.5.2 or 1.6.4, an item with
+no tab whose block or item class (the mod's own, below the shim base) declares `addCreativeItems`, `getSubBlocks` or `getSubItems` joins
+a tab `legacyconnector:unlisted_<mod>` named after its mod, with exactly the stacks that listing returns. Items without such a listing
+(multiblock parents, technical blocks) stay hidden, as in the original. The mod's own `addCreativeItems` is called directly when
+it declares one (shim `BlockFlower` is 1.7.10's coloured flower and would list nine vanilla subtypes for RedPower's plants block).
+
 ## Block subtypes (flattening)
 
 A 1.7.10 block has 16 metadata values, and its item usually lists some of them as subtypes (wool colours, Chisel variants,

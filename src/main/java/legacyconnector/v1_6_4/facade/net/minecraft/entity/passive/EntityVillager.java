@@ -11,4 +11,13 @@ public final class EntityVillager {
         legacyconnector.v1_7_10.net.minecraft.item.Item item = Ids.item(itemId);
         if (item != null) legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager.func_146089_b(list, item, random, chance);
     }
+
+    /**
+     * 1.6.4 {@code EntityVillager.addMerchantItem(list, itemId, random, chance)}: with the chance, adds an offer of the item (a random-sized stack of it) for one emerald
+     * (1.7.10: {@code func_146091_a}).
+     */
+    public static void addMerchantItem(legacyconnector.v1_7_10.net.minecraft.village.MerchantRecipeList list, int itemId, java.util.Random random, float chance) {
+        legacyconnector.v1_7_10.net.minecraft.item.Item item = Ids.item(itemId);
+        if (item != null) legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager.func_146091_a(list, item, random, chance);
+    }
 }

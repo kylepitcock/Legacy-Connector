@@ -297,7 +297,9 @@ public class Chunk {
      * for it) paid that per block.
      */
     private net.minecraft.world.level.block.state.BlockState mcc$serverState(int x, int y, int z) {
-        if (mcc$blocks != null || modern == null || y < 1 || y > 255) return null;
+        // y == 0 is answered here too (getBlock applies the bedrock-row rule): a chunk handed to another thread after its generation
+        // (Mystcraft's profiler queue) must not fall back to the generation region, which is gone by then and throws
+        if (mcc$blocks != null || modern == null || y < 0 || y > 255) return null;
         // a full chunk of a server level, or the chunk still being generated (a proto chunk: there are none on a client)
         var live = mcc$liveChunk();
         if (live != null ? live.getLevel().isClientSide() : !(modern instanceof net.minecraft.world.level.chunk.ProtoChunk)) return null;
@@ -314,7 +316,11 @@ public class Chunk {
 
     public Block getBlock(int x, int y, int z) {
         var fast = mcc$directState(x, y, z);
-        if (fast != null) return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(fast);
+        if (fast != null) {
+            // 1.7.10's overworld always had bedrock at y=0 (World.getBlock: mcc$bedrockFloor)
+            if (y == 0 && fast.isAir() && modern.getMinBuildHeight() < 0) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
+            return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(fast);
+        }
         if (mcc$blocks != null) {
             if (y < 0 || y >= mcc$height) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
             Block b = mcc$blocks[index(x, y, z)];

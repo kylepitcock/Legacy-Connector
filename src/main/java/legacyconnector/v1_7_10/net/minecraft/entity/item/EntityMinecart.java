@@ -121,8 +121,59 @@ public abstract class EntityMinecart extends Entity {
         };
     }
 
-    /** The cart type, from {@link #func_94087_l} in 1.7.10; subclasses return their own. */
-    public abstract int getMinecartType();
+    /** The cart type, from {@link #func_94087_l} in 1.7.10; subclasses return their own (a cart of a 1.2.x mod, one class for every kind, returns its {@link #minecartType}). */
+    public int getMinecartType() {
+        return minecartType;
+    }
+
+    // Members125 round 2: Minecraft 1.2.x had ONE cart class (type 0 rideable, 1 chest, 2 furnace) that mods extended for their own carts
+
+    /** 1.2.x {@code minecartType}: the kind of cart (0 rideable, 1 storage, 2 powered). */
+    public int minecartType;
+    /** 1.2.x furnace cart state, kept for the carts of mods that copy it ({@code fuel}, {@code pushX}, {@code pushZ}); the vanilla furnace cart has its own. */
+    public int fuel;
+    public double pushX;
+    public double pushZ;
+    /** 1.2.x storage cart contents (the chest cart's 27 slots plus the 9 of the player-sized variants). */
+    protected ItemStack[] cargoItems = new ItemStack[36];
+
+    /** 1.2.x constructor of a cart of a kind: {@code new EntityMinecart(world, x, y, z, type)}. */
+    public EntityMinecart(World world, double x, double y, double z, int type) {
+        this(world, x, y, z);
+        this.minecartType = type;
+    }
+
+    /** 1.2.x {@code isStorageCart()}: whether the cart is a chest cart. */
+    public boolean isStorageCart() {
+        return getMinecartType() == 1;
+    }
+
+    /** 1.2.x {@code isPoweredCart()} under its Feather name: whether the cart is a furnace cart. */
+    protected boolean isMinecartPowered() {
+        return isPoweredCart();
+    }
+
+    /** Forge 3.x {@code getDrag()}: the rolling friction factor of one tick (0.997 with a rider, 0.96 without); {@link #applyDrag} uses it, so a mod's cart can change it. */
+    protected double getDrag() {
+        return mcc$get$riddenByEntity(this) != null ? 0.996999979019165D : 0.9599999785423279D;
+    }
+
+    /** Forge 3.x {@code setMaxSpeedRail(speed)}: caps the speed on rails (at most {@link #getMaxCartSpeedOnRail}). */
+    public void setMaxSpeedRail(float speed) {
+        setCurrentCartSpeedCapOnRail(speed);
+    }
+
+    /** Forge 3.x {@code getItemsDropped()}: what the cart drops when it is broken (the cart's own item). */
+    public java.util.List getItemsDropped() {
+        java.util.List drops = new java.util.ArrayList();
+        drops.add(getCartItem());
+        return drops;
+    }
+
+    /** 1.2.x carts were inventories: the slot of a storage cart. */
+    public void setInventorySlotContents(int slot, ItemStack stack) {
+        if (cargoItems != null && slot >= 0 && slot < cargoItems.length) cargoItems[slot] = stack;
+    }
 
     public void setMinecartName(String name) {
         this.entityName = name;
@@ -634,7 +685,7 @@ public abstract class EntityMinecart extends Entity {
 
     /** Rolling friction for one tick: less with a rider. */
     protected void applyDrag() {
-        double drag = mcc$get$riddenByEntity(this) != null ? 0.996999979019165D : 0.9599999785423279D;
+        double drag = getDrag();
         setVelocity(mcc$get$motionX(this) * drag, 0.0D, mcc$get$motionZ(this) * drag);
     }
 

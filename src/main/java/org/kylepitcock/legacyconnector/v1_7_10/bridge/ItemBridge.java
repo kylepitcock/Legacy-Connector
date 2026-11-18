@@ -417,16 +417,18 @@ public final class ItemBridge {
             LegacyItemAdapter adapter = new LegacyItemAdapter(item, meta, properties(item));
             item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(base, meta), adapter));
         }
+        Runnable growItem = () -> {
+            for (int meta : discoverMetas(item)) {
+                if (item.mcc$variants.containsKey(meta)) continue;
+                LegacyItemAdapter adapter = new LegacyItemAdapter(item, meta, properties(item));
+                item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(base, meta), adapter));
+            }
+        };
         if (discoveryFailed) {
             discoveryFailed = false;
-            retryLater(() -> {
-                for (int meta : discoverMetas(item)) {
-                    if (item.mcc$variants.containsKey(meta)) continue;
-                    LegacyItemAdapter adapter = new LegacyItemAdapter(item, meta, properties(item));
-                    item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(base, meta), adapter));
-                }
-            });
+            retryLater(growItem);
         }
+        if (listsLate(item)) lateGrow(growItem);
     }
 
     /**
@@ -475,6 +477,28 @@ public final class ItemBridge {
     private static final List<Runnable> RETRY = new ArrayList<>();
     /** The mod that registered each {@link #RETRY} entry (modern id), so its subtypes are listed after its own init. */
     private static final List<String> RETRY_OWNER = new ArrayList<>();
+
+    /**
+     * An item whose own class lists its subtypes through the Forge item hook {@code addCreativeItems} from state that other code fills later (RedPower's ItemMicro asks its
+     * placers, which the Wiring, Machine and Control mods register in their own init, after the micro block item exists): its subtypes are listed once more when every mod has
+     * loaded. Only ever adds variants.
+     */
+    private static boolean listsLate(Item item) {
+        try {
+            if (!item.getHasSubtypes()) return false;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+        for (Class<?> c = item.getClass(); c != null && c != Object.class && !c.getName().startsWith("legacyconnector."); c = c.getSuperclass()) {
+            for (java.lang.reflect.Method m : c.getDeclaredMethods()) if (m.getName().equals("addCreativeItems")) return true;
+        }
+        return false;
+    }
+
+    private static void lateGrow(Runnable r) {
+        RETRY.add(r);
+        RETRY_OWNER.add("\u0000late");
+    }
 
     private static void retryLater(Runnable r) {
         var c = org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710.active();
@@ -549,16 +573,18 @@ public final class ItemBridge {
             LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
             item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(id, meta), modern));
         }
+        Runnable growBlockItem = () -> {
+            for (int meta : discoverMetas(item)) {
+                if (item.mcc$variants.containsKey(meta)) continue;
+                LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
+                item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(id, meta), modern));
+            }
+        };
         if (discoveryFailed) {
             discoveryFailed = false;
-            retryLater(() -> {
-                for (int meta : discoverMetas(item)) {
-                    if (item.mcc$variants.containsKey(meta)) continue;
-                    LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
-                    item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(id, meta), modern));
-                }
-            });
+            retryLater(growBlockItem);
         }
+        if (listsLate(item)) lateGrow(growBlockItem);
     }
 
     private static ResourceLocation variantId(ResourceLocation base, int meta) {

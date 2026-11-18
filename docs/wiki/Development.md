@@ -82,6 +82,10 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
 - `./gradlew compileJava --rerun` is the compile check (compileJava is non-incremental: the shim access widener rewrites class files), then
   `./gradlew generateShimIndex`, which catches "phantom field access" errors: shim code must read legacy fields that exist only as virtual
   fields through the `mcc$get$`/`mcc$set$` accessors.
+- `./gradlew checkShimMembers` (part of `check`) compares the public/protected members of the shim with `tools/dev/shim-members.txt.gz`:
+  members may be added, never silently removed or changed (name, descriptor, static or instance), because a mod that linked against one turns
+  into an unresolved reference (`gap_shim` in the probe). Accept an intended removal or record additions with
+  `python tools/dev/check_shim_members.py --update` and say so in the commit.
 - `tools/dev/run-corpus.sh [dir]` runs the server self test over a whole directory of jars. Run only one server at a time and never compile
   while one runs.
 - Translation results are cached per jar and mod set (`run-*/.legacyconnector/cache`). After changing the loader, linker, stubber or shim,
@@ -154,9 +158,14 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
 - **Suites** are `tools/dev/verify/suites/<name>.txt`, one `<version-folder> <jar-name-fragment>` per line (`1.7.10`, `1.12.2`, `1.6.4`, `1.5.2`,
   `1.4.7`, `1.20.1`, `b1.7.3`; the fragment is matched case-insensitively against jar file names; `#` starts a comment). Use a version in the
   fragment when other versions ship the same mod name (`CodeChickenCore-1.7.10`).
-- **Jars** are never downloaded or committed. They are looked up (first match wins) in the gitignored folders of the main checkout
+- **Jars** are never downloaded or committed. They are looked up in the gitignored folders of the main checkout
   (`JAR_ROOT`, default `Y:/Programming/Minecraft/Retrofit`: `test-mods*`, `run-subtest/mods`, `run-screenshots/mods`, ...; the list is `SEARCH` in the
-  script). A suite with a missing jar is reported as SKIP with the missing fragment, not as a failure.
+  script) by `tools/dev/verify/picker.py`. Each jar has an inferred Minecraft version (a version token in its file name, else its folder such as
+  `test-mods-164` or `1.12.2 test mods`); a line's version prefers jars of that version, never takes a jar of another version, and the picker
+  reports SETUP (the suite is not run and counts as a failure) when the pick is ambiguous (differently named unlabelled jars compete, or a `lib` line
+  matches several versions). `tools/dev/verify.sh --list [suite ...]` is the dry run that prints the pick per line without starting anything; a
+  real run prints the picks into the suite log (`build/devtools/verify-<suite>-jars.txt`, `run-verify/<suite>/logs/verify-jars.txt`). A suite
+  with a missing jar is reported as SKIP with the missing fragment, not as a failure. Fragments take `*` and `[`/`]` as wildcards.
 - **Run:** each suite gets a fresh game directory `run-verify/<suite>` (mods copied into `mods/<version>/`, eula and `server.properties` taken from the
   main checkout's `run-subtest` with a free port, no world, no translation cache) and runs `./gradlew runServerSubTest -PsubTestDir=... -PautostopTicks=700`
   (`AUTOSTOP`, `SUITE_TIMEOUT` override). Only the server of this checkout is killed on a timeout (`verify/kill-server.ps1`).

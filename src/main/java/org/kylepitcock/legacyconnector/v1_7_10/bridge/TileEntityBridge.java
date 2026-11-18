@@ -29,15 +29,71 @@ public final class TileEntityBridge {
 
     private TileEntityBridge() {}
 
-    public static synchronized void addMapping(Class<?> cls, String id) {
-        if (BY_ID.containsKey(id)) {
-            LOG.warn("Duplicate legacy tile entity id {} ({} vs {})", id, BY_ID.get(id).getName(), cls.getName());
-            return;
+    /** Prefix of the id a tile entity class gets when nothing registered it (see {@link #idOrFallback}). */
+    private static final String FALLBACK = "mcc:";
+    /** Class loaders of the registered tile entity classes: where a fallback id finds its class again after a restart. */
+    private static final java.util.Set<ClassLoader> LOADERS = new java.util.LinkedHashSet<>();
+
+    /**
+     * Registers a tile entity class under {@code id} and answers the id it is saved under. 1.4.7 to 1.7.10 had one tile entity table, where a
+     * second class for an id was a mod bug; a pack that holds two versions of a mod (both register the same name for different classes) or two mods
+     * that picked the same name must still save both, so the later class gets {@code id@className}: the first keeps the plain id, as before.
+     */
+    public static synchronized String addMapping(Class<?> cls, String id) {
+        String known = IDS.get(cls);
+        if (id.equals(known)) return known;
+        String use = id;
+        if (BY_ID.containsKey(id) && BY_ID.get(id) != cls) {
+            use = id + "@" + cls.getName();
+            LOG.warn("Legacy tile entity id {} is taken by {}: {} saves as {}", id, BY_ID.get(id).getName(), cls.getName(), use);
+            if (BY_ID.containsKey(use)) return use;
         }
+        @SuppressWarnings("unchecked")
+        Class<? extends TileEntity> te = (Class<? extends TileEntity>) cls;
+        BY_ID.put(use, te);
+        IDS.put(cls, use);
+        if (cls.getClassLoader() != null) LOADERS.add(cls.getClassLoader());
+        return use;
+    }
+
+    /**
+     * The id a tile entity class is saved under: its registered one, else (a class nothing registered: a subclass a mod's block creates, a
+     * registration that failed) {@code mcc:className}, which {@link #createAndLoad} resolves through the class loaders of the registered tiles. The game
+     * threw here ("is missing a mapping"), which dropped the tile's data; this keeps it, and the id is a function of the class, so it survives a restart.
+     */
+    public static synchronized String idOrFallback(Class<?> cls) {
+        String id = IDS.get(cls);
+        if (id != null) return id;
+        id = FALLBACK + cls.getName();
+        LOG.warn("Legacy tile entity class {} has no registered id: it saves as {}", cls.getName(), id);
         @SuppressWarnings("unchecked")
         Class<? extends TileEntity> te = (Class<? extends TileEntity>) cls;
         BY_ID.put(id, te);
         IDS.put(cls, id);
+        return id;
+    }
+
+    private static synchronized Class<? extends TileEntity> resolveFallback(String id) {
+        if (!id.startsWith(FALLBACK)) return null;
+        String name = id.substring(FALLBACK.length());
+        java.util.List<ClassLoader> loaders = new java.util.ArrayList<>(LOADERS);
+        loaders.add(Thread.currentThread().getContextClassLoader());
+        for (ClassLoader l : loaders) {
+            if (l == null) continue;
+            try {
+                Class<?> c = Class.forName(name, false, l);
+                if (TileEntity.class.isAssignableFrom(c)) {
+                    @SuppressWarnings("unchecked")
+                    Class<? extends TileEntity> te = (Class<? extends TileEntity>) c;
+                    BY_ID.put(id, te);
+                    IDS.putIfAbsent(c, id);
+                    return te;
+                }
+            } catch (ClassNotFoundException | LinkageError ignored) {
+                // the next loader
+            }
+        }
+        return null;
     }
 
     public static synchronized void addAlias(String alias, String id) {
@@ -54,6 +110,7 @@ public final class TileEntityBridge {
         synchronized (TileEntityBridge.class) {
             cls = BY_ID.get(tag.getString("id"));
         }
+        if (cls == null) cls = resolveFallback(tag.getString("id"));
         if (cls == null) {
             LOG.warn("Skipping legacy tile entity with unknown id {}", tag.getString("id"));
             return null;

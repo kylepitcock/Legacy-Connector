@@ -1,0 +1,8 @@
+1.6.4 forestry-A-2.3.1
+1.6.4 CoFHCore-2.0.0.5
+1.6.4 PowerCrystalsCore
+1.6.4 MineFactoryReloaded-2.7
+1.6.4 mystcraft-api
+1.6.4 mystcraft-uni-1.6.4
+1.6.4 TConstruct_mc1.6.4
+1.6.4 witchery-1.6.4

@@ -1,0 +1,32 @@
+# Thermal Foundation 1.12.2 (issue 311): its metadata items (material, coin, dye, bait, tools, armor...) draw their per-variant models, with the modern CodeChickenLib installed
+mods: 1.12.2 Forgelin-1.8
+mods: 1.12.2 CoFHCore-1.12.2
+mods: 1.12.2 RedstoneFlux-1.12
+mods: 1.12.2 CodeChickenLib-1.12.2
+mods: 1.12.2 ThermalFoundation-1.12.2
+mods: 1.12.2 ThermalExpansion-1.12.2
+mods: . CodeChickenLib-1.21.1
+cmd /gamemode creative @s
+wait 40
+cmd /give @s thermalfoundation:material 1
+cmd /give @s thermalfoundation:material_1 1
+cmd /give @s thermalfoundation:material_64 1
+cmd /give @s thermalfoundation:material_128 1
+cmd /give @s thermalfoundation:coin 1
+cmd /give @s thermalfoundation:coin_64 1
+cmd /give @s thermalfoundation:dye_5 1
+cmd /give @s thermalfoundation:bait 1
+cmd /give @s thermalfoundation:armor.helmet_tin 1
+cmd /give @s thermalfoundation:tool.pickaxe_tin 1
+cmd /give @s thermalfoundation:tool.sword_copper 1
+cmd /give @s thermalfoundation:fertilizer 1
+cmd /give @s thermalfoundation:geode 1
+cmd /give @s thermalfoundation:util_1 1
+cmd /give @s thermalfoundation:upgrade 1
+cmd /give @s thermalfoundation:horse_armor.iron 1
+wait 20
+inv
+wait 20
+shot thermal1122-items
+logabsent Unable to load model
+logabsent block/block/

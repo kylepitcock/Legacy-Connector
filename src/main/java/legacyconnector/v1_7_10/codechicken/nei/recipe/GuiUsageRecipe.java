@@ -13,5 +13,6 @@ public class GuiUsageRecipe {
 
     public static void registerUsageHandler(IUsageHandler handler) {
         usagehandlers.add(handler);
+        org.kylepitcock.legacyconnector.compat.nei.NeiBridge.registerUsageHandler(handler);
     }
 }

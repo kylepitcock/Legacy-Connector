@@ -51,6 +51,15 @@ public final class LegacyModRecord {
         return metadata != null && metadata.has("version") ? metadata.get("version").getAsString() : container.getModInfo().getVersion().toString();
     }
 
+    /** What the user knows the jar as: "Minecraft 1.2.5" for a 1.2.5 jar hosted on the 1.4.7 layer (the layer version is only a detail), else the version. */
+    public String displayVersion() {
+        if (metadata != null && metadata.has("sourceVersion")) {
+            String source = metadata.get("sourceVersion").getAsString();
+            if (!source.equals(version)) return "Minecraft " + source + ", hosted on the " + version + " layer";
+        }
+        return version;
+    }
+
     public String dependencies() {
         return metadata != null && metadata.has("dependencies") ? metadata.get("dependencies").getAsString() : "";
     }
@@ -74,6 +83,6 @@ public final class LegacyModRecord {
 
     @Override
     public String toString() {
-        return legacyId + " [" + version + "]";
+        return legacyId + " [" + (metadata != null && metadata.has("sourceVersion") ? metadata.get("sourceVersion").getAsString() : version) + "]";
     }
 }

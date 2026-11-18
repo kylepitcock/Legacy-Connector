@@ -15,6 +15,10 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * (its acceleration is the modern acceleration power along its motion).
  */
 public abstract class EntityFireball extends Entity {
+    /** Data fixers of saved fireballs: the layer reads saves with the modern game's fixers, so there is nothing to register. */
+    public static void registerFixesFireball(legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer fixer, String name) {
+    }
+
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;

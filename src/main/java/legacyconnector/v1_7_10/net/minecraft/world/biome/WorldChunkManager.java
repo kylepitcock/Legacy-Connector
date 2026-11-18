@@ -99,6 +99,14 @@ public class WorldChunkManager {
         return out;
     }
 
+    /** 1.2.5 {@code getTemperatures(out, x, z, w, h)}: the base temperature of the biome of each column of the rectangle (index {@code x + z * w}), 0.0 to 2.0. */
+    public float[] getTemperatures(float[] out, int x, int z, int w, int h) {
+        if (out == null || out.length < w * h) out = new float[w * h];
+        BiomeGenBase[] biomes = getBiomesForGeneration(null, x, z, w, h);
+        for (int i = 0; i < w * h; i++) out[i] = biomes[i] == null ? 0.5F : Math.max(0.0F, Math.min(2.0F, biomes[i].temperature));
+        return out;
+    }
+
     public float getTemperatureAtHeight(float temperature, int height) {
         return temperature;
     }

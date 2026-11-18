@@ -92,19 +92,39 @@ public final class NotchNames {
         return n;
     }
 
+    private static final Map<String, String> NEI_SCREENS = Map.of(
+            "codechicken/nei/recipe/GuiRecipe", "net/minecraft/client/gui/inventory/GuiContainer",
+            "codechicken/nei/recipe/GuiCraftingRecipe", "net/minecraft/client/gui/inventory/GuiContainer",
+            "codechicken/nei/recipe/GuiUsageRecipe", "net/minecraft/client/gui/inventory/GuiContainer");
+
     /** The supertypes of a class this table does not list (a Forge class such as ISidedInventory), in notch names where they have one: from the version's API data. */
     private String[] upFromHierarchy(String owner) {
         if (hierarchy == null || owner.indexOf('/') < 0 && classes.containsKey(owner)) return null;
         var entry = hierarchy.get(owner);
         // Forge 3.x's classes (forge/ISidedInventory) live in net/minecraft/src/forge of the shim; the API data lists the later package
         if (entry == null && owner.startsWith("net/minecraft/src/forge/")) entry = hierarchy.get("net/minecraftforge/common/" + owner.substring("net/minecraft/src/forge/".length()));
-        if (entry == null) return null;
+        if (entry == null) {
+            // NEI's own screens extend a vanilla one (NEI's coremod made them GuiContainers): the fields a handler reads off them (xSize, width, ...) are the vanilla ones
+            String vanilla = NEI_SCREENS.get(owner);
+            String notchSuper = vanilla == null ? null : byMcp.get(vanilla);
+            return notchSuper == null ? null : new String[] {notchSuper};
+        }
         java.util.List<String> all = new java.util.ArrayList<>();
         if (entry.superName() != null) all.add(entry.superName());
         all.addAll(entry.interfaces());
         String[] out = new String[all.size()];
         for (int i = 0; i < out.length; i++) out[i] = byMcp.getOrDefault(all.get(i), all.get(i));
         return out;
+    }
+
+    /**
+     * The supertypes of an API class that is not a game class (FML's {@code cpw/mods/fml/client/FMLTextureFX}, Forge 3.x's {@code forge/ISidedInventory}), from the version's API data,
+     * in notch names where they have one; null when the class is unknown. Used by the 1.2.5 renamer to walk from a Forge class up into the game classes it extends.
+     */
+    public String[] apiSupertypes(String owner) {
+        String[] up = upFromHierarchy(owner);
+        if (up == null && owner.startsWith("forge/")) up = upFromHierarchy("net/minecraft/src/" + owner);
+        return up;
     }
 
     public boolean isEmpty() {

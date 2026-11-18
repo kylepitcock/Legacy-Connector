@@ -125,6 +125,12 @@ public class FluidUtil {
                 () -> tryFillContainer(container, fluidSource, maxAmount, player, true));
     }
 
+    public static FluidActionResult tryFillContainerAndStow(ItemStack container, IFluidHandler fluidSource,
+            legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, int maxAmount,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return tryFillContainerAndStow(container, fluidSource, inventory, maxAmount, player, true);
+    }
+
     public static FluidActionResult tryEmptyContainerAndStow(ItemStack container, IFluidHandler fluidDestination,
             legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, int maxAmount,
             legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean doDrain) {

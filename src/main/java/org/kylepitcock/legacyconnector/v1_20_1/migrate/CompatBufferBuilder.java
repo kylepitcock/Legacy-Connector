@@ -76,13 +76,44 @@ public final class CompatBufferBuilder implements VertexConsumer {
         return b == null ? null : b.real;
     }
 
+    /**
+     * The 1.21.1 builder a mod's {@code ParticleRenderType.begin(builder, textures)} started, handed to the particle engine: the engine builds and draws it
+     * itself, so this wrapper lets go of it (a mod's 1.20.1 {@code end} is never called by 1.21.1; keeping it would make the next frame's begin fail with
+     * "Already building!").
+     */
+    public static BufferBuilder handOver(Tesselator tesselator) {
+        CompatBufferBuilder b;
+        synchronized (CompatBufferBuilder.class) {
+            b = OF_TESSELATOR.get(tesselator);
+        }
+        if (b == null) return null;
+        BufferBuilder started = b.real;
+        b.real = null;
+        return started;
+    }
+
     /** Takes over a builder that 1.21.1 code started ({@code ParticleRenderType.begin(Tesselator, TextureManager)}): a mod's 1.20.1 code then fills and ends it. */
     public void adopt(BufferBuilder started) {
         this.real = started;
     }
 
+    private static final boolean DIAG = Boolean.getBoolean("legacyconnector.bufferDiag");
+    private Throwable beganAt;
+
+    /** {@code BufferBuilder.format} (a public-in-practice field of 1.20.1 that renderers read): the format of the last {@code begin}. */
+    public VertexFormat format;
+    /** {@code BufferBuilder.defaultColorSet}: 1.20.1 flag for {@code defaultColor}; the default colour is not applied here, so it stays false. */
+    public boolean defaultColorSet;
+
+    /** {@code putBulkData(pose, quad, r, g, b, light, overlay)} of 1.20.1: 1.21.1 also takes the alpha (opaque here). */
+    public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, int light, int overlay) {
+        putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
+    }
+
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
-        if (real != null) throw new IllegalStateException("Already building!");
+        this.format = format;
+        if (real != null) throw new IllegalStateException("Already building!", beganAt);
+        if (DIAG) beganAt = new Throwable("previous begin");
         real = tesselator != null ? tesselator.begin(mode, format) : new BufferBuilder(own, mode, format);
     }
 

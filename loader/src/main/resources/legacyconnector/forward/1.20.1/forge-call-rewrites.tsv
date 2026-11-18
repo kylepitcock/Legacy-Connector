@@ -177,3 +177,4 @@ net/neoforged/neoforge/registries/DeferredHolder.filter(Ljava/util/function/Pred
 *.readRegistryId()Ljava/lang/Object;	readRegistryIdAny
 *.readRegistryIdSafe(Ljava/lang/Class;)Ljava/lang/Object;	readRegistryIdSafeAny
 net/neoforged/fml/ModContainer.getMod()Ljava/lang/Object;	modContainerGetMod
+net/neoforged/neoforge/client/event/RegisterRecipeBookCategoriesEvent.registerRecipeCategoryFinder(Lnet/minecraft/world/item/crafting/RecipeType;Ljava/util/function/Function;)V	recipeCategoryFinder

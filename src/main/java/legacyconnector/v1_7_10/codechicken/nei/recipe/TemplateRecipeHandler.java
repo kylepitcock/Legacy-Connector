@@ -66,6 +66,11 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
         drawProgressBar(x, y, tx, ty, w, h, ticks, direction);
     }
 
+    /** NEI 1.4.7: {@link #drawProgressBar(int, int, int, int, int, int, float, int)} through the manager. */
+    public void drawProgressBar(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int x, int y, int tx, int ty, int w, int h, float completion, int direction) {
+        drawProgressBar(x, y, tx, ty, w, h, completion, direction);
+    }
+
     /** NEI: a bar filling over {@code ticks} ticks, restarting (driven by {@link #cycleticks}). */
     public void drawProgressBar(int x, int y, int tx, int ty, int w, int h, int ticks, int direction) {
         drawProgressBar(x, y, tx, ty, w, h, ticks <= 0 ? 0.0F : (cycleticks % ticks) / (float) ticks, direction);
@@ -91,11 +96,20 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
         }
     }
 
-    /** NEI's {@code GuiDraw.changeTexture(String)}: {@code new ResourceLocation(path)} bound through the texture manager. */
+    /**
+     * NEI's {@code GuiDraw.changeTexture(String)}: {@code new ResourceLocation(path)} bound through the texture manager. A path with a leading
+     * slash is a 1.4.7 / 1.5.2 one ({@code /mods/thermalexpansion/gfx/gui_smelter.png}, {@code /gui/furnace.png}) and is resolved as that
+     * version's {@code RenderEngine.bindTexture(String)} resolves it.
+     */
     public static void mcc$changeTexture(String texture) {
         if (texture == null || texture.isEmpty()) return;
-        legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager()
-                .bindTexture(MCC$TEXTURES.computeIfAbsent(texture, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation::new));
+        var tm = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager();
+        if (texture.charAt(0) == '/') {
+            var location = org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(texture);
+            if (location != null) tm.bindTexture(location);
+            return;
+        }
+        tm.bindTexture(MCC$TEXTURES.computeIfAbsent(texture, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation::new));
     }
 
     private static final java.util.Map<String, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation> MCC$TEXTURES =
@@ -148,9 +162,19 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
         return arecipes.size();
     }
 
-    /** NEI: the region (5, 11, 166x65) of the handler's GUI texture at the origin. */
     @Override
     public void drawBackground(int recipe) {
+        drawBackground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.INSTANCE, recipe);
+    }
+
+    @Override
+    public void drawForeground(int recipe) {
+        drawForeground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.INSTANCE, recipe);
+    }
+
+    /** NEI: the region (5, 11, 166x65) of the handler's GUI texture at the origin (1.4.7 / 1.5.2 handlers override this shape). */
+    @Override
+    public void drawBackground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int recipe) {
         legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         String texture = getGuiTexture();
         if (texture == null) return;
@@ -160,11 +184,11 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
 
     /** NEI: the GUI texture bound again (progress bars are cut from it), then {@link #drawExtras}. */
     @Override
-    public void drawForeground(int recipe) {
+    public void drawForeground(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager manager, int recipe) {
         legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDisable(2896); // GL_LIGHTING
         mcc$changeTexture(getGuiTexture());
-        drawExtras(legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager.INSTANCE, recipe);
+        drawExtras(manager, recipe);
     }
 
     @Override

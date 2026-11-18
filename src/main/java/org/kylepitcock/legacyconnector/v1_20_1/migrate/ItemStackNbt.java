@@ -63,7 +63,8 @@ public final class ItemStackNbt {
         CompoundTag extra = converted(stack);
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         if (extra == null) {
-            if (data == null || data.isEmpty()) return null;
+            // an explicitly empty custom data is an empty tag, as in 1.20.1 (`if (!hasTag()) setTag(new CompoundTag()); getTag().put(...)` is a common pattern)
+            if (data == null) return null;
             return detach(stack, data); // live: a mod that mutates what hasTag/getTag handed out keeps working
         }
         CompoundTag merged = data == null ? new CompoundTag() : data.copyTag();
@@ -184,7 +185,7 @@ public final class ItemStackNbt {
         }
         CompoundTag rest = tag.copy();
         applyConverted(stack, rest);
-        if (!rest.isEmpty()) stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rest));
+        if (!rest.isEmpty() || tag.isEmpty()) stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rest));   // setTag(new CompoundTag()) leaves an empty tag, not none
     }
 
     public static void addTagElement(ItemStack stack, String key, Tag value) {

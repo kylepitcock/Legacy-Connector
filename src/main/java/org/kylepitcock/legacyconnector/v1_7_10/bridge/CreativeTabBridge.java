@@ -63,6 +63,116 @@ public final class CreativeTabBridge {
                     .build();
             LegacyRegistrar.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, modern);
         }
+        registerUnlistedTabs();
+    }
+
+    /** Source versions with numeric ids, whose mods' creative listings were read by NEI-era tools, not only by the tabs (1.4.7 to 1.6.4). */
+    private static boolean numericIdVersion(String version) {
+        return "1.4.7".equals(version) || "1.5.2".equals(version) || "1.6.4".equals(version);
+    }
+
+    /**
+     * Whether the mod's own class (not the shim base) declares one of the creative-listing methods: {@code getSubBlocks},
+     * {@code getSubItems} or the 1.4.7 Forge hook {@code addCreativeItems}. A mod that writes these means to list the stacks.
+     */
+    private static boolean modListsSubtypes(Class<?> c) {
+        for (; c != null && c != Object.class && !c.getName().startsWith("legacyconnector."); c = c.getSuperclass()) {
+            for (java.lang.reflect.Method m : c.getDeclaredMethods()) {
+                String n = m.getName();
+                if (n.equals("getSubBlocks") || n.equals("getSubItems") || n.equals("addCreativeItems")) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 1.4.7 to 1.6.4 mods (RedPower 2's world blocks) give a block no creative tab but list its subtypes through
+     * {@code addCreativeItems}/{@code getSubBlocks}: NEI and the search list read that listing, no tab did. Those stacks get
+     * one extra modern tab per mod, so they show in the creative inventory and in JEI. Items with no listing method of their
+     * own (technical blocks: multiblock parents, lit machines) stay hidden, as in the original.
+     */
+    private static final java.util.Map<String, List<Item>> UNLISTED_GROUPS = new java.util.LinkedHashMap<>();
+
+    private static void registerUnlistedTabs() {
+        java.util.Map<String, List<Item>> groups = new java.util.LinkedHashMap<>();
+        for (Item item : ItemBridge.modItems()) {
+            try {
+                if (item.getCreativeTab() != null) continue;
+                net.minecraft.world.item.Item variant = item.mcc$variants.get(0);
+                if (variant == null) continue;
+                String ns = BuiltInRegistries.ITEM.getKey(variant).getNamespace();
+                org.kylepitcock.legacyconnector.core.LegacyModRecord rec = org.kylepitcock.legacyconnector.core.LegacyMods.find(ns);
+                boolean pre13 = rec != null && rec.metadata != null && rec.metadata.has("sourceVersion") && "1.2.5".equals(rec.metadata.get("sourceVersion").getAsString());
+                if (rec == null || !(numericIdVersion(rec.version) || pre13)) continue;
+                Class<?> listing = item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib && ib.mcc$block() != null ? ib.mcc$block().getClass() : item.getClass();
+                // Minecraft 1.2.5 had no creative tabs for mods at all (NEI listed what the mod registered): every item of such a mod is findable
+                if (!pre13 && !modListsSubtypes(listing) && !modListsSubtypes(item.getClass())) continue;
+                groups.computeIfAbsent(ns, k -> new ArrayList<>()).add(item);
+            } catch (RuntimeException | LinkageError e) {
+                // an item whose tab or listing throws stays hidden
+            }
+        }
+        UNLISTED_GROUPS.clear();
+        UNLISTED_GROUPS.putAll(groups);
+        if (!groups.isEmpty()) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Tabs").info("Creative tabs for items the mods list but give no tab (1.4.7 to 1.6.4): {}",
+                    groups.entrySet().stream().map(g -> g.getKey() + "=" + g.getValue().size()).toList());
+        }
+        for (var e : groups.entrySet()) {
+            String ns = e.getKey();
+            List<Item> items = e.getValue();
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "unlisted_" + Ids.normalizePath(ns).replace('/', '_').replace('.', '_'));
+            if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
+            org.kylepitcock.legacyconnector.core.LegacyModRecord rec = org.kylepitcock.legacyconnector.core.LegacyMods.find(ns);
+            String title = rec == null ? ns : rec.name();
+            CreativeModeTab modern = CreativeModeTab.builder()
+                    .title(Component.literal(title))
+                    .icon(() -> {
+                        for (net.minecraft.world.item.ItemStack s : unlistedContents(items)) return s.copy();
+                        return new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK);
+                    })
+                    .displayItems((params, output) -> {
+                        for (net.minecraft.world.item.ItemStack s : unlistedContents(items)) output.accept(s);
+                    })
+                    .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
+                    .build();
+            LegacyRegistrar.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, modern);
+        }
+    }
+
+    private static boolean declaresAddCreativeItems(Class<?> c) {
+        for (; c != null && c != Object.class && !c.getName().startsWith("legacyconnector."); c = c.getSuperclass()) {
+            for (java.lang.reflect.Method m : c.getDeclaredMethods()) if (m.getName().equals("addCreativeItems")) return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static List<net.minecraft.world.item.ItemStack> unlistedContents(List<Item> items) {
+        List<net.minecraft.world.item.ItemStack> out = new ArrayList<>();
+        for (Item item : items) {
+            List raw = new ArrayList();
+            try {
+                if (item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib && ib.mcc$block() != null && declaresAddCreativeItems(ib.mcc$block().getClass())) {
+                    // the mod's own 1.4.7 listing is authoritative (shim base classes such as BlockFlower list vanilla subtypes of their own)
+                    java.util.ArrayList<Object> own = new java.util.ArrayList<>();
+                    ib.mcc$block().addCreativeItems(own);
+                    raw.addAll(own);
+                } else {
+                    item.getSubItems(item, null, raw);
+                }
+            } catch (RuntimeException | LinkageError e) {
+                continue;
+            }
+            for (Object o : raw) {
+                if (o instanceof ItemStack s && safeNonEmpty(s)) {
+                    net.minecraft.world.item.ItemStack m = s.mcc$modern().copy();
+                    m.setCount(1);
+                    if (out.stream().noneMatch(x -> net.minecraft.world.item.ItemStack.isSameItemSameComponents(x, m))) out.add(m);
+                }
+            }
+        }
+        return out;
     }
 
     /**
@@ -105,6 +215,9 @@ public final class CreativeTabBridge {
             }
             sb.append("\n  ").append(tab.getTabLabel()).append(": ").append(n).append(" stacks in ").append((System.nanoTime() - start) / 1_000_000)
                     .append(" ms, owner ").append(OWNER.get(tab));
+        }
+        for (var e : UNLISTED_GROUPS.entrySet()) {
+            sb.append("\n  unlisted ").append(e.getKey()).append(": ").append(unlistedContents(e.getValue()).size()).append(" stacks of ").append(e.getValue().size()).append(" items");
         }
         sb.append("\n  all tabs: ").append((System.nanoTime() - total) / 1_000_000).append(" ms");
         return sb.toString();

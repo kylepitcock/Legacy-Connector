@@ -257,6 +257,15 @@ public class InventoryPlayer implements IInventory {
         return added;
     }
 
+    /** Puts the stack into the given slot when it is empty (any free slot for -1); the stack is shrunk by what fitted. */
+    public boolean add(int slot, ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+        var modern = Stacks1122.toModern(stack);
+        boolean added = slot < 0 ? inv().add(modern) : inv().add(slot, modern);
+        stack.setCount(modern.getCount());
+        return added;
+    }
+
     public void placeItemBackInInventory(legacyconnector.v1_12_2.net.minecraft.world.World world, ItemStack stack) {
         if (stack != null && !stack.isEmpty()) inv().placeItemBackInInventory(Stacks1122.toModern(stack));
     }

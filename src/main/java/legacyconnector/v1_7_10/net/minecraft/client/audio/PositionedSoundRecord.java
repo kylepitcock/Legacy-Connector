@@ -3,16 +3,7 @@ package legacyconnector.v1_7_10.net.minecraft.client.audio;
 import legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;
 
 /** A one-shot sound at a position (or, with no attenuation, a UI sound). */
-public class PositionedSoundRecord implements ISound {
-    protected final ResourceLocation location;
-    protected float volume;
-    protected float pitch;
-    protected float x;
-    protected float y;
-    protected float z;
-    protected boolean repeat;
-    protected int repeatDelay;
-    protected ISound.AttenuationType attenuation = ISound.AttenuationType.LINEAR;
+public class PositionedSoundRecord extends PositionedSound {
     /** The volume slider the sound plays under (music and records have their own); null for the master volume. */
     public SoundCategory mcc$category;
 
@@ -22,15 +13,15 @@ public class PositionedSoundRecord implements ISound {
 
     protected PositionedSoundRecord(ResourceLocation location, float volume, float pitch, boolean repeat, int repeatDelay, ISound.AttenuationType attenuation,
             float x, float y, float z) {
-        this.location = location;
+        super(location);
         this.volume = volume;
-        this.pitch = pitch;
+        this.field_147663_c = pitch;
         this.repeat = repeat;
-        this.repeatDelay = repeatDelay;
-        this.attenuation = attenuation;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.field_147665_h = repeatDelay;
+        this.field_147666_i = attenuation;
+        this.xPosF = x;
+        this.yPosF = y;
+        this.zPosF = z;
     }
 
     /** A UI sound (button clicks): full volume at the listener, no attenuation. */
@@ -58,50 +49,5 @@ public class PositionedSoundRecord implements ISound {
         PositionedSoundRecord r = new PositionedSoundRecord(location, 4.0F, 1.0F, false, 0, ISound.AttenuationType.LINEAR, x, y, z);
         r.mcc$category = SoundCategory.RECORDS;
         return r;
-    }
-
-    @Override
-    public ResourceLocation getPositionedSoundLocation() {
-        return location;
-    }
-
-    @Override
-    public boolean canRepeat() {
-        return repeat;
-    }
-
-    @Override
-    public int getRepeatDelay() {
-        return repeatDelay;
-    }
-
-    @Override
-    public float getVolume() {
-        return volume;
-    }
-
-    @Override
-    public float getPitch() {
-        return pitch;
-    }
-
-    @Override
-    public float getXPosF() {
-        return x;
-    }
-
-    @Override
-    public float getYPosF() {
-        return y;
-    }
-
-    @Override
-    public float getZPosF() {
-        return z;
-    }
-
-    @Override
-    public ISound.AttenuationType getAttenuationType() {
-        return attenuation;
     }
 }
