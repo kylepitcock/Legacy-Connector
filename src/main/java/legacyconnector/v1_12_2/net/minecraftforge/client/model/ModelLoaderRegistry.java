@@ -149,6 +149,7 @@ public class ModelLoaderRegistry {
     /** Forgets loaded models (resources were reloaded). */
     public static void clearModelCache(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager manager) {
         CACHE.clear();
+        org.kylepitcock.legacyconnector.v1_12_2.client.OrphanVariants1122.clear();
     }
 
     /** Plain model locations mods asked for, to be baked by the game as standalone models. */
@@ -267,12 +268,19 @@ public class ModelLoaderRegistry {
                         if (found != null) return org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacy(found);
                     }
                 }
-                return org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacyModel(mrl);
+                var game = org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacyModel(mrl);
+                if (game == org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacy(org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.missingModern())) {
+                    // no game model under that name: a blockstate file no block owns (Botania's special flowers), baked from the mod's own json
+                    var own = org.kylepitcock.legacyconnector.v1_12_2.client.OrphanVariants1122.bake(mrl);
+                    if (own != null) return own;
+                }
+                return game;
             }
             var key = net.minecraft.client.resources.model.ModelResourceLocation.standalone(location.mcc$modern());
             var baking = org.kylepitcock.legacyconnector.v1_12_2.client.CustomModels1122.baking();
             var modern = baking != null ? baking.get(key) : null;
             if (modern == null) modern = net.minecraft.client.Minecraft.getInstance().getModelManager().getModel(key);
+            if (modern == null) modern = org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.missingModern();
             return org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacy(modern);
         }
     }

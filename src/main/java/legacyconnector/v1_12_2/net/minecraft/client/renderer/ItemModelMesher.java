@@ -30,8 +30,14 @@ public class ItemModelMesher {
 
     public IBakedModel getItemModel(ItemStack stack) {
         var renderer = net.minecraft.client.Minecraft.getInstance().getItemRenderer();
-        var modern = renderer.getModel(Stacks1122.toModern(stack), null, null, 0);
-        return Models1122.legacy(modern);
+        net.minecraft.client.resources.model.BakedModel modern;
+        try {
+            modern = renderer.getModel(Stacks1122.toModern(stack), null, null, 0);
+        } catch (NullPointerException e) {
+            // asked while the game's models are not baked yet (a resource reload listener of a mod: Astral Sorcery's item colors): the missing model
+            modern = null;
+        }
+        return modern != null ? Models1122.legacy(modern) : modelManager.getMissingModel();
     }
 
     protected int getMetadata(ItemStack stack) {
