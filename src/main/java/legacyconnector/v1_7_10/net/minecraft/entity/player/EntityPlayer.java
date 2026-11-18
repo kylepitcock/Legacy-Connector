@@ -857,6 +857,11 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$timeUntilPortal(p, v);
     }
 
+    /** 1.2.5 {@code EntityPlayer.dropItem()} (Feather name; 1.3 called it {@code dropOneItem}): throws one item of the held stack and returns the dropped item entity. */
+    public legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem mcc125$dropItem() {
+        return dropOneItem(false);
+    }
+
     /** 1.2.5 {@code EntityPlayer.pickUp(entity, count)}: plays the animation of {@code entity} flying into the player (1.3: {@code onItemPickup}). */
     public void mcc125$pickUp(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, int count) {
         onItemPickup(entity, count);

@@ -85,3 +85,12 @@ S	net/minecraft/entity/EntityLivingBase	prevHealth	I	org/kylepitcock/legacyconne
 R	net/minecraft/client/renderer/texture/TextureManager	getTextureContents	(Ljava/lang/String;)[I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	textureContents	(Lnet/minecraft/client/renderer/texture/TextureManager;Ljava/lang/String;)[I
 G	net/minecraft/item/ItemTool	damageVsEntity	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	toolDamageVsEntity	(Lnet/minecraft/item/ItemTool;)I
 S	net/minecraft/item/ItemTool	damageVsEntity	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setToolDamageVsEntity	(Lnet/minecraft/item/ItemTool;I)V
+# 1.2.5 round 2: EntityLiving.lastDamage was an int (1.7.10: float, the modern entity's lastHurt)
+G	net/minecraft/entity/EntityLivingBase	lastDamage	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	lastDamage	(Lnet/minecraft/entity/EntityLivingBase;)I
+S	net/minecraft/entity/EntityLivingBase	lastDamage	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setLastDamage	(Lnet/minecraft/entity/EntityLivingBase;I)V
+# 1.2.5 round 2: Forge 3.x DimensionManager.getWorlds() returned World[]; MapGenStructure.structureMap was a HashMap
+R	net/minecraft/src/forge/DimensionManager	getWorlds	()[Lnet/minecraft/world/World;	call	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	dimensionWorlds	()[Lnet/minecraft/world/World;
+G	net/minecraft/world/gen/structure/MapGenStructure	structureMap	Ljava/util/HashMap;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	structureMap	(Lnet/minecraft/world/gen/structure/MapGenStructure;)Ljava/util/HashMap;
+R	net/minecraft/entity/item/EntityMinecart	getDamage	()I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	minecartDamage	(Lnet/minecraft/entity/item/EntityMinecart;)I
+G	net/minecraft/world/storage/MapData	dimension	B	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	mapDimension	(Lnet/minecraft/world/storage/MapData;)B
+S	net/minecraft/world/storage/MapData	dimension	B	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setMapDimension	(Lnet/minecraft/world/storage/MapData;B)V

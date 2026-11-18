@@ -223,3 +223,7 @@ M	net/minecraft/tileentity/TileEntityPiston	getOffsetZ	(F)F	func_145859_d
 M	net/minecraft/item/ItemDye	func_96604_a	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;III)Z	func_150919_a
 M	net/minecraft/tileentity/TileEntityDispenser	getRandomStackFromInventory	()I	func_146017_i
 G	net/minecraft/world/gen/structure/StructureVillagePieces$Village	startPiece	Lnet/minecraft/world/gen/structure/StructureVillagePieces$Start;	static	legacyconnector/v1_6_4/forward/Forward164	villageStartPiece	(Lnet/minecraft/world/gen/structure/StructureVillagePieces$Village;)Lnet/minecraft/world/gen/structure/StructureVillagePieces$Start;
+# 1.2.5 round 2: BlockFlowing's working fields carry the 1.7.10 SRG names
+F	net/minecraft/block/BlockFlowing	numAdjacentSources	field_149815_a
+F	net/minecraft/block/BlockFlowing	isOptimalFlowDirection	field_149814_b
+F	net/minecraft/block/BlockFlowing	flowCost	field_149816_M

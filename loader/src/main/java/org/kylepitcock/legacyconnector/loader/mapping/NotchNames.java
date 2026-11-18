@@ -107,6 +107,16 @@ public final class NotchNames {
         return out;
     }
 
+    /**
+     * The supertypes of an API class that is not a game class (FML's {@code cpw/mods/fml/client/FMLTextureFX}, Forge 3.x's {@code forge/ISidedInventory}), from the version's API data,
+     * in notch names where they have one; null when the class is unknown. Used by the 1.2.5 renamer to walk from a Forge class up into the game classes it extends.
+     */
+    public String[] apiSupertypes(String owner) {
+        String[] up = upFromHierarchy(owner);
+        if (up == null && owner.startsWith("forge/")) up = upFromHierarchy("net/minecraft/src/" + owner);
+        return up;
+    }
+
     public boolean isEmpty() {
         return classes.isEmpty();
     }
