@@ -101,6 +101,33 @@ final class Forge1201EventAdapterTest {
         assertFalse(rewritten.itf);
     }
 
+
+    @Test
+    void unverifiedIntermediateForgeEventSuperCallFailsClosed() {
+        ClassNode node = new ClassNode();
+        node.version = Opcodes.V17;
+        node.access = Opcodes.ACC_PUBLIC;
+        node.name = "sample/IntermediateOverrideEvent";
+        node.superName = "net/minecraftforge/event/entity/EntityEvent";
+        MethodNode method = new MethodNode(
+                Opcodes.ASM9, Opcodes.ACC_PUBLIC, "setCanceled", "(Z)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+        method.instructions.add(new MethodInsnNode(
+                Opcodes.INVOKESPECIAL,
+                "net/minecraftforge/event/entity/EntityEvent",
+                "setCanceled",
+                "(Z)V",
+                false));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        method.maxStack = 2;
+        method.maxLocals = 2;
+        node.methods.add(method);
+
+        IOException failure = assertThrows(IOException.class, () -> Forge1201EventAdapter.apply(node));
+        assertTrue(failure.getMessage().contains("Unverified Forge event superclass override"));
+    }
+
     @Test
     void ordinarySourceEventCallsBecomeStaticVirtualDispatchBridges() throws Exception {
         ClassNode node = new ClassNode();
