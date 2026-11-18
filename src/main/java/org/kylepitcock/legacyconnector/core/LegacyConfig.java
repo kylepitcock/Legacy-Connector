@@ -43,6 +43,13 @@ public final class LegacyConfig {
             deepLayer.enabled = true
             # Comma separated class name prefixes of legacy world generators that must not run below y=0.
             deepLayer.excludeGenerators =
+            # How the deep layer is generated. shifted (default): each ore generator runs ONE extra full-height pass with legacy y=0 at the
+            # world bottom (-64), and the normal pass keeps everything but the ores, so a vein is never cut by a pass boundary. split: the
+            # older two-pass scheme (a pass for y>=0, one below it, ores of the shared band chosen per 8x8x8 cell).
+            deepLayer.mode = shifted
+            # Per-mod overrides, comma separated mod ids or generator class prefixes: these use the other mode than deepLayer.mode.
+            deepLayer.splitMods =
+            deepLayer.shiftedMods =
 
             # What legacy world generators build in place (shrines, towers, huts) is recorded as a modern structure where it is
             # built, so /locate structure <mod>:legacy/<name> finds the ones in chunks that have generated.
@@ -447,6 +454,27 @@ public final class LegacyConfig {
 
     public static boolean deepLayerEnabled() {
         return bool("deepLayer.enabled", true);
+    }
+
+    /** How a generator's deep layer is produced. */
+    public enum DeepMode { OFF, SPLIT, SHIFTED }
+
+    /** The deep layer mode of one generator (its mod id may be null): {@code deepLayer.mode} with the per-mod override lists applied. */
+    public static DeepMode deepLayerMode(String modId, String generatorClass) {
+        if (!deepLayerEnabled() || !deepLayerAllows(generatorClass)) return DeepMode.OFF;
+        boolean shifted = !"split".equalsIgnoreCase(string("deepLayer.mode", "shifted").trim());
+        if (listed("deepLayer.splitMods", modId, generatorClass)) shifted = false;
+        else if (listed("deepLayer.shiftedMods", modId, generatorClass)) shifted = true;
+        return shifted ? DeepMode.SHIFTED : DeepMode.SPLIT;
+    }
+
+    private static boolean listed(String key, String modId, String generatorClass) {
+        for (String s : string(key, "").split(",")) {
+            s = s.trim();
+            if (s.isEmpty()) continue;
+            if (modId != null && s.equalsIgnoreCase(modId) || generatorClass.startsWith(s)) return true;
+        }
+        return false;
     }
 
     public static boolean deepLayerAllows(String generatorClass) {

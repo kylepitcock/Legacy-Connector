@@ -75,7 +75,8 @@ public final class WorldGenBridge1122 {
         List<org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.Generator> out = new java.util.ArrayList<>();
         for (IWorldGenerator g : legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$worldGenerators()) {
             out.add(new org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.Generator(g, modIdOf(g),
-                    (level, chunkX, chunkZ) -> generateOne(level, chunkX, chunkZ, g)));
+                    (level, chunkX, chunkZ) -> generateOne(level, chunkX, chunkZ, g),
+                    (level, chunkX, chunkZ, bottomY) -> generateShifted(level, chunkX, chunkZ, g, bottomY)));
         }
         return out;
     }
@@ -103,9 +104,32 @@ public final class WorldGenBridge1122 {
     private static void generateOne(WorldGenLevel level, int chunkX, int chunkZ, IWorldGenerator g) {
         World world = WorldBridge1122.wrap(level);
         legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$beginPopulating(chunkX, chunkZ);
+        // a generator with a shifted pass leaves its ores to it (the normal pass refuses ore writes)
+        boolean shifted = level.getMinBuildHeight() < 0 && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerMode(modIdOf(g), g.getClass().getName())
+                == org.kylepitcock.legacyconnector.core.LegacyConfig.DeepMode.SHIFTED;
+        if (shifted) World.mcc$setRefuseOres(true);
         try {
             runOne(world, chunkX, chunkZ, g, new Random(chunkSeed(level.getSeed(), chunkX, chunkZ)), world.getChunkProvider());
         } finally {
+            if (shifted) World.mcc$setRefuseOres(false);
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$endPopulating();
+            WorldBridge1122.mcc$releaseRegion();
+        }
+    }
+
+    /**
+     * The shifted pass of one generator ({@code deepLayer.mode = shifted}): the same run with the same seed as the normal pass, but with
+     * legacy y=0 at {@code bottomY}, keeping only its ore writes. So the mod's ores come out as in 1.12, moved down by the difference of
+     * the world bottoms, in whole veins.
+     */
+    private static void generateShifted(WorldGenLevel level, int chunkX, int chunkZ, IWorldGenerator g, int bottomY) {
+        World world = WorldBridge1122.wrap(level);
+        legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$beginPopulating(chunkX, chunkZ);
+        World.mcc$enterShifted(bottomY);
+        try {
+            runOne(world, chunkX, chunkZ, g, new Random(chunkSeed(level.getSeed(), chunkX, chunkZ)), world.getChunkProvider());
+        } finally {
+            World.mcc$leaveShifted();
             legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$endPopulating();
             WorldBridge1122.mcc$releaseRegion();
         }

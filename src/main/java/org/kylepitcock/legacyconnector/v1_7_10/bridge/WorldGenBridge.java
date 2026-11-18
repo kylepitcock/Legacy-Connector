@@ -102,7 +102,7 @@ public final class WorldGenBridge {
         long chunkSeed = chunkSeed(level.getSeed(), chunkX, chunkZ);
         Random fmlRandom = new Random(chunkSeed);
         // ---- InPlaceStructureGuard: a call that builds into a modern structure is undone (see the class)
-        World.mcc$setOreSplit(splitsOres(level, e));
+        World.mcc$setOreMode(oreMode(level, e));
         try {
             org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator,
                     () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, GeneratorProviders1710.forLevel(level, DUMMY), world.getChunkProvider())));
@@ -112,9 +112,14 @@ public final class WorldGenBridge {
     }
 
     /** Whether the generator's deep layer runs here, so its ores in legacy y 0-63 are shared with it (World.mcc$splitDrops). */
-    private static boolean splitsOres(WorldGenLevel level, Entry e) {
-        return level.getMinBuildHeight() < 0 && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerEnabled()
-                && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerAllows(e.generator.getClass().getName());
+    /** 0: the generator has no deep layer here, 1: split by cell, 2: shifted (its ores come from the shifted pass, the normal pass refuses them). */
+    private static int oreMode(WorldGenLevel level, Entry e) {
+        if (level.getMinBuildHeight() >= 0) return 0;
+        return switch (DeepLayer1710.mode(e.generator)) {
+            case OFF -> 0;
+            case SPLIT -> 1;
+            case SHIFTED -> 2;
+        };
     }
 
     /** FML's per-chunk seed ({@code GameRegistry.generateWorld}): every generator starts from it. */
@@ -184,7 +189,7 @@ public final class WorldGenBridge {
                 Runnable call = () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, provider, chunkProvider));
                 if (modDimension) call.run();
                 else {
-                    World.mcc$setOreSplit(splitsOres(level, e));
+                    World.mcc$setOreMode(oreMode(level, e));
                     try {
                         org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator, call); // InPlaceStructureGuard
                     } finally {
