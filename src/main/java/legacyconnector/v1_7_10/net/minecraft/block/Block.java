@@ -454,7 +454,11 @@ public class Block {
     public TileEntity createTileEntity(World world, int metadata) {
         if (!(this instanceof ITileEntityProvider provider)) return null;
         try {
-            return provider.createNewTileEntity(world, metadata);
+            TileEntity made = provider.createNewTileEntity(world, metadata);
+            // 1.2.5: a block that overrides getBlockEntity(metadata) (RedPower's BlockExtended picks the tile class by metadata) has a no-argument factory
+            // that answers null; the loader's bridge turns that factory into createNewTileEntity(World, int), which then hides the metadata entity
+            if (made == null && this instanceof BlockContainer container) made = container.getBlockEntity(metadata);
+            return made;
         } catch (AbstractMethodError e) {
             // a 1.6.4 provider implements createNewTileEntity(World), which has no meta argument
             TileEntity legacy = mcc$createNewTileEntity1(this, world);

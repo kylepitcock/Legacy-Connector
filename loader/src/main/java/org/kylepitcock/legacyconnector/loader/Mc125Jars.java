@@ -312,9 +312,50 @@ public final class Mc125Jars {
         return measure(zip)[1] == 1 ? 's' : 'c';
     }
 
+    /**
+     * True when the jar names the pre-1.3 Forge API (the {@code forge/*} package of Forge 3.x, {@code net/minecraft/src/forge/*}) or ModLoaderMP ({@code BaseModMp}, {@code ModLoaderMp}) without
+     * holding those classes itself: Forge 4+ (1.3.2 onward) moved to {@code net.minecraftforge} and FML, so only Minecraft 1.2.5 and older jars reference them.
+     */
+    static boolean usesPre13Forge(ZipFile zip) {
+        boolean[] hit = {false};
+        Set<String> own = new HashSet<>();
+        Enumeration<? extends ZipEntry> en = zip.entries();
+        while (en.hasMoreElements()) {
+            String n = en.nextElement().getName();
+            if (n.endsWith(".class")) own.add(n.substring(0, n.length() - 6));
+        }
+        en = zip.entries();
+        while (en.hasMoreElements() && !hit[0]) {
+            ZipEntry entry = en.nextElement();
+            if (entry.isDirectory() || !entry.getName().endsWith(".class")) continue;
+            try (InputStream in = zip.getInputStream(entry)) {
+                new ClassReader(in).accept(new org.objectweb.asm.commons.ClassRemapper(new ClassVisitor(Opcodes.ASM9) {}, new org.objectweb.asm.commons.Remapper() {
+                    @Override
+                    public String map(String internalName) {
+                        if (!own.contains(internalName) && (internalName.startsWith("forge/") || internalName.startsWith("net/minecraft/src/forge/")
+                                || internalName.equals("BaseModMp") || internalName.equals("ModLoaderMp"))) hit[0] = true;
+                        return internalName;
+                    }
+                }), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            } catch (IOException | RuntimeException e) {
+                // an unreadable class does not count
+            }
+        }
+        return hit[0];
+    }
+
     static String detect(ZipFile zip, java.util.function.Supplier<double[]> othersSupplier) {
         double share = score(zip);
-        if (share < MIN_SHARE) return null;
+        if (share < MIN_SHARE) {
+            // few game references of its own (a mod that mostly calls its own classes and the Forge API): the pre-1.3 Forge API is evidence enough next to a partial or unknown fingerprint
+            if ((share < 0 || share >= NEAR_SHARE) && usesPre13Forge(zip) && !fitsBeta(zip)) {
+                double[] others = othersSupplier.get();
+                boolean other = false;
+                if (others != null) for (double o : others) if (o >= MIN_SHARE || (share >= 0 && o + 0.15 >= share)) other = true;
+                if (!other) return "references the pre-1.3 Forge API (forge/*, ModLoaderMP), which only Minecraft 1.2.5 and older jars do" + (share >= 0 ? " (" + Math.round(share * 100) + "% of the member references match)" : "");
+            }
+            return null;
+        }
         if (fitsBeta(zip)) return null;
         double[] others = othersSupplier.get();
         if (others != null) for (double o : others) if (o + 0.15 >= share) return null;
