@@ -280,6 +280,21 @@ public final class LegacyVertices {
                     fx = normals[q * 3];
                     fy = normals[q * 3 + 1];
                     fz = normals[q * 3 + 2];
+                    boolean uniform = uniformItemNormal(st, s);
+                    if (uniform) {
+                        float[] g = geometricNormal(corners[q * 4], corners[q * 4 + 1], corners[q * 4 + 2]);
+                        if (g != null) {
+                            fx = g[0];
+                            fy = g[1];
+                            fz = g[2];
+                        }
+                    }
+                    if ((!s.hasNormal || uniform) && !st.itemBrightness.isEmpty()
+                            && facesInward(corners[q * 4], corners[q * 4 + 1], corners[q * 4 + 2], corners[q * 4 + 3], fx, fy, fz)) {
+                        fx = -fx;
+                        fy = -fy;
+                        fz = -fz;
+                    }
                 }
                 RenderContext.quad(st, corners[q * 4], corners[q * 4 + 1], corners[q * 4 + 2], corners[q * 4 + 3], fx, fy, fz);
             }
@@ -463,6 +478,32 @@ public final class LegacyVertices {
         emitFilled(st, s, a, b, c, d);
     }
 
+    /**
+     * A block drawn as an item whose handler sets one normal for a draw of several quads (RedPower's inventory boxes call setNormal once for every face of a block): lit by
+     * that single normal every face got the same light, and the block as dark as a face turned from the light. Such a draw is lit by the faces' own normals instead.
+     */
+    private static boolean uniformItemNormal(RenderContext.State st, Snapshot s) {
+        return !st.itemBrightness.isEmpty() && s.hasNormal() && s.vertices().size() > 4;
+    }
+
+    private static float[] geometricNormal(double[] a, double[] b, double[] c) {
+        double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+        double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+        double cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+        double len = Math.sqrt(cx * cx + cy * cy + cz * cz);
+        return len > 1.0E-9 ? new float[] {(float) (cx / len), (float) (cy / len), (float) (cz / len)} : null;
+    }
+
+    /**
+     * A block drawn as an item by a legacy handler that sets no normals (RedPower's inventory boxes) was lit by whatever normal GL held, never by its winding: the
+     * handlers wind their quads either way, and a face wound inward came out lit as the back of the block (the item as dark as the unlit side). The face normal is turned to
+     * point away from the handler's origin, where such handlers centre the block.
+     */
+    private static boolean facesInward(double[] a, double[] b, double[] c, double[] d, float nx, float ny, float nz) {
+        double cx = (a[0] + b[0] + c[0] + d[0]) / 4, cy = (a[1] + b[1] + c[1] + d[1]) / 4, cz = (a[2] + b[2] + c[2] + d[2]) / 4;
+        return cx * nx + cy * ny + cz * nz < -1.0E-6;
+    }
+
     private static void emitFilled(RenderContext.State st, Snapshot s, double[] a, double[] b, double[] c, double[] d) {
         float fx = s.nx(), fy = s.ny(), fz = s.nz();
         boolean gui = RenderContext.gui(st) != null;
@@ -472,7 +513,7 @@ public final class LegacyVertices {
             fx = 0.0F;
             fy = 0.0F;
             fz = 1.0F;
-        } else if (!s.hasNormal()) {
+        } else if (!s.hasNormal() || uniformItemNormal(st, s)) {
             // Face normal from the first three corners.
             double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
             double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
@@ -482,6 +523,11 @@ public final class LegacyVertices {
                 fx = (float) (cx / len);
                 fy = (float) (cy / len);
                 fz = (float) (cz / len);
+                if (!st.itemBrightness.isEmpty() && facesInward(a, b, c, d, fx, fy, fz)) {
+                    fx = -fx;
+                    fy = -fy;
+                    fz = -fz;
+                }
             }
         }
         st.flatGuiQuad = !s.hasNormal() && gui;
