@@ -3,6 +3,7 @@ package legacyconnector.v1_20_1.net.minecraftforge.eventbus.api;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.Objects;
+import java.util.Set;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
 
@@ -16,6 +17,18 @@ import net.neoforged.bus.api.ICancellableEvent;
  */
 public final class Forge1201EventBridge {
     private static final VarHandle CANCELED;
+
+    /**
+     * Pinned NeoForge 21.1.258 target classes corresponding to source Forge 1.20.1
+     * built-in event classes directly annotated with @Cancelable. Do not replace this
+     * with a blanket ICancellableEvent check: target cancellation membership can differ
+     * from source annotation semantics for some migrated built-ins.
+     */
+    private static final Set<String> BUILTIN_SOURCE_CANCELABLE_TARGET_TYPES = Set.of(
+            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteract",
+            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteractSpecific",
+            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$RightClickBlock",
+            "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$RightClickItem");
 
     static {
         try {
@@ -71,13 +84,12 @@ public final class Forge1201EventBridge {
             return true;
         }
 
-        // A target-side ICancellableEvent on a source superclass usually reflects
-        // that superclass's source @Cancelable marker. Do not mistake the interface
-        // we injected solely for a custom isCancelable override as source annotation.
+        // Transformed source custom event parents inherit the connector marker.
+        // Known NeoForge built-in replacements are handled by an exact type table,
+        // not by assuming every target ICancellableEvent was source @Cancelable.
         Class<?> superclass = event.getClass().getSuperclass();
         while (superclass != null && Event.class.isAssignableFrom(superclass)) {
-            if (ICancellableEvent.class.isAssignableFrom(superclass)
-                    && !Forge1201CustomCancelableOverrideMarker.class.isAssignableFrom(superclass)) {
+            if (BUILTIN_SOURCE_CANCELABLE_TARGET_TYPES.contains(superclass.getName().replace('.', '/'))) {
                 return true;
             }
             superclass = superclass.getSuperclass();
