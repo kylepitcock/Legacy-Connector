@@ -90,10 +90,25 @@ class PalladiumFlightHandler1201Test implements Opcodes {
     }
 
     private static boolean hasFieldAccess(MethodNode method, int opcode) {
-        for (AbstractInsnNode instruction : method.instructions) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction instanceof FieldInsnNode field
                     && field.getOpcode() == opcode
                     && PalladiumFlightHandler1201.GROUND_TAKEOFF_GRACE.equals(field.name)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasIntInstruction(MethodNode method, int opcode, int value) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof IntInsnNode operand
+                    && operand.getOpcode() == opcode && operand.operand == value) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasJump(MethodNode method, int opcode) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof JumpInsnNode jump && jump.getOpcode() == opcode) return true;
         }
         return false;
     }
@@ -146,25 +161,20 @@ class PalladiumFlightHandler1201Test implements Opcodes {
         MethodNode setter = method(node, "setFlightType",
                 "(L" + PalladiumFlightHandler1201.FLIGHT_TYPE + ";)V");
         assertTrue(hasFieldAccess(setter, PUTFIELD));
-        assertTrue(setter.instructions.iterator().hasNext());
-        assertTrue(setter.instructions.stream().anyMatch(instruction ->
-                instruction instanceof IntInsnNode value
-                        && value.getOpcode() == BIPUSH
-                        && value.operand == PalladiumFlightHandler1201.GROUND_TAKEOFF_GRACE_TICKS));
+        assertTrue(hasIntInstruction(setter, BIPUSH,
+                PalladiumFlightHandler1201.GROUND_TAKEOFF_GRACE_TICKS));
 
         MethodNode tick = method(node, "tick", "()V");
         assertTrue(hasFieldAccess(tick, GETFIELD));
         assertTrue(hasFieldAccess(tick, PUTFIELD));
-        assertTrue(tick.instructions.stream().anyMatch(instruction ->
-                instruction instanceof JumpInsnNode jump && jump.getOpcode() == IFLE),
+        assertTrue(hasJump(tick, IFLE),
                 "the original grounded cancellation branch must run after grace expires");
-        assertTrue(tick.instructions.stream().anyMatch(instruction ->
-                instruction instanceof JumpInsnNode jump && jump.getOpcode() == IFEQ),
+        assertTrue(hasJump(tick, IFEQ),
                 "airborne players must skip the ground grace and clear it");
         assertEquals(0, PalladiumFlightHandler1201.applyGroundTakeoffGrace(node),
                 "the adapter must be idempotent");
         assertDoesNotThrow(() -> {
-            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            ClassWriter writer = new ClassWriter(0);
             node.accept(writer);
             writer.toByteArray();
         });
