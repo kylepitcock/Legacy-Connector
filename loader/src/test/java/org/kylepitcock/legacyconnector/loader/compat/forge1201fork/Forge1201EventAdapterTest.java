@@ -36,6 +36,21 @@ final class Forge1201EventAdapterTest {
         assertTrue(hasMethod(node, "setCanceled", "(Z)V"));
     }
 
+
+    @Test
+    void eventBusApiUtilitySuperclassIsNotMistakenForForgeEventRoot() throws Exception {
+        ClassNode node = new ClassNode();
+        node.version = Opcodes.V17;
+        node.access = Opcodes.ACC_PUBLIC;
+        node.name = "sample/NotAnEvent";
+        node.superName = "net/minecraftforge/eventbus/api/EventPriority";
+
+        Forge1201EventAdapter.apply(node);
+
+        assertFalse(node.interfaces.contains(Forge1201EventAdapter.COMPAT_INTERFACE));
+        assertFalse(hasMethod(node, "isCancelable", "()Z"));
+    }
+
     @Test
     void directCancelableAnnotationBecomesMarkerAndTargetInterface() throws Exception {
         ClassNode node = eventRoot("sample/CancelableEvent");
