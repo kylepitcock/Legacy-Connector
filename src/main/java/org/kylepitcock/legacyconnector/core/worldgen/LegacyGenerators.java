@@ -35,7 +35,31 @@ public final class LegacyGenerators {
     }
 
     /** A legacy generator: the legacy object (identity is the key), the legacy mod id that owns it (null: unknown) and how to run it. */
-    public record Generator(Object generator, String modId, Runner runner) {}
+    public record Generator(Object generator, String modId, Runner runner, DeepRunner deepRunner) {
+        public Generator(Object generator, String modId, Runner runner) {
+            this(generator, modId, runner, null);
+        }
+    }
+
+    /**
+     * The shifted pass of a legacy generator ({@code deepLayer.mode = shifted}): runs it once with legacy y=0 at {@code bottomY} (the
+     * placed y of its deep feature, the dimension's bottom by default), keeping only its ore writes; the normal {@link Runner} then
+     * refuses ore writes. Null for families that run their own deep layer.
+     */
+    public interface DeepRunner {
+        void run(WorldGenLevel level, int chunkX, int chunkZ, int bottomY);
+    }
+
+    /** Whether a generator gets a shifted pass (config {@code deepLayer.*}). */
+    public static boolean shifted(Generator g) {
+        return g.deepRunner() != null && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerMode(g.modId(), g.generator().getClass().getName())
+                == org.kylepitcock.legacyconnector.core.LegacyConfig.DeepMode.SHIFTED;
+    }
+
+    /** The shifted pass feature of a generator feature id ({@code <ns>:legacy_worldgen_deep/<name>}). */
+    public static ResourceLocation deepId(ResourceLocation id) {
+        return id.withPath(p -> p.replaceFirst("^legacy_worldgen/", "legacy_worldgen_deep/"));
+    }
 
     /** A legacy family's generators, in the order the legacy loader ran them. */
     public interface Source {
@@ -183,6 +207,15 @@ public final class LegacyGenerators {
                     "{\"type\":\"legacyconnector:legacy_generator\",\"config\":{\"generator\":\"" + id + "\"}}");
             put(out, dir + "placed_feature/" + id.getPath() + ".json", "{\"feature\":\"" + id + "\",\"placement\":[]}");
             features.append(",\"").append(id).append('"');
+            if (shifted(e.getValue())) {
+                ResourceLocation deep = deepId(id);
+                put(out, dir + "configured_feature/" + deep.getPath() + ".json",
+                        "{\"type\":\"legacyconnector:legacy_generator_deep\",\"config\":{\"generator\":\"" + id + "\"}}");
+                put(out, dir + "placed_feature/" + deep.getPath() + ".json",
+                        "{\"feature\":\"" + deep + "\",\"placement\":[{\"type\":\"minecraft:height_range\",\"height\":{\"above_bottom\":0}}]}");
+                put(out, "data/" + deep.getNamespace() + "/neoforge/biome_modifier/" + deep.getPath() + ".json",
+                        "{\"type\":\"neoforge:add_features\",\"biomes\":{\"type\":\"neoforge:any\"},\"features\":\"" + deep + "\",\"step\":\"underground_ores\"}");
+            }
             if (tag.length() > 0) tag.append(',');
             tag.append('"').append(id).append('"');
         }

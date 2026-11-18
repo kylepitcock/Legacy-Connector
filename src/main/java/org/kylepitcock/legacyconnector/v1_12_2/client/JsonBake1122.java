@@ -24,9 +24,29 @@ public final class JsonBake1122 {
 
     /** The model at a modern model location baked with the mod's sprites, or null when it is no plain json model. */
     public static IBakedModel bake(ResourceLocation location, Function<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, TextureAtlasSprite> getter) {
+        Map<ResourceLocation, BlockModel> cache = new HashMap<>();
+        return bake(location, load(location, cache), cache, getter, BlockModelRotation.X0_Y0);
+    }
+
+    /**
+     * A model written in code ({@code {"parent": ..., "textures": {...}}}, a blockstate variant that names a model and overrides its textures)
+     * baked with the game's sprites and the variant's rotation; null when its parent chain does not resolve.
+     */
+    public static IBakedModel bakeVariant(String json, int x, int y) {
         try {
             Map<ResourceLocation, BlockModel> cache = new HashMap<>();
-            BlockModel model = load(location, cache);
+            BlockModel model = BlockModel.fromStream(new java.io.StringReader(json));
+            var rotation = BlockModelRotation.by(Math.floorMod(x, 360), Math.floorMod(y, 360));
+            return bake(ResourceLocation.parse("legacyconnector:variant"), model, cache, legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.defaultTextureGetter(), rotation);
+        } catch (RuntimeException | LinkageError e) {
+            RenderErrors1122.report("baking a blockstate variant model", e);
+            return null;
+        }
+    }
+
+    private static IBakedModel bake(ResourceLocation location, BlockModel model, Map<ResourceLocation, BlockModel> cache,
+            Function<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, TextureAtlasSprite> getter, BlockModelRotation rotation) {
+        try {
             if (model == null) return null;
             model.resolveParents(id -> {
                 BlockModel parent = load(id, cache);
@@ -50,7 +70,7 @@ public final class JsonBake1122 {
                         if (method.getReturnType() == boolean.class) return false;
                         return null;
                     });
-            var baked = model.bake(baker, sprites, BlockModelRotation.X0_Y0);
+            var baked = model.bake(baker, sprites, rotation);
             return baked == null ? null : Models1122.legacy(baked);
         } catch (RuntimeException | LinkageError e) {
             RenderErrors1122.report("baking the json model " + location + " with a mod's textures", e);
@@ -59,6 +79,8 @@ public final class JsonBake1122 {
     }
 
     private static BlockModel load(ResourceLocation id, Map<ResourceLocation, BlockModel> cache) {
+        // a flat item model's chain ends in this marker, which the game's baking turns into the extruded item quads
+        if (id.getPath().equals("builtin/generated")) return net.minecraft.client.resources.model.ModelBakery.GENERATION_MARKER;
         if (id.getPath().startsWith("builtin/")) return null;
         BlockModel known = cache.get(id);
         if (known != null) return known;

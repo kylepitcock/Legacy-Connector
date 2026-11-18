@@ -65,3 +65,5 @@ net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	getDesc	des
 net/minecraftforge/event/entity/living/LivingPackSizeEvent	getMaxPackSize	getSize
 net/minecraftforge/event/entity/living/LivingPackSizeEvent	setMaxPackSize	setSize
 net/minecraftforge/event/entity/player/BonemealEvent	getEntity	getPlayer
+# --- gap round 12
+net/minecraftforge/common/loot/CanToolPerformAction	canToolPerformAction	canItemPerformAbility

@@ -407,7 +407,7 @@ public final class Forge1201Transformer {
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
             palladiumAddonPackChanges += palladiumAddonPackChange;
-            viaCalls += ForgeApiRewrites1201.apply(node, modEvents, baseIsMinecraft);
+            viaCalls += ForgeApiRewrites1201.apply(node, modEvents, baseIsMinecraft, hierarchy);
             if (modEvents.test(node.name) && ForgeApiRewrites1201.markCancelable(node)) viaCalls++;
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;

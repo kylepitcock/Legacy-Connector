@@ -98,3 +98,4 @@ net/minecraft/network/chat/ClickEvent$Action	getName	*	getSerializedName
 net/minecraft/world/level/block/ChangeOverTimeBlock	onRandomTick	*	changeOverTime
 net/minecraft/server/level/ChunkHolder	getLastAvailableStatus	*	getLatestStatus
 net/minecraft/client/renderer/ViewArea	chunks	:*	sections
+net/minecraft/world/effect/MobEffect	isDurationEffectTick	*	shouldApplyEffectTickThisTick

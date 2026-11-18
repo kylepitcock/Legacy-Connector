@@ -34,6 +34,7 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         if (legacy != null) {
             imageWidth = legacy.mcc$xSize();
             imageHeight = legacy.mcc$ySize();
+            legacy.mcc$hovered = () -> hoveredSlot instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacySlot ls ? ls.legacy() : null;
         }
         super.init();
         if (legacy != null) {

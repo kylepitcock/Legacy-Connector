@@ -44,6 +44,11 @@ public final class CompatBufferBuilder implements VertexConsumer {
         this.own = memory;
     }
 
+    /** The memory this builder writes into (what {@code RenderBuffers.fixedBuffers} entries hand to the buffer source); null for a tesselator's builder. */
+    public ByteBufferBuilder memory() {
+        return own;
+    }
+
     /** A builder over memory owned by someone else (a section buffer pack's {@code builder(RenderType)}). */
     public static CompatBufferBuilder over(ByteBufferBuilder memory) {
         return new CompatBufferBuilder(memory);

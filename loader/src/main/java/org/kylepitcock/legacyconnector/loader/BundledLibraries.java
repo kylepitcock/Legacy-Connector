@@ -307,6 +307,14 @@ final class BundledLibraries {
         if (slash > 0) out.add(entry.substring(0, slash));
     }
 
+    /**
+     * A jar-in-jar library of a modern mod: NeoForge's {@code META-INF/jarjar/} but also the other folders under {@code META-INF/} that a jar's
+     * {@code jarjar/metadata.json} may name (C2ME nests Caffeine in {@code META-INF/jars/}).
+     */
+    static boolean isNestedLibraryJar(String entryName) {
+        return entryName.startsWith("META-INF/") && entryName.endsWith(".jar") && entryName.indexOf('/', "META-INF/".length()) > 0;
+    }
+
     /** package (slash form) to the name of a jar that contains classes of it; nested jar-in-jar libraries are looked into too. */
     static Map<String, String> scanProviders(List<Path> dirs, Set<Path> excluded) {
         Map<String, String> out = new HashMap<>();
@@ -322,7 +330,7 @@ final class BundledLibraries {
                         while (en.hasMoreElements()) {
                             ZipEntry e = en.nextElement();
                             String n = e.getName();
-                            if (n.startsWith("META-INF/jarjar/") && n.endsWith(".jar")) {
+                            if (isNestedLibraryJar(n)) {
                                 try (InputStream in = zip.getInputStream(e)) {
                                     for (String s : packages(in.readAllBytes())) out.putIfAbsent(s, name + " (nested " + n.substring(n.lastIndexOf('/') + 1) + ")");
                                 }

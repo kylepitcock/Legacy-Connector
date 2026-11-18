@@ -160,6 +160,22 @@ public class World implements IBlockAccess {
         return w.mcc$villages;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$villageSiegeObj}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.village.VillageSiege villageSiegeObj;
+
+    private legacyconnector.v1_7_10.net.minecraft.village.VillageSiege mcc$siege;
+
+    /** The world's siege object (1.7.10 created it with the world); the modern game runs its own sieges, so nothing ticks this one. */
+    public static legacyconnector.v1_7_10.net.minecraft.village.VillageSiege mcc$get$villageSiegeObj(World w) {
+        if (w.mcc$siege == null) w.mcc$siege = new legacyconnector.v1_7_10.net.minecraft.village.VillageSiege(w);
+        return w.mcc$siege;
+    }
+
+    public static void mcc$set$villageSiegeObj(World w, legacyconnector.v1_7_10.net.minecraft.village.VillageSiege siege) {
+        w.mcc$siege = siege;
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.village.VillageCollection getVillageCollection() {
         return mcc$get$villageCollectionObj(this);
     }
@@ -347,7 +363,27 @@ public class World implements IBlockAccess {
 
     public static void mcc$enterDeepPass(int shift) {
         DEEP_PASSES.incrementAndGet();
-        DEEP_SHIFT.set(new int[] {shift});
+        DEEP_SHIFT.set(new int[] {shift, DEEP_CROSS});
+    }
+
+    /**
+     * The shifted pass ({@code deepLayer.mode = shifted}): one full-height pass of an ore generator with legacy y=0 at modern {@code shift}
+     * (-64), over the whole real column instead of only the deep layer; it keeps only the ore writes ({@link #mcc$splitDrops}), the
+     * normal pass of the same generator keeps everything else. So a vein is never cut by a pass boundary.
+     */
+    public static void mcc$enterShiftedPass(int shift) {
+        DEEP_PASSES.incrementAndGet();
+        DEEP_SHIFT.set(new int[] {shift, Integer.MAX_VALUE});
+    }
+
+    private static int deepCross() {
+        int[] s = DEEP_SHIFT.get();
+        return s == null ? DEEP_CROSS : s[1];
+    }
+
+    private static boolean shiftedPass() {
+        int[] s = DEEP_SHIFT.get();
+        return DEEP_PASSES.get() != 0 && s != null && s[1] == Integer.MAX_VALUE;
     }
 
     public static void mcc$leaveDeepPass() {
@@ -366,10 +402,15 @@ public class World implements IBlockAccess {
 
     /** Whether this thread runs a deep pass (legacy structures made modern are placed once, by the game: MapGenStructures1710). */
     /** Set while a legacy generator whose deep layer is active runs its normal pass (see {@link #mcc$splitDrops}). */
-    private static final ThreadLocal<Boolean> MCC_ORE_SPLIT = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final ThreadLocal<Integer> MCC_ORE_SPLIT = ThreadLocal.withInitial(() -> 0);
 
     public static void mcc$setOreSplit(boolean on) {
-        MCC_ORE_SPLIT.set(on);
+        MCC_ORE_SPLIT.set(on ? 1 : 0);
+    }
+
+    /** Normal pass of a generator whose ores come from the shifted pass: 0 = no split, 1 = split by cell (old), 2 = ores refused (shifted). */
+    public static void mcc$setOreMode(int mode) {
+        MCC_ORE_SPLIT.set(mode);
     }
 
     /**
@@ -380,12 +421,16 @@ public class World implements IBlockAccess {
      */
     private boolean mcc$splitDrops(int x, int y, int z, BlockPos p, BlockState state) {
         boolean deep = inDeepPass();
-        if (!deep && !MCC_ORE_SPLIT.get()) return false;
-        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) return deep && p.getY() >= 0;
-        if (!deep && (y < 0 || y > 63)) return false;
+        int mode = MCC_ORE_SPLIT.get();
+        if (!deep && mode == 0) return false;
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) return deep && !shiftedPass() && p.getY() >= 0;
+        boolean shifted = deep ? shiftedPass() : mode == 2;
+        if (!deep && !shifted && (y < 0 || y > 63)) return false;
         BlockState current = lvl().getBlockState(p);
         boolean ore = !state.isAir() && current.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD)
                 && !state.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD);
+        // shifted mode: the shifted pass keeps the ore writes only, the normal pass everything but them (no cell cut through a vein)
+        if (shifted) return deep ? !ore : ore;
         // The deep pass above modern 0 (the crossing band) shares the cells of the normal pass there, keyed by modern height.
         int ky = deep && p.getY() >= 0 ? p.getY() : y;
         boolean toDeep = (cellHash(x >> 3, ky >> 3, z >> 3) & 1) == 0;
@@ -413,7 +458,11 @@ public class World implements IBlockAccess {
      * deepslate was not the stone a vein may replace). The ore split ({@link #mcc$splitDrops}) is untouched: it covers 0..63 only.
      */
     private boolean mcc$oreVeinBelowZero(int y) {
-        return y < 0 && MCC_ORE_SPLIT.get() && lvl() instanceof net.minecraft.server.level.WorldGenRegion;
+        return y < 0 && MCC_ORE_SPLIT.get() == 1 && lvl() instanceof net.minecraft.server.level.WorldGenRegion;
+    }
+
+    public static boolean mcc$inShiftedPass() {
+        return shiftedPass();
     }
 
     public static boolean mcc$inDeepPass() {
@@ -431,7 +480,7 @@ public class World implements IBlockAccess {
      * placed a pylon whose every block was refused and then failed on the missing tile entity ("te" is null).
      */
     private static boolean mcc$aboveDeepLayer(int legacyY) {
-        return inDeepPass() && legacyY + deepShift() >= DEEP_CROSS;
+        return inDeepPass() && legacyY + deepShift() >= deepCross();
     }
 
     /**
@@ -586,7 +635,7 @@ public class World implements IBlockAccess {
      * within one chunk of its centre (and logs an error with a stack trace for each refused one, which is slow and noisy).
      */
     private boolean outsideRegion(BlockPos p) {
-        if (p.getY() >= DEEP_CROSS && inDeepPass()) return true;
+        if (inDeepPass() && p.getY() >= deepCross()) return true;
         if (lvl() instanceof net.minecraft.server.level.WorldGenRegion r) {
             var c = r.getCenter();
             return Math.abs((p.getX() >> 4) - c.x) > 1 || Math.abs((p.getZ() >> 4) - c.z) > 1;
@@ -599,7 +648,7 @@ public class World implements IBlockAccess {
      * is loaded: 1.7.10 generated the chunk on the spot (Witchery's Torment mazes span four chunks from chunk 0, 0).
      */
     private void deferOutsideRegion(BlockPos p, BlockState state, int meta) {
-        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || p.getY() >= DEEP_CROSS && inDeepPass()) return;
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || inDeepPass() && p.getY() >= deepCross()) return;
         Runnable write = state != null ? () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, state)
                 : () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.meta(r.getLevel(), p, meta);
         // part of what the generator run builds (a locatable legacy structure, LegacyGeneratorStructures)
@@ -803,7 +852,7 @@ public class World implements IBlockAccess {
     private int surface(int x, int z, Heightmap.Types type) {
         int modern = modernSurface(x, z, type);
         // the deep layer is buried: its top is y=0 (see mcc$aboveDeepLayer)
-        if (inDeepPass()) modern = Math.min(modern, DEEP_CROSS);
+        if (inDeepPass()) modern = Math.min(modern, deepCross());
         return legacyY(modern);
     }
 
@@ -837,7 +886,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean canBlockSeeTheSky(int x, int y, int z) {
-        if (inDeepPass()) return false; // the deep layer is buried (see mcc$aboveDeepLayer)
+        if (inDeepPass() && !shiftedPass()) return false; // the deep layer is buried (see mcc$aboveDeepLayer)
         return lvl().canSeeSky(pos(x, y, z));
     }
 

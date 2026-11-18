@@ -91,7 +91,7 @@ def gap1201_targets():
               "com.google.code.gson", "com.google.code.findbugs", "org.jetbrains", "com.github.oshi", "net.java.dev.jna", "com.mojang", "org.slf4j",
               "org.apache.logging.log4j", "com.electronwill.night-config", "net.neoforged", "net.neoforged.fancymodloader", "cpw.mods", "io.github.llamalad7",
               "org.joml", "net.sf.jopt-simple", "org.apache.httpcomponents", "org.ow2.asm", "net.fabricmc", "org.jspecify", "org.lz4", "org.checkerframework",
-              "com.google.errorprone"]
+              "com.google.errorprone", "org.jline", "net.minecrell"]
     skip = ("sources", "javadoc", "installertools", "jst", "moddev", "srgutils", "neoform", "AutoRenaming", "DevLaunch", "JarJar", "minecraft-dependencies",
             "binarypatcher", "cli-utils", "gradle", "fatjar", "at-parser", "natives", "javadoctor", "mergetool-2.0.0")
 
@@ -145,6 +145,19 @@ def native_libraries():
     return {l.split("	")[0] for l in f.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")}
 
 
+def not_translated(jar):
+    """Why the layer never translates this jar, or "": a Fabric/Quilt jar without a Forge mods.toml is Sinytra Connector's (LegacyJarInspector.inspect only takes
+    mods.toml / neoforge.mods.toml jars; a multi-loader jar WITH a mods.toml is translated and its fabric.mod.json dropped, so it is not listed here)."""
+    try:
+        with zipfile.ZipFile(jar) as z:
+            names = set(z.namelist())
+    except Exception:
+        return ""
+    if ("fabric.mod.json" in names or "quilt.mod.json" in names) and "META-INF/mods.toml" not in names and "META-INF/neoforge.mods.toml" not in names:
+        return "Fabric/Quilt jar: loaded by Sinytra Connector, never translated by the layer"
+    return ""
+
+
 def dotted(kind, sym):
     """A gap report symbol (internal names, descriptors) as the dotted name probe.py classifies by prefix."""
     if kind != "class":
@@ -193,6 +206,8 @@ def run_gap1201(jar_dir, out, keep_detail=None):
         rec = {"jar": j.name, "mc": "1.20.1", "mods": info, "classes": classes, "synthesizedMembers": 0, "references": refs.get(j.name, 0)}
         if info and all(m["id"].lower() in native_libraries() for m in info):
             rec["result"] = "obsolete"   # a library with a native 1.21.1 build of the same mod id: the layer skips this jar (NativeLibraries1201), the native build is what runs
+        elif not_translated(j):
+            rec.update({"result": "obsolete", "notTranslated": not_translated(j)})   # the layer never touches it: its unresolved names (Fabric intermediary...) are not gaps
         elif miss:
             rec.update({"result": "unresolved", "unresolved": len(miss), "missing": miss[:20]})
         else:

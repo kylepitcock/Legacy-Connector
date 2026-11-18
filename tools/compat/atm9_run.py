@@ -86,7 +86,9 @@ def analyse(records, miss, native_by_jar, libs):
         info = r.get("mods") or []
         m = info[0] if info else {"id": r["jar"], "name": r["jar"], "version": ""}
         syms = miss.get(r["jar"], set())
-        if r["result"] == "obsolete":
+        if r["result"] == "obsolete" and r.get("notTranslated"):
+            cat = "not_translated"   # Fabric/Quilt/NeoForge jar the loader skips (probe.not_translated)
+        elif r["result"] == "obsolete":
             cat = "library_native"   # replaced by the native 1.21.1 build of the same mod id (libraries.tsv)
         elif r["result"] == "links":
             cat = "links"
@@ -157,12 +159,12 @@ def main():
     n_total = len(jars)
     cats = collections.Counter(j["cat"] for j in jars)
     nat = [j for j in jars if j["native"]]
-    aband = [j for j in jars if not j["native"] and j["cat"] != "library_native"]
+    aband = [j for j in jars if not j["native"] and j["cat"] not in ("library_native", "not_translated")]
     summary = {"date": datetime.date.today().isoformat(), "label": a.label, "jars": n_total, "links": cats["links"], "unresolved": cats["unresolved"],
-               "library_native": cats["library_native"], "has_1211_version": len(nat), "has_1211_version_links": sum(1 for j in nat if j["cat"] == "links"),
+               "library_native": cats["library_native"], "not_translated": cats["not_translated"], "has_1211_version": len(nat), "has_1211_version_links": sum(1 for j in nat if j["cat"] == "links"),
                "abandoned": len(aband), "abandoned_links": sum(1 for j in aband if j["cat"] == "links"),
                "abandoned_unresolved": sum(1 for j in aband if j["cat"] == "unresolved"),
-               "unresolved_symbols_total": sum(j["unresolved"] for j in jars)}
+               "unresolved_symbols_total": sum(j["unresolved"] for j in jars if j["cat"] != "not_translated")}
     top_sym_all, top_own_all = blockers(jars)
     top_sym_ab, top_own_ab = blockers(jars, lambda j: not j["native"] and j["cat"] == "unresolved")
     summary["top_symbols"] = [[k[1], len(v)] for k, v in top_sym_all[:a.top]]
@@ -203,7 +205,7 @@ def main():
         print(f"{changed} mods.json rows noted 'has a 1.21.1 version'")
     if a.baseline:
         old = json.loads(pathlib.Path(a.baseline).read_text(encoding="utf-8"))
-        for k in ("links", "unresolved", "library_native", "has_1211_version_links", "abandoned_links", "abandoned_unresolved", "unresolved_symbols_total"):
+        for k in ("links", "unresolved", "library_native", "not_translated", "has_1211_version_links", "abandoned_links", "abandoned_unresolved", "unresolved_symbols_total"):
             print(f"{k}: {old.get(k)} -> {summary[k]} ({summary[k] - old.get(k, 0):+d})")
 
 

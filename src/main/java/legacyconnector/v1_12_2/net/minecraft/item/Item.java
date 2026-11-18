@@ -370,7 +370,9 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     public int getMetadata(ItemStack stack) {
         // Forge: the stack's metadata. Items that do not map damage themselves (getMetadata(int) is 0) answer the damage value, which is
         // what CoFH's ItemHelper.getItemDamage reads through Items.DIAMOND to tell one subtype of a stack from another
-        int damage = stack.getItemDamage();
+        // the stored value, not getItemDamage(): that asks Item.getDamage, which an item may define through getMetadata(stack) (Chisels & Bits'
+        // ItemChisel.getDamage = max(getMetadata(stack), nbt damage)), a StackOverflowError that crashed the server on the first tick
+        int damage = stack.getMetadata();
         int meta = getMetadata(damage);
         return meta == 0 ? damage : meta;
     }

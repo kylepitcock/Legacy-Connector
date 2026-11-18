@@ -132,11 +132,26 @@ public final class Models1122 {
     /** The model the game has under a legacy location (the missing model if none). */
     public static IBakedModel legacyModel(ModelResourceLocation location) {
         var manager = Minecraft.getInstance().getModelManager();
+        BakedModel missing = missingModern();
         for (var modern : modernLocations(location)) {
             BakedModel model = manager.getModel(modern);
-            if (model != manager.getMissingModel()) return legacy(model);
+            if (model != null && model != missing) return legacy(model);
         }
-        return legacy(manager.getMissingModel());
+        return legacy(missing);
+    }
+
+    /**
+     * The game's missing model; during the first bake (ModelEvent.ModifyBakingResult, where mods' IModel.bake runs) the manager has none yet and
+     * answers null for every location, so the one being baked stands in (a null baked model made Botania's special flowers and Astral Sorcery's
+     * item colorization throw).
+     */
+    public static BakedModel missingModern() {
+        BakedModel missing = Minecraft.getInstance().getModelManager().getMissingModel();
+        if (missing == null) {
+            var baking = CustomModels1122.baking();
+            if (baking != null) missing = baking.get(net.minecraft.client.resources.model.ModelBakery.MISSING_MODEL_VARIANT);
+        }
+        return missing;
     }
 
     /** Whether a baked model is a copy of the missing model (a cube of missing-texture faces, baked for a location whose json failed to load). */

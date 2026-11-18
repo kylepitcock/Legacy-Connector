@@ -191,7 +191,56 @@ public class World implements IBlockAccess {
     }
 
     private static net.minecraft.core.BlockPos modern(BlockPos p) {
-        return new net.minecraft.core.BlockPos(p.getX(), p.getY(), p.getZ());
+        int shift = SHIFT.get()[0];
+        return new net.minecraft.core.BlockPos(p.getX(), p.getY() + shift, p.getZ());
+    }
+
+    /**
+     * Shifted pass ({@code deepLayer.mode = shifted}, see LegacyGenerators.DeepRunner): while a legacy generator runs its shifted pass on
+     * this thread, legacy y=0 is modern {@code shift} (-64), so a generator keyed to the old world bottom fills the real one; deepslate
+     * reads as stone and only ore writes (natural stone replaced by another block) are kept. The normal pass of the same generator
+     * refuses exactly those writes ({@link #mcc$setRefuseOres}), so every ore comes from the one shifted pass and no vein is cut.
+     * Slot 0: shift (0 outside the pass); slot 1: the normal pass refuses ore writes.
+     */
+    private static final ThreadLocal<int[]> SHIFT = ThreadLocal.withInitial(() -> new int[2]);
+
+    public static void mcc$enterShifted(int shift) {
+        SHIFT.get()[0] = shift;
+    }
+
+    public static void mcc$leaveShifted() {
+        SHIFT.get()[0] = 0;
+    }
+
+    public static void mcc$setRefuseOres(boolean on) {
+        SHIFT.get()[1] = on ? 1 : 0;
+    }
+
+    private static boolean shifted() {
+        return SHIFT.get()[0] != 0;
+    }
+
+    /**
+     * Whether a write is refused by the ore partition: the shifted pass keeps only ore writes, the normal pass of a generator with a
+     * shifted pass keeps all but them. An ore write replaces natural overworld stone with a block that is not.
+     */
+    private boolean refusedByOrePartition(net.minecraft.core.BlockPos p, BlockState state) {
+        int[] s = SHIFT.get();
+        if (s[0] == 0 && s[1] == 0) return false;
+        if (!(acc() instanceof net.minecraft.server.level.WorldGenRegion region)) return false;
+        boolean ore = state != null && !state.isAir() && region.getBlockState(p).is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD)
+                && !state.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD);
+        return s[0] != 0 ? !ore : ore;
+    }
+
+    /** A vanilla ore a legacy generator put into deepslate becomes its deepslate variant (as the 1.7.10 layer does). */
+    private BlockState deepslateVariant(net.minecraft.core.BlockPos p, BlockState state) {
+        if (!shifted() || !(acc() instanceof net.minecraft.server.level.WorldGenRegion region) || !region.getBlockState(p).is(net.minecraft.world.level.block.Blocks.DEEPSLATE)) return state;
+        var key = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (!"minecraft".equals(key.getNamespace()) || !key.getPath().endsWith("_ore") || key.getPath().startsWith("deepslate_")) return state;
+        var twin = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(
+                net.minecraft.resources.ResourceLocation.withDefaultNamespace("deepslate_" + key.getPath()));
+        return twin.isPresent() ? twin.get().defaultBlockState() : state;
     }
 
     private static net.minecraft.world.level.block.Block modernBlock(Block block) {
@@ -430,7 +479,9 @@ public class World implements IBlockAccess {
     @Override
     public IBlockState getBlockState(BlockPos pos) {
         if (pos.getY() < 0 && !org.kylepitcock.legacyconnector.core.LegacyConfig.deepWorld1122()) return org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
-        IBlockState state = StatesBridge1122.toLegacy(mcc$state(modern(pos)));
+        BlockState read = mcc$state(modern(pos));
+        if (read.is(net.minecraft.world.level.block.Blocks.DEEPSLATE) && shifted()) read = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        IBlockState state = StatesBridge1122.toLegacy(read);
         if (state == null) state = org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
         return state;
     }
@@ -447,6 +498,8 @@ public class World implements IBlockAccess {
             return false;
         }
         BlockState modernState = StatesBridge1122.toModern(state);
+        if (refusedByOrePartition(p, modernState)) return false;
+        modernState = deepslateVariant(p, modernState);
         if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             boolean placed = region.setBlock(p, modernState, flags & ~1);
             if (placed) {
@@ -474,6 +527,7 @@ public class World implements IBlockAccess {
     public boolean mcc$setModernState(BlockPos pos, BlockState modernState, int flags) {
         var p = modern(pos);
         if (outsideRegion(p) || isOutsideBuildHeight(pos)) return false;
+        if (refusedByOrePartition(p, modernState)) return false;
         if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             boolean placed = region.setBlock(p, modernState, flags & ~1);
             if (placed) {
@@ -558,7 +612,7 @@ public class World implements IBlockAccess {
     public boolean isOutsideBuildHeight(BlockPos pos) {
         // 1.12's world started at y=0: the modern overworld goes down to -64, but mods index chunk section arrays with y>>4 (AbyssalCraft's explosions threw on -2)
         // (legacy.deepWorld1122, on by default: machines such as quarries reach the deepslate layers; off keeps 1.12's floor at y=0)
-        return (pos.getY() < 0 && !org.kylepitcock.legacyconnector.core.LegacyConfig.deepWorld1122()) || (acc() == null ? pos.getY() >= 256 : acc().isOutsideBuildHeight(pos.getY()));
+        return (pos.getY() < 0 && !org.kylepitcock.legacyconnector.core.LegacyConfig.deepWorld1122()) || (acc() == null ? pos.getY() >= 256 : acc().isOutsideBuildHeight(pos.getY() + SHIFT.get()[0]));
     }
 
     public boolean isValid(BlockPos pos) {
@@ -604,6 +658,11 @@ public class World implements IBlockAccess {
      * heightmaps exist, so the surface is found from the blocks themselves.
      */
     private int surface(int x, int z, Heightmap.Types type) {
+        int y = surfaceModern(x, z, type);
+        return y - SHIFT.get()[0];
+    }
+
+    private int surfaceModern(int x, int z, Heightmap.Types type) {
         if (acc() == null) return 0;
         if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             if (!region.hasChunk(x >> 4, z >> 4)) return region.getSeaLevel();

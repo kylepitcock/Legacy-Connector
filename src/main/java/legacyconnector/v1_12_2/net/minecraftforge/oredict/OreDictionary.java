@@ -20,7 +20,8 @@ public class OreDictionary {
 
     private static final List<String> ID_TO_NAME = new ArrayList<>();
     private static final Map<String, Integer> NAME_TO_ID = new HashMap<>();
-    private static final Map<Integer, List<ItemStack>> ORES = new LinkedHashMap<>();
+    /** Index = ore id, like Forge's field of the same name (mods remove an ore by reflection: RebornCore's OreUtil.remove replaces the list at the id). */
+    private static final List<NonNullList<ItemStack>> idToStack = new ArrayList<>();
 
     static {
         VanillaOres.register();
@@ -32,7 +33,7 @@ public class OreDictionary {
             id = ID_TO_NAME.size();
             ID_TO_NAME.add(name);
             NAME_TO_ID.put(name, id);
-            ORES.put(id, new ArrayList<>());
+            idToStack.add(NonNullList.create());
         }
         return id;
     }
@@ -56,10 +57,10 @@ public class OreDictionary {
     public static synchronized int[] getOreIDs(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return new int[0];
         List<Integer> ids = new ArrayList<>();
-        for (var e : ORES.entrySet()) {
-            for (ItemStack ore : e.getValue()) {
-                if (itemMatches(ore, stack, false)) {
-                    ids.add(e.getKey());
+        for (int oreId = 0; oreId < idToStack.size(); oreId++) {
+            for (ItemStack ore : idToStack.get(oreId)) {
+                if (!ore.isEmpty() && itemMatches(ore, stack, false)) {
+                    ids.add(oreId);
                     break;
                 }
             }
@@ -76,14 +77,14 @@ public class OreDictionary {
     public static synchronized NonNullList<ItemStack> getOres(String name, boolean alwaysCreateEntry) {
         NonNullList<ItemStack> out = NonNullList.create();
         Integer id = alwaysCreateEntry ? Integer.valueOf(getOreID(name)) : NAME_TO_ID.get(name);
-        if (id != null) for (ItemStack s : ORES.get(id)) out.add(s);
+        if (id != null) for (ItemStack s : idToStack.get(id)) if (!s.isEmpty()) out.add(s);
         return out;
     }
 
     public static synchronized NonNullList<ItemStack> getOres(Integer id) {
         NonNullList<ItemStack> out = NonNullList.create();
-        List<ItemStack> list = ORES.get(id);
-        if (list != null) for (ItemStack s : list) out.add(s);
+        List<ItemStack> list = id != null && id >= 0 && id < idToStack.size() ? idToStack.get(id) : null;
+        if (list != null) for (ItemStack s : list) if (!s.isEmpty()) out.add(s);
         return out;
     }
 
@@ -110,15 +111,19 @@ public class OreDictionary {
         if (ore == null || ore.isEmpty()) return;
         int id = getOreID(name);
         synchronized (OreDictionary.class) {
-            for (ItemStack have : ORES.get(id)) if (ItemStack.areItemsEqual(have, ore)) return;
-            ORES.get(id).add(ore.copy());
+            for (ItemStack have : idToStack.get(id)) if (ItemStack.areItemsEqual(have, ore)) return;
+            idToStack.get(id).add(ore.copy());
         }
         MinecraftForge.EVENT_BUS.post(new OreRegisterEvent(name, ore));
     }
 
     public static synchronized Map<String, List<ItemStack>> mcc$registrations() {
         Map<String, List<ItemStack>> out = new LinkedHashMap<>();
-        for (var e : ORES.entrySet()) out.put(ID_TO_NAME.get(e.getKey()), new ArrayList<>(e.getValue()));
+        for (int i = 0; i < idToStack.size(); i++) {
+            List<ItemStack> live = new ArrayList<>();
+            for (ItemStack s : idToStack.get(i)) if (!s.isEmpty()) live.add(s);
+            out.put(ID_TO_NAME.get(i), live);
+        }
         return out;
     }
 

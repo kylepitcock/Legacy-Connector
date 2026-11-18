@@ -65,10 +65,20 @@ final class ForgeApiRewrites1201 {
      * descriptor, so a {@code super.getCapability(...)} naming it reaches Minecraft's (capability-less) parent and becomes the helper's base behaviour.
      */
     static int apply(ClassNode node, java.util.function.Predicate<String> modEvents, java.util.function.BiPredicate<String, String> baseIsMinecraft) {
-        return apply(node, table(), modEvents, baseIsMinecraft);
+        return apply(node, table(), modEvents, baseIsMinecraft, null);
+    }
+
+    /** {@code hierarchy}: lets a call through a class of the jar (or of another jar of the set) reach the rule of the Minecraft/NeoForge class it inherits the method from. */
+    static int apply(ClassNode node, java.util.function.Predicate<String> modEvents, java.util.function.BiPredicate<String, String> baseIsMinecraft, Mc1201Hierarchy hierarchy) {
+        return apply(node, table(), modEvents, baseIsMinecraft, hierarchy);
     }
 
     static int apply(ClassNode node, Map<String, String> rules, java.util.function.Predicate<String> modEvents, java.util.function.BiPredicate<String, String> baseIsMinecraft) {
+        return apply(node, rules, modEvents, baseIsMinecraft, null);
+    }
+
+    static int apply(ClassNode node, Map<String, String> rules, java.util.function.Predicate<String> modEvents, java.util.function.BiPredicate<String, String> baseIsMinecraft,
+            Mc1201Hierarchy hierarchy) {
         if (rules.isEmpty()) return 0;
         int n = 0;
         for (MethodNode m : node.methods) {
@@ -111,6 +121,21 @@ final class ForgeApiRewrites1201 {
                     helper = rules.get("@event." + call.name + call.desc);
                     anyReceiver = helper != null;
                 }
+                // a call through a class of the jar that inherits the method (ItemStackHandlerNA.serializeNBT() where ItemStackHandlerNA extends ItemStackHandler): the
+                // rule of the declaring Minecraft/NeoForge class applies when no class of the mod declares the method on the way up; the helper takes that ancestor
+                String ruleOwner = null;
+                if (helper == null && hierarchy != null && (call.getOpcode() == Opcodes.INVOKEVIRTUAL || call.getOpcode() == Opcodes.INVOKEINTERFACE)
+                        && !call.owner.startsWith("[") && !hierarchy.isMinecraft(call.owner) && hierarchy.knows(call.owner)
+                        && hierarchy.declaredIn(call.owner, call.name, call.desc) == Mc1201Hierarchy.Origin.MINECRAFT) {
+                    for (String ancestor : hierarchy.minecraftAncestors(call.owner)) {
+                        if (ancestor.equals(call.owner)) continue;
+                        String viaAncestor = rules.get(ancestor + "." + call.name + call.desc);
+                        if (viaAncestor == null) continue;
+                        helper = viaAncestor;
+                        ruleOwner = ancestor;
+                        break;
+                    }
+                }
                 if (helper == null) continue;
                 String helperOwner = null;
                 if (helper.startsWith("TailClient.")) {   // the client-only part of the tail (client event classes must not be loaded by a dedicated server)
@@ -130,7 +155,7 @@ final class ForgeApiRewrites1201 {
                 if (call.getOpcode() != Opcodes.INVOKESTATIC) {
                     Type[] args = Type.getArgumentTypes(call.desc);
                     Type[] withReceiver = new Type[args.length + 1];
-                    withReceiver[0] = anyReceiver ? Type.getObjectType("java/lang/Object") : Type.getObjectType(call.owner);   // a "*" rule's helper takes any receiver
+                    withReceiver[0] = anyReceiver ? Type.getObjectType("java/lang/Object") : Type.getObjectType(ruleOwner != null ? ruleOwner : call.owner);   // a "*" rule's helper takes any receiver
                     System.arraycopy(args, 0, withReceiver, 1, args.length);
                     desc = Type.getMethodDescriptor(Type.getReturnType(call.desc), withReceiver);
                 }

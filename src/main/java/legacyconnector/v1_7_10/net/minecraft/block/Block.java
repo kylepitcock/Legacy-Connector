@@ -125,9 +125,30 @@ public class Block {
         // 1.7.10 named a few textures differently from the block (the brick block's is "brick"); mods read the field reflectively.
         this.textureName = "brick_block".equals(info.legacyName()) || "minecraft:brick_block".equals(info.legacyName()) ? "brick" : info.legacyName();
         BlockBridge.initVanilla(this, info);
+        this.blockIndexInTexture = mcc$vanillaTerrainIndex(info.legacyName());
         this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         this.opaque = this.isOpaqueCube();
         this.canBlockGrass = !blockMaterial.getCanBlockGrass();
+    }
+
+    /**
+     * 1.4.7 mods read {@code Block.blockIndexInTexture} of vanilla blocks as a field (a tank draws the liquid a stack holds from the tile of its block in
+     * {@code /terrain.png}; water read -1 and drew stone): the tile of the block's name where the sheet has one, else -1 (blocks with per-side tiles).
+     */
+    private static int mcc$vanillaTerrainIndex(String legacyName) {
+        if (legacyName == null) return -1;
+        String name = legacyName.startsWith("minecraft:") ? legacyName.substring(10) : legacyName;
+        switch (name) {
+            case "water", "flowing_water" -> name = "water_still";
+            case "lava", "flowing_lava" -> name = "lava_still";
+            default -> {
+            }
+        }
+        try {
+            return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.terrainIndexOf(name);
+        } catch (RuntimeException | LinkageError e) {
+            return -1;
+        }
     }
 
     /** Lets the bridge copy modern properties into the protected legacy fields of a vanilla wrapper. */

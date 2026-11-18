@@ -8,7 +8,11 @@ public class SoundManager {
     public static final SoundManager INSTANCE = new SoundManager(SoundHandler.INSTANCE);
     private final SoundHandler sndHandler;
     /** The sound library mods drive directly (IC2 takes it by reflection): its sources play on the modern engine. */
-    private final legacyconnector.v1_7_10.paulscode.sound.SoundSystem sndSystem = new legacyconnector.v1_7_10.paulscode.sound.SoundSystem();
+    private final SoundSystemStarterThread sndSystem = new SoundSystemStarterThread();
+
+    /** 1.7.10's type of {@link #sndSystem} (a SoundSystem that queues commands on its own thread); mods name it when they read the field. */
+    public static class SoundSystemStarterThread extends legacyconnector.v1_7_10.paulscode.sound.SoundSystem {
+    }
     /** Whether the engine is up (mods wait for it by reflection before using {@link #sndSystem}); kept by {@link #mcc$engineLoaded}. */
     private boolean loaded;
 
@@ -37,7 +41,7 @@ public class SoundManager {
     }
 
     /** A URL that reads a resource of the packs ({@code mcsounddomain:} in 1.7.10), for mods that stream sounds themselves. */
-    public java.net.URL getURLForSoundResource(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location) {
+    public static java.net.URL getURLForSoundResource(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location) {
         if (location == null) return null;
         var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(location.getResourceDomain(), location.getResourcePath());
         try {

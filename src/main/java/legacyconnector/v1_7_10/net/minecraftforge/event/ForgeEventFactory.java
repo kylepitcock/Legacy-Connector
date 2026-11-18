@@ -196,6 +196,12 @@ public class ForgeEventFactory {
         return event;
     }
 
+    /** Posts {@code LivingHealEvent}; the amount to heal (handlers may change it), 0 when a handler cancelled the heal. */
+    public static float onLivingHeal(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, float amount) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHealEvent(entity, amount);
+        return MinecraftForge.EVENT_BUS.post(event) ? 0.0F : event.amount;
+    }
+
     /** How many of a mob may spawn together in a chunk (its own limit; 1.7.10 had no event to change it). */
     public static int getMaxSpawnPackSize(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving entity) {
         return entity.getMaxSpawnedInChunk();

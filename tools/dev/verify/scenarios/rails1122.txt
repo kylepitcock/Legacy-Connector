@@ -1,0 +1,52 @@
+# Steve's Carts (1.12.2): mod rails use BlockRailBase.Rail (updateDir) to connect like 1.12; vanilla rails are unaffected
+mods: 1.12.2 StevesCarts-1.12.2
+mods: 1.12.2 RebornCore-1.12.2
+cmd /fill -12 148 -12 12 148 12 minecraft:stone
+cmd /tp @s 0.5 150 -8.5
+expect stevescarts :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var o=[];R.BLOCK.keySet().forEach(function(k){if(String(k).indexOf("stevescarts")==0)o.push(String(k));});return "L "+o.join(" ");})()
+wait 40
+# vanilla curve: an L of rails (0,0)-(0,1)-(1,1) connects like vanilla
+cmd /setblock 0 149 0 minecraft:rail
+cmd /setblock 0 149 1 minecraft:rail
+cmd /setblock 1 149 1 minecraft:rail
+wait 5
+expect shape=north_east :: String(server.overworld().getBlockState(new (Java.type("net.minecraft.core.BlockPos"))(0,149,1)))
+# a mod detector rail line east-west and north-south
+cmd /setblock 5 149 0 stevescarts:blockadvdetector
+cmd /setblock 6 149 0 stevescarts:blockadvdetector
+wait 5
+expect ^S1 :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var o=[];for(var x=5;x<=6;x++)o.push(String(server.overworld().getBlockState(new BP(x,149,0))));return "S1 "+o.join(" | ");})()
+cmd /setblock -5 149 0 stevescarts:blockjunction
+cmd /setblock -5 149 1 stevescarts:blockjunction
+wait 5
+expect ^S2 :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var o=[];for(var z=0;z<=1;z++)o.push(String(server.overworld().getBlockState(new BP(-5,149,z))));return "S2 "+o.join(" | ");})()
+# mod rail next to a vanilla rail
+cmd /setblock 0 149 -4 minecraft:rail
+cmd /setblock 1 149 -4 stevescarts:blockadvdetector
+wait 5
+expect ^S3 :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var o=[];for(var x=0;x<=1;x++)o.push(String(server.overworld().getBlockState(new BP(x,149,-4))));return "S3 "+o.join(" | ");})()
+# slope: a rail one block up
+cmd /setblock 8 148 8 minecraft:stone
+cmd /setblock 8 149 8 stevescarts:blockadvdetector
+cmd /setblock 9 149 8 stone
+cmd /setblock 9 150 8 stevescarts:blockadvdetector
+wait 5
+expect ^S4 :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");return "S4 "+String(server.overworld().getBlockState(new BP(8,149,8)))+" | "+String(server.overworld().getBlockState(new BP(9,150,8)));})()
+# a curve of mod rails (BlockRail subclass is flexible): the middle one turns like 1.12
+cmd /setblock -8 149 -8 stevescarts:blockadvdetector
+cmd /setblock -8 149 -7 stevescarts:blockadvdetector
+cmd /setblock -7 149 -7 stevescarts:blockadvdetector
+wait 5
+expect ^S5 :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var o=[];o.push(String(server.overworld().getBlockState(new BP(-8,149,-8))));o.push(String(server.overworld().getBlockState(new BP(-8,149,-7))));o.push(String(server.overworld().getBlockState(new BP(-7,149,-7))));return "S5 "+o.join(" | ");})()
+# vanilla slope
+cmd /setblock 10 149 8 minecraft:rail
+cmd /setblock 11 149 8 minecraft:stone
+cmd /setblock 11 150 8 minecraft:rail
+wait 5
+expect ^S6 :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");return "S6 "+String(server.overworld().getBlockState(new BP(10,149,8)))+" | "+String(server.overworld().getBlockState(new BP(11,150,8)));})()
+cmd /tp @s -6.5 152 -4.5
+look 180 55
+wait 20
+shot rails1122-rails
+logabsent ClassCastException
+logabsent Exception in server tick

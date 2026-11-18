@@ -159,3 +159,5 @@ net/minecraftforge/common/crafting/conditions/IConditionBuilder	net/neoforged/ne
 net/minecraftforge/common/crafting/conditions/ConditionContext	net/neoforged/neoforge/common/conditions/ConditionContext
 net/minecraftforge/gametest/ForgeGameTestHooks	net/neoforged/neoforge/gametest/GameTestHooks
 net/minecraftforge/client/model/ForgeFaceData	net/neoforged/neoforge/client/model/ExtraFaceData
+# --- gap round 12
+net/minecraftforge/common/loot/CanToolPerformAction	net/neoforged/neoforge/common/loot/CanItemPerformAbility
