@@ -30,6 +30,37 @@ public class SoundManager {
         if (category != null) net.minecraft.client.Minecraft.getInstance().getSoundManager().updateSourceVolume(category.mcc$source(), volume);
     }
 
+    /** The volume slider of a category (the master category is always 1: the master volume scales the listener). */
+    public float getSoundCategoryVolume(SoundCategory category) {
+        if (category == null || category.mcc$source() == net.minecraft.sounds.SoundSource.MASTER) return 1.0F;
+        return net.minecraft.client.Minecraft.getInstance().options.getSoundSourceVolume(category.mcc$source());
+    }
+
+    /** A URL that reads a resource of the packs ({@code mcsounddomain:} in 1.7.10), for mods that stream sounds themselves. */
+    public java.net.URL getURLForSoundResource(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location) {
+        if (location == null) return null;
+        var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(location.getResourceDomain(), location.getResourcePath());
+        try {
+            return java.net.URL.of(java.net.URI.create("mcsounddomain:" + id), new java.net.URLStreamHandler() {
+                @Override
+                protected java.net.URLConnection openConnection(java.net.URL u) {
+                    return new java.net.URLConnection(u) {
+                        @Override
+                        public void connect() {
+                        }
+
+                        @Override
+                        public java.io.InputStream getInputStream() throws java.io.IOException {
+                            return net.minecraft.client.Minecraft.getInstance().getResourceManager().open(id);
+                        }
+                    };
+                }
+            });
+        } catch (java.net.MalformedURLException e) {
+            return null;
+        }
+    }
+
     public void unloadSoundSystem() {
     }
 

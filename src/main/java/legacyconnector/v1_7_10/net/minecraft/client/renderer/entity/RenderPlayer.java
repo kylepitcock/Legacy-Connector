@@ -37,17 +37,68 @@ public class RenderPlayer extends RendererLivingEntity {
         }
     }
 
+    /** Name tag with a scoreboard line under it: 1.7.10's overload for players (the one mods override). */
+    protected void renderOffsetLivingLabel(legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer player, double x, double y, double z,
+            String text, float scale, double distance) {
+        super.renderOffsetLivingLabel(player, x, y, z, text, scale, distance);
+    }
+
     @Override
     protected void renderOffsetLivingLabel(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, double x, double y, double z,
             String text, float scale, double distance) {
-        super.renderOffsetLivingLabel(entity, x, y, z, text, scale, distance);
+        if (entity instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer p) renderOffsetLivingLabel(p, x, y, z, text, scale, distance);
+        else super.renderOffsetLivingLabel(entity, x, y, z, text, scale, distance);
+    }
+
+    /**
+     * Draws the player at (x, y, z) relative to the current matrix through this renderer's models ({@link #modelBipedMain} and the armour
+     * models), with the player's own skin: what 1.7.10 mods call to draw a player or fake player somewhere (GUI previews, NPC and morph
+     * renderers) and override to pose the models first. It runs the legacy model path rather than the modern PlayerRenderer so that a
+     * subclass's changes to the models and its own texture and scale callbacks are honoured; it posts no RenderPlayerEvent (a handler
+     * that draws the player itself would recurse).
+     */
+    public void doRender(legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer player, double x, double y, double z, float yaw,
+            float partialTicks) {
+        super.doRender((legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase) player, x, y, z, yaw, partialTicks);
+    }
+
+    @Override
+    public void doRender(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, double x, double y, double z, float yaw, float partialTicks) {
+        if (entity instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer p) doRender(p, x, y, z, yaw, partialTicks);
+        else super.doRender(entity, x, y, z, yaw, partialTicks);
     }
 
     @Override
     public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
-        // The engine never calls this (the modern renderer draws players), so a call comes from legacy code that wants the vanilla player drawn
-        // through this renderer's model: a model copier (Morph's forceRender of the player's model, which keeps only the parts that were drawn).
-        super.doRender(entity, x, y, z, yaw, partialTicks);
+        // reached by legacy code drawing a player through the renderer table; routed like javac's bridge methods so overrides of the typed overload run
+        if (entity instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer p) doRender(p, x, y, z, yaw, partialTicks);
+        else super.doRender(entity, x, y, z, yaw, partialTicks);
+    }
+
+    /** The player's position setup (a subclass moves the model here). */
+    protected void renderLivingAt(legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer player, double x, double y, double z) {
+        super.renderLivingAt(player, x, y, z);
+    }
+
+    @Override
+    protected void renderLivingAt(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, double x, double y, double z) {
+        if (entity instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer p) renderLivingAt(p, x, y, z);
+        else super.renderLivingAt(entity, x, y, z);
+    }
+
+    /** The cape, helmet and held item (the modern renderer's layers draw them; a subclass adds its own here). */
+    protected void renderEquippedItems(legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer player, float partialTicks) {
+        super.renderEquippedItems(player, partialTicks);
+    }
+
+    @Override
+    protected void renderEquippedItems(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, float partialTicks) {
+        if (entity instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer p) renderEquippedItems(p, partialTicks);
+        else super.renderEquippedItems(entity, partialTicks);
+    }
+
+    protected ResourceLocation getEntityTexture(legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer player) {
+        return player.getLocationSkin();
     }
 
     /**
@@ -134,7 +185,7 @@ public class RenderPlayer extends RendererLivingEntity {
 
     @Override
     protected ResourceLocation getEntityTexture(Entity entity) {
-        return STEVE;
+        return entity instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.AbstractClientPlayer p ? getEntityTexture(p) : STEVE;
     }
 
     // Members125 batch 3
