@@ -541,8 +541,14 @@ public class World implements IBlockAccess {
 
     /** Generation only records a stub for a placed block entity, but legacy generators fill theirs right away (chest loot, spawners). */
     private static void ensureGeneratedBlockEntity(net.minecraft.server.level.WorldGenRegion region, net.minecraft.core.BlockPos p, BlockState state) {
-        if (!state.hasBlockEntity() || !(state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock entityBlock)) return;
         var chunk = region.getChunk(p);
+        // A proto chunk keeps the block entity of the block that stood here before (a structure block of a template that a generator turns into a
+        // chest or spawner, Twilight Forest's data markers): it must go, or getTileEntity answers a structure block's view for the new block.
+        var stale = chunk.getBlockEntity(p);
+        if (stale != null && !stale.getType().isValid(state)) {
+            chunk.removeBlockEntity(p);
+        }
+        if (!state.hasBlockEntity() || !(state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock entityBlock)) return;
         if (chunk.getBlockEntity(p) != null) return;
         var be = entityBlock.newBlockEntity(p, state);
         if (be != null) chunk.setBlockEntity(be);
@@ -1300,7 +1306,22 @@ public class World implements IBlockAccess {
         }
         if (legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(entity) == null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$world(entity, this);
         mcc$entityListKey = Long.MIN_VALUE;
-        return acc().addFreshEntity(modern);
+        boolean added = acc().addFreshEntity(modern);
+        if (added && acc() instanceof net.minecraft.server.level.WorldGenRegion) rememberGenerated(modern);
+        return added;
+    }
+
+    /**
+     * Entities a legacy generator spawned into its generation region: the region keeps them as saved data of the proto chunk, but 1.12 generators
+     * asked the world for entities in a box afterwards (Twilight Forest's tower wings test a new painting against the ones placed before it).
+     * Per generator thread, the most recent ones.
+     */
+    private static final ThreadLocal<java.util.ArrayDeque<net.minecraft.world.entity.Entity>> GENERATED = ThreadLocal.withInitial(java.util.ArrayDeque::new);
+
+    private static void rememberGenerated(net.minecraft.world.entity.Entity e) {
+        var list = GENERATED.get();
+        list.addLast(e);
+        while (list.size() > 512) list.removeFirst();
     }
 
     public boolean addWeatherEffect(Entity entity) {
@@ -1368,6 +1389,12 @@ public class World implements IBlockAccess {
     }
 
     private List<net.minecraft.world.entity.Entity> modernEntities(net.minecraft.world.entity.Entity except, AxisAlignedBB bb) {
+        if (bb != null && acc() instanceof net.minecraft.server.level.WorldGenRegion) {
+            var box = bb.mcc$modern();
+            List<net.minecraft.world.entity.Entity> found = new ArrayList<>();
+            for (var e : GENERATED.get()) if (e != except && e.getBoundingBox().intersects(box) && visibleToLegacy(e)) found.add(e);
+            return found;
+        }
         Level live = mcc$liveLevel();
         if (live == null || bb == null) return List.of();
         if (live instanceof ServerLevel sl && !sl.getServer().isSameThread()) return List.of();

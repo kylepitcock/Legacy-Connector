@@ -71,6 +71,7 @@ public final class RecipeBridge1122 {
         var listed = legacyconnector.v1_12_2.net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingList();
         Map<Object, net.minecraft.resources.ResourceLocation> ids = new java.util.IdentityHashMap<>();
         Set<String> used = new java.util.HashSet<>();
+        int emptyResults = 0;
         for (IRecipe r : RECIPES) {
             if (!Registries1122.RECIPES.containsValue(r)) continue; // removed (CraftTweaker, mods)
             try {
@@ -86,9 +87,19 @@ public final class RecipeBridge1122 {
                 byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
                 out.put("data/" + ns + "/recipe/" + path + ".json", () -> bytes);
             } catch (RuntimeException e) {
-                LOG.warn("Could not translate legacy recipe {}: {}", r.getRegistryName(), e.toString());
+                // A recipe whose result item does not exist: the mod's blocks and items did not register (a required library is missing, the load
+                // report says which): one summary line instead of one per recipe.
+                if (String.valueOf(e.getMessage()).contains("empty result")) {
+                    emptyResults++;
+                    LOG.debug("Could not translate legacy recipe {}: {}", r.getRegistryName(), e.toString());
+                } else {
+                    LOG.warn("Could not translate legacy recipe {}: {}", r.getRegistryName(), e.toString());
+                }
                 dropped(r, e.toString());
             }
+        }
+        if (emptyResults > 0) {
+            LOG.warn("{} legacy recipes were dropped because their result is empty (items or blocks that are not registered; usually a mod whose required library is missing: see MISSING DEPENDENCY in the load report)", emptyResults);
         }
         for (Object[] s : SMELTING) {
             if (!listed.containsKey(s[0])) continue;

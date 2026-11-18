@@ -93,6 +93,9 @@ public final class GuiBridge {
         }
         if (!(player.mcc$entity instanceof ServerPlayer sp)) return;
         Object element = handler.getServerGuiElement(id, player, world, x, y, z);
+        // Forge 3.x (Minecraft 1.2.5) had one getGuiElement for both sides and RedPower 2's answers the GuiContainer (its container inside) on the server as well: the
+        // container is the server's, hosted by the menu, or the client's screen would run on a menu the server does not know (every slot click lost)
+        if (element instanceof legacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer gc && gc.inventorySlots != null) element = gc.inventorySlots;
         if (element instanceof Container container) {
             sp.openMenu(new SimpleMenuProvider((windowId, inv, p) -> new LegacyMenu(menuType, windowId, inv, container, null), Component.empty()),
                     buf -> {

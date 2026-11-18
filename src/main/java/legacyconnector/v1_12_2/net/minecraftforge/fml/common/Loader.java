@@ -20,6 +20,10 @@ public class Loader {
         return INSTANCE;
     }
 
+    /** FML's mod discoverer; coremods and mixin loaders read it by reflection (EnderCore's annotation mixins ask its ASM data table). */
+    private final legacyconnector.v1_12_2.net.minecraftforge.fml.common.discovery.ModDiscoverer discoverer =
+            new legacyconnector.v1_12_2.net.minecraftforge.fml.common.discovery.ModDiscoverer();
+
     /** FML's load controller; libraries read its per-mod lifecycle buses by reflection (SuperMartijn642's Core Lib). */
     private final LoadController modController = new LoadController();
 

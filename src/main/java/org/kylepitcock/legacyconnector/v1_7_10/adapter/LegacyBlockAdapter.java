@@ -76,6 +76,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean customHardness;
     private final VoxelShape[] staticShapes = new VoxelShape[16];
     private final boolean collisionList;
+    /** The mod's block answers the ray trace itself: a multipart block (RedPower's wires, covers and machines) picks the part a ray meets and leaves its bounds. */
+    private final boolean ownRaycast;
     private final boolean ladder;
     private final boolean pickBlock;
     private final boolean fireSource;
@@ -127,6 +129,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 || legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockPortal;
         this.customHardness = overrides(legacy, "getPlayerRelativeBlockHardness", EntityPlayer.class, World.class, int.class, int.class, int.class)
                 || overrides(legacy, "getBlockHardness", World.class, int.class, int.class, int.class);
+        this.ownRaycast = overrides(legacy, "collisionRayTrace", World.class, int.class, int.class, int.class,
+                legacyconnector.v1_7_10.net.minecraft.util.Vec3.class, legacyconnector.v1_7_10.net.minecraft.util.Vec3.class);
         this.collisionList = overrides(legacy, "addCollisionBoxesToList", World.class, int.class, int.class, int.class, AxisAlignedBB.class,
                 java.util.List.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
         this.ladder = overrides(legacy, "isLadder", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class,
@@ -803,6 +807,11 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         // air and liquids are never targeted (1.7.10's canCollideCheck): a mod fluid (Thaumcraft's purifying fluid) broke at a click
         if (legacy.getMaterial() == Material.air || legacy.getMaterial().isLiquid()) return Shapes.empty();
+        if (ownRaycast && context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext entityContext
+                && entityContext.getEntity() instanceof net.minecraft.world.entity.player.Player player && level instanceof net.minecraft.world.level.Level l) {
+            VoxelShape part = targetedPart(l, pos, player);
+            if (part != null) return part;
+        }
         if (selectedBox && level instanceof LevelAccessor acc) {
             // IndustrialCraft 2's cables never set their block bounds (full blocks) and answer the selection box from their tile entity:
             // 1.7.10 outlined and ray traced that box (collisionRayTrace aside), here it is the shape.
@@ -838,6 +847,36 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 // tile entity; a full block is the safe answer there.
                 shapeFailure(e);
                 return Shapes.block();
+            }
+        }
+    }
+
+    /**
+     * What the player's crosshair targets in a multipart block: the part the block's own {@code collisionRayTrace} hits along the player's look (the bounds it leaves are the
+     * part's), so a ray through the empty part of the cell reaches the block behind (a second wire is placed against a wall that already carries one). Empty when the ray meets
+     * no part, null when the block cannot be asked (the ordinary shape then applies).
+     */
+    private VoxelShape targetedPart(net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+        var eye = player.getEyePosition();
+        var look = player.getViewVector(1.0F);
+        double reach = player.blockInteractionRange() + 1.0;
+        var from = legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(eye.x, eye.y, eye.z);
+        var to = legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(eye.x + look.x * reach, eye.y + look.y * reach, eye.z + look.z * reach);
+        synchronized (legacy) {
+            double x1 = legacy.getBlockBoundsMinX(), y1 = legacy.getBlockBoundsMinY(), z1 = legacy.getBlockBoundsMinZ();
+            double x2 = legacy.getBlockBoundsMaxX(), y2 = legacy.getBlockBoundsMaxY(), z2 = legacy.getBlockBoundsMaxZ();
+            try {
+                var hit = legacy.collisionRayTrace(world(level), pos.getX(), pos.getY(), pos.getZ(), from, to);
+                if (hit == null) return Shapes.empty();
+                double minX = legacy.getBlockBoundsMinX(), minY = legacy.getBlockBoundsMinY(), minZ = legacy.getBlockBoundsMinZ();
+                double maxX = legacy.getBlockBoundsMaxX(), maxY = legacy.getBlockBoundsMaxY(), maxZ = legacy.getBlockBoundsMaxZ();
+                if (maxX <= minX || maxY <= minY || maxZ <= minZ) return null;
+                return Shapes.box(Math.max(0, minX), Math.max(0, minY), Math.max(0, minZ), Math.min(1, maxX), Math.min(1, maxY), Math.min(1, maxZ));
+            } catch (RuntimeException | LinkageError e) {
+                shapeFailure(e);
+                return null;
+            } finally {
+                legacy.setBlockBounds((float) x1, (float) y1, (float) z1, (float) x2, (float) y2, (float) z2);
             }
         }
     }

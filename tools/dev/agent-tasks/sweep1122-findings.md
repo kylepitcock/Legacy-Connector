@@ -28,38 +28,63 @@ Method: `tools/dev/quick-shots.sh` with `SCENARIO=control WORLD=minecraft:normal
    game's baking (`JsonBake1122.bakeVariant`; `JsonBake1122` also ends item chains in `ModelBakery.GENERATION_MARKER`). The special flowers' item models now
    come out (held daybloom shows the flower). The placed block is still wrong (F1).
 
+## Fixed in sweep 2 (branch worktree-agent-ab2b45843d9898ec9)
+
+- **F6 Twilight Forest worldgen** (verified in the client, TF + Botania + Baubles + Hwyla + EnderCore + Jade, perf mods, `dim_7`): the 1320
+  `Block-attached entity at invalid position` lines and the 10 `Trying to set block entity StructureBlockEntity ... does not allow it` (plus the
+  `ClassCastException TileEntityStructure -> TileEntityMobSpawner` that made the Druid Hut's chunk fail to populate) are gone. Four causes:
+  1. `EntityHanging.mcc$placeModern` loaded the saved data of a new entity (position 0,0,0) with the wall 16+ blocks away, which vanilla's
+     `HangingEntity.readAdditionalSaveData` rejects with that error and leaves the painting at the wrong place: the saved `Pos` is moved to the wall first.
+  2. The vanilla `EntityPainting(world, pos, facing)` constructor picks a random art among those that fit the wall (`onValidSurface`); the shim kept the
+     default art. It now does (the checked arts are the 1.12 list). The check reads the world the mod gave the entity, not the real level: the modern
+     `survives()` read `ServerLevel.getBlockState` from the generator thread and deadlocked the chunk system (seen and fixed in this run).
+  3. During generation a legacy generator asked the world for entities in a box after spawning some (TF's `checkPainting` refuses a painting that overlaps
+     a hanging entity placed before it); the generation region stores spawned entities as saved data, so the answer was always empty and every
+     overlapping painting was placed. `World` now remembers the entities spawned into the region per generator thread (last 512) and answers from them.
+     Result: 443 paintings (434 of them failing the wall check and dropping after 100 ticks) became 74 (20 valid, screenshot
+     `docs/screenshots/1.12.2/sweep2/twilight-lich-tower-painting.jpg`); the remaining 54 sit where TF itself chose a spot without wall (TF checks only
+     collisions, as in 1.12).
+  4. A proto chunk keeps the block entity of the block that stood there before: a template's structure block that a generator turns into a chest or spawner
+     (TF data markers) kept answering `TileEntityStructure` for `getTileEntity`. `World.ensureGeneratedBlockEntity` now removes a block entity the new
+     state does not accept.
+- **F10 Hwyla 1.12.2 -> Jade** needed no code: the Waila bridge (`LibraryBridges`, `LegacyJade1122`) is on when Jade is installed; sweep 1 had no Jade. With
+  Jade 15.10.6 in `mods/` Hwyla is not loaded ("bridging ... waila" in the log, `legacy mods` list has no `waila`) and Jade shows
+  the tooltip for Botania's blocks (`docs/screenshots/1.12.2/sweep2/botania-special-flowers-jade.jpg`: "Pure Daisy / Botania"). Without Jade the legacy
+  jar is loaded as before (nothing draws a tooltip then; not changed).
+- **F3 EnderCore mixin loader**: `Loader` has the `discoverer` field (a `ModDiscoverer`, ASM table built on first use) that `EnderCorePlugin.findAnnotationMixins`
+  reads by reflection. With EnderIO installed the log now shows `EnderCore Mixins: Found annotation mixin: ...` / `Registered mixin.` for
+  `DarkSteelUpgradeMixin` and `InternalPoweredItemMixin` (the others skip for missing mods) and no `NoSuchFieldException`. What the two mixins change in game
+  was not checked (see F12: that set does not reach a world here).
+- **F1 Botania special flowers**: not a layer defect. The sweep placed `type:"daybloom"`, which this Botania (r1.10-363) does not have (no blockstate, no
+  subtile class), so the block has no subtile and 1.12 draws its missing model too. All 11 valid special flowers placed with the creative-tab stack format
+  (`custom_data={type:"endoflame"}` etc.: endoflame, manastar, hydroangeas, dandelifeon, rannuncarpus, spectrolus, bellethorn, orechid, agricarnation,
+  gourmaryllis, kekimurus, puredaisy) render their models, with the subtile name synced to the client block entity (`subTileName`), verified in the client.
+- **F9 Storage Drawers without Chameleon**: the load report already named the cause (`Storage Drawers requires chameleon ... which is not installed`, an error
+  at preInit with `NoClassDefFoundError`, the loading-warnings screen on a client). The 36 (not 108: the test pack has fewer recipes) per-recipe
+  `Could not translate legacy recipe minecraft:air_*: empty result` warnings, logged three times, are now one summary line per generation that points at
+  `MISSING DEPENDENCY` in the load report (`RecipeBridge1122`); the per-recipe lines are debug.
+
 ## Open (not fixed)
 
-- **F1 Botania special flowers (functional and generating) render as a missing-texture cube when placed.** Cause narrowed: the models now bake, but
-  `SpecialFlowerBakedModel.getQuads` picks the variant from the extended state `BotaniaStateProps.SUBTILE_ID`, which the tile entity fills; with
-  `give @s botania:specialflower[minecraft:custom_data={type:"daybloom"}]` the placed block still has no subtile (unverified whether the legacy
-  NBT key `type` is read from `custom_data`; a creative-tab flower was not tried). Repro: Botania alone, place a special flower, look at it.
-  Screenshot `set2-botania-specialflower-after.jpg`.
+- **F12 (new) EnderCore + EnderIO (+ Jade or not, Hwyla or not) never finish creating a world in the screenshot test** on this machine: the integrated
+  server logs `Preparing spawn area` and `Changing simulation distance`, then its thread sits in `waitUntilNextTick` forever and the client in
+  `Minecraft.doWorldLoad`'s wait for `isReady()` (no deadlock in `jstack`, no error). Reproduced three times, also on the unmodified master base commit
+  (`36e6158bf`) with only `EnderCore` + `EnderIO` + the perf mods + Jade; the same pack without EnderIO reaches the world in about a minute. Sweep 1 ran
+  EnderIO fine, so something between (perf mod set, world seed or timing) changed; not diagnosed.
+
 - **F2 Ender IO / EnderCore log 204 `Missing translation for ...` errors at load**: `I18n.canTranslate` (`Lang.canLocalizeExact`) is asked in preInit/init
   before the language files are read. Display names and tooltips later translate fine (`Alloy Smelter`, `Electrical Steel Ingot` checked), so it is log noise
   unless a mod caches the untranslated string. Not checked against a real 1.12.2 client.
-- **F3 EnderCore mixin loader**: `NoSuchFieldException: discoverer` printed 10 times (`EnderCorePlugin.findAnnotationMixins` reads FML's ASM data
-  table `discoverer` by reflection through `ReflectionCompat`); EnderCore's annotation mixins are therefore not applied. Effect not checked.
 - **F4 AE2 `item/builtin/*` models** (`memory_card`, `biometric_card`, `encoded_pattern`, `color_applicator_colored`) and Ender IO
   `item_dark_steel_upgrade` log `Unable to load model` (AE2's `BuiltInModelLoader`, a custom loader model of the item). The items still draw (seen in the
   hotbar), so this is a warning only; whether the pattern's output preview and the card/applicator colours work was not checked.
 - **F5 Twilight Forest shaders fail to create** (`Failed to create shader! (VALIDATE)` for twilight_sky, aurora, firefly, starburst, shield, spiral, pulsing
   twice per start; GLSL 1.2 shaders from the mod, AMD driver here). Effects of the mod's own sky/aurora/fireflies are missing; the world renders.
-- **F6 Twilight Forest worldgen spams `Block-attached entity at invalid position`** (1320 lines in 4 minutes, from `c2me-worker`) and ends with 443
-  `minecraft:painting` entities in the TF dimension. The Lich Tower wing code (`ComponentTFTowerWing`, `new EntityPainting(world, pos, facing)` +
-  `checkPainting`, which only checks collisions, not `onValidSurface`) places paintings; the shim's `EntityHanging.onValidSurface` is the 1.12 wall check
-  but TF never calls it. Also 10 `Trying to set block entity StructureBlockEntity ... but state spawner/chest/trapped_chest does not allow it` (a legacy
-  tile entity created for the wrong modern block entity type during structure generation). Repro: Twilight Forest alone, `execute in legacyconnector:dim_7 run tp @s 0 100 0`, wait.
 - **F7 Twilight Forest `Duplicate legacy registration of twilightforest:twilight_leaves_3 in minecraft:item`** and `spiral_bricks` falls back
   (`state mapper file minecraft:x_spiral_bricks not found`).
 - **F8 Chisel needs CTM** (`NoClassDefFoundError: team.chisel.ctm...OffsetProviderRegistry` in `ClientProxy.registerModels`; CTM was not in the set, not a
   layer defect) and its `animations/strobe.png.mcmeta` is malformed json (the mod's own file, 1.12's reader was lenient; 1.21 logs
   `Unable to parse metadata`). A lenient re-parse of mcmeta files in the pack generator would cover it; not done.
-- **F9 Storage Drawers recipes `Could not translate legacy recipe minecraft:air_*: empty result` (108 lines)** appear when Chameleon is missing (the mod
-  then registers 13 items and 0 blocks); with Chameleon present all 9 blocks register. Not a layer defect, but the log should say that Chameleon is
-  required (the loader prints the dependency warning).
-- **F10 Hwyla 1.12.2 runs as a legacy mod** (`waila` loaded as a 1.12.2 legacy mod); the Waila -> Jade bridge in CLAUDE.md is not applied here. Not checked
-  whether the tooltips draw.
 - **F11 AE2 `EntityEntry ... registered twice`** (3 entities) and `dimension N: fallback biome (plains) answered: no provider/level yet` (5 lines per
   mod dimension, at load) are warnings with no visible effect.
 - Not covered: crafting through recipe GUIs, machine processing (power), AE2 networks across ticks, Blood Magic rituals, Atum/Erebus mobs, Quark features,
