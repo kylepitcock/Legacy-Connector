@@ -335,25 +335,6 @@ public class Minecraft {
         mc().execute(() -> mc().reloadResourcePacks());
     }
 
-    /** The F3 line about rendered entities ("E: 3/45, B: 0, I: 0, ..."). */
-    public String debugInfoEntities() {
-        return mc().levelRenderer == null ? "" : mc().levelRenderer.getEntityStatistics();
-    }
-
-    /** The F3 line about rendered chunks ("C: 120/400 (s)..."). */
-    public String debugInfoRenders() {
-        return mc().levelRenderer == null ? "" : mc().levelRenderer.getSectionStatistics();
-    }
-
-    public String getEntityDebug() {
-        return debugInfoEntities();
-    }
-
-    /** The name of the world's chunk provider, as the F3 screen shows it ("Client Chunk Cache: 25, 25"). */
-    public String getWorldProviderName() {
-        return mc().level == null ? "" : mc().level.gatherChunkSourceStats();
-    }
-
     public void shutdown() {
         mc().stop();
     }

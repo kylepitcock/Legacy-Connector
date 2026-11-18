@@ -24,9 +24,19 @@ public class OldServerPinger {
         synchronized (pending) {
             pending.add(new Object[] {data, modern});
         }
-        pinger.pingServer(modern, () -> {
-        }, () -> {
-        });
+        try {
+            pinger.pingServer(modern, () -> {
+            }, () -> {
+            });
+        } catch (Throwable t) {
+            // dead or unresolvable host: the vanilla list shows "Can't connect to server" instead of failing the screen
+            synchronized (pending) {
+                pending.removeIf(e -> e[0] == data);
+            }
+            data.serverMOTD = "Can't connect to server";
+            data.populationInfo = "";
+            data.pingToServer = -1L;
+        }
     }
 
     /** Lets the pending connections progress and copies the results of the finished pings. */

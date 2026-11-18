@@ -53,24 +53,10 @@ public class PlayerControllerMP {
     public void sendSlotPacket(ItemStack stack, int slot) {
     }
 
-    /** True in survival and adventure mode (not creative, not spectator). */
-    public boolean gameIsSurvivalOrAdventure() {
-        var m = mode();
-        return m != null && m.getPlayerMode().isSurvival();
-    }
-
     /** Tells the server which hotbar slot is selected (the modern game does it every tick; mods call it right after changing the slot). */
     public void syncCurrentPlayItem() {
         var m = mode();
         if (m != null) m.ensureHasSentCarriedItem();
-    }
-
-    /** A creative player's dropped stack: the creative inventory packet for slot -1 (the server spawns the item). */
-    public void sendPacketDropItem(ItemStack stack) {
-        var m = mode();
-        var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
-        if (m == null || connection == null || stack == null || !m.hasInfiniteItems()) return;
-        connection.send(new net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket(-1, ItemStack.mcc$toModern(stack)));
     }
 
     /** A left click on a block in creative mode: breaks it at once (as the game's creative click does). */
