@@ -1032,6 +1032,28 @@ class Mc1201MigrationTest implements Opcodes {
         assertNotNull(find(bridge, "test/MyTagType", "skip"));
     }
 
+    /** Client verification of rounds 11/12: a Mob subclass bridges getDefaultLootTable (Mob.getLootTable is final), RenderBuffers.fixedBuffers reads reach the view. */
+    @Test
+    void mobLootTableBridgeAndFixedBuffersView() {
+        ClassNode mob = cls("test/MyMob", "net/minecraft/world/entity/Mob");
+        MethodNode lt = method(mob, ACC_PUBLIC, "getLootTable", "()Lnet/minecraft/resources/ResourceLocation;");
+        lt.instructions.add(new InsnNode(ACONST_NULL));
+        lt.instructions.add(new InsnNode(ARETURN));
+        apply(mob);
+        assertNotNull(findDeclared(mob, "getDefaultLootTable", "()Lnet/minecraft/resources/ResourceKey;"));
+        assertNull(findDeclared(mob, "getLootTable", "()Lnet/minecraft/resources/ResourceKey;"));
+
+        String rb = "net/minecraft/client/renderer/RenderBuffers";
+        ClassNode c = cls("test/UsesBuffers", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC, "run", "(L" + rb + ";)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new FieldInsnNode(GETFIELD, rb, "fixedBuffers", "Ljava/util/SortedMap;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        assertNotNull(find(m, MIGRATE + "FixedBuffersView", "of"));
+    }
+
     @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);

@@ -920,6 +920,8 @@ final class Mc1201Migration {
             if (old == null || (old.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
             if (declared(node, b.newName(), b.newDesc()) != null) continue;
             if (!h.isSubclassOf(node.name, b.owner()) && !h.reachesUnknown(node.name)) continue;
+            // a row of a nearer owner for the same old method wins (Mob.getLootTable is final in 1.21.1: a Mob subclass bridges getDefaultLootTable instead)
+            if (moreSpecificBridge(node, h, t, b)) continue;
             // a mod ancestor that already declares the 1.21.1-shaped method (same signature in both versions: inventoryTick) keeps running: the bridge calls it first
             boolean callSuper = h.declaredIn(node.superName, b.newName(), b.newDesc()) == Origin.MOD;
             MethodNode bridge = bridge(node, old, b, callSuper);
@@ -927,6 +929,15 @@ final class Mc1201Migration {
             node.methods.add(bridge);
             c.bridges++;
         }
+    }
+
+    private static boolean moreSpecificBridge(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Bridge b) {
+        for (Bridge o : t.bridges) {
+            if (o == b || !o.oldName().equals(b.oldName()) || !o.oldDesc().equals(b.oldDesc())) continue;
+            if (o.owner().equals(b.owner()) || !h.isSubclassOf(o.owner(), b.owner())) continue;
+            if (h.isSubclassOf(node.name, o.owner())) return true;
+        }
+        return false;
     }
 
     private static MethodNode declared(ClassNode node, String name, String desc) {
