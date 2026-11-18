@@ -18,7 +18,7 @@ public class BlockStainedGlass extends BlockBreakable {
     private static final String[] DYES = {"black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow",
             "light_blue", "magenta", "orange", "white"};
 
-    private IIcon[] field_149998_a;
+    public static IIcon[] field_149998_a;
 
     public BlockStainedGlass(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
