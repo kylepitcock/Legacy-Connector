@@ -1373,6 +1373,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     for (String n : notSupportedNotes) w.write("  " + n + System.lineSeparator());
                     w.write(System.lineSeparator());
                 }
+                if (!LegacyJarInspector.pinnedNativeNotes().isEmpty()) {
+                    w.write("NeoForge mods for another Minecraft version (left to the game):" + System.lineSeparator());
+                    for (String n : LegacyJarInspector.pinnedNativeNotes()) w.write("  " + n + System.lineSeparator());
+                    w.write(System.lineSeparator());
+                }
                 if (!liteNotes.isEmpty()) {
                     w.write("Files that are not Forge mods:" + System.lineSeparator());
                     for (String n : liteNotes) w.write("  " + n + System.lineSeparator());
