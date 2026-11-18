@@ -237,8 +237,10 @@ public final class ShimLinker {
         }
         if (l != Hierarchy.Lookup.MISSING_MEMBER && l != Hierarchy.Lookup.MISSING_CLASS) return null;
 
-        if (!m.name.equals("<init>") && m.getOpcode() != Opcodes.INVOKESPECIAL && h.version() != null && h.version().forward() != null) {
+        if (!m.name.equals("<init>") && h.version() != null && h.version().forward() != null) {
             // A forward version's facade (legacyconnector/v1_6_4/...) supplies the legacy methods the shim lacks, e.g. World.getBlockId(III) over the id table.
+            // A mod's own "super.x()" (INVOKESPECIAL) goes the same way: the receiver on the stack is the mod object and the facade method is static with
+            // the receiver first, so INVOKESTATIC takes the stack as it is. The facade then implements the base behaviour: it must not call x() virtually.
             String[] facade = h.findFacadeMethod(m.owner, m.name, m.desc, m.getOpcode() == Opcodes.INVOKESTATIC);
             if (facade != null) {
                 MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC, facade[0], m.name, facade[1], false);

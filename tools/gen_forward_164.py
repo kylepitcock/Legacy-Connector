@@ -129,13 +129,14 @@ for owner in sorted(meth16):
     if fo not in h17 and fo not in meth17:
         continue  # class the 1.7.10 API does not have: handled as synthesized
     for name, desc in sorted(meth16[owner]):
-        if name.startswith("func_") or name in ("<init>", "<clinit>"):
+        if name in ("<init>", "<clinit>"):
             continue
         d = rd(desc)
         if has17(fo, name, d):
             continue
         cands = set()
-        for sid in name2ids.get(name, ()):
+        # a method MCP had not named yet in this version is listed under its SRG id ("func_111123_a"): that id is its own key, and 1.7.10's MCP may have named it since
+        for sid in (name2ids.get(name, ()) if not name.startswith("func_") else [name]):
             n = m17.get(sid)
             if n and n != name and has17(fo, n, d):
                 cands.add(n)

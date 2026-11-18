@@ -109,3 +109,5 @@ net/minecraft/world/storage/MapInfo	net/minecraft/world/storage/MapData$MapInfo
 net/minecraft/entity/EntitySelectorArmoredMob	net/minecraft/command/IEntitySelector$ArmoredMob
 net/minecraft/block/BlockBaseRailLogic	net/minecraft/block/BlockRailBase$Rail
 net/minecraft/world/gen/structure/StructurePieceBlockSelector	net/minecraft/world/gen/structure/StructureComponent$BlockSelector
+net/minecraft/tileentity/TileEntityRecordPlayer	net/minecraft/block/BlockJukebox$TileEntityJukebox
+net/minecraft/scoreboard/ScoreObjectiveCriteria	net/minecraft/scoreboard/IScoreObjectiveCriteria
