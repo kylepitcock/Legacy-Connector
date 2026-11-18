@@ -122,4 +122,17 @@ public final class Round11ClientCompat {
     public static Splitter filePackSplitter() {
         return Splitter.on('/').omitEmptyStrings().limit(3);
     }
+
+    /** {@code BeaconRenderer.renderBeaconBeam(..., float[] colours, ...)}: the colour is one packed int in 1.21.1. */
+    public static void beaconBeam(com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers, net.minecraft.resources.ResourceLocation texture,
+            float partialTick, float textureScale, long gameTime, int yOffset, int height, float[] colors, float beamRadius, float glowRadius) {
+        int color = net.minecraft.util.FastColor.ARGB32.color(255, (int) (colors[0] * 255F), (int) (colors[1] * 255F), (int) (colors[2] * 255F));
+        net.minecraft.client.renderer.blockentity.BeaconRenderer.renderBeaconBeam(pose, buffers, texture, partialTick, textureScale, gameTime, yOffset, height, color,
+                beamRadius, glowRadius);
+    }
+
+    /** {@code MultiBufferSource.BufferSource.builder}: the shared builder of 1.20.1 is the shared byte buffer of 1.21.1 (wrapped, writes go to that buffer). */
+    public static CompatBufferBuilder bufferSourceBuilder(net.minecraft.client.renderer.MultiBufferSource.BufferSource source) {
+        return CompatBufferBuilder.over(source.sharedBuffer);
+    }
 }

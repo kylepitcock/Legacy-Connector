@@ -974,6 +974,29 @@ class Mc1201MigrationTest implements Opcodes {
                 Mc1201Tables.get().classes.get("net/minecraft/world/level/storage/loot/functions/LootingEnchantFunction"));
     }
 
+    /** Gap round 11: a subclass of MobEffectInstance calling the 5-argument super constructor keeps its call and gets a holder for the effect. */
+    @Test
+    void mobEffectInstanceSuperConstructorTakesAHolder() {
+        String eff = "net/minecraft/world/effect/MobEffectInstance";
+        ClassNode c = cls("test/MyEffect", eff);
+        MethodNode m = method(c, ACC_PUBLIC, "<init>", "(Lnet/minecraft/world/effect/MobEffect;)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, eff, "<init>", "(Lnet/minecraft/world/effect/MobEffect;IIZZ)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode call = null;
+        for (var in : m.instructions) if (in instanceof MethodInsnNode mi && mi.name.equals("<init>")) call = mi;
+        assertNotNull(call);
+        assertEquals(INVOKESPECIAL, call.getOpcode());
+        assertEquals("(Lnet/minecraft/core/Holder;IIZZ)V", call.desc);
+        assertNotNull(find(m, MIGRATE + "HolderCompat", "holder"));
+    }
+
     @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);

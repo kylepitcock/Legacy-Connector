@@ -272,4 +272,157 @@ public final class Round11Compat {
     public static ResourceLocation paramSetKey(net.minecraft.world.level.storage.loot.parameters.LootContextParamSet set) {
         return net.minecraft.world.level.storage.loot.parameters.LootContextParamSets.REGISTRY.inverse().get(set);
     }
+
+    /** {@code menuType.create(id, inventory, buffer)} (Forge's menu type extension): the extra data buffer carries registry access now. */
+    public static net.minecraft.world.inventory.AbstractContainerMenu menuTypeCreate(net.minecraft.world.inventory.MenuType<?> type, int id,
+            net.minecraft.world.entity.player.Inventory inventory, net.minecraft.network.FriendlyByteBuf buffer) {
+        return type.create(id, inventory, new net.minecraft.network.RegistryFriendlyByteBuf(buffer, inventory.player.registryAccess()));
+    }
+
+    /** The same call through the extension interface (erased result {@code Object}). */
+    public static Object menuTypeCreateObject(net.neoforged.neoforge.common.extensions.IMenuTypeExtension<?> ext, int id,
+            net.minecraft.world.entity.player.Inventory inventory, net.minecraft.network.FriendlyByteBuf buffer) {
+        return ext.create(id, inventory, new net.minecraft.network.RegistryFriendlyByteBuf(buffer, inventory.player.registryAccess()));
+    }
+
+    // ---- chunk holders -----------------------------------------------------------------------------------------------------------------------
+
+    private static final Either<net.minecraft.world.level.chunk.ChunkAccess, Object> UNLOADED = Either.right("unloaded");
+
+    private static Either<net.minecraft.world.level.chunk.ChunkAccess, Object> either(net.minecraft.server.level.ChunkResult<net.minecraft.world.level.chunk.ChunkAccess> r) {
+        net.minecraft.world.level.chunk.ChunkAccess c = r.orElse(null);
+        return c != null ? Either.left(c) : Either.right(r);
+    }
+
+    /**
+     * {@code ChunkHolder.getOrScheduleFuture(status, map)}: 1.21.1 answers a {@code ChunkResult}; the 1.20.1 {@code Either<ChunkAccess, ChunkLoadingFailure>} is
+     * built from it (APPROXIMATION: the failure side is the result object, not a {@code ChunkLoadingFailure}, which no longer exists).
+     */
+    public static java.util.concurrent.CompletableFuture<Either<net.minecraft.world.level.chunk.ChunkAccess, Object>> chunkScheduleFuture(
+            net.minecraft.server.level.ChunkHolder holder, net.minecraft.world.level.chunk.status.ChunkStatus status, net.minecraft.server.level.ChunkMap map) {
+        return holder.scheduleChunkGenerationTask(status, map).thenApply(Round11Compat::either);
+    }
+
+    /** {@code ChunkHolder.getFutureIfPresent(status)}: an already completed future (the chunk if the holder has it at that status, else unloaded). */
+    public static java.util.concurrent.CompletableFuture<Either<net.minecraft.world.level.chunk.ChunkAccess, Object>> chunkFutureIfPresent(
+            net.minecraft.server.level.ChunkHolder holder, net.minecraft.world.level.chunk.status.ChunkStatus status) {
+        net.minecraft.world.level.chunk.ChunkAccess c = holder.getChunkIfPresent(status);
+        return java.util.concurrent.CompletableFuture.completedFuture(c != null ? Either.left(c) : UNLOADED);
+    }
+
+    /** {@code ChunkHolder.getChunkToSave()}: a completed future of the newest chunk the holder has. */
+    public static java.util.concurrent.CompletableFuture<net.minecraft.world.level.chunk.ChunkAccess> chunkToSave(net.minecraft.server.level.ChunkHolder holder) {
+        return java.util.concurrent.CompletableFuture.completedFuture(holder.getLatestChunk());
+    }
+
+    // ---- criteria, effects, entity data, loot tables of entities --------------------------------------------------------------------------------
+
+    /** {@code StatePropertiesPredicate.Builder.build()}: an optional predicate in 1.21.1 (always present for a builder). */
+    public static net.minecraft.advancements.critereon.StatePropertiesPredicate statePropertiesBuild(net.minecraft.advancements.critereon.StatePropertiesPredicate.Builder b) {
+        return b.build().orElseThrow();
+    }
+
+    /** {@code BlockPredicate.Builder.setProperties(predicate)}: takes the finished predicate (1.21.1 wants the builder). */
+    public static net.minecraft.advancements.critereon.BlockPredicate.Builder blockPredicateProperties(net.minecraft.advancements.critereon.BlockPredicate.Builder b,
+            net.minecraft.advancements.critereon.StatePropertiesPredicate predicate) {
+        b.properties = Optional.ofNullable(predicate);
+        return b;
+    }
+
+    /**
+     * {@code MobEffectInstance.setCurativeItems(items)}. APPROXIMATION: effect cures are {@code EffectCure} objects now; a milk bucket among the items keeps the
+     * milk cure and every other item list removes the cures (an item that cures an effect cannot be expressed as a cure).
+     */
+    public static void setCurativeItems(net.minecraft.world.effect.MobEffectInstance effect, List<net.minecraft.world.item.ItemStack> items) {
+        boolean milk = items != null && items.stream().anyMatch(i -> i.is(net.minecraft.world.item.Items.MILK_BUCKET));
+        effect.getCures().clear();
+        if (milk) effect.getCures().add(net.neoforged.neoforge.common.EffectCures.MILK);
+    }
+
+    /** {@code RandomizableContainerBlockEntity.lootTable} was a resource location. */
+    public static ResourceLocation containerLootTable(net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity be) {
+        return be.lootTable == null ? null : be.lootTable.location();
+    }
+
+    public static void setContainerLootTable(net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity be, ResourceLocation id) {
+        be.lootTable = id == null ? null : ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, id);
+    }
+
+    /** {@code DataValue.write(buffer)}: the registry-aware buffer wraps the same bytes. */
+    public static void dataValueWrite(net.minecraft.network.syncher.SynchedEntityData.DataValue<?> v, net.minecraft.network.FriendlyByteBuf buffer) {
+        v.write(new net.minecraft.network.RegistryFriendlyByteBuf(buffer, MigrateContext.registries()));
+    }
+
+    /** {@code DataValue.read(buffer, id)}. */
+    public static net.minecraft.network.syncher.SynchedEntityData.DataValue<?> dataValueRead(net.minecraft.network.FriendlyByteBuf buffer, int id) {
+        return net.minecraft.network.syncher.SynchedEntityData.DataValue.read(new net.minecraft.network.RegistryFriendlyByteBuf(buffer, MigrateContext.registries()), id);
+    }
+
+    /** The loot table id of an entity's default table (result adapter of the {@code getDefaultLootTable} bridge: the mod's id becomes the key 1.21.1 wants). */
+    public static ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTableKey(ResourceLocation id) {
+        return id == null ? null : ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, id);
+    }
+
+    /** {@code super.getDefaultLootTable()} of a mod entity: the table of its type, as the id 1.20.1 returned. */
+    public static ResourceLocation superDefaultLootTable(net.minecraft.world.entity.LivingEntity entity) {
+        return entity.getType().getDefaultLootTable().location();
+    }
+
+    /** {@code LootItemRandomChanceWithLootingCondition.percent}: the unenchanted chance. */
+    public static float bonusPercent(LootItemRandomChanceWithEnchantedBonusCondition c) {
+        return c.unenchantedChance();
+    }
+
+    /** {@code ...WithLootingCondition.lootingMultiplier}: the chance each looting level adds (the slope of the level based value). */
+    public static float bonusLootingMultiplier(LootItemRandomChanceWithEnchantedBonusCondition c) {
+        return c.enchantedChance().calculate(2) - c.enchantedChance().calculate(1);
+    }
+
+    // ---- more members of the second ranking ---------------------------------------------------------------------------------------------------
+
+    /** {@code MinMaxBounds.Doubles.serializeToJson()}: the codec writes the same JSON ({@code null} for an unbounded range, as 1.20.1's JsonNull). */
+    public static com.google.gson.JsonElement doublesToJson(net.minecraft.advancements.critereon.MinMaxBounds.Doubles bounds) {
+        return net.minecraft.advancements.critereon.MinMaxBounds.Doubles.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, bounds).result()
+                .orElse(com.google.gson.JsonNull.INSTANCE);
+    }
+
+    public static com.google.gson.JsonElement intsToJson(net.minecraft.advancements.critereon.MinMaxBounds.Ints bounds) {
+        return net.minecraft.advancements.critereon.MinMaxBounds.Ints.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, bounds).result()
+                .orElse(com.google.gson.JsonNull.INSTANCE);
+    }
+
+    /** {@code new VillagerTrades.ItemsAndEmeraldsToItems(from, fromCount, emeralds, to, toCount, maxUses, xp)}: the price multiplier (0.05 in 1.20.1) is a parameter now. */
+    public static net.minecraft.world.entity.npc.VillagerTrades.ItemsAndEmeraldsToItems itemsAndEmeraldsToItems(net.minecraft.world.level.ItemLike from, int fromCount,
+            int emeralds, Item to, int toCount, int maxUses, int xp) {
+        return new net.minecraft.world.entity.npc.VillagerTrades.ItemsAndEmeraldsToItems(from, fromCount, emeralds, to, toCount, maxUses, xp, 0.05F);
+    }
+
+    /**
+     * {@code MinecraftSessionService.fillProfileProperties(profile, requireSecure)}: authlib 6 fetches the whole profile; an unknown profile (offline, no
+     * network) is returned unchanged.
+     */
+    public static com.mojang.authlib.GameProfile fillProfileProperties(com.mojang.authlib.minecraft.MinecraftSessionService service, com.mojang.authlib.GameProfile profile,
+            boolean requireSecure) {
+        try {
+            com.mojang.authlib.yggdrasil.ProfileResult r = service.fetchProfile(profile.getId(), requireSecure);
+            return r == null ? profile : r.profile();
+        } catch (RuntimeException e) {
+            return profile;
+        }
+    }
+
+    /** {@code ReloadableServerResources.getLootData()}: the loot data of the running server. */
+    public static LegacyLootData reloadableLootData(net.minecraft.server.ReloadableServerResources resources) {
+        return new LegacyLootData(net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer());
+    }
+
+    /** {@code SoundEvent.readFromNetwork(buffer)} (Forge's extension, static in 1.20.1): the direct stream codec of the event. */
+    public static net.minecraft.sounds.SoundEvent soundEventRead(net.minecraft.network.FriendlyByteBuf buffer) {
+        return net.minecraft.sounds.SoundEvent.DIRECT_STREAM_CODEC.decode(buffer);
+    }
+
+    /** {@code soundEvent.writeToNetwork(buffer)}. */
+    public static void soundEventWrite(net.minecraft.sounds.SoundEvent event, net.minecraft.network.FriendlyByteBuf buffer) {
+        net.minecraft.sounds.SoundEvent.DIRECT_STREAM_CODEC.encode(buffer, event);
+    }
 }

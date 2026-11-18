@@ -138,3 +138,6 @@ net/minecraft/world/level/storage/loot/predicates/LootItemRandomChanceWithLootin
 net/minecraft/client/gui/components/TextAndImageButton	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTextAndImageButton
 net/minecraft/client/gui/components/TextAndImageButton$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTextAndImageButton$Builder
 com/mojang/blaze3d/vertex/BufferBuilder$DrawState	com/mojang/blaze3d/vertex/MeshData$DrawState
+net/minecraft/world/level/chunk/status/ChunkStatus$ChunkType	net/minecraft/world/level/chunk/status/ChunkType
+net/minecraft/world/level/chunk/ChunkStatus$ChunkType	net/minecraft/world/level/chunk/status/ChunkType
+net/neoforged/neoforge/common/crafting/StrictNBTIngredient$Serializer	legacyconnector/v1_20_1/net/minecraftforge/common/crafting/VanillaIngredientSerializer

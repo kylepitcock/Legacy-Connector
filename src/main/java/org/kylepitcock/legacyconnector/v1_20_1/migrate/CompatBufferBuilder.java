@@ -100,7 +100,18 @@ public final class CompatBufferBuilder implements VertexConsumer {
     private static final boolean DIAG = Boolean.getBoolean("legacyconnector.bufferDiag");
     private Throwable beganAt;
 
+    /** {@code BufferBuilder.format} (a public-in-practice field of 1.20.1 that renderers read): the format of the last {@code begin}. */
+    public VertexFormat format;
+    /** {@code BufferBuilder.defaultColorSet}: 1.20.1 flag for {@code defaultColor}; the default colour is not applied here, so it stays false. */
+    public boolean defaultColorSet;
+
+    /** {@code putBulkData(pose, quad, r, g, b, light, overlay)} of 1.20.1: 1.21.1 also takes the alpha (opaque here). */
+    public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, int light, int overlay) {
+        putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
+    }
+
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
+        this.format = format;
         if (real != null) throw new IllegalStateException("Already building!", beganAt);
         if (DIAG) beganAt = new Throwable("previous begin");
         real = tesselator != null ? tesselator.begin(mode, format) : new BufferBuilder(own, mode, format);
