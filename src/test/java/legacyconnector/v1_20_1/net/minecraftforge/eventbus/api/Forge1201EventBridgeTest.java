@@ -6,9 +6,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.junit.jupiter.api.Test;
 
 final class Forge1201EventBridgeTest {
+    @Test
+    void allFivePlayerInteractSubtypesAreRecognizedAsSourceCancelableBuiltins() {
+        assertTrue(Forge1201EventBridge.isKnownSourceCancelableBuiltinType(
+                PlayerInteractEvent.EntityInteractSpecific.class));
+        assertTrue(Forge1201EventBridge.isKnownSourceCancelableBuiltinType(
+                PlayerInteractEvent.EntityInteract.class));
+        assertTrue(Forge1201EventBridge.isKnownSourceCancelableBuiltinType(
+                PlayerInteractEvent.RightClickBlock.class));
+        assertTrue(Forge1201EventBridge.isKnownSourceCancelableBuiltinType(
+                PlayerInteractEvent.RightClickItem.class));
+        assertTrue(Forge1201EventBridge.isKnownSourceCancelableBuiltinType(
+                PlayerInteractEvent.LeftClickBlock.class));
+    }
     @Test
     void plainEventRetainsFalseCancelabilityAndRejectsMutation() {
         PlainEvent event = new PlainEvent();
