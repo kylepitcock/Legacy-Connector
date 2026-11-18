@@ -951,8 +951,11 @@ public final class LegacyJarInspector {
                 return new org.objectweb.asm.FieldVisitor(Opcodes.ASM9) {
                     @Override
                     public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                        // FML 2.x's ModLoader-era mods (Minecraft 1.2.x) wrote the annotation as the default-package class SidedProxy of net.minecraft.src
                         if (descriptor.equals("Lcpw/mods/fml/common/SidedProxy;")
-                                || descriptor.equals("Lnet/minecraftforge/fml/common/SidedProxy;")) {
+                                || descriptor.equals("Lnet/minecraftforge/fml/common/SidedProxy;")
+                                || descriptor.equals("LSidedProxy;")
+                                || descriptor.equals("Lnet/minecraft/src/SidedProxy;")) {
                             jar.sidedProxies.add(new String[] {className.replace('/', '.'), name});
                         }
                         return null;
