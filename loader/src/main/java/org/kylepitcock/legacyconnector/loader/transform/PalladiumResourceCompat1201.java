@@ -572,6 +572,7 @@ final class PalladiumResourceCompat1201 {
     }
 
 
+    /**
      * AlienEvo 1.1.3 contains two animation files with older/nonstandard names
      * and its render-layer JSON points directly at those names. Keep the source
      * assets under the expected names, update the two inspected render-layer
