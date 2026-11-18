@@ -125,4 +125,13 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
         if (p == null || packet == null || p.connection == null) return;
         p.connection.handlePlayerAction(packet.mcc$modern());
     }
+
+    /**
+     * Ticks the connection by hand. A real player's connection is ticked by the server already (a second tick would double the keep-alive and
+     * flying checks), so only the handler of a fake player, which nothing else ticks, runs.
+     */
+    public void update() {
+        var p = player == null ? null : player.mcc$serverPlayer();
+        if (p != null && p.connection != null && p instanceof net.neoforged.neoforge.common.util.FakePlayer) p.connection.tick();
+    }
 }

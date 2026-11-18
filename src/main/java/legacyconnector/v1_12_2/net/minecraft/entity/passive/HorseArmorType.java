@@ -65,7 +65,12 @@ public enum HorseArmorType {
         return NONE;
     }
 
+    public static boolean isHorseArmor(ItemStack stack) {
+        return getByItemStack(stack) != NONE;
+    }
+
     public static boolean isHorseArmor(Item item) {
         return getByItem(item) != NONE;
     }
+
 }

@@ -2436,4 +2436,10 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     public boolean shouldRiderFaceForward(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
         return this instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityBoat;
     }
+
+    /** Whether the entity is on this scoreboard team. */
+    public boolean isOnScoreboardTeam(legacyconnector.v1_12_2.net.minecraft.scoreboard.Team team) {
+        var own = getTeam();
+        return own != null && own.isSameTeam(team);
+    }
 }
