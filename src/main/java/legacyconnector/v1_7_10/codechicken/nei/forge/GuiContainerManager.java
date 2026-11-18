@@ -36,6 +36,11 @@ public class GuiContainerManager {
     /** The mouse in GUI coordinates when a caller fixes it (the JEI tooltip, which asks the handler in the recipe's own frame); null reads the real mouse. */
     private Point mouse;
 
+    /** Kept from the first version of this class (a no-screen manager). */
+    public GuiContainerManager() {
+        this(null);
+    }
+
     public GuiContainerManager(GuiContainer gui) {
         this.window = gui;
     }
