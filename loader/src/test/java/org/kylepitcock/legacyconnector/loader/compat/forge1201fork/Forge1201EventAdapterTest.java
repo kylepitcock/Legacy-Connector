@@ -183,7 +183,6 @@ final class Forge1201EventAdapterTest {
         assertEquals("(Z)V", preserved.desc);
     }
 
-
     @Test
     void auditedLeftClickBlockSetCanceledSuperCallKeepsTargetOverrideDispatch() throws Exception {
         ClassNode node = new ClassNode();
@@ -226,161 +225,7 @@ final class Forge1201EventAdapterTest {
             ClassNode node = new ClassNode();
             node.version = Opcodes.V17;
             node.access = Opcodes.ACC_PUBLIC;
-            node.name = "sample/Custom" + parent.substring(parent.lastIndexOf('
-        ClassNode node = new ClassNode();
-        node.version = Opcodes.V17;
-        node.access = Opcodes.ACC_PUBLIC;
-        node.name = "sample/IntermediateOverrideEvent";
-        node.superName = "net/minecraftforge/event/entity/EntityEvent";
-        MethodNode method = new MethodNode(
-                Opcodes.ASM9, Opcodes.ACC_PUBLIC, "setCanceled", "(Z)V", null, null);
-        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
-        method.instructions.add(new MethodInsnNode(
-                Opcodes.INVOKESPECIAL,
-                "net/minecraftforge/event/entity/EntityEvent",
-                "setCanceled",
-                "(Z)V",
-                false));
-        method.instructions.add(new InsnNode(Opcodes.RETURN));
-        method.maxStack = 2;
-        method.maxLocals = 2;
-        node.methods.add(method);
-
-        IOException failure = assertThrows(IOException.class, () -> Forge1201EventAdapter.apply(node));
-        assertTrue(failure.getMessage().contains("Unverified Forge event superclass override"));
-    }
-
-    @Test
-    void ordinarySourceEventCallsBecomeStaticVirtualDispatchBridges() throws Exception {
-        ClassNode node = new ClassNode();
-        node.version = Opcodes.V17;
-        node.access = Opcodes.ACC_PUBLIC;
-        node.name = "sample/EventCaller";
-        node.superName = "java/lang/Object";
-        MethodNode method = new MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "probe", "()Z", null, null);
-        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        method.instructions.add(new MethodInsnNode(
-                Opcodes.INVOKEVIRTUAL,
-                Forge1201EventAdapter.SOURCE_EVENT,
-                "isCanceled",
-                "()Z",
-                false));
-        method.instructions.add(new InsnNode(Opcodes.IRETURN));
-        method.maxStack = 1;
-        method.maxLocals = 2;
-        node.methods.add(method);
-
-        Forge1201EventAdapter.Stats stats = Forge1201EventAdapter.apply(node);
-
-        assertEquals(1, stats.callSitesRewritten());
-        MethodInsnNode rewritten = firstMethodCall(method);
-        assertEquals(Opcodes.INVOKESTATIC, rewritten.getOpcode());
-        assertEquals(Forge1201EventAdapter.BRIDGE, rewritten.owner);
-        assertEquals("isCanceled", rewritten.name);
-        assertEquals("(L" + Forge1201EventAdapter.SOURCE_EVENT + ";)Z", rewritten.desc);
-    }
-
-    @Test
-    void preservesUserOverridesAndUnrelatedAnnotations() throws Exception {
-        ClassNode node = eventRoot("sample/CustomEvent");
-        node.visibleAnnotations = new ArrayList<>();
-        node.visibleAnnotations.add(new AnnotationNode("Lsample/KeepMe;"));
-        MethodNode custom = new MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "isCancelable", "()Z", null, null);
-        custom.instructions.add(new InsnNode(Opcodes.ICONST_0));
-        custom.instructions.add(new InsnNode(Opcodes.IRETURN));
-        custom.maxStack = 1;
-        custom.maxLocals = 1;
-        node.methods.add(custom);
-
-        Forge1201EventAdapter.apply(node);
-
-        assertEquals(1, matchingMethods(node, "isCancelable", "()Z").size());
-        assertEquals("Lsample/KeepMe;", node.visibleAnnotations.get(0).desc);
-        assertTrue(node.interfaces.contains(Forge1201EventAdapter.COMPAT_INTERFACE));
-        assertTrue(node.interfaces.contains(Forge1201EventAdapter.TARGET_CANCELLABLE),
-                "A custom isCancelable override needs target cancellation state support.");
-    }
-
-    @Test
-    void repeatedApplicationDoesNotDuplicateInterfacesOrMethods() throws Exception {
-        ClassNode node = eventRoot("sample/IdempotentEvent");
-        node.visibleAnnotations = new ArrayList<>();
-        node.visibleAnnotations.add(new AnnotationNode(Forge1201EventAdapter.SOURCE_CANCELABLE_DESCRIPTOR));
-
-        Forge1201EventAdapter.apply(node);
-        int methodCount = node.methods.size();
-        Forge1201EventAdapter.apply(node);
-
-        assertEquals(methodCount, node.methods.size());
-        assertEquals(1, node.interfaces.stream()
-                .filter(Forge1201EventAdapter.COMPAT_INTERFACE::equals).count());
-        assertEquals(1, node.interfaces.stream()
-                .filter(Forge1201EventAdapter.CANCELABLE_MARKER::equals).count());
-        assertEquals(1, node.interfaces.stream()
-                .filter(Forge1201EventAdapter.TARGET_CANCELLABLE::equals).count());
-    }
-
-    @Test
-    void methodHandleReferencesFailClosedUntilLambdaAdaptationExists() {
-        ClassNode node = new ClassNode();
-        node.version = Opcodes.V17;
-        node.access = Opcodes.ACC_PUBLIC;
-        node.name = "sample/EventMethodReference";
-        node.superName = "java/lang/Object";
-        MethodNode method = new MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
-                "create", "()V", null, null);
-        method.instructions.add(new LdcInsnNode(new Handle(
-                Opcodes.H_INVOKEVIRTUAL,
-                Forge1201EventAdapter.SOURCE_EVENT,
-                "isCancelable",
-                "()Z",
-                false)));
-        method.instructions.add(new InsnNode(Opcodes.POP));
-        method.instructions.add(new InsnNode(Opcodes.RETURN));
-        method.maxStack = 1;
-        method.maxLocals = 0;
-        node.methods.add(method);
-
-        assertThrows(IOException.class, () -> Forge1201EventAdapter.apply(node));
-    }
-
-    private static ClassNode eventRoot(String name) {
-        ClassNode node = new ClassNode();
-        node.version = Opcodes.V17;
-        node.access = Opcodes.ACC_PUBLIC;
-        node.name = name;
-        node.superName = Forge1201EventAdapter.SOURCE_EVENT;
-        node.interfaces = new ArrayList<>();
-        node.methods = new ArrayList<>();
-        return node;
-    }
-
-    private static boolean hasMethod(ClassNode node, String name, String descriptor) {
-        return !matchingMethods(node, name, descriptor).isEmpty();
-    }
-
-    private static List<MethodNode> matchingMethods(ClassNode node, String name, String descriptor) {
-        return node.methods.stream()
-                .filter(method -> name.equals(method.name) && descriptor.equals(method.desc))
-                .toList();
-    }
-
-    private static boolean hasAnnotation(ClassNode node, String descriptor) {
-        return (node.visibleAnnotations != null && node.visibleAnnotations.stream()
-                .anyMatch(annotation -> descriptor.equals(annotation.desc)))
-                || (node.invisibleAnnotations != null && node.invisibleAnnotations.stream()
-                .anyMatch(annotation -> descriptor.equals(annotation.desc)));
-    }
-
-    private static MethodInsnNode firstMethodCall(MethodNode method) {
-        for (var instruction : method.instructions) {
-            if (instruction instanceof MethodInsnNode call) return call;
-        }
-        throw new AssertionError("Expected a method invocation");
-    }
-}
-) + 1);
+            node.name = "sample/Custom" + parent.substring(parent.lastIndexOf('$') + 1);
             node.superName = parent;
 
             Forge1201EventAdapter.apply(node);
@@ -432,7 +277,6 @@ final class Forge1201EventAdapterTest {
 
         assertTrue(node.interfaces.contains(Forge1201EventAdapter.TARGET_CANCELLABLE));
     }
-
     @Test
     void unverifiedIntermediateForgeEventSuperCallFailsClosed() {
         ClassNode node = new ClassNode();
