@@ -17,6 +17,11 @@ public class TileEntityStructure extends TileEntity {
         this.mcc$structure = structure;
     }
 
+    /** The game's structure block this views, or null for a mod's own tile. */
+    public net.minecraft.world.level.block.entity.StructureBlockEntity mcc$structureBlock() {
+        return mcc$structure;
+    }
+
     public String getName() {
         return mcc$structure != null ? mcc$structure.getStructureName() : name;
     }
