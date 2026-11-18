@@ -150,6 +150,22 @@ public final class Block {
         return (at != null ? at : self).getAmbientOcclusionLightValue();
     }
 
+    /** 1.5.2 {@code getUnlocalizedName2()}: the unlocalized name ("tile." + name), the same as {@code getUnlocalizedName()}. */
+    public static String getUnlocalizedName2(legacyconnector.v1_7_10.net.minecraft.block.Block self) {
+        return self.getUnlocalizedName();
+    }
+
+    /** 1.5.2 {@code isAssociatedBlockID(id)}: whether the id is this block's own (pistons and doors answer for their other halves). */
+    public static boolean isAssociatedBlockID(legacyconnector.v1_7_10.net.minecraft.block.Block self, int id) {
+        return id > 0 && mcc$fromId(id) == self;
+    }
+
+    /** {@code super.getAmbientOcclusionLightValue(world, x, y, z)} of an override: the same default (the override of this shape is a different method in 1.7.10, so no recursion). */
+    public static float mcc$super$getAmbientOcclusionLightValue(legacyconnector.v1_7_10.net.minecraft.block.Block self,
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        return getAmbientOcclusionLightValue(self, world, x, y, z);
+    }
+
     /** Forge's {@code Block.isBlockSolidOnSide} (1.7.10: isSideSolid). */
     public static boolean isBlockSolidOnSide(legacyconnector.v1_7_10.net.minecraft.block.Block self,
             legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,

@@ -8,4 +8,9 @@ public final class GLAllocation {
     public static int generateTextureNames() {
         return legacyconnector.v1_7_10.org.lwjgl.opengl.GL11Guard.glGenTextures();
     }
+
+    /** {@code generateTextureNames(buffer)} (1.4.7): fills the buffer, from its position to its limit, with fresh OpenGL texture names. */
+    public static void generateTextureNames(java.nio.IntBuffer names) {
+        while (names.hasRemaining()) names.put(generateTextureNames());
+    }
 }

@@ -20,6 +20,11 @@ R	net/minecraft/item/crafting/FurnaceRecipes	getSmeltingResult	(I)Lnet/minecraft
 R	net/minecraft/item/crafting/FurnaceRecipes	getExperience	(I)F	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	getExperience	(Lnet/minecraft/item/crafting/FurnaceRecipes;I)F
 M	net/minecraft/client/renderer/RenderBlocks	renderBlockFluids	(Lnet/minecraft/block/Block;III)Z	renderBlockLiquid
 F	net/minecraft/util/Direction	vineGrowth	facingToDirection
+# the same four int tables under 1.4.7's names (checked against the vanilla 1.4.7 class: the bed renderer reads headInvisibleFace {3,4,2,5} twice and footInvisibleFaceRemap {2,3,0,1})
+F	net/minecraft/util/Direction	footInvisibleFaceRemap	rotateOpposite
+F	net/minecraft/util/Direction	headInvisibleFace	directionToFacing
+F	net/minecraft/util/Direction	enderEyeMetaToDirection	rotateRight
+F	net/minecraft/util/Direction	field_71578_g	rotateLeft
 F	net/minecraft/entity/EntityHanging	xPosition	field_146063_b
 F	net/minecraft/entity/EntityHanging	yPosition	field_146064_c
 F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
@@ -85,3 +90,6 @@ S	net/minecraft/entity/EntityLivingBase	prevHealth	I	org/kylepitcock/legacyconne
 R	net/minecraft/client/renderer/texture/TextureManager	getTextureContents	(Ljava/lang/String;)[I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	textureContents	(Lnet/minecraft/client/renderer/texture/TextureManager;Ljava/lang/String;)[I
 G	net/minecraft/item/ItemTool	damageVsEntity	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	toolDamageVsEntity	(Lnet/minecraft/item/ItemTool;)I
 S	net/minecraft/item/ItemTool	damageVsEntity	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setToolDamageVsEntity	(Lnet/minecraft/item/ItemTool;I)V
+# API gap round 2 (2026-11-17): 1.4.7 returned nothing from executeCommand (1.5.2 and later: the number of commands run); WorldClient.playSound is the positioned sound effect
+R	net/minecraft/command/ICommandManager	executeCommand	(Lnet/minecraft/command/ICommandSender;Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward152	executeCommand	(Lnet/minecraft/command/ICommandManager;Lnet/minecraft/command/ICommandSender;Ljava/lang/String;)V
+R	net/minecraft/client/multiplayer/WorldClient	playSound	(DDDLjava/lang/String;FF)V	call	=	playSoundEffect	(DDDLjava/lang/String;FF)V

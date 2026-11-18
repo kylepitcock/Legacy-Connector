@@ -248,6 +248,18 @@ public final class ShimLinker {
             }
         }
 
+        if (!m.name.equals("<init>") && m.getOpcode() == Opcodes.INVOKESPECIAL && h.version() != null && h.version().forward() != null) {
+            // A super call of an override of a legacy method the shim lacks (a sprite's init, an item's getIconFromDamage): the version's facade declares the
+            // default body as "mcc$super$<name>" (its plain facade method may dispatch to the override itself, which the super call must not).
+            String[] sup = h.findFacadeMethod(m.owner, "mcc$super$" + m.name, m.desc, false);
+            if (sup != null) {
+                MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC, sup[0], "mcc$super$" + m.name, sup[1], false);
+                method.instructions.set(m, call);
+                report.adapted(m.owner, m.name + m.desc + " -> " + sup[0] + " (super)", from);
+                return call;
+            }
+        }
+
         if (m.name.equals("<init>")) {
             if (h.isSynth(m.owner)) {
                 demand.add(m.owner, Kind.CONSTRUCTOR, m.name, m.desc);

@@ -58,6 +58,12 @@ public final class Forward152 {
         return legacyconnector.v1_6_4.net.minecraft.src.ModLoader.getUniqueSpriteIndex(sheet);
     }
 
+    /** {@code commandManager.executeCommand(sender, command)} of 1.4.7, which returned nothing. */
+    public static void executeCommand(legacyconnector.v1_7_10.net.minecraft.command.ICommandManager manager, legacyconnector.v1_7_10.net.minecraft.command.ICommandSender sender,
+            String command) {
+        manager.executeCommand(sender, command);
+    }
+
     /** A constant int argument for a constructor rule (the metadata {@code EntityBreakingFX} gained). */
     public static int zero() {
         return 0;

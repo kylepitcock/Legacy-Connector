@@ -117,9 +117,37 @@ public class TextureManager implements ITickable {
     }
 
     private int mcc$upload(java.awt.image.BufferedImage image) {
+        return mcc$uploadInto(com.mojang.blaze3d.platform.TextureUtil.generateTextureId(), image);
+    }
+
+    /**
+     * 1.4.7 and 1.5.2 ({@code RenderEngine.setupTexture(image, id)}, {@code createTextureFromBytes(pixels, w, h, id)}): the pixels of an image a mod made earlier
+     * are replaced. A handle from {@link #allocateAndSetupTexture} is re-pointed to the new image (uploaded on its next bind); a real GL id is filled
+     * now when called on the render thread, and left as it is otherwise (no GL context to write into).
+     */
+    public void mcc$replaceImage(int id, java.awt.image.BufferedImage image) {
+        if (image == null || id <= 0) return;
+        if (id >= 0x50000000 && id < 0x60000000) {
+            mcc$images.put(id, image);
+            Integer real = mcc$uploaded.remove(id);
+            if (real != null && com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) com.mojang.blaze3d.platform.GlStateManager._deleteTexture(real);
+            return;
+        }
+        if (id < 0x40000000 && com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) mcc$uploadInto(id, image);
+    }
+
+    /** The id {@link #bindTexture(int)} resolves to this location (the handle {@link #getTexture(String)} hands out for a texture that is not loaded yet). */
+    public int mcc$handleFor(ResourceLocation location) {
+        return mcc$handleIds.computeIfAbsent(location, l -> {
+            int id = 0x40000000 + mcc$handleIds.size();
+            mcc$handles.put(id, l);
+            return id;
+        });
+    }
+
+    private int mcc$uploadInto(int id, java.awt.image.BufferedImage image) {
         int w = image.getWidth(), h = image.getHeight();
         int[] argb = image.getRGB(0, 0, w, h, null, 0, w);
-        int id = com.mojang.blaze3d.platform.TextureUtil.generateTextureId();
         com.mojang.blaze3d.platform.GlStateManager._bindTexture(id);
         com.mojang.blaze3d.platform.TextureUtil.prepareImage(id, 0, w, h);
         try (var nat = new com.mojang.blaze3d.platform.NativeImage(w, h, false)) {

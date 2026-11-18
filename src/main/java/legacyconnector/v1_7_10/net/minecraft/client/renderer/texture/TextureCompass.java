@@ -11,8 +11,12 @@ public class TextureCompass extends TextureAtlasSprite {
     public double currentAngle;
     public double angleDelta;
 
+    /** 1.5.2 {@code TextureCompass.compassTexture}: the compass sprite (the last one made), which mods read to drive or draw the needle. */
+    public static TextureCompass compassTexture;
+
     public TextureCompass(String name) {
         super(name);
+        compassTexture = this;
     }
 
     @Override

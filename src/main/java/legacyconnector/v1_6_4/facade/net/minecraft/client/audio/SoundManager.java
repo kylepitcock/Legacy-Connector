@@ -20,4 +20,9 @@ public final class SoundManager {
     public static SoundPool mcc$get$soundPoolMusic(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self) {
         return SoundPool.MUSIC;
     }
+
+    /** 1.5.2 {@code addSound(name, file)}: registers a sound file by name (the file name without digits and extension is the event); the sound plays from {@code file} (see {@code SoundPool}). */
+    public static void addSound(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self, String name, java.io.File file) {
+        SoundPool.SOUNDS.addSound(name, file);
+    }
 }
