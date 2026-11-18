@@ -176,7 +176,7 @@ public final class Forge1201EventAdapter {
                         }
                         if (!(SOURCE_EVENT.equals(call.owner)
                                 || SOURCE_EVENT_TYPES_WITH_INHERITED_BASE_ACCESSORS.contains(call.owner))
-                                || !eventRoot) {
+                                || !extendsForgeEventApiType) {
                             throw new IOException("Unverified Forge event superclass override for non-virtual "
                                     + "cancellation call in " + classNode.name + "." + method.name + method.desc
                                     + ": owner=" + call.owner + "." + call.name + call.desc
@@ -209,7 +209,7 @@ public final class Forge1201EventAdapter {
     }
 
     private static boolean isSourceEventCancellationMethod(String owner, String name, String descriptor) {
-        return isForgeEventBase(owner)
+        return isForgeEventApiType(owner)
                 && ((METHOD_IS_CANCELABLE.equals(name) && IS_CANCELABLE_DESCRIPTOR.equals(descriptor))
                 || (METHOD_IS_CANCELED.equals(name) && IS_CANCELED_DESCRIPTOR.equals(descriptor))
                 || (METHOD_SET_CANCELED.equals(name) && SET_CANCELED_DESCRIPTOR.equals(descriptor)));
