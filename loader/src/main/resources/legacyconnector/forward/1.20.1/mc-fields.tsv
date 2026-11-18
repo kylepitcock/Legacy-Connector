@@ -464,3 +464,4 @@ legacyconnector/v1_20_1/net/minecraftforge/network/NetworkRegistry	ABSENT	Llegac
 net/minecraft/world/inventory/InventoryMenu	TEXTURE_EMPTY_SLOTS	[Lnet/minecraft/resources/ResourceLocation;	-	none	Round10Compat.emptySlotTextures
 net/minecraft/core/registries/BuiltInRegistries	ROOT_REGISTRY_NAME	Lnet/minecraft/resources/ResourceLocation;	-	none	Round11Compat.rootRegistryName
 net/minecraft/server/packs/FilePackResources	SPLITTER	Lcom/google/common/base/Splitter;	-	none	Round11ClientCompat.filePackSplitter
+net/minecraft/server/level/ChunkHolder	UNLOADED_LEVEL_CHUNK	Lcom/mojang/datafixers/util/Either;	-	none	Round11Compat.unloadedLevelChunk

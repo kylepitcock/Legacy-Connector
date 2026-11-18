@@ -425,4 +425,20 @@ public final class Round11Compat {
     public static void soundEventWrite(net.minecraft.sounds.SoundEvent event, net.minecraft.network.FriendlyByteBuf buffer) {
         net.minecraft.sounds.SoundEvent.DIRECT_STREAM_CODEC.encode(buffer, event);
     }
+
+    /** {@code EnchantRandomlyFunction.randomApplicableEnchantment()}: needs the registries in 1.21.1. */
+    public static net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction.Builder randomApplicableEnchantment() {
+        return net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction.randomApplicableEnchantment(MigrateContext.provider());
+    }
+
+    /** {@code predicate.checkState(definition, onInvalid)}: 1.21.1 answers the problem as an optional string. */
+    public static void checkState(net.minecraft.advancements.critereon.StatePropertiesPredicate predicate, net.minecraft.world.level.block.state.StateDefinition<?, ?> definition,
+            java.util.function.Consumer<String> onInvalid) {
+        predicate.checkState(definition).ifPresent(onInvalid);
+    }
+
+    /** {@code ChunkHolder.UNLOADED_LEVEL_CHUNK} (an {@code Either} in 1.20.1): the failure side, the same object the chunk future helpers answer. */
+    public static Either<net.minecraft.world.level.chunk.LevelChunk, Object> unloadedLevelChunk() {
+        return Either.right("unloaded");
+    }
 }

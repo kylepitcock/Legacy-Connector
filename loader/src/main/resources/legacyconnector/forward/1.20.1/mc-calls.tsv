@@ -1048,3 +1048,9 @@ net/minecraft/server/ReloadableServerResources	getLootData	()Lorg/kylepitcock/le
 net/minecraft/sounds/SoundEvent	readFromNetwork	(Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/sounds/SoundEvent;	Round11Compat	soundEventRead	-
 net/minecraft/sounds/SoundEvent	writeToNetwork	(Lnet/minecraft/network/FriendlyByteBuf;)V	Round11Compat	soundEventWrite	-
 net/minecraft/core/HolderSet	direct	(Ljava/util/function/Function;Ljava/util/List;)Lnet/minecraft/core/HolderSet$Direct;	=	-	(Ljava/util/function/Function;Ljava/util/Collection;)Lnet/minecraft/core/HolderSet$Direct;
+net/minecraft/world/level/storage/loot/functions/EnchantRandomlyFunction	randomApplicableEnchantment	()Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;	Round11Compat	randomApplicableEnchantment	()Lnet/minecraft/world/level/storage/loot/functions/EnchantRandomlyFunction$Builder;
+net/minecraft/advancements/critereon/StatePropertiesPredicate	checkState	(Lnet/minecraft/world/level/block/state/StateDefinition;Ljava/util/function/Consumer;)V	Round11Compat	checkState	-
+net/minecraft/client/Options	$get$renderFpsChart	()Z	Round11ClientCompat	getRenderFpsChart	-
+net/minecraft/client/Options	$set$renderFpsChart	(Z)V	Round11ClientCompat	setRenderFpsChart	-
+net/minecraft/client/Options	$get$renderDebugCharts	()Z	Round11ClientCompat	getRenderDebugCharts	-
+net/minecraft/client/Options	$set$renderDebugCharts	(Z)V	Round11ClientCompat	setRenderDebugCharts	-

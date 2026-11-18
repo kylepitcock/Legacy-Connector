@@ -135,4 +135,25 @@ public final class Round11ClientCompat {
     public static CompatBufferBuilder bufferSourceBuilder(net.minecraft.client.renderer.MultiBufferSource.BufferSource source) {
         return CompatBufferBuilder.over(source.sharedBuffer);
     }
+
+    /** {@code Options.renderFpsChart} / {@code renderDebugCharts}: the debug overlay keeps these flags now (the profiler chart is 1.20.1's {@code renderDebugCharts}). */
+    public static boolean getRenderFpsChart(net.minecraft.client.Options options) {
+        var overlay = Minecraft.getInstance().getDebugOverlay();
+        return overlay != null && overlay.showFpsCharts();
+    }
+
+    public static void setRenderFpsChart(net.minecraft.client.Options options, boolean show) {
+        var overlay = Minecraft.getInstance().getDebugOverlay();
+        if (overlay != null && overlay.showFpsCharts() != show) overlay.toggleFpsCharts();
+    }
+
+    public static boolean getRenderDebugCharts(net.minecraft.client.Options options) {
+        var overlay = Minecraft.getInstance().getDebugOverlay();
+        return overlay != null && overlay.showProfilerChart();
+    }
+
+    public static void setRenderDebugCharts(net.minecraft.client.Options options, boolean show) {
+        var overlay = Minecraft.getInstance().getDebugOverlay();
+        if (overlay != null && overlay.showProfilerChart() != show) overlay.toggleProfilerChart();
+    }
 }
