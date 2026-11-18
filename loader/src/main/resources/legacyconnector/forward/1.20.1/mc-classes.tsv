@@ -141,3 +141,9 @@ com/mojang/blaze3d/vertex/BufferBuilder$DrawState	com/mojang/blaze3d/vertex/Mesh
 net/minecraft/world/level/chunk/status/ChunkStatus$ChunkType	net/minecraft/world/level/chunk/status/ChunkType
 net/minecraft/world/level/chunk/ChunkStatus$ChunkType	net/minecraft/world/level/chunk/status/ChunkType
 net/neoforged/neoforge/common/crafting/StrictNBTIngredient$Serializer	legacyconnector/v1_20_1/net/minecraftforge/common/crafting/VanillaIngredientSerializer
+# --- gap round 12
+net/minecraft/client/resources/model/ModelBakery$LoadedJson	net/minecraft/client/resources/model/BlockStateModelLoader$LoadedJson
+net/neoforged/neoforge/client/model/data/MultipartModelData$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMultipartBuilder
+net/minecraft/client/gui/screens/controls/KeyBindsList$Entry	net/minecraft/client/gui/screens/options/controls/KeyBindsList$Entry
+net/minecraft/client/gui/screens/controls/KeyBindsList$KeyEntry	net/minecraft/client/gui/screens/options/controls/KeyBindsList$KeyEntry
+net/minecraft/client/gui/screens/controls/KeyBindsList$CategoryEntry	net/minecraft/client/gui/screens/options/controls/KeyBindsList$CategoryEntry

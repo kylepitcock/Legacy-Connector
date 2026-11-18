@@ -997,6 +997,41 @@ class Mc1201MigrationTest implements Opcodes {
         assertNotNull(find(m, MIGRATE + "HolderCompat", "holder"));
     }
 
+    /** Gap round 12: calls of methods that lost or gained a parameter, and the TagType implementations of a mod, reach the 1.21.1 shapes. */
+    @Test
+    void round12RowsReachTheirHelpers() {
+        String entity = "net/minecraft/world/entity/Entity";
+        String living = "net/minecraft/world/entity/LivingEntity";
+        String tagType = "net/minecraft/nbt/TagType";
+        String editBox = "net/minecraft/client/gui/components/EditBox";
+        ClassNode c = cls("test/Round12", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC, "run", "(L" + entity + ";L" + living + ";L" + editBox + ";L" + tagType + ";Ljava/io/DataInput;)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new VarInsnNode(ALOAD, 2));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, entity, "doEnchantDamageEffects", "(L" + living + ";L" + entity + ";)V", false));
+        m.instructions.add(new VarInsnNode(ALOAD, 3));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, editBox, "moveCursorToEnd", "()V", false));
+        m.instructions.add(new VarInsnNode(ALOAD, 4));
+        m.instructions.add(new VarInsnNode(ALOAD, 5));
+        m.instructions.add(new MethodInsnNode(INVOKEINTERFACE, tagType, "skip", "(Ljava/io/DataInput;)V", true));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        assertNotNull(find(m, MIGRATE + "Round12Compat", "doEnchantDamageEffects"));
+        assertNotNull(find(m, MIGRATE + "Round12ClientCompat", "moveCursorToEnd"));
+        assertNotNull(find(m, MIGRATE + "Round12Compat", "tagSkipAll"));
+
+        // an implementation of TagType keeps its old methods and gets the 1.21.1 ones, which call them
+        ClassNode impl = cls("test/MyTagType", "java/lang/Object");
+        impl.interfaces.add(tagType);
+        MethodNode skip = method(impl, ACC_PUBLIC, "skip", "(Ljava/io/DataInput;)V");
+        skip.instructions.add(new InsnNode(RETURN));
+        assertEquals(1, apply(impl).bridges);
+        MethodNode bridge = findDeclared(impl, "skip", "(Ljava/io/DataInput;Lnet/minecraft/nbt/NbtAccounter;)V");
+        assertNotNull(bridge);
+        assertNotNull(find(bridge, "test/MyTagType", "skip"));
+    }
+
     @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);

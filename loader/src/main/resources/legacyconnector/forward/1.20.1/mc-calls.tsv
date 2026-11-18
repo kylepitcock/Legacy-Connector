@@ -1054,3 +1054,33 @@ net/minecraft/client/Options	$get$renderFpsChart	()Z	Round11ClientCompat	getRend
 net/minecraft/client/Options	$set$renderFpsChart	(Z)V	Round11ClientCompat	setRenderFpsChart	-
 net/minecraft/client/Options	$get$renderDebugCharts	()Z	Round11ClientCompat	getRenderDebugCharts	-
 net/minecraft/client/Options	$set$renderDebugCharts	(Z)V	Round11ClientCompat	setRenderDebugCharts	-
+# --- gap round 12
+# TagType (Rhino's NBT readers): the depth counter moved into the NbtAccounter, so 1.20.1 calls without one get an unlimited accounter
+net/minecraft/nbt/TagType	load	(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;	Round12Compat	tagLoad
+net/minecraft/nbt/TagType	parse	(Ljava/io/DataInput;Lnet/minecraft/nbt/StreamTagVisitor;)Lnet/minecraft/nbt/StreamTagVisitor$ValueResult;	Round12Compat	tagParse
+net/minecraft/nbt/TagType	skip	(Ljava/io/DataInput;I)V	Round12Compat	tagSkipDepth
+net/minecraft/nbt/TagType	skip	(Ljava/io/DataInput;)V	Round12Compat	tagSkipAll
+net/minecraft/world/entity/ai/behavior/BehaviorUtils	lockGazeAndWalkToEachOther	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/LivingEntity;F)V	Round12Compat	lockGazeAndWalkToEachOther
+# MultipartModelData.builder() (Forge 1.20.1; Fusion): the builder is a stand-in, build() answers the map the 1.21.1 property carries
+net/neoforged/neoforge/client/model/data/MultipartModelData	builder	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMultipartBuilder;	Round12ClientCompat	multipartBuilder
+# --- gap round 12 (calls through mod subclasses reach these: the owner is the declaring Minecraft class)
+net/minecraft/world/entity/Entity	doEnchantDamageEffects	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/Entity;)V	Round12Compat	doEnchantDamageEffects
+net/minecraft/client/gui/components/EditBox	moveCursorToEnd	()V	Round12ClientCompat	moveCursorToEnd
+net/minecraft/client/gui/components/EditBox	moveCursor	(I)V	Round12ClientCompat	moveCursor
+net/minecraft/client/renderer/entity/EntityRenderer	renderNameTag	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V	=args	0,1,2,3,4,Round12ClientCompat.partialTick@0	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V
+net/minecraft/world/entity/Mob	populateDefaultEquipmentEnchantments	(Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/DifficultyInstance;)V	=args	Round12Compat.levelAccessor@this:net/minecraft/world/entity/Mob,0,1	(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/DifficultyInstance;)V
+net/minecraft/world/entity/LivingEntity	dropAllDeathLoot	(Lnet/minecraft/world/damagesource/DamageSource;)V	=args	Round12Compat.serverLevel@this:net/minecraft/world/entity/LivingEntity,0	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;)V
+net/minecraft/world/item/DiggerItem	$get$speed	()F	Round12Compat	diggerSpeed
+net/minecraft/server/level/ServerPlayer	$get$latency	()I	Round12Compat	playerLatency
+net/minecraft/client/gui/components/AbstractSelectionList	renderBackground	(Lnet/minecraft/client/gui/GuiGraphics;)V	=	renderListBackground
+net/minecraft/client/gui/components/AbstractSelectionList	setRenderBackground	(Z)V	Round12ClientCompat	setRenderBackground
+net/minecraft/client/gui/components/AbstractSelectionList	setRenderSelection	(Z)V	Round12ClientCompat	setRenderSelection
+net/minecraft/client/gui/components/AbstractSelectionList	setRenderTopAndBottom	(Z)V	Round12ClientCompat	setRenderTopAndBottom
+net/minecraft/client/gui/components/AbstractSelectionList	updateSize	(IIII)V	Round12ClientCompat	updateSize
+net/minecraft/client/renderer/entity/ItemRenderer	getCompassFoilBufferDirect	(Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;)Lcom/mojang/blaze3d/vertex/VertexConsumer;	Round12ClientCompat	getCompassFoilBufferDirect
+net/neoforged/neoforge/common/util/BlockSnapshot	restore	(Z)Z	Round12Compat	restoreSnapshot
+# --- gap round 12, batch 3
+net/minecraft/client/renderer/entity/layers/RenderLayer	renderColoredCutoutModel	(Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFF)V	=args	0,1,2,3,4,5,Round12ClientCompat.rgb@6+7+8	(Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;I)V
+net/minecraft/client/renderer/entity/layers/RenderLayer	coloredCutoutModelCopyLayerRender	(Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFFFFF)V	=args	0,1,2,3,4,5,6,7,8,9,10,11,12,Round12ClientCompat.rgb@13+14+15	(Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/client/model/EntityModel;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFFI)V
+net/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/AppendLoot	<init>	(Lnet/minecraft/resources/ResourceLocation;)V	=args	Round11Compat.lootTableKey@0	(Lnet/minecraft/resources/ResourceKey;)V
+net/minecraft/world/level/block/BrushableBlock	<init>	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;)V	=args	0,2,3,1	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V

@@ -179,7 +179,7 @@ public final class Gap1201 {
     }
 
     private Cls jdk(String name) {
-        if (!(name.startsWith("java/") || name.startsWith("javax/") || name.startsWith("jdk/") || name.startsWith("sun/"))) return null;
+        if (!(name.startsWith("java/") || name.startsWith("javax/") || name.startsWith("jdk/") || name.startsWith("sun/") || name.startsWith("com/sun/"))) return null;
         try {
             Class<?> k = Class.forName(name.replace('/', '.'), false, ClassLoader.getPlatformClassLoader());
             Cls c = new Cls();
