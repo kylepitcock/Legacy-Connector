@@ -61,6 +61,14 @@ public final class Forward164 {
         return java.util.logging.Logger.getLogger(id != null ? id : "ForgeModLoader");
     }
 
+    // ------------------------------------------------------------------ villages
+
+    /** 1.4.7 to 1.6.4 {@code ComponentVillage.startPiece} (a village building's village start; 1.7.10 components do not keep it). */
+    public static legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Start villageStartPiece(
+            legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Village village) {
+        return village.mcc$startPiece();
+    }
+
     // ------------------------------------------------------------------ sound: Minecraft.sndManager and its 1.6.4 methods
 
     /** 1.6.4 {@code Minecraft.sndManager}: the sound manager (1.7.10 reaches it through the sound handler). */

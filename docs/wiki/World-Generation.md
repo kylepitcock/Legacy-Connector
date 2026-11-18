@@ -224,6 +224,20 @@ no house's place), and handlers that only add vanilla's own 1.7.10 houses (Witch
 village has its own. Witchery's `TownWallMode`/`TownKeepMode` and cluster settings apply as in 1.7.10. Limits: the wall's block
 entity keeps the paths in memory only (as in 1.7.10), so a chunk saved before it ticked gets no wall, and the wall reads chunks
 that are not loaded as air.
+**1.6.4, 1.5.2 and 1.4.7 village buildings** (the `v1_6_4` forward layer) ride the 1.7.10 path unchanged: those versions call the same
+`VillagerRegistry.registerVillageCreationHandler`, the loader renames `ComponentVillage`/`ComponentVillageStartPiece`/`StructureVillagePieceWeight` (flat
+`net.minecraft.src` names in 1.4.7) to the 1.7.10 `StructureVillagePieces` classes, and the components' int-id building calls (`placeBlockAtCurrentPosition`,
+`fillWithBlocks`...) go through the forward rows of `StructureComponent`. Server-checked (suites `villages164`, `villages152`, `villages147`; the
+self test scans up to 14 villages and logs, per legacy piece, the blocks of mods inside its own box, whether it stands against a street and whether it
+overlaps another piece): 1.6.4 Forestry's apiarist house, Tinkers' Construct's tool workshop, Witchery's apothecary and witch hut, Mystcraft's archivist
+house; 1.5.2 and 1.4.7 Forestry and Mystcraft; every piece beside a street, none overlapping another. Mod components that keep their own
+`ComponentVillage.startPiece` / average-ground field (Forestry 1.4.7 and 1.5.2) get the village's start piece through a field getter and the ground the
+jigsaw already found (`getAverageGroundLevel` returns it), so they stand on their plot instead of being measured from the terrain again. Left out
+as in the original: handlers whose limit is 0 for a size-0 village (MineFactory Reloaded's zoologist house: limit is the village size; Tinkers'
+smeltery), so those two are never seen in the default villages. 1.20.1 mods add houses as data-pack template pools; `tools/dev/server-scripts/village-pools.js`
+(suite `villages1201`) lists every village pool by namespace and the elements whose structure template is missing: CTOV's 130 pools resolve all their
+structure files that exist in the jar (the remaining elements name files its jar does not contain, as in 1.20.1). Open: a multi-loader data jar whose
+`neoforge.mods.toml` pins Minecraft to 1.20.x (Terralith) is not picked up as a 1.20.1 mod (its biome JSON also needs data conversions first).
 **1.12.2 village buildings** use the same assembly (`core/worldgen/VillageAdditions`, shared; each version supplies a `LegacyVillageSource`):
 1.12.2's `VillagerRegistry.IVillageCreationHandler`s (`LegacyVillages1122`, element type `legacyconnector:legacy_village_building_1122`,
 `LegacyVillagePoolElement1122`) become extra pieces of the vanilla village. The component is planned as 1.12 did
