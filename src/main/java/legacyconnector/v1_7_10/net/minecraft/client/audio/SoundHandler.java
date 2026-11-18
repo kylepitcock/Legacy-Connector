@@ -28,12 +28,55 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
 
     /** The sound manager behind this handler (set by the manager; mods read it by reflection). */
     SoundManager sndManager;
+    /** The entry 1.7.10 returned for a sound it had no file for. */
+    public static final SoundPoolEntry missing_sound = new SoundPoolEntry(new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation("meta:missing_sound"), 0.0D, 0.0D, false);
+
     /**
-     * 1.7.10's sound registry. The modern engine keeps its own, so nothing here reads it; mods replace it by reflection ({@code sndRegistry} /
-     * {@code field_147697_e}: The Betweenlands swaps in its own registry in init and fails to load without the field). Typed Object because
-     * the registry class is a synthesized one.
+     * 1.7.10's sound registry: the events legacy code registers itself ({@link #getSound} looks here first, then asks the modern sound manager). Mods
+     * read or replace it ({@code sndRegistry} / {@code field_147697_e}: The Betweenlands swaps in its own registry in init and fails to load
+     * without the field).
      */
-    private Object sndRegistry;
+    public SoundRegistry sndRegistry = new SoundRegistry();
+
+    /**
+     * The sound event of that name: one a mod registered, else the game's own sound under its legacy name ({@code mob.zombie.say}) as a pool that
+     * picks among the modern event's files, with their volume and pitch; null for an unknown name.
+     */
+    public SoundEventAccessorComposite getSound(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location) {
+        if (location == null) return null;
+        Object registered = sndRegistry == null ? null : sndRegistry.getObject((Object) location);
+        if (registered instanceof SoundEventAccessorComposite composite) return composite;
+        String name = location.getResourceDomain().equals("minecraft") ? location.getResourcePath() : location.getResourceDomain() + ":" + location.getResourcePath();
+        SoundEvent event = SoundBridge.sound(MUSIC_RENAMES.getOrDefault(name, name));
+        if (event == null) return null;
+        return new ModernEvent(location, event.getLocation(), SoundCategory.mcc$of(SoundBridge.legacySource(name, SoundSource.MASTER)));
+    }
+
+    /** An event of the modern sound manager seen as a legacy pool: every pick asks it for one of its (weighted) sounds. */
+    private static final class ModernEvent extends SoundEventAccessorComposite {
+        private final net.minecraft.resources.ResourceLocation event;
+        private final RandomSource random = RandomSource.create();
+
+        ModernEvent(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location, net.minecraft.resources.ResourceLocation event, SoundCategory category) {
+            super(location, 1.0D, 1.0D, category);
+            this.event = event;
+        }
+
+        @Override
+        public int getWeight() {
+            return 1;
+        }
+
+        @Override
+        public SoundPoolEntry func_148720_g() {
+            WeighedSoundEvents events = net.minecraft.client.Minecraft.getInstance().getSoundManager().getSoundEvent(event);
+            net.minecraft.client.resources.sounds.Sound sound = events == null ? null : events.getSound(random);
+            if (sound == null || sound == net.minecraft.client.sounds.SoundManager.EMPTY_SOUND) return missing_sound;
+            net.minecraft.resources.ResourceLocation file = sound.getLocation();
+            return new SoundPoolEntry(new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation(file.getNamespace(), "sounds/" + file.getPath() + ".ogg"),
+                    sound.getPitch().sample(random), sound.getVolume().sample(random), sound.shouldStream());
+        }
+    }
     private final Map<ISound, SoundInstance> playing = new WeakHashMap<>();
     /** 1.7.10's music events under their modern names. */
     private static final Map<String, String> MUSIC_RENAMES = Map.of("music.game.creative", "music.creative", "music.game.end", "music.end",

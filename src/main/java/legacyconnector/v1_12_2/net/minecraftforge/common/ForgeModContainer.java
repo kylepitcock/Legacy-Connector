@@ -7,6 +7,8 @@ import legacyconnector.v1_12_2.net.minecraftforge.common.config.Configuration;
 public class ForgeModContainer extends legacyconnector.v1_12_2.net.minecraftforge.fml.common.DummyModContainer {
     public static boolean fullBoundingBoxLadders = false;
     public static double zombieSummonBaseChance = 0.1D;
+    /** The chance a spawned zombie is a baby (the game spawns its zombies by its own rule; this is the value mods read). */
+    public static float zombieBabyChance = 0.05F;
     public static boolean replaceVanillaBucketModel = true;
     public static boolean forgeLightPipelineEnabled = true;
     public static boolean selectiveResourceReloadEnabled = false;

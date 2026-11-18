@@ -27,6 +27,10 @@ public class Fluid {
         this.flowing = flowing;
     }
 
+    public Fluid(String fluidName, ResourceLocation still, ResourceLocation flowing, java.awt.Color color) {
+        this(fluidName, still, flowing, color.getRGB());
+    }
+
     public Fluid(String fluidName, ResourceLocation still, ResourceLocation flowing, int color) {
         this(fluidName, still, flowing);
         this.color = color;

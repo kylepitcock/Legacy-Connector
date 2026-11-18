@@ -87,6 +87,27 @@ public class Potion {
         if (!PotionBridge.isVanilla(id)) PotionBridge.registerLegacy(this);
     }
 
+    /**
+     * The 1.8-style constructor ({@code new Potion(name, bad, color)}) that backports and 1.7.10 forks with named effects call: the potion has no
+     * numeric id of its own, so it takes the first free slot from 32 up (the array grows as needed).
+     */
+    protected Potion(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation name, boolean isBadEffect, int liquidColor) {
+        this(mcc$firstFreeId(), isBadEffect, liquidColor);
+        this.mcc$name = name;
+    }
+
+    private legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation mcc$name;
+
+    /** The name a 1.8-style potion was created with, or null for numeric-id potions. */
+    public legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation mcc$getResourceName() {
+        return mcc$name;
+    }
+
+    private static int mcc$firstFreeId() {
+        for (int i = 32; i < potionTypes.length; i++) if (potionTypes[i] == null) return i;
+        return Math.max(potionTypes.length, 32);
+    }
+
     public int getId() {
         return id;
     }

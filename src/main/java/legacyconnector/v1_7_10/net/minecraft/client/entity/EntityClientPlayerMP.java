@@ -43,6 +43,16 @@ public class EntityClientPlayerMP extends EntityPlayerSP {
         return mcc$player().getAttackAnim(partial);
     }
 
+    /** True while riding a mount that jumps (a saddled horse): the jump bar is shown. */
+    public boolean isRidingHorse() {
+        return mcc$player() instanceof net.minecraft.client.player.LocalPlayer local && local.jumpableVehicle() != null;
+    }
+
+    /** How far the jump bar of the mount is charged, 0 to 1. */
+    public float getHorseJumpPower() {
+        return mcc$player() instanceof net.minecraft.client.player.LocalPlayer local ? local.getJumpRidingScale() : 0.0F;
+    }
+
     /** Asks the server to respawn the (dead) player. */
     public void respawnPlayer() {
         if (mcc$player() instanceof net.minecraft.client.player.LocalPlayer local) local.respawn();

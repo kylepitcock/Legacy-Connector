@@ -1022,11 +1022,22 @@ public class World implements IBlockAccess {
 
     public void scheduleUpdate(BlockPos pos, Block blockIn, int delay) {
         if (acc() == null) return;
+        if (scheduledUpdatesAreImmediate) {
+            scheduleBlockUpdate(pos, blockIn, delay, 0);
+            return;
+        }
         acc().scheduleTick(modern(pos), modernBlock(blockIn), delay);
     }
 
     public void scheduleBlockUpdate(BlockPos pos, Block blockIn, int delay, int priority) {
         if (acc() == null) return;
+        if (scheduledUpdatesAreImmediate) {
+            IBlockState state = getBlockState(pos);
+            if (state != null && state.getBlock() != null && state.getBlock() == blockIn && state.getMaterial() != legacyconnector.v1_12_2.net.minecraft.block.material.Material.AIR) {
+                immediateBlockTick(pos, state, new Random());
+            }
+            return;
+        }
         acc().scheduleTick(modern(pos), modernBlock(blockIn), delay, net.minecraft.world.ticks.TickPriority.byValue(Math.max(-3, Math.min(3, priority))));
     }
 
@@ -2233,4 +2244,7 @@ public class World implements IBlockAccess {
         }
         return out;
     }
+
+    /** Scheduled block updates run at once instead of after their delay (world generation sets it). */
+    public boolean scheduledUpdatesAreImmediate;
 }

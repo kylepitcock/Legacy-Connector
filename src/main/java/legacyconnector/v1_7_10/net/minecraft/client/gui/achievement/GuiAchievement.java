@@ -24,6 +24,15 @@ public class GuiAchievement {
         displayInformation(achievement);
     }
 
+    /** Pops up an achievement given by name only (no stat of the registry): the toast shows the name and description. */
+    public void displayUnformattedAchievement(Achievement achievement) {
+        displayAchievement(achievement);
+    }
+
+    /** The per-frame update of the popup; modern toasts animate themselves. */
+    public void updateAchievementWindow() {
+    }
+
     public void func_146256_a(Achievement achievement) {
         displayAchievement(achievement);
     }

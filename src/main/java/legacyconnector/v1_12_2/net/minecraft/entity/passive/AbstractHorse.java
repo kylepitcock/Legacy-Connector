@@ -505,4 +505,12 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
         if (!owner.isEmpty()) setOwnerUniqueId(java.util.UUID.fromString(owner));
         setHorseSaddled(tag.getBoolean("Saddle"));
     }
+
+    /** The sound of a gallop step on a block of this sound type (now and then a breath on top). */
+    protected void playGallopSound(legacyconnector.v1_12_2.net.minecraft.block.SoundType soundTypeIn) {
+        playSound(legacyconnector.v1_12_2.net.minecraft.init.SoundEvents.ENTITY_HORSE_GALLOP, soundTypeIn.getVolume() * 0.15F, soundTypeIn.getPitch());
+        if (getRNG().nextInt(10) == 0) {
+            playSound(legacyconnector.v1_12_2.net.minecraft.init.SoundEvents.ENTITY_HORSE_BREATHE, soundTypeIn.getVolume() * 0.6F, soundTypeIn.getPitch());
+        }
+    }
 }

@@ -30,6 +30,10 @@ public class PhaseManager {
     @SuppressWarnings("unchecked")
     public <T extends IPhase> T getPhase(PhaseList<T> phase) {
         var m = mcc$modern();
+        if (m != null && phase == PhaseList.CHARGING_PLAYER
+                && m.getPhase(phase.mcc$modern()) instanceof net.minecraft.world.entity.boss.enderdragon.phases.DragonChargePlayerPhase charge) {
+            return (T) new PhaseChargingPlayer(view(charge), charge);
+        }
         return m == null || phase == null ? null : (T) view(m.getPhase(phase.mcc$modern()));
     }
 

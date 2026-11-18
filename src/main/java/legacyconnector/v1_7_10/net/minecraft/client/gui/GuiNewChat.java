@@ -6,6 +6,38 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 
 /** The chat window of the HUD. */
 public class GuiNewChat extends Gui {
+    public GuiNewChat() {
+    }
+
+    /** 1.7.10's constructor (chat replacements construct and install their own window): the modern game's chat stays the one drawn. */
+    public GuiNewChat(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+    }
+
+    /**
+     * The lines of the chat window, newest first as in 1.7.10's {@code chatLines}: a snapshot of the modern chat's messages (the tick they
+     * were added, the text, no id).
+     */
+    public java.util.List<ChatLine> mcc$chatLines() {
+        var gui = net.minecraft.client.Minecraft.getInstance().gui;
+        java.util.List<ChatLine> out = new java.util.ArrayList<>();
+        if (gui == null) return out;
+        for (var message : gui.getChat().allMessages) out.add(new ChatLine(message.addedTime(), IChatComponent.mcc$fromModern(message.content()), 0));
+        return out;
+    }
+
+    /**
+     * The text component under the mouse ({@code mouseX}/{@code mouseY} in window pixels, y from the bottom as {@code Mouse.getY} gives it),
+     * with its style and so its click and hover events, or null when the pointer is not over chat text. Mods use it to make links in chat
+     * clickable or to show a hand cursor over them.
+     */
+    public IChatComponent getChatComponent(int mouseX, int mouseY) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.gui == null) return null;
+        double scale = Math.max(1.0D, mc.getWindow().getGuiScale());
+        var style = mc.gui.getChat().getClickedComponentStyleAt(mouseX / scale, mc.getWindow().getGuiScaledHeight() - mouseY / scale);
+        return style == null ? null : IChatComponent.mcc$fromModern(Component.empty().withStyle(style));
+    }
+
     public void printChatMessage(IChatComponent message) {
         if (message == null) return;
         var gui = net.minecraft.client.Minecraft.getInstance().gui;

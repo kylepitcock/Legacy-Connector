@@ -125,4 +125,10 @@ public class EntityFireworkRocket extends legacyconnector.v1_12_2.net.minecraft.
     @Override
     protected void writeEntityToNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
     }
+
+    /** A rocket that boosts a gliding entity (elytra): flies with it and is attached to it. */
+    public EntityFireworkRocket(World world, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase boosted) {
+        this(world, boosted == null ? 0.0D : boosted.mcc$x(), boosted == null ? 0.0D : boosted.mcc$y(), boosted == null ? 0.0D : boosted.mcc$z(), stack);
+        mcc$set$boostedEntity(this, boosted);
+    }
 }
