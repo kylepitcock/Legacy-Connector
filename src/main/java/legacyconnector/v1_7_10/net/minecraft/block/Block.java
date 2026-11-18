@@ -695,8 +695,13 @@ public class Block {
         return getFlammability(world, x, y, z, world.getBlockMetadata(x, y, z), face);
     }
 
-    /** Forge 1.6.4 shape with the metadata; the default is the legacy table entry of the block, else the vanilla fire table. */
+    /** Forge 1.6.4 shape with the metadata; the default asks the Forge 3.x shape (an int side), which 1.2.x mods override. */
     public int getFlammability(IBlockAccess world, int x, int y, int z, int metadata, ForgeDirection face) {
+        return getFlammability(world, x, y, z, metadata, face == null ? -1 : face.ordinal());
+    }
+
+    /** Forge 3.x shape ({@code getFlammability(world, x, y, z, metadata, side)}): the legacy table entry of the block, else the vanilla fire table. */
+    public int getFlammability(IBlockAccess world, int x, int y, int z, int metadata, int side) {
         java.util.function.ToIntFunction<Block> legacy = mcc$legacyFlammability;
         int v = legacy == null ? 0 : legacy.applyAsInt(this);
         return v > 0 ? v : legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getFlammability(this);

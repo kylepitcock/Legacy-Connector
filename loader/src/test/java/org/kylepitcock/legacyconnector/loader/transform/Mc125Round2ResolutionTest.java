@@ -105,6 +105,20 @@ class Mc125Round2ResolutionTest {
         assertEquals("net/minecraft/client/LoadingScreenRenderer", ForwardRenames.map(LegacyVersion.V1_4_7, "net/minecraft/src/LoadingScreenRenderer"));
     }
 
+    /** The call and field rows of round 2 are loaded for the 1.2.5 chain (1.4.7 table over 1.5.2 over 1.6.4). */
+    @Test
+    void round2RowsAreLoaded() {
+        ForwardMembers table = ForwardMembers.forVersion(LegacyVersion.V1_4_7);
+        assertTrue(table.callRules().containsKey("net/minecraft/src/forge/DimensionManager.getWorlds()[Lnet/minecraft/world/World;"));
+        assertTrue(table.callRules().containsKey("net/minecraft/entity/item/EntityMinecart.getDamage()I"));
+        assertTrue(table.fieldCallRules().containsKey("net/minecraft/world/gen/structure/MapGenStructure.structureMap"));
+        assertTrue(table.fieldCallRules().containsKey("net/minecraft/world/storage/MapData.dimension"));
+        assertTrue(table.fieldSetRules().containsKey("net/minecraft/world/storage/MapData.dimension"));
+        assertEquals("field_149815_a", table.field("net/minecraft/block/BlockFlowing", "numAdjacentSources", null));
+        assertEquals("field_149814_b", table.field("net/minecraft/block/BlockFlowing", "isOptimalFlowDirection", null));
+        assertEquals("field_149816_M", table.field("net/minecraft/block/BlockFlowing", "flowCost", null));
+    }
+
     /** EntityLiving.lastDamage was an int: reads and writes go through the helper that keeps the modern entity's float. */
     @Test
     void lastDamageIsAnIntThroughHelpers() {

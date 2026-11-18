@@ -2577,6 +2577,12 @@ public class World implements IBlockAccess {
     public static void mcc$set$mcc125$isNew(World w, boolean v) {
     }
 
+    /** 1.2.5 {@code World.isSolidRender(x, y, z)} (Feather name; {@code isBlockOpaqueCube}): the block there is a full opaque cube. */
+    public boolean mcc125$isSolidRender(int x, int y, int z) {
+        Block block = getBlock(x, y, z);
+        return block != null && block.isOpaqueCube();
+    }
+
     private int mcc$lastSaveTime;
 
     /**
