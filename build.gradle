@@ -310,6 +310,19 @@ def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
     outputs.file shimIndexFile
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + classDirs.files.collect { it.absolutePath } } as CommandLineArgumentProvider)
 }
+// Members of the hand-written shim may be added, never silently removed or changed (a mod that linked against one would turn into an
+// unresolved reference, "gap_shim" in the probe): compared with tools/dev/shim-members.txt.gz; accept an intended removal with
+// `python tools/dev/check_shim_members.py --update`.
+def checkShimMembers = tasks.register('checkShimMembers', Exec) {
+    dependsOn generateShimIndex
+    inputs.file shimIndexFile
+    inputs.file layout.projectDirectory.file('tools/dev/shim-members.txt.gz')
+    inputs.file layout.projectDirectory.file('tools/dev/check_shim_members.py')
+    outputs.upToDateWhen { false }
+    def isWin = System.getProperty('os.name').toLowerCase().contains('win')
+    commandLine isWin ? ['python', 'tools/dev/check_shim_members.py'] : ['python3', 'tools/dev/check_shim_members.py']
+}
+tasks.named('check') { dependsOn checkShimMembers }
 sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
 tasks.named('processResources') {
     dependsOn generateShimIndex

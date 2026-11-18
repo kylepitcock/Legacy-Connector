@@ -226,3 +226,7 @@ G	net/minecraft/world/gen/structure/StructureVillagePieces$Village	startPiece	Ln
 # 1.6.4 gap round 3 (2026-11-17): the jukebox's tile entity (1.7.10 nests it in BlockJukebox; ids are the same SRG ids)
 M	net/minecraft/tileentity/TileEntityRecordPlayer	func_96097_a	()Lnet/minecraft/item/ItemStack;	func_145856_a
 M	net/minecraft/tileentity/TileEntityRecordPlayer	func_96098_a	(Lnet/minecraft/item/ItemStack;)V	func_145857_a
+# 1.2.5 round 2: BlockFlowing's working fields carry the 1.7.10 SRG names
+F	net/minecraft/block/BlockFlowing	numAdjacentSources	field_149815_a
+F	net/minecraft/block/BlockFlowing	isOptimalFlowDirection	field_149814_b
+F	net/minecraft/block/BlockFlowing	flowCost	field_149816_M

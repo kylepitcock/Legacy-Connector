@@ -10,6 +10,11 @@ public class FMLServerHandler {
         return INSTANCE;
     }
 
+    /** FML 2.x server handler: the language the server translates its messages to (a dedicated server has no language setting: English). */
+    public String getCurrentLanguage() {
+        return "en_US";
+    }
+
     public MinecraftServer getServer() {
         return legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance();
     }
