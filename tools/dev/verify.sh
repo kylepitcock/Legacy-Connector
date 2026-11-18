@@ -38,7 +38,7 @@ find_jar() {
       *) r="$JAR_ROOT/$r";;
     esac
     [ -d "$r" ] || continue
-    f=$(find "$r" -type f \( -iname "*.jar" -o -iname "*.zip" -o -iname "*.litemod" \) -iname "*$frag*" 2>/dev/null | sort | head -1)
+    f=$(find "$r" -path "*/test-mods-issues/312" -prune -o -type f \( -iname "*.jar" -o -iname "*.zip" -o -iname "*.litemod" \) -iname "*$frag*" -print 2>/dev/null | sort | head -1)
     if [ -n "$f" ]; then echo "$f"; return 0; fi
   done
   return 1

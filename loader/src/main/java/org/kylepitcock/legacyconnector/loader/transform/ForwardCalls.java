@@ -228,6 +228,9 @@ public final class ForwardCalls {
                 drop.add(new InsnNode(Opcodes.DUP2_X1));
                 drop.add(new InsnNode(Opcodes.POP2));
                 drop.add(new InsnNode(Opcodes.POP));
+                // dup2_x1 holds two more slots than the operands: a method whose own stack was exactly that deep (RedPower's BluePowerConductor.writeToNBT,
+                // new NBTTagDouble(null, value) inside an array store) failed verification, and every tile entity class using it could not be created
+                method.maxStack += 2;
             }
             default -> {
                 return null;
