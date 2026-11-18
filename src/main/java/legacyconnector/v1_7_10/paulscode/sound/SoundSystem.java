@@ -71,6 +71,19 @@ public class SoundSystem {
         return quickPlay(priority, url, identifier, toLoop, x, y, z, attmodel, distOrRoll);
     }
 
+    /**
+     * Plays a file as background music: a streaming source at the origin that is not attenuated with distance, started at once
+     * (paulscode's {@code backgroundMusic}; an existing source of the name is replaced).
+     */
+    public void backgroundMusic(String sourcename, URL url, String identifier, boolean toLoop) {
+        newStreamingSource(false, sourcename, url, identifier, toLoop, 0.0F, 0.0F, 0.0F, SoundSystemConfig.ATTENUATION_NONE, 0.0F);
+        play(sourcename);
+    }
+
+    public void backgroundMusic(String sourcename, String filename, boolean toLoop) {
+        backgroundMusic(sourcename, mcc$resource(filename), filename, toLoop);
+    }
+
     /** Drops the temporary sources that finished playing. */
     public void removeTemporarySources() {
         sources.entrySet().removeIf(e -> e.getValue().temporaryDone());

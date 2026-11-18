@@ -15,6 +15,8 @@ public abstract class FluidRegistry {
     private static final Map<Integer, Fluid> BY_ID = new HashMap<>();
     private static final Map<Block, Fluid> BY_BLOCK = new HashMap<>();
     private static int maxID = 0;
+    /** Forge's name to fluid table (kept with every registration; mods read it to look fluids up in both directions). */
+    public static final com.google.common.collect.BiMap<String, Fluid> masterFluidReference = com.google.common.collect.HashBiMap.create();
 
     public static final Fluid WATER = new Fluid("water").setUnlocalizedName("water");
     public static final Fluid LAVA = new Fluid("lava").setUnlocalizedName("lava").setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1300);
@@ -33,6 +35,7 @@ public abstract class FluidRegistry {
         if (fluid == null || IDS.containsKey(fluid.getName())) return false;
         int id = ++maxID;
         FLUIDS.put(fluid.getName(), fluid);
+        if (!masterFluidReference.containsValue(fluid)) masterFluidReference.put(fluid.getName(), fluid);
         IDS.put(fluid.getName(), id);
         BY_ID.put(id, fluid);
         if (fluid.getBlock() != null) BY_BLOCK.put(fluid.getBlock(), fluid);

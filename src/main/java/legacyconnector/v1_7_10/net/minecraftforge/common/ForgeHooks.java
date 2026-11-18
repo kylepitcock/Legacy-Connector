@@ -229,6 +229,27 @@ public class ForgeHooks {
      * Whether the player may keep the container open: {@code PlayerOpenContainerEvent} decides (ALLOW keeps it, DENY
      * closes it), by default the container's own {@code canInteractWith}.
      */
+    /**
+     * A player's chat line reaches the server: posts {@code ServerChatEvent}; the (possibly rewritten) component to broadcast, or null when a
+     * handler cancelled the message.
+     */
+    public static legacyconnector.v1_7_10.net.minecraft.util.ChatComponentTranslation onServerChatEvent(
+            legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer net, String raw,
+            legacyconnector.v1_7_10.net.minecraft.util.ChatComponentTranslation comp) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.ServerChatEvent(net.playerEntity, raw, comp);
+        if (MinecraftForge.EVENT_BUS.post(event)) return null;
+        return event.component;
+    }
+
+    /**
+     * Forge's wrapper around an item's use on a block. The block placement events of the use (the snapshots Forge recorded, and
+     * {@code BlockEvent.PlaceEvent}) are posted by the modern game around the use itself, so this runs the item's own use.
+     */
+    public static boolean onPlaceItemIntoWorld(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+        return stack.tryPlaceItemIntoWorld(player, world, x, y, z, side, hitX, hitY, hitZ);
+    }
+
     /** A note block was retuned: posts {@code NoteBlockEvent.Change}; false (and the old note restored) when cancelled. */
     public static boolean onNoteChange(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityNote te, byte old) {
         var event = new legacyconnector.v1_7_10.net.minecraftforge.event.world.NoteBlockEvent.Change(te.getWorldObj(), te.xCoord, te.yCoord,

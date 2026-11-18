@@ -13,6 +13,58 @@ public class SoundSystemConfig {
     private static float defaultRolloff = 0.03F;
     private static float defaultFadeDistance = 1000.0F;
     private static float masterGain = 1.0F;
+    private static int numberStreamingBuffers = 3;
+    private static int streamingBufferSize = 131072;
+    private static int maxFileSize = 268435456;
+    private static int fileChunkSize = 1048576;
+    private static SoundSystemLogger logger;
+
+    /** The lock paulscode's threads (and mods touching the library from their own) synchronise on. */
+    public static final Object THREAD_SYNC = new Object();
+
+    public static synchronized void setNumberStreamingBuffers(int number) {
+        numberStreamingBuffers = number;
+    }
+
+    public static synchronized int getNumberStreamingBuffers() {
+        return numberStreamingBuffers;
+    }
+
+    /** Bytes of audio per streaming buffer (default 128 KiB). */
+    public static synchronized void setStreamingBufferSize(int size) {
+        streamingBufferSize = size;
+    }
+
+    public static synchronized int getStreamingBufferSize() {
+        return streamingBufferSize;
+    }
+
+    /** The largest file the library loads whole (default 256 MiB). */
+    public static synchronized void setMaxFileSize(int size) {
+        maxFileSize = size;
+    }
+
+    public static synchronized int getMaxFileSize() {
+        return maxFileSize;
+    }
+
+    /** How many bytes the library reads from a file at a time (default 1 MiB). */
+    public static synchronized void setFileChunkSize(int size) {
+        fileChunkSize = size;
+    }
+
+    public static synchronized int getFileChunkSize() {
+        return fileChunkSize;
+    }
+
+    /** The library's log sink (mods replace it to capture or silence the lines). */
+    public static synchronized void setLogger(SoundSystemLogger sink) {
+        logger = sink;
+    }
+
+    public static synchronized SoundSystemLogger getLogger() {
+        return logger;
+    }
 
     public static synchronized void setNumberNormalChannels(int number) {
         numberNormalChannels = number;
