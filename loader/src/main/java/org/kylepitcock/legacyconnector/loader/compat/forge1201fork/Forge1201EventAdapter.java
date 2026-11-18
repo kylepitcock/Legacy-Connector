@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.compat.forge1201fork;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ConstantDynamic;
@@ -51,6 +52,32 @@ public final class Forge1201EventAdapter {
             "net/minecraftforge/event/",
             "net/minecraftforge/eventbus/api/",
             "legacyconnector/v1_20_1/net/minecraftforge/event/");
+
+    /**
+     * Pinned Forge 47.3.0 classes whose cancellation methods are inherited from Event.
+     * These may be safely rewritten to the non-virtual source-base helpers.
+     *
+     * <p>Do not expand this list based on package name alone. Each entry must be verified
+     * against the source class bytecode for all three method signatures.</p>
+     */
+    private static final Set<String> SOURCE_EVENT_TYPES_INHERITING_CANCELLATION_METHODS = Set.of(
+            "net/minecraftforge/event/entity/player/PlayerEvent",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$EntityInteract",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$EntityInteractSpecific",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock",
+            "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickItem");
+
+    /**
+     * Source owner/method pairs whose exact target equivalent has been audited and must
+     * retain invokespecial dispatch. RightClickBlock overrides setCanceled to update its
+     * useBlock/useItem result state; target 21.1.258 retains that override.
+     */
+    private static boolean hasAuditedTargetSuperImplementation(String owner, String name, String descriptor) {
+        return "net/minecraftforge/event/entity/player/PlayerInteractEvent$RightClickBlock".equals(owner)
+                && METHOD_SET_CANCELED.equals(name)
+                && SET_CANCELED_DESCRIPTOR.equals(descriptor);
+    }
 
     private Forge1201EventAdapter() {
     }
@@ -119,12 +146,18 @@ public final class Forge1201EventAdapter {
                 if (instruction instanceof MethodInsnNode call
                         && isSourceEventCancellationMethod(call.owner, call.name, call.desc)) {
                     if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
-                        if (!SOURCE_EVENT.equals(call.owner) || !eventRoot) {
+                        if (hasAuditedTargetSuperImplementation(call.owner, call.name, call.desc)) {
+                            // Preserve the target's corresponding override (currently the
+                            // PlayerInteractEvent.RightClickBlock setCanceled special case).
+                            continue;
+                        }
+                        if (!(SOURCE_EVENT.equals(call.owner)
+                                || SOURCE_EVENT_TYPES_INHERITING_CANCELLATION_METHODS.contains(call.owner))
+                                || !eventRoot) {
                             throw new IOException("Unverified Forge event superclass override for non-virtual "
                                     + "cancellation call in " + classNode.name + "." + method.name + method.desc
                                     + ": owner=" + call.owner + "." + call.name + call.desc
-                                    + ". Only direct calls to Forge Event are currently adapted; intermediate "
-                                    + "event superclass behavior requires a pinned source hierarchy audit.");
+                                    + ". The owner is not in the pinned source/target superclass policy.");
                         }
                         rewriteSuperCall(call);
                         superCalls++;
