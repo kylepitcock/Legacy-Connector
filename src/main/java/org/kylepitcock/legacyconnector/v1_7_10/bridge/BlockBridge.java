@@ -344,10 +344,10 @@ public final class BlockBridge {
         int id = legacyconnector.v1_6_4.net.minecraft.util.Ids.claimedBlockId(block);
         if (id <= 0 || legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id) != block) return false;
         if (block.mcc$modern != null) return ensureItemBlock(block, id);
-        if (NAMES.containsKey(block)) return false;
-        String name = block.getUnlocalizedName();
-        if (name == null || name.isEmpty() || name.equals("tile.null")) return false;
-        return registerImplicitOne(block, id);
+        // A block the mod has not registered yet is left alone here: mods build stacks of their blocks before they call
+        // GameRegistry.registerBlock(block, itemClass), and registering it now with a plain ItemBlock would drop that item class and its
+        // subtypes (Forestry 1.4.7 lost 30 items that way). Blocks nobody registers are still picked up by the end-of-loading sweep.
+        return false;
     }
 
     private static boolean hasIdBasedMods() {
