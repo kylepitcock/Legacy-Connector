@@ -37,4 +37,11 @@ public class SaplingGrowTreeEvent extends LevelEvent {
     public void setFeature(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> feature) {
         this.feature = feature;
     }
+
+    /** {@code setFeature(key)} of 1.20.1 (the feature as a resource key): looked up in the level's registries; an unknown key leaves the feature unchanged. */
+    public void setFeature(net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> key) {
+        if (getLevel() instanceof net.minecraft.world.level.Level level) {
+            level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.CONFIGURED_FEATURE).getHolder(key).ifPresent(h -> this.feature = h);
+        }
+    }
 }

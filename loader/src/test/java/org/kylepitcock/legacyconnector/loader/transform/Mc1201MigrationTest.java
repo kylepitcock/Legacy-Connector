@@ -936,6 +936,67 @@ class Mc1201MigrationTest implements Opcodes {
                 "net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds", "TUTORIAL_HINT", ":Lnet/minecraft/client/gui/components/toasts/SystemToast$SystemToastId;"));
     }
 
+    /** Gap round 11: static calls, instance calls and reads of changed fields reach their helpers. */
+    @Test
+    void round11RowsReachTheirHelpers() {
+        String lootDir = "net/minecraft/world/level/storage/loot/";
+        ClassNode c = cls("test/Round11", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC, "run", "(L" + lootDir + "entries/LootItem;Lnet/minecraft/client/gui/components/EditBox;)V");
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new InsnNode(ICONST_2));
+        m.instructions.add(new InsnNode(ICONST_3));
+        m.instructions.add(new InsnNode(ICONST_4));
+        m.instructions.add(new InsnNode(ICONST_5));
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/server/level/ChunkMap", "isChunkInRange", "(IIIII)Z", false));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, lootDir + "entries/LootItem", "item", "Lnet/minecraft/world/item/Item;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, lootDir + "entries/LootItem", "conditions", "[L" + lootDir + "predicates/LootItemCondition;"));
+        m.instructions.add(new InsnNode(POP));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraft/client/gui/components/EditBox", "moveCursorTo", "(I)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(2, counts.fields);
+        assertEquals(2, counts.calls);
+        assertNotNull(find(m, MIGRATE + "Round11Compat", "isChunkInRange"));
+        assertNotNull(find(m, MIGRATE + "Round11Compat", "lootItemItem"));
+        assertNotNull(find(m, MIGRATE + "Round11Compat", "entryConditions"));
+        assertNotNull(find(m, MIGRATE + "Round11ClientCompat", "moveCursorTo"));
+    }
+
+    @Test
+    void round11LootingClassesAreRenamed() {
+        assertEquals("net/minecraft/world/level/storage/loot/functions/EnchantedCountIncreaseFunction",
+                Mc1201Tables.get().classes.get("net/minecraft/world/level/storage/loot/functions/LootingEnchantFunction"));
+    }
+
+    /** Gap round 11: a subclass of MobEffectInstance calling the 5-argument super constructor keeps its call and gets a holder for the effect. */
+    @Test
+    void mobEffectInstanceSuperConstructorTakesAHolder() {
+        String eff = "net/minecraft/world/effect/MobEffectInstance";
+        ClassNode c = cls("test/MyEffect", eff);
+        MethodNode m = method(c, ACC_PUBLIC, "<init>", "(Lnet/minecraft/world/effect/MobEffect;)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, eff, "<init>", "(Lnet/minecraft/world/effect/MobEffect;IIZZ)V", false));
+        m.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode call = null;
+        for (var in : m.instructions) if (in instanceof MethodInsnNode mi && mi.name.equals("<init>")) call = mi;
+        assertNotNull(call);
+        assertEquals(INVOKESPECIAL, call.getOpcode());
+        assertEquals("(Lnet/minecraft/core/Holder;IIZZ)V", call.desc);
+        assertNotNull(find(m, MIGRATE + "HolderCompat", "holder"));
+    }
+
     @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
