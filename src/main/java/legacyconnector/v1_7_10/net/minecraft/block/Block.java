@@ -454,7 +454,11 @@ public class Block {
     public TileEntity createTileEntity(World world, int metadata) {
         if (!(this instanceof ITileEntityProvider provider)) return null;
         try {
-            return provider.createNewTileEntity(world, metadata);
+            TileEntity made = provider.createNewTileEntity(world, metadata);
+            // 1.2.5: a block that overrides getBlockEntity(metadata) (RedPower's BlockExtended picks the tile class by metadata) has a no-argument factory
+            // that answers null; the loader's bridge turns that factory into createNewTileEntity(World, int), which then hides the metadata entity
+            if (made == null && this instanceof BlockContainer container) made = container.getBlockEntity(metadata);
+            return made;
         } catch (AbstractMethodError e) {
             // a 1.6.4 provider implements createNewTileEntity(World), which has no meta argument
             TileEntity legacy = mcc$createNewTileEntity1(this, world);
@@ -695,8 +699,13 @@ public class Block {
         return getFlammability(world, x, y, z, world.getBlockMetadata(x, y, z), face);
     }
 
-    /** Forge 1.6.4 shape with the metadata; the default is the legacy table entry of the block, else the vanilla fire table. */
+    /** Forge 1.6.4 shape with the metadata; the default asks the Forge 3.x shape (an int side), which 1.2.x mods override. */
     public int getFlammability(IBlockAccess world, int x, int y, int z, int metadata, ForgeDirection face) {
+        return getFlammability(world, x, y, z, metadata, face == null ? -1 : face.ordinal());
+    }
+
+    /** Forge 3.x shape ({@code getFlammability(world, x, y, z, metadata, side)}): the legacy table entry of the block, else the vanilla fire table. */
+    public int getFlammability(IBlockAccess world, int x, int y, int z, int metadata, int side) {
         java.util.function.ToIntFunction<Block> legacy = mcc$legacyFlammability;
         int v = legacy == null ? 0 : legacy.applyAsInt(this);
         return v > 0 ? v : legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getFlammability(this);
@@ -1427,6 +1436,34 @@ public class Block {
     public int getBlockTexture(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int side) {
         return getBlockTextureFromSideAndMetadata(side, world.getBlockMetadata(x, y, z));
     }
+
+    // Members125 round 2
+
+    /**
+     * Forge 3.x {@code Block.blockStrength(player, metadata)}: how much of the block the player breaks per tick (the 1.2.x digging formula: hardness by metadata, 1/100 without the
+     * right tool, else the tool speed over 30). The game's own {@link #getPlayerRelativeBlockHardness} asks {@link #getBlockHardness}, which asks the mod's {@link #getHardness}.
+     */
+    public float blockStrength(EntityPlayer player, int metadata) {
+        float hardness = getHardness(metadata);
+        if (hardness < 0.0F) return 0.0F;
+        if (!canHarvestBlock(player, metadata)) return 1.0F / hardness / 100.0F;
+        return player.mcc$breakSpeed(this, metadata) / hardness / 30.0F;
+    }
+
+    /** Forge 3.x {@code Block.blockStrength(world, player, x, y, z)}: the same by the block's metadata and hardness at a position. */
+    public float blockStrength(World world, EntityPlayer player, int x, int y, int z) {
+        int metadata = world.getBlockMetadata(x, y, z);
+        float hardness = getBlockHardness(world, x, y, z);
+        if (hardness < 0.0F) return 0.0F;
+        if (!canHarvestBlock(player, metadata)) return 1.0F / hardness / 100.0F;
+        return player.mcc$breakSpeed(this, metadata) / hardness / 30.0F;
+    }
+
+    /**
+     * 1.2.x {@code Block.requiresSelfNotify[blockId]}: blocks that wanted their neighbours told when only their metadata changed. Since 1.3 every metadata change with the notify flag does
+     * that, so the table only has to exist for the mods that set it (nothing reads it).
+     */
+    public static boolean[] requiresSelfNotify = new boolean[4096];
 
     // Members125 batch 2
 

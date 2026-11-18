@@ -85,6 +85,23 @@ public final class GapCompat {
         return packet.pos().z;
     }
 
+    /**
+     * {@code ClientboundSetEntityMotionPacket.getXa/getYa/getZa()}: 1.20.1 returned the packet's own int field (the motion times 8000 as the vanilla constructor
+     * stores it, or whatever a mixin put there: CoFH Core stores half-float bits), 1.21.1 returns that field divided by 8000 as a double. Multiplying back gives
+     * the field again: a/8000.0*8000.0 is within half an ulp of a for a 32-bit int, so the rounding is exact.
+     */
+    public static int motionXa(net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket packet) {
+        return (int) Math.round(packet.getXa() * 8000.0);
+    }
+
+    public static int motionYa(net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket packet) {
+        return (int) Math.round(packet.getYa() * 8000.0);
+    }
+
+    public static int motionZa(net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket packet) {
+        return (int) Math.round(packet.getZa() * 8000.0);
+    }
+
     // ---- round 2: arrows, spawn rules, experience drops, simple containers
 
     /** The 1.20.1 parameter of {@code ArrowItem.isInfinite} was a Player; the shooter in 1.21.1 may be any living entity (null for a mob). */

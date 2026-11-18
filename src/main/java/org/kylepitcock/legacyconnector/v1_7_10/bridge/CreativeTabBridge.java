@@ -102,9 +102,11 @@ public final class CreativeTabBridge {
                 if (variant == null) continue;
                 String ns = BuiltInRegistries.ITEM.getKey(variant).getNamespace();
                 org.kylepitcock.legacyconnector.core.LegacyModRecord rec = org.kylepitcock.legacyconnector.core.LegacyMods.find(ns);
-                if (rec == null || !numericIdVersion(rec.version)) continue;
+                boolean pre13 = rec != null && rec.metadata != null && rec.metadata.has("sourceVersion") && "1.2.5".equals(rec.metadata.get("sourceVersion").getAsString());
+                if (rec == null || !(numericIdVersion(rec.version) || pre13)) continue;
                 Class<?> listing = item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib && ib.mcc$block() != null ? ib.mcc$block().getClass() : item.getClass();
-                if (!modListsSubtypes(listing) && !modListsSubtypes(item.getClass())) continue;
+                // Minecraft 1.2.5 had no creative tabs for mods at all (NEI listed what the mod registered): every item of such a mod is findable
+                if (!pre13 && !modListsSubtypes(listing) && !modListsSubtypes(item.getClass())) continue;
                 groups.computeIfAbsent(ns, k -> new ArrayList<>()).add(item);
             } catch (RuntimeException | LinkageError e) {
                 // an item whose tab or listing throws stays hidden

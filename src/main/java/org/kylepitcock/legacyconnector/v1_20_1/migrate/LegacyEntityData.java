@@ -25,6 +25,7 @@ public final class LegacyEntityData {
         RESERVED.add(new Reserved(owner, accessor));
     }
 
+    private static final boolean DIAG = Boolean.getBoolean("legacyconnector.entityDataDiag");
     private static final List<Reserved> RESERVED = new CopyOnWriteArrayList<>();
 
     private LegacyEntityData() {}
@@ -43,6 +44,7 @@ public final class LegacyEntityData {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void fillHoles(Object entity, Object[] itemsById, SynchedEntityData.Builder builder) {
         if (RESERVED.isEmpty() || entity == null) return;
+        if (DIAG && entity != null) org.slf4j.LoggerFactory.getLogger("LegacyConnector/EntityData").info("build {} ids {} on {}", entity.getClass().getName(), itemsById.length, Thread.currentThread().getName());
         for (Reserved r : RESERVED) {
             int id = r.accessor().id();
             if (id < 0 || id >= itemsById.length || itemsById[id] != null || !r.owner().isInstance(entity)) continue;

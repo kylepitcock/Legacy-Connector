@@ -902,6 +902,7 @@ net/minecraft/world/level/saveddata/maps/MapDecoration	getY	()B	=	y
 net/minecraft/client/User	getGameProfile	()Lcom/mojang/authlib/GameProfile;	Round8ClientCompat	userProfile
 com/mojang/blaze3d/platform/Lighting	setupLevel	(Lorg/joml/Matrix4f;)V	Round8ClientCompat	setupLevelLighting
 net/minecraft/client/resources/MobEffectTextureManager	get	(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;	Round8ClientCompat	effectSprite
+net/minecraft/client/renderer/LevelRenderer	renderSky	(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V	MiscCompat	renderSky	-
 net/minecraft/client/renderer/SectionBufferBuilderPack	builder	(Lnet/minecraft/client/renderer/RenderType;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;	Round9ClientCompat	packBuilder	-
 net/minecraft/client/renderer/RenderType	end	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;Lcom/mojang/blaze3d/vertex/VertexSorting;)V	Round9ClientCompat	end	-
 net/minecraft/world/entity/animal/Chicken	$put$FOOD_ITEMS	(Lnet/minecraft/world/item/crafting/Ingredient;)V	AnimalFood1201	setChicken	(Lnet/minecraft/world/item/crafting/Ingredient;)V
@@ -928,6 +929,9 @@ net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	canBrew	(Lnet/minecr
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	brewPotions	(Lnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;[I)V	LegacyBrewing	brewPotions
 net/neoforged/neoforge/common/CommonHooks	hasNoElements	(Lnet/minecraft/world/item/crafting/Ingredient;)Z	Round9Compat	hasNoElements
 net/neoforged/fml/config/ModConfig	getHandler	()Llegacyconnector/v1_20_1/net/minecraftforge/fml/config/ConfigFileTypeHandler;	Round9Compat	configHandler
+net/minecraft/network/syncher/EntityDataSerializer	write	(Lnet/minecraft/network/FriendlyByteBuf;Ljava/lang/Object;)V	MiscCompat	serializerWrite	-
+net/minecraft/network/syncher/EntityDataSerializer	read	(Lnet/minecraft/network/FriendlyByteBuf;)Ljava/lang/Object;	MiscCompat	serializerRead	-
+net/neoforged/fml/ModList	getModObjectById	(Ljava/lang/String;)Ljava/util/Optional;	MiscCompat	modObjectById	-
 # --- gap round 10
 net/minecraft/client/particle/ParticleRenderType	begin	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;Lnet/minecraft/client/renderer/texture/TextureManager;)V	Round10ClientCompat	particleBegin
 net/minecraft/client/particle/ParticleRenderType	end	(Lcom/mojang/blaze3d/vertex/Tesselator;)V	Round10ClientCompat	particleEnd
@@ -968,3 +972,8 @@ net/minecraft/world/item/enchantment/EnchantmentHelper	isEnchantmentCompatible	(
 net/minecraft/world/level/BlockAndTintGetter	getModelDataManager	()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;	Round10Compat	modelDataManager
 net/minecraft/world/level/BlockGetter	getModelDataManager	()Lnet/neoforged/neoforge/client/model/data/ModelDataManager;	Round10Compat	modelDataManager
 net/minecraft/world/entity/projectile/ProjectileUtil	getMobArrow	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;	Round10Compat	mobArrow
+net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket	getXa	()I	GapCompat	motionXa
+net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket	getYa	()I	GapCompat	motionYa
+net/minecraft/network/protocol/game/ClientboundSetEntityMotionPacket	getZa	()I	GapCompat	motionZa
+net/minecraft/world/item/ArmorItem	$get$material	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;	ArmorCompat	getMaterial	-
+net/minecraft/world/item/ItemStackLinkedSet	createTypeAndTagSet	()Ljava/util/Set;	MiscCompat	typeAndTagSet	-

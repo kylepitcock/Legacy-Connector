@@ -296,6 +296,7 @@ public final class DataConverter1201 {
 
     /** Converts a whole set of entries (a jar's resources); {@code pack.mcmeta} is brought to the 1.21.1 formats, using what the set contains. */
     public static Map<String, byte[]> convertAll(Map<String, byte[]> entries, Stats stats) {
+        entries = applyOverlays(entries, stats);
         boolean hasAssets = false;
         boolean hasData = false;
         for (String n : entries.keySet()) {
@@ -312,7 +313,15 @@ public final class DataConverter1201 {
                 continue;
             }
             if (name.startsWith("data/") || name.startsWith("assets/")) {
-                for (Out o : convert(name, e.getValue(), stats)) {
+                List<Out> converted;
+                try {
+                    converted = convert(name, e.getValue(), stats);
+                } catch (RuntimeException ex) {
+                    // one file the converter cannot handle must not cost the pack: it keeps its bytes (and its mapped path), the count is reported
+                    stats.add("convert_failed");
+                    converted = List.of(new Out(mapPath(name), e.getValue()));
+                }
+                for (Out o : converted) {
                     byte[] previous = out.get(o.path());
                     out.put(o.path(), previous != null && o.path().contains("/tags/") ? mergeTags(previous, o.data()) : o.data());
                 }
@@ -322,6 +331,76 @@ public final class DataConverter1201 {
         }
         emptyTagsForUnknownReferences(out, stats);
         return out;
+    }
+
+    /**
+     * Pack overlays ({@code overlays.entries} of pack.mcmeta, 1.20.2+): directories whose files replace the pack's own for the pack formats they name. A pack
+     * written for 1.20.x declares its newest format (Terralith: supported_formats [15, 41]) and ships the files that changed in the newer versions as overlays
+     * (the particle, carver and block predicate formats of 1.20.5); 1.21.1 runs at format 48, outside every range, so none would apply. The overlays that
+     * apply at the newest format the pack declares are merged into the pack here (a later entry wins) and the overlay directories and entries are removed;
+     * the conversions above then bring the result to 1.21.1.
+     */
+    static Map<String, byte[]> applyOverlays(Map<String, byte[]> entries, Stats stats) {
+        byte[] mcmeta = entries.get("pack.mcmeta");
+        if (mcmeta == null) return entries;
+        JsonObject root;
+        try {
+            JsonReader reader = new JsonReader(new StringReader(new String(mcmeta, StandardCharsets.UTF_8)));
+            reader.setLenient(true);
+            JsonElement parsed = JsonParser.parseReader(reader);
+            if (!parsed.isJsonObject()) return entries;
+            root = parsed.getAsJsonObject();
+        } catch (RuntimeException e) {
+            return entries;
+        }
+        if (!root.has("overlays") || !root.get("overlays").isJsonObject() || !root.getAsJsonObject("overlays").has("entries")
+                || !root.getAsJsonObject("overlays").get("entries").isJsonArray()) return entries;
+        JsonObject pack = root.has("pack") && root.get("pack").isJsonObject() ? root.getAsJsonObject("pack") : new JsonObject();
+        int top = -1;
+        if (pack.has("supported_formats")) top = formatRange(pack.get("supported_formats"))[1];
+        if (top < 0 && pack.has("pack_format") && pack.get("pack_format").isJsonPrimitive()) top = pack.get("pack_format").getAsInt();
+        if (top < 0) return entries;
+        List<String> dirs = new ArrayList<>();
+        List<String> applying = new ArrayList<>();
+        for (JsonElement el : root.getAsJsonObject("overlays").getAsJsonArray("entries")) {
+            if (!el.isJsonObject() || !el.getAsJsonObject().has("directory")) continue;
+            JsonObject entry = el.getAsJsonObject();
+            String dir = entry.get("directory").getAsString();
+            if (dir.isEmpty()) continue;
+            dirs.add(dir);
+            int[] range = entry.has("formats") ? formatRange(entry.get("formats")) : new int[] {0, Integer.MAX_VALUE};
+            if (range[0] <= top && top <= range[1]) applying.add(dir);
+        }
+        Map<String, byte[]> out = new LinkedHashMap<>();
+        for (var e : entries.entrySet()) {
+            boolean inOverlay = false;
+            for (String d : dirs) if (e.getKey().startsWith(d + "/")) inOverlay = true;
+            if (!inOverlay) out.put(e.getKey(), e.getValue());
+        }
+        for (String d : applying) {
+            for (var e : entries.entrySet()) {
+                if (!e.getKey().startsWith(d + "/")) continue;
+                out.put(e.getKey().substring(d.length() + 1), e.getValue());
+                stats.add("overlay_files");
+            }
+        }
+        root.remove("overlays");
+        pack.remove("supported_formats");
+        out.put("pack.mcmeta", GSON.toJson(root).getBytes(StandardCharsets.UTF_8));
+        return out;
+    }
+
+    /** {@code [min, max]} of a pack format range as pack.mcmeta writes it: a number, {@code [min, max]} or {@code {min_inclusive, max_inclusive}}. */
+    private static int[] formatRange(JsonElement e) {
+        if (e.isJsonPrimitive()) return new int[] {e.getAsInt(), e.getAsInt()};
+        if (e.isJsonArray() && e.getAsJsonArray().size() == 2) return new int[] {e.getAsJsonArray().get(0).getAsInt(), e.getAsJsonArray().get(1).getAsInt()};
+        if (e.isJsonObject()) {
+            JsonObject o = e.getAsJsonObject();
+            int lo = o.has("min_inclusive") ? o.get("min_inclusive").getAsInt() : o.has("min") ? o.get("min").getAsInt() : 0;
+            int hi = o.has("max_inclusive") ? o.get("max_inclusive").getAsInt() : o.has("max") ? o.get("max").getAsInt() : Integer.MAX_VALUE;
+            return new int[] {lo, hi};
+        }
+        return new int[] {-1, -1};
     }
 
     private static volatile Set<String> neoForgeTags;
@@ -1405,7 +1484,9 @@ public final class DataConverter1201 {
 
     // ---- int providers and spawner categories ------------------------------------------------------------------------------------------
 
-    private static final Set<String> NESTED_INT_PROVIDERS = Set.of("minecraft:uniform", "minecraft:biased_to_bottom", "minecraft:clamped", "minecraft:clamped_normal");
+    /** Number provider types 1.20.1 wrote with their fields under {@code value} (int and float providers; the ids may come without the namespace). */
+    private static final Set<String> NESTED_INT_PROVIDERS = Set.of("minecraft:uniform", "minecraft:biased_to_bottom", "minecraft:clamped", "minecraft:clamped_normal",
+            "minecraft:trapezoid", "uniform", "biased_to_bottom", "clamped", "clamped_normal", "trapezoid");
     private static final Set<String> VANILLA_MOB_CATEGORIES = Set.of("monster", "creature", "ambient", "axolotls", "underground_water_creature", "water_creature", "water_ambient", "misc");
 
     /**
@@ -1414,6 +1495,57 @@ public final class DataConverter1201 {
      * {@code value} object, so a {@code uniform} object with one is an int provider. Also: a biome's {@code spawners} of a mod's own mob category (Forge
      * enum extension, gone here) are read as the monster category.
      */
+    /**
+     * A biome's {@code particle.options}: 1.20.5 gave the particle types typed fields instead of a {@code value} wrapper. Block particles
+     * ({@code block, falling_dust, dust_pillar, block_marker}) keep their state under {@code block_state}, an item particle holds {@code item}
+     * as a stack ({@code id}, {@code count}), the color transition's keys are snake_case.
+     */
+    private static void particleOptions(JsonObject particle, Ctx c) {
+        if (!particle.has("options") || !particle.get("options").isJsonObject()) return;
+        JsonObject opt = particle.getAsJsonObject("options");
+        if (!opt.has("type") || !opt.get("type").isJsonPrimitive()) return;
+        String type = opt.get("type").getAsString();
+        if (type.startsWith("minecraft:")) type = type.substring(10);
+        switch (type) {
+            case "block", "falling_dust", "dust_pillar", "block_marker" -> {
+                if (opt.has("value")) {
+                    JsonElement v = opt.remove("value");
+                    if (v.isJsonPrimitive()) {
+                        JsonObject state = new JsonObject();
+                        state.addProperty("Name", v.getAsString());
+                        v = state;
+                    }
+                    opt.add("block_state", v);
+                    c.hit("particle_options");
+                }
+            }
+            case "item" -> {
+                if (opt.has("value")) {
+                    JsonElement v = opt.remove("value");
+                    JsonObject stack = new JsonObject();
+                    if (v.isJsonObject()) {
+                        JsonObject old = v.getAsJsonObject();
+                        JsonElement id = old.has("id") ? old.get("id") : old.get("item");
+                        if (id != null) stack.add("id", id);
+                        JsonElement count = old.has("Count") ? old.get("Count") : old.get("count");
+                        stack.addProperty("count", count != null && count.isJsonPrimitive() ? count.getAsInt() : 1);
+                    } else if (v.isJsonPrimitive()) {
+                        stack.add("id", v);
+                        stack.addProperty("count", 1);
+                    }
+                    opt.add("item", stack);
+                    c.hit("particle_options");
+                }
+            }
+            case "dust_color_transition" -> {
+                if (opt.has("fromColor")) opt.add("from_color", opt.remove("fromColor"));
+                if (opt.has("toColor")) opt.add("to_color", opt.remove("toColor"));
+                c.hit("particle_options");
+            }
+            default -> { }
+        }
+    }
+
     private static void worldgenShapes(JsonElement e, Ctx c) {
         if (e.isJsonArray()) {
             for (JsonElement x : e.getAsJsonArray()) worldgenShapes(x, c);
@@ -1421,12 +1553,14 @@ public final class DataConverter1201 {
         }
         if (!e.isJsonObject()) return;
         JsonObject o = e.getAsJsonObject();
-        if (o.has("type") && o.get("type").isJsonPrimitive() && NESTED_INT_PROVIDERS.contains(o.get("type").getAsString()) && o.has("value") && o.get("value").isJsonObject()) {
+        if (o.has("type") && o.get("type").isJsonPrimitive() && o.get("type").getAsJsonPrimitive().isString() && NESTED_INT_PROVIDERS.contains(o.get("type").getAsString())
+                && o.has("value") && o.get("value").isJsonObject()) {
             JsonObject inner = o.getAsJsonObject("value");
             o.remove("value");
             for (Map.Entry<String, JsonElement> en : inner.entrySet()) o.add(en.getKey(), en.getValue());
             c.hit("int_provider");
         }
+        if (o.has("particle") && o.get("particle").isJsonObject()) particleOptions(o.getAsJsonObject("particle"), c);
         if (o.has("spawners") && o.get("spawners").isJsonObject() && !o.has("type")) {
             JsonObject spawners = o.getAsJsonObject("spawners");
             for (String key : new ArrayList<>(spawners.keySet())) {

@@ -4,3 +4,7 @@ net/minecraft/world/entity/LivingEntity	canBreatheUnderwater	()Z	-
 net/minecraft/world/entity/decoration/HangingEntity	recalculateBoundingBox	()V	-
 net/minecraft/client/gui/components/AbstractWidget	render	(Lnet/minecraft/client/gui/GuiGraphics;IIF)V	renderWidget
 net/minecraft/world/entity/Entity	getGravity	()D	getDefaultGravity
+net/minecraft/network/codec/StreamEncoder	accept	(Ljava/lang/Object;Ljava/lang/Object;)V	encode
+net/minecraft/network/FriendlyByteBuf$Writer	accept	(Ljava/lang/Object;Ljava/lang/Object;)V	encode
+net/minecraft/network/codec/StreamDecoder	apply	(Ljava/lang/Object;)Ljava/lang/Object;	decode
+net/minecraft/network/FriendlyByteBuf$Reader	apply	(Ljava/lang/Object;)Ljava/lang/Object;	decode

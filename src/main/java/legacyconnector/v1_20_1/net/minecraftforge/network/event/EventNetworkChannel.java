@@ -21,8 +21,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /**
  * Forge 1.20.1's raw event channel ({@code NetworkRegistry.newEventChannel}): a mod listens to the bytes of a channel by hand and builds its packets with
  * {@code NetworkDirection.buildPacket}. Over NeoForge 1.21.1: one payload type per channel name that carries the raw bytes in both directions; a received
- * payload is posted on the channel's own event bus as {@link NetworkEvent.ServerCustomPayloadEvent} (serverbound) or
- * {@link NetworkEvent.ClientCustomPayloadEvent} (clientbound), on the main thread (NeoForge runs payload handlers there; a listener that wants the old
+ * payload is posted on the channel's own event bus as {@link NetworkEvent.ClientCustomPayloadEvent} (serverbound: sent by the client) or
+ * {@link NetworkEvent.ServerCustomPayloadEvent} (clientbound: sent by the server), on the main thread (NeoForge runs payload handlers there; a listener that wants the old
  * network thread's timing needs nothing more, {@code enqueueWork} runs at once on the main thread).
  */
 public class EventNetworkChannel {
@@ -93,7 +93,8 @@ public class EventNetworkChannel {
     private void handle(Payload payload, IPayloadContext ctx) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(payload.data));
         NetworkEvent.Context context = new NetworkEvent.Context(ctx);
-        bus.post(ctx.flow().isServerbound() ? new NetworkEvent.ServerCustomPayloadEvent(buf, context) : new NetworkEvent.ClientCustomPayloadEvent(buf, context));
+        // Forge names the event after the SENDER: ClientCustomPayloadEvent = sent by the client (arrives at the server), ServerCustomPayloadEvent = sent by the server
+        bus.post(ctx.flow().isServerbound() ? new NetworkEvent.ClientCustomPayloadEvent(buf, context) : new NetworkEvent.ServerCustomPayloadEvent(buf, context));
     }
 
     /** {@code registerObject(this)}: the {@code @SubscribeEvent} methods of the object listen to the channel's events. */

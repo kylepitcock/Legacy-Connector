@@ -1,0 +1,52 @@
+# Thermal series 1.20.1, issue 302: two minutes in a world with moving entities (CoFH Core's ClientPacketListener mixin reads every motion packet),
+# then the machines tab, a machine placed and its GUI. A crash on the first motion packet closed the client at world load.
+mods: 1.20.1 cofh_core-1.20.1
+mods: 1.20.1 thermal_foundation
+mods: 1.20.1 thermal_expansion
+mods: 1.20.1 thermal_dynamics
+mods: 1.20.1 thermal_cultivation
+mods: 1.20.1 redstone_arsenal
+mods: 1.20.1 ensorcellation
+cmd /fill -12 148 -12 12 148 12 minecraft:stone
+cmd /tp @s 0.5 150 0.5
+cmd /gamemode creative @s
+wait 40
+cmd /summon minecraft:zombie 6 150 6 {NoAI:0b}
+cmd /summon minecraft:pig 4 150 -4
+cmd /summon minecraft:cow -4 150 4
+cmd /summon minecraft:chicken -4 150 -4
+cmd /summon minecraft:item 2 152 2 {Item:{id:"minecraft:iron_ingot",count:16},Motion:[0.3,0.4,0.2]}
+cmd /summon minecraft:item -2 152 2 {Item:{id:"minecraft:gold_ingot",count:16},Motion:[-0.3,0.4,0.2]}
+cmd /summon minecraft:arrow 0 152 0 {Motion:[0.6,0.8,0.3]}
+wait 200
+shot thermal-soak-entities
+cmd /give @s minecraft:tnt 4
+cmd /setblock 8 149 0 minecraft:tnt
+cmd /setblock 8 150 0 minecraft:fire
+wait 1800
+shot thermal-soak-2min
+logabsent NoSuchMethodError
+logabsent Tried to load invalid fluid
+logabsent isn.t an IPacketServer
+logabsent ClientPacketListenerMixin
+logabsent InvalidMixin
+expect . :: mc.level == null ? "no level" : "level ok " + mc.player.getName().getString()
+cmd /setblock 2 149 0 thermal:machine_furnace
+cmd /tp @s 0.5 149 0.5
+look 270 30
+wait 60
+shot thermal-furnace-placed
+use
+wait 40
+expect Machine.*Screen :: mc.screen == null ? "none" : mc.screen.getClass().getName()
+shot thermal-furnace-gui
+wait 100
+logabsent Tried to load invalid fluid
+logabsent isn.t an IPacketServer
+logabsent Exception caught during firing event
+creative
+wait 30
+expect selected :: (function(){ var BR=Java.type('net.minecraft.core.registries.BuiltInRegistries'); var R=BR.CREATIVE_MODE_TAB; var pick=null; R.keySet().forEach(function(k){ var s=String(k); if(s.indexOf('thermal')>=0 && /machine|device|dynamo/.test(s) && pick==null) pick=k; }); if(pick==null) return 'none:'+R.keySet().toString().length; var tab=R.get(pick); var scr=mc.screen; var m=scr.getClass().getDeclaredMethod('selectTab', Java.type('net.minecraft.world.item.CreativeModeTab').class); m.setAccessible(true); m.invoke(scr, tab); return 'selected '+pick; })()
+wait 40
+shot thermal-creative-tab
+logabsent Exception caught during firing event

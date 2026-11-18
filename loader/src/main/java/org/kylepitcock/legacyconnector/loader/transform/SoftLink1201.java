@@ -57,6 +57,8 @@ final class SoftLink1201 implements Opcodes {
         final Set<String> missingMethods = new TreeSet<>();
         final Set<String> missingFields = new TreeSet<>();
         int sites;
+        /** The subset of the symbols above that a mixin class's handler bodies refer to (kind and symbol as in {@link #symbolList()}). */
+        final Set<String> mixinSymbols = new TreeSet<>();
 
         int symbols() {
             return missingClasses.size() + missingMethods.size() + missingFields.size();
@@ -217,10 +219,10 @@ final class SoftLink1201 implements Opcodes {
      * again (a stand-in that throws: a constructor call on {@code this} cannot be skipped).
      */
     int apply(ClassNode node) {
-        if (node.invisibleAnnotations != null && node.invisibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc))) return 0;
-        if (node.visibleAnnotations != null && node.visibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc))) return 0;
         current = node;
         terminating = false;
+        if ((node.invisibleAnnotations != null && node.invisibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc)))
+                || (node.visibleAnnotations != null && node.visibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc)))) return mixinBodies(node);
         int changes = 0;
         if (missingClass(node.superName)) unfixable.add(node.superName + " (superclass of " + node.name + ")");
         for (Iterator<String> it = node.interfaces.iterator(); it.hasNext(); ) {
@@ -251,6 +253,33 @@ final class SoftLink1201 implements Opcodes {
             if (c > 0) m.maxStack += 3;
             changes += c;
         }
+        return changes == 0 ? 0 : terminating ? 2 : 1;
+    }
+
+    /**
+     * A mixin class keeps its shape (its annotations, shadows and accessors are Mixin's business), but its handler and helper bodies are merged into a vanilla
+     * class and call 1.21.1 members like any mod code: a call that does not link there (a packet getter that changed its return type) throws NoSuchMethodError
+     * on every use of the handler, and in a handler of the client's packet listener that closes the game. Those bodies get the same stand-ins as the mod's
+     * other classes, and the symbols are kept apart for the report note ("Mixin warning").
+     */
+    private int mixinBodies(ClassNode node) {
+        Set<String> classes = new TreeSet<>(stats.missingClasses), methods = new TreeSet<>(stats.missingMethods), fields = new TreeSet<>(stats.missingFields);
+        stats.missingClasses.clear();
+        stats.missingMethods.clear();
+        stats.missingFields.clear();
+        int changes = 0;
+        for (MethodNode m : node.methods) {
+            if (m.instructions == null || m.instructions.size() == 0) continue;
+            int c = method(m);
+            if (c > 0) m.maxStack += 3;
+            changes += c;
+        }
+        for (String c : stats.missingClasses) stats.mixinSymbols.add("class " + c);
+        for (String x : stats.missingMethods) stats.mixinSymbols.add("method " + x);
+        for (String f : stats.missingFields) stats.mixinSymbols.add("field " + f);
+        stats.missingClasses.addAll(classes);
+        stats.missingMethods.addAll(methods);
+        stats.missingFields.addAll(fields);
         return changes == 0 ? 0 : terminating ? 2 : 1;
     }
 

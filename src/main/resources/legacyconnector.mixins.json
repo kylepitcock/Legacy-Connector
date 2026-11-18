@@ -9,6 +9,8 @@
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
     "SynchedEntityDataBuilderMixin",
+    "EntityEarlyDataMixin",
+    "SynchedEntityDataUnknownIdMixin",
     "MappedRegistryIntrusiveHolderMixin",
     "SynchedEntityDataDefineIdMixin",
     "BlockEntityNullStateMixin",

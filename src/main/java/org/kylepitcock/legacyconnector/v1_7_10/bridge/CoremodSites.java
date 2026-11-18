@@ -545,6 +545,14 @@ public final class CoremodSites {
                 "net/minecraft/client/renderer/entity/RenderPlayer.func_77039_a(Lnet/minecraft/entity/EntityLivingBase;DDD)V"
                         + "#replace:func_77039_a(Lnet/minecraft/client/entity/AbstractClientPlayer;DDD)V");
 
+        /**
+         * RenderPlayer.renderFirstPersonArm, first thing: a hook that answers true has drawn the arm itself and the game's own is left out (Legends swaps in its
+         * own arm renderer). Values: the player renderer, the player.
+         */
+        public static final Site FIRST_PERSON_ARM = site("first person arm", new Class<?>[] {
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer.class, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class},
+                "net/minecraft/client/renderer/entity/RenderPlayer.func_82441_a(Lnet/minecraft/entity/player/EntityPlayer;)V#head-cancel");
+
         /** {@link #LIMB_SWING_RENDER} and {@link #LIMB_AMOUNT_RENDER}. */
         public static float limb(Site site, net.minecraft.world.entity.LivingEntity entity, float value) {
             return site.active() ? ((Number) site.modify(0, value, EntityBridge.wrap(entity))).floatValue() : value;

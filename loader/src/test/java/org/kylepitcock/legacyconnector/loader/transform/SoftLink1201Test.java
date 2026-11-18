@@ -307,4 +307,21 @@ class SoftLink1201Test implements Opcodes {
         assertEquals(1, s.apply(c));
         for (AbstractInsnNode in : m.instructions) assertFalse(in instanceof LdcInsnNode l && l.cst instanceof Type);
     }
+
+    /** Issue 302: a mixin handler's call that does not link (a changed return type) used to be skipped by the soft link and threw NoSuchMethodError on every use. */
+    @Test
+    void mixinHandlerBodiesAreSoftLinkedAndReported() {
+        ClassNode c = cls("mod/mixin/HandlerMixin", "java/lang/Object");
+        c.visitAnnotation("Lorg/spongepowered/asm/mixin/Mixin;", false);
+        MethodNode m = method(c);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitMethodInsn(INVOKEVIRTUAL, SUB, "gone", "()I", false);
+        m.visitInsn(POP);
+        m.visitInsn(RETURN);
+        SoftLink1201 s = link(c);
+        assertEquals(1, s.apply(c), "the class is no longer skipped");
+        assertFalse(has(m, INVOKEVIRTUAL, "gone"), "the call became a stand-in");
+        assertTrue(s.stats.missingMethods.contains(SUB + ".gone()I"));
+        assertTrue(s.stats.mixinSymbols.contains("method " + SUB + ".gone()I"), "kept apart for the report");
+    }
 }

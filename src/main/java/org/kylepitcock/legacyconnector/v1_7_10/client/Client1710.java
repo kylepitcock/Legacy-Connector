@@ -97,6 +97,7 @@ public final class Client1710 {
             var renderer = event.getSkin(skin);
             if (renderer instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer player) {
                 player.addLayer(new LegacyArmorLayer(player));
+                player.addLayer(new LegacyPlayerSpecialsLayer(player));
             }
         }
         for (var type : event.getEntityTypes()) {
