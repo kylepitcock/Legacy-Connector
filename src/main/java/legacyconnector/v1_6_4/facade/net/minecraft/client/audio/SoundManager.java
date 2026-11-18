@@ -20,4 +20,27 @@ public final class SoundManager {
     public static SoundPool mcc$get$soundPoolMusic(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self) {
         return SoundPool.MUSIC;
     }
+
+    // ------------------------------------------------------------------ 1.6.4 gap round 3: sounds bound to an entity
+
+    /** 1.6.4 {@code stopEntitySound(entity)}: stops every sound started with {@code playEntitySound} for the entity. */
+    public static void stopEntitySound(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        legacyconnector.v1_6_4.forward.EntitySounds164.stop(self, entity);
+    }
+
+    /** 1.6.4 {@code updateSoundLocation(entity)}: moves the entity's sounds to where it is now. */
+    public static void updateSoundLocation(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        legacyconnector.v1_6_4.forward.EntitySounds164.move(entity, entity);
+    }
+
+    /** 1.6.4 {@code updateSoundLocation(entity, at)}: moves the sounds of {@code entity} to the position of {@code at}. */
+    public static void updateSoundLocation(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity at) {
+        legacyconnector.v1_6_4.forward.EntitySounds164.move(entity, at);
+    }
+
+    /** 1.6.4 {@code isEntitySoundPlaying(entity)}: whether a sound started for the entity is still playing. */
+    public static boolean isEntitySoundPlaying(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        return legacyconnector.v1_6_4.forward.EntitySounds164.playing(self, entity);
+    }
 }

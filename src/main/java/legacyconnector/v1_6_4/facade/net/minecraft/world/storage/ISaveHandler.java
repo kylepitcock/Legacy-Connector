@@ -20,4 +20,16 @@ public final class ISaveHandler {
         }
         return new legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.AnvilChunkLoader(dir);
     }
+
+    /** 1.6.4 {@code loadWorldInfo()}: the level data of the save (the overworld's, which holds the save's values). */
+    public static legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo loadWorldInfo(legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler self) {
+        legacyconnector.v1_7_10.net.minecraft.world.WorldServer overworld = legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager.getWorld(0);
+        return overworld == null ? null : overworld.getWorldInfo();
+    }
+
+    /** 1.6.4 {@code saveWorldInfoWithPlayer(info, playerTag)}: saves the level data; the single-player's data lives in the world's player data here. */
+    public static void saveWorldInfoWithPlayer(legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler self, legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo info,
+            legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound player) {
+        self.saveWorldInfo(info);
+    }
 }
