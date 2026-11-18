@@ -92,8 +92,12 @@ public final class SilentFailureChecks {
                     if (!inTag.contains(modern.getItem())) out.add(name + " lacks its own subtype " + BuiltInRegistries.ITEM.getKey(modern.getItem()) + " (damage " + damage + ")");
                 }
             }
+            // only items of the mods whose legacy registration is checked: modern mods and 1.20.1 in-place mods legitimately share the same tags
+            java.util.Set<String> checkedNamespaces = new java.util.HashSet<>();
+            for (net.minecraft.world.item.Item item : expected) checkedNamespaces.add(BuiltInRegistries.ITEM.getKey(item).getNamespace());
             for (net.minecraft.world.item.Item item : inTag) {
-                if (!expected.contains(item) && !BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("minecraft")) out.add("tag of " + name + " holds " + BuiltInRegistries.ITEM.getKey(item) + " that no registration names");
+                String ns = BuiltInRegistries.ITEM.getKey(item).getNamespace();
+                if (!expected.contains(item) && !ns.equals("minecraft") && checkedNamespaces.contains(ns)) out.add("tag of " + name + " holds " + BuiltInRegistries.ITEM.getKey(item) + " that no registration names");
             }
         }
         for (var m : byModern.entrySet()) {
