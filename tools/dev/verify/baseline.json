@@ -1545,6 +1545,21 @@
   "silent_failed": 0,
   "verify_errors": 0
  },
+ "thermal1201": {
+  "b173_blocks": 0,
+  "b173_callbacks_failed": 0,
+  "b173_mods_constructed": 0,
+  "b173_tests_failed": 0,
+  "crash_reports": 0,
+  "mixins_applied": 142,
+  "mixins_not_applied": 0,
+  "mods_failed_1201": 0,
+  "mods_loaded_1201": 8,
+  "reached_selftest": 1,
+  "real_level_sites": 0,
+  "silent_failed": 0,
+  "verify_errors": 0
+ },
  "traincraft": {
   "b173_blocks": 0,
   "b173_callbacks_failed": 0,
@@ -1590,6 +1605,21 @@
   "mods_failed": 0,
   "placement_placed": 907,
   "placement_total": 921,
+  "reached_selftest": 1,
+  "real_level_sites": 0,
+  "silent_failed": 0,
+  "verify_errors": 0
+ },
+ "villages1201": {
+  "b173_blocks": 0,
+  "b173_callbacks_failed": 0,
+  "b173_mods_constructed": 0,
+  "b173_tests_failed": 0,
+  "crash_reports": 0,
+  "mixins_applied": 145,
+  "mixins_not_applied": 0,
+  "mods_failed_1201": 0,
+  "mods_loaded_1201": 3,
   "reached_selftest": 1,
   "real_level_sites": 0,
   "silent_failed": 0,
@@ -1697,21 +1727,6 @@
   "placement_placed": 0,
   "placement_total": 0,
   "reached_selftest": 1,
-  "silent_failed": 0,
-  "verify_errors": 0
- },
- "thermal1201": {
-  "b173_blocks": 0,
-  "b173_callbacks_failed": 0,
-  "b173_mods_constructed": 0,
-  "b173_tests_failed": 0,
-  "crash_reports": 0,
-  "mixins_applied": 142,
-  "mixins_not_applied": 0,
-  "mods_failed_1201": 0,
-  "mods_loaded_1201": 8,
-  "reached_selftest": 1,
-  "real_level_sites": 0,
   "silent_failed": 0,
   "verify_errors": 0
  }
