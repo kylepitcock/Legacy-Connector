@@ -34,6 +34,13 @@ public class CriteriaTriggers {
     public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ConstructBeaconTrigger CONSTRUCT_BEACON =
             register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ConstructBeaconTrigger());
 
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ChangeDimensionTrigger CHANGED_DIMENSION =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ChangeDimensionTrigger());
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.KilledTrigger PLAYER_KILLED_ENTITY =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.KilledTrigger());
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ImpossibleTrigger IMPOSSIBLE =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ImpossibleTrigger());
+
     /** Registers a trigger under its id (1.12.2 threw on a duplicate id; here the first one is kept and the duplicate logged). */
     public static <T extends ICriterionTrigger<?>> T register(T criterion) {
         synchronized (REGISTRY) {

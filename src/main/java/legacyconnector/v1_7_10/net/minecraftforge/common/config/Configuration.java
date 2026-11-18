@@ -219,7 +219,78 @@ public class Configuration {
     public Property get(String category, String key, String[] defaultValues, String comment, boolean isListLengthFixed, int maxListLength,
             java.util.regex.Pattern validationPattern) {
         Property prop = get(category, key, defaultValues, comment, Property.Type.STRING);
+        if (prop != null) {
+            prop.setIsListLengthFixed(isListLengthFixed);
+            prop.setMaxListLength(maxListLength);
+            prop.setValidationPattern(validationPattern);
+        }
         return prop;
+    }
+
+    /** Forge for 1.8+ (and GTNH's 1.7.10 fork): a string list whose entries must match {@code validationPattern}. */
+    public Property get(String category, String key, String[] defaultValues, String comment, Pattern validationPattern) {
+        return get(category, key, defaultValues, comment, false, -1, validationPattern);
+    }
+
+    /** Forge for 1.8+: a string value that must match {@code validationPattern}. */
+    public Property get(String category, String key, String defaultValue, String comment, Pattern validationPattern) {
+        Property prop = get(category, key, defaultValue, comment, Property.Type.STRING);
+        if (prop != null) prop.setValidationPattern(validationPattern);
+        return prop;
+    }
+
+    /** Forge: a double list with bounds, a fixed or limited length. */
+    public Property get(String category, String key, double[] defaultValues, String comment, double min, double max, boolean fixed,
+            int maxLength) {
+        String[] values = new String[defaultValues.length];
+        for (int i = 0; i < defaultValues.length; i++) values[i] = Double.toString(defaultValues[i]);
+        Property prop = get(category, key, values, comment, Property.Type.DOUBLE);
+        prop.setDefaultValues(values);
+        prop.setMinValue(min);
+        prop.setMaxValue(max);
+        prop.setIsListLengthFixed(fixed);
+        prop.setMaxListLength(maxLength);
+        if (!prop.isDoubleList()) prop.set(values);
+        return prop;
+    }
+
+    /** Forge's reader that skips a byte order mark and then decodes with the given charset ({@code load()} reads with it). */
+    public static class UnicodeInputStreamReader extends java.io.Reader {
+        private final java.io.InputStreamReader reader;
+
+        public UnicodeInputStreamReader(java.io.InputStream source, String defaultEncoding) throws IOException {
+            java.io.PushbackInputStream in = new java.io.PushbackInputStream(source, 4);
+            byte[] bom = new byte[4];
+            int n = in.read(bom, 0, 4);
+            String encoding = defaultEncoding;
+            int skip = 0;
+            if (n >= 3 && (bom[0] & 0xFF) == 0xEF && (bom[1] & 0xFF) == 0xBB && (bom[2] & 0xFF) == 0xBF) {
+                encoding = "UTF-8";
+                skip = 3;
+            } else if (n >= 2 && (bom[0] & 0xFF) == 0xFE && (bom[1] & 0xFF) == 0xFF) {
+                encoding = "UTF-16BE";
+                skip = 2;
+            } else if (n >= 2 && (bom[0] & 0xFF) == 0xFF && (bom[1] & 0xFF) == 0xFE) {
+                encoding = "UTF-16LE";
+                skip = 2;
+            }
+            if (n > skip) in.unread(bom, skip, n - skip);
+            this.reader = new java.io.InputStreamReader(in, encoding);
+        }
+
+        public String getEncoding() {
+            return reader.getEncoding();
+        }
+
+        @Override
+        public int read(char[] buffer, int offset, int length) throws IOException {
+            return reader.read(buffer, offset, length);
+        }
+
+        @Override
+        public void close() throws IOException {
+            reader.close();
+        }
     }
 
     public Property get(String category, String key, String defaultValue, String comment, Property.Type type) {

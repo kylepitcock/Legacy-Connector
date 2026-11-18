@@ -69,6 +69,20 @@ public class PotionHelper {
         return func_77908_a(meta, 5, 4, 3, 2, 1);
     }
 
+    /** The 32 name prefixes of potions without effects ({@code field_77925_n}), indexed by {@link #func_77909_a}. */
+    public static final String[] field_77925_n = {"potion.prefix.mundane", "potion.prefix.uninteresting", "potion.prefix.bland",
+            "potion.prefix.clear", "potion.prefix.milky", "potion.prefix.diffuse", "potion.prefix.artless", "potion.prefix.thin",
+            "potion.prefix.awkward", "potion.prefix.flat", "potion.prefix.bulky", "potion.prefix.bungling", "potion.prefix.buttered",
+            "potion.prefix.smooth", "potion.prefix.suave", "potion.prefix.debonair", "potion.prefix.thick", "potion.prefix.elegant",
+            "potion.prefix.fancy", "potion.prefix.charming", "potion.prefix.dashing", "potion.prefix.refined", "potion.prefix.cordial",
+            "potion.prefix.sparkling", "potion.prefix.potent", "potion.prefix.foul", "potion.prefix.odorless", "potion.prefix.rank",
+            "potion.prefix.harsh", "potion.prefix.acrid", "potion.prefix.gross", "potion.prefix.stinky"};
+
+    /** The name prefix of a potion value ({@code potion.prefix.awkward} for 16): one of the 32 by {@link #func_77909_a}. */
+    public static String func_77905_c(int meta) {
+        return field_77925_n[func_77909_a(meta)];
+    }
+
     public static int func_77908_a(int meta, int a, int b, int c, int d, int e) {
         return (checkFlag(meta, a) ? 16 : 0) | (checkFlag(meta, b) ? 8 : 0) | (checkFlag(meta, c) ? 4 : 0)
                 | (checkFlag(meta, d) ? 2 : 0) | (checkFlag(meta, e) ? 1 : 0);

@@ -44,6 +44,62 @@ public class TextureFXManager {
         }
     }
 
+    /** The size of the texture {@code effect} animates (always the 16 by 16 tile, see {@link #getTextureDimensions(int)}). */
+    public java.awt.Dimension getTextureDimensions(TextureFX effect) {
+        return new java.awt.Dimension(16, 16);
+    }
+
+    /**
+     * 1.5.2 {@code getTextureDimensions(name)}: the size of a texture file, read from the mod's class path or the resource packs; 1 by 1 for a file nothing has
+     * (what FML answered for a texture it did not know).
+     */
+    public legacyconnector.v1_7_10.org.lwjgl.util.Dimension getTextureDimensions(String texture) {
+        try {
+            var image = loadImageFromTexturePack(null, texture);
+            if (image != null) return new legacyconnector.v1_7_10.org.lwjgl.util.Dimension(image.getWidth(), image.getHeight());
+        } catch (java.io.IOException | RuntimeException ignored) {
+            // unknown texture
+        }
+        return new legacyconnector.v1_7_10.org.lwjgl.util.Dimension(1, 1);
+    }
+
+    /** 1.4.7 {@code setTextureDimensions(id, width, height, effects)}: the sheet changed size (a texture pack); the effects that draw to it are told. */
+    public void setTextureDimensions(int id, int width, int height, java.util.List effects) {
+        if (effects == null) return;
+        for (Object fx : effects) {
+            if (fx instanceof ITextureFX ifx) ifx.onTextureDimensionsUpdate(width, height);
+        }
+    }
+
+    /** 1.4.7 {@code onPreRegisterEffect(effect)}: a tile about to be registered learns the size of its sheet. */
+    public void onPreRegisterEffect(TextureFX effect) {
+        if (effect instanceof ITextureFX ifx) ifx.onTextureDimensionsUpdate(16, 16);
+    }
+
+    /**
+     * 1.4.7 {@code onUpdateTextureEffect(effect)}: one tick of a tile; false (and the tile is marked errored) when it threw, so FML stopped animating it.
+     */
+    public boolean onUpdateTextureEffect(TextureFX effect) {
+        ITextureFX ifx = effect instanceof ITextureFX i ? i : null;
+        if (ifx != null && ifx.getErrored()) return false;
+        try {
+            effect.onTick();
+        } catch (RuntimeException e) {
+            if (ifx != null) ifx.setErrored(true);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 1.4.7 {@code onTexturePackChange(engine, pack, effects)}: the original re-read the sheets and told the tiles their new size. The host reloads its own
+     * atlases with the pack, so the tiles are told the size every sheet here has.
+     */
+    public void onTexturePackChange(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager engine,
+            legacyconnector.v1_6_4.net.minecraft.client.texturepacks.ITexturePack pack, java.util.List effects) {
+        setTextureDimensions(0, 16, 16, effects);
+    }
+
     public void addAnimation(TextureFX anim) {
         Animations147.register(anim);
     }

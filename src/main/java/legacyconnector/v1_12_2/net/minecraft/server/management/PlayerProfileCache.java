@@ -39,6 +39,15 @@ public class PlayerProfileCache {
         return m == null ? null : m.get(username).orElse(null);
     }
 
+    /** The cache entry of the profile with this UUID, or null. */
+    public ProfileEntry getByUUID(UUID uuid) {
+        for (ProfileEntry e : mcc$get$usernameToProfileEntryMap(this).values()) {
+            if (e.getGameProfile().getId().equals(uuid)) return e;
+        }
+        var profile = getProfileByUUID(uuid);
+        return profile == null ? null : new ProfileEntry(profile, null);
+    }
+
     public GameProfile getProfileByUUID(UUID uuid) {
         var m = modern();
         return m == null ? null : m.get(uuid).orElse(null);

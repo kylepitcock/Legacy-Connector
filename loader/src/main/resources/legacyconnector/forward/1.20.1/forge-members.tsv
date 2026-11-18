@@ -64,3 +64,4 @@ net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	getValue	va
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	getDesc	desc
 net/minecraftforge/event/entity/living/LivingPackSizeEvent	getMaxPackSize	getSize
 net/minecraftforge/event/entity/living/LivingPackSizeEvent	setMaxPackSize	setSize
+net/minecraftforge/event/entity/player/BonemealEvent	getEntity	getPlayer

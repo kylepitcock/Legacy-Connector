@@ -43,6 +43,11 @@ public final class Item {
         }
     };
 
+    /** {@code super.getIconFromDamage(damage)} of an override: the one tile the item was given (the plain form would call the override again). */
+    public static int mcc$super$getIconFromDamage(legacyconnector.v1_7_10.net.minecraft.item.Item self, int damage) {
+        return Math.max(self.iconIndex, 0);
+    }
+
     /**
      * 1.4.7 {@code getIconFromDamage(damage)}: the tile of the item's sprite sheet for that damage. A mod item that overrides it answers itself; any other
      * item has the one tile it was given ({@code iconIndex}).

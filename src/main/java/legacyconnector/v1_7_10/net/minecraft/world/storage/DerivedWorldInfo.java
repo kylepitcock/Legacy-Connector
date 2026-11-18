@@ -14,6 +14,12 @@ public class DerivedWorldInfo extends WorldInfo {
         this.theWorldInfo = info;
     }
 
+    /** The name belongs to the overworld's info. */
+    @Override
+    public void setWorldName(String name) {
+        theWorldInfo.setWorldName(name);
+    }
+
     @Override
     public long getSeed() {
         return theWorldInfo.getSeed();

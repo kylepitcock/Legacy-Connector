@@ -280,4 +280,47 @@ public class EntityBoat extends Entity {
             return modern == null ? OAK : getTypeFromString(modern.getName());
         }
     }
+
+    /** The average slipperiness of the blocks the boat's underside touches (how far it glides on ice and land). */
+    public float getBoatGlide() {
+        var m = mcc$entity;
+        var level = m == null ? null : m.level();
+        if (level == null) return 0.0F;
+        var box = m.getBoundingBox();
+        var lower = new net.minecraft.world.phys.AABB(box.minX, box.minY - 0.001D, box.minZ, box.maxX, box.minY, box.maxZ);
+        int x0 = net.minecraft.util.Mth.floor(lower.minX) - 1;
+        int x1 = net.minecraft.util.Mth.ceil(lower.maxX) + 1;
+        int y0 = net.minecraft.util.Mth.floor(lower.minY) - 1;
+        int y1 = net.minecraft.util.Mth.ceil(lower.maxY) + 1;
+        int z0 = net.minecraft.util.Mth.floor(lower.minZ) - 1;
+        int z1 = net.minecraft.util.Mth.ceil(lower.maxZ) + 1;
+        float sum = 0.0F;
+        int n = 0;
+        var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int x = x0; x < x1; ++x) {
+            for (int z = z0; z < z1; ++z) {
+                for (int y = y0; y < y1; ++y) {
+                    pos.set(x, y, z);
+                    var state = level.getBlockState(pos);
+                    if (state.isAir() || !net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(state.getCollisionShape(level, pos).move(x, y, z),
+                            net.minecraft.world.phys.shapes.Shapes.create(lower), net.minecraft.world.phys.shapes.BooleanOp.AND)) continue;
+                    sum += state.getFriction(level, pos, m);
+                    ++n;
+                }
+            }
+        }
+        return n == 0 ? 0.0F : sum / n;
+    }
+
+    /** Turns a passenger the way the boat turns (a rider cannot swing further than 105 degrees from the bow). */
+    protected void applyYawToEntity(Entity entityToUpdate) {
+        if (entityToUpdate == null) return;
+        float yaw = mcc$get$rotationYaw(this);
+        float diff = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.wrapDegrees(mcc$get$rotationYaw(entityToUpdate) - yaw);
+        float clamped = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.clamp(diff, -105.0F, 105.0F);
+        float change = clamped - diff;
+        mcc$set$prevRotationYaw(entityToUpdate, mcc$get$prevRotationYaw(entityToUpdate) + change);
+        mcc$set$rotationYaw(entityToUpdate, mcc$get$rotationYaw(entityToUpdate) + change);
+        entityToUpdate.setRotationYawHead(mcc$get$rotationYaw(entityToUpdate));
+    }
 }

@@ -116,4 +116,16 @@ public class EntityChicken extends EntityAnimal {
     protected ResourceLocation getLootTable() {
         return new ResourceLocation("minecraft", "entities/chicken");
     }
+
+    /** What tempts a chicken (a mod adds its own seeds). */
+    public static final java.util.Set<legacyconnector.v1_12_2.net.minecraft.item.Item> TEMPTATION_ITEMS = new java.util.HashSet<>(java.util.Arrays.asList(
+            legacyconnector.v1_12_2.net.minecraft.init.Items.WHEAT_SEEDS, legacyconnector.v1_12_2.net.minecraft.init.Items.MELON_SEEDS,
+            legacyconnector.v1_12_2.net.minecraft.init.Items.PUMPKIN_SEEDS, legacyconnector.v1_12_2.net.minecraft.init.Items.BEETROOT_SEEDS));
+
+    /** Makes the chicken a jockey (spawned under a baby zombie's seat: it never despawns). */
+    public void setChickenJockey(boolean jockey) {
+        this.chickenJockey = jockey;
+        var m = mcc$self();
+        if (m != null) m.setChickenJockey(jockey);
+    }
 }

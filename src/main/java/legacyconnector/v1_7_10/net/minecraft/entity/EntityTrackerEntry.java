@@ -65,6 +65,11 @@ public class EntityTrackerEntry {
         func_151259_a(packet);
     }
 
+    /** Starts tracking the entity for each player of the list (the modern tracker decides by range; see {@link #tryStartWachingThis}). */
+    public void sendEventsToPlayers(java.util.List players) {
+        for (int i = 0; i < players.size(); i++) tryStartWachingThis((EntityPlayerMP) players.get(i));
+    }
+
     /** Starts sending the entity to the player if in range; the modern tracker does this every tick by itself. */
     public void tryStartWachingThis(EntityPlayerMP player) {
     }

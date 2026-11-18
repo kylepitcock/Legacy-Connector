@@ -145,8 +145,37 @@ public class Mouse {
         return inScreenEvent ? eventWheel : wheel;
     }
 
+    /** Moves the pointer to (x, y) in window pixels, y from the bottom (LWJGL 2's origin). */
     public static void setCursorPosition(int x, int y) {
+        var window = net.minecraft.client.Minecraft.getInstance().getWindow();
+        if (window == null) return;
+        org.lwjgl.glfw.GLFW.glfwSetCursorPos(window.getWindow(), x, window.getScreenHeight() - y);
     }
+
+    private static volatile Cursor nativeCursor;
+
+    static Cursor mcc$currentCursor() {
+        return nativeCursor;
+    }
+
+    /**
+     * Shows a native cursor over the window (null restores the arrow) and returns the one shown before. The GLFW cursor is created and set on the
+     * render thread (now when called there).
+     */
+    public static Cursor setNativeCursor(Cursor cursor) throws legacyconnector.v1_7_10.org.lwjgl.LWJGLException {
+        Cursor previous = nativeCursor;
+        nativeCursor = cursor;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        Runnable apply = () -> {
+            Cursor wanted = nativeCursor;
+            long handle = wanted == null ? 0L : wanted.mcc$handle();
+            org.lwjgl.glfw.GLFW.glfwSetCursor(mc.getWindow().getWindow(), handle);
+        };
+        if (mc.isSameThread()) apply.run();
+        else mc.execute(apply);
+        return previous;
+    }
+
 
     public static int getButtonCount() {
         return 8;

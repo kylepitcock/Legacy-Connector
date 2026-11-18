@@ -443,6 +443,51 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         if (server != null) server.halt(false);
     }
 
+    /** The largest world size (border radius) the server allows: the modern server limit. */
+    public int getMaxWorldSize() {
+        var server = mcc$modern();
+        return server == null ? 29999984 : server.getAbsoluteMaxWorldSize();
+    }
+
+    /** Packets over this many bytes are compressed (-1: never). */
+    public int getNetworkCompressionThreshold() {
+        var server = mcc$modern();
+        return server == null ? 256 : server.getCompressionThreshold();
+    }
+
+    /** Minutes without input before a player is kicked (0: never). */
+    public void setPlayerIdleTimeout(int idleTimeout) {
+        var server = mcc$modern();
+        if (server != null) server.setPlayerIdleTimeout(idleTimeout);
+    }
+
+    public int getMaxPlayerIdleMinutes() {
+        var server = mcc$modern();
+        return server == null ? 0 : server.getPlayerIdleTimeout();
+    }
+
+    private String mcc$resourcePack = "";
+    private String mcc$resourcePackHash = "";
+
+    /** Remembers the resource pack the server would offer; the modern server reads its own setting. */
+    public void setResourcePack(String url, String hash) {
+        this.mcc$resourcePack = url == null ? "" : url;
+        this.mcc$resourcePackHash = hash == null ? "" : hash;
+    }
+
+    public String getResourcePackUrl() {
+        return mcc$resourcePack;
+    }
+
+    public String getResourcePackHash() {
+        return mcc$resourcePackHash;
+    }
+
+    /** Stops the server (the modern server finishes its tick and saves first). */
+    public void stopServer() {
+        initiateShutdown();
+    }
+
     public String getServerVersion() {
         return "1.12.2";
     }

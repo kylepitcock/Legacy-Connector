@@ -96,6 +96,24 @@ public class GuiTextField extends Gui {
         return getNthWordFromPos(n, cursorPosition);
     }
 
+    /** 1.7.10's {@code func_146197_a}: the position {@code n} words from {@code pos}; {@code skipSpaces} moves past the spaces after a word. */
+    public int func_146197_a(int n, int pos, boolean skipSpaces) {
+        int p = pos;
+        boolean back = n < 0;
+        for (int k = Math.abs(n); k > 0; k--) {
+            if (!back) {
+                int len = text.length();
+                p = text.indexOf(' ', p);
+                if (p == -1) p = len;
+                else while (skipSpaces && p < len && text.charAt(p) == ' ') p++;
+            } else {
+                while (skipSpaces && p > 0 && text.charAt(p - 1) == ' ') p--;
+                while (p > 0 && text.charAt(p - 1) != ' ') p--;
+            }
+        }
+        return p;
+    }
+
     public int getNthWordFromPos(int n, int pos) {
         int p = Math.max(0, Math.min(text.length(), pos));
         boolean back = n < 0;

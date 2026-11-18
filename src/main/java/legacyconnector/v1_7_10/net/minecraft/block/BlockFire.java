@@ -32,6 +32,11 @@ public class BlockFire extends legacyconnector.v1_7_10.net.minecraft.block.Block
         FIRE_INFO.put(block, new int[] {encouragement, flammability});
     }
 
+    /** 1.7.10's id-keyed {@code func_149842_a(blockId, encouragement, flammability)}: the same as {@link #setFireInfo} for the block with that id. */
+    public void func_149842_a(int blockId, int encouragement, int flammability) {
+        setFireInfo(Block.getBlockById(blockId), encouragement, flammability);
+    }
+
     public int getEncouragement(legacyconnector.v1_7_10.net.minecraft.block.Block block) {
         int[] info = FIRE_INFO.get(block);
         return info == null ? 0 : info[0];

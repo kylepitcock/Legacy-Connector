@@ -28,6 +28,15 @@ public class TileEntityChest extends TileEntity implements IInventory {
         this.mcc$inv = null;
     }
 
+    /** The chest type given at construction (0 normal, 1 trapped); -1 reads it from the block. */
+    private int field_145982_r = -1;
+
+    /** A chest of a fixed type (1.7.10 {@code TileEntityChest(int)}: 0 normal, 1 trapped), as the trapped chest block makes it. */
+    public TileEntityChest(int type) {
+        this();
+        this.field_145982_r = type;
+    }
+
     public TileEntityChest(net.minecraft.world.Container modern) {
         this.mcc$inv = modern;
         this.chestContents = new ItemStack[modern.getContainerSize()];
@@ -72,6 +81,7 @@ public class TileEntityChest extends TileEntity implements IInventory {
 
     /** The chest type: 0 for a normal chest, 1 for a trapped chest (1.7.10 read it from the block). */
     public int getChestType() {
+        if (field_145982_r >= 0) return field_145982_r;
         return getBlockType() == legacyconnector.v1_7_10.net.minecraft.init.Blocks.trapped_chest ? 1 : 0;
     }
 

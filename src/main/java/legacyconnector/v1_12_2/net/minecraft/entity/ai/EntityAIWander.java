@@ -5,6 +5,10 @@ public class EntityAIWander extends GoalTask1122 {
     protected final legacyconnector.v1_12_2.net.minecraft.entity.EntityCreature entity;
     protected double speed;
     protected int executionChance;
+    /** The target of the last stroll 1.12's goal computed (kept for subclasses that read them; the modern goal picks its own). */
+    protected double x;
+    protected double y;
+    protected double z;
 
     public EntityAIWander(legacyconnector.v1_12_2.net.minecraft.entity.EntityCreature creature, double speed) {
         this(creature, speed, 120);
