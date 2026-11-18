@@ -158,6 +158,9 @@ def main(argv):
         update = "--update" in argv
         rows = []
         for r in results:
+            if r.get("setup"):
+                rows.append({"suite": r["suite"], "status": "SETUP", "note": "ambiguous jar pick for: " + r["setup"] + " (see build/devtools/verify-" + r["suite"] + "-jars.txt)"})
+                continue
             if r.get("skipped"):
                 rows.append({"suite": r["suite"], "status": "SKIP", "note": "missing jar: " + r["skipped"]})
                 continue
@@ -175,7 +178,7 @@ def main(argv):
                 json.dump(base, f, indent=1, sort_keys=True)
                 f.write("\n")
         print(format_table(rows))
-        return 1 if any(r["status"] == "FAIL" for r in rows) else 0
+        return 1 if any(r["status"] in ("FAIL", "SETUP") for r in rows) else 0
     sys.stderr.write(__doc__)
     return 2
 

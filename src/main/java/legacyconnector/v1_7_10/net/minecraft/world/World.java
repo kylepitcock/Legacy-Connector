@@ -87,11 +87,11 @@ public class World implements IBlockAccess {
     }
 
     public static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$mapStorage(World w) {
-        return storage(w.mcc$fullLevel() instanceof ServerLevel s ? s.getServer().overworld() : null);
+        return storage(w.mcc$levelObject() instanceof ServerLevel s ? s.getServer().overworld() : null);
     }
 
     public static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$perWorldStorage(World w) {
-        return storage(w.mcc$fullLevel() instanceof ServerLevel s ? s : null);
+        return storage(w.mcc$levelObject() instanceof ServerLevel s ? s : null);
     }
 
     public WorldSavedData loadItemData(Class<?> type, String name) {
@@ -266,7 +266,7 @@ public class World implements IBlockAccess {
 
     /** The level's scoreboard (the server's, or the copy the server keeps a client in sync with). */
     public legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard getScoreboard() {
-        Level full = mcc$fullLevel();
+        Level full = mcc$levelObject();
         return full == null ? null : legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.mcc$wrap(full.getScoreboard());
     }
 
@@ -1635,11 +1635,11 @@ public class World implements IBlockAccess {
     }
 
     public void setWorldTime(long time) {
-        if (mcc$fullLevel() instanceof ServerLevel s) s.setDayTime(time);
+        if (mcc$levelObject() instanceof ServerLevel s) s.setDayTime(time);
     }
 
     public boolean isDaytime() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level != null && level.isDay();
     }
 
@@ -1655,12 +1655,12 @@ public class World implements IBlockAccess {
     private final java.util.List<IWorldAccess> worldAccesses = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public boolean isRaining() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level != null && level.isRaining();
     }
 
     public boolean isThundering() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level != null && level.isThundering();
     }
 
@@ -1670,7 +1670,7 @@ public class World implements IBlockAccess {
     }
 
     public float getRainStrength(float partial) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         return level == null ? 0 : level.getRainLevel(partial);
     }
 
@@ -1684,7 +1684,7 @@ public class World implements IBlockAccess {
 
     public long getSeed() {
         if (lvl() instanceof WorldGenLevel g) return g.getSeed();
-        return mcc$fullLevel() instanceof ServerLevel s ? s.getSeed() : 0L;
+        return mcc$levelObject() instanceof ServerLevel s ? s.getSeed() : 0L;
     }
 
     private legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo mcc$info;
@@ -1695,7 +1695,7 @@ public class World implements IBlockAccess {
     }
 
     public ChunkCoordinates getSpawnPoint() {
-        Level level = mcc$fullLevel();
+        Level level = mcc$levelObject();
         BlockPos spawn = level == null ? BlockPos.ZERO : level.getSharedSpawnPos();
         return new ChunkCoordinates(spawn.getX(), spawn.getY(), spawn.getZ());
     }
@@ -2183,7 +2183,7 @@ public class World implements IBlockAccess {
     }
 
     public void setSpawnLocation(int x, int y, int z) {
-        if (mcc$fullLevel() instanceof ServerLevel s) s.setDefaultSpawnPos(new BlockPos(x, y, z), 0.0F);
+        if (mcc$levelObject() instanceof ServerLevel s) s.setDefaultSpawnPos(new BlockPos(x, y, z), 0.0F);
     }
 
     /**
@@ -2246,7 +2246,7 @@ public class World implements IBlockAccess {
     }
 
     public GameRules getGameRules() {
-        return GameRules.mcc$of(mcc$fullLevel());
+        return GameRules.mcc$of(mcc$levelObject());
     }
 
     /** Whether any block overlapping the box has the given material (vanilla: water checks of items, entities). */
