@@ -54,6 +54,12 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
         this(net.neoforged.neoforge.common.util.FakePlayerFactory.get((net.minecraft.server.level.ServerLevel) world.mcc$fullLevel(), profile));
     }
 
+    /** 1.6.4 shape {@code new EntityPlayerMP(server, world, name, manager)}: an offline profile of that name. */
+    public EntityPlayerMP(MinecraftServer server, legacyconnector.v1_7_10.net.minecraft.world.World world, String name,
+            legacyconnector.v1_7_10.net.minecraft.server.management.ItemInWorldManager manager) {
+        this(server, (WorldServer) world, new com.mojang.authlib.GameProfile(net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name == null ? "" : name), name), manager);
+    }
+
     public ServerPlayer mcc$serverPlayer() {
         return (ServerPlayer) mcc$entity;
     }

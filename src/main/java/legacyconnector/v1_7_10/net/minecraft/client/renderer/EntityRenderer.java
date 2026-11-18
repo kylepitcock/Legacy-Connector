@@ -15,6 +15,11 @@ public class EntityRenderer implements legacyconnector.v1_7_10.net.minecraft.cli
         this(null, null);
     }
 
+    /** 1.5.2/1.6.4 shape {@code new EntityRenderer(mc)} (renderer replacements such as Morph's and More Player Models'). */
+    public EntityRenderer(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+        this(mc, null);
+    }
+
     /** Mods subclass it for alternative views (Witchery's entity viewer, Fisk's Heroes' camera); the modern game still renders. */
     public EntityRenderer(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManager manager) {
         this.itemRenderer = new ItemRenderer(mc);

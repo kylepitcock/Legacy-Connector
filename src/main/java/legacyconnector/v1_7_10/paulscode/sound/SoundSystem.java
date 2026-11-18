@@ -71,6 +71,12 @@ public class SoundSystem {
         return quickPlay(priority, url, identifier, toLoop, x, y, z, attmodel, distOrRoll);
     }
 
+    /** Background music: a streaming source without attenuation, started at once (replacing a source of the same name). */
+    public void backgroundMusic(String sourcename, URL url, String identifier, boolean toLoop) {
+        newStreamingSource(true, sourcename, url, identifier, toLoop, 0.0F, 0.0F, 0.0F, 0, 0.0F);
+        play(sourcename);
+    }
+
     /** Drops the temporary sources that finished playing. */
     public void removeTemporarySources() {
         sources.entrySet().removeIf(e -> e.getValue().temporaryDone());

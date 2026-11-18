@@ -101,7 +101,7 @@ public class TileEntitySkullRenderer extends TileEntitySpecialRenderer {
     }
 
     /** A head with an owner name: the profile of that player as the client knows it (null when unknown). */
-    private static GameProfile mcc$profile(String owner) {
+    public static GameProfile mcc$profile(String owner) {
         if (owner == null || owner.isEmpty()) return null;
         var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
         if (connection != null) {
