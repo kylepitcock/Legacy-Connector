@@ -265,6 +265,7 @@ public final class Gap1201 {
     }
 
     private long totalForge;
+    private long mixinTotal;
 
     /** A symbol of the Forge/NeoForge API (not of Minecraft or a third-party mod). */
     private static boolean forgeSymbol(String s) {
@@ -274,6 +275,14 @@ public final class Gap1201 {
 
     /** Offline report of a translated run: the symbols the soft link replaced by stand-ins, per original jar (still unresolved references of the mod: kind "soft" in the detail file). */
     private static final Map<String, Set<String>> SOFT = new TreeMap<>();
+    /** The part of {@link #SOFT} inside mixin handler bodies (soft-linked since issue 302) and the references still unresolved inside mixin classes, per original jar. */
+    private static final Map<String, Set<String>> SOFT_MIXIN = new TreeMap<>();
+    private static boolean isMixin(ClassNode n) {
+        for (var list : java.util.List.of(n.invisibleAnnotations == null ? java.util.List.<org.objectweb.asm.tree.AnnotationNode>of() : n.invisibleAnnotations,
+                n.visibleAnnotations == null ? java.util.List.<org.objectweb.asm.tree.AnnotationNode>of() : n.visibleAnnotations))
+            for (var a : list) if ("Lorg/spongepowered/asm/mixin/Mixin;".equals(a.desc)) return true;
+        return false;
+    }
 
     private final Map<String, Set<String>> missingClasses = new TreeMap<>();
     private final Map<String, Set<String>> missingMethods = new TreeMap<>();
@@ -358,7 +367,7 @@ public final class Gap1201 {
         PrintStream detail = new PrintStream(Files.newOutputStream(report.resolveSibling(report.getFileName() + ".detail.tsv")));
         out.println("Gap report: Forge " + System.getProperty("gap.mc", "1.20.1") + " jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
         for (Path mod : mods) {
-            Set<String> mc = new TreeSet<>(), mm = new TreeSet<>(), mf = new TreeSet<>();
+            Set<String> mc = new TreeSet<>(), mm = new TreeSet<>(), mf = new TreeSet<>(), mixinSyms = new TreeSet<>();
             int refs = 0;
             try (ZipFile zip = new ZipFile(mod.toFile())) {
                 for (var en = zip.entries(); en.hasMoreElements(); ) {
@@ -370,7 +379,18 @@ public final class Gap1201 {
                     } catch (RuntimeException ex) {
                         continue;
                     }
-                    refs += check(n, own, mc, mm, mf);
+                    boolean mixin = isMixin(n);
+                    Set<String> c2 = mixin ? new TreeSet<>() : mc, m2 = mixin ? new TreeSet<>() : mm, f2 = mixin ? new TreeSet<>() : mf;
+                    refs += check(n, own, c2, m2, f2);
+                    if (mixin) {
+                        // a mixin body is merged into a vanilla class: a reference that does not link there throws on every use of the handler (CoFH Core getXa()I, issue 302)
+                        mc.addAll(c2);
+                        mm.addAll(m2);
+                        mf.addAll(f2);
+                        c2.forEach(x -> mixinSyms.add("class " + x + "  <- " + n.name));
+                        m2.forEach(x -> mixinSyms.add("method " + x + "  <- " + n.name));
+                        f2.forEach(x -> mixinSyms.add("field " + x + "  <- " + n.name));
+                    }
                 }
             }
             String jar = mod.getFileName().toString();
@@ -393,6 +413,13 @@ public final class Gap1201 {
             long forgeApi = java.util.stream.Stream.of(mc, mm, mf).flatMap(Set::stream).filter(Gap1201::forgeSymbol).count();
             out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields, %d unresolved Forge-API symbols%n", jar, refs, mc.size(), mm.size(), mf.size(), forgeApi);
             totalForge += forgeApi;
+            mixinSyms.addAll(SOFT_MIXIN.getOrDefault(jar, Set.of()).stream().map(x -> x + "  (stood in by the soft link)").toList());
+            if (!mixinSyms.isEmpty()) {
+                out.println("  inside mixin classes (" + mixinSyms.size() + "):");
+                mixinSyms.forEach(x -> out.println("    " + x));
+                System.out.println("mixin-body unresolved in " + jar + ": " + mixinSyms.size());
+                mixinTotal += mixinSyms.size();
+            }
             final String jarName = jar;
             mc.forEach(x -> detail.println(jarName + "	class	" + x));
             mm.forEach(x -> detail.println(jarName + "	method	" + x));
@@ -402,7 +429,8 @@ public final class Gap1201 {
             mm.forEach(s -> missingMethods.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
             mf.forEach(s -> missingFields.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
         }
-        out.printf("%nTOTAL unresolved Forge-API symbols: %d%n", totalForge);
+        out.printf("%nTOTAL unresolved Forge-API symbols: %d%nTOTAL unresolved symbols inside mixin classes: %d%n", totalForge, mixinTotal);
+        System.out.println("TOTAL mixin-body unresolved: " + mixinTotal);
         ranked(out, "Missing classes (by number of jars)", missingClasses);
         ranked(out, "Missing methods", missingMethods);
         ranked(out, "Missing fields", missingFields);
@@ -450,6 +478,7 @@ public final class Gap1201 {
                 lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
                 var res = transformer.transform(lj, t, peers);
                 if (res.softLinked > 0) SOFT.computeIfAbsent(m.getFileName().toString(), k -> new TreeSet<>()).addAll(res.softSymbols);
+                if (!res.softMixinSymbols.isEmpty()) SOFT_MIXIN.computeIfAbsent(m.getFileName().toString(), k -> new TreeSet<>()).addAll(res.softMixinSymbols);
                 if (res.softLinked > 0) System.out.println("soft-linked " + res.softLinked + " symbol(s) in " + m.getFileName());
                 if (res.softLinked > 0 && Boolean.getBoolean("gap.softlist")) res.notes.stream().filter(n -> n.startsWith("Soft link: ") && n.length() > 40).forEach(n -> System.out.println("  " + m.getFileName() + " " + n));
                 out.add(t);

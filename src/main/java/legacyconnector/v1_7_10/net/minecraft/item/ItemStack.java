@@ -31,6 +31,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge;
  * with subtypes it selects the flattened modern item variant (or the {@code legacyconnector:legacy_meta} component for
  * subtypes that were never registered as variants). NBT lives in the {@code CUSTOM_DATA} component.</p>
  */
+@com.google.gson.annotations.JsonAdapter(org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyGson1710.ItemStackAdapter.class)
 public final class ItemStack {
     /** The "#.###" format vanilla uses for attribute values in tooltips (mods reflect it by its SRG name). */
     public static final java.text.DecimalFormat field_111284_a = new java.text.DecimalFormat("#.###");

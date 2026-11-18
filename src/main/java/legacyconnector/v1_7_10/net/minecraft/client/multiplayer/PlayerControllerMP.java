@@ -128,6 +128,18 @@ public class PlayerControllerMP {
         return m.useItemOn(local, net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.phys.BlockHitResult(at, face, pos, false)).consumesAction();
     }
 
+    /** Minecraft 1.3+ {@code gameIsSurvivalOrAdventure()}: the player is not in creative mode (spectators do not exist before 1.8). */
+    public boolean gameIsSurvivalOrAdventure() {
+        return isNotCreative();
+    }
+
+    /** 1.2.5 {@code sendPacketDropItem(stack)}: in creative mode the client tells the server that it threw the stack away (the server spawns the item); survival drops go through the inventory. */
+    public void sendPacketDropItem(ItemStack stack) {
+        var m = mode();
+        if (m == null || stack == null || !isInCreativeMode()) return;
+        m.handleCreativeModeItemDrop(stack.mcc$modern());
+    }
+
     /** Uses the held item in the air; true when it did something. */
     public boolean sendUseItem(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.world.World world, ItemStack stack) {
         var m = mode();

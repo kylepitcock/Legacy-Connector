@@ -33,6 +33,14 @@ public class ServerConfigurationManager {
         return out;
     }
 
+    /** 1.2.5 {@code PlayerManager.sendPacket(name, packet)} (Feather name): sends the packet to the player of that name; false when nobody of that name is online. */
+    public boolean mcc125$sendPacket(String name, legacyconnector.v1_7_10.net.minecraft.network.Packet packet) {
+        EntityPlayerMP player = getPlayerByUsername(name);
+        if (player == null) return false;
+        legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP.mcc$get$playerNetServerHandler(player).sendPacket(packet);
+        return true;
+    }
+
     public EntityPlayerMP getPlayerByUsername(String name) {
         var p = mcc$server.mcc$modern().getPlayerList().getPlayerByName(name);
         return p == null ? null : (EntityPlayerMP) EntityBridge.wrap(p);

@@ -28,6 +28,11 @@ public final class ApiCompatClient {
         return tracker.getGameTimeDeltaPartialTick(false);
     }
 
+    /** The float partial tick of a 1.21.1 {@code DeltaTracker} (library callbacks that took the float in 1.20.1). */
+    public static float deltaPartial(DeltaTracker tracker) {
+        return tracker.getGameTimeDeltaPartialTick(false);
+    }
+
     /** {@code ModelManager.getModel(ResourceLocation)}: standalone models are looked up by {@code ModelResourceLocation.standalone}. */
     public static net.minecraft.client.resources.model.BakedModel getModel(net.minecraft.client.resources.model.ModelManager manager, ResourceLocation id) {
         return manager.getModel(ModelResourceLocation.standalone(id));

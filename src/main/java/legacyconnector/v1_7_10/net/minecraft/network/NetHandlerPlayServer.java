@@ -35,6 +35,11 @@ public class NetHandlerPlayServer implements legacyconnector.v1_7_10.net.minecra
         return playerEntity;
     }
 
+    /** 1.2.5 {@code NetServerHandler.getPlayerEntity()} (Feather name): the player this handler serves. */
+    public EntityPlayerMP getPlayerEntity() {
+        return playerEntity;
+    }
+
     /** The player's connection (the given one for handlers mods made, the real one otherwise). */
     public NetworkManager getNetworkManager() {
         if (netManager != null && netManager != NetworkManager.MCC_DUMMY) return netManager;

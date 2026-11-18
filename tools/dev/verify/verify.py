@@ -10,8 +10,8 @@ import os
 import re
 import sys
 
-BAD = ["b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors", "real_level_sites", "mixins_not_applied"]
-GOOD = ["mixins_applied", "b173_mods_constructed", "b173_blocks", "mods_loaded_1201", "blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest"]
+BAD = ["b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors", "real_level_sites", "mixins_not_applied", "village_overlaps", "village_streetless"]
+GOOD = ["mixins_applied", "b173_mods_constructed", "b173_blocks", "mods_loaded_1201", "blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest", "village_pieces", "village_blocks"]
 TOLERANCE = 0.02
 # alive/removed after the entity self test is not deterministic (random despawns; Traincraft varies 308 to 319 between identical runs)
 TOLERANCES = {"entities_alive": 0.10}
@@ -35,6 +35,8 @@ PATTERNS = [
     (r"SILENT FAILURE CHECKS: (\d+) passed, (\d+) failed", [("silent_failed", 2)]),
     (r"1\.12\.2 item placement: (\d+) of (\d+) placed", [("placement_placed", 1), ("placement_total", 2)]),
     (r"Legacy Connector mixins: (\d+) injectors applied, (\d+) not applied", [("mixins_applied", 1), ("mixins_not_applied", 2)]),
+    (r"VILLAGE TEST SUMMARY: \d+ villages, (\d+) legacy pieces, (\d+) blocks of mods in them, (\d+) overlapping, (\d+) away from a street",
+     [("village_pieces", 1), ("village_blocks", 2), ("village_overlaps", 3), ("village_streetless", 4)]),
     (r"Legacy content: \d+ mods, (\d+) items, (\d+) blocks, (\d+) entity types", [("content_items", 1), ("content_blocks", 2), ("content_entities", 3)]),
 ]
 
@@ -156,6 +158,9 @@ def main(argv):
         update = "--update" in argv
         rows = []
         for r in results:
+            if r.get("setup"):
+                rows.append({"suite": r["suite"], "status": "SETUP", "note": "ambiguous jar pick for: " + r["setup"] + " (see build/devtools/verify-" + r["suite"] + "-jars.txt)"})
+                continue
             if r.get("skipped"):
                 rows.append({"suite": r["suite"], "status": "SKIP", "note": "missing jar: " + r["skipped"]})
                 continue
@@ -173,7 +178,7 @@ def main(argv):
                 json.dump(base, f, indent=1, sort_keys=True)
                 f.write("\n")
         print(format_table(rows))
-        return 1 if any(r["status"] == "FAIL" for r in rows) else 0
+        return 1 if any(r["status"] in ("FAIL", "SETUP") for r in rows) else 0
     sys.stderr.write(__doc__)
     return 2
 
