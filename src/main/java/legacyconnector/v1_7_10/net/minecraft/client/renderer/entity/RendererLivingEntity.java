@@ -176,4 +176,12 @@ public abstract class RendererLivingEntity extends Render {
     /** Name tags are drawn by the modern renderer. */
     protected void passSpecialRender(EntityLivingBase entity, double x, double y, double z) {
     }
+
+    /** 1.7.10 {@code func_110813_b}/{@code canRenderName}: whether the entity's name tag is drawn (HUD on, not the camera player, visible, not ridden). */
+    protected boolean canRenderName(EntityLivingBase entity) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (entity == null || entity.mcc$entity == null || mc.options.hideGui) return false;
+        var me = mc.getCameraEntity();
+        return entity.mcc$entity != me && !entity.mcc$entity.isInvisibleTo(mc.player) && !entity.mcc$entity.isVehicle();
+    }
 }

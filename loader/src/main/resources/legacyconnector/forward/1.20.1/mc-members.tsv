@@ -94,3 +94,7 @@ net/minecraft/client/renderer/RenderType	translucentNoCrumbling	*	translucent
 net/minecraft/world/item/CreativeModeTab$Builder	withBackgroundLocation	*	backgroundTexture
 net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds	TUTORIAL_HINT	:*	PERIODIC_NOTIFICATION
 net/minecraft/client/gui/components/ChatComponent	refreshTrimmedMessage	*	refreshTrimmedMessages
+net/minecraft/network/chat/ClickEvent$Action	getName	*	getSerializedName
+net/minecraft/world/level/block/ChangeOverTimeBlock	onRandomTick	*	changeOverTime
+net/minecraft/server/level/ChunkHolder	getLastAvailableStatus	*	getLatestStatus
+net/minecraft/client/renderer/ViewArea	chunks	:*	sections

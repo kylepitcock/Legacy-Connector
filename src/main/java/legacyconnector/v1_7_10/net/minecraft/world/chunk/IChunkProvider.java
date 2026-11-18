@@ -36,6 +36,11 @@ public interface IChunkProvider {
     default void saveExtraData() {
     }
 
+    /** Saves the loaded chunks (1.7.10: all of them when {@code all}); a provider without storage of its own has nothing to save and reports success. */
+    default boolean saveChunks(boolean all, legacyconnector.v1_7_10.net.minecraft.util.IProgressUpdate progress) {
+        return true;
+    }
+
     /** The nearest structure of a name ("Village", "Stronghold", "Mineshaft", "Temple"...): the world's locator by default. */
     default legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition findClosestStructure(legacyconnector.v1_7_10.net.minecraft.world.World world, String name, int x, int y, int z) {
         return world == null ? null : world.findClosestStructure(name, x, y, z);

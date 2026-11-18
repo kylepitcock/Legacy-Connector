@@ -330,6 +330,11 @@ public class Minecraft {
         mc().reloadResourcePacks();
     }
 
+    /** Reloads the resource packs at the end of the tick (mods ask for it from anywhere; the reload itself runs on the render thread). */
+    public void scheduleResourcesRefresh() {
+        mc().execute(() -> mc().reloadResourcePacks());
+    }
+
     public void shutdown() {
         mc().stop();
     }

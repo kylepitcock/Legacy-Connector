@@ -53,6 +53,18 @@ public class PlayerControllerMP {
     public void sendSlotPacket(ItemStack stack, int slot) {
     }
 
+    /** Tells the server which hotbar slot is selected (the modern game does it every tick; mods call it right after changing the slot). */
+    public void syncCurrentPlayItem() {
+        var m = mode();
+        if (m != null) m.ensureHasSentCarriedItem();
+    }
+
+    /** A left click on a block in creative mode: breaks it at once (as the game's creative click does). */
+    public static void clickBlockCreative(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, PlayerControllerMP controller, int x, int y, int z,
+            int side) {
+        controller.clickBlock(x, y, z, side);
+    }
+
     public float getBlockReachDistance() {
         var player = net.minecraft.client.Minecraft.getInstance().player;
         return player == null ? 4.5F : (float) player.blockInteractionRange();

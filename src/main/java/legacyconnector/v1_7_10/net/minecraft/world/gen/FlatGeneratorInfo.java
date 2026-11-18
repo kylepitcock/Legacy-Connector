@@ -27,6 +27,11 @@ public class FlatGeneratorInfo {
         return worldFeatures;
     }
 
+    /** MCP name of {@link #func_82644_b}: the structures (village, mineshaft, ...) the preset generates, by name with their parameters. */
+    public Map getWorldFeatures() {
+        return worldFeatures;
+    }
+
     public List getFlatLayers() {
         return flatLayers;
     }

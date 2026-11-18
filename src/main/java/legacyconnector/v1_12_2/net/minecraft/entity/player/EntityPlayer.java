@@ -887,6 +887,128 @@ public abstract class EntityPlayer extends EntityLivingBase {
         if (type != null && mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) sp.setGameMode(type.mcc$modern());
     }
 
+    /** Counts the distance of a move in the movement statistics (walked, swum, climbed, fallen...) the way the modern player does. */
+    public void addMovementStat(double dx, double dy, double dz) {
+        var p = mcc$player();
+        if (p == null || isRiding()) return;
+        int cm = Math.round((float) Math.sqrt(dx * dx + dz * dz) * 100.0F);
+        if (p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)) {
+            if (cm > 0) {
+                p.awardStat(net.minecraft.stats.Stats.WALK_UNDER_WATER_ONE_CM, cm);
+                p.causeFoodExhaustion(0.01F * cm * 0.01F);
+            }
+        } else if (p.isInWater()) {
+            int swum = Math.round((float) Math.sqrt(dx * dx + dy * dy + dz * dz) * 100.0F);
+            if (swum > 0) {
+                p.awardStat(net.minecraft.stats.Stats.SWIM_ONE_CM, swum);
+                p.causeFoodExhaustion(0.01F * swum * 0.01F);
+            }
+        } else if (p.onClimbable()) {
+            if (dy > 0.0D) p.awardStat(net.minecraft.stats.Stats.CLIMB_ONE_CM, (int) Math.round(dy * 100.0D));
+        } else if (p.onGround()) {
+            if (cm > 0) {
+                p.awardStat(p.isSprinting() ? net.minecraft.stats.Stats.SPRINT_ONE_CM
+                        : p.isCrouching() ? net.minecraft.stats.Stats.CROUCH_ONE_CM : net.minecraft.stats.Stats.WALK_ONE_CM, cm);
+                p.causeFoodExhaustion((p.isSprinting() ? 0.1F : 0.0F) * cm * 0.01F);
+            }
+        } else if (p.isFallFlying()) {
+            p.awardStat(net.minecraft.stats.Stats.AVIATE_ONE_CM, cm);
+        } else if (cm > 25) {
+            p.awardStat(net.minecraft.stats.Stats.FLY_ONE_CM, cm);
+        }
+    }
+
+    private final java.util.List<legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent> mcc$prefixes = new java.util.ArrayList<>();
+    private final java.util.List<legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent> mcc$suffixes = new java.util.ArrayList<>();
+
+    /** Forge: a component shown before the player's name in chat and the name tag. */
+    public void addPrefix(legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent prefix) {
+        if (prefix != null) mcc$prefixes.add(prefix);
+        refreshDisplayName();
+    }
+
+    /** Forge: a component shown after the player's name. */
+    public void addSuffix(legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent suffix) {
+        if (suffix != null) mcc$suffixes.add(suffix);
+        refreshDisplayName();
+    }
+
+    public java.util.Collection<legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent> getPrefixes() {
+        return mcc$prefixes;
+    }
+
+    public java.util.Collection<legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent> getSuffixes() {
+        return mcc$suffixes;
+    }
+
+    /** Puts a parrot's saved form on a free shoulder; false while the player rides, flies, swims or has both shoulders taken. */
+    public boolean addShoulderEntity(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        var p = mcc$player();
+        if (p == null || tag == null || p.isPassenger() || !p.onGround() || p.isInWater()) return false;
+        if (p.getShoulderEntityLeft().isEmpty()) {
+            setLeftShoulderEntity(tag);
+            return true;
+        }
+        if (p.getShoulderEntityRight().isEmpty()) {
+            setRightShoulderEntity(tag);
+            return true;
+        }
+        return false;
+    }
+
+    /** Opens the editor of a structure block (the game's structure block screen; it only exists on the client of that player). */
+    public void openEditStructure(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityStructure structure) {
+        var p = mcc$player();
+        if (p == null || structure == null) return;
+        var be = structure.mcc$structureBlock();
+        if (be != null && p.level().isClientSide) p.openStructureBlock(be);
+    }
+
+    /** Unlocks the recipes of these names in the recipe book. */
+    public void unlockRecipes(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation[] ids) {
+        if (ids == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        java.util.List<net.minecraft.resources.ResourceLocation> list = new java.util.ArrayList<>();
+        for (var id : ids) if (id != null) list.add(id.mcc$modern());
+        sp.awardRecipesByKey(list);
+    }
+
+    /** Takes recipes out of the recipe book again (the modern recipes of the same names). */
+    public void resetRecipes(java.util.List<legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe> recipes) {
+        if (recipes == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        var manager = sp.server.getRecipeManager();
+        java.util.List<net.minecraft.world.item.crafting.RecipeHolder<?>> holders = new java.util.ArrayList<>();
+        for (var r : recipes) {
+            if (r == null || r.getRegistryName() == null) continue;
+            manager.byKey(r.getRegistryName().mcc$modern()).ifPresent(holders::add);
+        }
+        sp.resetRecipes(holders);
+    }
+
+    /** Sends the client the "combat started" message of the death screen's combat log. */
+    public void sendEnterCombat() {
+        if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && sp.connection != null) {
+            sp.connection.send(net.minecraft.network.protocol.game.ClientboundPlayerCombatEnterPacket.INSTANCE);
+        }
+    }
+
+    /** Sends the client the "combat ended" message with the combat's length. */
+    public void sendEndCombat() {
+        if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && sp.connection != null) {
+            sp.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerCombatEndPacket(sp.getCombatTracker()));
+        }
+    }
+
+    @Deprecated
+    protected boolean sleeping;
+
+    public static boolean mcc$get$sleeping(EntityPlayer p) {
+        return p.isPlayerSleeping();
+    }
+
+    public static void mcc$set$sleeping(EntityPlayer p, boolean v) {
+        // the modern player sleeps through startSleepInBed / stopSleepInBed
+    }
+
     /** Unlocks recipes in the player's recipe book (the modern recipes of the same names). */
     public void unlockRecipes(java.util.List<legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe> recipes) {
         if (recipes == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;

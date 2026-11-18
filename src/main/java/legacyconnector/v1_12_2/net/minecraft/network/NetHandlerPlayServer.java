@@ -13,6 +13,27 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
     @Deprecated
     public int floatingTickCount;
 
+    /** Phantom fields: the tick counters of the 1.12 handler; they follow the server tick count. */
+    @Deprecated
+    public int networkTickCount;
+    @Deprecated
+    public int lastPositionUpdate;
+
+    public static int mcc$get$networkTickCount(NetHandlerPlayServer h) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server == null ? 0 : server.getTickCount();
+    }
+
+    public static void mcc$set$networkTickCount(NetHandlerPlayServer h, int value) {
+    }
+
+    public static int mcc$get$lastPositionUpdate(NetHandlerPlayServer h) {
+        return mcc$get$networkTickCount(h);
+    }
+
+    public static void mcc$set$lastPositionUpdate(NetHandlerPlayServer h, int value) {
+    }
+
     public NetHandlerPlayServer(EntityPlayerMP player) {
         this.player = player;
     }
@@ -124,5 +145,14 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
         var p = player == null ? null : player.mcc$serverPlayer();
         if (p == null || packet == null || p.connection == null) return;
         p.connection.handlePlayerAction(packet.mcc$modern());
+    }
+
+    /**
+     * Ticks the connection by hand. A real player's connection is ticked by the server already (a second tick would double the keep-alive and
+     * flying checks), so only the handler of a fake player, which nothing else ticks, runs.
+     */
+    public void update() {
+        var p = player == null ? null : player.mcc$serverPlayer();
+        if (p != null && p.connection != null && p instanceof net.neoforged.neoforge.common.util.FakePlayer) p.connection.tick();
     }
 }

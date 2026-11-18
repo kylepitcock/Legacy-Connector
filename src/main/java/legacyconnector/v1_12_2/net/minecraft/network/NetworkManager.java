@@ -27,6 +27,13 @@ public class NetworkManager {
         if (modern != null && connection.isConnected()) connection.send(modern);
     }
 
+    /** 1.12 send with completion listeners: the packet is sent, the listeners are not called (the modern connection reports no result here). */
+    @SafeVarargs
+    public final void sendPacket(Packet<?> packetIn, io.netty.util.concurrent.GenericFutureListener<? extends io.netty.util.concurrent.Future<? super Void>> listener,
+            io.netty.util.concurrent.GenericFutureListener<? extends io.netty.util.concurrent.Future<? super Void>>... listeners) {
+        sendPacket(packetIn);
+    }
+
     public java.net.SocketAddress getRemoteAddress() {
         return connection.getRemoteAddress();
     }

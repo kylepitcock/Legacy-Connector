@@ -1483,4 +1483,12 @@ public abstract class EntityLivingBase extends Entity {
             // the shield keeps its durability
         }
     }
+
+    /** The yaw change a wandering mob wants (read by its movement; mods set it from their own AI). */
+    public float randomYawVelocity;
+
+    /** A shield took a hit: the attacker is pushed back from the blocker. */
+    protected void blockUsingShield(EntityLivingBase attacker) {
+        if (attacker != null) attacker.knockBack(this, 0.5F, mcc$x() - attacker.mcc$x(), mcc$z() - attacker.mcc$z());
+    }
 }

@@ -26,6 +26,14 @@ public class TileEntityShulkerBox extends TileEntityLockableLoot implements org.
         this.mcc$box = null;
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor mcc$color;
+
+    /** 1.12 coloured constructor (a null colour is the uncoloured box). */
+    public TileEntityShulkerBox(legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor colorIn) {
+        this.mcc$box = null;
+        this.mcc$color = colorIn;
+    }
+
     /** A view of a game shulker box. */
     public TileEntityShulkerBox(net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity box) {
         this.mcc$box = box;

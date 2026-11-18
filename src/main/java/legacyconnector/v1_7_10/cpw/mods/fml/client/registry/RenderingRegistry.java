@@ -60,6 +60,18 @@ public class RenderingRegistry {
         return handler != null && handler.shouldRender3DInInventory(modelId);
     }
 
+    /**
+     * FML 1.5.2 {@code addTextureOverride(fileToOverride, fileToAdd)}: deprecated in that FML, which answered -1 and did nothing (textures came from the
+     * sprite sheets by then); the same here. 1.4.7's override of sheet tiles is not carried over.
+     */
+    public static int addTextureOverride(String fileToOverride, String fileToAdd) {
+        return -1;
+    }
+
+    /** FML 1.5.2 {@code addTextureOverride(path, overlayPath, index)}: the body of that FML was commented out; nothing to do. */
+    public static void addTextureOverride(String path, String overlayPath, int index) {
+    }
+
     public static int addNewArmourRendererPrefix(String prefix) {
         return 5 + prefix.hashCode() % 1000;
     }

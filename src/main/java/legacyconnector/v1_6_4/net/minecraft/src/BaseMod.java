@@ -138,4 +138,16 @@ public abstract class BaseMod {
     public String toString() {
         return getName() + " " + getVersion();
     }
+
+    // ------------------------------------------------------------------ client connection hooks (empty in the original BaseMod as well)
+
+    /** The client joined a server (ModLoader's {@code BaseMod.clientConnect}); the base class does nothing. */
+    public void clientConnect(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler) {}
+
+    /** The client left a server ({@code BaseMod.clientDisconnect}); the base class does nothing. */
+    public void clientDisconnect(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler) {}
+
+    /** A custom payload packet reached the client ({@code BaseMod.clientCustomPayload}); the base class does nothing. */
+    public void clientCustomPayload(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler,
+            legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload packet) {}
 }

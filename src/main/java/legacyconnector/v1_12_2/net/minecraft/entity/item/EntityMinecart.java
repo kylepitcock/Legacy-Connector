@@ -354,4 +354,9 @@ public abstract class EntityMinecart extends Entity {
             return id < 0 || id >= values().length ? RIDEABLE : values()[id];
         }
     }
+
+    /** Forge: the speed cap on rails the cart currently runs with. */
+    public float getCurrentCartSpeedCapOnRail() {
+        return mcc$maxSpeedOnRail;
+    }
 }

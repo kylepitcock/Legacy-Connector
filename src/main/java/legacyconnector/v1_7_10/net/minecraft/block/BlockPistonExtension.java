@@ -22,4 +22,23 @@ public class BlockPistonExtension extends legacyconnector.v1_7_10.net.minecraft.
     public static int getDirectionMeta(int meta) {
         return meta & 7;
     }
+
+    private legacyconnector.v1_7_10.net.minecraft.util.IIcon mcc$headTexture;
+
+    /** {@code func_150086_a} (1.6.4: {@code setHeadTexture}): the icon of the head's face while a piston with a mod's head extends, until {@link #clearHeadTexture()}. */
+    public void func_150086_a(legacyconnector.v1_7_10.net.minecraft.util.IIcon icon) {
+        this.mcc$headTexture = icon;
+    }
+
+    /** Goes back to the vanilla head icons. */
+    public void clearHeadTexture() {
+        this.mcc$headTexture = null;
+    }
+
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getIcon(int side, int meta) {
+        legacyconnector.v1_7_10.net.minecraft.util.IIcon override = mcc$headTexture;
+        if (override != null && side == getDirectionMeta(meta)) return override;
+        return super.getIcon(side, meta);
+    }
 }

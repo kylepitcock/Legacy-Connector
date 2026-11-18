@@ -2412,4 +2412,34 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         if (moved) setPosition(x, box.minY, z);
         return moved;
     }
+
+    private legacyconnector.v1_12_2.net.minecraft.command.CommandResultStats mcc$cmdResultStats;
+
+    /** The scoreboard targets commands run by or on this entity write their results to (1.12's {@code /stats}). */
+    public legacyconnector.v1_12_2.net.minecraft.command.CommandResultStats getCommandStats() {
+        if (mcc$cmdResultStats == null) mcc$cmdResultStats = new legacyconnector.v1_12_2.net.minecraft.command.CommandResultStats();
+        return mcc$cmdResultStats;
+    }
+
+    /** Takes over the {@code /stats} targets of another entity (used when an entity is copied or recreated). */
+    public void setCommandStats(Entity entityIn) {
+        if (entityIn == null) return;
+        getCommandStats().addAllStats(entityIn.getCommandStats());
+    }
+
+    /** The entity's rotation as (pitch, yaw). */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec2f getPitchYaw() {
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec2f(mcc$get$rotationPitch(this), mcc$get$rotationYaw(this));
+    }
+
+    /** Whether a player riding this entity turns to face its heading (boats do, everything else keeps looking where the player looks). */
+    public boolean shouldRiderFaceForward(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return this instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityBoat;
+    }
+
+    /** Whether the entity is on this scoreboard team. */
+    public boolean isOnScoreboardTeam(legacyconnector.v1_12_2.net.minecraft.scoreboard.Team team) {
+        var own = getTeam();
+        return own != null && own.isSameTeam(team);
+    }
 }

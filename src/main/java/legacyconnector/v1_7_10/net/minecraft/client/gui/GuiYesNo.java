@@ -5,6 +5,11 @@ import legacyconnector.v1_7_10.net.minecraft.util.StatCollector;
 /** A two-line question with a confirm and a cancel button. */
 public class GuiYesNo extends GuiScreen {
     protected GuiYesNoCallback parentScreen;
+
+    /** The callback asked ({@code parentScreen}); the 1.6.4 facade reads it as the screen that opened this one. */
+    public GuiYesNoCallback mcc$callback() {
+        return parentScreen;
+    }
     protected String messageLine1;
     private final String messageLine2;
     protected String confirmButtonText;
@@ -37,6 +42,20 @@ public class GuiYesNo extends GuiScreen {
     public void initGui() {
         buttonList.add(new GuiButton(0, width / 2 - 155, height / 6 + 96, 150, 20, confirmButtonText));
         buttonList.add(new GuiButton(1, width / 2 + 5, height / 6 + 96, 150, 20, cancelButtonText));
+    }
+
+    private int ticksUntilEnable;
+
+    /** Disables the buttons for {@code ticks} ticks (the question that must not be answered by a double click). */
+    public void setButtonDelay(int ticks) {
+        this.ticksUntilEnable = ticks;
+        for (Object o : buttonList) ((GuiButton) o).enabled = false;
+    }
+
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        if (--ticksUntilEnable == 0) for (Object o : buttonList) ((GuiButton) o).enabled = true;
     }
 
     @Override

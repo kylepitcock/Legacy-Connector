@@ -96,7 +96,15 @@ public class WorldInfo {
         return 0;
     }
 
+    private String mcc$worldNameOverride;
+
+    /** Renames the world as legacy code sees it ({@link #getWorldName} and the saved {@code LevelName}); the modern level settings keep their own. */
+    public void setWorldName(String name) {
+        this.mcc$worldNameOverride = name;
+    }
+
     public String getWorldName() {
+        if (mcc$worldNameOverride != null) return mcc$worldNameOverride;
         if (saved() != null) return saved().hasKey("LevelName") ? saved().getString("LevelName") : "world";
         Level level = level();
         return level != null && level.getServer() != null ? level.getServer().getWorldData().getLevelName() : "world";

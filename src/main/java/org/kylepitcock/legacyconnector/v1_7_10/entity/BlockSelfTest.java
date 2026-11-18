@@ -95,6 +95,11 @@ public final class BlockSelfTest {
                         state = state.setValue(org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.META, meta);
                     }
                     level.setBlock(pos, state, 3);
+                    if (!level.getBlockState(pos).is(modernBlock)) {
+                        // dropped at once for lack of support (torches, ladders, plants: as in 1.7.10, they need a face to stand on): give it a floor and place again
+                        level.setBlock(pos.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                        level.setBlock(pos, state, 3);
+                    }
                     PLACED.add(pos);
                     NAMES.add(name);
                     placed++;

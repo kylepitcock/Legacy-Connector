@@ -27,6 +27,56 @@ public class S21PacketChunkData extends Packet {
         this.field_149283_c = sectionMask;
     }
 
+    /** The uncompressed 1.7.10 chunk payload: which sections it has, which of them have an add (id high bits) array, and the data. */
+    public static class Extracted {
+        public byte[] field_150282_a;
+        public int field_150280_b;
+        public int field_150281_c;
+
+        public Extracted() {
+        }
+    }
+
+    /**
+     * 1.7.10's {@code func_149269_a}: the wire payload of the sections of {@code mask} (empty sections of a full chunk are left out): all block
+     * LSB arrays, then metadata, block light, sky light (not in dimensions without sky), the add arrays of the sections that have one, and for
+     * a full chunk the 256 biome ids.
+     */
+    public static Extracted func_149269_a(Chunk chunk, boolean full, int mask) {
+        legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
+        Extracted result = new Extracted();
+        java.util.List<byte[]> parts = new java.util.ArrayList<>();
+        java.util.List<legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage> used = new java.util.ArrayList<>();
+        int adds = 0;
+        for (int i = 0; i < sections.length; i++) {
+            if (sections[i] != null && (!full || !sections[i].isEmpty()) && (mask & 1 << i) != 0) {
+                result.field_150280_b |= 1 << i;
+                used.add(sections[i]);
+                if (sections[i].getBlockMSBArray() != null) {
+                    result.field_150281_c |= 1 << i;
+                    adds++;
+                }
+            }
+        }
+        boolean hasSky = !legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(chunk.worldObj).hasNoSky;
+        for (var s : used) parts.add(s.getBlockLSBArray());
+        for (var s : used) parts.add(s.getMetadataArray().data);
+        for (var s : used) parts.add(s.getBlocklightArray().data);
+        if (hasSky) for (var s : used) parts.add(s.getSkylightArray().data);
+        if (adds > 0) for (var s : used) if (s.getBlockMSBArray() != null) parts.add(s.getBlockMSBArray().data);
+        if (full) parts.add(chunk.getBiomeArray());
+        int size = 0;
+        for (byte[] p : parts) size += p.length;
+        byte[] data = new byte[size];
+        int at = 0;
+        for (byte[] p : parts) {
+            System.arraycopy(p, 0, data, at, p.length);
+            at += p.length;
+        }
+        result.field_150282_a = data;
+        return result;
+    }
+
     /** The size of the buffer the legacy packet compressed into. */
     public static int func_149275_c() {
         return 196864;
