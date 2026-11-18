@@ -1043,6 +1043,18 @@
    "link": "https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT/releases",
    "date": "2026-11-17",
    "open": true
+  },
+  {
+   "issue": 315,
+   "mod": "Fossils 8.0.6",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "[crash-2026-11-18_06.43.40-client.txt](https://github.com/user-attachments/files/35036247/crash-2026-11-18_06.43.40-client.txt) [legacyconnector-report.txt](https://github.com/user-attachments/files/35036469/legacyconnector-report.txt) [latest.log](https://github.com/user-attachments/files/35036470/latest.log) no fossils background in main menu and no buttons to play LLibrary.NETWORK_WRAPPER is n…",
+   "lc": "0.5.0",
+   "neoforge": "21.1.172",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/fossils",
+   "date": "2026-11-18",
+   "open": true
   }
  ]
 }
