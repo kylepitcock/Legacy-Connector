@@ -6,14 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -144,6 +148,36 @@ class Mc1201MigrationTest implements Opcodes {
         assertNotNull(superCall);
         assertEquals(INVOKESPECIAL, superCall.getOpcode());
         assertEquals(desc, superCall.desc);
+    }
+
+    @Test
+    void legacyAabbBlockPosConstructorBecomesCompatFactoryCall() {
+        String pos = "net/minecraft/core/BlockPos";
+        String aabb = "net/minecraft/world/phys/AABB";
+        String constructor = "(L" + pos + ";L" + pos + ";)V";
+        ClassNode c = cls("test/AabbCalls", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "bounds",
+                "(L" + pos + ";L" + pos + ";)L" + aabb + ";");
+        m.instructions.add(new TypeInsnNode(NEW, aabb));
+        m.instructions.add(new InsnNode(DUP));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, aabb, "<init>", constructor, false));
+        m.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).constructors);
+
+        MethodInsnNode factory = find(m, MIGRATE + "MiscCompat", "newAabb");
+        assertNotNull(factory);
+        assertEquals(INVOKESTATIC, factory.getOpcode());
+        assertEquals("(L" + pos + ";L" + pos + ";)L" + aabb + ";", factory.desc);
+        assertNull(find(m, aabb, "<init>"), "the removed target constructor must not remain");
+        for (AbstractInsnNode in : m.instructions) {
+            if (in instanceof TypeInsnNode type && type.getOpcode() == NEW) {
+                assertFalse(type.desc.equals(aabb), "the AABB allocation is replaced by the factory call");
+            }
+        }
+        verify(c);
     }
 
     @Test
@@ -517,6 +551,274 @@ class Mc1201MigrationTest implements Opcodes {
         assertEquals(INVOKEVIRTUAL, back.getOpcode());
         assertEquals("(L" + CT + ";)V", back.desc);
         verify(c);
+    }
+
+    @Test
+    void directVirtualMobFinalizeSpawnCallsUseTheScopedSpawnHelper() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String helperDesc = "(L" + mob + ";L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData
+                + ";L" + CT + ";)L" + spawnData + ";";
+
+        ClassNode caller = cls("test/DirectMobSpawnCaller", "java/lang/Object");
+        MethodNode invoke = method(caller, ACC_PUBLIC | ACC_STATIC, "invoke",
+                "(L" + mob + ";L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT + ";)L"
+                        + spawnData + ";");
+        for (int i = 0; i <= 5; i++) invoke.instructions.add(new VarInsnNode(ALOAD, i));
+        invoke.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, mob, "finalizeSpawn", oldDesc, false));
+        invoke.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(caller).calls);
+        MethodInsnNode helper = find(invoke, MIGRATE + "SpawnCompat", "finalizeSpawn");
+        assertNotNull(helper);
+        assertEquals(INVOKESTATIC, helper.getOpcode());
+        assertEquals(helperDesc, helper.desc);
+        assertNull(find(invoke, mob, "finalizeSpawn"));
+        verify(caller);
+    }
+
+    @Test
+    void virtualMobFinalizeSpawnMethodReferencesUseTheScopedSpawnHelper() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String helperDesc = "(L" + mob + ";L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData
+                + ";L" + CT + ";)L" + spawnData + ";";
+
+        ClassNode caller = cls("test/MobSpawnMethodReference", "java/lang/Object");
+        MethodNode method = method(caller, ACC_PUBLIC | ACC_STATIC, "make", "()Ljava/lang/Object;");
+        Handle bootstrap = new Handle(
+                H_INVOKESTATIC,
+                "java/lang/invoke/LambdaMetafactory",
+                "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                        + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)"
+                        + "Ljava/lang/invoke/CallSite;",
+                false);
+        Handle legacyReference = new Handle(H_INVOKEVIRTUAL, mob, "finalizeSpawn", oldDesc, false);
+        InvokeDynamicInsnNode indy = new InvokeDynamicInsnNode(
+                "apply",
+                "()Ljava/lang/Object;",
+                bootstrap,
+                Type.getMethodType("()Ljava/lang/Object;"),
+                legacyReference,
+                Type.getMethodType("()Ljava/lang/Object;"));
+        method.instructions.add(indy);
+        method.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(caller).calls);
+        assertTrue(indy.bsmArgs[1] instanceof Handle);
+        Handle migrated = (Handle) indy.bsmArgs[1];
+        assertEquals(H_INVOKESTATIC, migrated.getTag());
+        assertEquals(MIGRATE + "SpawnCompat", migrated.getOwner());
+        assertEquals("finalizeSpawn", migrated.getName());
+        assertEquals(helperDesc, migrated.getDesc());
+        verify(caller);
+    }
+
+    @Test
+    void superMobFinalizeSpawnKeepsInvokespecialAndDropsOnlyTheRemovedTag() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+
+        ClassNode child = cls("test/SuperMobSpawnCaller", mob);
+        MethodNode invoke = method(child, ACC_PUBLIC, "invoke",
+                "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT + ";)L" + spawnData + ";");
+        invoke.instructions.add(new VarInsnNode(ALOAD, 0));
+        for (int i = 1; i <= 5; i++) invoke.instructions.add(new VarInsnNode(ALOAD, i));
+        invoke.instructions.add(new MethodInsnNode(INVOKESPECIAL, mob, "finalizeSpawn", oldDesc, false));
+        invoke.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(child).calls);
+        MethodInsnNode call = find(invoke, mob, "finalizeSpawn");
+        assertNotNull(call);
+        assertEquals(INVOKESPECIAL, call.getOpcode(), "super dispatch must remain non-virtual");
+        assertEquals(newDesc, call.desc);
+        assertEquals(POP, call.getPrevious().getOpcode(), "only the legacy CompoundTag argument is removed");
+        assertNull(find(invoke, MIGRATE + "SpawnCompat", "finalizeSpawn"));
+        verify(child);
+    }
+
+    @Test
+    void explicitEntityTypeCreateAndSpawnOverloadsUseTagPreservingAdapters() {
+        String entityType = "net/minecraft/world/entity/EntityType";
+        String serverLevel = "net/minecraft/server/level/ServerLevel";
+        String consumer = "java/util/function/Consumer";
+        String pos = "net/minecraft/core/BlockPos";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String oldDesc = "(L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos + ";L" + spawnType
+                + ";ZZ)Lnet/minecraft/world/entity/Entity;";
+        String helperDesc = "(L" + entityType + ";L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos
+                + ";L" + spawnType + ";ZZ)Lnet/minecraft/world/entity/Entity;";
+
+        ClassNode caller = cls("test/ExplicitEntityTypeCalls", "java/lang/Object");
+        MethodNode create = method(caller, ACC_PUBLIC | ACC_STATIC, "create",
+                "(L" + entityType + ";L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos + ";L" + spawnType + ";ZZ)Lnet/minecraft/world/entity/Entity;");
+        MethodNode spawn = method(caller, ACC_PUBLIC | ACC_STATIC, "spawn",
+                "(L" + entityType + ";L" + serverLevel + ";L" + CT + ";L" + consumer + ";L" + pos + ";L" + spawnType + ";ZZ)Lnet/minecraft/world/entity/Entity;");
+        for (MethodNode method : List.of(create, spawn)) {
+            for (int i = 0; i <= 7; i++) {
+                Type argument = Type.getArgumentTypes(method.desc)[i];
+                method.instructions.add(new VarInsnNode(argument.getOpcode(ILOAD), new int[] {0,1,2,3,4,5,6,7}[i]));
+            }
+            method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, entityType,
+                    method.name, oldDesc, false));
+            method.instructions.add(new InsnNode(ARETURN));
+        }
+
+        assertEquals(2, apply(caller).calls);
+        MethodInsnNode createAdapter = find(create, MIGRATE + "EntityTypeCompat", "create");
+        MethodInsnNode spawnAdapter = find(spawn, MIGRATE + "EntityTypeCompat", "spawn");
+        assertNotNull(createAdapter);
+        assertNotNull(spawnAdapter);
+        assertEquals(INVOKESTATIC, createAdapter.getOpcode());
+        assertEquals(INVOKESTATIC, spawnAdapter.getOpcode());
+        assertEquals(helperDesc, createAdapter.desc);
+        assertEquals(helperDesc, spawnAdapter.desc);
+        assertNull(find(create, entityType, "create"));
+        assertNull(find(spawn, entityType, "spawn"));
+        verify(caller);
+    }
+
+    @Test
+    void legacyMobFinalizeSpawnBridgeReadsTheTagFromThisInstance() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode c = cls("test/MyMob", mob);
+        MethodNode legacy = method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new VarInsnNode(ALOAD, 4));
+        legacy.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).bridges);
+
+        MethodNode bridge = findDeclared(c, "finalizeSpawn", newDesc);
+        assertNotNull(bridge, "a legacy five-argument override needs a target four-argument bridge");
+        MethodInsnNode tag = find(bridge, MIGRATE + "SpawnContext", "currentTagFor");
+        assertNotNull(tag, "the bridge must query the active tag for this Mob");
+        assertEquals(INVOKESTATIC, tag.getOpcode());
+        assertEquals("(Ljava/lang/Object;)L" + CT + ";", tag.desc);
+        assertEquals(ALOAD, tag.getPrevious().getOpcode());
+        assertEquals(0, ((VarInsnNode) tag.getPrevious()).var);
+
+        MethodInsnNode dispatch = find(bridge, c.name, "finalizeSpawn");
+        assertNotNull(dispatch);
+        assertEquals(INVOKEVIRTUAL, dispatch.getOpcode(), "dispatch must reach the most-derived legacy override");
+        assertEquals(oldDesc, dispatch.desc);
+        verify(c);
+    }
+
+    @Test
+    void mobTargetFinalizeSpawnDeclarationFailsEvenWithoutLegacyOverride() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+
+        ClassNode c = cls("test/MyMobWithOnlyTargetShapedOverload", mob);
+        MethodNode overload = method(c, ACC_PUBLIC, "finalizeSpawn", newDesc);
+        overload.instructions.add(new InsnNode(ACONST_NULL));
+        overload.instructions.add(new InsnNode(ARETURN));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(c));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(c.name));
+    }
+
+    @Test
+    void mobLegacyFinalizeSpawnBridgeFailsWhenBothSignaturesAreDeclaredInOneClass() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode c = cls("test/MyMobWithOverload", mob);
+        MethodNode legacy = method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new InsnNode(ACONST_NULL));
+        legacy.instructions.add(new InsnNode(ARETURN));
+        MethodNode overload = method(c, ACC_PUBLIC, "finalizeSpawn", newDesc);
+        overload.instructions.add(new InsnNode(ACONST_NULL));
+        overload.instructions.add(new InsnNode(ARETURN));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(c));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(c.name));
+    }
+
+    @Test
+    void mobLegacyFinalizeSpawnBridgeFailsWhenPrivateTargetDescriptorOccupiesBridgeSlot() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode c = cls("test/MyMobWithPrivateOverload", mob);
+        MethodNode legacy = method(c, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new InsnNode(ACONST_NULL));
+        legacy.instructions.add(new InsnNode(ARETURN));
+        MethodNode privateOverload = method(c, ACC_PRIVATE, "finalizeSpawn", newDesc);
+        privateOverload.instructions.add(new InsnNode(ACONST_NULL));
+        privateOverload.instructions.add(new InsnNode(ARETURN));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(c));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(c.name));
+    }
+
+    @Test
+    void mobLegacyFinalizeSpawnBridgeFailsWhenTargetShapedOverloadIsInChildClass() {
+        String mob = "net/minecraft/world/entity/Mob";
+        String level = "net/minecraft/world/level/ServerLevelAccessor";
+        String difficulty = "net/minecraft/world/DifficultyInstance";
+        String spawnType = "net/minecraft/world/entity/MobSpawnType";
+        String spawnData = "net/minecraft/world/entity/SpawnGroupData";
+        String oldDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";L" + CT
+                + ";)L" + spawnData + ";";
+        String newDesc = "(L" + level + ";L" + difficulty + ";L" + spawnType + ";L" + spawnData + ";)L" + spawnData + ";";
+        ClassNode parent = cls("test/BaseLegacyMob", mob);
+        MethodNode legacy = method(parent, ACC_PUBLIC, "finalizeSpawn", oldDesc);
+        legacy.instructions.add(new InsnNode(ACONST_NULL));
+        legacy.instructions.add(new InsnNode(ARETURN));
+        ClassNode child = cls("test/ChildMobWithOverload", parent.name);
+        MethodNode overload = method(child, ACC_PUBLIC, "finalizeSpawn", newDesc);
+        overload.instructions.add(new InsnNode(ACONST_NULL));
+        overload.instructions.add(new InsnNode(ARETURN));
+
+        IllegalStateException error = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class, () -> apply(parent, child));
+        assertTrue(error.getMessage().contains("four-argument finalizeSpawn declaration"));
+        assertTrue(error.getMessage().contains(child.name));
     }
 
     @Test

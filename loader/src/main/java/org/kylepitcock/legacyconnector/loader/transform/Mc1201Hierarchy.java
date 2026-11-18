@@ -159,6 +159,30 @@ public final class Mc1201Hierarchy {
     }
 
     /**
+     * Whether a non-synthetic method with this exact signature is declared by
+     * any class or interface from this mod jar in the ancestry of {@code owner}.
+     * Generated compatibility bridges are synthetic and must not be treated
+     * as source declarations when detecting signature collisions.
+     */
+    boolean hasNonSyntheticModDeclaration(String owner, String name, String desc) {
+        return hasNonSyntheticModDeclaration(owner, name, desc, new HashSet<>());
+    }
+
+    private boolean hasNonSyntheticModDeclaration(String owner, String name, String desc, Set<String> seen) {
+        if (owner == null || !seen.add(owner)) return false;
+        ClassNode node = mod.get(owner);
+        if (node == null) return false;
+        for (MethodNode method : node.methods) {
+            if (method.name.equals(name) && method.desc.equals(desc)
+                    && (method.access & Opcodes.ACC_SYNTHETIC) == 0) return true;
+        }
+        for (String parent : supers(owner)) {
+            if (hasNonSyntheticModDeclaration(parent, name, desc, seen)) return true;
+        }
+        return false;
+    }
+
+    /**
      * Who declares {@code name+desc} first when looking from {@code owner} upwards: a class of the mod, Minecraft's own tree (the method is not
      * in the mod, the rule table decides) or unknown. Walks only mod classes and stops at the first Minecraft class: whether Minecraft itself has
      * the method is the rule table's knowledge.

@@ -93,6 +93,20 @@ public final class Forge1201TargetApiVerifier {
         }
     }
 
+    /**
+     * Local-variable load instructions observed in one directly-declared method body.
+     * This is bytecode evidence only; it does not perform control-flow or value-flow analysis.
+     */
+    public record MethodCodeSummary(boolean codePresent, Map<Integer, Integer> localLoadCounts) {
+        public MethodCodeSummary {
+            localLoadCounts = Map.copyOf(localLoadCounts);
+        }
+
+        public int loadCount(int localSlot) {
+            return localLoadCounts.getOrDefault(localSlot, 0);
+        }
+    }
+
     public enum LookupStatus {
         FOUND,
         MISSING,
@@ -128,6 +142,20 @@ public final class Forge1201TargetApiVerifier {
                     target.interfaces(),
                     signatures(target.methods()),
                     signatures(target.fields())));
+        }
+
+        /** Returns the access flags for a directly declared method, or empty when absent. */
+        public Optional<Integer> declaredMethodAccess(String owner, String name, String descriptor)
+                throws IOException {
+            TargetClass target = verifier.readClass(owner);
+            return target == null ? Optional.empty()
+                    : Optional.ofNullable(target.methodAccess().get(new MemberKey(name, descriptor)));
+        }
+
+        /** Inspects local load opcodes in a directly declared method body without defining the class. */
+        public Optional<MethodCodeSummary> inspectMethodCode(String owner, String name, String descriptor)
+                throws IOException {
+            return verifier.inspectMethodCode(owner, name, descriptor);
         }
 
         public MemberLookup lookupMethod(String owner, String name, String descriptor) throws IOException {
@@ -171,13 +199,15 @@ public final class Forge1201TargetApiVerifier {
             String superName,
             List<String> interfaces,
             Set<MemberKey> methods,
-            Set<MemberKey> fields) {}
+            Set<MemberKey> fields,
+            Map<MemberKey, Integer> methodAccess) {}
 
     private record Lookup(boolean found, boolean complete) {}
 
     private final ClassBytesProvider classBytes;
     private final Map<String, TargetClass> classCache = new HashMap<>();
     private final Set<String> missingClassCache = new HashSet<>();
+    private final Map<MethodCodeKey, Optional<MethodCodeSummary>> methodCodeCache = new HashMap<>();
 
     private Forge1201TargetApiVerifier(ClassBytesProvider classBytes) {
         this.classBytes = classBytes;
@@ -362,6 +392,78 @@ public final class Forge1201TargetApiVerifier {
                 || kind == Forge1201MappingCatalog.Kind.UNMAPPED_FORGE_API;
     }
 
+    private record MethodCodeKey(String owner, MemberKey member) {}
+
+    private Optional<MethodCodeSummary> inspectMethodCode(String owner, String name, String descriptor)
+            throws IOException {
+        MethodCodeKey cacheKey = new MethodCodeKey(owner, new MemberKey(name, descriptor));
+        Optional<MethodCodeSummary> cached = methodCodeCache.get(cacheKey);
+        if (cached != null) return cached;
+
+        TargetClass classInfo = readClass(owner);
+        if (classInfo == null || !classInfo.methods().contains(cacheKey.member())) {
+            methodCodeCache.put(cacheKey, Optional.empty());
+            return Optional.empty();
+        }
+
+        final String[] actualOwner = new String[1];
+        final boolean[] methodFound = new boolean[1];
+        final boolean[] codePresent = new boolean[1];
+        Map<Integer, Integer> localLoadCounts = new HashMap<>();
+        try (InputStream input = classBytes.open(owner)) {
+            if (input == null) {
+                throw new IOException("Class resource disappeared while inspecting method code: " + owner);
+            }
+            ClassReader reader = new ClassReader(input);
+            reader.accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override
+                public void visit(int version, int access, String className, String signature,
+                                  String parentName, String[] implementedInterfaces) {
+                    actualOwner[0] = className;
+                }
+
+                @Override
+                public MethodVisitor visitMethod(
+                        int access, String methodName, String methodDescriptor,
+                        String signature, String[] exceptions) {
+                    if (!name.equals(methodName) || !descriptor.equals(methodDescriptor)) return null;
+                    methodFound[0] = true;
+                    return new MethodVisitor(Opcodes.ASM9) {
+                        @Override
+                        public void visitCode() {
+                            codePresent[0] = true;
+                        }
+
+                        @Override
+                        public void visitVarInsn(int opcode, int local) {
+                            if (opcode == Opcodes.ILOAD || opcode == Opcodes.LLOAD
+                                    || opcode == Opcodes.FLOAD || opcode == Opcodes.DLOAD
+                                    || opcode == Opcodes.ALOAD) {
+                                localLoadCounts.merge(local, 1, Integer::sum);
+                            }
+                        }
+                    };
+                }
+            }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        } catch (IllegalArgumentException malformedClass) {
+            throw new IOException("Cannot inspect method code in class resource " + owner, malformedClass);
+        }
+
+        if (!owner.equals(actualOwner[0])) {
+            throw new IOException("Target class resource mismatch while inspecting method code: requested "
+                    + owner + " but found " + actualOwner[0]);
+        }
+        if (!methodFound[0]) {
+            throw new IOException("Method metadata disappeared while inspecting bytecode: "
+                    + owner + "#" + name + descriptor);
+        }
+
+        Optional<MethodCodeSummary> result =
+                Optional.of(new MethodCodeSummary(codePresent[0], localLoadCounts));
+        methodCodeCache.put(cacheKey, result);
+        return result;
+    }
+
     private TargetClass readClass(String internalName) throws IOException {
         if (classCache.containsKey(internalName)) return classCache.get(internalName);
         if (missingClassCache.contains(internalName)) return null;
@@ -377,6 +479,7 @@ public final class Forge1201TargetApiVerifier {
             final List<String> interfaces = new ArrayList<>();
             final Set<MemberKey> methods = new HashSet<>();
             final Set<MemberKey> fields = new HashSet<>();
+            final Map<MemberKey, Integer> methodAccess = new HashMap<>();
             ClassReader reader = new ClassReader(input);
             reader.accept(new ClassVisitor(Opcodes.ASM9) {
                 @Override
@@ -399,7 +502,9 @@ public final class Forge1201TargetApiVerifier {
                 @Override
                 public MethodVisitor visitMethod(int access, String methodName, String descriptor,
                                                  String signature, String[] exceptions) {
-                    methods.add(new MemberKey(methodName, descriptor));
+                    MemberKey key = new MemberKey(methodName, descriptor);
+                    methods.add(key);
+                    methodAccess.put(key, access);
                     return null;
                 }
             }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
@@ -409,7 +514,8 @@ public final class Forge1201TargetApiVerifier {
                         + " but found " + name[0]);
             }
             TargetClass result = new TargetClass(
-                    name[0], superName[0], List.copyOf(interfaces), Set.copyOf(methods), Set.copyOf(fields));
+                    name[0], superName[0], List.copyOf(interfaces), Set.copyOf(methods), Set.copyOf(fields),
+                    Map.copyOf(methodAccess));
             classCache.put(internalName, result);
             return result;
         } catch (IllegalArgumentException malformedClass) {
