@@ -180,13 +180,13 @@ public final class Forge1201EventAdapter {
         return classNode.methods.stream().anyMatch(method ->
                 name.equals(method.name)
                         && descriptor.equals(method.desc)
-                        && (method.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) == 0);
+                        && (method.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE | Opcodes.ACC_SYNTHETIC)) == 0);
     }
 
     private static void injectMissingSourceMethods(ClassNode classNode) {
         if (!declaresAnyMethod(classNode, METHOD_IS_CANCELABLE, IS_CANCELABLE_DESCRIPTOR)) {
             MethodNode method = new MethodNode(
-                    Opcodes.ASM9, Opcodes.ACC_PUBLIC, METHOD_IS_CANCELABLE, IS_CANCELABLE_DESCRIPTOR, null, null);
+                    Opcodes.ASM9, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, METHOD_IS_CANCELABLE, IS_CANCELABLE_DESCRIPTOR, null, null);
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
             method.instructions.add(new MethodInsnNode(
                     Opcodes.INVOKESTATIC, BRIDGE, BASE_IS_CANCELABLE,
@@ -199,7 +199,7 @@ public final class Forge1201EventAdapter {
 
         if (!declaresAnyMethod(classNode, METHOD_IS_CANCELED, IS_CANCELED_DESCRIPTOR)) {
             MethodNode method = new MethodNode(
-                    Opcodes.ASM9, Opcodes.ACC_PUBLIC, METHOD_IS_CANCELED, IS_CANCELED_DESCRIPTOR, null, null);
+                    Opcodes.ASM9, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, METHOD_IS_CANCELED, IS_CANCELED_DESCRIPTOR, null, null);
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
             method.instructions.add(new MethodInsnNode(
                     Opcodes.INVOKESTATIC, BRIDGE, BASE_IS_CANCELED,
@@ -212,7 +212,7 @@ public final class Forge1201EventAdapter {
 
         if (!declaresAnyMethod(classNode, METHOD_SET_CANCELED, SET_CANCELED_DESCRIPTOR)) {
             MethodNode method = new MethodNode(
-                    Opcodes.ASM9, Opcodes.ACC_PUBLIC, METHOD_SET_CANCELED, SET_CANCELED_DESCRIPTOR, null, null);
+                    Opcodes.ASM9, Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, METHOD_SET_CANCELED, SET_CANCELED_DESCRIPTOR, null, null);
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
             method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
             method.instructions.add(new MethodInsnNode(
