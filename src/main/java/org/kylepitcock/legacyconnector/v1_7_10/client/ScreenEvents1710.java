@@ -22,19 +22,30 @@ public final class ScreenEvents1710 {
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Closing e) -> ModernViews1710.closed(e.getScreen()));
         NeoForge.EVENT_BUS.addListener((ScreenEvent.MouseScrolled.Pre e) -> legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$scrolled(e.getScrollDeltaY()));
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Init.Post e) -> {
-            if (!(e.getScreen() instanceof LegacyScreen ls) || !wants(GuiScreenEvent.InitGuiEvent.Post.class)) return;
-            GuiScreenEvent.InitGuiEvent.Post post = new GuiScreenEvent.InitGuiEvent.Post(ls.legacy(), ls.legacy().mcc$buttons());
+            GuiScreen legacy = hosted(e.getScreen());
+            if (legacy == null || !wants(GuiScreenEvent.InitGuiEvent.Post.class)) return;
+            GuiScreenEvent.InitGuiEvent.Post post = new GuiScreenEvent.InitGuiEvent.Post(legacy, legacy.mcc$buttons());
             MinecraftForge.EVENT_BUS.post(post);
         });
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Render.Post e) -> {
-            if (!(e.getScreen() instanceof LegacyScreen ls) || !wants(GuiScreenEvent.DrawScreenEvent.Post.class)) return;
+            if (!wants(GuiScreenEvent.DrawScreenEvent.Post.class)) return;
+            // a game screen is seen through its stand-in, as for InitGuiEvent (ModernViews1710), so a mod drawing on every screen (cursor effects) still does
+            GuiScreen legacy = hosted(e.getScreen());
+            if (legacy == null) legacy = ModernViews1710.of(e.getScreen());
             RenderContext.beginGui(e.getGuiGraphics());
             try {
-                MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.DrawScreenEvent.Post(ls.legacy(), e.getMouseX(), e.getMouseY(), e.getPartialTick()));
+                MinecraftForge.EVENT_BUS.post(new GuiScreenEvent.DrawScreenEvent.Post(legacy, e.getMouseX(), e.getMouseY(), e.getPartialTick()));
             } finally {
                 RenderContext.end();
             }
         });
+    }
+
+    /** The legacy screen a hosting modern screen shows: a replaced screen or a legacy container GUI (both are GuiScreens to Forge's events). */
+    private static GuiScreen hosted(net.minecraft.client.gui.screens.Screen screen) {
+        if (screen instanceof LegacyScreen ls) return ls.legacy();
+        if (screen instanceof LegacyContainerScreen lcs) return lcs.legacy();
+        return null;
     }
 
     static boolean wants(Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event> type) {
