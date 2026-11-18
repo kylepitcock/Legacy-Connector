@@ -100,7 +100,11 @@ public final class Forge1201EventBridge {
      * @Cancelable.
      */
     private static boolean isKnownSourceCancelableBuiltin(Event event) {
-        Class<?> type = event.getClass();
+        return isKnownSourceCancelableBuiltinType(event.getClass());
+    }
+
+    /** Package-private type-only seam for pinned built-in classification tests. */
+    static boolean isKnownSourceCancelableBuiltinType(Class<?> type) {
         while (type != null && Event.class.isAssignableFrom(type)) {
             if (BUILTIN_SOURCE_CANCELABLE_TARGET_TYPES.contains(type.getName().replace('.', '/'))) {
                 return true;
