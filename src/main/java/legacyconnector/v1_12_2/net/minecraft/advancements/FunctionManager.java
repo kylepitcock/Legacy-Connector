@@ -12,6 +12,14 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 public class FunctionManager {
     private final MinecraftServer server;
 
+    /** Phantom field: reads go to {@link #mcc$get$functions}. */
+    @Deprecated
+    public Map<ResourceLocation, FunctionObject> functions;
+
+    public static Map<ResourceLocation, FunctionObject> mcc$get$functions(FunctionManager manager) {
+        return manager.getFunctions();
+    }
+
     public FunctionManager(java.io.File functionDirIn, MinecraftServer serverIn) {
         this.server = serverIn;
     }

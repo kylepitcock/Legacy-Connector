@@ -168,6 +168,17 @@ public class PlayerList {
         return view(sp);
     }
 
+    /** Loads the player's saved data (playerdata of the world) into the player; the data, or null when the player has none. */
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound readPlayerDataFromFile(EntityPlayerMP playerIn) {
+        return playerIn == null ? null
+                : legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData.mcc$server().readPlayerData(playerIn);
+    }
+
+    /** The login is done by the game; a mod's list overrides this to add its own steps and calls it first. */
+    public void initializeConnectionToPlayer(legacyconnector.v1_12_2.net.minecraft.network.NetworkManager netManager, EntityPlayerMP playerIn,
+            legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer nethandlerplayserver) {
+    }
+
     public String[] getOppedPlayerNames() {
         var m = modern();
         return m == null ? new String[0] : m.getOpNames();
