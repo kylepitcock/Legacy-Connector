@@ -3,12 +3,16 @@ package legacyconnector.v1_7_10.net.minecraft.item;
 import legacyconnector.v1_7_10.net.minecraft.block.material.Material;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities;
+import legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister;
 import legacyconnector.v1_7_10.net.minecraft.init.Items;
+import legacyconnector.v1_7_10.net.minecraft.util.IIcon;
 import legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** The glass bottle: right-click on water fills it into a water bottle (the item the potion class gives at damage 0). */
 public class ItemGlassBottle extends Item {
+    private IIcon field_150920_a;
+
     public ItemGlassBottle(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
@@ -34,5 +38,15 @@ public class ItemGlassBottle extends Item {
         if (stack.mcc$count() <= 0) return water;
         if (!player.inventory.addItemStackToInventory(water)) player.dropPlayerItemWithRandomChoice(water, false);
         return stack;
+    }
+
+    @Override
+    public IIcon getIconFromDamage(int damage) {
+        return field_150920_a != null ? field_150920_a : super.getIconFromDamage(damage);
+    }
+
+    @Override
+    public void registerIcons(IIconRegister register) {
+        field_150920_a = register.registerIcon(getIconString() + "_empty");
     }
 }

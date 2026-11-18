@@ -19,6 +19,19 @@ public abstract class ServerCommandDelegate extends CommandBase {
         this.usage = "commands." + name + ".usage";
     }
 
+    /** Whether the online player of that name is an operator. */
+    protected static boolean mcc$isOperator(String name) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return false;
+        var player = server.getPlayerList().getPlayerByName(name);
+        return player != null && server.getPlayerList().isOp(player.getGameProfile());
+    }
+
+    /** Rewrites the 1.7.10 arguments into what the modern command takes (identity by default). */
+    protected String[] mcc$translateArguments(String[] args) {
+        return args;
+    }
+
     @Override
     public String getCommandName() {
         return name;
@@ -38,6 +51,7 @@ public abstract class ServerCommandDelegate extends CommandBase {
     public void processCommand(ICommandSender sender, String[] args) {
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
+        args = mcc$translateArguments(args);
         String line = name + (args.length == 0 ? "" : " " + String.join(" ", args));
         var source = sender instanceof legacyconnector.v1_7_10.net.minecraft.entity.Entity e && e.mcc$entity() != null
                 ? e.mcc$entity().createCommandSourceStack() : server.createCommandSourceStack();
