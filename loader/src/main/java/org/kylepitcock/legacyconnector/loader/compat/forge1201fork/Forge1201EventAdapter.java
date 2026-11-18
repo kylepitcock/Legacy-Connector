@@ -49,10 +49,6 @@ public final class Forge1201EventAdapter {
     private static final String BASE_IS_CANCELED = "baseIsCanceled";
     private static final String BASE_SET_CANCELED = "baseSetCanceled";
 
-    private static final List<String> SOURCE_EVENT_BASE_PREFIXES = List.of(
-            "net/minecraftforge/event/",
-            "legacyconnector/v1_20_1/net/minecraftforge/event/");
-
     /**
      * Pinned Forge 47.3.0 event types whose isCancelable/isCanceled implementations
      * are inherited from Event. The two interaction classes with their own setCanceled
@@ -110,24 +106,28 @@ public final class Forge1201EventAdapter {
      *                     an impossible event-method invocation shape
      */
     public static Stats apply(ClassNode classNode) throws IOException {
-        return apply(classNode, Forge1201EventAdapter::isForgeEventApiType);
+        return apply(classNode, SOURCE_EVENT::equals, SOURCE_EVENT::equals);
     }
 
     /**
-     * Transforms a class when the caller can resolve its source Forge Event ancestry.
-     * The predicate receives the source-named superclass and must return true only when
-     * that superclass is proven to extend Forge Event, possibly through mod-defined bases.
-     * A missing superclass must resolve false; callers must not guess from a method name.
+     * Transforms a class when the caller can resolve its source Forge Event hierarchy.
+     * The first predicate proves that the named superclass is a Forge Event descendant,
+     * including mod-defined intermediary event classes. The second predicate proves that
+     * it is a Forge-provided API event class whose target counterpart lacks the connector
+     * compatibility surface and therefore needs local method shims. Both predicates must
+     * fail closed for missing or unclassified classes; package prefixes and method names
+     * are not sufficient evidence of Event ancestry.
      */
-    public static Stats apply(ClassNode classNode, Predicate<String> sourceEventSuperclass) throws IOException {
+    public static Stats apply(
+            ClassNode classNode,
+            Predicate<String> sourceEventSuperclass,
+            Predicate<String> forgeApiEventSuperclass) throws IOException {
         Objects.requireNonNull(classNode, "classNode");
         Objects.requireNonNull(sourceEventSuperclass, "sourceEventSuperclass");
+        Objects.requireNonNull(forgeApiEventSuperclass, "forgeApiEventSuperclass");
 
-        // Forge API parents are target-native classes after remapping and therefore need
-        // the compatibility methods injected into this transformed child. A mod-defined
-        // event parent is transformed separately and already supplies the inherited
-        // compatibility surface; only ancestry-sensitive markers need to be added here.
-        boolean extendsForgeEventApiType = isForgeEventApiType(classNode.superName);
+        boolean extendsForgeEventApiType = classNode.superName != null
+                && forgeApiEventSuperclass.test(classNode.superName);
         boolean sourceForgeEventDescendant = extendsForgeEventApiType
                 || (classNode.superName != null && sourceEventSuperclass.test(classNode.superName));
         boolean directlyCancelable = removeCancelableAnnotation(classNode);
@@ -167,7 +167,7 @@ public final class Forge1201EventAdapter {
         for (MethodNode method : classNode.methods) {
             for (AbstractInsnNode instruction : method.instructions) {
                 if (instruction instanceof MethodInsnNode call
-                        && isSourceEventCancellationMethod(call.owner, call.name, call.desc)) {
+                        && isSourceEventCancellationMethod(call.owner, call.name, call.desc, forgeApiEventSuperclass)) {
                     if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
                         if (hasAuditedTargetSuperImplementation(call.owner, call.name, call.desc)) {
                             // Preserve the target's corresponding interaction override:
@@ -192,7 +192,7 @@ public final class Forge1201EventAdapter {
                                 + " for Forge Event cancellation call in "
                                 + classNode.name + "." + method.name + method.desc);
                     }
-                } else if (containsUnsupportedEventHandle(instruction)) {
+                } else if (containsUnsupportedEventHandle(instruction, forgeApiEventSuperclass)) {
                     throw new IOException("Method-handle reference to a Forge Event cancellation method "
                             + "requires a dedicated LambdaMetafactory adapter: "
                             + classNode.name + "." + method.name + method.desc);
@@ -203,13 +203,14 @@ public final class Forge1201EventAdapter {
         return new Stats(roots, directlyCancelable ? 1 : 0, callSites, superCalls);
     }
 
-    private static boolean isForgeEventApiType(String internalName) {
-        return internalName != null && (SOURCE_EVENT.equals(internalName)
-                || SOURCE_EVENT_BASE_PREFIXES.stream().anyMatch(internalName::startsWith));
-    }
-
-    private static boolean isSourceEventCancellationMethod(String owner, String name, String descriptor) {
-        return isForgeEventApiType(owner)
+    private static boolean isSourceEventCancellationMethod(
+            String owner,
+            String name,
+            String descriptor,
+            Predicate<String> forgeApiEventSuperclass) {
+        boolean sourceEventApiOwner = SOURCE_EVENT.equals(owner)
+                || (owner != null && forgeApiEventSuperclass.test(owner));
+        return sourceEventApiOwner
                 && ((METHOD_IS_CANCELABLE.equals(name) && IS_CANCELABLE_DESCRIPTOR.equals(descriptor))
                 || (METHOD_IS_CANCELED.equals(name) && IS_CANCELED_DESCRIPTOR.equals(descriptor))
                 || (METHOD_SET_CANCELED.equals(name) && SET_CANCELED_DESCRIPTOR.equals(descriptor)));
@@ -315,31 +316,38 @@ public final class Forge1201EventAdapter {
         call.itf = false;
     }
 
-    private static boolean containsUnsupportedEventHandle(AbstractInsnNode instruction) {
+    private static boolean containsUnsupportedEventHandle(
+            AbstractInsnNode instruction,
+            Predicate<String> forgeApiEventSuperclass) {
         if (instruction instanceof org.objectweb.asm.tree.LdcInsnNode ldc) {
-            return containsUnsupportedEventHandleValue(ldc.cst);
+            return containsUnsupportedEventHandleValue(ldc.cst, forgeApiEventSuperclass);
         }
         if (instruction instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode dynamic) {
-            if (containsEventMethodHandle(dynamic.bsm)) return true;
+            if (containsEventMethodHandle(dynamic.bsm, forgeApiEventSuperclass)) return true;
             for (Object argument : dynamic.bsmArgs) {
-                if (containsUnsupportedEventHandleValue(argument)) return true;
+                if (containsUnsupportedEventHandleValue(argument, forgeApiEventSuperclass)) return true;
             }
         }
         return false;
     }
 
-    private static boolean containsUnsupportedEventHandleValue(Object value) {
-        if (value instanceof Handle handle) return containsEventMethodHandle(handle);
+    private static boolean containsUnsupportedEventHandleValue(
+            Object value,
+            Predicate<String> forgeApiEventSuperclass) {
+        if (value instanceof Handle handle) return containsEventMethodHandle(handle, forgeApiEventSuperclass);
         if (value instanceof ConstantDynamic dynamic) {
-            if (containsEventMethodHandle(dynamic.getBootstrapMethod())) return true;
+            if (containsEventMethodHandle(dynamic.getBootstrapMethod(), forgeApiEventSuperclass)) return true;
             for (int index = 0; index < dynamic.getBootstrapMethodArgumentCount(); index++) {
-                if (containsUnsupportedEventHandleValue(dynamic.getBootstrapMethodArgument(index))) return true;
+                if (containsUnsupportedEventHandleValue(dynamic.getBootstrapMethodArgument(index), forgeApiEventSuperclass)) return true;
             }
         }
         return false;
     }
 
-    private static boolean containsEventMethodHandle(Handle handle) {
-        return isSourceEventCancellationMethod(handle.getOwner(), handle.getName(), handle.getDesc());
+    private static boolean containsEventMethodHandle(
+            Handle handle,
+            Predicate<String> forgeApiEventSuperclass) {
+        return isSourceEventCancellationMethod(
+                handle.getOwner(), handle.getName(), handle.getDesc(), forgeApiEventSuperclass);
     }
 }
