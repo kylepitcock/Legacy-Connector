@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 231;
+    public static final int TRANSFORMER_VERSION = 235;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -807,6 +807,10 @@ public final class LegacyJarTransformer {
     }
 
     static void write(Path output, Manifest manifest, Map<String, byte[]> classes, Map<String, byte[]> resources) throws IOException {
+        // Mixin generates org.spongepowered.asm.synthetic.* itself (module mixin_synthetic); a mod jar that ships a stray Dummy there (Blueprint)
+        // exports the same package from a second module and the module layer fails to resolve with any other mod that has synthetic classes.
+        classes = withoutMixinSynthetic(classes);
+        resources = withoutMixinSynthetic(resources);
         Files.createDirectories(output.getParent());
         Path tmp = output.resolveSibling(output.getFileName() + ".tmp");
         try (OutputStream os = Files.newOutputStream(tmp); JarOutputStream jos = new JarOutputStream(os, manifest)) {
@@ -825,6 +829,15 @@ public final class LegacyJarTransformer {
             for (var e : classes.entrySet()) put(jos, e.getKey(), e.getValue());
         }
         moveIntoPlace(tmp, output);
+    }
+
+    private static Map<String, byte[]> withoutMixinSynthetic(Map<String, byte[]> in) {
+        boolean any = false;
+        for (String n : in.keySet()) if (n.startsWith("org/spongepowered/asm/synthetic/")) { any = true; break; }
+        if (!any) return in;
+        Map<String, byte[]> out = new LinkedHashMap<>(in);
+        out.keySet().removeIf(n -> n.startsWith("org/spongepowered/asm/synthetic/"));
+        return out;
     }
 
     private static void addParents(java.util.Set<String> dirs, String name) {

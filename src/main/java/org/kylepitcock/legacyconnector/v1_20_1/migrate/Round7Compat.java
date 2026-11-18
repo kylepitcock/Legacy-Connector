@@ -18,6 +18,25 @@ public final class Round7Compat {
         return name;
     }
 
+    /**
+     * {@code ObfuscationReflectionHelper.findMethod(clazz, name, params...)}: the static {@code PotionBrewing.addMix(Potion, Item, Potion)} (a mod's way
+     * past the protected 1.20.1 method; Blueprint) is answered with the brewing facade's method, which registers the mix on the 1.21.1 builder. Anything
+     * else is looked up as before.
+     */
+    public static java.lang.reflect.Method findMethod(Class<?> clazz, String name, Class<?>... params) {
+        if (clazz == net.minecraft.world.item.alchemy.PotionBrewing.class && params.length == 3
+                && params[0] == net.minecraft.world.item.alchemy.Potion.class && params[1] == net.minecraft.world.item.Item.class
+                && params[2] == net.minecraft.world.item.alchemy.Potion.class) {
+            try {
+                return LegacyBrewing.class.getMethod("addPotionMix", net.minecraft.world.item.alchemy.Potion.class,
+                        net.minecraft.world.item.Item.class, net.minecraft.world.item.alchemy.Potion.class);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(clazz, name, params);
+    }
+
     /** {@code DisplayInfo.getFrame()}: the frame type is the advancement type now. */
     public static AdvancementType displayFrame(DisplayInfo info) {
         return info.getType();

@@ -1,0 +1,22 @@
+# client verification set of 1.20.1 migration rounds 11/12 (WIDGETS_LOCATION, renderNameTag, selection lists, TextAndImageButton, loot, brewing); not a regression suite
+1.20.1 Quark-4.0-462.jar
+1.20.1 Zeta-1.0-30.jar
+1.20.1 alexsmobs-1.22.9.jar
+1.20.1 alexscaves-2.0.2.jar
+lib citadel-1.21.1-2.7.6.jar
+lib geckolib-neoforge-1.21.1-4.9.3.jar
+lib curios-neoforge-9.5.1+1.21.1.jar
+1.20.1 amendments-1.20-2.2.3.jar
+1.20.1 supplementaries-1.20-3.1.40.jar
+1.20.1 moonlight-1.20-2.16.14-forge.jar
+1.20.1 midnightlib-forge-1.9.1+1.20.1.jar
+1.20.1 railcraft-reborn-1.20.1-1.1.10.jar
+1.20.1 Aquaculture-1.20.1-2.5.5.jar
+1.20.1 The_Undergarden-1.20.1-0.8.14.jar
+1.20.1 blueprint-1.20.1-7.1.3.jar
+1.20.1 TConstruct-1.20.1-3.10.2.92.jar
+1.20.1 Mantle-1.20.1-1.11.79.jar
+1.20.1 irons_spellbooks-1.20.1-3.4.0.11.jar
+lib caelus-neoforge-7.0.1+1.21.1.jar
+lib player-animation-lib-forge-2.0.4+1.21.1.jar
+1.20.1 Stargate Journey-1.20.1-0.6.42.jar
