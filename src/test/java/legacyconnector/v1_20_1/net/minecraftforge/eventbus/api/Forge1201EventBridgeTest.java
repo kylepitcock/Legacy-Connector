@@ -52,7 +52,8 @@ final class Forge1201EventBridgeTest {
         assertFalse(Forge1201EventBridge.baseIsCancelable(event),
                 "The source Forge Event superclass checks @Cancelable, not the synthetic target interface.");
         Forge1201EventBridge.setCanceled(event, true);
-        assertTrue(event.superValue);
+        assertFalse(event.superValue,
+                "The source Event superclass sees no @Cancelable annotation on this class or its parents.");
         assertTrue(Forge1201EventBridge.isCanceled(event));
     }
 
