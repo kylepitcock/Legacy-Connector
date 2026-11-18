@@ -67,7 +67,22 @@ public final class Forge1201EventBridge {
     /** Non-virtual equivalent of Forge Event.isCancelable(). */
     public static boolean baseIsCancelable(Event event) {
         Objects.requireNonNull(event, "event");
-        return event instanceof Forge1201CancelableEventMarker;
+        if (event instanceof Forge1201CancelableEventMarker) {
+            return true;
+        }
+
+        // A target-side ICancellableEvent on a source superclass usually reflects
+        // that superclass's source @Cancelable marker. Do not mistake the interface
+        // we injected solely for a custom isCancelable override as source annotation.
+        Class<?> superclass = event.getClass().getSuperclass();
+        while (superclass != null && Event.class.isAssignableFrom(superclass)) {
+            if (ICancellableEvent.class.isAssignableFrom(superclass)
+                    && !Forge1201CustomCancelableOverrideMarker.class.isAssignableFrom(superclass)) {
+                return true;
+            }
+            superclass = superclass.getSuperclass();
+        }
+        return false;
     }
 
     /** Non-virtual equivalent of Forge Event.isCanceled(): read the base Event state. */
