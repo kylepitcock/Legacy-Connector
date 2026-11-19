@@ -1067,6 +1067,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/angry-pixel-the-betweenlands-mod/files/all?page=1&pageSize=20&showAlphaFiles=show",
    "date": "2026-11-18",
    "open": true
+  },
+  {
+   "issue": 317,
+   "mod": "Techguns Community Edition 2.2.0.1",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- all 3d items (itemshared items, not weapons!) have a missing texture model - though, grenade launcher's model is invisible in inventory and is shown like a missing model in the hand - as far as I can see, none of the machines actually work - probably a tileentity issue (+ their inventory models are either incorrect or straight invisible). the same is applied for blocks with metadata <img width=…",
+   "lc": "4a2aa53",
+   "neoforge": "21.1.265",
+   "link": "https://modrinth.com/mod/techguns/version/2.2.0.1",
+   "date": "2026-11-19",
+   "open": true
   }
  ]
 }
