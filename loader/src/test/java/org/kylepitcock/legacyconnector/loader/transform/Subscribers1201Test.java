@@ -72,7 +72,7 @@ class Subscribers1201Test implements Opcodes {
         AnnotationNode subscriber = new AnnotationNode("Lnet/neoforged/fml/common/EventBusSubscriber;");
         subscriber.values = new java.util.ArrayList<>(List.of(
                 "bus", new String[]{"Lnet/neoforged/fml/common/EventBusSubscriber$Bus;", "FORGE"},
-                "value", List.of(new String[]{"Lnet/neoforged/api/distmarker/Dist;", "CLIENT"})));
+                "value", java.util.Collections.singletonList(new String[]{"Lnet/neoforged/api/distmarker/Dist;", "CLIENT"})));
         events.visibleAnnotations = new java.util.ArrayList<>(List.of(subscriber));
         MethodNode handler = new MethodNode(ACC_PUBLIC | ACC_STATIC, "onTick", "(Ljava/lang/Object;)V", null, null);
         handler.visibleAnnotations = new java.util.ArrayList<>(List.of(new AnnotationNode("Lnet/neoforged/bus/api/SubscribeEvent;")));
