@@ -865,6 +865,18 @@
    "open": true
   },
   {
+   "issue": 292,
+   "mod": "IC2Classic-1.7.10-1.2.6",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Updated with newest legacyconnector 0.5 Mod is mostly survival ready Haven't tried: Crop system Works at first glance: World gen features Energy system & tiers Machines & generators Nuclear reactor Electric tools & armor/jetpacks Cabling Tree tapping Wrenching Recipes Upgrades Painting, cf foam Fluid cells Hazmat protection Tesla coils Mod boats functional Radiation potion effect Bugged: Quantum …",
+   "lc": "0.5.0",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/ic2-classic/files/8014397",
+   "date": "2026-11-15",
+   "open": false
+  },
+  {
    "issue": 295,
    "mod": "CustomOreGen-1.12-1.8.1",
    "mc": "1.12.2",
