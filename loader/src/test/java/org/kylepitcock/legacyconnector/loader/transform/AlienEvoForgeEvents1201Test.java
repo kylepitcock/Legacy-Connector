@@ -112,11 +112,13 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
                     "L" + VANILLA_LAYERS + ";"));
             pre.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, VANILLA_LAYERS,
                     "type", "()L" + NAMED_OVERLAY + ";", false));
-            pre.instructions.add(new JumpInsnNode(IF_ACMPNE, new LabelNode()));
+            LabelNode nextOverlay = new LabelNode();
+            pre.instructions.add(new JumpInsnNode(IF_ACMPNE, nextOverlay));
             pre.instructions.add(new VarInsnNode(ALOAD, 0));
             pre.instructions.add(new InsnNode(ICONST_1));
             pre.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, RENDER_LAYER_PRE,
                     "setCanceled", "(Z)V", false));
+            pre.instructions.add(nextOverlay);
         }
         // The optional external-overlay check uses NamedGuiOverlay.id() in Forge.
         pre.instructions.add(new VarInsnNode(ALOAD, 0));
@@ -143,7 +145,9 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
                     "L" + VANILLA_LAYERS + ";"));
             post.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, VANILLA_LAYERS,
                     "type", "()L" + NAMED_OVERLAY + ";", false));
-            post.instructions.add(new JumpInsnNode(IF_ACMPNE, new LabelNode()));
+            LabelNode nextOverlay = new LabelNode();
+            post.instructions.add(new JumpInsnNode(IF_ACMPNE, nextOverlay));
+            post.instructions.add(nextOverlay);
         }
         post.instructions.add(new InsnNode(RETURN));
         node.methods.add(post);
