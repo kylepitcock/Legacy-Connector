@@ -297,6 +297,8 @@ public final class Forge1201Transformer {
         int palladiumPlayerSkinFetcherChanges = 0;
         int palladiumFlightHandlerChanges = 0;
         int palladiumFlightTakeoffGraceChanges = 0;
+        int palladiumFlightStateTraceChanges = 0;
+        int palladiumFlightInputTraceChanges = 0;
         int palladiumCustomProjectileChanges = 0;
         int palladiumProjectileExplosionChanges = 0;
         int palladiumCustomProjectileRendererChanges = 0;
@@ -350,6 +352,10 @@ public final class Forge1201Transformer {
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumFlightTakeoffGraceChange = PalladiumFlightHandler1201.applyGroundTakeoffGrace(node);
             palladiumFlightTakeoffGraceChanges += palladiumFlightTakeoffGraceChange;
+            int palladiumFlightStateTraceChange = PalladiumFlightHandler1201.applyDiagnostics(node);
+            palladiumFlightStateTraceChanges += palladiumFlightStateTraceChange;
+            int palladiumFlightInputTraceChange = PalladiumFlightInputTrace1201.apply(node);
+            palladiumFlightInputTraceChanges += palladiumFlightInputTraceChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
             palladiumCustomProjectileChanges += palladiumCustomProjectileChange;
             int palladiumProjectileExplosionChange = PalladiumProjectileExplosion1201.apply(node);
@@ -389,7 +395,8 @@ public final class Forge1201Transformer {
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
-                    + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumCustomProjectileChange
+                    + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumFlightStateTraceChange
+                    + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
         }
@@ -421,6 +428,14 @@ public final class Forge1201Transformer {
         if (palladiumFlightTakeoffGraceChanges > 0) {
             result.notes.add("Palladium FlightHandler now gives a newly activated grounded flyer up to six ticks to lift off, then preserves its original landing cancellation: "
                     + palladiumFlightTakeoffGraceChanges + " FlightHandler class(es)");
+        }
+        if (palladiumFlightStateTraceChanges > 0) {
+            result.notes.add("Optional Palladium FlightHandler state tracing installed at setFlightType/tick/updateMovement: "
+                    + palladiumFlightStateTraceChanges + " method(s)");
+        }
+        if (palladiumFlightInputTraceChanges > 0) {
+            result.notes.add("Optional PalladiumCore InputEvent.Key callback tracing installed: "
+                    + palladiumFlightInputTraceChanges + " handler method(s)");
         }
         if (palladiumCustomProjectileChanges > 0) {
             result.notes.add("Palladium CustomProjectile EntityDimensions.width field access migrated to the public 1.21.1 record accessor: "

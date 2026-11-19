@@ -183,6 +183,55 @@ final class PalladiumFlightHandler1201 implements Opcodes {
         tick.maxStack = Math.max(tick.maxStack, 3);
     }
 
+
+    /**
+     * Installs opt-in traces at the server/client flight state transitions. The helper is a
+     * no-op unless -Dlegacyconnector.debug.palladiumFlight=true is supplied at launch.
+     */
+    static int applyDiagnostics(ClassNode node) {
+        if (!FLIGHT_HANDLER.equals(node.name)) return 0;
+
+        int changed = 0;
+        MethodNode setter = find(node, "setFlightType", "(L" + FLIGHT_TYPE + ";)V");
+        if (setter != null && !hasDiagnosticCall(setter, "logFlightType")) {
+            InsnList trace = new InsnList();
+            trace.add(new LdcInsnNode("setFlightType"));
+            trace.add(new VarInsnNode(ALOAD, 0));
+            trace.add(new VarInsnNode(ALOAD, 1));
+            trace.add(new MethodInsnNode(INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumFlightDebugCompat",
+                    "logFlightType", "(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", false));
+            setter.instructions.insert(trace);
+            setter.maxStack = Math.max(setter.maxStack, 3);
+            changed++;
+        }
+
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null || !method.desc.equals("()V")) continue;
+            if (!method.name.equals("tick") && !method.name.equals("updateMovement")) continue;
+            if (hasDiagnosticCall(method, "logFlightState")) continue;
+
+            InsnList trace = new InsnList();
+            trace.add(new LdcInsnNode(method.name));
+            trace.add(new VarInsnNode(ALOAD, 0));
+            trace.add(new MethodInsnNode(INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumFlightDebugCompat",
+                    "logFlightState", "(Ljava/lang/String;Ljava/lang/Object;)V", false));
+            method.instructions.insert(trace);
+            method.maxStack = Math.max(method.maxStack, 2);
+            changed++;
+        }
+        return changed;
+    }
+
+    private static boolean hasDiagnosticCall(MethodNode method, String name) {
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && call.owner.equals("legacyconnector/v1_20_1/PalladiumFlightDebugCompat")
+                    && call.name.equals(name)) return true;
+        }
+        return false;
+    }
+
     private static MethodInsnNode findSingleOnGroundCall(MethodNode tick) {
         MethodInsnNode found = null;
         int count = 0;
