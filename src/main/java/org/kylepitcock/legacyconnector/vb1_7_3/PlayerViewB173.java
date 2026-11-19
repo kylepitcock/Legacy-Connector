@@ -136,6 +136,9 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         inventory.selectedSlot = player.getInventory().selected;
         for (int i = 0; i < 36; i++) {
             ItemStack legacy = StacksB173.toLegacy(player.getInventory().items.get(i));
+            // a refresh in the middle of a callback (the block a mod's right click grows triggers one) keeps the slot original code already
+            // changed or holds (a decremented or emptied stack) while the native slot is unchanged since the last sync
+            if (same(legacy, before[i])) continue;
             inventory.main[i] = legacy;
             before[i] = legacy == null ? null : legacy.copy();
         }

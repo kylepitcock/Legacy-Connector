@@ -271,11 +271,11 @@ public final class DeferredGenWrites {
                 } else if (w.state != null) {
                     Map<BlockPos, BlockState> states = STATES.get(level);
                     if (states != null) states.remove(w.pos, w.state);
-                    region.setBlock(w.pos, w.state, 2);
+                    if (region.setBlock(w.pos, w.state, 2)) refreshShapes(region, w.pos);
                 } else {
                     BlockState current = region.getBlockState(w.pos);
                     BlockState next = BlockBridge.withMeta(current, w.meta);
-                    if (next != current) region.setBlock(w.pos, next, 2);
+                    if (next != current && region.setBlock(w.pos, next, 2)) refreshShapes(region, w.pos);
                 }
             } catch (RuntimeException e) {
                 LOG.debug("Deferred legacy generation write at {} failed", w.pos, e);
@@ -309,16 +309,43 @@ public final class DeferredGenWrites {
                     if (states != null) states.remove(w.pos, w.state);
                     if(w.intercepted)org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.writeReplacement(level,w.pos,w.state,WRITE_FLAGS,512);
                     else level.setBlock(w.pos, w.state, WRITE_FLAGS);
+                    refreshShapes(level, w.pos);
                 } else {
                     BlockState current = level.getBlockState(w.pos);
                     BlockState next = BlockBridge.withMeta(current, w.meta);
-                    if (next != current) level.setBlock(w.pos, next, WRITE_FLAGS);
+                    if (next != current && level.setBlock(w.pos, next, WRITE_FLAGS)) refreshShapes(level, w.pos);
                 }
             } catch (RuntimeException e) {
                 if(w.durable!=0)retain(level,w,key);
                 LOG.debug("Deferred legacy generation write at {} failed", w.pos, e);
             }
         }
+    }
+
+    /**
+     * Shape-dependent state (fence, pane and wall connections, the snowy flag of grass under a removed snow layer, stair shapes) follows the
+     * neighbours in the native game; a legacy write without shape updates (generation, a deferred write, a builder's edit mode) left it stale. The
+     * block at the position and its six neighbours take the state their neighbours give them now. Only a block's own properties change: a shape
+     * update that would replace the block (an unsupported torch, a door without its partner) is not applied.
+     */
+    public static void refreshShapes(net.minecraft.world.level.LevelAccessor access,BlockPos pos){
+        refresh(access,pos);
+        for(var side:net.minecraft.core.Direction.values())refresh(access,pos.relative(side));
+    }
+    private static void refresh(net.minecraft.world.level.LevelAccessor access,BlockPos at){
+        if(!access.hasChunkAt(at))return;
+        BlockState current=access.getBlockState(at);
+        // two-block halves (doors, tall plants) are written half by half and repaired by the builder itself
+        if(current.getProperties().isEmpty()||current.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF))return;
+        BlockState updated=current;
+        for(var side:net.minecraft.core.Direction.values()){
+            var neighbour=at.relative(side);
+            if(!access.hasChunkAt(neighbour))continue;
+            var next=updated.updateShape(side,access.getBlockState(neighbour),access,at,neighbour);
+            if(next.getBlock()!=current.getBlock())return;
+            updated=next;
+        }
+        if(updated!=current)access.setBlock(at,updated,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
     }
 
     private static void retain(ServerLevel level,Write write,long key){
@@ -340,6 +367,7 @@ public final class DeferredGenWrites {
                         ?org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.writeReplacement(level,write.pos,write.state,WRITE_FLAGS,512)
                         :access.setBlock(write.pos,write.state,2);
                 if(!accepted&&access.getBlockState(write.pos)!=write.state){retain(level,write,key);return;}
+                refreshShapes(access,write.pos);
                 var states=STATES.get(level);if(states!=null)states.remove(write.pos,write.state);
             }
             data.accepted(write.durable);

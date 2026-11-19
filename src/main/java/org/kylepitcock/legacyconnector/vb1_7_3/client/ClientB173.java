@@ -13,6 +13,8 @@ import org.kylepitcock.legacyconnector.vb1_7_3.MenusB173;
 public final class ClientB173 implements MenusB173.Client {
     /** How long a GUI the client's callback built waits for its menu. */
     private static final long PENDING_MS = 10_000;
+    /** LWJGL2 codes of shift, control, alt and the meta keys (left and right). */
+    static boolean modifier(int code){return code==42||code==54||code==29||code==157||code==56||code==184||code==219||code==220;}
 
     private Screen pending;
     private long pendingAt;
@@ -44,8 +46,10 @@ public final class ClientB173 implements MenusB173.Client {
             for(var binding:Minecraft.getInstance().options.keyMappings)
                 if(KeysB173.lwjgl(binding.getKey().getValue())==code&&binding.isDown())return true;
             // LWJGL2 polled any key, bound or not (mods read their own keys from a properties file); only while no screen takes the input.
+            // Modifier keys are read inside screens too: Beta's own container shift-click and mods' trade screens (shift and ctrl change
+            // the amount) poll them while their screen is open, and a held modifier types nothing.
             var mc=Minecraft.getInstance();
-            if(mc.screen!=null||mc.getWindow()==null)return false;
+            if(mc.getWindow()==null||mc.screen!=null&&!modifier(code))return false;
             int glfw=KeysB173.glfw(code);
             return glfw>0&&com.mojang.blaze3d.platform.InputConstants.isKeyDown(mc.getWindow().getWindow(),glfw);
         });
