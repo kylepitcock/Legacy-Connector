@@ -115,6 +115,14 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         return queryShape(state,level,pos,false);
     }
 
+    private Boolean selectedBoxOverridden;
+    /** A block with its own {@code getSelectedBoundingBoxFromPool} (Block.getBoundingBox here). */
+    private boolean selectedBoxOverridden() {
+        Boolean own = selectedBoxOverridden;
+        if (own == null) selectedBoxOverridden = own = overrides(legacy, "getBoundingBox", World.class, int.class, int.class, int.class);
+        return own;
+    }
+
     private Boolean ownRaycast;
     /** A block with its own {@code collisionRayTrace} (a multipart block picks the part a ray meets and sets its bounds to it). */
     private boolean ownRaycast() {
@@ -139,6 +147,12 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
             try (var views = EntityViewsB173.callbackScope()) {
                 var hit = legacy.raycast(World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ(), from, to);
                 if (hit == null) return Shapes.empty();
+                // Beta drew getSelectedBoundingBoxFromPool after the trace: a block with its own (a pipe's core and arms) is outlined by it
+                if (selectedBoxOverridden()) {
+                    var selected = legacy.getBoundingBox(World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
+                    if (selected == null) return Shapes.empty();
+                    return Shapes.create(selected.mcc$box().move(-pos.getX(), -pos.getY(), -pos.getZ()));
+                }
                 double minX = legacy.minX, minY = legacy.minY, minZ = legacy.minZ, maxX = legacy.maxX, maxY = legacy.maxY, maxZ = legacy.maxZ;
                 if (maxX <= minX || maxY <= minY || maxZ <= minZ) return null;
                 return Shapes.box(Math.max(0, minX), Math.max(0, minY), Math.max(0, minZ), Math.min(1, maxX), Math.min(1, maxY), Math.min(1, maxZ));
@@ -200,6 +214,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
                     // Beta outlines and targets a block by getBoundingBox (getSelectedBoundingBoxFromPool): none, or a box with no extent, hides it.
                     var selected=legacy.getBoundingBox(world,pos.getX(),pos.getY(),pos.getZ());
                     if(selected==null||selected.maxX<=selected.minX&&selected.maxY<=selected.minY&&selected.maxZ<=selected.minZ)return Shapes.empty();
+                    // a block with its own selection box (a pipe: its core and connected arms) is outlined and targeted by that box, as Beta drew it
+                    if(selectedBoxOverridden())return Shapes.create(selected.mcc$box().move(-pos.getX(),-pos.getY(),-pos.getZ()));
                     return outline;
                 }
                 var boxes=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box>();

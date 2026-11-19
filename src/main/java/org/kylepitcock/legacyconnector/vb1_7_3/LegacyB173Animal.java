@@ -43,6 +43,8 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private float syncedHeadYaw=Float.NaN,syncedBodyYaw=Float.NaN;
     private boolean syncingView;
     private float appliedMovementSpeed=Float.NaN;
+    /** Beta's ground acceleration factor (0.1 * 0.16277136) in native units (native multiplies the speed by 0.216). */
+    static final float BETA_GROUND_SPEED=0.1F*0.16277136F/0.21600002F;
     private DamageSource damageSource;
     private net.minecraft.world.level.block.state.BlockState fallingState;
     private BlockPos fallingPos;
@@ -351,7 +353,15 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     public void baseTravel(float sideways,float forward){
         if(inTravel)throw new IllegalStateException("Recursive Beta base travel");
         if(!Float.isFinite(sideways)||!Float.isFinite(forward))throw new IllegalStateException("Non-finite Beta travel inputs");
-        inTravel=true;travels++;try{flushView();super.travel(new net.minecraft.world.phys.Vec3(sideways,0,forward));syncView();}finally{inTravel=false;}
+        inTravel=true;travels++;float speed=getSpeed();
+        try{
+            flushView();
+            // Beta's movementSpeed is already in the forward input original AI passes here; its ground acceleration was a fixed
+            // 0.1 * 0.16277136 / f^3. Native travel multiplies the input by getSpeed() * 0.216 / f^3, so the travel runs at Beta's factor
+            // (with movementSpeed as the native speed too, Beta mobs accelerated several times too fast and darted around).
+            setSpeed(BETA_GROUND_SPEED);
+            super.travel(new net.minecraft.world.phys.Vec3(sideways,0,forward));syncView();
+        }finally{setSpeed(speed);inTravel=false;}
     }
     @Override public void move(MoverType type,net.minecraft.world.phys.Vec3 motion){
         if(legacy==null||level().isClientSide){super.move(type,motion);return;}

@@ -30,6 +30,8 @@ public final class BlockQueryB173 extends World {
     @Override public boolean shouldSuffocate(int x,int y,int z) { return method_1783(x,y,z); }
     @Override public Material getMaterial(int x,int y,int z) { var b=Block.BLOCKS[getBlockId(x,y,z)];return b==null?Material.AIR:b.material; }
     @Override public legacyconnector.vb1_7_3.net.minecraft.block.entity.BlockEntity getBlockEntity(int x,int y,int z) {
-        var tile=level.getBlockEntity(new BlockPos(x,y,z));return tile instanceof LegacyB173BlockEntity b?b.legacy():null;
+        var tile=level.getBlockEntity(new BlockPos(x,y,z));if(tile instanceof LegacyB173BlockEntity b)return b.legacy();
+        // a native chest (sign, spawner) reads as its Beta view: a pipe or cable drawn beside it connects as it does in the world
+        return tile==null?null:BlockEntityViewsB173.wrapDetached(tile);
     }
 }
