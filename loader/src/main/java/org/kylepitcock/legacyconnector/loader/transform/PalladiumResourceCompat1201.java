@@ -1679,13 +1679,17 @@ PlayerEvents.tick(e => {
         }
 
         int start = normalized.indexOf(abilityAnchor);
-        int end = normalized.indexOf("\n    },", start);
-        if (end < 0) {
+        int objectStart = normalized.indexOf('{', start);
+        int objectEnd = findMatchingJsonObjectEnd(normalized, objectStart);
+        if (objectEnd < 0) {
             throw new IllegalStateException(
-                    "AlienEvo power " + path + " has no closing block for " + abilityName + ".");
+                    "AlienEvo power " + path + " has no matching closing brace for " + abilityName + ".");
         }
 
-        String block = normalized.substring(start, end);
+        // The ability may be the final entry in the abilities object (closing with
+        // "}") or have a following sibling (closing with "},"). Find its matching
+        // brace instead of assuming a comma after the block.
+        String block = normalized.substring(start, objectEnd + 1);
         String debugFalse = "      \"debug_mode\": false,";
         String debugTrue = "      \"debug_mode\": true,";
         int falseCount = occurrences(block, debugFalse);
@@ -1703,10 +1707,52 @@ PlayerEvents.tick(e => {
                             + ": false=" + falseCount + ", true=" + trueCount);
         }
 
-        String migrated = normalized.substring(0, start) + block + normalized.substring(end);
+        String migrated = normalized.substring(0, start) + block + normalized.substring(objectEnd + 1);
         String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
         resources.put(path, output.getBytes(StandardCharsets.UTF_8));
         return 1;
+    }
+
+    /**
+     * Return the matching closing brace for a JSON object, ignoring braces inside
+     * quoted strings and honoring escaped quotes. Returns -1 for malformed input.
+     */
+    private static int findMatchingJsonObjectEnd(String json, int objectStart) {
+        if (objectStart < 0 || objectStart >= json.length() || json.charAt(objectStart) != '{') {
+            return -1;
+        }
+
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        for (int i = objectStart; i < json.length(); i++) {
+            char current = json.charAt(i);
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (current == '\\\\') {
+                    escaped = true;
+                } else if (current == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (current == '"') {
+                inString = true;
+            } else if (current == '{') {
+                depth++;
+            } else if (current == '}') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+                if (depth < 0) {
+                    return -1;
+                }
+            }
+        }
+        return -1;
     }
 
     /**
