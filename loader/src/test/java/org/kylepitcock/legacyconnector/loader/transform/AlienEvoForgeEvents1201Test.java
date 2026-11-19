@@ -114,10 +114,12 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
                     "type", "()L" + NAMED_OVERLAY + ";", false));
             LabelNode nextOverlay = new LabelNode();
             pre.instructions.add(new JumpInsnNode(IF_ACMPNE, nextOverlay));
+            // The generic Forge API pass runs before AlienEvoForgeEvents1201
+            // and routes the removed Event#setCanceled method through this helper.
             pre.instructions.add(new VarInsnNode(ALOAD, 0));
             pre.instructions.add(new InsnNode(ICONST_1));
-            pre.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, RENDER_LAYER_PRE,
-                    "setCanceled", "(Z)V", false));
+            pre.instructions.add(new MethodInsnNode(INVOKESTATIC, ForgeApiRewrites1201.HELPERS,
+                    "eventSetCanceled", "(Ljava/lang/Object;Z)V", false));
             pre.instructions.add(nextOverlay);
         }
         // The optional external-overlay check uses NamedGuiOverlay.id() in Forge.
@@ -240,7 +242,9 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
                 + countField(pre, VANILLA_LAYERS, "FOOD_LEVEL", AlienEvoForgeEvents1201.RESOURCE_LOCATION)
                 + countField(pre, VANILLA_LAYERS, "ARMOR_LEVEL", AlienEvoForgeEvents1201.RESOURCE_LOCATION)
                 + countField(pre, VANILLA_LAYERS, "AIR_LEVEL", AlienEvoForgeEvents1201.RESOURCE_LOCATION));
-        assertEquals(5, countCalls(pre, AlienEvoForgeEvents1201.CANCELLABLE_EVENT,
+        assertEquals(5, countCalls(pre, ForgeApiRewrites1201.HELPERS,
+                "eventSetCanceled", "(Ljava/lang/Object;Z)V"));
+        assertEquals(0, countCalls(pre, AlienEvoForgeEvents1201.CANCELLABLE_EVENT,
                 "setCanceled", "(Z)V"));
         assertEquals(0, countCalls(pre, NAMED_OVERLAY, "id",
                 "()" + AlienEvoForgeEvents1201.RESOURCE_LOCATION));
@@ -248,15 +252,16 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
                 "()L" + NAMED_OVERLAY + ";"));
         assertEquals(0, countCalls(pre, null, "getOverlay", "()L" + NAMED_OVERLAY + ";"));
 
-        int cancelInterfaces = 0;
+        int cancellationHelpers = 0;
         for (AbstractInsnNode instruction : pre.instructions.toArray()) {
-            if (instruction instanceof MethodInsnNode call && call.name.equals("setCanceled")) {
-                assertEquals(INVOKEINTERFACE, call.getOpcode());
-                assertEquals(AlienEvoForgeEvents1201.CANCELLABLE_EVENT, call.owner);
-                cancelInterfaces++;
+            if (instruction instanceof MethodInsnNode call && call.name.equals("eventSetCanceled")) {
+                assertEquals(INVOKESTATIC, call.getOpcode());
+                assertEquals(ForgeApiRewrites1201.HELPERS, call.owner);
+                assertEquals("(Ljava/lang/Object;Z)V", call.desc);
+                cancellationHelpers++;
             }
         }
-        assertEquals(5, cancelInterfaces);
+        assertEquals(5, cancellationHelpers);
         assertEquals(0, AlienEvoForgeEvents1201.apply(node));
     }
 
