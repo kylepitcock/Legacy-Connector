@@ -1730,7 +1730,7 @@ PlayerEvents.tick(e => {
             if (inString) {
                 if (escaped) {
                     escaped = false;
-                } else if (current == '\\\\') {
+                } else if (current == '\\') {
                     escaped = true;
                 } else if (current == '"') {
                     inString = false;
