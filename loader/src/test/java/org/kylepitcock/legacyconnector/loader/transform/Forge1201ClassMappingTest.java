@@ -59,4 +59,28 @@ class Forge1201ClassMappingTest {
                 "net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Post",
                 transformer.mapClass("net/minecraftforge/client/event/RenderGuiOverlayEvent$Post"));
     }
+
+    @Test
+    void registrationOverlayEventKeepsTheLegacyFacadeForPalladiumCore() {
+        Forge1201Transformer transformer = new Forge1201Transformer(shimWithFacades(
+                "net/minecraftforge/client/event/RegisterGuiOverlaysEvent"));
+
+        assertEquals(
+                SHIM_PREFIX + "net/minecraftforge/client/event/RegisterGuiOverlaysEvent",
+                transformer.mapClass("net/minecraftforge/client/event/RegisterGuiOverlaysEvent"));
+    }
+
+    @Test
+    void vanillaOverlayIdentifiersUseNeoForgeLayersButNamedWrappersStayShimBacked() {
+        Forge1201Transformer transformer = new Forge1201Transformer(shimWithFacades(
+                "net/minecraftforge/client/gui/overlay/VanillaGuiOverlay",
+                "net/minecraftforge/client/gui/overlay/NamedGuiOverlay"));
+
+        assertEquals(
+                "net/neoforged/neoforge/client/gui/VanillaGuiLayers",
+                transformer.mapClass("net/minecraftforge/client/gui/overlay/VanillaGuiOverlay"));
+        assertEquals(
+                SHIM_PREFIX + "net/minecraftforge/client/gui/overlay/NamedGuiOverlay",
+                transformer.mapClass("net/minecraftforge/client/gui/overlay/NamedGuiOverlay"));
+    }
 }
