@@ -152,7 +152,25 @@ public final class Forge1201Transformer {
         // native event types (for example PlayerTickEvent$Post).
         String direct = classRenames.get(name);
         if (direct != null) return direct;
-        // '
+        // Nested JVM classes use character code 36 as their separator.
+        int dollar = name.indexOf(36);
+        if (dollar > 0) {
+            // Curated renames are often declared for an outer event class.
+            // Apply that alias to its nested event types before considering a
+            // same-named legacy facade.
+            String outerName = name.substring(0, dollar);
+            String directOuter = classRenames.get(outerName);
+            if (directOuter != null) return directOuter + name.substring(dollar);
+        }
+        String facade = LegacyVersion.V1_20_1.shimPrefix() + name;
+        if (shim.contains(facade)) return facade;
+        if (dollar > 0) {
+            String outer = mapClass(name.substring(0, dollar));
+            if (!outer.equals(name.substring(0, dollar))) return outer + name.substring(dollar);
+        }
+        for (String[] move : PACKAGE_MOVES) if (name.startsWith(move[0])) return move[1] + name.substring(move[0].length());
+        return name;
+    }
 
     /** A class of an isolated library that this jar does not define: the library tables of the native build do not apply to it. */
     private boolean isForeignIsolated(String owner) {
