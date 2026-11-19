@@ -236,7 +236,7 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
                 + countField(pre, VANILLA_LAYERS, "FOOD_LEVEL", AlienEvoForgeEvents1201.RESOURCE_LOCATION)
                 + countField(pre, VANILLA_LAYERS, "ARMOR_LEVEL", AlienEvoForgeEvents1201.RESOURCE_LOCATION)
                 + countField(pre, VANILLA_LAYERS, "AIR_LEVEL", AlienEvoForgeEvents1201.RESOURCE_LOCATION));
-        assertEquals(3, countCalls(pre, AlienEvoForgeEvents1201.CANCELLABLE_EVENT,
+        assertEquals(5, countCalls(pre, AlienEvoForgeEvents1201.CANCELLABLE_EVENT,
                 "setCanceled", "(Z)V"));
         assertEquals(0, countCalls(pre, NAMED_OVERLAY, "id",
                 "()" + AlienEvoForgeEvents1201.RESOURCE_LOCATION));
