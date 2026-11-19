@@ -58,6 +58,9 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
     private static final String FOV_ANIMATOR =
             "net/habb/alienevo/client/model/animation/FirstPersonFovAnimator";
 
+    private static final String FORGE_API_HELPERS = ForgeApiRewrites1201.HELPERS;
+    private static final String FORGE_API_SET_CANCELED_DESC = "(Ljava/lang/Object;Z)V";
+
     private static final String PLAYER_TICK_POST_DESC = "(L" + PLAYER_TICK_POST + ";)V";
     private static final String SERVER_TICK_POST_DESC = "(L" + SERVER_TICK_POST + ";)V";
     private static final String RENDER_FRAME_PRE_DESC = "(L" + RENDER_FRAME_PRE + ";)V";
@@ -199,19 +202,29 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
         int getNameCalls = countMethodCalls(method, RENDER_GUI_LAYER, "getName", LAYER_GET_NAME_DESC);
         int resourceLocationFields = countVanillaLayerFields(method, RESOURCE_LOCATION);
         int interfaceCancelCalls = countMethodCalls(method, CANCELLABLE_EVENT, "setCanceled", "(Z)V");
+        // ForgeApiRewrites1201 runs before this event-specific adapter. Its generic
+        // @event.setCanceled rule has already converted these calls to the checked
+        // compatibility helper, so accept that shape as well as direct/interface calls.
+        int helperCancelCalls = countMethodCalls(
+                method, FORGE_API_HELPERS, "eventSetCanceled", FORGE_API_SET_CANCELED_DESC);
+        int migratedCancelCalls = interfaceCancelCalls + helperCancelCalls;
+        boolean directCancelShape = cancelCalls == expectedCancelCalls
+                && interfaceCancelCalls == 0 && helperCancelCalls == 0;
+        boolean migratedCancelShape = cancelCalls == 0
+                && migratedCancelCalls == expectedCancelCalls;
 
         if (overlayReads == 0 && typeCalls == 0 && overlayIdCalls == 0
                 && getNameCalls == expectedOverlayReads
                 && resourceLocationFields == expectedLayerFields
                 && cancelCalls == 0
-                && interfaceCancelCalls == expectedCancelCalls) {
+                && migratedCancelCalls == expectedCancelCalls) {
             return 0;
         }
 
         if (overlayReads != expectedOverlayReads
                 || typeCalls != expectedTypeCalls
                 || layerFields != expectedLayerFields
-                || cancelCalls != expectedCancelCalls
+                || (!directCancelShape && !migratedCancelShape)
                 || overlayIdCalls != expectedOverlayIdCalls) {
             throw new IllegalStateException(
                     method.name + " has an unexpected RenderGuiLayerEvent migration shape: "
@@ -265,9 +278,11 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
         int migratedGetNames = countMethodCalls(method, RENDER_GUI_LAYER, "getName", LAYER_GET_NAME_DESC);
         int migratedResourceFields = countVanillaLayerFields(method, RESOURCE_LOCATION);
         int migratedInterfaceCalls = countMethodCalls(method, CANCELLABLE_EVENT, "setCanceled", "(Z)V");
+        int migratedHelperCalls = countMethodCalls(
+                method, FORGE_API_HELPERS, "eventSetCanceled", FORGE_API_SET_CANCELED_DESC);
         if (migratedGetNames != expectedOverlayReads
                 || migratedResourceFields != expectedLayerFields
-                || migratedInterfaceCalls != expectedCancelCalls
+                || migratedInterfaceCalls + migratedHelperCalls != expectedCancelCalls
                 || countMethodCalls(method, VANILLA_GUI_LAYERS, "type", NAMED_OVERLAY_DESC) != 0
                 || countMethodCalls(method, NAMED_GUI_OVERLAY, "id", "()" + RESOURCE_LOCATION) != 0) {
             throw new IllegalStateException(method.name + " did not reach the expected ResourceLocation GUI-layer form");
