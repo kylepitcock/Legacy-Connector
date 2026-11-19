@@ -62,7 +62,7 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
     private static final String RENDER_GUI_LAYER_PRE_DESC = "(L" + RENDER_GUI_LAYER_PRE + ";)V";
     private static final String RENDER_GUI_LAYER_POST_DESC = "(L" + RENDER_GUI_LAYER_POST + ";)V";
     private static final String NAMED_OVERLAY_DESC = "()L" + NAMED_GUI_OVERLAY + ";";
-    private static final String LAYER_GET_NAME_DESC = "()" + RESOURCE_LOCATION;
+    static final String LAYER_GET_NAME_DESC = "()" + RESOURCE_LOCATION;
     private static final String LAYER_FIELD_DESC = "L" + VANILLA_GUI_LAYERS + ";";
 
     private AlienEvoForgeEvents1201() {}
