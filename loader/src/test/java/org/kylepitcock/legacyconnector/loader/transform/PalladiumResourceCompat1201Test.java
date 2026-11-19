@@ -1670,6 +1670,40 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void skipsLegacyScriptRewritesForNativeResourcesWithoutScripts() {
+        Map<String, byte[]> resources = new HashMap<>();
+        String cannonbolt = """
+                {
+                  "abilities": {
+                    "multi_hit": {
+                      "type": "alienevo:meteor_barrage",
+                      "launch_height": 5.6,
+                      "slam_count": 6,
+                      "aoe_radius": 6.5
+                    }
+                  }
+                }
+                """;
+        String kineceleran = """
+                {
+                  "abilities": {
+                    "punch_barrage": {
+                      "type": "alienevo:motion_to_entity",
+                      "debug_mode": false,
+                      "motion_strength": 3.2
+                    }
+                  }
+                }
+                """;
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER, cannonbolt);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER, kineceleran);
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(cannonbolt, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER));
+        assertEquals(kineceleran, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER));
+    }
+
+    @Test
     void doesNotTouchOtherResourcesOrUnrelatedScripts() {
         Map<String, byte[]> resources = new HashMap<>();
         String unrelated = "if (entity[slot + 'ArmorItem']) { }";
