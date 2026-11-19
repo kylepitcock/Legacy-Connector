@@ -36,8 +36,10 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
     static final String RENDER_GUI_LAYER_POST = RENDER_GUI_LAYER + "$Post";
     static final String VANILLA_GUI_LAYERS =
             "net/neoforged/neoforge/client/gui/VanillaGuiLayers";
+    // Intermediate descriptor retained by the compatibility facade. Every use of
+    // the old named-overlay wrapper is removed/replaced before the translated class is emitted.
     static final String NAMED_GUI_OVERLAY =
-            "net/neoforged/neoforge/client/gui/overlay/NamedGuiOverlay";
+            "legacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/NamedGuiOverlay";
     static final String PLAYER_EVENT =
             "net/neoforged/neoforge/event/entity/player/PlayerEvent";
     static final String CANCELLABLE_EVENT = "net/neoforged/bus/api/ICancellableEvent";
