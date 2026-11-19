@@ -193,7 +193,7 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
         int typeCalls = countMethodCalls(method, VANILLA_GUI_LAYERS, "type", NAMED_OVERLAY_DESC);
         int layerFields = countVanillaLayerFields(method, LAYER_FIELD_DESC);
         int cancelCalls = countCallsByName(method, "setCanceled", "(Z)V", cancellable ? RENDER_GUI_LAYER_PRE : null);
-        int overlayIdCalls = countMethodCalls(method, NAMED_GUI_OVERLAY, "id", RESOURCE_LOCATION);
+        int overlayIdCalls = countMethodCalls(method, NAMED_GUI_OVERLAY, "id", "()" + RESOURCE_LOCATION);
         int getNameCalls = countMethodCalls(method, RENDER_GUI_LAYER, "getName", LAYER_GET_NAME_DESC);
         int resourceLocationFields = countVanillaLayerFields(method, RESOURCE_LOCATION);
         int interfaceCancelCalls = countMethodCalls(method, CANCELLABLE_EVENT, "setCanceled", "(Z)V");
@@ -237,7 +237,7 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
                 changed++;
             } else if (call.owner.equals(NAMED_GUI_OVERLAY)
                     && call.name.equals("id")
-                    && call.desc.equals(RESOURCE_LOCATION)) {
+                    && call.desc.equals("()" + RESOURCE_LOCATION)) {
                 method.instructions.remove(call);
                 changed++;
             } else if (cancellable && call.owner.equals(RENDER_GUI_LAYER_PRE)
@@ -267,7 +267,7 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
                 || migratedResourceFields != expectedLayerFields
                 || migratedInterfaceCalls != expectedCancelCalls
                 || countMethodCalls(method, VANILLA_GUI_LAYERS, "type", NAMED_OVERLAY_DESC) != 0
-                || countMethodCalls(method, NAMED_GUI_OVERLAY, "id", RESOURCE_LOCATION) != 0) {
+                || countMethodCalls(method, NAMED_GUI_OVERLAY, "id", "()" + RESOURCE_LOCATION) != 0) {
             throw new IllegalStateException(method.name + " did not reach the expected ResourceLocation GUI-layer form");
         }
         return changed;
