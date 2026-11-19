@@ -70,6 +70,7 @@ public final class KeyClientB173 {
     }
     private static void refreshPressed(){for(var entry:MAPPINGS.entrySet())KeyBinding.mcc$set$pressed(entry.getKey(),down(entry.getValue()));}
     private static byte[] lastRaw=new byte[32];
+    private static net.minecraft.world.phys.Vec3 lastVelocity=net.minecraft.world.phys.Vec3.ZERO;
     private static void tick(){
         var minecraft=Minecraft.getInstance();var current=minecraft.getConnection();
         guiSnapshot=currentGui();menuSnapshot=menuActive(minecraft.screen);
@@ -92,6 +93,13 @@ public final class KeyClientB173 {
             long window=minecraft.getWindow().getWindow();
             for(int code=1;code<256;code++){int glfw=KeysB173.glfw(code);
                 if(glfw>0&&InputConstants.isKeyDown(window,glfw)||legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$forced(code))bits[code>>3]|=(byte)(1<<(code&7));}
+        }
+        // the player's own velocity, which original server code changes (a jetpack's thrust, a bouncing block): the server has a stale copy
+        var velocity=minecraft.player.getDeltaMovement();
+        if(heartbeat||!velocity.equals(lastVelocity)){
+            lastVelocity=velocity;var integrated=minecraft.getSingleplayerServer();
+            if(integrated!=null){var uuid=minecraft.player.getUUID();double x=velocity.x,y=velocity.y,z=velocity.z;integrated.execute(()->{var actor=integrated.getPlayerList().getPlayer(uuid);if(actor!=null)KeyBindingsB173.velocity(actor,x,y,z);});}
+            else if(current.hasChannel(LegacyPayload.TYPE))net.neoforged.neoforge.network.PacketDistributor.sendToServer(KeyBindingsB173.velocityPacket(velocity.x,velocity.y,velocity.z));
         }
         if(heartbeat||!Arrays.equals(bits,lastRaw)){
             lastRaw=bits;
