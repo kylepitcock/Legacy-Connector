@@ -3,42 +3,65 @@ package legacyconnector.v1_20_1;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
-import net.neoforged.neoforge.client.event.InputEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Temporary, opt-in diagnostic hooks for Palladium Survival flight.
  * Enable with -Dlegacyconnector.debug.palladiumFlight=true.
+ *
+ * This shared helper deliberately does not reference client-only event classes:
+ * FlightHandler is loaded on both logical sides.
  */
 public final class PalladiumFlightDebugCompat {
+    private static final String DEBUG_PROPERTY = "legacyconnector.debug.palladiumFlight";
     private static final Logger LOGGER = LoggerFactory.getLogger("LegacyConnector/PalladiumFlight");
     private static final AtomicInteger MOVEMENT_SAMPLES = new AtomicInteger();
 
     private PalladiumFlightDebugCompat() {
     }
 
-    private static boolean enabled() {
-        return Boolean.getBoolean("legacyconnector.debug.palladiumFlight");
+    public static boolean isEnabled() {
+        return Boolean.getBoolean(DEBUG_PROPERTY);
+    }
+
+    /** Always logs once during client bootstrap so a missing JVM argument is visible. */
+    public static void logClientBootstrap(boolean globalKeyObserverRegistered) {
+        LOGGER.info("[PalladiumFlightTrace] client bootstrap diagnosticsEnabled={} globalKeyObserverRegistered={} property={} rawValue={}",
+                isEnabled(), globalKeyObserverRegistered, DEBUG_PROPERTY, System.getProperty(DEBUG_PROPERTY, "<unset>"));
+    }
+
+    /** Called from PalladiumCore's transformed class initializer, proving its callback instrumentation loaded. */
+    public static void logInputTraceInstalled(String handlerClass) {
+        if (!isEnabled()) return;
+        LOGGER.info("[PalladiumFlightTrace] subscriber instrumentation loaded handler={}", handlerClass);
     }
 
     public static void logKeyEvent(String handler, Object rawEvent) {
-        if (!enabled() || !(rawEvent instanceof InputEvent.Key event)) return;
-        int key = event.getKey();
+        if (!isEnabled() || rawEvent == null) return;
+
+        // Avoid linking this common helper to NeoForge's client-only InputEvent.Key class.
+        Object keyValue = invokeNoArgs(rawEvent, "getKey");
+        if (!(keyValue instanceof Number keyNumber)) return;
+        int key = keyNumber.intValue();
         if (!isFlightKey(key)) return;
+
+        int action = number(invokeNoArgs(rawEvent, "getAction"), -1);
+        Object scanCode = invokeNoArgs(rawEvent, "getScanCode");
+        Object modifiers = invokeNoArgs(rawEvent, "getModifiers");
         LOGGER.info("[PalladiumFlightTrace] input callback={} key={} code={} action={} scanCode={} modifiers={}",
-                handler, keyName(key), key, actionName(event.getAction()), event.getScanCode(), event.getModifiers());
+                handler, keyName(key), key, actionName(action), scanCode, modifiers);
     }
 
     public static void logFlightType(String stage, Object handler, Object requestedType) {
-        if (!enabled()) return;
+        if (!isEnabled()) return;
         Object player = readField(handler, "player");
         LOGGER.info("[PalladiumFlightTrace] flight activation stage={} requestedType={} player={}",
                 stage, requestedType, player == null ? "null" : player.getClass().getName());
     }
 
     public static void logFlightState(String stage, Object handler) {
-        if (!enabled() || handler == null) return;
+        if (!isEnabled() || handler == null) return;
         if (MOVEMENT_SAMPLES.incrementAndGet() % 10 != 0) return;
 
         Object player = readField(handler, "player");
@@ -76,6 +99,10 @@ public final class PalladiumFlightDebugCompat {
             case 2 -> "REPEAT";
             default -> "UNKNOWN_" + action;
         };
+    }
+
+    private static int number(Object value, int fallback) {
+        return value instanceof Number number ? number.intValue() : fallback;
     }
 
     private static Object readField(Object target, String name) {

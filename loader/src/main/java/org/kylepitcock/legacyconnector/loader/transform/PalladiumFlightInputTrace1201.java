@@ -4,6 +4,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -52,15 +53,53 @@ final class PalladiumFlightInputTrace1201 implements Opcodes {
             method.maxStack = Math.max(method.maxStack, 2);
             changed++;
         }
+
+        if (changed > 0) installClassLoadMarker(node);
         return changed;
+    }
+
+    private static void installClassLoadMarker(ClassNode node) {
+        if (hasClassLoadMarker(node)) return;
+
+        MethodNode initializer = null;
+        for (MethodNode method : node.methods) {
+            if ("<clinit>".equals(method.name) && "()V".equals(method.desc)) {
+                initializer = method;
+                break;
+            }
+        }
+        if (initializer == null) {
+            initializer = new MethodNode(ACC_STATIC, "<clinit>", "()V", null, null);
+            initializer.instructions.add(new InsnNode(RETURN));
+            node.methods.add(initializer);
+        }
+
+        InsnList marker = new InsnList();
+        marker.add(new LdcInsnNode(HANDLER.replace('/', '.')));
+        marker.add(new MethodInsnNode(INVOKESTATIC, HELPER, "logInputTraceInstalled", "(Ljava/lang/String;)V", false));
+        initializer.instructions.insert(marker);
+        initializer.maxStack = Math.max(initializer.maxStack, 1);
+    }
+
+    private static boolean hasClassLoadMarker(ClassNode node) {
+        for (MethodNode method : node.methods) {
+            if (!"<clinit>".equals(method.name) || !"()V".equals(method.desc) || method.instructions == null) continue;
+            for (var instruction : method.instructions) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.getOpcode() == INVOKESTATIC
+                        && HELPER.equals(call.owner)
+                        && "logInputTraceInstalled".equals(call.name)) return true;
+            }
+        }
+        return false;
     }
 
     private static boolean hasTrace(MethodNode method) {
         for (var instruction : method.instructions) {
-            if (instruction instanceof MethodInsnNode call
-                    && call.getOpcode() == INVOKESTATIC
-                    && HELPER.equals(call.owner)
-                    && "logKeyEvent".equals(call.name)) return true;
+            if (instruction instanceof MethodInsnNode methodCall
+                    && methodCall.getOpcode() == INVOKESTATIC
+                    && HELPER.equals(methodCall.owner)
+                    && "logKeyEvent".equals(methodCall.name)) return true;
         }
         return false;
     }
