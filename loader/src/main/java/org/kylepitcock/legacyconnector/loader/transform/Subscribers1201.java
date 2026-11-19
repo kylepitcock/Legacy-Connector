@@ -71,19 +71,26 @@ final class Subscribers1201 {
         List<Spec> specs = new ArrayList<>();
         for (ClassNode n : nodes) {
             AnnotationNode sub = find(n.visibleAnnotations, SUBSCRIBER);
-            if (sub == null || hasAnySubscriber(n, byName) && !hasInstanceSubscriber(n, byName)) continue;
+            if (sub == null) continue;
             String bus = "GAME";
             StringBuilder dists = new StringBuilder();
             if (sub.values != null) {
                 for (int i = 0; i + 1 < sub.values.size(); i += 2) {
                     Object key = sub.values.get(i);
                     Object v = sub.values.get(i + 1);
-                    if ("bus".equals(key) && v instanceof String[] e && e.length == 2) bus = e[1].equals("MOD") ? "MOD" : "GAME";
+                    if ("bus".equals(key) && v instanceof String[] e && e.length == 2) {
+                        // Forge 1.20.1 calls its main event bus FORGE; NeoForge 1.21.1 calls it GAME.
+                        bus = e[1].equals("MOD") ? "MOD" : "GAME";
+                        if (!e[1].equals(bus)) sub.values.set(i + 1, new String[]{e[0], bus});
+                    }
                     if ("value".equals(key) && v instanceof List<?> l) {
                         for (Object o : l) if (o instanceof String[] e && e.length == 2) dists.append(dists.isEmpty() ? "" : ",").append(e[1]);
                     }
                 }
             }
+            // Static-only subscribers stay annotated for NeoForge's loader, but their enum values
+            // must already use NeoForge's vocabulary. Classes with instance handlers are handled below.
+            if (hasAnySubscriber(n, byName) && !hasInstanceSubscriber(n, byName)) continue;
             n.visibleAnnotations.remove(sub);
             specs.add(new Spec(bus, dists.toString(), n.name.replace('/', '.')));
         }

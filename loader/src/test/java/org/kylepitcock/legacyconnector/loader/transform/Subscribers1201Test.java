@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -54,6 +55,37 @@ class Subscribers1201Test implements Opcodes {
         int calls = 0;
         for (AbstractInsnNode in : init.instructions) if (in instanceof MethodInsnNode mi && mi.name.equals("subscribeStatics")) calls++;
         assertEquals(2, calls);
+    }
+
+    @Test
+    void mapsForgeSubscriberAnnotationAndBusToNeoForgeTopLevelTypes() {
+        Forge1201Transformer transformer = new Forge1201Transformer(ShimIndex.empty());
+        assertEquals("net/neoforged/fml/common/EventBusSubscriber",
+                transformer.mapClass("net/minecraftforge/fml/common/Mod$EventBusSubscriber"));
+        assertEquals("net/neoforged/fml/common/EventBusSubscriber$Bus",
+                transformer.mapClass("net/minecraftforge/fml/common/Mod$EventBusSubscriber$Bus"));
+    }
+
+    @Test
+    void staticOnlySubscribersConvertForgeBusToGameBus() {
+        ClassNode events = cls("mod/Events", "java/lang/Object");
+        AnnotationNode subscriber = new AnnotationNode("Lnet/neoforged/fml/common/EventBusSubscriber;");
+        subscriber.values = new java.util.ArrayList<>(List.of(
+                "bus", new String[]{"Lnet/neoforged/fml/common/EventBusSubscriber$Bus;", "FORGE"},
+                "value", List.of(new String[]{"Lnet/neoforged/api/distmarker/Dist;", "CLIENT"})));
+        events.visibleAnnotations = new java.util.ArrayList<>(List.of(subscriber));
+        MethodNode handler = new MethodNode(ACC_PUBLIC | ACC_STATIC, "onTick", "(Ljava/lang/Object;)V", null, null);
+        handler.visibleAnnotations = new java.util.ArrayList<>(List.of(new AnnotationNode("Lnet/neoforged/bus/api/SubscribeEvent;")));
+        handler.visitInsn(RETURN);
+        events.methods.add(handler);
+
+        assertEquals(0, Subscribers1201.apply(List.of(events)));
+        assertTrue(events.visibleAnnotations.contains(subscriber));
+        String[] bus = (String[]) subscriber.values.get(1);
+        assertEquals("GAME", bus[1]);
+        @SuppressWarnings("unchecked")
+        List<String[]> dists = (List<String[]>) subscriber.values.get(3);
+        assertEquals("CLIENT", dists.get(0)[1]);
     }
 
     @Test

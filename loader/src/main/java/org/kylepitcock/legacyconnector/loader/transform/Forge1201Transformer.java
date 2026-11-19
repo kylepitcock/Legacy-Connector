@@ -671,7 +671,7 @@ public final class Forge1201Transformer {
     // ---- side-by-side libraries ---------------------------------------------------------------------------------------------
 
     private static final String MOD_DESC = "Lnet/neoforged/fml/common/Mod;";
-    private static final String SUBSCRIBER_DESC = "Lnet/neoforged/fml/common/Mod$EventBusSubscriber;";
+    private static final String SUBSCRIBER_DESC = "Lnet/neoforged/fml/common/EventBusSubscriber;";
 
     /** Relocates string constants and annotation values that name isolated classes, and swaps the mod id of an isolated library's own annotations. */
     private void isolate(ClassNode node) {
