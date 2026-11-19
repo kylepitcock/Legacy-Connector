@@ -304,6 +304,7 @@ public final class Forge1201Transformer {
         int palladiumCustomProjectileRendererChanges = 0;
         int palladiumCoreOverlayChanges = 0;
         int palladiumCoreLightningMixinChanges = 0;
+        int alienEvoForgeEventChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -348,6 +349,8 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
+            alienEvoForgeEventChanges += alienEvoForgeEventChange;
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumFlightTakeoffGraceChange = PalladiumFlightHandler1201.applyGroundTakeoffGrace(node);
@@ -398,7 +401,11 @@ public final class Forge1201Transformer {
                     + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumFlightStateTraceChange
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
-                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange);
+        }
+        if (alienEvoForgeEventChanges > 0) {
+            result.notes.add("Native Forge event callbacks migrated to NeoForge tick phases and ResourceLocation GUI layers: "
+                    + alienEvoForgeEventChanges + " bytecode rewrite(s)");
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
