@@ -61,6 +61,18 @@ public final class Forge1201Transformer {
     private static final String KUBEJS6_CONSOLE = "dev/latvian/mods/kubejs/util/ConsoleJS";
     private static final String KUBEJS7_CONSOLE = "dev/latvian/mods/kubejs/script/ConsoleJS";
 
+    /**
+     * Curated aliases which must target the native NeoForge class even when a
+     * same-named Forge facade exists. Other overlapping aliases retain the
+     * compatibility facade by default.
+     */
+    private static final java.util.Set<String> NATIVE_ALIAS_OVERRIDES = java.util.Set.of(
+            "net/minecraftforge/event/TickEvent$PlayerTickEvent",
+            "net/minecraftforge/event/TickEvent$ServerTickEvent",
+            "net/minecraftforge/event/TickEvent$RenderTickEvent",
+            "net/minecraftforge/client/event/RenderGuiOverlayEvent",
+            "net/minecraftforge/client/gui/overlay/VanillaGuiOverlay");
+
     private static final String[][] PACKAGE_MOVES = {
             {"net/minecraftforge/fml/", "net/neoforged/fml/"},
             {"net/minecraftforge/eventbus/", "net/neoforged/bus/"},
@@ -146,17 +158,22 @@ public final class Forge1201Transformer {
             return KUBEJS7_CONSOLE + name.substring(KUBEJS6_CONSOLE.length());
         }
         if (!name.startsWith("net/minecraftforge/")) return name;
-        // Prefer explicit Forge -> NeoForge aliases over same-named legacy facades.
+        int dollar = name.indexOf('$');
+        String outerName = dollar > 0 ? name.substring(0, dollar) : name;
+        boolean nativeAliasMustWin = NATIVE_ALIAS_OVERRIDES.contains(name)
+                || NATIVE_ALIAS_OVERRIDES.contains(outerName);
+        String facade = LegacyVersion.V1_20_1.shimPrefix() + name;
+        // Preserve compatibility facades except for APIs whose new NeoForge class
+        // is required by a dedicated migration adapter. RegisterGuiOverlaysEvent
+        // deliberately remains shim-backed for PalladiumCore.
+        if (!nativeAliasMustWin && shim.contains(facade)) return facade;
         String direct = classRenames.get(name);
         if (direct != null) return direct;
-        int dollar = name.indexOf('$');
         if (dollar > 0) {
             // Curated aliases on outer event classes also apply to their nested classes.
-            String outerName = name.substring(0, dollar);
             String directOuter = classRenames.get(outerName);
             if (directOuter != null) return directOuter + name.substring(dollar);
         }
-        String facade = LegacyVersion.V1_20_1.shimPrefix() + name;
         if (shim.contains(facade)) return facade;
         if (dollar > 0) {
             String outer = mapClass(name.substring(0, dollar));
