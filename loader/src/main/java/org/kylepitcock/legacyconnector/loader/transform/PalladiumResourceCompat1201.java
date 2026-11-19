@@ -226,70 +226,81 @@ final class PalladiumResourceCompat1201 {
         Map<String, byte[]> original = new java.util.HashMap<>();
         resources.forEach((path, contents) -> original.put(path, contents.clone()));
 
-        rewrite(
-                resources,
-                ALIEN_EVO_STORE_ARMOR,
-                new String[][] {{LEGACY_STORE_ARMOR_CHECK, SAFE_STORE_ARMOR_CHECK, "1"}});
-        rewrite(
-                resources,
-                ALIEN_EVO_SLOT_TRANSFORM,
-                new String[][] {
-                        {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
-                        {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
-                });
-        rewrite(
-                resources,
-                ALIEN_EVO_QUICK_CHANGE,
-                new String[][] {
-                        {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
-                        {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
-                });
-        rewriteTransformScript(resources);
-        rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
-        rewritePowerUiEntityPreview(resources);
-        rewritePowerUiEditBoxTick(resources);
-        rewriteAlienEvoTemporaryCrystalBlockTicks(resources);
-        rewriteAfOmniAoeDamageMarkerGuard(resources);
+        // These rewrites target the former JavaScript-script implementation only.
+        // The native implementation has no .js resources; do not infer or recreate
+        // script behavior from its newer Java classes or silently rewrite its data.
+        boolean hasLegacyScriptResources = hasLegacyAlienEvoScripts(resources);
+        if (hasLegacyScriptResources) {
+            rewrite(
+                    resources,
+                    ALIEN_EVO_STORE_ARMOR,
+                    new String[][] {{LEGACY_STORE_ARMOR_CHECK, SAFE_STORE_ARMOR_CHECK, "1"}});
+            rewrite(
+                    resources,
+                    ALIEN_EVO_SLOT_TRANSFORM,
+                    new String[][] {
+                            {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
+                            {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
+                    });
+            rewrite(
+                    resources,
+                    ALIEN_EVO_QUICK_CHANGE,
+                    new String[][] {
+                            {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
+                            {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
+                    });
+            rewriteTransformScript(resources);
+            rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
+            rewritePowerUiEntityPreview(resources);
+            rewritePowerUiEditBoxTick(resources);
+            rewriteAlienEvoTemporaryCrystalBlockTicks(resources);
+            rewriteAfOmniAoeDamageMarkerGuard(resources);
+        }
+
+        // These migrations target resource/data files, not KubeJS script files.
         rewriteDiamondShardTexture(resources);
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
         removeDuplicateMalformedGeckoLibAnimation(resources);
         addMissingAlienEvoMachineScrollTag(resources);
-        rewriteLegacyScriptApis(resources);
-        rewriteAlienEvoLevelPlaySoundCalls(resources);
-        rewriteScoreboardApi(resources);
-        rewriteServerApiAccess(resources);
-        rewriteOmnitrixPacketPlayerAccess(resources);
-        rewriteOmnitrixPacketStringValues(resources);
-        rewriteAlienEvoFireAbsorbBlockLookup(resources);
-        rewriteAlienEvoFireAbsorbTemporaryState(resources);
-        rewriteAlienEvoDecoupleOmnitrixCycle(resources);
-        rewriteAlienEvoGlidePitchLength(resources);
-        rewriteAlienEvoXpDeathPlayerAccess(resources);
-        rewriteAlienEvoRechargeCooldown(resources);
-        rewriteAlienEvoStatAbilityOperation(resources);
-        rewriteAlienEvoNetworkDataPlayerAccess(resources);
-        rewriteAlienEvoPrototypeCoreLayoutScores(resources);
-        rewriteAlienEvoItemStackCustomData(resources);
-        rewriteAlienEvoWorkbenchItemCustomData(resources);
-        // Normalize the legacy modifier operation before the landing-state rewrite
-        // replaces the original tick block containing both modifier call sites.
-        rewriteAlienEvoSlamAttributeOperations(resources);
-        rewriteAlienEvoSlamLandingState(resources);
-        rewriteAlienEvoMotionToEntityTargetChecks(resources);
-        rewriteAlienEvoMotionToEntityDiagnostics(resources);
-        // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
-        rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
-                {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
-                {"entity.removeAttribute(attribute, UUID)",
-                        "entity.removeAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'))", "1"},
-                {"entity.modifyAttribute(attribute, UUID,",
-                        "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'),", "1"}
-        });
-        rewriteOptionalPehkuiApi(resources);
-        rewriteAlienEvoBlockParticleOptions(resources);
-        rewriteAlienEvoSlotPersistentDataIntegers(resources);
-        rewriteAlienEvoSetSecondsOnFire(resources);
+
+        if (hasLegacyScriptResources) {
+            rewriteLegacyScriptApis(resources);
+            rewriteAlienEvoLevelPlaySoundCalls(resources);
+            rewriteScoreboardApi(resources);
+            rewriteServerApiAccess(resources);
+            rewriteOmnitrixPacketPlayerAccess(resources);
+            rewriteOmnitrixPacketStringValues(resources);
+            rewriteAlienEvoFireAbsorbBlockLookup(resources);
+            rewriteAlienEvoFireAbsorbTemporaryState(resources);
+            rewriteAlienEvoDecoupleOmnitrixCycle(resources);
+            rewriteAlienEvoGlidePitchLength(resources);
+            rewriteAlienEvoXpDeathPlayerAccess(resources);
+            rewriteAlienEvoRechargeCooldown(resources);
+            rewriteAlienEvoStatAbilityOperation(resources);
+            rewriteAlienEvoNetworkDataPlayerAccess(resources);
+            rewriteAlienEvoPrototypeCoreLayoutScores(resources);
+            rewriteAlienEvoItemStackCustomData(resources);
+            rewriteAlienEvoWorkbenchItemCustomData(resources);
+            // Normalize the legacy modifier operation before the landing-state rewrite
+            // replaces the original tick block containing both modifier call sites.
+            rewriteAlienEvoSlamAttributeOperations(resources);
+            rewriteAlienEvoSlamLandingState(resources);
+            rewriteAlienEvoMotionToEntityTargetChecks(resources);
+            rewriteAlienEvoMotionToEntityDiagnostics(resources);
+            // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
+            rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
+                    {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
+                    {"entity.removeAttribute(attribute, UUID)",
+                            "entity.removeAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'))", "1"},
+                    {"entity.modifyAttribute(attribute, UUID,",
+                            "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'),", "1"}
+            });
+            rewriteOptionalPehkuiApi(resources);
+            rewriteAlienEvoBlockParticleOptions(resources);
+            rewriteAlienEvoSlotPersistentDataIntegers(resources);
+            rewriteAlienEvoSetSecondsOnFire(resources);
+        }
 
         // A single resource can receive more than one independent rewrite.
         // Report distinct changed resource paths, including resources removed by a migration.
@@ -1662,8 +1673,9 @@ PlayerEvents.tick(e => {
         String abilityAnchor = "\"" + abilityName + "\": {\n"
                 + "      \"type\": \"alienevo:motion_to_entity\",\n";
         if (occurrences(normalized, abilityAnchor) != 1) {
-            throw new IllegalStateException(
-                    "AlienEvo power " + path + " has an unexpected " + abilityName + " definition.");
+            // This is optional diagnostic instrumentation for the old motion_to_entity
+            // ability shape. A new/absent ability type is not a translation error.
+            return 0;
         }
 
         int start = normalized.indexOf(abilityAnchor);
@@ -2225,6 +2237,18 @@ PlayerEvents.tick(e => {
             start = end;
         }
         return indented.toString();
+    }
+
+    private static boolean hasLegacyAlienEvoScripts(Map<String, byte[]> resources) {
+        return resources.keySet().stream().anyMatch(PalladiumResourceCompat1201::isLegacyAlienEvoScriptResource);
+    }
+
+    private static boolean isLegacyAlienEvoScriptResource(String path) {
+        return path.endsWith(".js")
+                && (path.startsWith("addon/alienevo/kubejs_scripts/")
+                        || path.startsWith("assets/alienevo/kubejs_scripts/")
+                        || path.startsWith("data/alienevo/kubejs_scripts/")
+                        || path.startsWith("addon/afomni/kubejs_scripts/"));
     }
 
     private static boolean isAlienEvoKubeJsScript(String path) {
