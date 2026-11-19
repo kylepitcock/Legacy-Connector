@@ -1670,6 +1670,65 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void skipsChangedCannonboltAbilityButKeepsXlr8MotionDiagnostics() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, """
+                StartupEvents.registry('palladium:abilities', event => {
+                    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');
+                    let recentTargets = new Map();
+                    let currentTargets = new Map();
+                    let lastTargetTimes = new Map();
+                    event.create('alienevo:motion_to_entity')
+                        .tick((entity, entry, holder, enabled) => {
+                            if (enabled && entity.isPlayer()) {
+                                nearbyEntities.forEach(nearby => {
+                                    if (!(nearby instanceof LivingEntity)) return;
+                                });
+                                nearbyEntities.forEach(nearby => {
+                                    if (!(nearby instanceof LivingEntity) || playerTargets.has(nearby.id)) return;
+                                });
+                            }
+                        });
+                });
+                """);
+        String cannonbolt = """
+                {
+                  "abilities": {
+                    "multi_hit": {
+                      "type": "alienevo:meteor_barrage",
+                      "launch_height": 5.6,
+                      "slam_count": 6
+                    }
+                  }
+                }
+                """;
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER, cannonbolt);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER, """
+                {
+                  "abilities": {
+                    "punch_barrage": {
+                      "type": "alienevo:motion_to_entity",
+                      "debug_mode": false,
+                      "motion_strength": 3.2
+                    }
+                  }
+                }
+                """);
+
+        assertEquals(2, PalladiumResourceCompat1201.apply(resources));
+
+        String cannonboltAfter = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER);
+        assertEquals(cannonbolt, cannonboltAfter);
+        String xlr8 = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER);
+        assertTrue(xlr8.contains("\"debug_mode\": true,"));
+        assertFalse(xlr8.contains("\"debug_mode\": false,"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(cannonbolt, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CANNONBOLT_POWER));
+        assertEquals(xlr8, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_POWER));
+    }
+
+    @Test
     void skipsLegacyScriptRewritesForNativeResourcesWithoutScripts() {
         Map<String, byte[]> resources = new HashMap<>();
         String cannonbolt = """
