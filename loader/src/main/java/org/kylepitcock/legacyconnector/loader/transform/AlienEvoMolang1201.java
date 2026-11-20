@@ -37,7 +37,7 @@ final class AlienEvoMolang1201 implements Opcodes {
     static final String OLD_PARSER = "software/bernie/geckolib/core/molang/MolangParser";
     static final String OLD_LAZY_VARIABLE = "software/bernie/geckolib/core/molang/LazyVariable";
 
-    static final String HELPER_PACKAGE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/";
+    static final String HELPER_PACKAGE = "net/habb/alienevo/compat/geckolib/bridge/";
     static final String PARSER_COMPAT = HELPER_PACKAGE + "MolangParserCompat";
     static final String VARIABLE_COMPAT = HELPER_PACKAGE + "MolangVariableCompat";
     static final String ROLL_FACTORY = HELPER_PACKAGE + "MolangRollSinceFactory";
