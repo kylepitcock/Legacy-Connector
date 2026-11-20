@@ -21,6 +21,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
     static final String DEFAULTED = "com/mojang/blaze3d/vertex/DefaultedVertexConsumer";
     static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
     static final String HELPER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/VertexConsumerCompat";
+    static final String LEGACY_END = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEndVertexConsumer";
 
     private static final String COLOR_DESC = "(IIII)V";
 
@@ -33,7 +34,8 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         int changes = 0;
         node.superName = "java/lang/Object";
         if (!node.interfaces.contains(VERTEX)) node.interfaces.add(VERTEX);
-        changes += 2;
+        if (!node.interfaces.contains(LEGACY_END)) node.interfaces.add(LEGACY_END);
+        changes += 3;
 
         Set<String> inheritedColorFields = new LinkedHashSet<>();
         boolean needsDefaultInitializer = false;
@@ -90,6 +92,11 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         // and expose the 1.21.1 float descriptor through this bridge.
         if (find(node, "addVertex", "(FFF)L" + VERTEX + ";") == null) {
             node.methods.add(addVertexBridge(node.name));
+            changes++;
+        }
+        if (find(node, "endVertex", "()V") != null
+                && find(node, "legacyEndVertex", "()V") == null) {
+            node.methods.add(legacyEndVertexBridge(node.name));
             changes++;
         }
 
@@ -181,6 +188,16 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         method.instructions.add(new InsnNode(RETURN));
         method.maxLocals = 5;
         method.maxStack = 2;
+        return method;
+    }
+
+    private static MethodNode legacyEndVertexBridge(String owner) {
+        MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC, "legacyEndVertex", "()V", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "endVertex", "()V", false));
+        method.instructions.add(new InsnNode(RETURN));
+        method.maxLocals = 1;
+        method.maxStack = 1;
         return method;
     }
 
