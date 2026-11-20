@@ -332,6 +332,7 @@ public final class Forge1201Transformer {
         int alienEvoMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
+        int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -427,6 +428,14 @@ public final class Forge1201Transformer {
                 mixinStats.mixinClasses++;
                 mixinStats.dropped.add(node.name + " (replaced by the 1.21.1 STEP_HEIGHT attribute adapter)");
                 mixinStats.droppedClasses.add(node.name);
+            } else if (node.name.equals("net/habb/alienevo/mixin/MolangParserThreadSafetyMixin")) {
+                // The 1.21.1 runtime in this profile does not provide GeckoLib's old
+                // MolangParser package. Keep AlienEvo's other mixins, but don't load
+                // this optional wrap-method hook against a class that is absent.
+                mixinStats.mixinClasses++;
+                mixinStats.dropped.add(node.name + " (optional GeckoLib MolangParser target is absent from the 1.21.1 runtime)");
+                mixinStats.droppedClasses.add(node.name);
+                alienEvoMolangMixinDropped++;
             } else {
                 Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             }
@@ -442,6 +451,9 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoVertexConsumerChange);
+        }
+        if (alienEvoMolangMixinDropped > 0) {
+            result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
         }
         if (alienEvoVertexConsumerChanges > 0) {
             result.notes.add("AlienEvo flat loot-effect renderer migrated from the removed DefaultedVertexConsumer superclass to 1.21.1 VertexConsumer: "
