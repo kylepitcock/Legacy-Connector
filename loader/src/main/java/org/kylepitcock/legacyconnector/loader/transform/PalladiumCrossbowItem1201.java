@@ -3,7 +3,6 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import java.util.ArrayList;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -80,7 +79,7 @@ final class PalladiumCrossbowItem1201 implements Opcodes {
         handler.instructions = createProjectileHandler();
         handler.tryCatchBlocks.clear();
         handler.maxLocals = 8;
-        handler.maxStack = 3;
+        handler.maxStack = 4;
 
         // The old lambda only existed for the removed ItemStack damage call;
         // new CrossbowItem.performShooting owns durability and sound.
