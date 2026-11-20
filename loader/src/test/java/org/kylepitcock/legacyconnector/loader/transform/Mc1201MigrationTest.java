@@ -265,6 +265,63 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacyPostChainAddPassKeepsNearestNeighborFiltering() {
+        String postChain = "net/minecraft/client/renderer/PostChain";
+        String renderTarget = "com/mojang/blaze3d/pipeline/RenderTarget";
+        String postPass = "net/minecraft/client/renderer/PostPass";
+        String oldDesc = "(Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";)L" + postPass + ";";
+        String newDesc = "(Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";Z)L" + postPass + ";";
+
+        ClassNode c = cls("test/CrispPostPass", "java/lang/Object");
+        MethodNode add = method(c, ACC_PUBLIC | ACC_STATIC, "add",
+                "(L" + postChain + ";Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";)L" + postPass + ";");
+        add.instructions.add(new VarInsnNode(ALOAD, 0));
+        add.instructions.add(new VarInsnNode(ALOAD, 1));
+        add.instructions.add(new VarInsnNode(ALOAD, 2));
+        add.instructions.add(new VarInsnNode(ALOAD, 3));
+        add.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, postChain, "addPass", oldDesc, false));
+        add.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).calls);
+        MethodInsnNode call = find(add, postChain, "addPass");
+        assertNotNull(call);
+        assertEquals(newDesc, call.desc);
+        assertEquals(ICONST_0, call.getPrevious().getOpcode(),
+                "the 1.20.1 PostPass default is nearest-neighbor filtering");
+        verify(c);
+    }
+
+    @Test
+    void legacyPostChainConstructorUsesResourceProviderDescriptor() {
+        String postChain = "net/minecraft/client/renderer/PostChain";
+        String textureManager = "net/minecraft/client/renderer/texture/TextureManager";
+        String resourceManager = "net/minecraft/server/packs/resources/ResourceManager";
+        String resourceProvider = "net/minecraft/server/packs/resources/ResourceProvider";
+        String renderTarget = "com/mojang/blaze3d/pipeline/RenderTarget";
+        String resourceLocation = "net/minecraft/resources/ResourceLocation";
+        String oldDesc = "(L" + textureManager + ";L" + resourceManager + ";L" + renderTarget + ";L" + resourceLocation + ";)V";
+        String newDesc = "(L" + textureManager + ";L" + resourceProvider + ";L" + renderTarget + ";L" + resourceLocation + ";)V";
+
+        ClassNode c = cls("test/LegacyPostChainFactory", "java/lang/Object");
+        MethodNode create = method(c, ACC_PUBLIC | ACC_STATIC, "create",
+                "(L" + textureManager + ";L" + resourceManager + ";L" + renderTarget + ";L" + resourceLocation + ";)L" + postChain + ";");
+        create.instructions.add(new TypeInsnNode(NEW, postChain));
+        create.instructions.add(new InsnNode(DUP));
+        create.instructions.add(new VarInsnNode(ALOAD, 0));
+        create.instructions.add(new VarInsnNode(ALOAD, 1));
+        create.instructions.add(new VarInsnNode(ALOAD, 2));
+        create.instructions.add(new VarInsnNode(ALOAD, 3));
+        create.instructions.add(new MethodInsnNode(INVOKESPECIAL, postChain, "<init>", oldDesc, false));
+        create.instructions.add(new InsnNode(ARETURN));
+
+        apply(c);
+        MethodInsnNode constructor = find(create, postChain, "<init>");
+        assertNotNull(constructor);
+        assertEquals(newDesc, constructor.desc);
+        verify(c);
+    }
+
+    @Test
     void directMinecraftCallsUseRenamedMemberTable() {
         String gameRenderer = "net/minecraft/client/renderer/GameRenderer";
         String shaderInstance = "net/minecraft/client/renderer/ShaderInstance";
