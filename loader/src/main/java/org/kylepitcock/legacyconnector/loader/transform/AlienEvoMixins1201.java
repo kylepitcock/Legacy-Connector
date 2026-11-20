@@ -114,8 +114,10 @@ final class AlienEvoMixins1201 implements Opcodes {
         String newDesc = "(" + DELTA_TRACKER + "Z" + CALLBACK + ")V";
         MethodNode method = find(node, "alienevo$kartSteerFrame", oldDesc);
         if (method == null) return 0;
-        // The old frame time and timestamp are unused by this handler. Its
-        // boolean argument is still the render-outline flag in 1.21.1.
+        // The old frame time, timestamp, boolean flag and CallbackInfo are
+        // unused by this handler. Its Minecraft temporary was local 6; the new
+        // descriptor ends at local 3, so move that temporary to local 4.
+        remapSlots(method, slot -> slot >= 6 ? slot - 2 : slot);
         replaceDescriptor(method, newDesc);
         return 1;
     }
