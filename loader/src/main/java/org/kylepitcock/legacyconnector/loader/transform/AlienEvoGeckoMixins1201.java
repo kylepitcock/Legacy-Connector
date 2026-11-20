@@ -18,21 +18,20 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
     static final String RIDE_SEAT_BONE = "net/habb/alienevo/mixin/client/RideSeatBoneMixin";
 
     private static final String CALLBACK = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
-    private static final String ANIMATABLE = "Lsoftware/bernie/geckolib/animatable/GeoAnimatable;";
-    private static final String ANIMATION_STATE = "Lsoftware/bernie/geckolib/animation/AnimationState;";
+    private static final String ANIMATABLE = "Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;";
+    private static final String ANIMATION_STATE = "Lsoftware/bernie/geckolib/core/animation/AnimationState;";
     private static final String POSE_STACK = "Lcom/mojang/blaze3d/vertex/PoseStack;";
     private static final String ENTITY = "Lnet/minecraft/world/entity/Entity;";
     private static final String BAKED_MODEL = "Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;";
+    private static final String GEO_BONE = "Lsoftware/bernie/geckolib/cache/object/GeoBone;";
     private static final String RENDER_TYPE = "Lnet/minecraft/client/renderer/RenderType;";
     private static final String BUFFER_SOURCE = "Lnet/minecraft/client/renderer/MultiBufferSource;";
     private static final String VERTEX_CONSUMER = "Lcom/mojang/blaze3d/vertex/VertexConsumer;";
 
-    private static final String OLD_RENDER_ARGS =
-            "(" + POSE_STACK + ENTITY + BAKED_MODEL + RENDER_TYPE + BUFFER_SOURCE
-                    + VERTEX_CONSUMER + "ZFIIFFFF" + CALLBACK + ")V";
-    private static final String NEW_RENDER_ARGS =
-            "(" + POSE_STACK + ENTITY + BAKED_MODEL + RENDER_TYPE + BUFFER_SOURCE
-                    + VERTEX_CONSUMER + "ZFIII" + CALLBACK + ")V";
+    private static final String OLD_RENDER_ARGS = renderArgs(BAKED_MODEL, false);
+    private static final String NEW_RENDER_ARGS = renderArgs(BAKED_MODEL, true);
+    private static final String OLD_BONE_RENDER_ARGS = renderArgs(GEO_BONE, false);
+    private static final String NEW_BONE_RENDER_ARGS = renderArgs(GEO_BONE, true);
 
     private AlienEvoGeckoMixins1201() {}
 
@@ -87,13 +86,22 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
                 "alienevo$endSeatMeasure",
                 "alienevo$measureSeatBone"
         };
+        final MethodNode[] legacyMethods = new MethodNode[names.length];
         int oldHandlers = 0;
         int newHandlers = 0;
-        for (String name : names) {
-            if (find(node, name, OLD_RENDER_ARGS) != null) oldHandlers++;
-            else if (find(node, name, NEW_RENDER_ARGS) != null) newHandlers++;
-            else {
-                throw new IllegalStateException("AlienEvo RideSeatBoneMixin lost its inspected handler " + name);
+        for (int i = 0; i < names.length; i++) {
+            // The first two injections target GeoRenderer#render and receive a
+            // BakedGeoModel. The recursive bone injection receives a GeoBone.
+            String oldDesc = i == 2 ? OLD_BONE_RENDER_ARGS : OLD_RENDER_ARGS;
+            String newDesc = i == 2 ? NEW_BONE_RENDER_ARGS : NEW_RENDER_ARGS;
+            MethodNode legacy = find(node, names[i], oldDesc);
+            if (legacy != null) {
+                legacyMethods[i] = legacy;
+                oldHandlers++;
+            } else if (find(node, names[i], newDesc) != null) {
+                newHandlers++;
+            } else {
+                throw new IllegalStateException("AlienEvo RideSeatBoneMixin lost its inspected handler " + names[i]);
             }
         }
         if (oldHandlers == 0 && newHandlers == names.length) return 0;
@@ -102,13 +110,19 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
                     + "(legacy=" + oldHandlers + ", current=" + newHandlers + ")");
         }
 
-        for (String name : names) {
-            MethodNode method = find(node, name, OLD_RENDER_ARGS);
+        for (int i = 0; i < names.length; i++) {
+            MethodNode method = legacyMethods[i];
+            String newDesc = i == 2 ? NEW_BONE_RENDER_ARGS : NEW_RENDER_ARGS;
             shiftLocals(method, 12, -3);
             method.maxLocals = Math.max(method.maxLocals - 3, 13);
-            replaceDescriptor(method, NEW_RENDER_ARGS);
+            replaceDescriptor(method, newDesc);
         }
         return 1;
+    }
+
+    private static String renderArgs(String geometryType, boolean packedColor) {
+        return "(" + POSE_STACK + ENTITY + geometryType + RENDER_TYPE + BUFFER_SOURCE
+                + VERTEX_CONSUMER + (packedColor ? "ZFIII" : "ZFIIFFFF") + CALLBACK + ")V";
     }
 
     private static void shiftLocals(MethodNode method, int firstSlot, int delta) {
