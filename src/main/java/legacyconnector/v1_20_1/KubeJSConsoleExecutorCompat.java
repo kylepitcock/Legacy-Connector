@@ -22,7 +22,7 @@ public final class KubeJSConsoleExecutorCompat {
             executor.execute(task);
             return true;
         } catch (RejectedExecutionException rejected) {
-            if (executor instanceof ExecutorService service && service.isShutdown()) {
+            if (executor instanceof ExecutorService service && service.isTerminated()) {
                 task.run();
                 return false;
             }
