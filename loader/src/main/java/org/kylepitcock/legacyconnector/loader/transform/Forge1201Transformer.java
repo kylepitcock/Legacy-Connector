@@ -593,6 +593,10 @@ public final class Forge1201Transformer {
         if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
         for (ClassNode node : nodes) {
+            if (AlienEvoMolang1201.dropLegacyRollSinceClass(node.name)) {
+                result.notes.add("Replaced AlienEvo's obsolete McLib roll_since function class with the GeckoLib 4.9 MathFunction.Factory bridge");
+                continue;
+            }
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
