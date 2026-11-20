@@ -329,6 +329,7 @@ public final class Forge1201Transformer {
         int palladiumCoreOverlayChanges = 0;
         int palladiumCoreLightningMixinChanges = 0;
         int alienEvoForgeEventChanges = 0;
+        int alienEvoMixinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -373,6 +374,8 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int alienEvoMixinChange = AlienEvoMixins1201.apply(node);
+            alienEvoMixinChanges += alienEvoMixinChange;
             int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
             alienEvoForgeEventChanges += alienEvoForgeEventChange;
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
@@ -426,6 +429,10 @@ public final class Forge1201Transformer {
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange);
+        }
+        if (alienEvoMixinChanges > 0) {
+            result.notes.add("AlienEvo Minecraft render/shield mixin handler descriptors adapted for 1.21.1: "
+                    + alienEvoMixinChanges + " handler(s)");
         }
         if (alienEvoForgeEventChanges > 0) {
             result.notes.add("Native Forge event callbacks migrated to NeoForge tick phases and ResourceLocation GUI layers: "
