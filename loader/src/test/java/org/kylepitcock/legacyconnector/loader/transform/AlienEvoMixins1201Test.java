@@ -178,6 +178,95 @@ class AlienEvoMixins1201Test implements Opcodes {
         verify(node);
     }
 
+    @Test
+    void cameraZoomScaleUsesFloatDistanceInOneTwentyOne() {
+        ClassNode node = node("net/habb/alienevo/mixin/scale/client/CameraZoomScaleMixin");
+        MethodNode handler = method(node, "alienevo$scaleCameraDistance", "(D)D");
+        handler.instructions.add(new VarInsnNode(DLOAD, 1));
+        handler.instructions.add(new VarInsnNode(FLOAD, 3));
+        handler.instructions.add(new InsnNode(F2D));
+        handler.instructions.add(new InsnNode(DMUL));
+        handler.instructions.add(new InsnNode(DRETURN));
+
+        assertEquals(1, AlienEvoMixins1201.apply(node));
+        assertEquals("(F)F", handler.desc);
+        assertEquals(FLOAD, ((VarInsnNode) handler.instructions.get(0)).getOpcode());
+        assertEquals(FLOAD, ((VarInsnNode) handler.instructions.get(1)).getOpcode());
+        assertEquals(FMUL, handler.instructions.get(2).getOpcode());
+        assertEquals(FRETURN, handler.instructions.get(3).getOpcode());
+        verify(node);
+    }
+
+    @Test
+    void kartCameraZoomScaleUsesFloatDistanceInOneTwentyOne() {
+        ClassNode node = node("net/habb/alienevo/mixin/client/KartCameraMixin");
+        MethodNode handler = method(node, "alienevo$kartSpeedZoom", "(D)D");
+        handler.instructions.add(new VarInsnNode(DLOAD, 1));
+        handler.instructions.add(new InsnNode(DRETURN));
+
+        assertEquals(1, AlienEvoMixins1201.apply(node));
+        assertEquals("(F)F", handler.desc);
+        assertEquals(FLOAD, ((VarInsnNode) handler.instructions.get(0)).getOpcode());
+        assertEquals(FRETURN, handler.instructions.get(1).getOpcode());
+        verify(node);
+    }
+
+    @Test
+    void cameraPositionHandlerConvertsDoubleZoomAndCallbackSlotsToFloat() {
+        ClassNode node = node("net/habb/alienevo/mixin/client/CameraPositionMixin");
+        MethodNode handler = method(node, "alienevo$keepZoomWhenPivotBuried",
+                "(DLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V");
+        handler.instructions.add(new VarInsnNode(ALOAD, 3));
+        handler.instructions.add(new org.objectweb.asm.tree.TypeInsnNode(CHECKCAST, "java/lang/Double"));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false));
+        handler.instructions.add(new VarInsnNode(DSTORE, 4));
+        handler.instructions.add(new VarInsnNode(ALOAD, 6));
+        handler.instructions.add(new VarInsnNode(DLOAD, 4));
+        handler.instructions.add(new VarInsnNode(DLOAD, 1));
+        handler.instructions.add(new InsnNode(DCMPG));
+        handler.instructions.add(new VarInsnNode(ALOAD, 3));
+        handler.instructions.add(new VarInsnNode(DLOAD, 1));
+        handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Double", "valueOf",
+                "(D)Ljava/lang/Double;", false));
+        handler.instructions.add(new InsnNode(RETURN));
+
+        assertEquals(1, AlienEvoMixins1201.apply(node));
+        assertEquals("(FLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V", handler.desc);
+        assertEquals(2, ((VarInsnNode) handler.instructions.get(0)).var);
+        assertEquals("java/lang/Float", ((org.objectweb.asm.tree.TypeInsnNode) handler.instructions.get(1)).desc);
+        assertEquals("java/lang/Float", ((MethodInsnNode) handler.instructions.get(2)).owner);
+        assertEquals("()F", ((MethodInsnNode) handler.instructions.get(2)).desc);
+        assertEquals(3, ((VarInsnNode) handler.instructions.get(3)).var);
+        assertEquals(4, ((VarInsnNode) handler.instructions.get(4)).var);
+        assertEquals(FCMPG, handler.instructions.get(7).getOpcode());
+        assertEquals(2, ((VarInsnNode) handler.instructions.get(8)).var);
+        assertEquals("java/lang/Float", ((MethodInsnNode) handler.instructions.get(10)).owner);
+        assertEquals("(F)Ljava/lang/Float;", ((MethodInsnNode) handler.instructions.get(10)).desc);
+        verify(node);
+    }
+
+    @Test
+    void modelBakeryCrystalHandlerAdaptsTextureGetterToLegacySpriteFunction() {
+        ClassNode node = node("net/habb/alienevo/mixin/client/ModelBakeryCrystalMixin");
+        node.fields.add(new org.objectweb.asm.tree.FieldNode(ACC_PRIVATE, "f_119215_", "Ljava/util/Map;", null, null));
+        MethodNode handler = method(node, "alienevo$bakeStaticCrystal",
+                "(Ljava/util/function/BiFunction;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V");
+        handler.instructions.add(new VarInsnNode(ALOAD, 0));
+        handler.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, node.name, "f_119215_", "Ljava/util/Map;"));
+        handler.instructions.add(new VarInsnNode(ALOAD, 1));
+        handler.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                "net/habb/alienevo/client/renderer/DiamondBlockStaticModel", "install",
+                "(Ljava/util/Map;Ljava/util/function/BiFunction;)V", false));
+        handler.instructions.add(new InsnNode(RETURN));
+
+        assertEquals(1, AlienEvoMixins1201.apply(node));
+        assertEquals("(Lnet/minecraft/client/resources/model/ModelBakery$TextureGetter;"
+                + "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V", handler.desc);
+        assertNotNull(call(handler, "org/kylepitcock/legacyconnector/v1_20_1/migrate/ModelBakeryCompat", "asBiFunction"));
+        assertNotNull(call(handler, "net/habb/alienevo/client/renderer/DiamondBlockStaticModel", "install"));
+        verify(node);
+    }
+
     private static VarInsnNode findVar(MethodNode method, int opcode, int slot) {
         for (var instruction : method.instructions.toArray()) {
             if (instruction instanceof VarInsnNode variable && variable.getOpcode() == opcode
