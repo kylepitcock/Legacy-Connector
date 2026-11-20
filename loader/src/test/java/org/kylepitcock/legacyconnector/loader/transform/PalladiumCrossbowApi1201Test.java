@@ -36,14 +36,24 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         use.maxLocals = 7;
         use.maxStack = 6;
 
+        // Mirror the uploaded AddonCrossbowItem.use bytecode: it first reads
+        // the held stack, computes velocityMultiplier/inaccuracy into locals,
+        // and then calls the old static methods on CrossbowItem.
+        use.instructions.add(new VarInsnNode(ALOAD, 2));
+        use.instructions.add(new VarInsnNode(ALOAD, 3));
+        use.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER, "getItemInHand",
+                "(L" + HAND + ";)L" + ITEM_STACK + ";", false));
+        use.instructions.add(new VarInsnNode(ASTORE, 4));
         use.instructions.add(new VarInsnNode(ALOAD, 4));
-        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "getShootingPower",
+        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.CROSSBOW, "getShootingPower",
                 "(L" + ITEM_STACK + ";)F", false));
         use.instructions.add(new VarInsnNode(ALOAD, 0));
         use.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, node.name, "velocityMultiplier", "F"));
         use.instructions.add(new InsnNode(FMUL));
+        use.instructions.add(new VarInsnNode(FSTORE, 5));
         use.instructions.add(new VarInsnNode(ALOAD, 0));
         use.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, node.name, "inaccuracy", "F"));
+        use.instructions.add(new VarInsnNode(FSTORE, 6));
 
         use.instructions.add(new VarInsnNode(ALOAD, 1));
         use.instructions.add(new VarInsnNode(ALOAD, 2));
@@ -51,12 +61,12 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         use.instructions.add(new VarInsnNode(ALOAD, 4));
         use.instructions.add(new VarInsnNode(FLOAD, 5));
         use.instructions.add(new VarInsnNode(FLOAD, 6));
-        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "performShooting",
+        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.CROSSBOW, "performShooting",
                 "(L" + LEVEL + ";L" + LIVING_ENTITY + ";L" + HAND + ";L" + ITEM_STACK + ";FF)V", false));
 
         use.instructions.add(new VarInsnNode(ALOAD, 4));
         use.instructions.add(new InsnNode(ICONST_0));
-        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "setCharged",
+        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.CROSSBOW, "setCharged",
                 "(L" + ITEM_STACK + ";Z)V", false));
         use.instructions.add(new InsnNode(RETURN));
         return node;
@@ -73,10 +83,10 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         assertTrue(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.HELPER, "performShooting",
                 "(L" + CROSSBOW + ";L" + LEVEL + ";L" + LIVING_ENTITY + ";L" + HAND
                         + ";L" + ITEM_STACK + ";FF)V"));
-        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "getShootingPower", "(L" + ITEM_STACK + ";)F"));
-        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "performShooting",
+        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.CROSSBOW, "getShootingPower", "(L" + ITEM_STACK + ";)F"));
+        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.CROSSBOW, "performShooting",
                 "(L" + LEVEL + ";L" + LIVING_ENTITY + ";L" + HAND + ";L" + ITEM_STACK + ";FF)V"));
-        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "setCharged", "(L" + ITEM_STACK + ";Z)V"),
+        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.CROSSBOW, "setCharged", "(L" + ITEM_STACK + ";Z)V"),
                 "performShooting now clears the CHARGED_PROJECTILES component itself");
         assertTrue(hasOpcode(use, FSTORE));
         assertTrue(hasOpcode(use, ASTORE));
