@@ -19,15 +19,19 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
     private static final String POSE_STACK = "Lcom/mojang/blaze3d/vertex/PoseStack;";
     private static final String ENTITY = "Lnet/minecraft/world/entity/Entity;";
     private static final String BAKED_MODEL = "Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;";
+    private static final String GEO_BONE = "Lsoftware/bernie/geckolib/cache/object/GeoBone;";
     private static final String RENDER_TYPE = "Lnet/minecraft/client/renderer/RenderType;";
     private static final String BUFFER_SOURCE = "Lnet/minecraft/client/renderer/MultiBufferSource;";
     private static final String VERTEX_CONSUMER = "Lcom/mojang/blaze3d/vertex/VertexConsumer;";
-    private static final String OLD_RENDER_ARGS =
-            "(" + POSE_STACK + ENTITY + BAKED_MODEL + RENDER_TYPE + BUFFER_SOURCE
-                    + VERTEX_CONSUMER + "ZFIIFFFF" + CI + ")V";
-    private static final String NEW_RENDER_ARGS =
-            "(" + POSE_STACK + ENTITY + BAKED_MODEL + RENDER_TYPE + BUFFER_SOURCE
-                    + VERTEX_CONSUMER + "ZFIII" + CI + ")V";
+    private static final String OLD_RENDER_ARGS = renderArgs(BAKED_MODEL, false);
+    private static final String NEW_RENDER_ARGS = renderArgs(BAKED_MODEL, true);
+    private static final String OLD_BONE_RENDER_ARGS = renderArgs(GEO_BONE, false);
+    private static final String NEW_BONE_RENDER_ARGS = renderArgs(GEO_BONE, true);
+
+    private static String renderArgs(String geometryType, boolean packedColor) {
+        return "(" + POSE_STACK + ENTITY + geometryType + RENDER_TYPE + BUFFER_SOURCE
+                + VERTEX_CONSUMER + (packedColor ? "ZFIII" : "ZFIIFFFF") + CI + ")V";
+    }
 
     private static ClassNode node(String name) {
         ClassNode node = new ClassNode();
@@ -60,11 +64,11 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
 
     @Test
     void stillClockInsertsPartialTickBeforeCallbackAndMovesExistingLocals() {
+        String animatable = "Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;";
+        String animationState = "Lsoftware/bernie/geckolib/core/animation/AnimationState;";
         ClassNode node = node(AlienEvoGeckoMixins1201.STILL_CLOCK);
-        String oldDesc = "(Lsoftware/bernie/geckolib/animatable/GeoAnimatable;JL"
-                + "software/bernie/geckolib/animation/AnimationState;" + CI + ")V";
-        String newDesc = "(Lsoftware/bernie/geckolib/animatable/GeoAnimatable;JL"
-                + "software/bernie/geckolib/animation/AnimationState;F" + CI + ")V";
+        String oldDesc = "(" + animatable + "J" + animationState + CI + ")V";
+        String newDesc = "(" + animatable + "J" + animationState + "F" + CI + ")V";
         MethodNode handler = method(node, "alienevo$poseStill", oldDesc, 8, ALOAD, 5, ALOAD, 6, ALOAD, 7);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
@@ -85,27 +89,27 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
         assertEquals(List.of(7, 12, 13), localSlots(handler));
         assertEquals(14, handler.maxLocals);
         assertNull(handler.localVariables);
+        assertEquals(0, AlienEvoGeckoMixins1201.apply(node), "the descriptor rewrite must be idempotent");
     }
 
     @Test
-    void rideSeatBoneMigratesAllThreeCallbacksTogether() {
+    void rideSeatBoneMigratesBakedModelHandlersAndGeoBoneHandlerTogether() {
         ClassNode node = node(AlienEvoGeckoMixins1201.RIDE_SEAT_BONE);
-        String[] names = {
-                "alienevo$beginSeatMeasure",
-                "alienevo$endSeatMeasure",
-                "alienevo$measureSeatBone"
-        };
-        for (String name : names) method(node, name, OLD_RENDER_ARGS, 16, ILOAD, 7, ALOAD, 15);
+        MethodNode begin = method(node, "alienevo$beginSeatMeasure", OLD_RENDER_ARGS, 16, ILOAD, 7, ALOAD, 15);
+        MethodNode end = method(node, "alienevo$endSeatMeasure", OLD_RENDER_ARGS, 16, ILOAD, 7, ALOAD, 15);
+        MethodNode bone = method(node, "alienevo$measureSeatBone", OLD_BONE_RENDER_ARGS, 16, ILOAD, 7, ALOAD, 15);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
-        for (String name : names) {
-            MethodNode handler = node.methods.stream().filter(m -> m.name.equals(name)).findFirst().orElse(null);
-            assertNotNull(handler);
+        for (MethodNode handler : List.of(begin, end)) {
             assertEquals(NEW_RENDER_ARGS, handler.desc);
             assertEquals(List.of(7, 12), localSlots(handler));
             assertEquals(13, handler.maxLocals);
             assertNull(handler.localVariables);
         }
+        assertEquals(NEW_BONE_RENDER_ARGS, bone.desc);
+        assertEquals(List.of(7, 12), localSlots(bone));
+        assertEquals(13, bone.maxLocals);
+        assertNull(bone.localVariables);
         assertEquals(0, AlienEvoGeckoMixins1201.apply(node), "the descriptor rewrite must be idempotent");
     }
 }
