@@ -35,12 +35,31 @@ final class AlienEvoStepHeight1201 implements Opcodes {
      * it to the class that still declares the method.
      */
     private static int retargetStepHeightScaleMixin(ClassNode node) {
-        int changes = retargetMixinAnnotation(node.visibleAnnotations);
+        boolean foundMixin = false;
+        boolean alreadyLivingEntity = false;
+        int changes = 0;
+        changes += retargetMixinAnnotation(node.visibleAnnotations);
         changes += retargetMixinAnnotation(node.invisibleAnnotations);
-        if (changes == 0) {
-            throw new IllegalStateException("AlienEvo EntityStepHeightScaleMixin no longer targets Entity through its inspected @Mixin annotation");
+        if (changes > 0) return changes;
+        for (java.util.List<AnnotationNode> annotations : java.util.List.of(
+                node.visibleAnnotations == null ? java.util.Collections.emptyList() : node.visibleAnnotations,
+                node.invisibleAnnotations == null ? java.util.Collections.emptyList() : node.invisibleAnnotations)) {
+            for (AnnotationNode annotation : annotations) {
+                if (!annotation.desc.equals("Lorg/spongepowered/asm/mixin/Mixin;")
+                        || annotation.values == null) continue;
+                foundMixin = true;
+                for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+                    if (!"value".equals(annotation.values.get(i))
+                            || !(annotation.values.get(i + 1) instanceof java.util.List<?> values)) continue;
+                    for (Object value : values) {
+                        if (value instanceof Type type && type.getSort() == Type.OBJECT
+                                && type.getInternalName().equals(LIVING_ENTITY)) alreadyLivingEntity = true;
+                    }
+                }
+            }
         }
-        return changes;
+        if (foundMixin && alreadyLivingEntity) return 0;
+        throw new IllegalStateException("AlienEvo EntityStepHeightScaleMixin no longer targets Entity through its inspected @Mixin annotation");
     }
 
     private static int retargetMixinAnnotation(java.util.List<AnnotationNode> annotations) {
