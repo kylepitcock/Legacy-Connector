@@ -25,9 +25,10 @@ class KubeJSConsoleExecutorCompatTest {
     }
 
     @Test
-    void runsLogResetInlineOnlyAfterExecutorShutdown() {
+    void runsLogResetInlineOnlyAfterExecutorTermination() {
         var executor = Executors.newSingleThreadExecutor();
         executor.shutdown();
+        assertTrue(executor.isTerminated());
 
         var runs = new java.util.concurrent.atomic.AtomicInteger();
         assertFalse(KubeJSConsoleExecutorCompat.executeOrRunAfterShutdown(executor, runs::incrementAndGet));
