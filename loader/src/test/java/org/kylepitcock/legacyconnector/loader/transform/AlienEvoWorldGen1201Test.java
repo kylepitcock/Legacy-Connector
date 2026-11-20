@@ -82,6 +82,20 @@ class AlienEvoWorldGen1201Test implements Opcodes {
     }
 
     @Test
+    void duplicateCampgroundBiomeLookupsFailClosed() {
+        ClassNode node = campgroundFeature();
+        MethodNode place = node.methods.get(0);
+        place.instructions.insertBefore(place.instructions.getLast(), new VarInsnNode(ALOAD, 1));
+        place.instructions.insertBefore(place.instructions.getLast(), new VarInsnNode(ALOAD, 2));
+        place.instructions.insertBefore(place.instructions.getLast(), new MethodInsnNode(INVOKEINTERFACE,
+                AlienEvoWorldGen1201.WORLD_GEN_LEVEL, "getBiome",
+                AlienEvoWorldGen1201.LEGACY_GET_BIOME, true));
+        place.instructions.insertBefore(place.instructions.getLast(), new InsnNode(POP));
+
+        assertThrows(IllegalStateException.class, () -> AlienEvoWorldGen1201.apply(node));
+    }
+
+    @Test
     void unexpectedCampgroundBytecodeFailsClosed() {
         ClassNode node = campgroundFeature();
         node.methods.get(0).instructions.clear();
