@@ -61,6 +61,11 @@ final class AlienEvoMolang1201 implements Opcodes {
 
     private AlienEvoMolang1201() {}
 
+    /** The old McLib function class is replaced by the generated GeckoLib MathFunction implementation. */
+    static boolean dropLegacyRollSinceClass(String name) {
+        return ROLL_FUNCTION.equals(name);
+    }
+
     /** Returns the number of class/method/call-site changes applied to this class. */
     static int apply(ClassNode node) {
         Objects.requireNonNull(node, "node");
