@@ -30,6 +30,9 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         node.superName = AlienEvoVertexConsumer1201.DEFAULTED;
         node.fields.add(new FieldNode(ACC_PRIVATE | ACC_FINAL, "delegate", "L" + VERTEX + ";", null, null));
         node.fields.add(new FieldNode(ACC_PRIVATE | ACC_FINAL, "full", "Z", null, null));
+        node.fields.add(new FieldNode(ACC_PRIVATE, "x", "D", null, null));
+        node.fields.add(new FieldNode(ACC_PRIVATE, "y", "D", null, null));
+        node.fields.add(new FieldNode(ACC_PRIVATE, "z", "D", null, null));
 
         MethodNode init = new MethodNode(ACC_PUBLIC, "<init>", "(L" + VERTEX + ";IIIIZ)V", null, null);
         node.methods.add(init);
@@ -46,6 +49,22 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         init.instructions.add(new InsnNode(RETURN));
         init.maxLocals = 7;
         init.maxStack = 5;
+
+        MethodNode position = new MethodNode(ACC_PUBLIC, "vertex", "(DDD)L" + VERTEX + ";", null, null);
+        node.methods.add(position);
+        position.instructions.add(new VarInsnNode(ALOAD, 0));
+        position.instructions.add(new VarInsnNode(DLOAD, 1));
+        position.instructions.add(new FieldInsnNode(PUTFIELD, node.name, "x", "D"));
+        position.instructions.add(new VarInsnNode(ALOAD, 0));
+        position.instructions.add(new VarInsnNode(DLOAD, 3));
+        position.instructions.add(new FieldInsnNode(PUTFIELD, node.name, "y", "D"));
+        position.instructions.add(new VarInsnNode(ALOAD, 0));
+        position.instructions.add(new VarInsnNode(DLOAD, 5));
+        position.instructions.add(new FieldInsnNode(PUTFIELD, node.name, "z", "D"));
+        position.instructions.add(new VarInsnNode(ALOAD, 0));
+        position.instructions.add(new InsnNode(ARETURN));
+        position.maxLocals = 7;
+        position.maxStack = 3;
 
         MethodNode endVertex = new MethodNode(ACC_PUBLIC, "endVertex", "()V", null, null);
         node.methods.add(endVertex);
@@ -116,6 +135,13 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         assertTrue(node.fields.stream().anyMatch(field ->
                 field.name.equals("legacyPendingVertex") && field.desc.equals("Z")));
         assertNotNull(find(node, "legacyFlushPending", "()V"));
+        MethodNode legacyPosition = find(node, "vertex", "(DDD)L" + VERTEX + ";");
+        assertNotNull(legacyPosition);
+        assertTrue(legacyPosition.instructions.toArray().length > 0);
+        assertTrue(java.util.Arrays.stream(legacyPosition.instructions.toArray()).anyMatch(instruction ->
+                instruction instanceof FieldInsnNode field && field.getOpcode() == PUTFIELD
+                        && field.owner.equals(node.name) && field.name.equals("legacyPendingVertex")),
+                "the old position setter must mark its stored vertex for legacy endVertex emission");
         MethodNode legacyEnd = find(node, "legacyEndVertex", "()V");
         assertNotNull(legacyEnd);
         assertNotNull(findCall(legacyEnd, node.name, "legacyFlushPending", "()V"));
