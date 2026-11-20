@@ -116,7 +116,8 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         changes += rename(node, "overlayCoords", "(II)L" + VERTEX + ";", "setUv1");
         changes += rename(node, "uv2", "(II)L" + VERTEX + ";", "setUv2");
         changes += rename(node, "normal", "(FFF)L" + VERTEX + ";", "setNormal");
-        if (flushAfterNormal(node)) changes++;
+        if (flushAfterMethodReturn(node, "setUv2", "(II)L" + VERTEX + ";")) changes++;
+        if (flushAfterMethodReturn(node, "setNormal", "(FFF)L" + VERTEX + ";")) changes++;
 
         return changes;
     }
@@ -204,7 +205,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
     private static MethodNode legacyEndVertexBridge(String owner) {
         MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC, "legacyEndVertex", "()V", null, null);
         method.instructions.add(new VarInsnNode(ALOAD, 0));
-        method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "legacyFlushPending", "()V", false));
+        method.instructions.add(new MethodInsnNode(INVOKESPECIAL, owner, "legacyFlushPending", "()V", false));
         method.instructions.add(new InsnNode(RETURN));
         method.maxLocals = 1;
         method.maxStack = 1;
@@ -229,16 +230,16 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         return method;
     }
 
-    private static boolean flushAfterNormal(ClassNode node) {
-        MethodNode normal = find(node, "setNormal", "(FFF)L" + VERTEX + ";");
-        if (normal == null) return false;
+    private static boolean flushAfterMethodReturn(ClassNode node, String name, String descriptor) {
+        MethodNode method = find(node, name, descriptor);
+        if (method == null) return false;
         boolean changed = false;
-        for (AbstractInsnNode instruction : normal.instructions.toArray()) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction.getOpcode() == ARETURN) {
                 InsnList flush = new InsnList();
                 flush.add(new VarInsnNode(ALOAD, 0));
                 flush.add(new MethodInsnNode(INVOKESPECIAL, node.name, "legacyFlushPending", "()V", false));
-                normal.instructions.insertBefore(instruction, flush);
+                method.instructions.insertBefore(instruction, flush);
                 changed = true;
             }
         }
