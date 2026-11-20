@@ -20,7 +20,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
     static final String FLAT = "net/habb/alienevo/client/renderer/ModuleLootItemFx$Flat";
     static final String DEFAULTED = "com/mojang/blaze3d/vertex/DefaultedVertexConsumer";
     static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
-    static final String HELPER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/VertexConsumerCompat";
+    static final String HELPER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/VertexCompat";
     static final String LEGACY_END = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEndVertexConsumer";
 
     private static final String COLOR_DESC = "(IIII)V";
@@ -123,7 +123,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         if (call.name.equals("vertex") && call.desc.equals("(FFFFFFFFFIIFFF)V")) {
             call.setOpcode(INVOKESTATIC);
             call.owner = HELPER;
-            call.name = "addVertex";
+            call.name = "vertex";
             call.desc = "(L" + VERTEX + ";FFFFFFFFFIIFFF)V";
             call.itf = false;
             return 1;
