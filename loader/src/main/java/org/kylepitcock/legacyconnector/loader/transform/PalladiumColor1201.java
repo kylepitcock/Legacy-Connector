@@ -10,6 +10,7 @@ import org.objectweb.asm.tree.MethodNode;
 final class PalladiumColor1201 implements Opcodes {
     static final String COLORABLE_SUIT_STAND_LAYER =
             "net/threetag/palladium/client/renderer/renderlayer/ColorableSuitStandLayer";
+    static final String LASER_RENDERER = "net/threetag/palladium/client/renderer/LaserRenderer";
     private static final String SHEEP = "net/minecraft/world/entity/animal/Sheep";
     private static final String DYE_COLOR = "net/minecraft/world/item/DyeColor";
     private static final String RENDER_DESC =
@@ -33,6 +34,7 @@ final class PalladiumColor1201 implements Opcodes {
         if (COLORABLE_SUIT_STAND_LAYER.equals(node.name)) {
             return adaptSuitStand(node);
         }
+        if (!LASER_RENDERER.equals(node.name)) return 0;
 
         int changes = 0;
         for (MethodNode method : node.methods) {
