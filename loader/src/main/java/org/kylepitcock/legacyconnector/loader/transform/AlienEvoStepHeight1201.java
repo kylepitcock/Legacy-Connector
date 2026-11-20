@@ -2,7 +2,9 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import java.util.Set;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -12,6 +14,9 @@ final class AlienEvoStepHeight1201 implements Opcodes {
     static final String LEGACY_ACCESSOR = "net/habb/alienevo/mixin/scale/EntityRawStepAccessor";
     static final String PLAYER = "net/minecraft/world/entity/player/Player";
     static final String HELPER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/StepHeightCompat";
+    static final String SCALE_MIXIN = "net/habb/alienevo/mixin/scale/EntityStepHeightScaleMixin";
+    static final String ENTITY = "net/minecraft/world/entity/Entity";
+    static final String LIVING_ENTITY = "net/minecraft/world/entity/LivingEntity";
 
     private static final Set<String> USERS = Set.of(
             "net/habb/alienevo/aliens/arburian_pelarota/BallRollController",
@@ -24,8 +29,48 @@ final class AlienEvoStepHeight1201 implements Opcodes {
         return LEGACY_ACCESSOR.equals(name);
     }
 
-    /** Rewrites all calls in the three verified surf controllers. */
+    /**
+     * In 1.21.1 the legacy maxUpStep() implementation lives on LivingEntity,
+     * not Entity. Keep AlienEvo's ModifyReturnValue scaling logic but retarget
+     * it to the class that still declares the method.
+     */
+    private static int retargetStepHeightScaleMixin(ClassNode node) {
+        int changes = retargetMixinAnnotation(node.visibleAnnotations);
+        changes += retargetMixinAnnotation(node.invisibleAnnotations);
+        if (changes == 0) {
+            throw new IllegalStateException("AlienEvo EntityStepHeightScaleMixin no longer targets Entity through its inspected @Mixin annotation");
+        }
+        return changes;
+    }
+
+    private static int retargetMixinAnnotation(java.util.List<AnnotationNode> annotations) {
+        if (annotations == null) return 0;
+        for (AnnotationNode annotation : annotations) {
+            if (!annotation.desc.equals("Lorg/spongepowered/asm/mixin/Mixin;")
+                    || annotation.values == null) continue;
+            for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+                if (!"value".equals(annotation.values.get(i))
+                        || !(annotation.values.get(i + 1) instanceof java.util.List<?> values)) continue;
+                boolean changed = false;
+                for (int j = 0; j < values.size(); j++) {
+                    Object value = values.get(j);
+                    if (value instanceof Type type && type.getSort() == Type.OBJECT
+                            && type.getInternalName().equals(ENTITY)) {
+                        @SuppressWarnings("unchecked")
+                        java.util.List<Object> mutable = (java.util.List<Object>) values;
+                        mutable.set(j, Type.getObjectType(LIVING_ENTITY));
+                        changed = true;
+                    }
+                }
+                if (changed) return 1;
+            }
+        }
+        return 0;
+    }
+
+    /** Rewrites all calls in the three verified surf controllers and retargets the step-scale mixin. */
     static int apply(ClassNode node) {
+        if (SCALE_MIXIN.equals(node.name)) return retargetStepHeightScaleMixin(node);
         if (!USERS.contains(node.name)) return 0;
         int changes = 0;
         for (var method : node.methods) {
