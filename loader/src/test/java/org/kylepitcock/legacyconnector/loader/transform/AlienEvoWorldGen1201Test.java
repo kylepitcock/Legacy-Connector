@@ -2,8 +2,8 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
@@ -11,6 +11,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 /** Regression tests for the bounded AlienEvo campground biome lookup. */
 class AlienEvoWorldGen1201Test implements Opcodes {
@@ -21,9 +22,11 @@ class AlienEvoWorldGen1201Test implements Opcodes {
         node.name = AlienEvoWorldGen1201.FEATURE;
         node.superName = "java/lang/Object";
 
-        MethodNode place = new MethodNode(ACC_PUBLIC, "place", "(L" + AlienEvoWorldGen1201.WORLD_GEN_LEVEL + ";L" + AlienEvoWorldGen1201.BLOCK_POS + ";)Z", null, null);
-        place.instructions.add(new org.objectweb.asm.tree.VarInsnNode(ALOAD, 1));
-        place.instructions.add(new org.objectweb.asm.tree.VarInsnNode(ALOAD, 2));
+        String descriptor = "(L" + AlienEvoWorldGen1201.WORLD_GEN_LEVEL
+                + ";L" + AlienEvoWorldGen1201.BLOCK_POS + ";)Z";
+        MethodNode place = new MethodNode(ACC_PUBLIC, "place", descriptor, null, null);
+        place.instructions.add(new VarInsnNode(ALOAD, 1));
+        place.instructions.add(new VarInsnNode(ALOAD, 2));
         place.instructions.add(new MethodInsnNode(INVOKEINTERFACE,
                 AlienEvoWorldGen1201.WORLD_GEN_LEVEL, "getBiome",
                 AlienEvoWorldGen1201.LEGACY_GET_BIOME, true));
