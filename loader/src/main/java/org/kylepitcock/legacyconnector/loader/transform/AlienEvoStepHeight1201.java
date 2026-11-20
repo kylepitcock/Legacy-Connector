@@ -35,35 +35,20 @@ final class AlienEvoStepHeight1201 implements Opcodes {
      * it to the class that still declares the method.
      */
     private static int retargetStepHeightScaleMixin(ClassNode node) {
-        boolean foundMixin = false;
-        boolean alreadyLivingEntity = false;
-        int changes = 0;
-        changes += retargetMixinAnnotation(node.visibleAnnotations);
-        changes += retargetMixinAnnotation(node.invisibleAnnotations);
-        if (changes > 0) return changes;
-        for (java.util.List<AnnotationNode> annotations : java.util.List.of(
-                node.visibleAnnotations == null ? java.util.Collections.emptyList() : node.visibleAnnotations,
-                node.invisibleAnnotations == null ? java.util.Collections.emptyList() : node.invisibleAnnotations)) {
-            for (AnnotationNode annotation : annotations) {
-                if (!annotation.desc.equals("Lorg/spongepowered/asm/mixin/Mixin;")
-                        || annotation.values == null) continue;
-                foundMixin = true;
-                for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
-                    if (!"value".equals(annotation.values.get(i))
-                            || !(annotation.values.get(i + 1) instanceof java.util.List<?> values)) continue;
-                    for (Object value : values) {
-                        if (value instanceof Type type && type.getSort() == Type.OBJECT
-                                && type.getInternalName().equals(LIVING_ENTITY)) alreadyLivingEntity = true;
-                    }
-                }
-            }
-        }
-        if (foundMixin && alreadyLivingEntity) return 0;
+        int visible = retargetMixinAnnotation(node.visibleAnnotations);
+        int invisible = retargetMixinAnnotation(node.invisibleAnnotations);
+        if (visible > 0 || invisible > 0) return Math.max(visible, invisible);
+        if (visible < 0 || invisible < 0) return 0; // already targets LivingEntity
         throw new IllegalStateException("AlienEvo EntityStepHeightScaleMixin no longer targets Entity through its inspected @Mixin annotation");
     }
 
+    /**
+     * Returns 1 when Entity was changed to LivingEntity, -1 when the annotation
+     * already targets LivingEntity, and 0 when no matching @Mixin target exists.
+     */
     private static int retargetMixinAnnotation(java.util.List<AnnotationNode> annotations) {
         if (annotations == null) return 0;
+        boolean alreadyLivingEntity = false;
         for (AnnotationNode annotation : annotations) {
             if (!annotation.desc.equals("Lorg/spongepowered/asm/mixin/Mixin;")
                     || annotation.values == null) continue;
@@ -73,18 +58,20 @@ final class AlienEvoStepHeight1201 implements Opcodes {
                 boolean changed = false;
                 for (int j = 0; j < values.size(); j++) {
                     Object value = values.get(j);
-                    if (value instanceof Type type && type.getSort() == Type.OBJECT
-                            && type.getInternalName().equals(ENTITY)) {
+                    if (!(value instanceof Type type) || type.getSort() != Type.OBJECT) continue;
+                    if (type.getInternalName().equals(ENTITY)) {
                         @SuppressWarnings("unchecked")
                         java.util.List<Object> mutable = (java.util.List<Object>) values;
                         mutable.set(j, Type.getObjectType(LIVING_ENTITY));
                         changed = true;
+                    } else if (type.getInternalName().equals(LIVING_ENTITY)) {
+                        alreadyLivingEntity = true;
                     }
                 }
                 if (changed) return 1;
             }
         }
-        return 0;
+        return alreadyLivingEntity ? -1 : 0;
     }
 
     /** Rewrites all calls in the three verified surf controllers and retargets the step-scale mixin. */
