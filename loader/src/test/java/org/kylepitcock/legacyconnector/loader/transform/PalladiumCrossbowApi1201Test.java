@@ -37,7 +37,7 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         use.maxStack = 6;
 
         use.instructions.add(new VarInsnNode(ALOAD, 4));
-        use.instructions.add(new MethodInsnNode(INVOKESTATIC, CROSSBOW, "getShootingPower",
+        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "getShootingPower",
                 "(L" + ITEM_STACK + ";)F", false));
         use.instructions.add(new VarInsnNode(ALOAD, 0));
         use.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, node.name, "velocityMultiplier", "F"));
@@ -51,12 +51,12 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         use.instructions.add(new VarInsnNode(ALOAD, 4));
         use.instructions.add(new VarInsnNode(FLOAD, 5));
         use.instructions.add(new VarInsnNode(FLOAD, 6));
-        use.instructions.add(new MethodInsnNode(INVOKESTATIC, CROSSBOW, "performShooting",
+        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "performShooting",
                 "(L" + LEVEL + ";L" + LIVING_ENTITY + ";L" + HAND + ";L" + ITEM_STACK + ";FF)V", false));
 
         use.instructions.add(new VarInsnNode(ALOAD, 4));
         use.instructions.add(new InsnNode(ICONST_0));
-        use.instructions.add(new MethodInsnNode(INVOKESTATIC, CROSSBOW, "setCharged",
+        use.instructions.add(new MethodInsnNode(INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "setCharged",
                 "(L" + ITEM_STACK + ";Z)V", false));
         use.instructions.add(new InsnNode(RETURN));
         return node;
@@ -73,10 +73,10 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         assertTrue(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.HELPER, "performShooting",
                 "(L" + CROSSBOW + ";L" + LEVEL + ";L" + LIVING_ENTITY + ";L" + HAND
                         + ";L" + ITEM_STACK + ";FF)V"));
-        assertFalse(hasCall(use, INVOKESTATIC, CROSSBOW, "getShootingPower", "(L" + ITEM_STACK + ";)F"));
-        assertFalse(hasCall(use, INVOKESTATIC, CROSSBOW, "performShooting",
+        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "getShootingPower", "(L" + ITEM_STACK + ";)F"));
+        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "performShooting",
                 "(L" + LEVEL + ";L" + LIVING_ENTITY + ";L" + HAND + ";L" + ITEM_STACK + ";FF)V"));
-        assertFalse(hasCall(use, INVOKESTATIC, CROSSBOW, "setCharged", "(L" + ITEM_STACK + ";Z)V"),
+        assertFalse(hasCall(use, INVOKESTATIC, PalladiumCrossbowApi1201.ADDON_CROSSBOW, "setCharged", "(L" + ITEM_STACK + ";Z)V"),
                 "performShooting now clears the CHARGED_PROJECTILES component itself");
         assertTrue(hasOpcode(use, FSTORE));
         assertTrue(hasOpcode(use, ASTORE));
@@ -84,6 +84,34 @@ class PalladiumCrossbowApi1201Test implements Opcodes {
         assertTrue(use.maxStack >= 7);
 
         assertEquals(0, PalladiumCrossbowApi1201.apply(node), "the migration must be idempotent");
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        node.accept(writer);
+        assertTrue(writer.toByteArray().length > 0);
+    }
+
+    @Test
+    void inheritedChargedProjectileMembershipUsesTheComponentHelper() {
+        ClassNode node = new ClassNode();
+        node.version = V17;
+        node.name = "net/threetag/palladium/item/SomeCrossbowHelper";
+        node.superName = "java/lang/Object";
+        MethodNode check = new MethodNode(ACC_PUBLIC | ACC_STATIC, "hasProjectile",
+                "(L" + ITEM_STACK + ";Lnet/minecraft/world/item/Item;)Z", null, null);
+        node.methods.add(check);
+        check.instructions.add(new VarInsnNode(ALOAD, 0));
+        check.instructions.add(new VarInsnNode(ALOAD, 1));
+        check.instructions.add(new MethodInsnNode(INVOKESTATIC, CROSSBOW, "containsChargedProjectile",
+                "(L" + ITEM_STACK + ";Lnet/minecraft/world/item/Item;)Z", false));
+        check.instructions.add(new InsnNode(IRETURN));
+        check.maxLocals = 2;
+        check.maxStack = 2;
+
+        assertEquals(1, PalladiumCrossbowApi1201.apply(node));
+        assertTrue(hasCall(check, INVOKESTATIC, PalladiumCrossbowApi1201.HELPER,
+                "containsChargedProjectile", "(L" + ITEM_STACK + ";Lnet/minecraft/world/item/Item;)Z"));
+        assertFalse(hasCall(check, INVOKESTATIC, CROSSBOW,
+                "containsChargedProjectile", "(L" + ITEM_STACK + ";Lnet/minecraft/world/item/Item;)Z"));
+        assertEquals(0, PalladiumCrossbowApi1201.apply(node));
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         node.accept(writer);
         assertTrue(writer.toByteArray().length > 0);
