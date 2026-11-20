@@ -268,7 +268,7 @@ public final class LegacyJarInspector {
     private static void readForge1201Dependencies(String text, List<LegacyModDecl> mods) {
         if (mods.isEmpty()) return;
         java.util.regex.Pattern table = java.util.regex.Pattern.compile(
-                "(?ms)^\\s*\\[\\[dependencies\\.([^\\]]+)\\]\]\s*(.*?)(?=^\\s*\\[|\\z)");
+                "(?ms)^\\s*\\[\\[dependencies\\.([^\\]]+)\\]\\]\\s*(.*?)(?=^\\s*\\[|\\z)");
         java.util.regex.Pattern mandatoryPattern = java.util.regex.Pattern.compile(
                 "(?i)^\\s*mandatory\\s*=\\s*(true|false)\\s*(?:#.*)?$");
         Map<String, LegacyModDecl> byId = new HashMap<>();
