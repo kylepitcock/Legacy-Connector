@@ -61,8 +61,14 @@ public final class VertexCompat {
         return c.setNormal(v.x(), v.y(), v.z());
     }
 
-    /** A vertex is complete once the next one starts: nothing to do. */
-    public static void endVertex(VertexConsumer c) {}
+    /**
+     * On native 1.21.1 consumers the vertex is completed by addVertex/build.
+     * AlienEvo's legacy flat wrapper deliberately buffers state, so give that
+     * one adapter its old end-of-vertex callback.
+     */
+    public static void endVertex(VertexConsumer c) {
+        if (c instanceof LegacyEndVertexConsumer legacy) legacy.legacyEndVertex();
+    }
 
     /** {@code VertexConsumer.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz)} (a whole vertex in one call): {@code addVertex} with a packed colour. */
     public static void vertex(VertexConsumer c, float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {
