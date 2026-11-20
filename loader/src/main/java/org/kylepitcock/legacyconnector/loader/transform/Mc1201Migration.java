@@ -544,7 +544,7 @@ final class Mc1201Migration {
 
     /**
      * {@code =args}: the call keeps its name and receiver, its arguments are produced again from the old ones. The helper-name column lists one token per
-     * new parameter: {@code N} (old argument N unchanged), {@code Class.method@a+b} (a static helper taking old arguments a and b, returning the new parameter),
+     * new parameter: {@code N} (old argument N unchanged), {@code true}/{@code false} (a new boolean constant), or {@code Class.method@a+b} (a static helper taking old arguments a and b, returning the new parameter),
      * and the helper-descriptor column is the new descriptor. The old arguments are spilled to fresh locals first, so any argument can be dropped, reordered or
      * converted (super constructors that lost an id, took a {@code Holder}...).
      */
@@ -563,6 +563,14 @@ final class Mc1201Migration {
         for (int i = old.length - 1; i >= 0; i--) il.add(new VarInsnNode(old[i].getOpcode(Opcodes.ISTORE), slot[i]));
         for (int j = 0; j < now.length; j++) {
             String tok = tokens[j].strip();
+            if (tok.equals("true") || tok.equals("false")) {
+                if (now[j].getSort() != Type.BOOLEAN) {
+                    throw new IllegalStateException("=args boolean constant for non-boolean parameter " + j + " in "
+                            + call.owner + "." + call.name + call.desc);
+                }
+                il.add(new InsnNode(tok.equals("true") ? Opcodes.ICONST_1 : Opcodes.ICONST_0));
+                continue;
+            }
             int at = tok.indexOf('@');
             if (at < 0) {
                 int i = Integer.parseInt(tok);
