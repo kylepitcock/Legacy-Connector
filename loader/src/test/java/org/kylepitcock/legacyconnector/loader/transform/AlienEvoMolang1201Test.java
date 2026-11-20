@@ -15,6 +15,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.FrameNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -97,9 +99,21 @@ class AlienEvoMolang1201Test implements Opcodes {
         render.instructions.add(new InsnNode(ACONST_NULL));
         render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AlienEvoMolang1201.OLD_PARSER, "setMemoizedValue",
                 "(Ljava/lang/String;Ljava/util/function/DoubleSupplier;)V", false));
+        // Stack-map frame types are part of the class too: HologramRenderer's
+        // loop stores the legacy parser in a local across a branch.
+        render.instructions.add(new InsnNode(ACONST_NULL));
+        render.instructions.add(new VarInsnNode(ASTORE, 1));
+        render.instructions.add(new InsnNode(ACONST_NULL));
+        render.instructions.add(new VarInsnNode(ASTORE, 2));
+        render.instructions.add(new LabelNode());
+        FrameNode oldFrame = new FrameNode(F_APPEND, 2,
+                new Object[] {AlienEvoMolang1201.OLD_PARSER, AlienEvoMolang1201.OLD_LAZY_VARIABLE}, 0, null);
+        render.instructions.add(oldFrame);
         render.instructions.add(new InsnNode(RETURN));
+        render.maxLocals = 3;
+        render.maxStack = 2;
 
-        assertTrue(AlienEvoMolang1201.apply(node) >= 7);
+        assertTrue(AlienEvoMolang1201.apply(node) >= 9);
         assertTrue(hasField(render, GETSTATIC, AlienEvoMolang1201.PARSER_COMPAT, "INSTANCE",
                 "L" + AlienEvoMolang1201.PARSER_COMPAT + ";"));
         assertTrue(hasCall(render, INVOKEVIRTUAL, AlienEvoMolang1201.PARSER_COMPAT, "getVariable",
@@ -111,6 +125,8 @@ class AlienEvoMolang1201Test implements Opcodes {
                 "(Ljava/lang/String;Ljava/util/function/DoubleSupplier;)V"));
         assertFalse(hasOwner(render, AlienEvoMolang1201.OLD_PARSER));
         assertFalse(hasOwner(render, AlienEvoMolang1201.OLD_LAZY_VARIABLE));
+        assertEquals(AlienEvoMolang1201.PARSER_COMPAT, oldFrame.local.get(0));
+        assertEquals(AlienEvoMolang1201.VARIABLE_COMPAT, oldFrame.local.get(1));
         assertEquals(0, AlienEvoMolang1201.apply(node));
         assertClassCanBeSerialized(node);
     }
