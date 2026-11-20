@@ -304,6 +304,7 @@ public final class Forge1201Transformer {
         int palladiumAddonPackChanges = 0;
         int palladiumWidgetButtonChanges = 0;
         int palladiumMixinChanges = 0;
+        int palladiumCrossbowChanges = 0;
         int palladiumLootChanges = 0;
         int palladiumAccessoryScreenChanges = 0;
         int palladiumAdvancementWidgetChanges = 0;
@@ -410,6 +411,8 @@ public final class Forge1201Transformer {
             palladiumWidgetButtonChanges += palladiumWidgetButtonChange;
             int palladiumMixinChange = PalladiumMixinCompat1201.apply(node);
             palladiumMixinChanges += palladiumMixinChange;
+            int palladiumCrossbowChange = PalladiumCrossbowItem1201.apply(node);
+            palladiumCrossbowChanges += palladiumCrossbowChange;
             int palladiumLootChange = PalladiumLootCompat1201.apply(node);
             palladiumLootChanges += palladiumLootChange;
             int palladiumAccessoryScreenChange = PalladiumAccessoryScreen1201.apply(node);
@@ -440,7 +443,7 @@ public final class Forge1201Transformer {
                 Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             }
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
-                    + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
+                    + palladiumWidgetButtonChange + palladiumMixinChange + palladiumCrossbowChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
@@ -483,6 +486,10 @@ public final class Forge1201Transformer {
         if (palladiumWidgetButtonChanges > 0) {
             result.notes.add("Palladium default button backgrounds migrated to 1.21.1 GUI sprites: "
                     + palladiumWidgetButtonChanges + " button class(es)");
+        }
+        if (palladiumCrossbowChanges > 0) {
+            result.notes.add("Palladium custom crossbow ammo migrated to the 1.21.1 createProjectile hook; vanilla now handles the subsequent projectile launch: "
+                    + palladiumCrossbowChanges + " mixin class(es)");
         }
         if (palladiumMixinChanges > 0) {
             result.notes.add("Palladium 1.21.1 compatibility adapters applied to "
