@@ -276,7 +276,12 @@ public final class Forge1201Transformer {
         List<ClassNode> nodes = new ArrayList<>();
         Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
         java.util.Set<String> serializable = SerialUids.serializable(classes);
+        int palladiumLegacyCheckboxClassesDropped = 0;
         for (var e : classes.entrySet()) {
+            if (PalladiumAddonPackCheckbox1201.dropLegacyClass(e.getKey())) {
+                palladiumLegacyCheckboxClassesDropped++;
+                continue;
+            }
             ClassNode node = new ClassNode();
             try {
                 new ClassReader(e.getValue()).accept(SerialUids.head(serializable, e.getValue(), new ClassRemapper(node, mapper)), 0);
@@ -308,6 +313,7 @@ public final class Forge1201Transformer {
         int palladiumCrossbowApiChanges = 0;
         int palladiumLootChanges = 0;
         int palladiumAccessoryScreenChanges = 0;
+        int palladiumAddonPackCheckboxChanges = 0;
         int palladiumAdvancementWidgetChanges = 0;
         int palladiumPowersScreenChanges = 0;
         int palladiumSelectionListChanges = 0;
@@ -380,6 +386,8 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int palladiumAddonPackCheckboxChange = PalladiumAddonPackCheckbox1201.apply(node);
+            palladiumAddonPackCheckboxChanges += palladiumAddonPackCheckboxChange;
             int alienEvoMixinChange = AlienEvoMixins1201.apply(node);
             alienEvoMixinChanges += alienEvoMixinChange;
             int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
@@ -450,7 +458,8 @@ public final class Forge1201Transformer {
             }
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumCrossbowChange + palladiumCrossbowApiChange + palladiumLootChange
-                    + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
+                    + palladiumAccessoryScreenChange + palladiumAddonPackCheckboxChange
+                    + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
@@ -493,6 +502,11 @@ public final class Forge1201Transformer {
         if (palladiumAddonPackChanges > 0) {
             result.notes.add("Palladium addon-pack repository adapted: FolderRepositorySource uses Minecraft's symlink validator; the discovery callback rebuilds immutable 1.21.1 PackLocationInfo/PackSelectionConfig with the legacy addonpack: ID prefix and required-selection setting: "
                     + palladiumAddonPackChanges + " constructor call(s)");
+        }
+        if (palladiumAddonPackCheckboxChanges > 0 || palladiumLegacyCheckboxClassesDropped > 0) {
+            result.notes.add("Palladium AddonPackLogScreen filter checkboxes migrated to the 1.21.1 Checkbox builder; selection callbacks and log refresh retained: "
+                    + palladiumAddonPackCheckboxChanges + " screen rewrite(s), "
+                    + palladiumLegacyCheckboxClassesDropped + " obsolete nested CheckboxButton class(es) removed");
         }
         if (palladiumWidgetButtonChanges > 0) {
             result.notes.add("Palladium default button backgrounds migrated to 1.21.1 GUI sprites: "
