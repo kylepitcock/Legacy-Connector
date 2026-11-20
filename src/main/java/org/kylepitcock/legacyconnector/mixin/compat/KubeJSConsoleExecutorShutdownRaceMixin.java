@@ -1,8 +1,9 @@
 package org.kylepitcock.legacyconnector.mixin.compat;
 
 import java.util.concurrent.Executor;
-import legacyconnector.v1_20_1.KubeJSConsoleExecutorCompat;
+
 import com.mojang.logging.LogUtils;
+import legacyconnector.v1_20_1.KubeJSConsoleExecutorCompat;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -30,7 +31,6 @@ public abstract class KubeJSConsoleExecutorShutdownRaceMixin {
             require = 0,
             expect = 1
     )
-    @Unique
     private void legacyconnector$executeOrRunAfterShutdown(Executor executor, Runnable task) {
         if (!KubeJSConsoleExecutorCompat.executeOrRunAfterShutdown(executor, task)) {
             LEGACYCONNECTOR_LOGGER.warn(
