@@ -614,6 +614,28 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void inheritedPlayerStepHeightSetterUsesTheLivingEntityAttributeAdapter() {
+        String player = "net/minecraft/world/entity/player/Player";
+        String entityCompat = MIGRATE + "EntityCompat";
+        ClassNode c = cls("net/habb/alienevo/aliens/petrosapien/CrystalSurfController", "java/lang/Object");
+        MethodNode move = method(c, ACC_PUBLIC | ACC_STATIC, "temporarilyRaiseStepHeight",
+                "(L" + player + ";F)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(FLOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, player, "setMaxUpStep", "(F)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(1, counts.calls);
+        MethodInsnNode setter = find(move, entityCompat, "setMaxUpStep");
+        assertNotNull(setter,
+                "the inherited Entity.setMaxUpStep call must route to the STEP_HEIGHT attribute helper");
+        assertEquals(INVOKESTATIC, setter.getOpcode());
+        assertEquals("(Lnet/minecraft/world/entity/Entity;F)V", setter.desc);
+        verify(c);
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");
