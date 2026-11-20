@@ -95,6 +95,9 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         assertNotNull(findCall(handler, INVOKEINTERFACE, "java/util/Map", "put",
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
         assertFalse(hasField(handler, node.name, "f_110093_"));
+        assertNull(Mixin1201.missingShadow(node,
+                List.of("net/minecraft/client/renderer/RenderBuffers"), new Mc1201Hierarchy()),
+                "the replacement @Shadow field must exist on 1.21.1 RenderBuffers");
         verify(node);
     }
 
@@ -127,6 +130,9 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         assertNotNull(findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiHeight", "()I"));
         assertFalse(hasField(handler, node.name, "f_92977_"));
         assertFalse(hasField(handler, node.name, "f_92978_"));
+        assertNull(Mixin1201.missingShadow(node,
+                List.of("net/minecraft/client/gui/Gui"), new Mc1201Hierarchy()),
+                "the heat meter should no longer shadow removed Gui dimension fields");
         verify(node);
     }
 
@@ -180,6 +186,9 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
             }
         }
         assertEquals(2, floatZeroes);
+        assertNull(Mixin1201.missingShadow(node,
+                List.of("net/minecraft/client/Camera"), new Mc1201Hierarchy()),
+                "the replacement @Shadow move(float,float,float) must exist on 1.21.1 Camera");
         verify(node);
     }
 
