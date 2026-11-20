@@ -80,6 +80,23 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
     }
 
     @Test
+    void stillClockPreservesOwnersAfterGeckoLibTypesWereRemapped() {
+        ClassNode node = node(AlienEvoGeckoMixins1201.STILL_CLOCK);
+        String animatable = "Llegacyconnector/isolated/geckolib/GeoAnimatable;";
+        String animationState = "Llegacyconnector/isolated/geckolib/AnimationState;";
+        String oldDesc = "(" + animatable + "J" + animationState + CI + ")V";
+        String newDesc = "(" + animatable + "J" + animationState + "F" + CI + ")V";
+        MethodNode handler = method(node, "alienevo$poseStill", oldDesc, 8, ALOAD, 5, ALOAD, 6, ALOAD, 7);
+
+        assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        assertEquals(List.of(6, 7, 8), localSlots(handler));
+        assertEquals(9, handler.maxLocals);
+        assertNull(handler.localVariables);
+        assertEquals(0, AlienEvoGeckoMixins1201.apply(node), "the descriptor rewrite must be idempotent");
+    }
+
+    @Test
     void geoEntityRendererPacksColorAndMovesCallbackAndRendererTemporary() {
         ClassNode node = node(AlienEvoGeckoMixins1201.GEO_ENTITY_RENDERER);
         MethodNode handler = method(node, "alienevo$ensureAlienEvoLayers", OLD_RENDER_ARGS, 17, ILOAD, 7, ALOAD, 15, ALOAD, 16);
