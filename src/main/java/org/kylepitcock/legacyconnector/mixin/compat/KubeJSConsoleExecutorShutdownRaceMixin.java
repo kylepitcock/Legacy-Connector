@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
  * KubeJS 2101 can unload scripts after its background executor was shut down.
- * Its ConsoleJS.resetFile() submits the log-clear task without checking the
- * executor state; perform that one task synchronously on a shutdown rejection.
+ * Its ConsoleJS.resetFile() and flush(false) submit log tasks without checking
+ * executor state; run those tasks synchronously only after shutdown completes.
  */
 @Pseudo
 @Mixin(targets = "dev.latvian.mods.kubejs.script.ConsoleJS", remap = false)
@@ -23,19 +23,19 @@ public abstract class KubeJSConsoleExecutorShutdownRaceMixin {
     private static final Logger LEGACYCONNECTOR_LOGGER = LogUtils.getLogger();
 
     @Redirect(
-            method = "resetFile",
+            method = {"resetFile", "flush"},
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/concurrent/Executor;execute(Ljava/lang/Runnable;)V"
             ),
             require = 0,
-            expect = 1
+            expect = 2
     )
     private void legacyconnector$executeOrRunAfterShutdown(Executor executor, Runnable task) {
         if (!KubeJSConsoleExecutorCompat.executeOrRunAfterShutdown(executor, task)) {
             LEGACYCONNECTOR_LOGGER.warn(
-                    "KubeJS ConsoleJS.resetFile() found its background executor shut down; "
-                            + "cleared the script log synchronously to keep reload alive"
+                    "KubeJS ConsoleJS log task found its background executor terminated; "
+                            + "ran the task synchronously to keep reload/flush alive"
             );
         }
     }
