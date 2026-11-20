@@ -88,7 +88,7 @@ class LegacyJarInspectorForge1201Test {
         try {
             String generated = new String(ModMetadataGenerator.modsToml(inspected), StandardCharsets.UTF_8);
             assertTrue(generated.contains("[[dependencies.alienevo]]"));
-            assertTrue(generated.contains('modId="palladium"\ntype="required"\nversionRange="*"\nordering="AFTER"'));
+            assertTrue(generated.contains("modId=\"palladium\"\ntype=\"required\"\nversionRange=\"*\"\nordering=\"AFTER\""));
         } finally {
             ModMetadataGenerator.setLoadedMods(List.of());
         }
