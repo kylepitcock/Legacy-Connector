@@ -128,7 +128,6 @@ final class PalladiumCrossbowApi1201 implements Opcodes {
         code.add(new VarInsnNode(ALOAD, locals[3]));
         code.add(new VarInsnNode(FLOAD, locals[4]));
         code.add(new VarInsnNode(FLOAD, locals[5]));
-        code.add(new InsnNode(ACONST_NULL));
 
         method.instructions.insertBefore(call, code);
         call.setOpcode(INVOKESTATIC);
