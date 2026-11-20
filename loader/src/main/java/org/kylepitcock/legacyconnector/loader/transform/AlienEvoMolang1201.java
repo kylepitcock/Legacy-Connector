@@ -8,6 +8,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -198,22 +199,53 @@ final class AlienEvoMolang1201 implements Opcodes {
     private static int migrateLegacyParserCalls(ClassNode node) {
         if (BOOTSTRAP.equals(node.name)) return 0; // init() was fully replaced above
         int changes = 0;
+        if (node.signature != null) {
+            String signature = replaceType(node.signature);
+            if (!signature.equals(node.signature)) {
+                node.signature = signature;
+                changes++;
+            }
+        }
         for (FieldNode field : node.fields) {
             String desc = replaceType(field.desc);
             if (!desc.equals(field.desc)) {
                 field.desc = desc;
                 changes++;
             }
+            if (field.signature != null) {
+                String signature = replaceType(field.signature);
+                if (!signature.equals(field.signature)) {
+                    field.signature = signature;
+                    changes++;
+                }
+            }
         }
         for (MethodNode method : node.methods) {
-            method.desc = replaceType(method.desc);
-            if (method.signature != null) method.signature = replaceType(method.signature);
+            String descriptor = replaceType(method.desc);
+            if (!descriptor.equals(method.desc)) {
+                method.desc = descriptor;
+                changes++;
+            }
+            if (method.signature != null) {
+                String signature = replaceType(method.signature);
+                if (!signature.equals(method.signature)) {
+                    method.signature = signature;
+                    changes++;
+                }
+            }
             if (method.localVariables != null) {
                 for (var local : method.localVariables) {
                     String desc = replaceType(local.desc);
                     if (!desc.equals(local.desc)) {
                         local.desc = desc;
                         changes++;
+                    }
+                    if (local.signature != null) {
+                        String signature = replaceType(local.signature);
+                        if (!signature.equals(local.signature)) {
+                            local.signature = signature;
+                            changes++;
+                        }
                     }
                 }
             }
@@ -228,9 +260,15 @@ final class AlienEvoMolang1201 implements Opcodes {
                     } else if (field.name.equals("functions")) {
                         throw new IllegalStateException("Unadapted direct access to GeckoLib's removed MolangParser.functions map in " + node.name);
                     }
-                } else if (instruction instanceof TypeInsnNode type && type.desc.equals(OLD_PARSER)) {
-                    type.desc = PARSER_COMPAT;
-                    changes++;
+                } else if (instruction instanceof TypeInsnNode type) {
+                    String desc = replaceType(type.desc);
+                    if (!desc.equals(type.desc)) {
+                        type.desc = desc;
+                        changes++;
+                    }
+                } else if (instruction instanceof FrameNode frame) {
+                    changes += rewriteFrameTypes(frame.local);
+                    changes += rewriteFrameTypes(frame.stack);
                 } else if (instruction instanceof MethodInsnNode call) {
                     if (call.owner.equals(OLD_PARSER)) {
                         if (call.name.equals("getVariable")
@@ -251,6 +289,22 @@ final class AlienEvoMolang1201 implements Opcodes {
                 }
             }
             if (method.localVariables == null) continue;
+        }
+        return changes;
+    }
+
+    private static int rewriteFrameTypes(java.util.List<Object> values) {
+        if (values == null) return 0;
+        int changes = 0;
+        for (int i = 0; i < values.size(); i++) {
+            Object value = values.get(i);
+            if (value instanceof String type) {
+                String replacement = replaceType(type);
+                if (!replacement.equals(type)) {
+                    values.set(i, replacement);
+                    changes++;
+                }
+            }
         }
         return changes;
     }
