@@ -22,6 +22,7 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
     static final String RENDER_BUFFERS = "net/habb/alienevo/mixin/client/RenderBuffersGlintMixin";
     static final String RIFLE_CROSSHAIR = "net/habb/alienevo/mixin/client/RifleHeatCrosshairMixin";
     static final String WHIRLPOOL_CAMERA = "net/habb/alienevo/mixin/client/WhirlpoolCameraMixin";
+    static final String RENDER_TYPES = "net/habb/alienevo/client/renderer/AlienEvoRenderTypes";
 
     private static final String BUFFER_SOURCE = "net/minecraft/client/renderer/MultiBufferSource$BufferSource";
     private static final String SEQUENCED_MAP = "Ljava/util/SequencedMap;";
@@ -41,6 +42,7 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
             case RENDER_BUFFERS -> migrateTintedGlintBuffer(node);
             case RIFLE_CROSSHAIR -> migrateRifleHeatCrosshair(node);
             case WHIRLPOOL_CAMERA -> migrateWhirlpoolCamera(node);
+            case RENDER_TYPES -> migrateTintedGlintShader(node);
             default -> 0;
         };
     }
@@ -104,6 +106,42 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
                     + "fixed-buffer registration shape (fieldReads=" + oldFieldReads
                     + ", bufferNews=" + bufferBuilderNews + ", bufferConstructors=" + bufferBuilderConstructors
                     + ", mapPuts=" + sortedMapPuts + ")");
+        }
+        return 1;
+    }
+
+    /**
+     * AlienEvo's 1.20.1 tinted item-glint render type referenced the direct
+     * glint shader, which was removed in 1.21.1. Its POSITION_TEX format and
+     * item glint texture use the current item-glint shader instead.
+     *
+     * Run before SoftLink1201: otherwise the removed field read is replaced
+     * with null and RenderType.CompositeState fails during client bootstrap.
+     */
+    private static int migrateTintedGlintShader(ClassNode node) {
+        final String shaderOwner = "net/minecraft/client/renderer/RenderStateShard";
+        final String shaderDesc = "Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;";
+        int oldReads = 0;
+        int alreadyMigrated = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode instruction : method.instructions.toArray()) {
+                if (!(instruction instanceof FieldInsnNode field)
+                        || field.getOpcode() != GETSTATIC
+                        || !field.owner.equals(shaderOwner)
+                        || !field.desc.equals(shaderDesc)) continue;
+                if (field.name.equals("RENDERTYPE_GLINT_DIRECT_SHADER")) {
+                    field.name = "RENDERTYPE_GLINT_SHADER";
+                    oldReads++;
+                } else if (field.name.equals("RENDERTYPE_GLINT_SHADER")) {
+                    alreadyMigrated++;
+                }
+            }
+        }
+        if (oldReads == 0 && alreadyMigrated == 1) return 0;
+        if (oldReads != 1 || alreadyMigrated != 0) {
+            throw new IllegalStateException("AlienEvoRenderTypes no longer contains its inspected direct item-glint shader read "
+                    + "(legacyReads=" + oldReads + ", currentReads=" + alreadyMigrated + ")");
         }
         return 1;
     }
