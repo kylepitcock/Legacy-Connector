@@ -1,6 +1,5 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
-import net.minecraft.util.ARGB;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 /**
@@ -24,12 +23,16 @@ public final class VertexConsumerCompat {
             float red, float green, float blue, float alpha,
             float u, float v, int overlay, int light,
             float normalX, float normalY, float normalZ) {
-        consumer.addVertex(x, y, z, ARGB.colorFromFloat(alpha, red, green, blue),
-                u, v, overlay, light, normalX, normalY, normalZ);
+        int color = (channel(alpha) << 24) | (channel(red) << 16) | (channel(green) << 8) | channel(blue);
+        consumer.addVertex(x, y, z, color, u, v, overlay, light, normalX, normalY, normalZ);
     }
 
-    /** The 1.21.1 API submits a vertex when addVertex is called; there is no endVertex step. */
+    /** The 1.21.1 API has no endVertex method; preserve only legacy wrappers that still buffer a vertex. */
     public static void endVertex(VertexConsumer consumer) {
-        // Deliberately empty: addVertex already started the next vertex in the builder.
+        if (consumer instanceof LegacyEndVertexConsumer legacy) legacy.legacyEndVertex();
+    }
+
+    private static int channel(float value) {
+        return Math.max(0, Math.min(255, (int) (value * 255.0F)));
     }
 }
