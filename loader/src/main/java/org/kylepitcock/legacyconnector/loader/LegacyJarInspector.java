@@ -240,6 +240,9 @@ public final class LegacyJarInspector {
                 mods.add(d);
             }
         }
+        // Forge 1.20.1 dependency tables are separate TOML tables; keep them for NeoForge module ordering/readability.
+        // Some released mods (including AlienEvo) use a placeholder owner such as "examplemod" for a single-mod jar.
+        readForge1201Dependencies(text, mods);
         if (loader == null || !java.util.Set.of("javafml", "lowcodefml", "kotlinforforge").contains(loader) || mods.isEmpty() || mods.stream().anyMatch(d -> d.legacyId == null)) return null;
         String evidence = forge1201Evidence(zip, text, loader);
         if (evidence == null) return null;
@@ -255,6 +258,60 @@ public final class LegacyJarInspector {
         jar.version = LegacyVersion.V1_20_1;
         jar.versionEvidence = evidence;
         return jar;
+    }
+
+    private record Forge1201Dependency(String owner, String modId, boolean mandatory, String ordering, String versionRange) {}
+
+    /**
+     * Preserve Forge 1.20.1 {@code [[dependencies.<modid>]]} declarations when generating NeoForge metadata.
+     * A few single-mod jars copied the Forge template's {@code examplemod} table owner without changing it to
+     * their actual mod id. In that unambiguous case, associate the dependency tables with the sole declared mod.
+     */
+    private static void readForge1201Dependencies(String text, List<LegacyModDecl> mods) {
+        if (mods.isEmpty()) return;
+        java.util.regex.Pattern table = java.util.regex.Pattern.compile(
+                "(?ms)^\\\\s*\\\\[\\\\[dependencies\\\\.([^\\\\]]+)\\\\]\\\\]\\\\s*(.*?)(?=^\\\\s*\\\\[|\\\\z)");
+        java.util.regex.Pattern mandatoryPattern = java.util.regex.Pattern.compile(
+                "(?i)^\\\\s*mandatory\\\\s*=\\\\s*(true|false)\\\\s*(?:#.*)?$");
+        Map<String, LegacyModDecl> byId = new HashMap<>();
+        for (LegacyModDecl mod : mods) byId.put(mod.legacyId, mod);
+        var blocks = table.matcher(text);
+        while (blocks.find()) {
+            String owner = blocks.group(1).trim();
+            String modId = null;
+            String ordering = "NONE";
+            String versionRange = null;
+            boolean mandatory = false;
+            for (String raw : blocks.group(2).split("\\\\R")) {
+                var string = TOML_STRING.matcher(raw);
+                if (string.find()) {
+                    String key = string.group(1);
+                    String value = string.group(2) != null ? string.group(2) : string.group(3);
+                    switch (key) {
+                        case "modId" -> modId = value;
+                        case "ordering" -> ordering = value;
+                        case "versionRange" -> versionRange = value;
+                        default -> { }
+                    }
+                } else {
+                    var bool = mandatoryPattern.matcher(raw);
+                    if (bool.find()) mandatory = Boolean.parseBoolean(bool.group(1));
+                }
+            }
+            if (modId == null || modId.isBlank()) continue;
+            LegacyModDecl declaration = byId.get(owner);
+            if (declaration == null && mods.size() == 1) declaration = mods.get(0);
+            if (declaration == null) continue; // ambiguous owner in a multi-mod jar: do not guess
+            String order = switch (ordering.toUpperCase(java.util.Locale.ROOT)) {
+                case "AFTER" -> "after";
+                case "BEFORE" -> "before";
+                default -> "none";
+            };
+            String dependency = (mandatory ? "required-" : "") + order + ":" + modId;
+            if (versionRange != null && !versionRange.isBlank() && !versionRange.equals("*")) dependency += "@" + versionRange;
+            declaration.dependencies = declaration.dependencies == null || declaration.dependencies.isBlank()
+                    ? dependency : declaration.dependencies + ";" + dependency;
+        }
     }
 
     private static final java.util.regex.Pattern RANGE = java.util.regex.Pattern.compile("([\\[(])\\s*([^,\\])\\s]*)\\s*(?:(,)\\s*([^,\\])\\s]*)\\s*)?([\\])])");
