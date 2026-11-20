@@ -55,7 +55,7 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
         if (isStillClockDescriptor(arguments, true) && Type.VOID_TYPE.equals(Type.getReturnType(method.desc))) {
             return 0;
         }
-        if (!isStillClockDescriptor(arguments, false) || Type.VOID_TYPE != Type.getReturnType(method.desc)
+        if (!isStillClockDescriptor(arguments, false) || !Type.VOID_TYPE.equals(Type.getReturnType(method.desc))
                 || (method.access & ACC_STATIC) != 0) {
             throw new IllegalStateException("AlienEvo GeckoStillClockMixin has an unexpected poseStill descriptor: "
                     + method.desc);
