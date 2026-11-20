@@ -338,6 +338,7 @@ public final class Forge1201Transformer {
         int palladiumCoreLightningMixinChanges = 0;
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
+        int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoMolangBootstrapChanges = 0;
@@ -391,6 +392,8 @@ public final class Forge1201Transformer {
             palladiumAddonPackCheckboxChanges += palladiumAddonPackCheckboxChange;
             int alienEvoMixinChange = AlienEvoMixins1201.apply(node);
             alienEvoMixinChanges += alienEvoMixinChange;
+            int alienEvoLegacyMixinChange = AlienEvoLegacyMixins1201.apply(node);
+            alienEvoLegacyMixinChanges += alienEvoLegacyMixinChange;
             int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
             alienEvoForgeEventChanges += alienEvoForgeEventChange;
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
@@ -470,7 +473,7 @@ public final class Forge1201Transformer {
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
-                    + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoVertexConsumerChange
+                    + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
                     + alienEvoMolangBootstrapChange);
         }
         if (alienEvoMolangBootstrapChanges > 0) {
@@ -487,6 +490,10 @@ public final class Forge1201Transformer {
         if (alienEvoStepHeightChanges > 0) {
             result.notes.add("AlienEvo surf step-height access migrated from the removed Entity field to the 1.21.1 STEP_HEIGHT attribute: "
                     + alienEvoStepHeightChanges + " bytecode site(s)");
+        }
+        if (alienEvoLegacyMixinChanges > 0) {
+            result.notes.add("AlienEvo RenderBuffers glint, rifle heat HUD and Whirlpool camera mixins migrated to the 1.21.1 renderer APIs: "
+                    + alienEvoLegacyMixinChanges + " mixin class(es)");
         }
         if (alienEvoMixinChanges > 0) {
             result.notes.add("AlienEvo Minecraft render/shield mixin handler descriptors adapted for 1.21.1: "
