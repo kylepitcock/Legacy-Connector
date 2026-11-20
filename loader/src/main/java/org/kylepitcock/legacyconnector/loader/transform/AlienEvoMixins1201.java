@@ -33,11 +33,8 @@ final class AlienEvoMixins1201 implements Opcodes {
     private static final String OUTLINE = "net/habb/alienevo/mixin/client/ElectrocutionOutlineChainMixin";
     private static final String SHIELD = "net/habb/alienevo/mixin/ShieldSoundMixin";
     private static final String KART_CAMERA = "net/habb/alienevo/mixin/client/KartCameraMixin";
-    private static final String CAMERA_ZOOM_SCALE = "net/habb/alienevo/mixin/scale/client/CameraZoomScaleMixin";
-    private static final String CAMERA_POSITION = "net/habb/alienevo/mixin/client/CameraPositionMixin";
     private static final String CAMERA_POSITION = "net/habb/alienevo/mixin/client/CameraPositionMixin";
     private static final String CAMERA_ZOOM = "net/habb/alienevo/mixin/scale/client/CameraZoomScaleMixin";
-    private static final String KART_CAMERA = "net/habb/alienevo/mixin/client/KartCameraMixin";
     private static final String MODEL_BAKERY = "net/habb/alienevo/mixin/client/ModelBakeryCrystalMixin";
 
     private AlienEvoMixins1201() {}
@@ -230,83 +227,6 @@ final class AlienEvoMixins1201 implements Opcodes {
         }
         if (!adapted) return 0;
         replaceDescriptor(method, newDesc);
-        return 1;
-    }
-
-    private static int migrateCameraDistance(ClassNode node, String handlerName) {
-        MethodNode method = find(node, handlerName, "(D)D");
-        if (method == null) return 0;
-        // Camera.getMaxZoom changed from double to float. Convert the new float
-        // argument to double for the existing calculations and narrow each return.
-        for (AbstractInsnNode instruction : method.instructions.toArray()) {
-            if (instruction instanceof VarInsnNode variable && variable.getOpcode() == DLOAD && variable.var == 1) {
-                variable.setOpcode(FLOAD);
-                InsnList widen = new InsnList();
-                widen.add(new InsnNode(F2D));
-                method.instructions.insert(variable, widen);
-            } else if (instruction.getOpcode() == DRETURN) {
-                InsnList narrow = new InsnList();
-                narrow.add(new InsnNode(D2F));
-                narrow.add(new InsnNode(FRETURN));
-                method.instructions.insertBefore(instruction, narrow);
-                method.instructions.remove(instruction);
-            }
-        }
-        method.desc = "(F)F";
-        method.signature = null;
-        method.parameters = null;
-        method.localVariables = null;
-        return 1;
-    }
-
-    private static int migrateCameraPosition(ClassNode node) {
-        String oldDesc = "(DLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V";
-        MethodNode method = find(node, "alienevo$keepZoomWhenPivotBuried", oldDesc);
-        if (method == null) return 0;
-
-        // Camera.getMaxZoom(float) returns Float rather than Double. Keep the
-        // collision comparison in double precision, then set Float.
-        int inputLoads = 0;
-        for (AbstractInsnNode instruction : method.instructions.toArray()) {
-            if (instruction instanceof TypeInsnNode type && type.getOpcode() == CHECKCAST
-                    && type.desc.equals("java/lang/Double")) {
-                type.desc = "java/lang/Float";
-            } else if (instruction instanceof MethodInsnNode call
-                    && call.owner.equals("java/lang/Double") && call.name.equals("doubleValue")
-                    && call.desc.equals("()D")) {
-                call.owner = "java/lang/Float";
-                call.name = "floatValue";
-                call.desc = "()F";
-                InsnList widen = new InsnList();
-                widen.add(new InsnNode(F2D));
-                method.instructions.insert(call, widen);
-            } else if (instruction instanceof MethodInsnNode call
-                    && call.owner.equals("java/lang/Double") && call.name.equals("valueOf")
-                    && call.desc.equals("(D)Ljava/lang/Double;")) {
-                call.owner = "java/lang/Float";
-                call.name = "valueOf";
-                call.desc = "(F)Ljava/lang/Float;";
-            } else if (instruction instanceof VarInsnNode variable
-                    && variable.getOpcode() == DLOAD && variable.var == 1) {
-                variable.setOpcode(FLOAD);
-                if (inputLoads++ == 0) {
-                    InsnList widen = new InsnList();
-                    widen.add(new InsnNode(F2D));
-                    method.instructions.insert(variable, widen);
-                }
-            }
-        }
-        // CallbackInfoReturnable moved from local 3 to 2; the former double
-        // result and all subsequent temporaries move down one slot.
-        remapSlots(method, slot -> slot >= 3 ? slot - 1 : slot);
-        method.desc = "(FLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V";
-        method.signature = null;
-        method.parameters = null;
-        method.visibleParameterAnnotations = null;
-        method.invisibleParameterAnnotations = null;
-        method.visibleAnnotableParameterCount = 0;
-        method.invisibleAnnotableParameterCount = 0;
-        method.localVariables = null;
         return 1;
     }
 
