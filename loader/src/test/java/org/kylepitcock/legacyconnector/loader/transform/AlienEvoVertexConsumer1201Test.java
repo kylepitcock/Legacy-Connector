@@ -112,7 +112,11 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         assertEquals("java/lang/Object", node.superName);
         assertTrue(node.interfaces.contains(VERTEX));
         assertTrue(node.interfaces.contains(AlienEvoVertexConsumer1201.LEGACY_END));
-        assertNotNull(find(node, "legacyEndVertex", "()V"));
+        assertNotNull(find(node, "legacyPendingVertex", "Z"));
+        assertNotNull(find(node, "legacyFlushPending", "()V"));
+        MethodNode legacyEnd = find(node, "legacyEndVertex", "()V");
+        assertNotNull(legacyEnd);
+        assertNotNull(findCall(legacyEnd, node.name, "legacyFlushPending", "()V"));
         for (String color : List.of("defaultR", "defaultG", "defaultB", "defaultA")) {
             assertTrue(node.fields.stream().anyMatch(f -> f.name.equals(color) && f.desc.equals("I")),
                     "the subclass must own inherited color state " + color);
@@ -144,6 +148,10 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         assertNotNull(findCall(full, AlienEvoVertexConsumer1201.HELPER, "vertex",
                 "(L" + VERTEX + ";FFFFFFFFFIIFFF)V"));
         assertNotNull(find(node, "addVertex", "(FFF)L" + VERTEX + ";"));
+        assertNotNull(findCall(find(node, "setUv2", "(II)L" + VERTEX + ";"),
+                node.name, "legacyFlushPending", "()V"));
+        assertNotNull(findCall(find(node, "setNormal", "(FFF)L" + VERTEX + ";"),
+                node.name, "legacyFlushPending", "()V"));
         for (String method : List.of("setColor", "setUv", "setUv1", "setUv2", "setNormal")) {
             assertTrue(node.methods.stream().anyMatch(m -> m.name.equals(method)),
                     "missing new interface method " + method);
