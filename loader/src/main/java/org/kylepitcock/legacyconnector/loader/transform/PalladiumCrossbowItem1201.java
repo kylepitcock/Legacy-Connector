@@ -88,10 +88,13 @@ final class PalladiumCrossbowItem1201 implements Opcodes {
     }
 
     private static AnnotationNode findInject(MethodNode method) {
-        for (List<AnnotationNode> annotations : List.of(
-                method.visibleAnnotations == null ? List.of() : method.visibleAnnotations,
-                method.invisibleAnnotations == null ? List.of() : method.invisibleAnnotations)) {
-            for (AnnotationNode annotation : annotations) {
+        if (method.visibleAnnotations != null) {
+            for (AnnotationNode annotation : method.visibleAnnotations) {
+                if (annotation.desc.equals("Lorg/spongepowered/asm/mixin/injection/Inject;")) return annotation;
+            }
+        }
+        if (method.invisibleAnnotations != null) {
+            for (AnnotationNode annotation : method.invisibleAnnotations) {
                 if (annotation.desc.equals("Lorg/spongepowered/asm/mixin/injection/Inject;")) return annotation;
             }
         }
