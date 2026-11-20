@@ -158,7 +158,7 @@ class AlienEvoMolang1201Test implements Opcodes {
     @Test
     void generatedFacadeFactoryAndMathFunctionExposeTheGeckoLib49Contracts() {
         Map<String, byte[]> generated = AlienEvoMolang1201.generateHelperClasses();
-        assertEquals(4, generated.size());
+        assertEquals(5, generated.size());
 
         ClassNode parser = read(generated, AlienEvoMolang1201.PARSER_COMPAT);
         assertNotNull(parser.fields.stream().filter(f -> f.name.equals("INSTANCE")
@@ -166,8 +166,16 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertNotNull(find(parser, "getVariable",
                 "(Ljava/lang/String;)L" + AlienEvoMolang1201.VARIABLE_COMPAT + ";"));
         assertNotNull(find(parser, "setValue", "(Ljava/lang/String;Ljava/util/function/DoubleSupplier;)V"));
-        assertNotNull(find(parser, "setMemoizedValue", "(Ljava/lang/String;Ljava/util/function/DoubleSupplier;)V"));
+        MethodNode memoizedSetter = find(parser, "setMemoizedValue",
+                "(Ljava/lang/String;Ljava/util/function/DoubleSupplier;)V");
+        assertNotNull(memoizedSetter);
+        assertTrue(hasCall(memoizedSetter, INVOKESPECIAL, AlienEvoMolang1201.MEMOIZED_SUPPLIER, "<init>",
+                "(Ljava/util/function/DoubleSupplier;)V"));
         assertNotNull(find(parser, "registerRollSince", "()V"));
+
+        ClassNode memoized = read(generated, AlienEvoMolang1201.MEMOIZED_SUPPLIER);
+        assertTrue(memoized.interfaces.contains("java/util/function/DoubleSupplier"));
+        assertNotNull(find(memoized, "getAsDouble", "()D"));
 
         ClassNode variable = read(generated, AlienEvoMolang1201.VARIABLE_COMPAT);
         assertNotNull(find(variable, "get", "()D"));
