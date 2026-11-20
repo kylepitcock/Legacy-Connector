@@ -89,6 +89,9 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         assertEquals("L" + BUFFER_SOURCE + ";", shadow.desc);
         assertNotNull(shadow.visibleAnnotations.stream()
                 .filter(a -> a.desc.equals("Lorg/spongepowered/asm/mixin/Shadow;")).findFirst().orElse(null));
+        assertNotNull(McMembers1201.get("net/minecraft/client/renderer/RenderBuffers"));
+        assertTrue(McMembers1201.get("net/minecraft/client/renderer/RenderBuffers").fields()
+                .contains("bufferSource:L" + BUFFER_SOURCE + ";"));
         assertNotNull(findField(handler, BUFFER_SOURCE, "fixedBuffers", "Ljava/util/SequencedMap;"));
         assertNotNull(findType(handler, NEW, BYTE_BUFFER_BUILDER));
         assertNotNull(findCall(handler, INVOKESPECIAL, BYTE_BUFFER_BUILDER, "<init>", "(I)V"));
@@ -175,6 +178,8 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         assertEquals(1, AlienEvoLegacyMixins1201.apply(node));
         assertEquals("move", shadow.name);
         assertEquals("(FFF)V", shadow.desc);
+        assertNotNull(McMembers1201.get(CAMERA));
+        assertTrue(McMembers1201.get(CAMERA).methods().contains("move(FFF)V"));
         assertNotNull(findCall(handler, INVOKEVIRTUAL, node.name, "move", "(FFF)V"));
         assertTrue(handler.instructions.toArray().length > 0);
         int floatZeroes = 0;
