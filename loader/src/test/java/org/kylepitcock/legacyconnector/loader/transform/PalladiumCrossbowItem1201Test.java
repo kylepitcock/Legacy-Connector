@@ -79,6 +79,8 @@ class PalladiumCrossbowItem1201Test implements Opcodes {
         assertNotNull(inject);
         assertEquals(List.of("createProjectile"), annotationValue(inject, "method"));
         assertEquals(Boolean.TRUE, annotationValue(inject, "cancellable"));
+        assertEquals(Boolean.FALSE, annotationValue(inject, "remap"),
+                "the new 1.21.1-only selector must not be processed by the old refmap");
         List<?> atList = (List<?>) annotationValue(inject, "at");
         assertEquals("HEAD", annotationValue((AnnotationNode) atList.get(0), "value"));
 
