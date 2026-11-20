@@ -5,15 +5,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * Keeps KubeJS ConsoleJS log clearing safe during script unload if its
- * background executor has already entered shutdown.
+ * Keeps KubeJS ConsoleJS log tasks safe if its background executor has
+ * completely terminated during shutdown.
  */
 public final class KubeJSConsoleExecutorCompat {
     private KubeJSConsoleExecutorCompat() {}
 
     /**
-     * Submit normally; only if a shut-down ExecutorService rejects the task,
-     * execute it on the caller so a log reset cannot abort script reload.
+     * Submit normally; only if a terminated ExecutorService rejects the task,
+     * execute it on the caller so log reset/flush cannot abort script reload.
      *
      * @return true when submitted to the executor, false when run inline
      */
