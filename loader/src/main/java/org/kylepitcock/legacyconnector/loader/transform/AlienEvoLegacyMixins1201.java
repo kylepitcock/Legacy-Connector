@@ -127,7 +127,10 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
                     || variable.getOpcode() != ALOAD || variable.var != 0) {
                 throw new IllegalStateException("AlienEvo RifleHeatCrosshairMixin GUI dimension read lost its this receiver");
             }
-            handler.instructions.remove(receiver);
+            // The replacement accessor belongs to the GuiGraphics argument,
+            // not to the mixin target Gui instance. Reuse the old receiver slot
+            // but load the new callback argument instead.
+            variable.var = 1;
             handler.instructions.set(field, new MethodInsnNode(INVOKEVIRTUAL, GUI_GRAPHICS,
                     methodName, "()I", false));
         }
