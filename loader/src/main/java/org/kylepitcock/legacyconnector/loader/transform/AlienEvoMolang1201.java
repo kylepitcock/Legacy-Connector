@@ -81,10 +81,6 @@ final class AlienEvoMolang1201 implements Opcodes {
         return changes;
     }
 
-    static boolean dropLegacyRollSinceClass(String name) {
-        return ROLL_FUNCTION.equals(name);
-    }
-
     private static int migrateBootstrap(ClassNode node) {
         FieldNode queries = null;
         for (FieldNode field : node.fields) {
@@ -731,6 +727,7 @@ final class AlienEvoMolang1201 implements Opcodes {
         compute.instructions.add(new InsnNode(DRETURN));
         compute.instructions.add(hasActor);
         compute.instructions.add(new VarInsnNode(ALOAD, 1));
+        compute.instructions.add(new TypeInsnNode(CHECKCAST, "net/minecraft/world/entity/LivingEntity"));
         compute.instructions.add(new VarInsnNode(ALOAD, 0));
         compute.instructions.add(new FieldInsnNode(GETFIELD, ROLL_MATH_FUNCTION, "args", "[L" + MATH_VALUE + ";"));
         compute.instructions.add(new InsnNode(ICONST_0));
