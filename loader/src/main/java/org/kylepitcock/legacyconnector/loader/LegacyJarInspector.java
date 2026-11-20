@@ -240,7 +240,7 @@ public final class LegacyJarInspector {
                 mods.add(d);
             }
         }
-        // Forge 1.20.1 dependency tables are separate TOML tables; keep them for NeoForge module ordering/readability.
+        // Forge 1.20.1 dependency tables are separate TOML tables; preserve them for NeoForge mod dependency validation and ordering.
         // Some released mods (including AlienEvo) use a placeholder owner such as "examplemod" for a single-mod jar.
         readForge1201Dependencies(text, mods);
         if (loader == null || !java.util.Set.of("javafml", "lowcodefml", "kotlinforforge").contains(loader) || mods.isEmpty() || mods.stream().anyMatch(d -> d.legacyId == null)) return null;
@@ -261,7 +261,7 @@ public final class LegacyJarInspector {
     }
 
     /**
-     * Preserve Forge 1.20.1 {@code [[dependencies.<modid>]]} declarations when generating NeoForge metadata.
+     * Preserve Forge 1.20.1 {@code [[dependencies.<modid>]]} declarations for NeoForge mod dependency validation and ordering.
      * A few single-mod jars copied the Forge template's {@code examplemod} table owner without changing it to
      * their actual mod id. In that unambiguous case, associate the dependency tables with the sole declared mod.
      */
