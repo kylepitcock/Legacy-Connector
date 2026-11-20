@@ -105,6 +105,7 @@ final class PalladiumCrossbowItem1201 implements Opcodes {
         if (inject.values == null) inject.values = new ArrayList<>();
         boolean methodFound = false;
         boolean cancellableFound = false;
+        boolean remapFound = false;
         for (int i = 0; i + 1 < inject.values.size(); i += 2) {
             String key = (String) inject.values.get(i);
             if (key.equals("method")) {
@@ -113,6 +114,9 @@ final class PalladiumCrossbowItem1201 implements Opcodes {
             } else if (key.equals("cancellable")) {
                 inject.values.set(i + 1, Boolean.TRUE);
                 cancellableFound = true;
+            } else if (key.equals("remap")) {
+                inject.values.set(i + 1, Boolean.FALSE);
+                remapFound = true;
             }
         }
         if (!methodFound) {
@@ -121,6 +125,10 @@ final class PalladiumCrossbowItem1201 implements Opcodes {
         if (!cancellableFound) {
             inject.values.add("cancellable");
             inject.values.add(Boolean.TRUE);
+        }
+        if (!remapFound) {
+            inject.values.add("remap");
+            inject.values.add(Boolean.FALSE);
         }
     }
 
