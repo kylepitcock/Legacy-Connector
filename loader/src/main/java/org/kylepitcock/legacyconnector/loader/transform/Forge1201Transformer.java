@@ -482,7 +482,6 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoWorldGenChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoExceptionChange);
         }
         if (alienEvoMolangMixinDropped > 0) {
