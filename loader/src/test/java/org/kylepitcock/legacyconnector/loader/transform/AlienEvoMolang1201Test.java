@@ -318,14 +318,6 @@ class AlienEvoMolang1201Test implements Opcodes {
         return false;
     }
 
-    private static boolean hasCall(MethodNode method, int opcode, String owner, String name, String desc) {
-        for (var instruction : method.instructions.toArray()) {
-            if (instruction instanceof MethodInsnNode call && call.getOpcode() == opcode
-                    && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(desc)) return true;
-        }
-        return false;
-    }
-
     private static void assertClassCanBeSerialized(ClassNode node) {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         node.accept(writer);
