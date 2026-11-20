@@ -341,7 +341,6 @@ public final class Forge1201Transformer {
         int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
-        int alienEvoMolangBootstrapChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
@@ -443,9 +442,8 @@ public final class Forge1201Transformer {
             alienEvoStepHeightChanges += alienEvoStepHeightChange;
             int alienEvoVertexConsumerChange = AlienEvoVertexConsumer1201.apply(node);
             alienEvoVertexConsumerChanges += alienEvoVertexConsumerChange;
-            int alienEvoMolangBootstrapChange = AlienEvoMolang1201.apply(node);
-            alienEvoMolangBootstrapChanges += alienEvoMolangBootstrapChange;
-            alienEvoMolangCompatChanges += alienEvoMolangBootstrapChange;
+            int alienEvoMolangChange = AlienEvoMolang1201.apply(node);
+            alienEvoMolangCompatChanges += alienEvoMolangChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
                 mixinStats.mixinClasses++;
                 mixinStats.dropped.add(node.name + " (replaced by the 1.21.1 STEP_HEIGHT attribute adapter)");
@@ -474,11 +472,7 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoMolangBootstrapChange);
-        }
-        if (alienEvoMolangBootstrapChanges > 0) {
-            result.notes.add("AlienEvo Molang query pre-registration migrated to GeckoLib 4.9 MathParser.getVariableFor: "
-                    + alienEvoMolangBootstrapChanges + " bootstrap class(es)");
+                    + alienEvoMolangChange);
         }
         if (alienEvoMolangMixinDropped > 0) {
             result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
