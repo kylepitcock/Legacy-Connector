@@ -60,7 +60,7 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
     @Test
     void tintedGlintRegistersOnTheCurrentRenderBuffersBufferSource() {
         ClassNode node = node(AlienEvoLegacyMixins1201.RENDER_BUFFERS);
-        FieldNode shadow = new FieldNode(ACC_PRIVATE, "f_110093_", "Ljava/util/SortedMap;", null,
+        FieldNode shadow = new FieldNode(ACC_PRIVATE, "fixedBuffers", "Ljava/util/SortedMap;", null,
                 "Ljava/util/SortedMap<L" + RENDER_TYPE + ";Lcom/mojang/blaze3d/vertex/BufferBuilder;>;");
         shadow.visibleAnnotations = new ArrayList<>(List.of(
                 annotation("Lorg/spongepowered/asm/mixin/Shadow;"),
@@ -69,7 +69,7 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
 
         MethodNode handler = method(node, ACC_PRIVATE, "alienevo$registerTintedGlint", "(" + CI + ")V");
         handler.instructions.add(new VarInsnNode(ALOAD, 0));
-        handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "f_110093_", "Ljava/util/SortedMap;"));
+        handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "fixedBuffers", "Ljava/util/SortedMap;"));
         handler.instructions.add(new FieldInsnNode(GETSTATIC, "net/habb/alienevo/client/renderer/AlienEvoRenderTypes",
                 "TINTED_GLINT", "L" + RENDER_TYPE + ";"));
         handler.instructions.add(new TypeInsnNode(NEW, "com/mojang/blaze3d/vertex/BufferBuilder"));
@@ -94,7 +94,7 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         assertNotNull(findCall(handler, INVOKESPECIAL, BYTE_BUFFER_BUILDER, "<init>", "(I)V"));
         assertNotNull(findCall(handler, INVOKEINTERFACE, "java/util/Map", "put",
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
-        assertFalse(hasField(handler, node.name, "f_110093_"));
+        assertFalse(hasField(handler, node.name, "fixedBuffers"));
         assertNull(Mixin1201.missingShadow(node,
                 List.of("net/minecraft/client/renderer/RenderBuffers"), new Mc1201Hierarchy()),
                 "the replacement @Shadow field must exist on 1.21.1 RenderBuffers");
@@ -104,8 +104,8 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
     @Test
     void rifleHeatMeterUsesGuiGraphicsDimensionsAndCurrentCrosshairSignature() {
         ClassNode node = node(AlienEvoLegacyMixins1201.RIFLE_CROSSHAIR);
-        node.fields.add(new FieldNode(ACC_PRIVATE, "f_92977_", "I", null, null));
-        node.fields.add(new FieldNode(ACC_PRIVATE, "f_92978_", "I", null, null));
+        node.fields.add(new FieldNode(ACC_PRIVATE, "screenWidth", "I", null, null));
+        node.fields.add(new FieldNode(ACC_PRIVATE, "screenHeight", "I", null, null));
 
         MethodNode handler = method(node, ACC_PRIVATE, "alienevo$drawHeatMeter",
                 "(" + GUI_GRAPHICS + CI + ")V");
@@ -115,9 +115,9 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         handler.instructions.add(new JumpInsnNode(IFEQ, done));
         handler.instructions.add(new VarInsnNode(ALOAD, 1));
         handler.instructions.add(new VarInsnNode(ALOAD, 0));
-        handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "f_92977_", "I"));
+        handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "screenWidth", "I"));
         handler.instructions.add(new VarInsnNode(ALOAD, 0));
-        handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "f_92978_", "I"));
+        handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "screenHeight", "I"));
         handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/habb/alienevo/client/hud/RifleHeatOverlay",
                 "render", "(" + GUI_GRAPHICS + "II)V", false));
         handler.instructions.add(done);
@@ -125,11 +125,11 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
 
         assertEquals(1, AlienEvoLegacyMixins1201.apply(node));
         assertEquals("(" + GUI_GRAPHICS + "Lnet/minecraft/client/DeltaTracker;" + CI + ")V", handler.desc);
-        assertTrue(node.fields.stream().noneMatch(f -> f.name.equals("f_92977_") || f.name.equals("f_92978_")));
+        assertTrue(node.fields.stream().noneMatch(f -> f.name.equals("screenWidth") || f.name.equals("screenHeight")));
         assertNotNull(findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiWidth", "()I"));
         assertNotNull(findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiHeight", "()I"));
-        assertFalse(hasField(handler, node.name, "f_92977_"));
-        assertFalse(hasField(handler, node.name, "f_92978_"));
+        assertFalse(hasField(handler, node.name, "screenWidth"));
+        assertFalse(hasField(handler, node.name, "screenHeight"));
         assertNull(Mixin1201.missingShadow(node,
                 List.of("net/minecraft/client/gui/Gui"), new Mc1201Hierarchy()),
                 "the heat meter should no longer shadow removed Gui dimension fields");
