@@ -23,7 +23,7 @@ public abstract class KubeJSConsoleExecutorShutdownRaceMixin {
     private static final Logger LEGACYCONNECTOR_LOGGER = LogUtils.getLogger();
 
     @Redirect(
-            method = {"resetFile", "flush"},
+            method = {"resetFile()V", "flush(Z)V"},
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/concurrent/Executor;execute(Ljava/lang/Runnable;)V"
