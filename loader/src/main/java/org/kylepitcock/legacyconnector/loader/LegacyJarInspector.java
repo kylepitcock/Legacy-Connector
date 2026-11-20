@@ -260,8 +260,6 @@ public final class LegacyJarInspector {
         return jar;
     }
 
-    private record Forge1201Dependency(String owner, String modId, boolean mandatory, String ordering, String versionRange) {}
-
     /**
      * Preserve Forge 1.20.1 {@code [[dependencies.<modid>]]} declarations when generating NeoForge metadata.
      * A few single-mod jars copied the Forge template's {@code examplemod} table owner without changing it to
@@ -270,9 +268,9 @@ public final class LegacyJarInspector {
     private static void readForge1201Dependencies(String text, List<LegacyModDecl> mods) {
         if (mods.isEmpty()) return;
         java.util.regex.Pattern table = java.util.regex.Pattern.compile(
-                "(?ms)^\\\\s*\\\\[\\\\[dependencies\\\\.([^\\\\]]+)\\\\]\\\\]\\\\s*(.*?)(?=^\\\\s*\\\\[|\\\\z)");
+                "(?ms)^\\s*\\[\\[dependencies\\.([^\\]]+)\\]\]\s*(.*?)(?=^\\s*\\[|\\z)");
         java.util.regex.Pattern mandatoryPattern = java.util.regex.Pattern.compile(
-                "(?i)^\\\\s*mandatory\\\\s*=\\\\s*(true|false)\\\\s*(?:#.*)?$");
+                "(?i)^\\s*mandatory\\s*=\\s*(true|false)\\s*(?:#.*)?$");
         Map<String, LegacyModDecl> byId = new HashMap<>();
         for (LegacyModDecl mod : mods) byId.put(mod.legacyId, mod);
         var blocks = table.matcher(text);
@@ -282,7 +280,7 @@ public final class LegacyJarInspector {
             String ordering = "NONE";
             String versionRange = null;
             boolean mandatory = false;
-            for (String raw : blocks.group(2).split("\\\\R")) {
+            for (String raw : blocks.group(2).split("\\R")) {
                 var string = TOML_STRING.matcher(raw);
                 if (string.find()) {
                     String key = string.group(1);
