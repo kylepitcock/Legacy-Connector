@@ -32,16 +32,41 @@ final class PalladiumCrossbowApi1201 implements Opcodes {
     private static final String CHARGED_DESC = "(L" + ITEM_STACK + ";Z)V";
     private static final String OLD_CHARGE_DURATION_DESC = "(L" + ITEM_STACK + ";)I";
     private static final String NEW_CHARGE_DURATION_DESC = "(L" + ITEM_STACK + ";L" + LIVING_ENTITY + ";)I";
+    private static final String OLD_CONTAINS_DESC = "(L" + ITEM_STACK + ";Lnet/minecraft/world/item/Item;)Z";
 
     private PalladiumCrossbowApi1201() {}
 
     /** Returns the number of call sites adapted in this class. */
     static int apply(ClassNode node) {
-        return switch (node.name) {
+        int changes = adaptContainsChargedProjectile(node);
+        changes += switch (node.name) {
             case ADDON_CROSSBOW -> adaptAddonCrossbowItem(node);
             case PALLADIUM_CLIENT -> adaptClientChargePredicate(node);
             default -> 0;
         };
+        return changes;
+    }
+
+    private static boolean isCrossbowOwner(String owner) {
+        return CROSSBOW.equals(owner) || ADDON_CROSSBOW.equals(owner);
+    }
+
+    private static int adaptContainsChargedProjectile(ClassNode node) {
+        int changes = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode instruction : method.instructions.toArray()) {
+                if (!(instruction instanceof MethodInsnNode call)
+                        || call.getOpcode() != INVOKESTATIC
+                        || !isCrossbowOwner(call.owner)
+                        || !call.name.equals("containsChargedProjectile")
+                        || !call.desc.equals(OLD_CONTAINS_DESC)) continue;
+                call.owner = HELPER;
+                call.name = "containsChargedProjectile";
+                changes++;
+            }
+        }
+        return changes;
     }
 
     private static int adaptAddonCrossbowItem(ClassNode node) {
@@ -53,7 +78,7 @@ final class PalladiumCrossbowApi1201 implements Opcodes {
         for (MethodNode method : node.methods) {
             if (method.instructions == null) continue;
             for (AbstractInsnNode instruction : method.instructions.toArray()) {
-                if (!(instruction instanceof MethodInsnNode call) || !call.owner.equals(CROSSBOW)) continue;
+                if (!(instruction instanceof MethodInsnNode call) || !isCrossbowOwner(call.owner)) continue;
 
                 if (call.name.equals("getShootingPower") && call.desc.equals(POWER_DESC)
                         && call.getOpcode() == INVOKESTATIC) {
