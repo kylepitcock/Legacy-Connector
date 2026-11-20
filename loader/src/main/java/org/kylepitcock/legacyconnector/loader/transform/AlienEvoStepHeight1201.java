@@ -30,9 +30,9 @@ final class AlienEvoStepHeight1201 implements Opcodes {
     }
 
     /**
-     * In 1.21.1 the legacy maxUpStep() implementation lives on LivingEntity,
-     * not Entity. Keep AlienEvo's ModifyReturnValue scaling logic but retarget
-     * it to the class that still declares the method.
+     * Entity still declares maxUpStep() in 1.21.1, but LivingEntity overrides it
+     * to read the STEP_HEIGHT attribute. Retarget AlienEvo's scaling hook to
+     * that override so it affects players and living alien entities.
      */
     private static int retargetStepHeightScaleMixin(ClassNode node) {
         int visible = retargetMixinAnnotation(node.visibleAnnotations);
