@@ -480,6 +480,27 @@ final class AlienEvoMolang1201 implements Opcodes {
         getMinArgs.maxStack = 1;
         node.methods.add(getMinArgs);
 
+        // The legacy McLib function declared exactly one required argument.
+        // GeckoLib's default MathFunction validation checks a minimum only, so
+        // retain the old exact-arity contract explicitly.
+        MethodNode validate = new MethodNode(ACC_PUBLIC, "validate", "([L" + MATH_VALUE + ";)V", null, null);
+        LabelNode oneArgument = new LabelNode();
+        validate.instructions.add(new VarInsnNode(ALOAD, 1));
+        validate.instructions.add(new InsnNode(ARRAYLENGTH));
+        validate.instructions.add(new InsnNode(ICONST_1));
+        validate.instructions.add(new JumpInsnNode(IF_ICMPEQ, oneArgument));
+        validate.instructions.add(new TypeInsnNode(NEW, "java/lang/IllegalArgumentException"));
+        validate.instructions.add(new InsnNode(DUP));
+        validate.instructions.add(new org.objectweb.asm.tree.LdcInsnNode("alienevo.roll_since expects exactly one argument"));
+        validate.instructions.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/IllegalArgumentException", "<init>",
+                "(Ljava/lang/String;)V", false));
+        validate.instructions.add(new InsnNode(ATHROW));
+        validate.instructions.add(oneArgument);
+        validate.instructions.add(new InsnNode(RETURN));
+        validate.maxLocals = 2;
+        validate.maxStack = 3;
+        node.methods.add(validate);
+
         MethodNode getArgs = new MethodNode(ACC_PUBLIC, "getArgs", "()[L" + MATH_VALUE + ";", null, null);
         getArgs.instructions.add(new VarInsnNode(ALOAD, 0));
         getArgs.instructions.add(new FieldInsnNode(GETFIELD, ROLL_MATH_FUNCTION, "args", "[L" + MATH_VALUE + ";"));
