@@ -482,8 +482,8 @@ public final class Forge1201Transformer {
                     + alienEvoVertexConsumerChanges + " bytecode change(s)");
         }
         if (alienEvoStepHeightChanges > 0) {
-            result.notes.add("AlienEvo surf step-height access migrated from the removed Entity field to the 1.21.1 STEP_HEIGHT attribute: "
-                    + alienEvoStepHeightChanges + " bytecode site(s)");
+            result.notes.add("AlienEvo surf step-height access migrated to the 1.21.1 STEP_HEIGHT attribute; its step-height scaling mixin now targets LivingEntity.maxUpStep(): "
+                    + alienEvoStepHeightChanges + " bytecode change(s)");
         }
         if (alienEvoLegacyMixinChanges > 0) {
             result.notes.add("AlienEvo RenderBuffers glint, rifle heat HUD and Whirlpool camera mixins migrated to the 1.21.1 renderer APIs: "
