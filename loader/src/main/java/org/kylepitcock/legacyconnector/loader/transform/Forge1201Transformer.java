@@ -342,6 +342,7 @@ public final class Forge1201Transformer {
         int alienEvoGeckoExceptionChanges = 0;
         int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
+        int alienEvoWorldGenChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
@@ -399,6 +400,9 @@ public final class Forge1201Transformer {
             alienEvoGeckoExceptionChanges += alienEvoGeckoExceptionChange;
             int alienEvoLegacyMixinChange = AlienEvoLegacyMixins1201.apply(node);
             alienEvoLegacyMixinChanges += alienEvoLegacyMixinChange;
+            int alienEvoWorldGenChange = AlienEvoWorldGen1201.apply(node);
+            alienEvoWorldGenChanges += alienEvoWorldGenChange;
+            viaCalls += alienEvoWorldGenChange;
             int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
             alienEvoForgeEventChanges += alienEvoForgeEventChange;
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
@@ -478,10 +482,15 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
+                    + alienEvoWorldGenChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoExceptionChange);
         }
         if (alienEvoMolangMixinDropped > 0) {
             result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
+        }
+        if (alienEvoWorldGenChanges > 0) {
+            result.notes.add("AlienEvo CampgroundTrailFeature now samples the candidate block's exact quart biome during feature generation, avoiding BiomeManager's jittered neighboring-chunk lookup: "
+                    + alienEvoWorldGenChanges + " biome lookup(s)");
         }
         if (alienEvoVertexConsumerChanges > 0) {
             result.notes.add("AlienEvo flat loot-effect renderer migrated from the removed DefaultedVertexConsumer superclass to 1.21.1 VertexConsumer: "
