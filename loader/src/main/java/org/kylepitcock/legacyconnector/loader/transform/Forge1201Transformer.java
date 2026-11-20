@@ -330,6 +330,7 @@ public final class Forge1201Transformer {
         int palladiumCoreLightningMixinChanges = 0;
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
+        int alienEvoStepHeightChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -417,7 +418,15 @@ public final class Forge1201Transformer {
             palladiumPowersScreenChanges += palladiumPowersScreenChange;
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
-            Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
+            int alienEvoStepHeightChange = AlienEvoStepHeight1201.apply(node);
+            alienEvoStepHeightChanges += alienEvoStepHeightChange;
+            if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
+                mixinStats.mixinClasses++;
+                mixinStats.dropped.add(node.name + " (replaced by the 1.21.1 STEP_HEIGHT attribute adapter)");
+                mixinStats.droppedClasses.add(node.name);
+            } else {
+                Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
+            }
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
@@ -428,7 +437,12 @@ public final class Forge1201Transformer {
                     + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumFlightStateTraceChange
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
-                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange);
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
+                    + alienEvoStepHeightChange);
+        }
+        if (alienEvoStepHeightChanges > 0) {
+            result.notes.add("AlienEvo surf step-height access migrated from the removed Entity field to the 1.21.1 STEP_HEIGHT attribute: "
+                    + alienEvoStepHeightChanges + " bytecode site(s)");
         }
         if (alienEvoMixinChanges > 0) {
             result.notes.add("AlienEvo Minecraft render/shield mixin handler descriptors adapted for 1.21.1: "
