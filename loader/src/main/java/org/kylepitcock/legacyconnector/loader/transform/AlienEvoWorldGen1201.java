@@ -65,7 +65,7 @@ final class AlienEvoWorldGen1201 implements Opcodes {
 
         if (matched > 1) {
             throw new IllegalStateException("AlienEvo CampgroundTrailFeature contains "
-                    + changed + " matching getBiome calls; expected exactly one inspected call");
+                    + matched + " matching getBiome calls; expected exactly one inspected call");
         }
         if (changed == 0 && !alreadyAdapted) {
             throw new IllegalStateException("AlienEvo CampgroundTrailFeature no longer contains the inspected "
