@@ -77,6 +77,8 @@ class PalladiumCrossbowItem1201Test implements Opcodes {
                 "(L" + LEVEL + ";L" + ITEM_STACK + ";L" + LIVING_ENTITY + ";)L" + PROJECTILE + ";"));
         assertTrue(hasCall(handler, INVOKEVIRTUAL, "org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable",
                 "setReturnValue", "(Ljava/lang/Object;)V"));
+        assertTrue(hasOpcode(handler, IFNULL),
+                "a null addon projectile must leave the native fallback projectile in place");
 
         AnnotationNode inject = findInject(handler);
         assertNotNull(inject);
@@ -130,6 +132,13 @@ class PalladiumCrossbowItem1201Test implements Opcodes {
     private static boolean hasType(MethodNode method, int opcode, String desc) {
         for (var instruction : method.instructions.toArray()) {
             if (instruction instanceof TypeInsnNode type && type.getOpcode() == opcode && type.desc.equals(desc)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasOpcode(MethodNode method, int opcode) {
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction.getOpcode() == opcode) return true;
         }
         return false;
     }
