@@ -116,7 +116,8 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         changes += rename(node, "overlayCoords", "(II)L" + VERTEX + ";", "setUv1");
         changes += rename(node, "uv2", "(II)L" + VERTEX + ";", "setUv2");
         changes += rename(node, "normal", "(FFF)L" + VERTEX + ";", "setNormal");
-        if (flushAfterMethodReturn(node, "setUv2", "(II)L" + VERTEX + ";")) changes++;
+        // setUv2 is followed by setNormal in the 1.21.1 full-vertex contract;
+        // flush only after normal so the wrapper does not emit an incomplete vertex.
         if (flushAfterMethodReturn(node, "setNormal", "(FFF)L" + VERTEX + ";")) changes++;
 
         return changes;
