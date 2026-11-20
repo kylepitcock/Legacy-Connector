@@ -91,6 +91,23 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
             changes++;
         }
 
+        // The legacy vertex(x,y,z) call only stores position; endVertex() performs
+        // the actual delegate emission. Mark that state so both old and new call
+        // sequences can flush it at their correct terminal operation.
+        MethodNode legacyPosition = find(node, "vertex", "(DDD)L" + VERTEX + ";");
+        if (legacyPosition != null) {
+            for (AbstractInsnNode instruction : legacyPosition.instructions.toArray()) {
+                if (instruction.getOpcode() == ARETURN) {
+                    InsnList pending = new InsnList();
+                    pending.add(new VarInsnNode(ALOAD, 0));
+                    pending.add(new InsnNode(ICONST_1));
+                    pending.add(new FieldInsnNode(PUTFIELD, node.name, "legacyPendingVertex", "Z"));
+                    legacyPosition.instructions.insertBefore(instruction, pending);
+                    changes++;
+                }
+            }
+        }
+
         // The new interface's first abstract method is addVertex(float,float,float).
         // Keep the legacy double-precision implementation as an internal helper
         // and expose the 1.21.1 float descriptor through this bridge.
@@ -261,10 +278,6 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         method.instructions.add(new InsnNode(F2D));
         method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "vertex",
                 "(DDD)L" + VERTEX + ";", false));
-        method.instructions.add(new InsnNode(DUP));
-        method.instructions.add(new VarInsnNode(ALOAD, 0));
-        method.instructions.add(new InsnNode(ICONST_1));
-        method.instructions.add(new FieldInsnNode(PUTFIELD, owner, "legacyPendingVertex", "Z"));
         method.instructions.add(new InsnNode(ARETURN));
         method.maxLocals = 4;
         method.maxStack = 7;
