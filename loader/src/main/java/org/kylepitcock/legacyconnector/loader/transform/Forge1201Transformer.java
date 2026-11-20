@@ -341,6 +341,7 @@ public final class Forge1201Transformer {
         int alienEvoStepHeightChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoMolangBootstrapChanges = 0;
+        int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
@@ -441,6 +442,7 @@ public final class Forge1201Transformer {
             alienEvoVertexConsumerChanges += alienEvoVertexConsumerChange;
             int alienEvoMolangBootstrapChange = AlienEvoMolang1201.apply(node);
             alienEvoMolangBootstrapChanges += alienEvoMolangBootstrapChange;
+            alienEvoMolangCompatChanges += alienEvoMolangBootstrapChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
                 mixinStats.mixinClasses++;
                 mixinStats.dropped.add(node.name + " (replaced by the 1.21.1 STEP_HEIGHT attribute adapter)");
@@ -616,6 +618,14 @@ public final class Forge1201Transformer {
             if (node.name.startsWith(Mc1201Tables.HELPER_PACKAGE.substring(0, Mc1201Tables.HELPER_PACKAGE.lastIndexOf("migrate/"))) && !ownClasses.contains(node.name)) continue;
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
+        }
+        if (alienEvoMolangCompatChanges > 0) {
+            for (var helperClass : AlienEvoMolang1201.generateHelperClasses().entrySet()) {
+                outClasses.put(helperClass.getKey(), helperClass.getValue());
+                result.classes++;
+            }
+            result.notes.add("AlienEvo GeckoLib 4.8 MolangParser calls migrated to GeckoLib 4.9 MathParser/Variable, including the roll_since MathFunction factory: "
+                    + alienEvoMolangCompatChanges + " compatibility rewrite(s)");
         }
         if (soft != null && soft.stats.symbols() > 0) {
             result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
