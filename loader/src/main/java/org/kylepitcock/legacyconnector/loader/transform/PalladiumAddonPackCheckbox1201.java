@@ -7,6 +7,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -28,7 +29,12 @@ final class PalladiumAddonPackCheckbox1201 implements Opcodes {
     private static final String LEGACY_CTOR =
             "(L" + SCREEN + ";IIIIL" + COMPONENT + ";ZLjava/util/function/Consumer;)V";
     private static final String FACTORY_DESC =
-            "(L" + SCREEN + ";IIIIL" + COMPONENT + ";ZLjava/util/function/Consumer;)L" + CHECKBOX + ";";
+            "(Lnet/minecraft/client/gui/screens/Screen;IIIIL" + COMPONENT
+                    + ";ZLjava/util/function/Consumer;Ljava/lang/Runnable;)L" + CHECKBOX + ";";
+    private static final String LAMBDA_METAFACTORY_DESC =
+            "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                    + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;"
+                    + "Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;";
 
     private PalladiumAddonPackCheckbox1201() {}
 
@@ -95,8 +101,24 @@ final class PalladiumAddonPackCheckbox1201 implements Opcodes {
                     throw new IllegalStateException("Palladium AddonPackLogScreen CheckboxButton allocation is missing its DUP");
                 }
 
+                if ((method.access & ACC_STATIC) != 0) {
+                    throw new IllegalStateException("Palladium AddonPackLogScreen Checkbox construction unexpectedly moved into a static method");
+                }
+                // The builder callback also needs the old outer-screen list refresh.
+                // Capture this in a Runnable backed by the synthetic bridge added below.
+                InsnList refresh = new InsnList();
+                refresh.add(new org.objectweb.asm.tree.VarInsnNode(ALOAD, 0));
+                refresh.add(new org.objectweb.asm.tree.InvokeDynamicInsnNode(
+                        "run", "(L" + node.name + ";)Ljava/lang/Runnable;",
+                        new org.objectweb.asm.Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory",
+                                "metafactory", LAMBDA_METAFACTORY_DESC, false),
+                        org.objectweb.asm.Type.getMethodType("()V"),
+                        new org.objectweb.asm.Handle(H_INVOKEVIRTUAL, node.name, REFRESH_BRIDGE, "()V", false),
+                        org.objectweb.asm.Type.getMethodType("()V")));
+                method.instructions.insertBefore(call, refresh);
+
                 // Replace the uninitialized allocation pair with a static factory
-                // consuming the existing constructor arguments in their original order.
+                // consuming the original arguments plus the captured refresh callback.
                 method.instructions.remove(duplicate);
                 method.instructions.remove(allocation);
                 method.instructions.set(call, new MethodInsnNode(INVOKESTATIC,
