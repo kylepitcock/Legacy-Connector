@@ -1,6 +1,5 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.ARGB;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
