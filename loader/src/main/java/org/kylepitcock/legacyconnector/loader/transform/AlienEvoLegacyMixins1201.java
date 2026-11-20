@@ -23,13 +23,11 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
     static final String RIFLE_CROSSHAIR = "net/habb/alienevo/mixin/client/RifleHeatCrosshairMixin";
     static final String WHIRLPOOL_CAMERA = "net/habb/alienevo/mixin/client/WhirlpoolCameraMixin";
 
-    private static final String RENDER_BUFFERS_TARGET = "net/minecraft/client/renderer/RenderBuffers";
     private static final String BUFFER_SOURCE = "net/minecraft/client/renderer/MultiBufferSource$BufferSource";
     private static final String SEQUENCED_MAP = "Ljava/util/SequencedMap;";
     private static final String BYTE_BUFFER_BUILDER = "com/mojang/blaze3d/vertex/ByteBufferBuilder";
     private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     private static final String DELTA_TRACKER = "Lnet/minecraft/client/DeltaTracker;";
-    private static final String CAMERA = "net/minecraft/client/Camera";
 
     private AlienEvoLegacyMixins1201() {}
 
@@ -44,7 +42,8 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
     }
 
     private static int migrateTintedGlintBuffer(ClassNode node) {
-        FieldNode shadow = findField(node, "f_110093_", "Ljava/util/SortedMap;");
+        FieldNode shadow = findField(node, "fixedBuffers", "Ljava/util/SortedMap;");
+        if (shadow == null) shadow = findField(node, "f_110093_", "Ljava/util/SortedMap;");
         if (shadow == null) return 0;
         MethodNode handler = findMethod(node, "alienevo$registerTintedGlint",
                 "(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V");
@@ -64,7 +63,7 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
             if (instruction instanceof FieldInsnNode field
                     && field.getOpcode() == GETFIELD
                     && field.owner.equals(node.name)
-                    && field.name.equals("f_110093_")
+                    && (field.name.equals("f_110093_") || field.name.equals("fixedBuffers"))
                     && field.desc.equals("Ljava/util/SortedMap;")) {
                 field.name = "bufferSource";
                 field.desc = bufferSourceDesc;
@@ -113,10 +112,10 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
             if (!(instruction instanceof FieldInsnNode field) || field.getOpcode() != GETFIELD
                     || !field.owner.equals(node.name) || !field.desc.equals("I")) continue;
             String methodName;
-            if (field.name.equals("f_92977_")) {
+            if (field.name.equals("f_92977_") || field.name.equals("screenWidth")) {
                 methodName = "guiWidth";
                 widthReads++;
-            } else if (field.name.equals("f_92978_")) {
+            } else if (field.name.equals("f_92978_") || field.name.equals("screenHeight")) {
                 methodName = "guiHeight";
                 heightReads++;
             } else {
@@ -141,7 +140,8 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
         // screenHeight values. GuiGraphics now owns these scaled dimensions.
         for (Iterator<FieldNode> iterator = node.fields.iterator(); iterator.hasNext();) {
             FieldNode field = iterator.next();
-            if ((field.name.equals("f_92977_") || field.name.equals("f_92978_")) && field.desc.equals("I")) {
+            if ((field.name.equals("f_92977_") || field.name.equals("screenWidth")
+                    || field.name.equals("f_92978_") || field.name.equals("screenHeight")) && field.desc.equals("I")) {
                 iterator.remove();
             }
         }
