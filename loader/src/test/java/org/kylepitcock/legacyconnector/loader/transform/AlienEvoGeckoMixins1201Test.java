@@ -40,7 +40,9 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
 
     private static MethodNode method(ClassNode node, String name, String desc, int maxLocals, int... loads) {
         MethodNode method = new MethodNode(ACC_PRIVATE, name, desc, null, null);
-        for (int slot : loads) method.instructions.add(new VarInsnNode(slot == 7 ? ILOAD : ALOAD, slot));
+        for (int i = 0; i < loads.length; i += 2) {
+            method.instructions.add(new VarInsnNode(loads[i], loads[i + 1]));
+        }
         method.instructions.add(new InsnNode(RETURN));
         method.maxLocals = maxLocals;
         method.maxStack = 2;
@@ -63,7 +65,7 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
                 + "software/bernie/geckolib/animation/AnimationState;" + CI + ")V";
         String newDesc = "(Lsoftware/bernie/geckolib/animatable/GeoAnimatable;JL"
                 + "software/bernie/geckolib/animation/AnimationState;F" + CI + ")V";
-        MethodNode handler = method(node, "alienevo$poseStill", oldDesc, 8, 5, 6, 7);
+        MethodNode handler = method(node, "alienevo$poseStill", oldDesc, 8, ALOAD, 5, ALOAD, 6, ALOAD, 7);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
         assertEquals(newDesc, handler.desc);
@@ -76,7 +78,7 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
     @Test
     void geoEntityRendererPacksColorAndMovesCallbackAndRendererTemporary() {
         ClassNode node = node(AlienEvoGeckoMixins1201.GEO_ENTITY_RENDERER);
-        MethodNode handler = method(node, "alienevo$ensureAlienEvoLayers", OLD_RENDER_ARGS, 17, 7, 15, 16);
+        MethodNode handler = method(node, "alienevo$ensureAlienEvoLayers", OLD_RENDER_ARGS, 17, ILOAD, 7, ALOAD, 15, ALOAD, 16);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
         assertEquals(NEW_RENDER_ARGS, handler.desc);
@@ -93,7 +95,7 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
                 "alienevo$endSeatMeasure",
                 "alienevo$measureSeatBone"
         };
-        for (String name : names) method(node, name, OLD_RENDER_ARGS, 16, 7, 15);
+        for (String name : names) method(node, name, OLD_RENDER_ARGS, 16, ILOAD, 7, ALOAD, 15);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
         for (String name : names) {
