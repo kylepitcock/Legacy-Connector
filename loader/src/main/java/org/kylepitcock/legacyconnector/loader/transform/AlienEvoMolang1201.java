@@ -769,6 +769,16 @@ final class AlienEvoMolang1201 implements Opcodes {
         getArgs.maxStack = 1;
         node.methods.add(getArgs);
 
+        // roll_since depends on the currently rendered entity even when its
+        // argument is an immutable constant. Force per-evaluation computation;
+        // GeckoLib otherwise caches a MathFunction whose args are all immutable.
+        MethodNode isMutable = new MethodNode(ACC_PUBLIC, "isMutable", "([L" + MATH_VALUE + ";)Z", null, null);
+        isMutable.instructions.add(new InsnNode(ICONST_1));
+        isMutable.instructions.add(new InsnNode(IRETURN));
+        isMutable.maxLocals = 2;
+        isMutable.maxStack = 1;
+        node.methods.add(isMutable);
+
         MethodNode compute = new MethodNode(ACC_PUBLIC, "compute", "()D", null, null);
         LabelNode hasActor = new LabelNode();
         compute.instructions.add(new MethodInsnNode(INVOKESTATIC,
