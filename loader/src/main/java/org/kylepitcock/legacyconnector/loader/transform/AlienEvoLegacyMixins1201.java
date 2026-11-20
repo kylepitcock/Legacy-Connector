@@ -25,6 +25,10 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
 
     private static final String BUFFER_SOURCE = "net/minecraft/client/renderer/MultiBufferSource$BufferSource";
     private static final String SEQUENCED_MAP = "Ljava/util/SequencedMap;";
+    private static final String BUFFER_BUILDER = "com/mojang/blaze3d/vertex/BufferBuilder";
+    // Forge1201Transformer's ClassRemapper maps BufferBuilder to this shim before this adapter runs.
+    private static final String COMPAT_BUFFER_BUILDER =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder";
     private static final String BYTE_BUFFER_BUILDER = "com/mojang/blaze3d/vertex/ByteBufferBuilder";
     private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     private static final String DELTA_TRACKER = "Lnet/minecraft/client/DeltaTracker;";
@@ -58,6 +62,7 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
 
         int oldFieldReads = 0;
         int bufferBuilderNews = 0;
+        int bufferBuilderConstructors = 0;
         int sortedMapPuts = 0;
         for (AbstractInsnNode instruction : handler.instructions.toArray()) {
             if (instruction instanceof FieldInsnNode field
@@ -73,14 +78,17 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
                         BUFFER_SOURCE, "fixedBuffers", SEQUENCED_MAP));
                 oldFieldReads++;
             } else if (instruction instanceof TypeInsnNode type && type.getOpcode() == NEW
-                    && type.desc.equals("com/mojang/blaze3d/vertex/BufferBuilder")) {
+                    && (type.desc.equals(BUFFER_BUILDER) || type.desc.equals(COMPAT_BUFFER_BUILDER))) {
+                // BufferBuilder is class-remapped to CompatBufferBuilder before this adapter runs.
+                // BufferSource.fixedBuffers stores the underlying ByteBufferBuilder, not the wrapper.
                 type.desc = BYTE_BUFFER_BUILDER;
                 bufferBuilderNews++;
             } else if (instruction instanceof MethodInsnNode call
                     && call.getOpcode() == INVOKESPECIAL
-                    && call.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
+                    && (call.owner.equals(BUFFER_BUILDER) || call.owner.equals(COMPAT_BUFFER_BUILDER))
                     && call.name.equals("<init>") && call.desc.equals("(I)V")) {
                 call.owner = BYTE_BUFFER_BUILDER;
+                bufferBuilderConstructors++;
             } else if (instruction instanceof MethodInsnNode call
                     && call.getOpcode() == INVOKEINTERFACE
                     && call.owner.equals("java/util/SortedMap")
@@ -91,10 +99,11 @@ final class AlienEvoLegacyMixins1201 implements Opcodes {
                 sortedMapPuts++;
             }
         }
-        if (oldFieldReads != 1 || bufferBuilderNews != 1 || sortedMapPuts != 1) {
+        if (oldFieldReads != 1 || bufferBuilderNews != 1 || bufferBuilderConstructors != 1 || sortedMapPuts != 1) {
             throw new IllegalStateException("AlienEvo RenderBuffersGlintMixin bytecode no longer matches the inspected "
                     + "fixed-buffer registration shape (fieldReads=" + oldFieldReads
-                    + ", bufferNews=" + bufferBuilderNews + ", mapPuts=" + sortedMapPuts + ")");
+                    + ", bufferNews=" + bufferBuilderNews + ", bufferConstructors=" + bufferBuilderConstructors
+                    + ", mapPuts=" + sortedMapPuts + ")");
         }
         return 1;
     }
