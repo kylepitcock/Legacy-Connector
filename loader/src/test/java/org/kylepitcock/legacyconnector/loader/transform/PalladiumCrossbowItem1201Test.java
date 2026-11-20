@@ -3,7 +3,6 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
 /** Verifies that Palladium custom ammo is created through the 1.21.1 crossbow hook. */
 class PalladiumCrossbowItem1201Test implements Opcodes {
@@ -27,9 +25,6 @@ class PalladiumCrossbowItem1201Test implements Opcodes {
     private static final String ITEM_STACK = "net/minecraft/world/item/ItemStack";
     private static final String PROJECTILE = "net/minecraft/world/entity/projectile/Projectile";
     private static final String ADDON_PROJECTILE_ITEM = "net/threetag/palladium/item/AddonProjectileItem";
-    private static final String CIR =
-            "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;";
-
     private static ClassNode mixin() {
         ClassNode node = new ClassNode();
         node.version = V17;
