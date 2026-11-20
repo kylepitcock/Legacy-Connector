@@ -338,6 +338,7 @@ public final class Forge1201Transformer {
         int palladiumCoreLightningMixinChanges = 0;
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
+        int alienEvoGeckoMixinChanges = 0;
         int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
@@ -391,6 +392,8 @@ public final class Forge1201Transformer {
             palladiumAddonPackCheckboxChanges += palladiumAddonPackCheckboxChange;
             int alienEvoMixinChange = AlienEvoMixins1201.apply(node);
             alienEvoMixinChanges += alienEvoMixinChange;
+            int alienEvoGeckoMixinChange = AlienEvoGeckoMixins1201.apply(node);
+            alienEvoGeckoMixinChanges += alienEvoGeckoMixinChange;
             int alienEvoLegacyMixinChange = AlienEvoLegacyMixins1201.apply(node);
             alienEvoLegacyMixinChanges += alienEvoLegacyMixinChange;
             int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
@@ -472,7 +475,7 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoMolangChange);
+                    + alienEvoMolangChange + alienEvoGeckoMixinChange);
         }
         if (alienEvoMolangMixinDropped > 0) {
             result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
@@ -486,12 +489,16 @@ public final class Forge1201Transformer {
                     + alienEvoStepHeightChanges + " bytecode change(s)");
         }
         if (alienEvoLegacyMixinChanges > 0) {
-            result.notes.add("AlienEvo RenderBuffers glint, rifle heat HUD and Whirlpool camera mixins migrated to the 1.21.1 renderer APIs: "
+            result.notes.add("AlienEvo tinted glint shader, RenderBuffers, rifle heat HUD and Whirlpool camera migrated to 1.21.1 renderer APIs: "
                     + alienEvoLegacyMixinChanges + " mixin class(es)");
         }
         if (alienEvoMixinChanges > 0) {
             result.notes.add("AlienEvo Minecraft render/shield mixin handler descriptors adapted for 1.21.1: "
                     + alienEvoMixinChanges + " handler(s)");
+        }
+        if (alienEvoGeckoMixinChanges > 0) {
+            result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "
+                    + alienEvoGeckoMixinChanges + " mixin class(es)");
         }
         if (alienEvoForgeEventChanges > 0) {
             result.notes.add("Native Forge event callbacks migrated to NeoForge tick phases and ResourceLocation GUI layers: "
