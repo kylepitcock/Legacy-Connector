@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -226,6 +228,14 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
             if (instruction instanceof TypeInsnNode type && type.getOpcode() == opcode && type.desc.equals(desc)) return type;
         }
         return null;
+    }
+
+    private static AbstractInsnNode previousReal(AbstractInsnNode instruction) {
+        AbstractInsnNode previous = instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) {
+            previous = previous.getPrevious();
+        }
+        return previous;
     }
 
     private static boolean hasField(MethodNode method, String owner, String name) {
