@@ -135,7 +135,7 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         }
 
         MethodNode full = find(node, "emitFull", "(FFFFFFFFFIIFFF)V");
-        assertNotNull(findCall(full, AlienEvoVertexConsumer1201.HELPER, "addVertex",
+        assertNotNull(findCall(full, AlienEvoVertexConsumer1201.HELPER, "vertex",
                 "(L" + VERTEX + ";FFFFFFFFFIIFFF)V"));
         assertNotNull(find(node, "addVertex", "(FFF)L" + VERTEX + ";"));
         for (String method : List.of("setColor", "setUv", "setUv1", "setUv2", "setNormal")) {
