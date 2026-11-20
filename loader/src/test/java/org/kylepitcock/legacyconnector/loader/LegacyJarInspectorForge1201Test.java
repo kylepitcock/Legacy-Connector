@@ -49,6 +49,13 @@ class LegacyJarInspectorForge1201Test {
                 versionRange="[1.20.1-4.2.0,)"
                 ordering="AFTER"
                 side="BOTH"
+
+                [[dependencies.examplemod]]
+                modId="terrablender"
+                mandatory=true
+                versionRange="[3.0.0.0,)"
+                ordering="AFTER"
+                side="BOTH"
                 """;
 
         try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(jarPath))) {
@@ -72,5 +79,49 @@ class LegacyJarInspectorForge1201Test {
                 .anyMatch(dependency -> dependency.legacyId().equals("forge") && dependency.required()));
         assertTrue(mod.parsedDependencies().stream()
                 .anyMatch(dependency -> dependency.legacyId().equals("minecraft") && dependency.required()));
+        assertTrue(mod.parsedDependencies().contains(
+                new LegacyModDecl.Dependency("terrablender", true, "AFTER", "[3.0.0.0,)")));
+    }
+
+    @Test
+    void doesNotGuessPlaceholderOwnerForMultiModJar(@TempDir Path tempDir) throws Exception {
+        Path jarPath = tempDir.resolve("multi-mod.jar");
+        String modsToml = """
+                modLoader="javafml"
+                loaderVersion="[43,)"
+
+                [[mods]]
+                modId="firstmod"
+                version="1.0"
+                displayName="First"
+
+                [[mods]]
+                modId="secondmod"
+                version="1.0"
+                displayName="Second"
+
+                [[dependencies.examplemod]]
+                modId="palladium"
+                mandatory=true
+                versionRange="[1.20.1-4.2.0,)"
+                ordering="AFTER"
+                side="BOTH"
+                """;
+
+        try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(jarPath))) {
+            output.putNextEntry(new ZipEntry("META-INF/mods.toml"));
+            output.write(modsToml.getBytes(StandardCharsets.UTF_8));
+            output.closeEntry();
+        }
+
+        LegacyJar inspected;
+        try (ZipFile zip = new ZipFile(jarPath.toFile())) {
+            inspected = LegacyJarInspector.inspectForge1201(zip, jarPath);
+        }
+
+        assertNotNull(inspected);
+        assertEquals(2, inspected.mods.size());
+        assertTrue(inspected.mods.stream().allMatch(mod -> mod.dependencies.isEmpty()),
+                "An ambiguous placeholder owner must not assign the dependency to either mod");
     }
 }
