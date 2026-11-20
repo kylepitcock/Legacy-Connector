@@ -39,7 +39,7 @@ class LegacyJarInspectorForge1201Test {
                 [[dependencies.examplemod]]
                 modId="minecraft"
                 mandatory=true
-                versionRange="[1.20.1,)"
+                versionRange="[1.19.2,)"
                 ordering="NONE"
                 side="BOTH"
 
