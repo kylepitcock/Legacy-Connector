@@ -52,8 +52,14 @@ public final class CompatBufferBuilder implements VertexConsumer {
         real = tesselator != null ? tesselator.begin(mode, format) : new BufferBuilder(own, mode, format);
     }
 
-    public boolean isBuilding() {
+    /** The 1.20.1 {@code BufferBuilder#building()} name retained for translated callers. */
+    public boolean building() {
         return real != null;
+    }
+
+    /** Modern descriptive alias used by compatibility code. */
+    public boolean isBuilding() {
+        return building();
     }
 
     /** 1.20.1 {@code end()} returned the {@code RenderedBuffer}; null when no vertex was written (1.21.1's {@code build()} contract). */
