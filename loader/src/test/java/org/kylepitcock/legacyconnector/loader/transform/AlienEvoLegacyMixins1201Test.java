@@ -30,6 +30,7 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
     private static final String CI = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
     private static final String RENDER_TYPE = "net/minecraft/client/renderer/RenderType";
     private static final String BUFFER_SOURCE = "net/minecraft/client/renderer/MultiBufferSource$BufferSource";
+    private static final String COMPAT_BUFFER_BUILDER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder";
     private static final String BYTE_BUFFER_BUILDER = "com/mojang/blaze3d/vertex/ByteBufferBuilder";
     private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     private static final String CAMERA = "net/minecraft/client/Camera";
@@ -63,7 +64,7 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
     void tintedGlintRegistersOnTheCurrentRenderBuffersBufferSource() {
         ClassNode node = node(AlienEvoLegacyMixins1201.RENDER_BUFFERS);
         FieldNode shadow = new FieldNode(ACC_PRIVATE, "fixedBuffers", "Ljava/util/SortedMap;", null,
-                "Ljava/util/SortedMap<L" + RENDER_TYPE + ";Lcom/mojang/blaze3d/vertex/BufferBuilder;>;");
+                "Ljava/util/SortedMap<L" + RENDER_TYPE + ";L" + COMPAT_BUFFER_BUILDER + ";>;");
         shadow.visibleAnnotations = new ArrayList<>(List.of(
                 annotation("Lorg/spongepowered/asm/mixin/Shadow;"),
                 annotation("Lorg/spongepowered/asm/mixin/Final;")));
@@ -74,12 +75,12 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "fixedBuffers", "Ljava/util/SortedMap;"));
         handler.instructions.add(new FieldInsnNode(GETSTATIC, "net/habb/alienevo/client/renderer/AlienEvoRenderTypes",
                 "TINTED_GLINT", "L" + RENDER_TYPE + ";"));
-        handler.instructions.add(new TypeInsnNode(NEW, "com/mojang/blaze3d/vertex/BufferBuilder"));
+        handler.instructions.add(new TypeInsnNode(NEW, COMPAT_BUFFER_BUILDER));
         handler.instructions.add(new InsnNode(DUP));
         handler.instructions.add(new FieldInsnNode(GETSTATIC, "net/habb/alienevo/client/renderer/AlienEvoRenderTypes",
                 "TINTED_GLINT", "L" + RENDER_TYPE + ";"));
         handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, RENDER_TYPE, "bufferSize", "()I", false));
-        handler.instructions.add(new MethodInsnNode(INVOKESPECIAL, "com/mojang/blaze3d/vertex/BufferBuilder",
+        handler.instructions.add(new MethodInsnNode(INVOKESPECIAL, COMPAT_BUFFER_BUILDER,
                 "<init>", "(I)V", false));
         handler.instructions.add(new MethodInsnNode(INVOKEINTERFACE, "java/util/SortedMap", "put",
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", true));
