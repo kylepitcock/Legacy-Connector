@@ -31,6 +31,10 @@ final class AlienEvoMixins1201 implements Opcodes {
     private static final String KART_STEER = "net/habb/alienevo/mixin/client/KartSteerMixin";
     private static final String OUTLINE = "net/habb/alienevo/mixin/client/ElectrocutionOutlineChainMixin";
     private static final String SHIELD = "net/habb/alienevo/mixin/ShieldSoundMixin";
+    private static final String CAMERA_POSITION = "net/habb/alienevo/mixin/client/CameraPositionMixin";
+    private static final String CAMERA_ZOOM = "net/habb/alienevo/mixin/scale/client/CameraZoomScaleMixin";
+    private static final String KART_CAMERA = "net/habb/alienevo/mixin/client/KartCameraMixin";
+    private static final String MODEL_BAKERY = "net/habb/alienevo/mixin/client/ModelBakeryCrystalMixin";
 
     private AlienEvoMixins1201() {}
 
@@ -45,6 +49,10 @@ final class AlienEvoMixins1201 implements Opcodes {
             case KART_STEER -> migrateKartSteer(node);
             case OUTLINE -> migrateElectrocutionOutline(node);
             case SHIELD -> migrateShieldDisable(node);
+            case CAMERA_POSITION -> migrateCameraPosition(node);
+            case CAMERA_ZOOM -> migrateCameraZoom(node, "alienevo$scaleCameraDistance");
+            case KART_CAMERA -> migrateCameraZoom(node, "alienevo$kartSpeedZoom");
+            case MODEL_BAKERY -> migrateModelBakeryCrystal(node);
             default -> 0;
         };
     }
@@ -137,6 +145,84 @@ final class AlienEvoMixins1201 implements Opcodes {
         // Player.disableShield() is now parameterless. The old boolean was
         // unused; CallbackInfo and the one temporary Player local shift down.
         remapSlots(method, slot -> slot >= 2 ? slot - 1 : slot);
+        replaceDescriptor(method, newDesc);
+        return 1;
+    }
+
+    private static int migrateCameraZoom(ClassNode node, String handlerName) {
+        MethodNode method = find(node, handlerName, "(D)D");
+        if (method == null) return 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof VarInsnNode variable) {
+                if (variable.getOpcode() == DLOAD) variable.setOpcode(FLOAD);
+                else if (variable.getOpcode() == DSTORE) variable.setOpcode(FSTORE);
+            } else if (instruction.getOpcode() == DRETURN) {
+                method.instructions.set(instruction, new InsnNode(FRETURN));
+            } else if (instruction.getOpcode() == DMUL) {
+                method.instructions.set(instruction, new InsnNode(FMUL));
+            } else if (instruction.getOpcode() == DCMPL) {
+                method.instructions.set(instruction, new InsnNode(FCMPL));
+            } else if (instruction.getOpcode() == DCMPG) {
+                method.instructions.set(instruction, new InsnNode(FCMPG));
+            } else if (instruction.getOpcode() == F2D) {
+                method.instructions.remove(instruction);
+            }
+        }
+        replaceDescriptor(method, "(F)F");
+        return 1;
+    }
+
+    private static int migrateCameraPosition(ClassNode node) {
+        String oldDesc = "(DLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V";
+        String newDesc = "(FLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V";
+        MethodNode method = find(node, "alienevo$keepZoomWhenPivotBuried", oldDesc);
+        if (method == null) return 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof VarInsnNode variable) {
+                int slot = variable.var;
+                if (slot == 3) variable.var = 2;       // CallbackInfoReturnable
+                else if (slot == 4) variable.var = 3;  // formerly a double temporary, now a float
+                else if (slot >= 6) variable.var = slot - 2;
+                if (variable.getOpcode() == DLOAD) variable.setOpcode(FLOAD);
+                else if (variable.getOpcode() == DSTORE) variable.setOpcode(FSTORE);
+            } else if (instruction instanceof org.objectweb.asm.tree.TypeInsnNode type
+                    && type.getOpcode() == CHECKCAST && type.desc.equals("java/lang/Double")) {
+                type.desc = "java/lang/Float";
+            } else if (instruction instanceof MethodInsnNode call && call.owner.equals("java/lang/Double")) {
+                call.owner = "java/lang/Float";
+                if (call.name.equals("doubleValue") && call.desc.equals("()D")) call.desc = "()F";
+                else if (call.name.equals("valueOf") && call.desc.equals("(D)Ljava/lang/Double;")) {
+                    call.desc = "(F)Ljava/lang/Float;";
+                }
+            } else if (instruction.getOpcode() == DCMPG) {
+                method.instructions.set(instruction, new InsnNode(FCMPG));
+            } else if (instruction.getOpcode() == DCMPL) {
+                method.instructions.set(instruction, new InsnNode(FCMPL));
+            }
+        }
+        replaceDescriptor(method, newDesc);
+        return 1;
+    }
+
+    private static int migrateModelBakeryCrystal(ClassNode node) {
+        String oldDesc = "(Ljava/util/function/BiFunction;" + CALLBACK + ")V";
+        String textureGetter = "Lnet/minecraft/client/resources/model/ModelBakery$TextureGetter;";
+        String newDesc = "(" + textureGetter + CALLBACK + ")V";
+        MethodNode method = find(node, "alienevo$bakeStaticCrystal", oldDesc);
+        if (method == null) return 0;
+        String modelClass = "net/habb/alienevo/client/renderer/DiamondBlockStaticModel";
+        boolean adapted = false;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call && call.getOpcode() == INVOKESTATIC
+                    && call.owner.equals(modelClass) && call.name.equals("install")
+                    && call.desc.equals("(Ljava/util/Map;Ljava/util/function/BiFunction;)V")) {
+                method.instructions.insertBefore(call, new MethodInsnNode(INVOKESTATIC,
+                        "org/kylepitcock/legacyconnector/v1_20_1/migrate/ModelBakeryCompat",
+                        "asBiFunction", "(" + textureGetter + ")Ljava/util/function/BiFunction;", false));
+                adapted = true;
+            }
+        }
+        if (!adapted) return 0;
         replaceDescriptor(method, newDesc);
         return 1;
     }
