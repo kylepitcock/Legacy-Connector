@@ -150,6 +150,8 @@ final class PalladiumCrossbowItem1201 implements Opcodes {
                 "(L" + LEVEL + ";L" + ITEM_STACK + ";L" + LIVING_ENTITY + ";)L" + PROJECTILE + ";",
                 false));
         code.add(new VarInsnNode(ASTORE, 7));
+        code.add(new VarInsnNode(ALOAD, 7));
+        code.add(new JumpInsnNode(IFNULL, returnOriginal));
         code.add(new VarInsnNode(ALOAD, 6));
         code.add(new VarInsnNode(ALOAD, 7));
         code.add(new MethodInsnNode(INVOKEVIRTUAL, CALLBACK_RETURN, "setReturnValue",
