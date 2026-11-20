@@ -190,6 +190,12 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertNotNull(find(function, "getName", "()Ljava/lang/String;"));
         assertNotNull(find(function, "getMinArgs", "()I"));
         assertNotNull(find(function, "getArgs", "()[L" + AlienEvoMolang1201.MATH_VALUE + ";"));
+        MethodNode isMutable = find(function, "isMutable", "([L" + AlienEvoMolang1201.MATH_VALUE + ";)Z");
+        assertNotNull(isMutable);
+        assertEquals(ICONST_1, isMutable.instructions.getFirst().getOpcode(),
+                "roll_since depends on the current render actor and must never be cached as immutable");
+        assertEquals(IRETURN, isMutable.instructions.getLast().getOpcode());
+
         MethodNode compute = find(function, "compute", "()D");
         assertNotNull(compute);
         assertTrue(hasCall(compute, INVOKESTATIC,
