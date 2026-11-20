@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.IincInsnNode;
@@ -18,8 +19,6 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
     static final String RIDE_SEAT_BONE = "net/habb/alienevo/mixin/client/RideSeatBoneMixin";
 
     private static final String CALLBACK = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
-    private static final String ANIMATABLE = "Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;";
-    private static final String ANIMATION_STATE = "Lsoftware/bernie/geckolib/core/animation/AnimationState;";
     private static final String POSE_STACK = "Lcom/mojang/blaze3d/vertex/PoseStack;";
     private static final String ENTITY = "Lnet/minecraft/world/entity/Entity;";
     private static final String BAKED_MODEL = "Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;";
@@ -47,20 +46,55 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
 
     private static int migrateStillClock(ClassNode node) {
         final String name = "alienevo$poseStill";
-        final String oldDesc = "(" + ANIMATABLE + "J" + ANIMATION_STATE + CALLBACK + ")V";
-        final String newDesc = "(" + ANIMATABLE + "J" + ANIMATION_STATE + "F" + CALLBACK + ")V";
-        MethodNode method = find(node, name, oldDesc);
+        MethodNode method = findNamed(node, name);
         if (method == null) {
-            if (find(node, name, newDesc) != null) return 0;
-            throw new IllegalStateException("AlienEvo GeckoStillClockMixin lost its inspected poseStill handler");
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin lost its poseStill handler");
         }
 
-        // GeckoLib 4.9 inserted partialTick before CallbackInfo. Move CallbackInfo
-        // and the two existing local references (manager and processor) one slot.
-        shiftLocals(method, 5, 1);
-        method.maxLocals = Math.max(method.maxLocals + 1, 9);
-        replaceDescriptor(method, newDesc);
+        Type[] arguments = Type.getArgumentTypes(method.desc);
+        if (isStillClockDescriptor(arguments, true) && Type.VOID_TYPE.equals(Type.getReturnType(method.desc))) {
+            return 0;
+        }
+        if (!isStillClockDescriptor(arguments, false) || Type.VOID_TYPE != Type.getReturnType(method.desc)
+                || (method.access & ACC_STATIC) != 0) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin has an unexpected poseStill descriptor: "
+                    + method.desc);
+        }
+
+        // The source JAR's GeckoLib owners can be remapped before this adapter
+        // runs. Match the stable parameter roles rather than hardcoding those
+        // owners, then preserve the already-remapped types in the new descriptor.
+        Type[] migratedArguments = new Type[arguments.length + 1];
+        System.arraycopy(arguments, 0, migratedArguments, 0, arguments.length - 1);
+        migratedArguments[arguments.length - 1] = Type.FLOAT_TYPE;
+        migratedArguments[arguments.length] = arguments[arguments.length - 1];
+        String migratedDescriptor = Type.getMethodDescriptor(Type.VOID_TYPE, migratedArguments);
+
+        int callbackSlot = 1; // instance methods reserve slot zero for this
+        for (int i = 0; i < arguments.length - 1; i++) {
+            callbackSlot += arguments[i].getSize();
+        }
+        // GeckoLib's handler shape is (GeoAnimatable, long, AnimationState, CallbackInfo).
+        // The float occupies the old CallbackInfo slot, so move it and all later locals.
+        shiftLocals(method, callbackSlot, 1);
+        method.maxLocals = Math.max(method.maxLocals + 1, callbackSlot + 2);
+        replaceDescriptor(method, migratedDescriptor);
         return 1;
+    }
+
+    private static boolean isStillClockDescriptor(Type[] args, boolean withPartialTick) {
+        if (args.length != (withPartialTick ? 5 : 4)) return false;
+        return hasSimpleObjectName(args[0], "GeoAnimatable")
+                && args[1].equals(Type.LONG_TYPE)
+                && hasSimpleObjectName(args[2], "AnimationState")
+                && (!withPartialTick || args[3].equals(Type.FLOAT_TYPE))
+                && CALLBACK.equals(args[withPartialTick ? 4 : 3].getDescriptor());
+    }
+
+    private static boolean hasSimpleObjectName(Type type, String simpleName) {
+        return type.getSort() == Type.OBJECT
+                && (type.getInternalName().equals(simpleName)
+                || type.getInternalName().endsWith("/" + simpleName));
     }
 
     private static int migrateGeoEntityRenderer(ClassNode node) {
@@ -140,6 +174,18 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
             if (method.name.equals(name) && method.desc.equals(descriptor)) return method;
         }
         return null;
+    }
+
+    private static MethodNode findNamed(ClassNode node, String name) {
+        MethodNode found = null;
+        for (MethodNode method : node.methods) {
+            if (!method.name.equals(name)) continue;
+            if (found != null) {
+                throw new IllegalStateException("AlienEvo mixin has duplicate " + name + " handlers");
+            }
+            found = method;
+        }
+        return found;
     }
 
     private static void replaceDescriptor(MethodNode method, String descriptor) {
