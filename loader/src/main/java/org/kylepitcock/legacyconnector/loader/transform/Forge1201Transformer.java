@@ -438,7 +438,7 @@ public final class Forge1201Transformer {
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
-                    + alienEvoStepHeightChange);
+                    + alienEvoStepHeightChange + alienEvoMixinChange);
         }
         if (alienEvoStepHeightChanges > 0) {
             result.notes.add("AlienEvo surf step-height access migrated from the removed Entity field to the 1.21.1 STEP_HEIGHT attribute: "
