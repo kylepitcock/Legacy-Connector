@@ -51,6 +51,7 @@ final class AlienEvoMolang1201 implements Opcodes {
     static final String VARIABLE_COMPAT = HELPER_PACKAGE + "MolangVariableCompat";
     static final String ROLL_FACTORY = HELPER_PACKAGE + "MolangRollSinceFactory";
     static final String ROLL_MATH_FUNCTION = HELPER_PACKAGE + "MolangRollSinceFunction";
+    static final String MEMOIZED_SUPPLIER = HELPER_PACKAGE + "MolangMemoizedDoubleSupplier";
 
     private static final String DOUBLE_SUPPLIER = "Ljava/util/function/DoubleSupplier;";
     private static final String VARIABLE_DESC = "L" + VARIABLE + ";";
@@ -527,6 +528,7 @@ final class AlienEvoMolang1201 implements Opcodes {
         result.put(VARIABLE_COMPAT + ".class", write(variableCompatClass()));
         result.put(ROLL_FACTORY + ".class", write(rollSinceFactoryClass()));
         result.put(ROLL_MATH_FUNCTION + ".class", write(rollSinceMathFunctionClass()));
+        result.put(MEMOIZED_SUPPLIER + ".class", write(memoizedSupplierClass()));
         return result;
     }
 
@@ -594,13 +596,65 @@ final class AlienEvoMolang1201 implements Opcodes {
         MethodNode method = new MethodNode(ACC_PUBLIC, name,
                 "(Ljava/lang/String;" + DOUBLE_SUPPLIER + ")V", null, null);
         method.instructions.add(new VarInsnNode(ALOAD, 1));
-        method.instructions.add(new VarInsnNode(ALOAD, 2));
+        if (name.equals("setMemoizedValue")) {
+            // GeckoLib 4.8 memoized the first supplied result (sentinel = Double.MIN_VALUE).
+            method.instructions.add(new TypeInsnNode(NEW, MEMOIZED_SUPPLIER));
+            method.instructions.add(new InsnNode(DUP));
+            method.instructions.add(new VarInsnNode(ALOAD, 2));
+            method.instructions.add(new MethodInsnNode(INVOKESPECIAL, MEMOIZED_SUPPLIER, "<init>",
+                    "(" + DOUBLE_SUPPLIER + ")V", false));
+        } else {
+            method.instructions.add(new VarInsnNode(ALOAD, 2));
+        }
         method.instructions.add(new MethodInsnNode(INVOKESTATIC, MATH_PARSER, "setVariable",
                 "(Ljava/lang/String;" + DOUBLE_SUPPLIER + ")V", false));
         method.instructions.add(new InsnNode(RETURN));
         method.maxLocals = 3;
-        method.maxStack = 2;
+        method.maxStack = 4;
         return method;
+    }
+
+    private static ClassNode memoizedSupplierClass() {
+        String doubleSupplier = "java/util/function/DoubleSupplier";
+        ClassNode node = baseClass(MEMOIZED_SUPPLIER, ACC_PUBLIC | ACC_FINAL | ACC_SUPER, "java/lang/Object");
+        node.interfaces.add(doubleSupplier);
+        node.fields.add(new FieldNode(ACC_PRIVATE | ACC_FINAL, "supplier", DOUBLE_SUPPLIER, null, null));
+        node.fields.add(new FieldNode(ACC_PRIVATE, "computedValue", "D", null, null));
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>", "(" + DOUBLE_SUPPLIER + ")V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 1));
+        constructor.instructions.add(new FieldInsnNode(PUTFIELD, MEMOIZED_SUPPLIER, "supplier", DOUBLE_SUPPLIER));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(Double.MIN_VALUE));
+        constructor.instructions.add(new FieldInsnNode(PUTFIELD, MEMOIZED_SUPPLIER, "computedValue", "D"));
+        constructor.instructions.add(new InsnNode(RETURN));
+        constructor.maxLocals = 2;
+        constructor.maxStack = 3;
+        node.methods.add(constructor);
+
+        MethodNode getAsDouble = new MethodNode(ACC_PUBLIC, "getAsDouble", "()D", null, null);
+        LabelNode cached = new LabelNode();
+        getAsDouble.instructions.add(new VarInsnNode(ALOAD, 0));
+        getAsDouble.instructions.add(new FieldInsnNode(GETFIELD, MEMOIZED_SUPPLIER, "computedValue", "D"));
+        getAsDouble.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(Double.MIN_VALUE));
+        getAsDouble.instructions.add(new InsnNode(DCMPL));
+        getAsDouble.instructions.add(new JumpInsnNode(IFNE, cached));
+        getAsDouble.instructions.add(new VarInsnNode(ALOAD, 0));
+        getAsDouble.instructions.add(new VarInsnNode(ALOAD, 0));
+        getAsDouble.instructions.add(new FieldInsnNode(GETFIELD, MEMOIZED_SUPPLIER, "supplier", DOUBLE_SUPPLIER));
+        getAsDouble.instructions.add(new MethodInsnNode(INVOKEINTERFACE, doubleSupplier, "getAsDouble", "()D", true));
+        getAsDouble.instructions.add(new FieldInsnNode(PUTFIELD, MEMOIZED_SUPPLIER, "computedValue", "D"));
+        getAsDouble.instructions.add(cached);
+        getAsDouble.instructions.add(new VarInsnNode(ALOAD, 0));
+        getAsDouble.instructions.add(new FieldInsnNode(GETFIELD, MEMOIZED_SUPPLIER, "computedValue", "D"));
+        getAsDouble.instructions.add(new InsnNode(DRETURN));
+        getAsDouble.maxLocals = 1;
+        getAsDouble.maxStack = 4;
+        node.methods.add(getAsDouble);
+        return node;
     }
 
     private static ClassNode variableCompatClass() {
