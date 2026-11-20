@@ -331,6 +331,7 @@ public final class Forge1201Transformer {
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
+        int alienEvoVertexConsumerChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -420,6 +421,8 @@ public final class Forge1201Transformer {
             palladiumSelectionListChanges += palladiumSelectionListChange;
             int alienEvoStepHeightChange = AlienEvoStepHeight1201.apply(node);
             alienEvoStepHeightChanges += alienEvoStepHeightChange;
+            int alienEvoVertexConsumerChange = AlienEvoVertexConsumer1201.apply(node);
+            alienEvoVertexConsumerChanges += alienEvoVertexConsumerChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
                 mixinStats.mixinClasses++;
                 mixinStats.dropped.add(node.name + " (replaced by the 1.21.1 STEP_HEIGHT attribute adapter)");
@@ -438,7 +441,11 @@ public final class Forge1201Transformer {
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
-                    + alienEvoStepHeightChange + alienEvoMixinChange);
+                    + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoVertexConsumerChange);
+        }
+        if (alienEvoVertexConsumerChanges > 0) {
+            result.notes.add("AlienEvo flat loot-effect renderer migrated from the removed DefaultedVertexConsumer superclass to 1.21.1 VertexConsumer: "
+                    + alienEvoVertexConsumerChanges + " bytecode change(s)");
         }
         if (alienEvoStepHeightChanges > 0) {
             result.notes.add("AlienEvo surf step-height access migrated from the removed Entity field to the 1.21.1 STEP_HEIGHT attribute: "
