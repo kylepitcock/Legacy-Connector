@@ -7,9 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import org.kylepitcock.legacyconnector.loader.meta.ModMetadataGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -81,6 +83,15 @@ class LegacyJarInspectorForge1201Test {
                 .anyMatch(dependency -> dependency.legacyId().equals("minecraft") && dependency.required()));
         assertTrue(mod.parsedDependencies().contains(
                 new LegacyModDecl.Dependency("terrablender", true, "AFTER", "[3.0.0.0,)")));
+
+        ModMetadataGenerator.setLoadedMods(List.of("alienevo", "palladium", "terrablender"));
+        try {
+            String generated = new String(ModMetadataGenerator.modsToml(inspected), StandardCharsets.UTF_8);
+            assertTrue(generated.contains("[[dependencies.alienevo]]"));
+            assertTrue(generated.contains('modId="palladium"\ntype="required"\nversionRange="*"\nordering="AFTER"'));
+        } finally {
+            ModMetadataGenerator.setLoadedMods(List.of());
+        }
     }
 
     @Test
