@@ -339,6 +339,7 @@ public final class Forge1201Transformer {
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
         int alienEvoGeckoMixinChanges = 0;
+        int alienEvoGeckoExceptionChanges = 0;
         int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
@@ -394,6 +395,8 @@ public final class Forge1201Transformer {
             alienEvoMixinChanges += alienEvoMixinChange;
             int alienEvoGeckoMixinChange = AlienEvoGeckoMixins1201.apply(node);
             alienEvoGeckoMixinChanges += alienEvoGeckoMixinChange;
+            int alienEvoGeckoExceptionChange = AlienEvoGeckoException1201.apply(node);
+            alienEvoGeckoExceptionChanges += alienEvoGeckoExceptionChange;
             int alienEvoLegacyMixinChange = AlienEvoLegacyMixins1201.apply(node);
             alienEvoLegacyMixinChanges += alienEvoLegacyMixinChange;
             int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
@@ -475,7 +478,7 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoMolangChange + alienEvoGeckoMixinChange);
+                    + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoExceptionChange);
         }
         if (alienEvoMolangMixinDropped > 0) {
             result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
@@ -499,6 +502,10 @@ public final class Forge1201Transformer {
         if (alienEvoGeckoMixinChanges > 0) {
             result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "
                     + alienEvoGeckoMixinChanges + " mixin class(es)");
+        }
+        if (alienEvoGeckoExceptionChanges > 0) {
+            result.notes.add("AlienEvo GeckoLib 4.9 catch migration: replaced the removed GeckoLibException with RuntimeException in AlienGeckoRenderLayer: "
+                    + alienEvoGeckoExceptionChanges + " catch handler(s)");
         }
         if (alienEvoForgeEventChanges > 0) {
             result.notes.add("Native Forge event callbacks migrated to NeoForge tick phases and ResourceLocation GUI layers: "
