@@ -113,7 +113,7 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         node.fields.add(new FieldNode(ACC_PRIVATE, "screenHeight", "I", null, null));
 
         MethodNode handler = method(node, ACC_PRIVATE, "alienevo$drawHeatMeter",
-                "(" + GUI_GRAPHICS + CI + ")V");
+                "(L" + GUI_GRAPHICS + ";" + CI + ")V");
         handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/habb/alienevo/client/hud/RifleHeatOverlay",
                 "shouldRender", "()Z", false));
         LabelNode done = new LabelNode();
@@ -124,12 +124,12 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         handler.instructions.add(new VarInsnNode(ALOAD, 0));
         handler.instructions.add(new FieldInsnNode(GETFIELD, node.name, "screenHeight", "I"));
         handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/habb/alienevo/client/hud/RifleHeatOverlay",
-                "render", "(" + GUI_GRAPHICS + "II)V", false));
+                "render", "(L" + GUI_GRAPHICS + ";II)V", false));
         handler.instructions.add(done);
         handler.instructions.add(new InsnNode(RETURN));
 
         assertEquals(1, AlienEvoLegacyMixins1201.apply(node));
-        assertEquals("(" + GUI_GRAPHICS + "Lnet/minecraft/client/DeltaTracker;" + CI + ")V", handler.desc);
+        assertEquals("(L" + GUI_GRAPHICS + ";Lnet/minecraft/client/DeltaTracker;" + CI + ")V", handler.desc);
         assertTrue(node.fields.stream().noneMatch(f -> f.name.equals("screenWidth") || f.name.equals("screenHeight")));
         MethodInsnNode width = findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiWidth", "()I");
         MethodInsnNode height = findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiHeight", "()I");
