@@ -275,6 +275,8 @@ class Mc1201MigrationTest implements Opcodes {
         ClassNode c = cls("test/CrispPostPass", "java/lang/Object");
         MethodNode add = method(c, ACC_PUBLIC | ACC_STATIC, "add",
                 "(L" + postChain + ";Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";)L" + postPass + ";");
+        add.maxLocals = 4;
+        add.maxStack = 4;
         add.instructions.add(new VarInsnNode(ALOAD, 0));
         add.instructions.add(new VarInsnNode(ALOAD, 1));
         add.instructions.add(new VarInsnNode(ALOAD, 2));
@@ -305,6 +307,8 @@ class Mc1201MigrationTest implements Opcodes {
         ClassNode c = cls("test/LegacyPostChainFactory", "java/lang/Object");
         MethodNode create = method(c, ACC_PUBLIC | ACC_STATIC, "create",
                 "(L" + textureManager + ";L" + resourceManager + ";L" + renderTarget + ";L" + resourceLocation + ";)L" + postChain + ";");
+        create.maxLocals = 4;
+        create.maxStack = 6;
         create.instructions.add(new TypeInsnNode(NEW, postChain));
         create.instructions.add(new InsnNode(DUP));
         create.instructions.add(new VarInsnNode(ALOAD, 0));
