@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -57,6 +59,28 @@ class AlienEvoStepHeight1201Test implements Opcodes {
         assertEquals(INVOKESTATIC, setter.getOpcode());
         assertEquals("(L" + AlienEvoStepHeight1201.PLAYER + ";F)V", setter.desc);
         assertNull(findLegacyCall(move));
+    }
+
+    @Test
+    void stepHeightScalingMixinTargetsLivingEntityInOneTwentyOne() {
+        ClassNode node = new ClassNode();
+        node.version = V17;
+        node.name = AlienEvoStepHeight1201.SCALE_MIXIN;
+        node.superName = "java/lang/Object";
+        AnnotationNode mixin = new AnnotationNode("Lorg/spongepowered/asm/mixin/Mixin;");
+        mixin.values = new java.util.ArrayList<>(java.util.List.of(
+                "value", new java.util.ArrayList<>(java.util.List.of(Type.getObjectType(AlienEvoStepHeight1201.ENTITY)))));
+        node.invisibleAnnotations = new java.util.ArrayList<>(java.util.List.of(mixin));
+        MethodNode scale = new MethodNode(ACC_PRIVATE, "alienevo$scaleStepHeight", "(F)F", null, null);
+        node.methods.add(scale);
+
+        assertEquals(1, AlienEvoStepHeight1201.apply(node));
+        Object target = mixin.values.get(1);
+        assertTrue(target instanceof java.util.List<?>);
+        assertEquals(Type.getObjectType(AlienEvoStepHeight1201.LIVING_ENTITY),
+                ((java.util.List<?>) target).get(0));
+        assertEquals("(F)F", scale.desc);
+        assertEquals(0, AlienEvoStepHeight1201.apply(node), "the retarget must be idempotent");
     }
 
     @Test
