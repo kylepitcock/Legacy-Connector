@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -18,6 +19,7 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -191,6 +193,76 @@ class AlienEvoMolang1201Test implements Opcodes {
     }
 
     @Test
+    void mclibIValueKeyframeTypesAndNegatingLambdaMoveToMathValue() {
+        ClassNode node = node("net/habb/alienevo/client/geo/MirroredGeoAnimations");
+        node.signature = "Ljava/lang/Object;";
+        node.fields.add(new FieldNode(ACC_PRIVATE, "frames", "Ljava/util/List;",
+                "Ljava/util/List<Lsoftware/bernie/geckolib/core/keyframe/Keyframe<L"
+                        + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";>;>;", null));
+
+        MethodNode negate = method(node, ACC_PRIVATE | ACC_STATIC, "negate",
+                "(L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";)L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";");
+        negate.signature = "(L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";)L"
+                + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";";
+        negate.instructions.add(new VarInsnNode(ALOAD, 0));
+        negate.instructions.add(new TypeInsnNode(CHECKCAST, AlienEvoMolang1201.OLD_MCLIB_CONSTANT));
+        negate.instructions.add(new InsnNode(POP));
+        negate.instructions.add(new VarInsnNode(ALOAD, 0));
+        negate.instructions.add(new MethodInsnNode(INVOKEINTERFACE, AlienEvoMolang1201.OLD_MCLIB_IVALUE,
+                "get", "()D", true));
+        negate.instructions.add(new InsnNode(POP2));
+        negate.instructions.add(new VarInsnNode(ALOAD, 0));
+        Handle metafactory = new Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                        + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)"
+                        + "Ljava/lang/invoke/CallSite;", false);
+        Handle implementation = new Handle(H_INVOKESTATIC, node.name, "lambda$negate$2",
+                "(L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";)D", false);
+        negate.instructions.add(new InvokeDynamicInsnNode("get",
+                "(L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";)L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";",
+                metafactory, Type.getMethodType("()D"), implementation, Type.getMethodType("()D")));
+        negate.instructions.add(new InsnNode(POP));
+        negate.instructions.add(new InsnNode(ACONST_NULL));
+        negate.instructions.add(new InsnNode(ARETURN));
+        negate.maxLocals = 1;
+        negate.maxStack = 2;
+
+        MethodNode lambda = method(node, ACC_PRIVATE | ACC_STATIC, "lambda$negate$2",
+                "(L" + AlienEvoMolang1201.OLD_MCLIB_IVALUE + ";)D");
+        lambda.instructions.add(new VarInsnNode(ALOAD, 0));
+        lambda.instructions.add(new MethodInsnNode(INVOKEINTERFACE, AlienEvoMolang1201.OLD_MCLIB_IVALUE,
+                "get", "()D", true));
+        lambda.instructions.add(new InsnNode(DNEG));
+        lambda.instructions.add(new InsnNode(DRETURN));
+        lambda.maxLocals = 1;
+        lambda.maxStack = 2;
+
+        assertTrue(AlienEvoMolang1201.apply(node) >= 8);
+        assertTrue(node.fields.getFirst().signature.contains("L" + AlienEvoMolang1201.MATH_VALUE + ";"));
+        assertEquals("(L" + AlienEvoMolang1201.MATH_VALUE + ";)L"
+                + AlienEvoMolang1201.MATH_VALUE + ";", negate.desc);
+        assertEquals("(L" + AlienEvoMolang1201.MATH_VALUE + ";)L"
+                + AlienEvoMolang1201.MATH_VALUE + ";", negate.signature);
+        assertTrue(hasType(negate, CHECKCAST, AlienEvoMolang1201.GECKO_CONSTANT));
+        assertTrue(hasCall(negate, INVOKEINTERFACE, AlienEvoMolang1201.MATH_VALUE, "get", "()D"));
+        InvokeDynamicInsnNode dynamic = null;
+        for (var instruction : negate.instructions.toArray()) {
+            if (instruction instanceof InvokeDynamicInsnNode indy) dynamic = indy;
+        }
+        assertNotNull(dynamic);
+        assertEquals("(L" + AlienEvoMolang1201.MATH_VALUE + ";)L"
+                + AlienEvoMolang1201.MATH_VALUE + ";", dynamic.desc);
+        assertEquals("(L" + AlienEvoMolang1201.MATH_VALUE + ";)D",
+                ((Handle) dynamic.bsmArgs[1]).getDesc());
+        assertEquals("(L" + AlienEvoMolang1201.MATH_VALUE + ";)D", lambda.desc);
+        assertTrue(hasCall(lambda, INVOKEINTERFACE, AlienEvoMolang1201.MATH_VALUE, "get", "()D"));
+        assertFalse(hasOwner(negate, AlienEvoMolang1201.OLD_MCLIB_IVALUE));
+        assertFalse(hasOwner(lambda, AlienEvoMolang1201.OLD_MCLIB_IVALUE));
+        assertEquals(0, AlienEvoMolang1201.apply(node));
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
     void unrelatedClassesAreNotModified() {
         ClassNode node = node("example/UnrelatedBootstrap");
         assertEquals(0, AlienEvoMolang1201.apply(node));
@@ -235,6 +307,22 @@ class AlienEvoMolang1201Test implements Opcodes {
 
     private static boolean hasOpcode(MethodNode method, int opcode) {
         for (var instruction : method.instructions.toArray()) if (instruction.getOpcode() == opcode) return true;
+        return false;
+    }
+
+    private static boolean hasType(MethodNode method, int opcode, String desc) {
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof org.objectweb.asm.tree.TypeInsnNode type
+                    && type.getOpcode() == opcode && type.desc.equals(desc)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasCall(MethodNode method, int opcode, String owner, String name, String desc) {
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call && call.getOpcode() == opcode
+                    && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(desc)) return true;
+        }
         return false;
     }
 
