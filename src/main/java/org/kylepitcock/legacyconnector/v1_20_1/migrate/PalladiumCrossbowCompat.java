@@ -17,6 +17,12 @@ import net.minecraft.world.level.Level;
 public final class PalladiumCrossbowCompat {
     private PalladiumCrossbowCompat() {}
 
+    /** Equivalent to the old CrossbowItem.containsChargedProjectile helper. */
+    public static boolean containsChargedProjectile(ItemStack weapon, net.minecraft.world.item.Item projectile) {
+        ChargedProjectiles projectiles = weapon.get(DataComponents.CHARGED_PROJECTILES);
+        return projectiles != null && projectiles.contains(projectile);
+    }
+
     /** Equivalent to 1.21.1 CrossbowItem's private getShootingPower helper. */
     public static float getShootingPower(ItemStack weapon) {
         ChargedProjectiles projectiles = weapon.get(DataComponents.CHARGED_PROJECTILES);
