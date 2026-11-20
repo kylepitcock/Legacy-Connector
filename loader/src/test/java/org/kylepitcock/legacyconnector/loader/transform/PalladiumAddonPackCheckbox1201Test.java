@@ -12,6 +12,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -67,8 +68,12 @@ class PalladiumAddonPackCheckbox1201Test implements Opcodes {
         assertEquals(0, countNew(init, BUTTON));
         assertEquals(0, countCall(init, INVOKESPECIAL, BUTTON, "<init>", OLD_CTOR));
         assertEquals(3, countCall(init, INVOKESTATIC, PalladiumAddonPackCheckbox1201.HELPER,
-                "create", "(L" + SCREEN + ";IIIIL" + COMPONENT + ";ZLjava/util/function/Consumer;)L"
+                "create", "(Lnet/minecraft/client/gui/screens/Screen;IIIIL" + COMPONENT
+                        + ";ZLjava/util/function/Consumer;Ljava/lang/Runnable;)L"
                         + PalladiumAddonPackCheckbox1201.CHECKBOX + ";"));
+        assertEquals(3, countRefreshLambdas(init));
+        assertTrue(hasCall(find(node, PalladiumAddonPackCheckbox1201.REFRESH_BRIDGE, "()V"),
+                INVOKEVIRTUAL, LIST, "refreshList", "()V"));
 
         MethodNode refresh = find(node, PalladiumAddonPackCheckbox1201.REFRESH_BRIDGE, "()V");
         assertNotNull(refresh);
@@ -95,6 +100,26 @@ class PalladiumAddonPackCheckbox1201Test implements Opcodes {
         init.instructions.remove(call);
         assertThrows(IllegalStateException.class, () -> PalladiumAddonPackCheckbox1201.apply(node));
         assertEquals(2, countCall(init, INVOKESPECIAL, BUTTON, "<init>", OLD_CTOR));
+    }
+
+    private static int countRefreshLambdas(MethodNode method) {
+        int count = 0;
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof InvokeDynamicInsnNode dynamic
+                    && dynamic.name.equals("run")
+                    && dynamic.desc.equals("(L" + SCREEN + ";)Ljava/lang/Runnable;")
+                    && dynamic.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory")) count++;
+        }
+        return count;
+    }
+
+    private static boolean hasCall(MethodNode method, int opcode, String owner, String name, String desc) {
+        if (method == null) return false;
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call && call.getOpcode() == opcode
+                    && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(desc)) return true;
+        }
+        return false;
     }
 
     private static MethodNode find(ClassNode node, String name, String desc) {
