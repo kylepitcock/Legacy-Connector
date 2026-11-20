@@ -129,8 +129,16 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
         assertEquals(1, AlienEvoLegacyMixins1201.apply(node));
         assertEquals("(" + GUI_GRAPHICS + "Lnet/minecraft/client/DeltaTracker;" + CI + ")V", handler.desc);
         assertTrue(node.fields.stream().noneMatch(f -> f.name.equals("screenWidth") || f.name.equals("screenHeight")));
-        assertNotNull(findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiWidth", "()I"));
-        assertNotNull(findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiHeight", "()I"));
+        MethodInsnNode width = findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiWidth", "()I");
+        MethodInsnNode height = findCall(handler, INVOKEVIRTUAL, GUI_GRAPHICS, "guiHeight", "()I");
+        assertNotNull(width);
+        assertNotNull(height);
+        assertEquals(ALOAD, ((VarInsnNode) previousReal(width)).getOpcode());
+        assertEquals(1, ((VarInsnNode) previousReal(width)).var,
+                "guiWidth must receive the GuiGraphics handler argument, not the Gui mixin target");
+        assertEquals(ALOAD, ((VarInsnNode) previousReal(height)).getOpcode());
+        assertEquals(1, ((VarInsnNode) previousReal(height)).var,
+                "guiHeight must receive the GuiGraphics handler argument, not the Gui mixin target");
         assertFalse(hasField(handler, node.name, "screenWidth"));
         assertFalse(hasField(handler, node.name, "screenHeight"));
         assertNull(Mixin1201.missingShadow(node,
