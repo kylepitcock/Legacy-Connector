@@ -108,6 +108,23 @@ class AlienEvoLegacyMixins1201Test implements Opcodes {
     }
 
     @Test
+    void tintedGlintUsesTheCurrentItemGlintShader() {
+        ClassNode node = node("net/habb/alienevo/client/renderer/AlienEvoRenderTypes");
+        MethodNode clinit = method(node, ACC_STATIC, "<clinit>", "()V");
+        String owner = "net/minecraft/client/renderer/RenderStateShard";
+        String desc = "Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;";
+        clinit.instructions.add(new FieldInsnNode(GETSTATIC, owner, "RENDERTYPE_GLINT_DIRECT_SHADER", desc));
+        clinit.instructions.add(new InsnNode(POP));
+        clinit.instructions.add(new InsnNode(RETURN));
+
+        assertEquals(1, AlienEvoLegacyMixins1201.apply(node));
+        assertNotNull(findField(clinit, owner, "RENDERTYPE_GLINT_SHADER", desc));
+        assertFalse(hasField(clinit, owner, "RENDERTYPE_GLINT_DIRECT_SHADER"));
+        assertEquals(0, AlienEvoLegacyMixins1201.apply(node), "the shader rewrite must be idempotent");
+        verify(node);
+    }
+
+    @Test
     void rifleHeatMeterUsesGuiGraphicsDimensionsAndCurrentCrosshairSignature() {
         ClassNode node = node(AlienEvoLegacyMixins1201.RIFLE_CROSSHAIR);
         node.fields.add(new FieldNode(ACC_PRIVATE, "screenWidth", "I", null, null));
