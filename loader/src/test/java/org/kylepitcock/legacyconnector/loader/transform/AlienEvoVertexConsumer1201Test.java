@@ -112,7 +112,8 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         assertEquals("java/lang/Object", node.superName);
         assertTrue(node.interfaces.contains(VERTEX));
         assertTrue(node.interfaces.contains(AlienEvoVertexConsumer1201.LEGACY_END));
-        assertNotNull(find(node, "legacyPendingVertex", "Z"));
+        assertTrue(node.fields.stream().anyMatch(field ->
+                field.name.equals("legacyPendingVertex") && field.desc.equals("Z")));
         assertNotNull(find(node, "legacyFlushPending", "()V"));
         MethodNode legacyEnd = find(node, "legacyEndVertex", "()V");
         assertNotNull(legacyEnd);
