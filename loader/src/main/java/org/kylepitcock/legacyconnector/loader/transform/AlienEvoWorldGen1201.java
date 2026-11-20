@@ -30,6 +30,7 @@ final class AlienEvoWorldGen1201 implements Opcodes {
         if (!FEATURE.equals(node.name)) return 0;
 
         int changed = 0;
+        int matched = 0;
         boolean alreadyAdapted = false;
         for (var method : node.methods) {
             if (method.instructions == null) continue;
@@ -41,6 +42,7 @@ final class AlienEvoWorldGen1201 implements Opcodes {
                         && call.name.equals("getBiomeForFeature")
                         && call.desc.equals(COMPAT_GET_BIOME)) {
                     alreadyAdapted = true;
+                    matched++;
                     continue;
                 }
 
@@ -51,6 +53,7 @@ final class AlienEvoWorldGen1201 implements Opcodes {
                     continue;
                 }
 
+                matched++;
                 call.setOpcode(INVOKESTATIC);
                 call.owner = HELPER;
                 call.name = "getBiomeForFeature";
@@ -60,7 +63,7 @@ final class AlienEvoWorldGen1201 implements Opcodes {
             }
         }
 
-        if (changed > 1) {
+        if (matched > 1) {
             throw new IllegalStateException("AlienEvo CampgroundTrailFeature contains "
                     + changed + " matching getBiome calls; expected exactly one inspected call");
         }
