@@ -4,12 +4,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
@@ -36,6 +41,10 @@ final class AlienEvoMolang1201 implements Opcodes {
     static final String VARIABLE = "software/bernie/geckolib/loading/math/value/Variable";
     static final String OLD_PARSER = "software/bernie/geckolib/core/molang/MolangParser";
     static final String OLD_LAZY_VARIABLE = "software/bernie/geckolib/core/molang/LazyVariable";
+    static final String OLD_MCLIB_IVALUE = "com/eliotlash/mclib/math/IValue";
+    static final String OLD_MCLIB_CONSTANT = "com/eliotlash/mclib/math/Constant";
+    static final String OLD_MCLIB_FUNCTION = "com/eliotlash/mclib/math/functions/Function";
+    static final String GECKO_CONSTANT = "software/bernie/geckolib/loading/math/value/Constant";
 
     static final String HELPER_PACKAGE = "net/habb/alienevo/compat/geckolib/bridge/";
     static final String PARSER_COMPAT = HELPER_PACKAGE + "MolangParserCompat";
@@ -63,7 +72,12 @@ final class AlienEvoMolang1201 implements Opcodes {
             changes += migrateRollSinceRegistration(node);
         }
         changes += migrateLegacyParserCalls(node);
+        changes += migrateMclibKeyframeValues(node);
         return changes;
+    }
+
+    static boolean dropLegacyRollSinceClass(String name) {
+        return ROLL_FUNCTION.equals(name);
     }
 
     private static int migrateBootstrap(ClassNode node) {
@@ -309,9 +323,200 @@ final class AlienEvoMolang1201 implements Opcodes {
         return changes;
     }
 
+    /**
+     * GeckoLib 4.9 changed its keyframe value bound from McLib IValue to
+     * GeckoLib MathValue. Both expose get()D; MathValue is also a functional
+     * interface, so AlienEvo's negating lambda remains valid after its
+     * invokedynamic descriptors and bootstrap handles are remapped.
+     */
+    private static int migrateMclibKeyframeValues(ClassNode node) {
+        int changes = 0;
+        if (node.superName != null) {
+            String replacement = replaceType(node.superName);
+            if (!replacement.equals(node.superName)) {
+                node.superName = replacement;
+                changes++;
+            }
+        }
+        for (int i = 0; i < node.interfaces.size(); i++) {
+            String current = node.interfaces.get(i);
+            String replacement = replaceType(current);
+            if (!replacement.equals(current)) {
+                node.interfaces.set(i, replacement);
+                changes++;
+            }
+        }
+        if (node.outerClass != null) {
+            String replacement = replaceType(node.outerClass);
+            if (!replacement.equals(node.outerClass)) {
+                node.outerClass = replacement;
+                changes++;
+            }
+        }
+        if (node.outerMethodDesc != null) {
+            String replacement = replaceType(node.outerMethodDesc);
+            if (!replacement.equals(node.outerMethodDesc)) {
+                node.outerMethodDesc = replacement;
+                changes++;
+            }
+        }
+        for (FieldNode field : node.fields) {
+            String replacement = replaceType(field.desc);
+            if (!replacement.equals(field.desc)) {
+                field.desc = replacement;
+                changes++;
+            }
+            if (field.signature != null) {
+                replacement = replaceType(field.signature);
+                if (!replacement.equals(field.signature)) {
+                    field.signature = replacement;
+                    changes++;
+                }
+            }
+        }
+        for (MethodNode method : node.methods) {
+            String replacement = replaceType(method.desc);
+            if (!replacement.equals(method.desc)) {
+                method.desc = replacement;
+                changes++;
+            }
+            if (method.signature != null) {
+                replacement = replaceType(method.signature);
+                if (!replacement.equals(method.signature)) {
+                    method.signature = replacement;
+                    changes++;
+                }
+            }
+            if (method.exceptions != null) {
+                for (int i = 0; i < method.exceptions.size(); i++) {
+                    String current = method.exceptions.get(i);
+                    replacement = replaceType(current);
+                    if (!replacement.equals(current)) {
+                        method.exceptions.set(i, replacement);
+                        changes++;
+                    }
+                }
+            }
+            if (method.localVariables != null) {
+                for (var local : method.localVariables) {
+                    replacement = replaceType(local.desc);
+                    if (!replacement.equals(local.desc)) {
+                        local.desc = replacement;
+                        changes++;
+                    }
+                    if (local.signature != null) {
+                        replacement = replaceType(local.signature);
+                        if (!replacement.equals(local.signature)) {
+                            local.signature = replacement;
+                            changes++;
+                        }
+                    }
+                }
+            }
+            if (method.instructions == null) continue;
+            for (var instruction : method.instructions.toArray()) {
+                if (instruction instanceof FieldInsnNode field) {
+                    replacement = replaceType(field.owner);
+                    if (!replacement.equals(field.owner)) {
+                        field.owner = replacement;
+                        changes++;
+                    }
+                    replacement = replaceType(field.desc);
+                    if (!replacement.equals(field.desc)) {
+                        field.desc = replacement;
+                        changes++;
+                    }
+                } else if (instruction instanceof MethodInsnNode call) {
+                    replacement = replaceType(call.owner);
+                    if (!replacement.equals(call.owner)) {
+                        call.owner = replacement;
+                        changes++;
+                    }
+                    replacement = replaceType(call.desc);
+                    if (!replacement.equals(call.desc)) {
+                        call.desc = replacement;
+                        changes++;
+                    }
+                    if (call.owner.equals(GECKO_CONSTANT)) call.itf = false;
+                } else if (instruction instanceof TypeInsnNode type) {
+                    replacement = replaceType(type.desc);
+                    if (!replacement.equals(type.desc)) {
+                        type.desc = replacement;
+                        changes++;
+                    }
+                } else if (instruction instanceof MultiANewArrayInsnNode array) {
+                    replacement = replaceType(array.desc);
+                    if (!replacement.equals(array.desc)) {
+                        array.desc = replacement;
+                        changes++;
+                    }
+                } else if (instruction instanceof FrameNode frame) {
+                    changes += rewriteFrameTypes(frame.local);
+                    changes += rewriteFrameTypes(frame.stack);
+                } else if (instruction instanceof LdcInsnNode ldc) {
+                    if (ldc.cst instanceof Type type) {
+                        Type rewritten = rewriteType(type);
+                        if (!rewritten.equals(type)) {
+                            ldc.cst = rewritten;
+                            changes++;
+                        }
+                    } else if (ldc.cst instanceof Handle handle) {
+                        Handle rewritten = rewriteHandle(handle);
+                        if (!rewritten.equals(handle)) {
+                            ldc.cst = rewritten;
+                            changes++;
+                        }
+                    }
+                } else if (instruction instanceof InvokeDynamicInsnNode dynamic) {
+                    replacement = replaceType(dynamic.desc);
+                    if (!replacement.equals(dynamic.desc)) {
+                        dynamic.desc = replacement;
+                        changes++;
+                    }
+                    Handle bootstrap = rewriteHandle(dynamic.bsm);
+                    if (!bootstrap.equals(dynamic.bsm)) {
+                        dynamic.bsm = bootstrap;
+                        changes++;
+                    }
+                    for (int i = 0; i < dynamic.bsmArgs.length; i++) {
+                        Object arg = dynamic.bsmArgs[i];
+                        if (arg instanceof Type type) {
+                            Type rewritten = rewriteType(type);
+                            if (!rewritten.equals(type)) {
+                                dynamic.bsmArgs[i] = rewritten;
+                                changes++;
+                            }
+                        } else if (arg instanceof Handle handle) {
+                            Handle rewritten = rewriteHandle(handle);
+                            if (!rewritten.equals(handle)) {
+                                dynamic.bsmArgs[i] = rewritten;
+                                changes++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return changes;
+    }
+
+    private static Type rewriteType(Type type) {
+        String descriptor = replaceType(type.getDescriptor());
+        return descriptor.equals(type.getDescriptor()) ? type : Type.getType(descriptor);
+    }
+
+    private static Handle rewriteHandle(Handle handle) {
+        String owner = replaceType(handle.getOwner());
+        String descriptor = replaceType(handle.getDesc());
+        if (owner.equals(handle.getOwner()) && descriptor.equals(handle.getDesc())) return handle;
+        return new Handle(handle.getTag(), owner, handle.getName(), descriptor, handle.isInterface());
+    }
+
     private static String replaceType(String value) {
         return value == null ? null : value.replace(OLD_PARSER, PARSER_COMPAT)
-                .replace(OLD_LAZY_VARIABLE, VARIABLE_COMPAT);
+                .replace(OLD_LAZY_VARIABLE, VARIABLE_COMPAT)
+                .replace(OLD_MCLIB_IVALUE, MATH_VALUE)
+                .replace(OLD_MCLIB_CONSTANT, GECKO_CONSTANT);
     }
 
     /** Generated helper bytecode: no GeckoLib compile-time dependency is added to the loader. */
