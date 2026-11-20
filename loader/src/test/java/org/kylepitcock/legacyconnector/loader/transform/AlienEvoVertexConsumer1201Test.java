@@ -46,6 +46,10 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         init.maxLocals = 7;
         init.maxStack = 5;
 
+        MethodNode endVertex = new MethodNode(ACC_PUBLIC, "endVertex", "()V", null, null);
+        node.methods.add(endVertex);
+        endVertex.instructions.add(new InsnNode(RETURN));
+
         MethodNode emit = new MethodNode(ACC_PRIVATE, "emit", "(DDDFF)V", null, null);
         node.methods.add(emit);
         emit.instructions.add(new VarInsnNode(ALOAD, 0));
@@ -107,6 +111,8 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
 
         assertEquals("java/lang/Object", node.superName);
         assertTrue(node.interfaces.contains(VERTEX));
+        assertTrue(node.interfaces.contains(AlienEvoVertexConsumer1201.LEGACY_END));
+        assertNotNull(find(node, "legacyEndVertex", "()V"));
         for (String color : List.of("defaultR", "defaultG", "defaultB", "defaultA")) {
             assertTrue(node.fields.stream().anyMatch(f -> f.name.equals(color) && f.desc.equals("I")),
                     "the subclass must own inherited color state " + color);
