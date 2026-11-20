@@ -125,7 +125,6 @@ class AlienEvoMixins1201Test implements Opcodes {
         ClassNode node = node("net/habb/alienevo/mixin/client/KartSteerMixin");
         MethodNode handler = method(node, "alienevo$kartSteerFrame",
                 "(FJZLorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V");
-        handler.instructions.add(new VarInsnNode(ALOAD, 0));
         handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/client/Minecraft",
                 "getInstance", "()Lnet/minecraft/client/Minecraft;", false));
         handler.instructions.add(new VarInsnNode(ASTORE, 6));
@@ -136,8 +135,8 @@ class AlienEvoMixins1201Test implements Opcodes {
         assertEquals(1, AlienEvoMixins1201.apply(node));
         assertEquals("(Lnet/minecraft/client/DeltaTracker;Z"
                 + "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V", handler.desc);
-        assertEquals(4, ((VarInsnNode) handler.instructions.get(3)).var);
-        assertEquals(4, ((VarInsnNode) handler.instructions.get(4)).var);
+        assertEquals(4, ((VarInsnNode) handler.instructions.get(1)).var);
+        assertEquals(4, ((VarInsnNode) handler.instructions.get(2)).var);
         verify(node);
     }
 
