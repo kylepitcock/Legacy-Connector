@@ -1,13 +1,12 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -36,7 +35,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         if (!node.interfaces.contains(VERTEX)) node.interfaces.add(VERTEX);
         changes += 2;
 
-        Set<String> inheritedColorFields = new HashSet<>();
+        Set<String> inheritedColorFields = new LinkedHashSet<>();
         boolean needsDefaultInitializer = false;
 
         for (MethodNode method : node.methods) {
