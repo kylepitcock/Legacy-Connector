@@ -1091,6 +1091,18 @@
    "link": "https://modrinth.com/mod/techguns/version/2.2.0.1",
    "date": "2026-11-19",
    "open": true
+  },
+  {
+   "issue": 319,
+   "mod": "Scape and Run: Parasites 1.10.9",
+   "mc": "1.12.2",
+   "status": "crashes",
+   "details": "- Game crashes on start.",
+   "lc": "0.3.10",
+   "neoforge": "21.1.267",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites/files/8787918",
+   "date": "2026-11-20",
+   "open": true
   }
  ]
 }
