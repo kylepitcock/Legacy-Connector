@@ -112,7 +112,7 @@ class AlienEvoMixins1201Test implements Opcodes {
                 + "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V", handler.desc);
         assertNull(findVar(handler, FLOAD, 1));
         assertNotNull(findVar(handler, ALOAD, 1));
-        assertNotNull(findVar(handler, ILOAD, -1));
+        assertEquals(ICONST_0, handler.instructions.get(1).getOpcode());
         MethodInsnNode partialTick = call(handler, "net/minecraft/client/DeltaTracker", "getGameTimeDeltaPartialTick");
         assertNotNull(partialTick);
         assertEquals("(Z)F", partialTick.desc);
@@ -154,8 +154,8 @@ class AlienEvoMixins1201Test implements Opcodes {
                 + "Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;"
                 + "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V", handler.desc);
         assertNotNull(call(handler, "net/minecraft/client/DeltaTracker", "getGameTimeDeltaPartialTick"));
-        assertEquals(9, ((VarInsnNode) handler.instructions.get(handler.instructions.size() - 2)).var);
-        assertEquals(10, ((VarInsnNode) handler.instructions.get(handler.instructions.size() - 1)).var);
+        assertEquals(9, ((VarInsnNode) handler.instructions.get(4)).var);
+        assertEquals(10, ((VarInsnNode) handler.instructions.get(5)).var);
         verify(node);
     }
 
@@ -165,13 +165,16 @@ class AlienEvoMixins1201Test implements Opcodes {
         MethodNode handler = method(node, "alienevo$preventShieldDisable",
                 "(ZLorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V");
         handler.instructions.add(new VarInsnNode(ALOAD, 3));
+        handler.instructions.add(new VarInsnNode(ASTORE, 3));
         handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new InsnNode(POP));
         handler.instructions.add(new InsnNode(RETURN));
 
         assertEquals(1, AlienEvoMixins1201.apply(node));
         assertEquals("(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V", handler.desc);
         assertEquals(2, ((VarInsnNode) handler.instructions.getFirst()).var);
-        assertEquals(1, ((VarInsnNode) handler.instructions.get(1)).var);
+        assertEquals(2, ((VarInsnNode) handler.instructions.get(1)).var);
+        assertEquals(1, ((VarInsnNode) handler.instructions.get(2)).var);
         verify(node);
     }
 
