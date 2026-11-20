@@ -36,6 +36,10 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         if (!node.interfaces.contains(VERTEX)) node.interfaces.add(VERTEX);
         if (!node.interfaces.contains(LEGACY_END)) node.interfaces.add(LEGACY_END);
         changes += 3;
+        if (node.fields.stream().noneMatch(field -> field.name.equals("legacyPendingVertex") && field.desc.equals("Z"))) {
+            node.fields.add(new FieldNode(ACC_PRIVATE | ACC_SYNTHETIC, "legacyPendingVertex", "Z", null, null));
+            changes++;
+        }
 
         Set<String> inheritedColorFields = new LinkedHashSet<>();
         boolean needsDefaultInitializer = false;
@@ -94,10 +98,15 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
             node.methods.add(addVertexBridge(node.name));
             changes++;
         }
-        if (find(node, "endVertex", "()V") != null
-                && find(node, "legacyEndVertex", "()V") == null) {
-            node.methods.add(legacyEndVertexBridge(node.name));
-            changes++;
+        if (find(node, "endVertex", "()V") != null) {
+            if (find(node, "legacyFlushPending", "()V") == null) {
+                node.methods.add(legacyFlushPendingBridge(node.name));
+                changes++;
+            }
+            if (find(node, "legacyEndVertex", "()V") == null) {
+                node.methods.add(legacyEndVertexBridge(node.name));
+                changes++;
+            }
         }
 
         // The old concrete overrides now have the 1.21.1 method names. Keep
@@ -107,6 +116,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         changes += rename(node, "overlayCoords", "(II)L" + VERTEX + ";", "setUv1");
         changes += rename(node, "uv2", "(II)L" + VERTEX + ";", "setUv2");
         changes += rename(node, "normal", "(FFF)L" + VERTEX + ";", "setNormal");
+        if (flushAfterNormal(node)) changes++;
 
         return changes;
     }
@@ -194,16 +204,52 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
     private static MethodNode legacyEndVertexBridge(String owner) {
         MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC, "legacyEndVertex", "()V", null, null);
         method.instructions.add(new VarInsnNode(ALOAD, 0));
-        method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "endVertex", "()V", false));
+        method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "legacyFlushPending", "()V", false));
         method.instructions.add(new InsnNode(RETURN));
         method.maxLocals = 1;
         method.maxStack = 1;
         return method;
     }
 
+    private static MethodNode legacyFlushPendingBridge(String owner) {
+        MethodNode method = new MethodNode(ACC_PRIVATE | ACC_SYNTHETIC, "legacyFlushPending", "()V", null, null);
+        org.objectweb.asm.tree.LabelNode done = new org.objectweb.asm.tree.LabelNode();
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(GETFIELD, owner, "legacyPendingVertex", "Z"));
+        method.instructions.add(new org.objectweb.asm.tree.JumpInsnNode(IFEQ, done));
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "endVertex", "()V", false));
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new InsnNode(ICONST_0));
+        method.instructions.add(new FieldInsnNode(PUTFIELD, owner, "legacyPendingVertex", "Z"));
+        method.instructions.add(done);
+        method.instructions.add(new InsnNode(RETURN));
+        method.maxLocals = 1;
+        method.maxStack = 2;
+        return method;
+    }
+
+    private static boolean flushAfterNormal(ClassNode node) {
+        MethodNode normal = find(node, "setNormal", "(FFF)L" + VERTEX + ";");
+        if (normal == null) return false;
+        boolean changed = false;
+        for (AbstractInsnNode instruction : normal.instructions.toArray()) {
+            if (instruction.getOpcode() == ARETURN) {
+                InsnList flush = new InsnList();
+                flush.add(new VarInsnNode(ALOAD, 0));
+                flush.add(new MethodInsnNode(INVOKESPECIAL, node.name, "legacyFlushPending", "()V", false));
+                normal.instructions.insertBefore(instruction, flush);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
     private static MethodNode addVertexBridge(String owner) {
         MethodNode method = new MethodNode(ACC_PUBLIC, "addVertex",
                 "(FFF)L" + VERTEX + ";", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new MethodInsnNode(INVOKESPECIAL, owner, "legacyFlushPending", "()V", false));
         method.instructions.add(new VarInsnNode(ALOAD, 0));
         method.instructions.add(new VarInsnNode(FLOAD, 1));
         method.instructions.add(new InsnNode(F2D));
@@ -213,6 +259,10 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         method.instructions.add(new InsnNode(F2D));
         method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "vertex",
                 "(DDD)L" + VERTEX + ";", false));
+        method.instructions.add(new InsnNode(DUP));
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new InsnNode(ICONST_1));
+        method.instructions.add(new FieldInsnNode(PUTFIELD, owner, "legacyPendingVertex", "Z"));
         method.instructions.add(new InsnNode(ARETURN));
         method.maxLocals = 4;
         method.maxStack = 7;
