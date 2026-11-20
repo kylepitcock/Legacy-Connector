@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -149,8 +150,9 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         assertNotNull(findCall(full, AlienEvoVertexConsumer1201.HELPER, "vertex",
                 "(L" + VERTEX + ";FFFFFFFFFIIFFF)V"));
         assertNotNull(find(node, "addVertex", "(FFF)L" + VERTEX + ";"));
-        assertNotNull(findCall(find(node, "setUv2", "(II)L" + VERTEX + ";"),
-                node.name, "legacyFlushPending", "()V"));
+        assertNull(findCall(find(node, "setUv2", "(II)L" + VERTEX + ";"),
+                node.name, "legacyFlushPending", "()V"),
+                "overlay/light setters occur before the final normal and must not flush early");
         assertNotNull(findCall(find(node, "setNormal", "(FFF)L" + VERTEX + ";"),
                 node.name, "legacyFlushPending", "()V"));
         for (String method : List.of("setColor", "setUv", "setUv1", "setUv2", "setNormal")) {
