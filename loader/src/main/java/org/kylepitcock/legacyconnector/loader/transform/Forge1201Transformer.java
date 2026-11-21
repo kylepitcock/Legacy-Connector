@@ -358,6 +358,7 @@ public final class Forge1201Transformer {
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoBufferingGlowConsumerChanges = 0;
         int alienEvoNoopRenderBufferChanges = 0;
+        int alienEvoColoredProjectileRendererChanges = 0;
         int alienEvoLateEffectBuffersChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
@@ -477,6 +478,8 @@ public final class Forge1201Transformer {
             alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
             int alienEvoNoopRenderBufferChange = AlienEvoNoopRenderBuffer1201.apply(node);
             alienEvoNoopRenderBufferChanges += alienEvoNoopRenderBufferChange;
+            int alienEvoColoredProjectileRendererChange = AlienEvoColoredProjectileRenderer1201.apply(node);
+            alienEvoColoredProjectileRendererChanges += alienEvoColoredProjectileRendererChange;
             int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
             alienEvoLateEffectBuffersChanges += alienEvoLateEffectBuffersChange;
             viaCalls += alienEvoLateEffectBuffersChange;
@@ -550,6 +553,10 @@ public final class Forge1201Transformer {
         if (alienEvoGeckoRenderLayerModelChanges > 0) {
             result.notes.add("AlienEvo AlienGeckoRenderLayerModel.renderToBuffer adapted to GeckoLib's handleAnimations partial-tick API: "
                     + alienEvoGeckoRenderLayerModelChanges + " call site(s)");
+        }
+        if (alienEvoColoredProjectileRendererChanges > 0) {
+            result.notes.add("AlienEvo ColoredProjectileRenderer EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
+                    + alienEvoColoredProjectileRendererChanges + " field read(s)");
         }
         if (alienEvoNoopRenderBufferChanges > 0) {
             result.notes.add("AlienEvo NoopRenderBuffer$Noop now implements VertexConsumer.addVertex(float,float,float) while preserving no-op behavior: "
