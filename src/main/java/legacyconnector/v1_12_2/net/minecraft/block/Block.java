@@ -858,7 +858,10 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     public void addCollisionBoxToList(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB entityBox,
             java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> collidingBoxes, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, boolean isActualState) {
         if (world == null) return;
-        var level = world.mcc$level();
+        // through the world's block accessor: while a mod generator runs this is the generation region, and a read on the real level
+        // would wait for the chunk being generated (The Betweenlands' spirit tree face check hung the server that way)
+        var level = world.mcc$access();
+        if (level == null) return;
         var mp = pos.mcc$modern();
         for (var box : level.getBlockState(mp).getCollisionShape(level, mp).toAabbs()) {
             addCollisionBoxToList(pos, entityBox, collidingBoxes, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(box));
