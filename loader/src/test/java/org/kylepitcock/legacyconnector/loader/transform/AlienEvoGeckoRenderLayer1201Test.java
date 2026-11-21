@@ -31,10 +31,10 @@ class AlienEvoGeckoRenderLayer1201Test implements Opcodes {
                         + "L" + PalladiumGeckoRenderLayer1201.GEO_ANIMATABLE + ";J"
                         + "L" + AlienEvoGeckoRenderLayer1201.ANIMATION_STATE + ";)V",
                 null, null);
-        method.instructions.add(new VarInsnNode(ALOAD, 0));
         method.instructions.add(new VarInsnNode(ALOAD, 1));
-        method.instructions.add(new VarInsnNode(LLOAD, 2));
-        method.instructions.add(new VarInsnNode(ALOAD, 4));
+        method.instructions.add(new VarInsnNode(ALOAD, 2));
+        method.instructions.add(new VarInsnNode(LLOAD, 3));
+        method.instructions.add(new VarInsnNode(ALOAD, 5));
         method.instructions.add(new MethodInsnNode(
                 INVOKEVIRTUAL,
                 AlienEvoGeckoRenderLayer1201.GEO_MODEL,
@@ -43,7 +43,7 @@ class AlienEvoGeckoRenderLayer1201Test implements Opcodes {
                 false));
         method.instructions.add(new InsnNode(RETURN));
         method.maxStack = 5;
-        method.maxLocals = 5;
+        method.maxLocals = 6;
         return method;
     }
 
