@@ -37,12 +37,15 @@ class CompatBufferBuilderTest {
         builder.vertex(1.0, 1.0, 0.0);
         builder.vertex(0.0, 1.0, 0.0);
 
-        CompatBufferBuilder.drawWithRenderType(renderType, builder, VertexSorting.DISTANCE_TO_ORIGIN);
+        try {
+            CompatBufferBuilder.drawWithRenderType(renderType, builder, VertexSorting.DISTANCE_TO_ORIGIN);
 
-        assertNotNull(renderType.drawn, "RenderType.draw must receive the built mesh");
-        assertNotNull(renderType.drawn.indexBuffer(), "translucent quad indices must be sorted before draw");
-        renderType.drawn.close();
-        builder.discard();
+            assertNotNull(renderType.drawn, "RenderType.draw must receive the built mesh");
+            assertNotNull(renderType.drawn.indexBuffer(), "translucent quad indices must be sorted before draw");
+        } finally {
+            if (renderType.drawn != null) renderType.drawn.close();
+            builder.discard();
+        }
     }
 
     @Test
