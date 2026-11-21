@@ -358,6 +358,7 @@ public final class Forge1201Transformer {
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoBufferingGlowConsumerChanges = 0;
         int alienEvoNoopRenderBufferChanges = 0;
+        int alienEvoBoneAnchorsChanges = 0;
         int alienEvoColoredProjectileRendererChanges = 0;
         int alienEvoLateEffectBuffersChanges = 0;
         int alienEvoMolangCompatChanges = 0;
@@ -478,6 +479,8 @@ public final class Forge1201Transformer {
             alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
             int alienEvoNoopRenderBufferChange = AlienEvoNoopRenderBuffer1201.apply(node);
             alienEvoNoopRenderBufferChanges += alienEvoNoopRenderBufferChange;
+            int alienEvoBoneAnchorsChange = AlienEvoBoneAnchors1201.apply(node);
+            alienEvoBoneAnchorsChanges += alienEvoBoneAnchorsChange;
             int alienEvoColoredProjectileRendererChange = AlienEvoColoredProjectileRenderer1201.apply(node);
             alienEvoColoredProjectileRendererChanges += alienEvoColoredProjectileRendererChange;
             int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
@@ -513,7 +516,8 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoBufferingGlowConsumerChange + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
+                    + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange + alienEvoBoneAnchorsChange
+                    + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
         if (mapper.authlibPropertyMethodReferences > 0) {
             result.notes.add("Authlib 1.20.1 Property JavaBean getters migrated to the 1.21.1 record accessors: "
@@ -559,8 +563,12 @@ public final class Forge1201Transformer {
                     + alienEvoColoredProjectileRendererChanges + " field read(s)");
         }
         if (alienEvoNoopRenderBufferChanges > 0) {
-            result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float) and setColor(int,int,int,int) methods: "
+            result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float), setColor(int,int,int,int), and setUv(float,float) methods: "
                     + alienEvoNoopRenderBufferChanges + " method change(s)");
+        }
+        if (alienEvoBoneAnchorsChanges > 0) {
+            result.notes.add("AlienEvo BoneAnchors inverse-view rotation migrated to the 1.21.1 active camera rotation API: "
+                    + alienEvoBoneAnchorsChanges + " call site(s)");
         }
         if (alienEvoLateEffectBuffersChanges > 0) {
             result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
