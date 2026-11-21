@@ -1139,6 +1139,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/magic-evolved-2/files/9398891",
    "date": "2026-11-21",
    "open": true
+  },
+  {
+   "issue": 323,
+   "mod": "Railcraft 6.17.0.0",
+   "mc": "1.4.7 (planned)",
+   "status": "partial",
+   "details": "<img width=\"1920\" height=\"1009\" alt=\"2026-11-21_16 38 05\" src=\"https://github.com/user-attachments/assets/cab09d4a-1762-48f2-9f33-b42592049f8d\" /> <img width=\"1920\" height=\"1009\" alt=\"2026-11-21_16 38 25\" src=\"https://github.com/user-attachments/assets/4cfeab17-779b-4e4f-9e2b-404f411c744c\" /> Railcraft breaks the cobblestone textures for some reason Also Railcraft's own Fences and walls have brok…",
+   "lc": "0.5.0-nightly.124.4a2aa53",
+   "neoforge": "21.1.265",
+   "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-21",
+   "open": true
   }
  ]
 }
