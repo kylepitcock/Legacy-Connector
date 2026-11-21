@@ -358,6 +358,7 @@ public final class Forge1201Transformer {
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoBufferingGlowConsumerChanges = 0;
         int alienEvoNoopRenderBufferChanges = 0;
+        int alienEvoLateEffectBuffersChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
@@ -476,6 +477,9 @@ public final class Forge1201Transformer {
             alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
             int alienEvoNoopRenderBufferChange = AlienEvoNoopRenderBuffer1201.apply(node);
             alienEvoNoopRenderBufferChanges += alienEvoNoopRenderBufferChange;
+            int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
+            alienEvoLateEffectBuffersChanges += alienEvoLateEffectBuffersChange;
+            viaCalls += alienEvoLateEffectBuffersChange;
             int alienEvoMolangChange = AlienEvoMolang1201.apply(node);
             alienEvoMolangCompatChanges += alienEvoMolangChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
@@ -550,6 +554,10 @@ public final class Forge1201Transformer {
         if (alienEvoNoopRenderBufferChanges > 0) {
             result.notes.add("AlienEvo NoopRenderBuffer$Noop now implements VertexConsumer.addVertex(float,float,float) while preserving no-op behavior: "
                     + alienEvoNoopRenderBufferChanges + " method addition(s)");
+        }
+        if (alienEvoLateEffectBuffersChanges > 0) {
+            result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
+                    + alienEvoLateEffectBuffersChanges + " bytecode rewrite(s)");
         }
         if (alienEvoGeckoMixinChanges > 0) {
             result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "
