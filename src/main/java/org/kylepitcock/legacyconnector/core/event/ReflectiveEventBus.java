@@ -73,6 +73,7 @@ public final class ReflectiveEventBus {
     private final String name;
     private final Adapter adapter;
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final java.util.Set<Method> staticHandlers = new java.util.HashSet<>();
     private final Map<Object, List<Listener>> byOwner = new IdentityHashMap<>();
     private final Map<Class<?>, List<Listener>> dispatchCache = new ConcurrentHashMap<>();
     /** Event classes that have at least one listener (including via superclass); lets bridges skip work. */
@@ -103,6 +104,9 @@ public final class ReflectiveEventBus {
                     continue;
                 }
                 if (added.stream().anyMatch(l -> l.name.equals(m.getName()) && l.eventType == m.getParameterTypes()[0])) continue; // overridden
+                // a static handler inherited by a second subscriber class runs once (Techguns: ServerProxy extends CommonProxy, both
+                // @EventBusSubscriber; its registerSounds nulls its list after the first run and threw on the second)
+                if (statics && !staticHandlers.add(m)) continue;
                 try {
                     m.setAccessible(true);
                     MethodHandle h = MethodHandles.lookup().unreflect(m);
