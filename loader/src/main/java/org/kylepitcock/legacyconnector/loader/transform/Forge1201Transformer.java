@@ -355,6 +355,7 @@ public final class Forge1201Transformer {
         int alienEvoStepHeightChanges = 0;
         int alienEvoWorldGenChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
+        int alienEvoBufferingGlowConsumerChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
@@ -466,6 +467,8 @@ public final class Forge1201Transformer {
             alienEvoStepHeightChanges += alienEvoStepHeightChange;
             int alienEvoVertexConsumerChange = AlienEvoVertexConsumer1201.apply(node);
             alienEvoVertexConsumerChanges += alienEvoVertexConsumerChange;
+            int alienEvoBufferingGlowConsumerChange = AlienEvoBufferingGlowConsumer1201.apply(node);
+            alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
             int alienEvoMolangChange = AlienEvoMolang1201.apply(node);
             alienEvoMolangCompatChanges += alienEvoMolangChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
@@ -496,7 +499,7 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
+                    + alienEvoBufferingGlowConsumerChange + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
         if (mapper.authlibPropertyMethodReferences > 0) {
             result.notes.add("Authlib 1.20.1 Property JavaBean getters migrated to the 1.21.1 record accessors: "
@@ -512,6 +515,10 @@ public final class Forge1201Transformer {
         if (alienEvoVertexConsumerChanges > 0) {
             result.notes.add("AlienEvo flat loot-effect renderer migrated from the removed DefaultedVertexConsumer superclass to 1.21.1 VertexConsumer: "
                     + alienEvoVertexConsumerChanges + " bytecode change(s)");
+        }
+        if (alienEvoBufferingGlowConsumerChanges > 0) {
+            result.notes.add("AlienEvo BufferingGlowConsumer now bridges VertexConsumer.addVertex and flushes recorded glow vertices after setNormal: "
+                    + alienEvoBufferingGlowConsumerChanges + " bytecode change(s)");
         }
         if (alienEvoStepHeightChanges > 0) {
             result.notes.add("AlienEvo surf step-height access migrated to the 1.21.1 STEP_HEIGHT attribute; its step-height scaling mixin now targets LivingEntity.maxUpStep(): "
