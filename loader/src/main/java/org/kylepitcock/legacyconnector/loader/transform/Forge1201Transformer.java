@@ -360,6 +360,7 @@ public final class Forge1201Transformer {
         int alienEvoNoopRenderBufferChanges = 0;
         int alienEvoBoneAnchorsChanges = 0;
         int alienEvoColoredProjectileRendererChanges = 0;
+        int alienEvoSuperheroFlightControllerChanges = 0;
         int alienEvoLateEffectBuffersChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
@@ -483,6 +484,8 @@ public final class Forge1201Transformer {
             alienEvoBoneAnchorsChanges += alienEvoBoneAnchorsChange;
             int alienEvoColoredProjectileRendererChange = AlienEvoColoredProjectileRenderer1201.apply(node);
             alienEvoColoredProjectileRendererChanges += alienEvoColoredProjectileRendererChange;
+            int alienEvoSuperheroFlightControllerChange = AlienEvoSuperheroFlightController1201.apply(node);
+            alienEvoSuperheroFlightControllerChanges += alienEvoSuperheroFlightControllerChange;
             int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
             alienEvoLateEffectBuffersChanges += alienEvoLateEffectBuffersChange;
             viaCalls += alienEvoLateEffectBuffersChange;
@@ -517,6 +520,7 @@ public final class Forge1201Transformer {
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
                     + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange + alienEvoBoneAnchorsChange
+                    + alienEvoSuperheroFlightControllerChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
         if (mapper.authlibPropertyMethodReferences > 0) {
@@ -562,8 +566,12 @@ public final class Forge1201Transformer {
             result.notes.add("AlienEvo ColoredProjectileRenderer EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
                     + alienEvoColoredProjectileRendererChanges + " field read(s)");
         }
+        if (alienEvoSuperheroFlightControllerChanges > 0) {
+            result.notes.add("AlienEvo SuperheroFlightController EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
+                    + alienEvoSuperheroFlightControllerChanges + " field read(s)");
+        }
         if (alienEvoNoopRenderBufferChanges > 0) {
-            result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float), setColor(int,int,int,int), and setUv(float,float) methods: "
+            result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float), setColor(int,int,int,int), setUv(float,float), setUv1(int,int), setUv2(int,int), and setNormal(float,float,float) methods: "
                     + alienEvoNoopRenderBufferChanges + " method change(s)");
         }
         if (alienEvoBoneAnchorsChanges > 0) {
