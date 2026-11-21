@@ -61,16 +61,30 @@ public final class CompatBufferBuilder implements VertexConsumer {
         if (renderType == null || builder == null || sorting == null) {
             throw new IllegalArgumentException("RenderType, builder and vertex sorting must be non-null");
         }
-        if (renderType.sortOnUpload() && builder.own == null) {
+
+        drawWithRenderType(builder, renderType.sortOnUpload(), sorting, renderType::draw);
+    }
+
+    /**
+     * Shared mesh-building path used by the RenderType bridge and CPU-only tests.
+     * Keeping the draw operation as a callback avoids initializing Minecraft's
+     * client RenderType registry from a standalone JUnit test.
+     */
+    static void drawWithRenderType(CompatBufferBuilder builder, boolean sortOnUpload,
+            VertexSorting sorting, java.util.function.Consumer<MeshData> draw) {
+        if (builder == null || sorting == null || draw == null) {
+            throw new IllegalArgumentException("Builder, vertex sorting and draw callback must be non-null");
+        }
+        if (sortOnUpload && builder.own == null) {
             throw new IllegalStateException("Cannot sort a RenderType mesh without its original ByteBufferBuilder");
         }
 
         MeshData mesh = builder.end();
         if (mesh == null) return;
-        if (renderType.sortOnUpload()) mesh.sortQuads(builder.own, sorting);
+        if (sortOnUpload) mesh.sortQuads(builder.own, sorting);
         // RenderType.draw performs the 1.21.1 setup/draw/clear sequence and
         // transfers MeshData ownership to the renderer, which closes it.
-        renderType.draw(mesh);
+        draw.accept(mesh);
     }
 
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
