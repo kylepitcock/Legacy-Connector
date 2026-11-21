@@ -49,6 +49,28 @@ class CompatBufferBuilderTest {
     }
 
     @Test
+    void nonSortingRenderTypeDrawsWithoutCreatingSortedIndices() {
+        CompatBufferBuilder builder = new CompatBufferBuilder(256);
+        CapturingRenderType renderType = new CapturingRenderType(false);
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+        builder.vertex(0.0, 0.0, 0.0);
+        builder.vertex(1.0, 0.0, 0.0);
+        builder.vertex(1.0, 1.0, 0.0);
+        builder.vertex(0.0, 1.0, 0.0);
+
+        try {
+            CompatBufferBuilder.drawWithRenderType(renderType, builder, VertexSorting.DISTANCE_TO_ORIGIN);
+
+            assertNotNull(renderType.drawn, "RenderType.draw must receive the built mesh");
+            org.junit.jupiter.api.Assertions.assertNull(renderType.drawn.indexBuffer(),
+                    "non-translucent layers should not allocate sorted quad indices");
+        } finally {
+            if (renderType.drawn != null) renderType.drawn.close();
+            builder.discard();
+        }
+    }
+
+    @Test
     void legacyBuildingAliasTracksTheActiveBuffer() {
         CompatBufferBuilder builder = new CompatBufferBuilder(256);
 
