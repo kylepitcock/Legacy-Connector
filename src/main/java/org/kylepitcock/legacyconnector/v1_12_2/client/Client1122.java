@@ -92,6 +92,8 @@ public final class Client1122 {
         // layers mods add to the legacy player renderers run on the modern ones
         modBus.addListener((EntityRenderersEvent.AddLayers e) -> {
             if (present()) LegacyPlayerLayer1122.addTo(e);
+            // and those added to vanilla mobs' renderers on the modern mob renderers
+            if (present()) LegacyMobLayer1122.addTo(e);
         });
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block e) -> {
             if (present()) Colors1122.onBlockColors(e);

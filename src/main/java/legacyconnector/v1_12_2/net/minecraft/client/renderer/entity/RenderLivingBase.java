@@ -51,6 +51,20 @@ public abstract class RenderLivingBase<T extends EntityLivingBase> extends Rende
         return mainModel;
     }
 
+    /** How many layers the renderer had when it was made (vanilla's own); -1 when never marked. */
+    private int mcc$builtInLayers = -1;
+
+    /** Marks the layers present now as the renderer's own (called when the layer makes a vanilla renderer). */
+    public void mcc$markBuiltIn() {
+        mcc$builtInLayers = layerRenderers.size();
+    }
+
+    /** The layers mods added to a vanilla renderer after it was made (drawn over the modern entity, see LegacyMobLayer1122). */
+    public List<LayerRenderer<T>> mcc$addedLayers() {
+        int from = Math.max(mcc$builtInLayers, 0);
+        return layerRenderers.size() <= from ? List.of() : layerRenderers.subList(from, layerRenderers.size());
+    }
+
     /** The shortest turn from one angle to the next, interpolated. */
     protected float interpolateRotation(float prevYawOffset, float yawOffset, float partialTicks) {
         float f = yawOffset - prevYawOffset;

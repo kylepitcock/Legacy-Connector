@@ -161,7 +161,11 @@ public abstract class EntityTameable extends EntityAnimal implements IEntityOwna
     }
 
     public boolean isOwner(EntityLivingBase entity) {
-        return entity != null && entity == getOwner();
+        if (entity == null) return false;
+        if (entity == getOwner()) return true;
+        // the owner by id (a fake player is in no player list, so getOwner cannot find it)
+        UUID id = getOwnerId();
+        return id != null && id.equals(entity.getUniqueID());
     }
 
     public legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAISit getAISit() {

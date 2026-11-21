@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 256;
+    public static final int TRANSFORMER_VERSION = 257;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -125,6 +125,8 @@ public final class LegacyJarTransformer {
             // what coremods added to Minecraft's classes (interfaces and their accessors) becomes mixins on the shim classes, translated with the jar
             CoremodAdditionMixins.addTo(jar, c.classes, shim);
         }
+        // 1.12.2 mixins on vanilla classes: their @Shadow fields become accesses of the vanilla class, translated like the mod's own code
+        if (jar.version == LegacyVersion.V1_12_2) c.notes.addAll(LegacyMixinConfigs.retargetShadowFields(c.classes));
         // Beta 1.7.3 jars are obfuscated: named first, then relocated like the other families
         if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes,shim));
         // Minecraft 1.2.5 jars (opt-in) are renamed to 1.4.7's obfuscation first and are 1.4.7 jars from here on

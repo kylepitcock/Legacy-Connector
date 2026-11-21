@@ -50,6 +50,8 @@ public final class EntityBridge1122 {
             var saved = modern.getPersistentData().getCompound(CAPS_KEY);
             if (!saved.isEmpty()) view.mcc$readCaps(new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(saved));
         }
+        // a vanilla class that mods' mixins changed: the view gets back what it saved
+        org.kylepitcock.legacyconnector.v1_12_2.entity.MixedViews1122.restore(view, modern);
         return view;
     }
 

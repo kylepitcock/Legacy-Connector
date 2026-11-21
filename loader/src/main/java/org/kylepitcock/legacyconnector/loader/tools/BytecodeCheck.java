@@ -168,8 +168,16 @@ public final class BytecodeCheck {
                 if (hierarchy.isSynth(i) && known != null && (known.access & Opcodes.ACC_INTERFACE) == 0) check.synthInterfaces.add(i);
             }
         }
-        for (ClassNode n : nodes) check.check(n);
+        // a mixin class is never loaded itself: its code is merged into its target, where "this" is the target (a mixin on a vanilla class reads
+        // the vanilla fields through this), so it is not verified on its own
+        for (ClassNode n : nodes) if (!isMixin(n)) check.check(n);
         return check;
+    }
+
+    private static boolean isMixin(ClassNode n) {
+        if (n.invisibleAnnotations == null) return false;
+        for (var a : n.invisibleAnnotations) if ("Lorg/spongepowered/asm/mixin/Mixin;".equals(a.desc)) return true;
+        return false;
     }
 
     /** {@code verify: N classes, M methods, K findings in J groups} (plus the unknown/skipped counts when there are any). */

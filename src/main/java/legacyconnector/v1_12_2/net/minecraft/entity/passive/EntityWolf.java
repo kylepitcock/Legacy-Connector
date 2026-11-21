@@ -163,6 +163,25 @@ public class EntityWolf extends EntityTameable {
         }
     }
 
+    /**
+     * Declared here as in 1.12 (mods' mixins on EntityWolf inject into it): a view of a vanilla wolf whose class carries mods' mixins
+     * is ticked by {@code MixedViews1122}, which calls this for the injected code; the modern wolf ticks itself.
+     */
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+    }
+
+    /**
+     * Declared here as in 1.12 (mods' mixins on EntityWolf inject into it). When the modern wolf's interaction is forwarded to a view
+     * ({@code MixedViews1122}), only the mods' injected code runs: the modern wolf does its own taming, feeding and sitting afterwards.
+     */
+    @Override
+    protected boolean processInteract(EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        if (org.kylepitcock.legacyconnector.v1_12_2.entity.MixedViews1122.forwarding()) return false;
+        return super.processInteract(player, hand);
+    }
+
     @Override
     public boolean attackEntityAsMob(legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
         if (target == null) return false;

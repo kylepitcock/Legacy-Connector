@@ -409,6 +409,12 @@ public abstract class EntityLiving extends EntityLivingBase {
         return true;
     }
 
+    /** Declared here as in 1.12 (mods' mixins on EntityLiving shadow it); the slots are the modern mob's. */
+    @Override
+    public void setItemStackToSlot(EntityEquipmentSlot slot, ItemStack stack) {
+        super.setItemStackToSlot(slot, stack);
+    }
+
     /**
      * A picked-up item lying on the ground replaces the held or worn item when it is better (1.12 protected hook of the pick-up loop):
      * the modern mob decides which slot and whether the item is an upgrade, the replaced item is dropped, the pick-up is animated.

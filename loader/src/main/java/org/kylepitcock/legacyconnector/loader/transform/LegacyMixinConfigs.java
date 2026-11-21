@@ -52,16 +52,43 @@ final class LegacyMixinConfigs {
                 if (!cfg.has("package") || !cfg.get("package").isJsonPrimitive()) continue;
                 String pkg = cfg.get("package").getAsString().replace('.', '/') + "/";
                 int total = 0, kept = 0;
+                List<String> dropped = new ArrayList<>();
+                // which mixin classes of the jar apply: a mixin whose superclass is a mixin that does not apply cannot apply either (Mixin
+                // fails the whole target class, and a failed super call is a fatal transformer error)
+                java.util.Set<String> mixinClasses = new java.util.HashSet<>(), ok = new java.util.HashSet<>();
+                for (String section : new String[] {"mixins", "client", "server"}) {
+                    if (!cfg.has(section) || !cfg.get(section).isJsonArray()) continue;
+                    for (JsonElement m : cfg.getAsJsonArray(section)) {
+                        String cls = pkg + m.getAsString().replace('.', '/');
+                        mixinClasses.add(cls);
+                        ClassNode node = nodes.get(cls);
+                        if (node != null && targetsLegacy(node, nodes, hierarchy)) ok.add(cls);
+                    }
+                }
+                for (boolean changed = true; changed; ) {
+                    changed = false;
+                    for (var it = ok.iterator(); it.hasNext(); ) {
+                        String cls = it.next();
+                        for (String sup = nodes.get(cls).superName; sup != null && mixinClasses.contains(sup); sup = nodes.containsKey(sup) ? nodes.get(sup).superName : null) {
+                            if (!ok.contains(sup)) {
+                                it.remove();
+                                changed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
                 for (String section : new String[] {"mixins", "client", "server"}) {
                     if (!cfg.has(section) || !cfg.get(section).isJsonArray()) continue;
                     JsonArray in = cfg.getAsJsonArray(section);
                     JsonArray out = new JsonArray();
                     for (JsonElement m : in) {
                         total++;
-                        ClassNode node = nodes.get(pkg + m.getAsString().replace('.', '/'));
-                        if (node != null && targetsLegacy(node, nodes, hierarchy)) {
+                        if (ok.contains(pkg + m.getAsString().replace('.', '/'))) {
                             out.add(m);
                             kept++;
+                        } else {
+                            dropped.add(m.getAsString());
                         }
                     }
                     cfg.add(section, out);
@@ -82,7 +109,8 @@ final class LegacyMixinConfigs {
                 other.remove(name);
                 other.put(out, GSON.toJson(cfg).getBytes(StandardCharsets.UTF_8));
                 jar.mixinConfigResources.add(out);
-                notes.add("Mixin config " + name + ": " + kept + " of " + total + " mixin(s) target translated mod classes and are applied; the rest target Minecraft/Forge");
+                notes.add("Mixin config " + name + ": " + kept + " of " + total + " mixin(s) target translated mod classes or legacy API classes that have their members and are applied"
+                        + (dropped.isEmpty() ? "" : "; not applied: " + String.join(", ", dropped.subList(0, Math.min(8, dropped.size()))) + (dropped.size() > 8 ? ", ..." : "")));
             } catch (RuntimeException ex) {
                 notes.add("Mixin config " + name + " could not be read: " + ex);
             }
@@ -125,6 +153,105 @@ final class LegacyMixinConfigs {
         return false;
     }
 
+    /**
+     * Before translation (legacy names): a mixin on a vanilla class reads and writes that class's fields through {@code @Shadow} copies
+     * ({@code this.isDead}, {@code this.motionX}). Most of those are virtual on the shim class (a view of a vanilla wolf answers the
+     * modern wolf's position, not a field), so the copies would read stale values. Every access of a shadowed field in the jar's mixin
+     * classes is made an access of the target class instead, which the translation turns into the shim's accessor like any mod code,
+     * and the {@code @Shadow} field declarations are dropped (no shadow is left for Mixin to look up). Mixins on the jar's own classes are
+     * left alone. Returns the notes for the report.
+     */
+    static List<String> retargetShadowFields(Map<String, byte[]> classes) {
+        Map<String, ClassNode> mixins = new java.util.HashMap<>();
+        Map<String, String> target = new java.util.HashMap<>();
+        for (var e : classes.entrySet()) {
+            byte[] b = e.getValue();
+            if (!contains(b, MIXIN_DESC) || !contains(b, SHADOW_DESC)) {
+                if (contains(b, MIXIN_DESC)) {
+                    // a mixin without shadows of its own can still inherit some from a mixin superclass: keep it for the chain walk
+                    ClassNode n = read(b);
+                    String t = n == null ? null : vanillaTarget(n, classes);
+                    if (t != null) {
+                        mixins.put(n.name, n);
+                        target.put(n.name, t);
+                    }
+                }
+                continue;
+            }
+            ClassNode n = read(b);
+            if (n == null) continue;
+            String t = vanillaTarget(n, classes);
+            if (t == null) continue;
+            mixins.put(n.name, n);
+            target.put(n.name, t);
+        }
+        if (mixins.isEmpty()) return List.of();
+        // the shadow fields each mixin sees: its own and its mixin superclasses'
+        Map<String, java.util.Set<String>> shadows = new java.util.HashMap<>();
+        for (ClassNode n : mixins.values()) {
+            java.util.Set<String> names = new java.util.HashSet<>();
+            for (ClassNode c = n; c != null; c = mixins.get(c.superName)) {
+                for (var f : c.fields) if (hasAnnotation(anns(f.visibleAnnotations, f.invisibleAnnotations), SHADOW_DESC)) names.add(f.name);
+            }
+            shadows.put(n.name, names);
+        }
+        int moved = 0;
+        java.util.Set<String> changed = new java.util.HashSet<>();
+        for (ClassNode n : mixins.values()) {
+            for (var m : n.methods) {
+                for (var insn : m.instructions) {
+                    if (!(insn instanceof org.objectweb.asm.tree.FieldInsnNode f)) continue;
+                    var seen = shadows.get(f.owner);
+                    if (seen == null || !seen.contains(f.name)) continue;
+                    f.owner = target.get(f.owner);
+                    moved++;
+                    changed.add(n.name);
+                }
+            }
+        }
+        for (ClassNode n : mixins.values()) {
+            if (n.fields.removeIf(f -> hasAnnotation(anns(f.visibleAnnotations, f.invisibleAnnotations), SHADOW_DESC))) changed.add(n.name);
+        }
+        for (String name : changed) {
+            org.objectweb.asm.ClassWriter w = new org.objectweb.asm.ClassWriter(0);
+            mixins.get(name).accept(w);
+            classes.put(name, w.toByteArray());
+        }
+        return moved == 0 ? List.of() : List.of("Mixins on vanilla classes: " + moved + " access(es) of @Shadow fields in " + changed.size()
+                + " mixin class(es) go to the vanilla class's fields (translated like the mod's own code)");
+    }
+
+    private static ClassNode read(byte[] b) {
+        try {
+            ClassNode n = new ClassNode();
+            new org.objectweb.asm.ClassReader(b).accept(n, 0);
+            return n;
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** The single vanilla Minecraft/Forge class a mixin targets (not one of the jar's own classes), or null. */
+    private static String vanillaTarget(ClassNode mixin, Map<String, byte[]> classes) {
+        if (mixin.invisibleAnnotations == null) return null;
+        String found = null;
+        for (AnnotationNode a : mixin.invisibleAnnotations) {
+            if (!MIXIN_DESC.equals(a.desc) || a.values == null) continue;
+            for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                String key = (String) a.values.get(i);
+                if (!(a.values.get(i + 1) instanceof List<?> list)) continue;
+                for (Object o : list) {
+                    String t = o instanceof Type type ? type.getInternalName() : key.equals("targets") ? String.valueOf(o).replace('.', '/') : null;
+                    if (t == null) continue;
+                    if (classes.containsKey(t) || !(t.startsWith("net/minecraft/") || t.startsWith("net/minecraftforge/"))) return null;
+                    if (found != null && !found.equals(t)) return null; // several targets: a shadow access has no single owner
+                    found = t;
+                }
+            }
+        }
+        return found;
+    }
+
     private static final String SHADOW_DESC = "Lorg/spongepowered/asm/mixin/Shadow;";
     private static final String ACCESSOR_DESC = "Lorg/spongepowered/asm/mixin/gen/Accessor;";
     private static final String INVOKER_DESC = "Lorg/spongepowered/asm/mixin/gen/Invoker;";
@@ -132,13 +259,13 @@ final class LegacyMixinConfigs {
     /** True when every @Shadow, @Accessor and @Invoker of the mixin names a member the shim class (or a shim supertype) has. */
     static boolean shadowsExist(ClassNode mixin, String target, Hierarchy hierarchy) {
         for (var f : mixin.fields) {
-            if (hasAnnotation(f.invisibleAnnotations, SHADOW_DESC) && !hasField(target, f.name, hierarchy)) return false;
+            if (hasAnnotation(anns(f.visibleAnnotations, f.invisibleAnnotations), SHADOW_DESC) && !hasField(target, f.name, hierarchy)) return false;
         }
         for (var m : mixin.methods) {
-            if (hasAnnotation(m.invisibleAnnotations, SHADOW_DESC)) {
+            if (hasAnnotation(anns(m.visibleAnnotations, m.invisibleAnnotations), SHADOW_DESC)) {
                 if (!hasMethod(target, m.name, hierarchy)) return false;
-            } else if (hasAnnotation(m.invisibleAnnotations, ACCESSOR_DESC) || hasAnnotation(m.invisibleAnnotations, INVOKER_DESC)) {
-                String name = annotationValue(m.invisibleAnnotations);
+            } else if (hasAnnotation(anns(m.visibleAnnotations, m.invisibleAnnotations), ACCESSOR_DESC) || hasAnnotation(anns(m.visibleAnnotations, m.invisibleAnnotations), INVOKER_DESC)) {
+                String name = annotationValue(anns(m.visibleAnnotations, m.invisibleAnnotations));
                 if (name == null) {
                     String n = m.name;
                     for (String prefix : new String[] {"get", "set", "is", "call", "invoke"}) {
@@ -149,7 +276,7 @@ final class LegacyMixinConfigs {
                     }
                     if (name == null) return false;
                 }
-                boolean invoker = hasAnnotation(m.invisibleAnnotations, INVOKER_DESC);
+                boolean invoker = hasAnnotation(anns(m.visibleAnnotations, m.invisibleAnnotations), INVOKER_DESC);
                 if (invoker ? !hasMethod(target, name, hierarchy) : !hasField(target, name, hierarchy)) return false;
             }
         }
@@ -167,8 +294,7 @@ final class LegacyMixinConfigs {
         var info = hierarchy.find(target);
         if (info == null) return false;
         for (var m : mixin.methods) {
-            if (m.invisibleAnnotations == null) continue;
-            for (AnnotationNode a : m.invisibleAnnotations) {
+            for (AnnotationNode a : anns(m.visibleAnnotations, m.invisibleAnnotations)) {
                 if (OVERWRITE_DESC.equals(a.desc)) {
                     if (!declares(info, m.name)) return false;
                     continue;
@@ -204,6 +330,15 @@ final class LegacyMixinConfigs {
         int paren = s.indexOf('(');
         if (paren >= 0) s = s.substring(0, paren);
         return s;
+    }
+
+    /** Both annotation lists of a member (Mixin's @Shadow, @Inject, @Accessor are runtime-visible, @Mixin is not). */
+    private static List<AnnotationNode> anns(List<AnnotationNode> visible, List<AnnotationNode> invisible) {
+        if (visible == null) return invisible == null ? List.of() : invisible;
+        if (invisible == null) return visible;
+        List<AnnotationNode> all = new ArrayList<>(visible);
+        all.addAll(invisible);
+        return all;
     }
 
     private static boolean hasAnnotation(List<AnnotationNode> list, String desc) {

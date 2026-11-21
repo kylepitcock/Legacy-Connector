@@ -1381,6 +1381,10 @@ public abstract class EntityLivingBase extends Entity {
     protected void onNewPotionEffect(PotionEffect effect) {
     }
 
+    /** Wears the armour by the damage taken; empty in 1.12's EntityLivingBase too (players and mods' mobs override it). */
+    protected void damageArmor(float damage) {
+    }
+
     protected void onChangedPotionEffect(PotionEffect effect, boolean reapply) {
     }
 

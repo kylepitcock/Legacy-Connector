@@ -27,7 +27,25 @@ import org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122;
 public class RenderManager {
     private static RenderManager instance;
 
-    public final Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap = new HashMap<>();
+    public final Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap = new RenderMap();
+
+    /**
+     * The renderer map mods read: a vanilla class without a registered renderer answers the layer's port of the vanilla renderer, as 1.12's
+     * map held every vanilla renderer ({@code entityRenderMap.get(EntityWolf.class).addLayer(...)}: Wolf Armor and Storage). Those answers are
+     * not stored, and views of vanilla entities are still drawn by the modern renderer ({@link #getEntityRenderObject}).
+     */
+    private final class RenderMap extends HashMap<Class<? extends Entity>, Render<? extends Entity>> {
+        @Override
+        public Render<? extends Entity> get(Object key) {
+            Render<? extends Entity> r = super.get(key);
+            if (r == null && key instanceof Class<?> c && !containsKey(c)) r = mcc$vanillaExact(c);
+            return r;
+        }
+
+        Render<? extends Entity> raw(Object key) {
+            return super.get(key);
+        }
+    }
     private final Map<String, RenderPlayer> skinMap = new HashMap<>();
     private final RenderPlayer playerRenderer;
     private FontRenderer textRenderer;
@@ -127,13 +145,24 @@ public class RenderManager {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    /** The renderer of a class or its closest superclass: registered ones, then (for 1.12's map) the vanilla ports. */
     public <T extends Entity> Render<T> getEntityClassRenderObject(Class<? extends Entity> entityClass) {
+        Render<T> render = mcc$registered(entityClass);
+        if (render != null) return render;
+        @SuppressWarnings("unchecked")
+        Render<T> vanilla = entityClass == null ? null : (Render<T>) mcc$vanilla(entityClass);
+        return vanilla;
+    }
+
+    /** The registered renderer of a class or its closest superclass (mods' renderers; vanilla ports are not looked at). */
+    @SuppressWarnings("unchecked")
+    private <T extends Entity> Render<T> mcc$registered(Class<? extends Entity> entityClass) {
         mcc$loadFactories();
-        Render<? extends Entity> render = entityRenderMap.get(entityClass);
+        RenderMap map = (RenderMap) entityRenderMap;
+        Render<? extends Entity> render = map.raw(entityClass);
         if (render == null && entityClass != null && entityClass != Entity.class) {
             for (Class<?> c = entityClass.getSuperclass(); c != null && c != Object.class && render == null; c = c.getSuperclass()) {
-                render = entityRenderMap.get(c);
+                render = map.raw(c);
             }
             if (render != null) entityRenderMap.put(entityClass, render);
         }
@@ -147,7 +176,7 @@ public class RenderManager {
             RenderPlayer render = skinMap.get(player.getSkinType());
             return (Render<T>) (render != null ? render : playerRenderer);
         }
-        Render<T> render = getEntityClassRenderObject(entityIn.getClass());
+        Render<T> render = mcc$registered(entityIn.getClass());
         if (render != null) return render;
         // a view of a modern entity: the modern renderer draws it; a mod entity without a renderer was a white box in 1.12
         boolean hosted = entityIn.mcc$entity instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.Host1122;
@@ -158,6 +187,13 @@ public class RenderManager {
     }
 
     private Map<Class<?>, Render<? extends Entity>> mcc$vanillaRenderers;
+
+    /** The port of the vanilla renderer of exactly this vanilla class, or null. */
+    public Render<? extends Entity> mcc$vanillaExact(Class<?> cls) {
+        if (cls == null || !cls.getName().startsWith("legacyconnector.")) return null;
+        Render<? extends Entity> r = mcc$vanilla(cls);
+        return r != null && mcc$vanillaRenderers.get(cls) == r ? r : null;
+    }
 
     /** The vanilla renderer of the closest vanilla superclass that has one in the shim. */
     private Render<? extends Entity> mcc$vanilla(Class<?> cls) {
@@ -188,6 +224,8 @@ public class RenderManager {
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama.class, new RenderLlama(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.boss.EntityWither.class, new RenderWither(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class,new RenderEntityItem(this, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance()));
+            // what mods add to these renderers from now on is drawn over the modern entities too (LegacyMobLayer1122)
+            for (var r : m.values()) if (r instanceof RenderLivingBase<?> living) living.mcc$markBuiltIn();
             mcc$vanillaRenderers = m;
         }
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
