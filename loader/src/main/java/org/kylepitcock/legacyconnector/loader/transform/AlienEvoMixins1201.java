@@ -195,7 +195,10 @@ final class AlienEvoMixins1201 implements Opcodes {
                 type.desc = "java/lang/Float";
             } else if (instruction instanceof MethodInsnNode call && call.owner.equals("java/lang/Double")) {
                 call.owner = "java/lang/Float";
-                if (call.name.equals("doubleValue") && call.desc.equals("()D")) call.desc = "()F";
+                if (call.name.equals("doubleValue") && call.desc.equals("()D")) {
+                    call.name = "floatValue";
+                    call.desc = "()F";
+                }
                 else if (call.name.equals("valueOf") && call.desc.equals("(D)Ljava/lang/Double;")) {
                     call.desc = "(F)Ljava/lang/Float;";
                 }

@@ -242,6 +242,7 @@ class AlienEvoMixins1201Test implements Opcodes {
         assertEquals(2, ((VarInsnNode) handler.instructions.get(0)).var);
         assertEquals("java/lang/Float", ((org.objectweb.asm.tree.TypeInsnNode) handler.instructions.get(1)).desc);
         assertEquals("java/lang/Float", ((MethodInsnNode) handler.instructions.get(2)).owner);
+        assertEquals("floatValue", ((MethodInsnNode) handler.instructions.get(2)).name);
         assertEquals("()F", ((MethodInsnNode) handler.instructions.get(2)).desc);
         assertEquals(3, ((VarInsnNode) handler.instructions.get(3)).var);
         assertEquals(4, ((VarInsnNode) handler.instructions.get(4)).var);

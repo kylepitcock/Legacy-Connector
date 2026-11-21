@@ -350,12 +350,14 @@ public final class Forge1201Transformer {
         int alienEvoMixinChanges = 0;
         int alienEvoGeckoMixinChanges = 0;
         int alienEvoGeckoRenderLayerChanges = 0;
+        int alienEvoGeckoRenderLayerModelChanges = 0;
         int alienEvoGeckoExceptionChanges = 0;
         int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
         int alienEvoWorldGenChanges = 0;
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoBufferingGlowConsumerChanges = 0;
+        int alienEvoNoopRenderBufferChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
@@ -378,6 +380,9 @@ public final class Forge1201Transformer {
             int alienEvoGeckoRenderLayerChange = AlienEvoGeckoRenderLayer1201.apply(node);
             alienEvoGeckoRenderLayerChanges += alienEvoGeckoRenderLayerChange;
             viaCalls += alienEvoGeckoRenderLayerChange;
+            int alienEvoGeckoRenderLayerModelChange = AlienEvoGeckoRenderLayerModel1201.apply(node);
+            alienEvoGeckoRenderLayerModelChanges += alienEvoGeckoRenderLayerModelChange;
+            viaCalls += alienEvoGeckoRenderLayerModelChange;
             int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
             palladiumSuitStandChanges += palladiumSuitStandChange;
             int palladiumRendererRotationChange = PalladiumRendererRotation1201.apply(node);
@@ -469,6 +474,8 @@ public final class Forge1201Transformer {
             alienEvoVertexConsumerChanges += alienEvoVertexConsumerChange;
             int alienEvoBufferingGlowConsumerChange = AlienEvoBufferingGlowConsumer1201.apply(node);
             alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
+            int alienEvoNoopRenderBufferChange = AlienEvoNoopRenderBuffer1201.apply(node);
+            alienEvoNoopRenderBufferChanges += alienEvoNoopRenderBufferChange;
             int alienEvoMolangChange = AlienEvoMolang1201.apply(node);
             alienEvoMolangCompatChanges += alienEvoMolangChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
@@ -535,6 +542,14 @@ public final class Forge1201Transformer {
         if (alienEvoGeckoRenderLayerChanges > 0) {
             result.notes.add("AlienEvo first-person AlienGeckoRenderLayer adapted to GeckoLib's handleAnimations partial-tick API: "
                     + alienEvoGeckoRenderLayerChanges + " call site(s)");
+        }
+        if (alienEvoGeckoRenderLayerModelChanges > 0) {
+            result.notes.add("AlienEvo AlienGeckoRenderLayerModel.renderToBuffer adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + alienEvoGeckoRenderLayerModelChanges + " call site(s)");
+        }
+        if (alienEvoNoopRenderBufferChanges > 0) {
+            result.notes.add("AlienEvo NoopRenderBuffer$Noop now implements VertexConsumer.addVertex(float,float,float) while preserving no-op behavior: "
+                    + alienEvoNoopRenderBufferChanges + " method addition(s)");
         }
         if (alienEvoGeckoMixinChanges > 0) {
             result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "
