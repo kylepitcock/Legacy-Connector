@@ -213,6 +213,7 @@ public final class CreativeTabBridge {
                 sb.append("\n  ").append(tab.getTabLabel()).append(": threw ").append(e);
                 continue;
             }
+            sb.append(diagnose(tab));
             sb.append("\n  ").append(tab.getTabLabel()).append(": ").append(n).append(" stacks in ").append((System.nanoTime() - start) / 1_000_000)
                     .append(" ms, owner ").append(OWNER.get(tab));
         }
@@ -221,6 +222,55 @@ public final class CreativeTabBridge {
         }
         sb.append("\n  all tabs: ").append((System.nanoTime() - total) / 1_000_000).append(" ms");
         return sb.toString();
+    }
+
+    /** Self test diagnostic: what the tab's legacy listing returned against what survives into the modern tab, and items naming the tab that list nothing. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static String diagnose(CreativeTabs tab) {
+        try {
+            List raw = new ArrayList();
+            tab.displayAllReleventItems(raw);
+            int empty = 0, dup = 0, ok = 0;
+            List<net.minecraft.world.item.ItemStack> seen = new ArrayList<>();
+            List<String> samples = new ArrayList<>();
+            for (Object o : raw) {
+                if (!(o instanceof ItemStack s) || !safeNonEmpty(s)) {
+                    empty++;
+                    if (samples.size() < 12 && o instanceof ItemStack s2) samples.add("empty:" + s2.getItem());
+                    continue;
+                }
+                net.minecraft.world.item.ItemStack m = s.mcc$modern().copy();
+                m.setCount(1);
+                if (seen.stream().anyMatch(x -> net.minecraft.world.item.ItemStack.isSameItemSameComponents(x, m))) {
+                    dup++;
+                    if (samples.size() < 12) samples.add("dup:" + m.getItem());
+                    continue;
+                }
+                seen.add(m);
+                ok++;
+            }
+            java.util.Set<net.minecraft.world.item.Item> listed = new java.util.HashSet<>();
+            for (net.minecraft.world.item.ItemStack m : seen) listed.add(m.getItem());
+            List<String> missing = new ArrayList<>();
+            int unlisted = 0;
+            for (Item item : ItemBridge.modItems()) {
+                try {
+                    if (item.getCreativeTab() != tab) continue;
+                    boolean any = false;
+                    for (net.minecraft.world.item.Item v : item.mcc$variants.values()) if (v != null && listed.contains(v)) any = true;
+                    if (!any) {
+                        unlisted++;
+                        if (missing.size() < 25) missing.add(item.getClass().getSimpleName() + "/" + item.mcc$variants.get(0));
+                    }
+                } catch (RuntimeException | LinkageError e) {
+                    // skipped
+                }
+            }
+            return "\n  " + tab.getTabLabel() + ": legacy listing " + raw.size() + " stacks, " + ok + " kept, " + empty + " empty, " + dup + " duplicate " + samples
+                    + "; " + unlisted + " item(s) name the tab but list nothing " + missing;
+        } catch (RuntimeException | LinkageError e) {
+            return "";
+        }
     }
 
     /** The icon of every tab, worked out once: the creative screen asks for it every frame and the fallback lists the whole tab. */

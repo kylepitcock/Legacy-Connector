@@ -67,6 +67,7 @@ public class ItemTool extends Item {
         this.toolMaterial = material == null ? Item.ToolMaterial.WOOD : material;
         this.effectiveBlocksTool = effectiveBlocksTool == null ? Collections.emptySet() : effectiveBlocksTool;
         this.maxStackSize = 1;
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabTools);
         this.setMaxDamage(toolMaterial.getMaxUses());
         this.efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
         this.damageVsEntity = damage + toolMaterial.getDamageVsEntity();

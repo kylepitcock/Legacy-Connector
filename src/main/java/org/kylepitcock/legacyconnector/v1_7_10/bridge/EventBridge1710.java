@@ -1102,11 +1102,14 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.ItemTooltipEvent e) -> {
             if (!wants(forge(), ItemTooltipEvent.class) || e.getItemStack().isEmpty()) return;
+            // the creative search index builds tooltips with no player; 1.7.10 handlers read event.entityPlayer.worldObj unguarded
+            net.minecraft.world.entity.player.Player tipPlayer = e.getEntity() != null ? e.getEntity() : org.kylepitcock.legacyconnector.v1_7_10.client.ClientGui.localPlayer();
+            if (tipPlayer == null) return;
             List<String> lines = new ArrayList<>();
             for (Component c : e.getToolTip()) lines.add(c.getString());
             int before = lines.size();
             List<String> original = List.copyOf(lines);
-            forge().post(new ItemTooltipEvent(ItemStack.mcc$wrap(e.getItemStack()), e.getEntity() == null ? null : player(e.getEntity()), lines,
+            forge().post(new ItemTooltipEvent(ItemStack.mcc$wrap(e.getItemStack()), player(tipPlayer), lines,
                     e.getFlags().isAdvanced()));
             if (lines.size() >= before && lines.subList(0, before).equals(original)) {
                 for (String s : lines.subList(before, lines.size())) e.getToolTip().add(Component.literal(s));

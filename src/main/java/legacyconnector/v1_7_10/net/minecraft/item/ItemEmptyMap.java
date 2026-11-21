@@ -12,5 +12,6 @@ public class ItemEmptyMap extends legacyconnector.v1_7_10.net.minecraft.item.Ite
 
     protected ItemEmptyMap() {
         super();
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabMisc);
     }
 }

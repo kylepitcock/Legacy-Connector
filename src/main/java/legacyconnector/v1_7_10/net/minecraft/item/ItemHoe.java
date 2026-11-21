@@ -16,6 +16,7 @@ public class ItemHoe extends Item {
 
     public ItemHoe(Item.ToolMaterial material) {
         this.theToolMaterial = material == null ? Item.ToolMaterial.WOOD : material;
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabTools);
         this.maxStackSize = 1;
         this.setMaxDamage(theToolMaterial.getMaxUses());
     }

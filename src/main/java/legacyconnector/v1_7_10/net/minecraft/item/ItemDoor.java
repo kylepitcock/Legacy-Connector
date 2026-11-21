@@ -9,6 +9,7 @@ public class ItemDoor extends Item {
     private final Material doorMaterial;
 
     public ItemDoor(Material material) {
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabRedstone);
         this.doorMaterial = material;
         this.maxStackSize = 1;
     }
