@@ -98,6 +98,7 @@ final class Mc1201Migration {
         renameWidgetNarrationOverride(node, h, c);
         renameOverrides(node, h, t, c);
         swapMobBucketSuper(node);
+        swapPathPackSuper(node);
         swapItemPredicateSuper(node, c);
         renameBusConstant(node);
         dropEmptySubscriber(node);
@@ -298,6 +299,27 @@ final class Mc1201Migration {
         }
         node.superName = standIn;
         counts.itemPredicateStandIns.add(standIn);
+    }
+
+    /**
+     * A class extending {@code PathPackResources} and calling the 1.20.1 constructor {@code (String, Path, boolean)} (LDLib's {@code CustomResourcePack}):
+     * it extends the stand-in {@code LegacyPathPackResources}, which has that constructor, instead.
+     */
+    private static void swapPathPackSuper(ClassNode node) {
+        final String pack = "net/minecraft/server/packs/PathPackResources";
+        final String standIn = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyPathPackResources";
+        final String desc = "(Ljava/lang/String;Ljava/nio/file/Path;Z)V";
+        if (!pack.equals(node.superName)) return;
+        boolean swapped = false;
+        for (MethodNode m : node.methods) {
+            for (AbstractInsnNode in : m.instructions.toArray()) {
+                if (in instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESPECIAL && call.owner.equals(pack) && call.name.equals("<init>") && call.desc.equals(desc)) {
+                    call.owner = standIn;
+                    swapped = true;
+                }
+            }
+        }
+        if (swapped) node.superName = standIn;
     }
 
     /**

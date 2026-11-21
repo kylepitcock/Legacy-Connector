@@ -152,7 +152,8 @@ final class Mixin1201 {
      */
     private static final Map<String, String> REMOVED_STATIC_MEMBERS = Map.of(
             "net/minecraft/advancements/CriteriaTriggers.CRITERIA", "criteriaTriggerMap",
-            "net/minecraft/advancements/CriteriaTriggers.register", "registerTrigger");
+            "net/minecraft/advancements/CriteriaTriggers.register", "registerTrigger",
+            "net/minecraft/world/level/levelgen/structure/pools/JigsawPlacement.addPieces", "jigsawAddPieces");
 
     /** Instance fields of Minecraft 1.20.1 that 1.21.1 removed, read by a mixin accessor interface: "owner.field" to the {@code Round6Compat} helper (takes the instance). */
     private static final Map<String, String> REMOVED_INSTANCE_FIELDS = Map.of(
