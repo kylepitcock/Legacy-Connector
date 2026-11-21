@@ -34,8 +34,8 @@ final class AlienEvoLateEffectBuffers1201 implements Opcodes {
         int migratedCalls = 0;
         MethodInsnNode legacy = null;
         for (AbstractInsnNode instruction : flush.instructions.toArray()) {
-            if (!(instruction instanceof MethodInsnNode call) || !call.owner.equals(RENDER_TYPE)) continue;
-            if (call.name.equals("end")) {
+            if (!(instruction instanceof MethodInsnNode call)) continue;
+            if (call.owner.equals(RENDER_TYPE) && call.name.equals("end")) {
                 legacyCalls++;
                 if (call.getOpcode() != INVOKEVIRTUAL || !call.desc.equals(LEGACY_DESC)) {
                     throw new IllegalStateException("AlienEvo LateEffectBuffers RenderType.end call has an unknown descriptor");
