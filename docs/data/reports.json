@@ -1127,6 +1127,18 @@
    "link": "https://modrinth.com/mod/ntmspace/version/1.0.27X5853",
    "date": "2026-11-21",
    "open": true
+  },
+  {
+   "issue": 322,
+   "mod": "magic_evolved_two-1.2.9-forge-1.20.1",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "- Game crashes on start",
+   "lc": "0.5.0",
+   "neoforge": "21.1.267",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/magic-evolved-2/files/9398891",
+   "date": "2026-11-21",
+   "open": true
   }
  ]
 }
