@@ -349,6 +349,7 @@ public final class Forge1201Transformer {
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
         int alienEvoGeckoMixinChanges = 0;
+        int alienEvoGeckoRenderLayerChanges = 0;
         int alienEvoGeckoExceptionChanges = 0;
         int alienEvoLegacyMixinChanges = 0;
         int alienEvoStepHeightChanges = 0;
@@ -373,6 +374,9 @@ public final class Forge1201Transformer {
             int palladiumGeckoModelAnimationChange = PalladiumGeckoRenderLayerModel1201.apply(node);
             palladiumGeckoModelAnimationChanges += palladiumGeckoModelAnimationChange;
             viaCalls += palladiumGeckoModelAnimationChange;
+            int alienEvoGeckoRenderLayerChange = AlienEvoGeckoRenderLayer1201.apply(node);
+            alienEvoGeckoRenderLayerChanges += alienEvoGeckoRenderLayerChange;
+            viaCalls += alienEvoGeckoRenderLayerChange;
             int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
             palladiumSuitStandChanges += palladiumSuitStandChange;
             int palladiumRendererRotationChange = PalladiumRendererRotation1201.apply(node);
@@ -492,7 +496,7 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoExceptionChange);
+                    + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
         if (mapper.authlibPropertyMethodReferences > 0) {
             result.notes.add("Authlib 1.20.1 Property JavaBean getters migrated to the 1.21.1 record accessors: "
@@ -520,6 +524,10 @@ public final class Forge1201Transformer {
         if (alienEvoMixinChanges > 0) {
             result.notes.add("AlienEvo Minecraft render/shield mixin handler descriptors adapted for 1.21.1: "
                     + alienEvoMixinChanges + " handler(s)");
+        }
+        if (alienEvoGeckoRenderLayerChanges > 0) {
+            result.notes.add("AlienEvo first-person AlienGeckoRenderLayer adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + alienEvoGeckoRenderLayerChanges + " call site(s)");
         }
         if (alienEvoGeckoMixinChanges > 0) {
             result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "
