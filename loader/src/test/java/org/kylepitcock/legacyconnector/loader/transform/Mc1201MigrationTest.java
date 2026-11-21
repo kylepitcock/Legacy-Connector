@@ -413,6 +413,35 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void blockEntityGetUpdateTagSuperCallDoesNotRedispatchThroughTheTranslatedOverride() {
+        ClassNode c = cls("test/DiamondBlockEntity", BE);
+        MethodNode legacyOverride = method(c, ACC_PUBLIC, "getUpdateTag", "()L" + CT + ";");
+        legacyOverride.instructions.add(new VarInsnNode(ALOAD, 0));
+        legacyOverride.instructions.add(new MethodInsnNode(INVOKESPECIAL, BE, "getUpdateTag", "()L" + CT + ";", false));
+        legacyOverride.instructions.add(new InsnNode(ARETURN));
+
+        MethodNode ordinaryCall = method(c, ACC_PUBLIC | ACC_STATIC, "ordinaryUpdateTag", "(L" + BE + ";)L" + CT + ";");
+        ordinaryCall.instructions.add(new VarInsnNode(ALOAD, 0));
+        ordinaryCall.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, BE, "getUpdateTag", "()L" + CT + ";", false));
+        ordinaryCall.instructions.add(new InsnNode(ARETURN));
+
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(2, counts.calls);
+
+        MethodInsnNode superCall = find(legacyOverride, MIGRATE + "MiddleCompat", "getUpdateTagSuper");
+        assertNotNull(superCall);
+        assertEquals(INVOKESTATIC, superCall.getOpcode());
+        assertEquals("(L" + BE + ";)L" + CT + ";", superCall.desc);
+        assertNull(find(legacyOverride, MIGRATE + "MiddleCompat", "getUpdateTag"));
+
+        MethodInsnNode virtualCall = find(ordinaryCall, MIGRATE + "MiddleCompat", "getUpdateTag");
+        assertNotNull(virtualCall);
+        assertEquals(INVOKESTATIC, virtualCall.getOpcode());
+        assertNull(find(ordinaryCall, MIGRATE + "MiddleCompat", "getUpdateTagSuper"));
+        verify(c);
+    }
+
+    @Test
     void blockEntityOverrideGetsABridgeAndSuperCallsGetTheProvider() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");

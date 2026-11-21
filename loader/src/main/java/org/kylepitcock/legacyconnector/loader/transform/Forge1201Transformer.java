@@ -358,6 +358,7 @@ public final class Forge1201Transformer {
         int alienEvoVertexConsumerChanges = 0;
         int alienEvoBufferingGlowConsumerChanges = 0;
         int alienEvoNoopRenderBufferChanges = 0;
+        int alienEvoDynamicColorParticleRenderTypeChanges = 0;
         int alienEvoBoneAnchorsChanges = 0;
         int alienEvoColoredProjectileRendererChanges = 0;
         int alienEvoSuperheroFlightControllerChanges = 0;
@@ -480,6 +481,8 @@ public final class Forge1201Transformer {
             alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
             int alienEvoNoopRenderBufferChange = AlienEvoNoopRenderBuffer1201.apply(node);
             alienEvoNoopRenderBufferChanges += alienEvoNoopRenderBufferChange;
+            int alienEvoDynamicColorParticleRenderTypeChange = AlienEvoDynamicColorParticleRenderType1201.apply(node);
+            alienEvoDynamicColorParticleRenderTypeChanges += alienEvoDynamicColorParticleRenderTypeChange;
             int alienEvoBoneAnchorsChange = AlienEvoBoneAnchors1201.apply(node);
             alienEvoBoneAnchorsChanges += alienEvoBoneAnchorsChange;
             int alienEvoColoredProjectileRendererChange = AlienEvoColoredProjectileRenderer1201.apply(node);
@@ -519,7 +522,8 @@ public final class Forge1201Transformer {
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
-                    + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange + alienEvoBoneAnchorsChange
+                    + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange
+                    + alienEvoDynamicColorParticleRenderTypeChange + alienEvoBoneAnchorsChange
                     + alienEvoSuperheroFlightControllerChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
@@ -573,6 +577,10 @@ public final class Forge1201Transformer {
         if (alienEvoNoopRenderBufferChanges > 0) {
             result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float), setColor(int,int,int,int), setUv(float,float), setUv1(int,int), setUv2(int,int), and setNormal(float,float,float) methods: "
                     + alienEvoNoopRenderBufferChanges + " method change(s)");
+        }
+        if (alienEvoDynamicColorParticleRenderTypeChanges > 0) {
+            result.notes.add("AlienEvo DynamicColorParticleRenderType migrated from the 1.20.1 BufferBuilder-based ParticleRenderType.begin method to the 1.21.1 Tesselator.begin contract: "
+                    + alienEvoDynamicColorParticleRenderTypeChanges + " method rewrite(s)");
         }
         if (alienEvoBoneAnchorsChanges > 0) {
             result.notes.add("AlienEvo BoneAnchors inverse-view rotation migrated to the 1.21.1 active camera rotation API: "

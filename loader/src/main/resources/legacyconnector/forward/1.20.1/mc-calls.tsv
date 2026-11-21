@@ -361,6 +361,7 @@ net/minecraft/world/entity/player/Player	disableShield	(Z)V	MiddleCompat	disable
 net/minecraft/world/entity/player/Player	startAutoSpinAttack	(I)V	MiddleCompat	startAutoSpinAttack
 net/minecraft/world/entity/player/Player	canReach	(Lnet/minecraft/core/BlockPos;D)Z	MiddleCompat	canReach
 net/minecraft/world/entity/player/Player	canReach	(Lnet/minecraft/world/entity/Entity;D)Z	MiddleCompat	canReach
+net/minecraft/world/level/block/entity/BlockEntity	getUpdateTag	()Lnet/minecraft/nbt/CompoundTag;@special	MiddleCompat	getUpdateTagSuper
 net/minecraft/world/level/block/entity/BlockEntity	getUpdateTag	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	getUpdateTag
 net/minecraft/world/level/block/entity/BlockEntity	saveWithId	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	saveWithId
 net/minecraft/world/level/block/entity/BlockEntity	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	serializeNBT
