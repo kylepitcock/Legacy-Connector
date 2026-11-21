@@ -28,20 +28,25 @@ class AlienEvoNoopRenderBuffer1201Test implements Opcodes {
     }
 
     @Test
-    void addsNoopFloatVertexMethodAndReturnsTheSameConsumer() {
+    void addsFloatVertexAndColorMethodsAsNoopAndIsIdempotent() {
         ClassNode node = node(AlienEvoNoopRenderBuffer1201.TARGET_CLASS);
-        assertEquals(1, AlienEvoNoopRenderBuffer1201.apply(node));
-        MethodNode addVertex = node.methods.stream()
-                .filter(method -> method.name.equals("addVertex")
-                        && method.desc.equals("(FFF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";"))
-                .findFirst().orElseThrow();
-        AbstractInsnNode[] real = java.util.Arrays.stream(addVertex.instructions.toArray())
-                .filter(instruction -> instruction.getOpcode() >= 0)
-                .toArray(AbstractInsnNode[]::new);
-        assertEquals(2, real.length);
-        assertEquals(ALOAD, real[0].getOpcode());
-        assertEquals(0, ((VarInsnNode) real[0]).var);
-        assertEquals(ARETURN, real[1].getOpcode());
+        assertEquals(2, AlienEvoNoopRenderBuffer1201.apply(node));
+
+        assertNoop(node, "addVertex", "(FFF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
+        assertNoop(node, "setColor", "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
+        assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
+    }
+
+    @Test
+    void replacesAnAbstractColorMethodWithTheNoopImplementation() {
+        ClassNode node = node(AlienEvoNoopRenderBuffer1201.TARGET_CLASS);
+        MethodNode color = new MethodNode(ACC_PUBLIC | ACC_ABSTRACT, "setColor",
+                "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";", null, null);
+        node.methods.add(color);
+
+        assertEquals(2, AlienEvoNoopRenderBuffer1201.apply(node));
+        assertEquals(0, color.access & ACC_ABSTRACT);
+        assertNoop(node, "setColor", "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
         assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
     }
 
@@ -64,5 +69,18 @@ class AlienEvoNoopRenderBuffer1201Test implements Opcodes {
         ClassNode node = node(AlienEvoNoopRenderBuffer1201.TARGET_CLASS);
         node.interfaces.clear();
         assertThrows(IllegalStateException.class, () -> AlienEvoNoopRenderBuffer1201.apply(node));
+    }
+
+    private static void assertNoop(ClassNode node, String name, String descriptor) {
+        MethodNode method = node.methods.stream()
+                .filter(candidate -> candidate.name.equals(name) && candidate.desc.equals(descriptor))
+                .findFirst().orElseThrow();
+        AbstractInsnNode[] real = java.util.Arrays.stream(method.instructions.toArray())
+                .filter(instruction -> instruction.getOpcode() >= 0)
+                .toArray(AbstractInsnNode[]::new);
+        assertEquals(2, real.length);
+        assertEquals(ALOAD, real[0].getOpcode());
+        assertEquals(0, ((VarInsnNode) real[0]).var);
+        assertEquals(ARETURN, real[1].getOpcode());
     }
 }
