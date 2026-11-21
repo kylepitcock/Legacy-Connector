@@ -82,6 +82,69 @@ class AlienEvoResourceCompat1201Test {
         assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(resources));
     }
 
+
+    @Test
+    void removesOnlyTheMalformedKineceleranKickStopPositionChannel() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put(AlienEvoResourceCompat1201.KINECELERAN_ANIMATION, """
+                {
+                  "animations": {
+                    "animation.kineceleran.kick_stop": {
+                      "bones": {
+                        "armorHead": {
+                          "rotation": {"0.0":{"vector":[45,15,-5],"easing":"easeInElastic"}},
+                          "position": {"vector":["easeInElastic","easeInElastic","easeInElastic"]}
+                        }
+                      }
+                    }
+                  }
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+
+        assertTrue(AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(resources));
+        String repaired = new String(resources.get(AlienEvoResourceCompat1201.KINECELERAN_ANIMATION),
+                StandardCharsets.UTF_8);
+        assertTrue(repaired.contains("\"rotation\""), repaired);
+        assertTrue(repaired.contains("\"easeInElastic\""), repaired);
+        assertFalse(repaired.contains("\"position\""), repaired);
+        assertFalse(AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(resources));
+    }
+
+    @Test
+    void leavesValidEasingFieldsAndOtherMalformedShapesUntouched() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put(AlienEvoResourceCompat1201.KINECELERAN_ANIMATION, """
+                {
+                  "animations": {
+                    "animation.kineceleran.kick_stop": {
+                      "bones": {
+                        "armorHead": {
+                          "position": {"vector":[0,0,0],"easing":"easeInElastic"}
+                        }
+                      }
+                    }
+                  }
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(resources));
+
+        Map<String, byte[]> wrongKeyframe = new LinkedHashMap<>();
+        wrongKeyframe.put(AlienEvoResourceCompat1201.KINECELERAN_ANIMATION, """
+                {
+                  "animations": {
+                    "animation.kineceleran.kick_stop": {
+                      "bones": {
+                        "armorHead": {
+                          "position": {"vector":["easeInElastic","easeInElastic",0]}
+                        }
+                      }
+                    }
+                  }
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(wrongKeyframe));
+    }
+
     @Test
     void addsTheVanillaAddonRootMarkerOnlyWhenAddonResourcesExist() {
         Map<String, byte[]> resources = new LinkedHashMap<>();

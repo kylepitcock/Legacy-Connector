@@ -133,6 +133,15 @@ final class AlienEvoMolang1201 implements Opcodes {
         code.add(new IincInsnNode(2, 1));
         code.add(new JumpInsnNode(GOTO, loop));
         code.add(done);
+        // AlienEvo uses "default"/"-default" in rotation and position vectors as
+        // a bind-pose reset marker. GeckoLib 4.9 parses vector expressions with
+        // MathParser, where registering this token as a zero transform offset
+        // makes it equivalent to the neutral rotation/position value.
+        code.add(new LdcInsnNode("default"));
+        code.add(new MethodInsnNode(INVOKESTATIC, MATH_PARSER, "getVariableFor",
+                "(Ljava/lang/String;)" + VARIABLE_DESC, false));
+        code.add(new InsnNode(DCONST_0));
+        code.add(new MethodInsnNode(INVOKEVIRTUAL, VARIABLE, "set", "(D)V", false));
         code.add(new InsnNode(RETURN));
 
         init.instructions.clear();
@@ -142,7 +151,7 @@ final class AlienEvoMolang1201 implements Opcodes {
         init.parameters = null;
         init.signature = null;
         init.maxLocals = 3;
-        init.maxStack = 2;
+        init.maxStack = 3;
         return 1;
     }
 

@@ -66,13 +66,19 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertNotNull(init);
         assertTrue(hasCall(init, INVOKESTATIC, AlienEvoMolang1201.MATH_PARSER, "getVariableFor",
                 "(Ljava/lang/String;)L" + AlienEvoMolang1201.VARIABLE + ";"));
+        assertEquals(2, countCalls(init, INVOKESTATIC, AlienEvoMolang1201.MATH_PARSER, "getVariableFor",
+                "(Ljava/lang/String;)L" + AlienEvoMolang1201.VARIABLE + ";"),
+                "one lookup for the query array and one for AlienEvo's default marker");
+        assertTrue(hasStringConstant(init, "default"));
+        assertTrue(hasOpcode(init, DCONST_0));
+        assertTrue(hasCall(init, INVOKEVIRTUAL, AlienEvoMolang1201.VARIABLE, "set", "(D)V"));
         assertFalse(hasOwner(init, AlienEvoMolang1201.OLD_PARSER));
         assertTrue(hasOpcode(init, ARRAYLENGTH));
         assertTrue(hasOpcode(init, AALOAD));
         assertTrue(hasOpcode(init, IF_ICMPGE));
         assertTrue(hasOpcode(init, IINC));
         assertEquals(3, init.maxLocals);
-        assertEquals(2, init.maxStack);
+        assertEquals(3, init.maxStack);
 
         assertEquals(0, AlienEvoMolang1201.apply(node));
         assertClassCanBeSerialized(node);
@@ -294,6 +300,23 @@ class AlienEvoMolang1201Test implements Opcodes {
             if (method.name.equals(name) && method.desc.equals(descriptor)) return method;
         }
         return null;
+    }
+
+
+    private static int countCalls(MethodNode method, int opcode, String owner, String name, String desc) {
+        int count = 0;
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call && call.getOpcode() == opcode
+                    && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(desc)) count++;
+        }
+        return count;
+    }
+
+    private static boolean hasStringConstant(MethodNode method, String value) {
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof LdcInsnNode constant && value.equals(constant.cst)) return true;
+        }
+        return false;
     }
 
     private static boolean hasOwner(MethodNode method, String owner) {

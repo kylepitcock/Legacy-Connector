@@ -695,7 +695,7 @@ public final class Forge1201Transformer {
                 outClasses.put(helperClass.getKey(), helperClass.getValue());
                 result.classes++;
             }
-            result.notes.add("AlienEvo GeckoLib 4.8 MolangParser calls migrated to GeckoLib 4.9 MathParser/Variable, including the roll_since MathFunction factory: "
+            result.notes.add("AlienEvo GeckoLib 4.8 MolangParser calls migrated to GeckoLib 4.9 MathParser/Variable, including the roll_since MathFunction factory; the special default/-default animation reset token is pre-registered as a neutral zero transform offset: "
                     + alienEvoMolangCompatChanges + " compatibility rewrite(s)");
         }
         if (soft != null && soft.stats.symbols() > 0) {
@@ -844,6 +844,9 @@ public final class Forge1201Transformer {
         }
         if (AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(outResources)) {
             result.notes.add("AlienEvo: made the Ad Astra oxygen damage-type tag optional; it is used when ad_astra:oxygen is registered and skipped when Ad Astra is absent");
+        }
+        if (AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(outResources)) {
+            result.notes.add("AlienEvo: removed the single malformed Kineceleran kick_stop armorHead.position channel whose vector contained easing names; valid rotation/easing data is preserved");
         }
         if (AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(outResources)) {
             result.notes.add("AlienEvo: added the 1.21.1 addon resource-root marker for its nonstandard addon/ asset tree");

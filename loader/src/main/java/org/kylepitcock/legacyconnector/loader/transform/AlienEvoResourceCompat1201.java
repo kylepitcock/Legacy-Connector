@@ -21,6 +21,8 @@ final class AlienEvoResourceCompat1201 {
     static final String EVOASTRA_DAMAGE_TAG =
             "data/alienevo/tags/damage_type/evoastra.json";
     static final String ADDON_RESOURCE_ROOT_MARKER = "addon/.mcassetsroot";
+    static final String KINECELERAN_ANIMATION =
+            "assets/alienevo/animations/aliens/kineceleran/kineceleran.animation.json";
 
     private AlienEvoResourceCompat1201() {}
 
@@ -97,6 +99,50 @@ final class AlienEvoResourceCompat1201 {
         } catch (RuntimeException ignored) {
             return false;
         }
+    }
+
+
+    /**
+     * AlienEvo dev.24 has one malformed GeckoLib keyframe: kick_stop / armorHead
+     * places the easing name in all three position vector components. Easing
+     * belongs on the keyframe's "easing" property, not in a numeric vector.
+     * Remove only that unusable position channel and preserve the valid rotation
+     * channel and all other animations.
+     */
+    static boolean repairKineceleranKickStopPositionVector(Map<String, byte[]> resources) {
+        byte[] original = resources.get(KINECELERAN_ANIMATION);
+        if (original == null) return false;
+
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(original, StandardCharsets.UTF_8));
+            if (!parsed.isJsonObject()) return false;
+            JsonObject root = parsed.getAsJsonObject();
+            JsonObject animations = getObject(root, "animations");
+            JsonObject kickStop = getObject(animations, "animation.kineceleran.kick_stop");
+            JsonObject bones = getObject(kickStop, "bones");
+            JsonObject armorHead = getObject(bones, "armorHead");
+            JsonObject position = getObject(armorHead, "position");
+            if (position == null || position.entrySet().size() != 1
+                    || !position.has("vector") || !position.get("vector").isJsonArray()) return false;
+
+            JsonArray vector = position.getAsJsonArray("vector");
+            if (vector.size() != 3) return false;
+            for (JsonElement component : vector) {
+                if (!component.isJsonPrimitive() || !component.getAsJsonPrimitive().isString()
+                        || !"easeInElastic".equalsIgnoreCase(component.getAsString())) return false;
+            }
+
+            armorHead.remove("position");
+            resources.put(KINECELERAN_ANIMATION, root.toString().getBytes(StandardCharsets.UTF_8));
+            return true;
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
+    private static JsonObject getObject(JsonObject parent, String key) {
+        if (parent == null || !parent.has(key) || !parent.get(key).isJsonObject()) return null;
+        return parent.getAsJsonObject(key);
     }
 
     /**
