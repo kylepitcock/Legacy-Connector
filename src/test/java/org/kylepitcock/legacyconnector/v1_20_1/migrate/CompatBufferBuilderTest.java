@@ -1,13 +1,50 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexSorting;
+import net.minecraft.client.renderer.RenderType;
 import org.junit.jupiter.api.Test;
 
 class CompatBufferBuilderTest {
+
+    private static final class CapturingRenderType extends RenderType {
+        private MeshData drawn;
+
+        private CapturingRenderType(boolean sortOnUpload) {
+            super("legacy_connector_test", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS,
+                    256, false, sortOnUpload, () -> {}, () -> {});
+        }
+
+        @Override
+        public void draw(MeshData mesh) {
+            drawn = mesh;
+        }
+    }
+
+    @Test
+    void renderTypeCompatibilityPathSortsTranslucentQuadsBeforeDrawing() {
+        CompatBufferBuilder builder = new CompatBufferBuilder(256);
+        CapturingRenderType renderType = new CapturingRenderType(true);
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+        builder.vertex(0.0, 0.0, 0.0);
+        builder.vertex(1.0, 0.0, 0.0);
+        builder.vertex(1.0, 1.0, 0.0);
+        builder.vertex(0.0, 1.0, 0.0);
+
+        CompatBufferBuilder.drawWithRenderType(renderType, builder, VertexSorting.DISTANCE_TO_ORIGIN);
+
+        assertNotNull(renderType.drawn, "RenderType.draw must receive the built mesh");
+        assertNotNull(renderType.drawn.indexBuffer(), "translucent quad indices must be sorted before draw");
+        renderType.drawn.close();
+        builder.discard();
+    }
+
     @Test
     void legacyBuildingAliasTracksTheActiveBuffer() {
         CompatBufferBuilder builder = new CompatBufferBuilder(256);
