@@ -15,6 +15,7 @@ final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
     private static final String LEGACY_POSITION_DESC = "(DDD)L" + VERTEX + ";";
     private static final String ADD_VERTEX_DESC = "(FFF)L" + VERTEX + ";";
     private static final String SET_COLOR_DESC = "(IIII)L" + VERTEX + ";";
+    private static final String SET_UV_DESC = "(FF)L" + VERTEX + ";";
 
     private AlienEvoNoopRenderBuffer1201() {}
 
@@ -28,6 +29,7 @@ final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
         int legacyPositionMethods = 0;
         MethodNode existingAddVertex = null;
         MethodNode existingSetColor = null;
+        MethodNode existingSetUv = null;
         for (MethodNode method : node.methods) {
             if (LEGACY_POSITION_DESC.equals(method.desc)) legacyPositionMethods++;
             if ("addVertex".equals(method.name) && ADD_VERTEX_DESC.equals(method.desc)) {
@@ -41,6 +43,12 @@ final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
                     throw new IllegalStateException("AlienEvo NoopRenderBuffer$Noop has duplicate setColor(IIII) methods");
                 }
                 existingSetColor = method;
+            }
+            if ("setUv".equals(method.name) && SET_UV_DESC.equals(method.desc)) {
+                if (existingSetUv != null) {
+                    throw new IllegalStateException("AlienEvo NoopRenderBuffer$Noop has duplicate setUv(FF) methods");
+                }
+                existingSetUv = method;
             }
         }
         if (legacyPositionMethods != 1) {
@@ -73,6 +81,21 @@ final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
             }
         } else {
             node.methods.add(noopFluentMethod("setColor", SET_COLOR_DESC, 5));
+            changes++;
+        }
+
+        // setUv(float,float) is another abstract VertexConsumer method in 1.21.1.
+        // AlienEvo uses this sink during its pose pre-pass; it must remain a true no-op.
+        if (existingSetUv != null) {
+            if ((existingSetUv.access & (ACC_ABSTRACT | ACC_NATIVE)) != 0) {
+                replaceWithNoop(existingSetUv, 3);
+                changes++;
+            } else if (!isThisReturningNoop(existingSetUv)) {
+                throw new IllegalStateException(
+                        "AlienEvo NoopRenderBuffer$Noop already has a non-no-op setUv(FF) implementation");
+            }
+        } else {
+            node.methods.add(noopFluentMethod("setUv", SET_UV_DESC, 3));
             changes++;
         }
         return changes;
