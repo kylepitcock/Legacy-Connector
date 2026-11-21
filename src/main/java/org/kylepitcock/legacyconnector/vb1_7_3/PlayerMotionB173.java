@@ -34,6 +34,22 @@ public final class PlayerMotionB173 {
     static byte[] encode(int mask, double vx, double vy, double vz) {
         return ByteBuffer.allocate(25).put((byte) mask).putDouble(vx).putDouble(vy).putDouble(vz).array();
     }
+    /** Bit 8 of the mask: the values are changes the client adds to its own current velocity. */
+    static final int DELTA = 8;
+
+    /** The client's current velocity with the changed components moved by what original code changed them by. */
+    static Vec3 add(Vec3 current, int mask, double dx, double dy, double dz) {
+        return new Vec3((mask & 1) != 0 ? current.x + dx : current.x, (mask & 2) != 0 ? current.y + dy : current.y, (mask & 4) != 0 ? current.z + dz : current.z);
+    }
+
+    /**
+     * The changes original code made to a server player's velocity, measured from the velocity its client last reported (the view's
+     * baseline); the client adds them to its own. A component set to a value arrives as that value (baseline plus difference); one original
+     * code added to (a jetpack's thrust) keeps the player's own momentum instead of replacing it with the server's copy.
+     */
+    public static boolean sendChange(ServerPlayer player, int mask, double vx, double vy, double vz, double bx, double by, double bz) {
+        return send(player, mask | DELTA, vx - bx, vy - by, vz - bz);
+    }
 
     private static final ThreadLocal<int[]> CLIENT_DRIVEN=ThreadLocal.withInitial(()->new int[1]);
     /** While a block's walking or collision callback runs for a server player whose client runs the same callback for itself. */
@@ -48,7 +64,7 @@ public final class PlayerMotionB173 {
 
     /** True when the changed components were delivered to the player's client, which applies them to its own velocity. */
     public static boolean send(ServerPlayer player, int mask, double vx, double vy, double vz) {
-        if (mask == 0 || player.connection == null || !hasLegacyChannel(player)) return false;
+        if ((mask & 7) == 0 || player.connection == null || !hasLegacyChannel(player)) return false;
         // not kept on the server: its copy of a client-moved player's velocity is stale, and a push repeated every tick (a conveyor's) must
         // differ from it again next tick to be sent again
         PacketDistributor.sendToPlayer(player, new LegacyPayload(FAMILY, CHANNEL, 0, encode(mask, vx, vy, vz)));
@@ -67,12 +83,13 @@ public final class PlayerMotionB173 {
     private static void receive(LegacyPayload payload, IPayloadContext context) {
         if (!CHANNEL.equals(payload.channel()) || !context.flow().isClientbound() || payload.data().length != 25) return;
         var data = ByteBuffer.wrap(payload.data());
-        int mask = data.get() & 7;
+        int mask = data.get() & 15;
         double vx = data.getDouble(), vy = data.getDouble(), vz = data.getDouble();
         if (!Double.isFinite(vx) || !Double.isFinite(vy) || !Double.isFinite(vz)) return;
         context.enqueueWork(() -> {
             var player = context.player();
-            if (player != null) player.setDeltaMovement(merge(player.getDeltaMovement(), mask, vx, vy, vz));
+            if (player != null) player.setDeltaMovement((mask & DELTA) != 0 ? add(player.getDeltaMovement(), mask, vx, vy, vz)
+                    : merge(player.getDeltaMovement(), mask, vx, vy, vz));
         });
     }
 }

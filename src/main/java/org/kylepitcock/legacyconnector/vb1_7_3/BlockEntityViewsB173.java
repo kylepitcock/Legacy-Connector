@@ -28,6 +28,17 @@ public final class BlockEntityViewsB173 {
         if(!(nativeEntity instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign))return null;
         return TOUCHED.get().computeIfAbsent(nativeEntity,ignored->{var view=new SignBlockEntity();var pos=sign.getBlockPos();view.x=pos.getX();view.y=pos.getY();view.z=pos.getZ();view.world=World.mcc$wrap(sign.getLevel());view.mcc$host=sign;for(int i=0;i<4;i++)view.texts[i]=sign.getFrontText().getMessage(i,false).getString();return view;});
     }
+    /**
+     * A view for reading only (render and shape queries on any thread): nothing is remembered for a write-back, so a meshing thread that never
+     * flushes keeps no views alive and never sees an older copy of the contents.
+     */
+    public static BlockEntity wrapDetached(net.minecraft.world.level.block.entity.BlockEntity nativeEntity){
+        var touched=TOUCHED.get();if(touched.containsKey(nativeEntity))return touched.get(nativeEntity);
+        var view=wrap(nativeEntity);
+        if(view!=null){touched.remove(nativeEntity);CHEST_BASELINES.remove(view);}
+        if(touched.isEmpty())TOUCHED.remove();
+        return view;
+    }
     public static void flush(BlockEntity view){
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.ChestBlockEntity chest&&view.mcc$host instanceof net.minecraft.world.level.block.entity.ChestBlockEntity nativeChest){
             var before=CHEST_BASELINES.get(chest);boolean changed=false;

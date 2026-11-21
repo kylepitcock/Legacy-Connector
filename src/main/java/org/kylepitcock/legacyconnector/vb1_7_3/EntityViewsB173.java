@@ -343,7 +343,7 @@ public final class EntityViewsB173 {
                         var current=nativePlayer.getDeltaMovement();
                         int changed=PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,touched.vx,touched.vy,touched.vz)
                                 &PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,current.x,current.y,current.z);
-                        if(changed!=0&&!(nativePlayer instanceof net.minecraft.server.level.ServerPlayer server&&PlayerMotionB173.send(server,changed,view.velocityX,view.velocityY,view.velocityZ))){
+                        if(changed!=0&&!(nativePlayer instanceof net.minecraft.server.level.ServerPlayer server&&PlayerMotionB173.sendChange(server,changed,view.velocityX,view.velocityY,view.velocityZ,touched.vx,touched.vy,touched.vz))){
                             nativePlayer.setDeltaMovement(PlayerMotionB173.merge(current,changed,view.velocityX,view.velocityY,view.velocityZ));
                             if(nativePlayer instanceof net.minecraft.server.level.ServerPlayer)nativePlayer.hurtMarked=true;
                         }

@@ -41,6 +41,64 @@ public class NBTTagCompound extends NBTBase {
         return NBTBase.mcc$wrap(type.load(input, accounter), null);
     }
 
+    /** Phantom field: 1.12's private {@code tagMap} (mods read it reflectively-by-name); accesses go through {@link #mcc$get$tagMap}. */
+    @Deprecated
+    public Map<String, NBTBase> tagMap;
+
+    /** A live view of the compound as 1.12's key-to-tag map: reads and writes go to the tag. */
+    public static Map<String, NBTBase> mcc$get$tagMap(NBTTagCompound c) {
+        return new java.util.AbstractMap<String, NBTBase>() {
+            @Override
+            public Set<Map.Entry<String, NBTBase>> entrySet() {
+                Set<Map.Entry<String, NBTBase>> out = new java.util.LinkedHashSet<>();
+                for (String key : new java.util.ArrayList<>(c.getKeySet())) out.add(new java.util.AbstractMap.SimpleEntry<>(key, c.getTag(key)) {
+                    @Override
+                    public NBTBase setValue(NBTBase v) {
+                        NBTBase old = super.setValue(v);
+                        c.setTag(key, v);
+                        return old;
+                    }
+                });
+                return out;
+            }
+
+            @Override
+            public NBTBase get(Object key) {
+                return key instanceof String k && c.hasKey(k) ? c.getTag(k) : null;
+            }
+
+            @Override
+            public boolean containsKey(Object key) {
+                return key instanceof String k && c.hasKey(k);
+            }
+
+            @Override
+            public NBTBase put(String key, NBTBase value) {
+                NBTBase old = get(key);
+                c.setTag(key, value);
+                return old;
+            }
+
+            @Override
+            public NBTBase remove(Object key) {
+                if (!(key instanceof String k)) return null;
+                NBTBase old = get(k);
+                c.removeTag(k);
+                return old;
+            }
+
+            @Override
+            public int size() {
+                return c.getKeySet().size();
+            }
+        };
+    }
+
+    public static void mcc$set$tagMap(NBTTagCompound c, Map<String, NBTBase> map) {
+        for (String key : new java.util.ArrayList<>(c.getKeySet())) c.removeTag(key);
+        if (map != null) for (Map.Entry<String, NBTBase> e : map.entrySet()) c.setTag(e.getKey(), e.getValue());
+    }
+
     public Set<String> getKeySet() {
         return mcc$tag.getAllKeys();
     }
