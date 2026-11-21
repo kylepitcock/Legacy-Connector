@@ -8,12 +8,13 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-/** Adds the 1.21.1 float-position method to AlienEvo's deliberately no-op vertex sink. */
+/** Adds the missing 1.21.1 VertexConsumer methods to AlienEvo's deliberately no-op vertex sink. */
 final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
     static final String TARGET_CLASS = "net/habb/alienevo/client/renderer/NoopRenderBuffer$Noop";
     static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
     private static final String LEGACY_POSITION_DESC = "(DDD)L" + VERTEX + ";";
     private static final String ADD_VERTEX_DESC = "(FFF)L" + VERTEX + ";";
+    private static final String SET_COLOR_DESC = "(IIII)L" + VERTEX + ";";
 
     private AlienEvoNoopRenderBuffer1201() {}
 
@@ -26,6 +27,7 @@ final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
 
         int legacyPositionMethods = 0;
         MethodNode existingAddVertex = null;
+        MethodNode existingSetColor = null;
         for (MethodNode method : node.methods) {
             if (LEGACY_POSITION_DESC.equals(method.desc)) legacyPositionMethods++;
             if ("addVertex".equals(method.name) && ADD_VERTEX_DESC.equals(method.desc)) {
@@ -34,28 +36,67 @@ final class AlienEvoNoopRenderBuffer1201 implements Opcodes {
                 }
                 existingAddVertex = method;
             }
+            if ("setColor".equals(method.name) && SET_COLOR_DESC.equals(method.desc)) {
+                if (existingSetColor != null) {
+                    throw new IllegalStateException("AlienEvo NoopRenderBuffer$Noop has duplicate setColor(IIII) methods");
+                }
+                existingSetColor = method;
+            }
         }
         if (legacyPositionMethods != 1) {
             throw new IllegalStateException(
                     "AlienEvo NoopRenderBuffer$Noop expected one legacy double-position method; found "
                             + legacyPositionMethods);
         }
+
+        int changes = 0;
         if (existingAddVertex != null) {
             if (!isThisReturningNoop(existingAddVertex)) {
                 throw new IllegalStateException(
                         "AlienEvo NoopRenderBuffer$Noop already has a non-no-op addVertex(FFF) implementation");
             }
-            return 0;
+        } else {
+            node.methods.add(noopFluentMethod("addVertex", ADD_VERTEX_DESC, 4));
+            changes++;
         }
 
-        MethodNode addVertex = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC,
-                "addVertex", ADD_VERTEX_DESC, null, null);
-        addVertex.instructions.add(new VarInsnNode(ALOAD, 0));
-        addVertex.instructions.add(new InsnNode(ARETURN));
-        addVertex.maxStack = 1;
-        addVertex.maxLocals = 4;
-        node.methods.add(addVertex);
-        return 1;
+        // VertexConsumer.addVertex(float,float,float) chains through setColor
+        // when bulk-rendering an item. The 1.20.1 Noop sink has no matching
+        // 1.21.1 implementation, so keep the sink genuinely side-effect-free.
+        if (existingSetColor != null) {
+            if ((existingSetColor.access & (ACC_ABSTRACT | ACC_NATIVE)) != 0) {
+                replaceWithNoop(existingSetColor, 5);
+                changes++;
+            } else if (!isThisReturningNoop(existingSetColor)) {
+                throw new IllegalStateException(
+                        "AlienEvo NoopRenderBuffer$Noop already has a non-no-op setColor(IIII) implementation");
+            }
+        } else {
+            node.methods.add(noopFluentMethod("setColor", SET_COLOR_DESC, 5));
+            changes++;
+        }
+        return changes;
+    }
+
+    private static MethodNode noopFluentMethod(String name, String descriptor, int locals) {
+        MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC, name, descriptor, null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new InsnNode(ARETURN));
+        method.maxStack = 1;
+        method.maxLocals = locals;
+        return method;
+    }
+
+    private static void replaceWithNoop(MethodNode method, int locals) {
+        method.access = (method.access & ~(ACC_ABSTRACT | ACC_NATIVE | ACC_PRIVATE | ACC_PROTECTED))
+                | ACC_PUBLIC | ACC_SYNTHETIC;
+        method.instructions.clear();
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new InsnNode(ARETURN));
+        method.tryCatchBlocks.clear();
+        method.localVariables = null;
+        method.maxStack = 1;
+        method.maxLocals = locals;
     }
 
     private static boolean isThisReturningNoop(MethodNode method) {
