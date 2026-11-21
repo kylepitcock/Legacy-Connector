@@ -30,10 +30,11 @@ class AlienEvoNoopRenderBuffer1201Test implements Opcodes {
     @Test
     void addsFloatVertexAndColorMethodsAsNoopAndIsIdempotent() {
         ClassNode node = node(AlienEvoNoopRenderBuffer1201.TARGET_CLASS);
-        assertEquals(2, AlienEvoNoopRenderBuffer1201.apply(node));
+        assertEquals(3, AlienEvoNoopRenderBuffer1201.apply(node));
 
         assertNoop(node, "addVertex", "(FFF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
         assertNoop(node, "setColor", "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
+        assertNoop(node, "setUv", "(FF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";
         assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
     }
 
@@ -47,6 +48,19 @@ class AlienEvoNoopRenderBuffer1201Test implements Opcodes {
         assertEquals(2, AlienEvoNoopRenderBuffer1201.apply(node));
         assertEquals(0, color.access & ACC_ABSTRACT);
         assertNoop(node, "setColor", "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
+        assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
+    }
+
+    @Test
+    void replacesAnAbstractUvMethodWithTheNoopImplementation() {
+        ClassNode node = node(AlienEvoNoopRenderBuffer1201.TARGET_CLASS);
+        MethodNode uv = new MethodNode(ACC_PUBLIC | ACC_ABSTRACT, "setUv",
+                "(FF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";", null, null);
+        node.methods.add(uv);
+
+        assertEquals(3, AlienEvoNoopRenderBuffer1201.apply(node));
+        assertEquals(0, uv.access & ACC_ABSTRACT);
+        assertNoop(node, "setUv", "(FF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
         assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
     }
 
