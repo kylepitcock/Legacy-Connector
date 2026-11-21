@@ -11,6 +11,7 @@ public class ItemFlintAndSteel extends Item {
 
     protected ItemFlintAndSteel() {
         super();
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabTools);
         this.maxStackSize = 1;
         this.setMaxDamage(64);
     }

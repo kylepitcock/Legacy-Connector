@@ -218,8 +218,11 @@ public final class LegacyRemapper extends Remapper {
         }
         for (String candidate : notchLocals.keySet()) {
             java.util.Set<String> declared = localMethods.get(candidate);
-            if (declared == null || !declared.contains(member)) continue;
+            boolean declares = declared != null && declared.contains(member);
             if (!candidate.equals(top) && !isLocalSubtype(candidate, top, 0)) continue;
+            // a subclass that declares nothing still implements the Minecraft interface through the method it inherits (Railcraft's
+            // RailcraftTileEntity.a_(EntityPlayer) is IInventory.isUseableByPlayer of TileMultiBlockInventory, which inherits it)
+            if (!declares && candidate.equals(top)) continue;
             String renamed = methodNameOf(candidate, name, desc);
             if (!renamed.equals(name)) return renamed;
         }

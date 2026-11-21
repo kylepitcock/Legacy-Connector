@@ -20,6 +20,7 @@ public class ItemSeeds extends Item implements IPlantable {
     }
 
     public ItemSeeds(Block crops, Block soil) {
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabMaterials);
         this.field_150925_a = crops;
         this.field_150184_b = soil;
     }

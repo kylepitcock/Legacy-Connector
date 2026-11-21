@@ -116,9 +116,13 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;
         // a server player is moved by its client: the server's velocity is stale, the movement since the last tick is what Beta's motion was
         // (a trampoline bounces the speed a player lands with, an accelerator multiplies the walking speed)
-        if(player instanceof net.minecraft.server.level.ServerPlayer){
-            double dx=player.getX()-player.xo,dy=player.getY()-player.yo,dz=player.getZ()-player.zo;
-            if(dx!=0||dy!=0||dz!=0){velocityX=dx;velocityY=dy;velocityZ=dz;}
+        if(player instanceof net.minecraft.server.level.ServerPlayer server){
+            var reported=KeyBindingsB173.reportedVelocity(server);
+            if(reported!=null){velocityX=reported.x;velocityY=reported.y;velocityZ=reported.z;}
+            else{
+                double dx=player.getX()-player.xo,dy=player.getY()-player.yo,dz=player.getZ()-player.zo;
+                if(dx!=0||dy!=0||dz!=0){velocityX=dx;velocityY=dy;velocityZ=dz;}
+            }
         }
         // A server player never receives the jump key from the native client; the layer's key report carries it
         boolean jump=EntityFieldsB173.jumpInput(player)||player instanceof net.minecraft.server.level.ServerPlayer server&&KeyBindingsB173.jumpHeld(server);
@@ -136,6 +140,9 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         inventory.selectedSlot = player.getInventory().selected;
         for (int i = 0; i < 36; i++) {
             ItemStack legacy = StacksB173.toLegacy(player.getInventory().items.get(i));
+            // a refresh in the middle of a callback (the block a mod's right click grows triggers one) keeps the slot original code already
+            // changed or holds (a decremented or emptied stack) while the native slot is unchanged since the last sync
+            if (same(legacy, before[i])) continue;
             inventory.main[i] = legacy;
             before[i] = legacy == null ? null : legacy.copy();
         }

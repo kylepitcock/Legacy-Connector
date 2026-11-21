@@ -58,6 +58,7 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
         this.renderIndex = renderIndex;
         this.damageReduceAmount = armorType >= 0 && armorType < 4 ? this.material.getDamageReductionAmount(armorType) : 0;
         this.setMaxDamage(armorType >= 0 && armorType < 4 ? this.material.getDurability(armorType) : 0);
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabCombat);
         this.maxStackSize = 1;
     }
 

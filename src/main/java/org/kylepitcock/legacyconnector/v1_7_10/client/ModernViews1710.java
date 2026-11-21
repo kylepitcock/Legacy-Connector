@@ -110,6 +110,30 @@ public final class ModernViews1710 {
         }
     }
 
+    /** The survival inventory: inventory-tab mods (Galacticraft, Tinkers' Construct) match {@code event.gui instanceof GuiInventory} and place tabs from guiLeft/guiTop. */
+    public static final class Inventory extends legacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiInventory implements View {
+        private final net.minecraft.client.gui.screens.inventory.InventoryScreen modern;
+
+        Inventory(net.minecraft.client.gui.screens.inventory.InventoryScreen modern) {
+            super(Minecraft.mcc$get$thePlayer(Minecraft.getMinecraft()));
+            this.modern = modern;
+        }
+
+        @Override
+        public void mcc$initView(Minecraft mc, int width, int height) {
+            super.mcc$initView(mc, width, height);
+            this.guiLeft = modern.getGuiLeft();
+            this.guiTop = modern.getGuiTop();
+            this.xSize = modern.getXSize();
+            this.ySize = modern.getYSize();
+        }
+
+        @Override
+        public Screen modern() {
+            return modern;
+        }
+    }
+
     public static final class Sounds extends GuiScreenOptionsSounds implements View {
         private final Screen modern;
 
@@ -147,6 +171,7 @@ public final class ModernViews1710 {
     private static GuiScreen viewOf(Screen s) {
         try {
             if (s instanceof net.minecraft.client.gui.screens.TitleScreen) return new MainMenu(s);
+            if (s instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen inv && Minecraft.mcc$get$thePlayer(Minecraft.getMinecraft()) != null) return new Inventory(inv);
             if (s instanceof net.minecraft.client.gui.screens.options.OptionsScreen) return new Options(s);
             if (s instanceof net.minecraft.client.gui.screens.PauseScreen) return new Pause(s);
             if (s instanceof net.minecraft.client.gui.screens.options.VideoSettingsScreen) return new Video(s);

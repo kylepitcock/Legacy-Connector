@@ -1,0 +1,2 @@
+# issue 322: LDLib 1.20.1 alone (CustomResourcePack extends PathPackResources); jars in ignored folder test-mods-issues/322
+1.20.1 ldlib-forge-1.20.1

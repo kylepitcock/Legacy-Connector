@@ -51,7 +51,7 @@ public final class Round10ClientCompat {
      * {@code VertexFormat.Builder.padding(int)}). The element is a marker no format contains; {@link MiddleClientCompat#newVertexFormat} turns it into
      * one byte of padding. APPROXIMATION: the marker uses the {@code GENERIC} usage, so code that compares a usage with {@code PADDING} sees GENERIC.
      */
-    public static final VertexFormatElement PADDING_ELEMENT = new VertexFormatElement(31, 31, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.GENERIC, 1);
+    public static final VertexFormatElement PADDING_ELEMENT = new VertexFormatElement(31, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.GENERIC, 1);
 
     public static VertexFormatElement elementPadding() {
         return PADDING_ELEMENT;

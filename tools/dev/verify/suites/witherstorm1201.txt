@@ -1,0 +1,2 @@
+# issue 320: Cracker's Wither Storm 1.20.1 alone (SimpleFoiledItem); jars in ignored folder test-mods-issues/320
+1.20.1 witherstormmod-1.20.1

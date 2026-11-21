@@ -48,6 +48,11 @@ public final class ClientGui {
         return new LegacyMenu(type, windowId, inv, new Empty(), null);
     }
 
+    /** The local player as a plain Player (a client class kept out of server-loaded bridges), or null. */
+    public static net.minecraft.world.entity.player.Player localPlayer() {
+        return Minecraft.getInstance().player;
+    }
+
     public static void display(GuiScreen screen) {
         Minecraft mc = Minecraft.getInstance();
         if (screen == null) {

@@ -25,6 +25,7 @@ public class ItemBow extends legacyconnector.v1_7_10.net.minecraft.item.Item {
 
     protected ItemBow() {
         super();
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabCombat);
         this.maxStackSize = 1;
         this.setMaxDamage(384);
     }

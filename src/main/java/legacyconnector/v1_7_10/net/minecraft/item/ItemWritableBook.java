@@ -13,6 +13,7 @@ public class ItemWritableBook extends Item {
 
     public ItemWritableBook() {
         super();
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabMisc);
         setMaxStackSize(1);
     }
 

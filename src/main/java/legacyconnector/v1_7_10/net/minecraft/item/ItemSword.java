@@ -20,6 +20,7 @@ public class ItemSword extends Item {
 
     public ItemSword(Item.ToolMaterial material) {
         this.field_150933_b = material == null ? Item.ToolMaterial.WOOD : material;
+        setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabCombat);
         this.maxStackSize = 1;
         this.setMaxDamage(field_150933_b.getMaxUses());
         this.field_150934_a = 4.0F + field_150933_b.getDamageVsEntity();

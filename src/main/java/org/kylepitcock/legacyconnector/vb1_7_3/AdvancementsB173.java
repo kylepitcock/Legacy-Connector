@@ -50,7 +50,8 @@ public final class AdvancementsB173 {
         Achievement vanillaRoot=Achievements.OPEN_INVENTORY;
         Map<ResourceLocation,String> roots=new LinkedHashMap<>();
         Map<ResourceLocation,String> titles=new LinkedHashMap<>();
-        for(Stat stat:all())if(stat instanceof Achievement achievement&&achievement!=vanillaRoot&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(achievement.mcc$namespace)){
+        // Beta's own achievements (open inventory, getting wood, ...) are vanilla's advancements already: only mods' achievements get a tab
+        for(Stat stat:all())if(stat instanceof Achievement achievement&&achievement!=vanillaRoot&&!achievement.mcc$vanilla&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(achievement.mcc$namespace)){
             ResourceLocation id=idOf(achievement),parent=parentOf(achievement);
             var stack=achievement.icon==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(achievement.icon);
             String icon=stack.isEmpty()?"minecraft:barrier":BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
