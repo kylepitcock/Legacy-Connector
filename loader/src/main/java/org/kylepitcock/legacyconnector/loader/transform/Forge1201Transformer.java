@@ -360,6 +360,7 @@ public final class Forge1201Transformer {
         int alienEvoNoopRenderBufferChanges = 0;
         int alienEvoDynamicColorParticleRenderTypeChanges = 0;
         int alienEvoBoneAnchorsChanges = 0;
+        int alienEvoBeamAbilityParticlesChanges = 0;
         int alienEvoColoredProjectileRendererChanges = 0;
         int alienEvoSuperheroFlightControllerChanges = 0;
         int alienEvoLateEffectBuffersChanges = 0;
@@ -485,6 +486,8 @@ public final class Forge1201Transformer {
             alienEvoDynamicColorParticleRenderTypeChanges += alienEvoDynamicColorParticleRenderTypeChange;
             int alienEvoBoneAnchorsChange = AlienEvoBoneAnchors1201.apply(node);
             alienEvoBoneAnchorsChanges += alienEvoBoneAnchorsChange;
+            int alienEvoBeamAbilityParticlesChange = AlienEvoBeamAbilityParticles1201.apply(node);
+            alienEvoBeamAbilityParticlesChanges += alienEvoBeamAbilityParticlesChange;
             int alienEvoColoredProjectileRendererChange = AlienEvoColoredProjectileRenderer1201.apply(node);
             alienEvoColoredProjectileRendererChanges += alienEvoColoredProjectileRendererChange;
             int alienEvoSuperheroFlightControllerChange = AlienEvoSuperheroFlightController1201.apply(node);
@@ -524,7 +527,7 @@ public final class Forge1201Transformer {
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
                     + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange
                     + alienEvoDynamicColorParticleRenderTypeChange + alienEvoBoneAnchorsChange
-                    + alienEvoSuperheroFlightControllerChange
+                    + alienEvoBeamAbilityParticlesChange + alienEvoSuperheroFlightControllerChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
         if (mapper.authlibPropertyMethodReferences > 0) {
@@ -585,6 +588,10 @@ public final class Forge1201Transformer {
         if (alienEvoBoneAnchorsChanges > 0) {
             result.notes.add("AlienEvo BoneAnchors inverse-view rotation migrated to the 1.21.1 active camera rotation API: "
                     + alienEvoBoneAnchorsChanges + " call site(s)");
+        }
+        if (alienEvoBeamAbilityParticlesChanges > 0) {
+            result.notes.add("AlienEvo BeamAbility particle parsing migrated ParticleArgument.readParticle to the 1.21.1 HolderLookup.Provider signature: "
+                    + alienEvoBeamAbilityParticlesChanges + " call site(s)");
         }
         if (alienEvoLateEffectBuffersChanges > 0) {
             result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
