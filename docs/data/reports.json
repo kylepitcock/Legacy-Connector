@@ -1103,6 +1103,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites/files/8787918",
    "date": "2026-11-20",
    "open": false
+  },
+  {
+   "issue": 320,
+   "mod": "Cracker's Wither Storm Mod 4.2.1",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "in the neoforge loading screen in the step that legacy connector translates the mod it says its translating the wither mod but seconds after it crashed the entire agme",
+   "lc": "0.5.0",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/crackers-wither-storm-mod",
+   "date": "2026-11-21",
+   "open": true
   }
  ]
 }
