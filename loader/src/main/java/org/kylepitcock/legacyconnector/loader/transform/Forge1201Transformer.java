@@ -559,8 +559,8 @@ public final class Forge1201Transformer {
                     + alienEvoColoredProjectileRendererChanges + " field read(s)");
         }
         if (alienEvoNoopRenderBufferChanges > 0) {
-            result.notes.add("AlienEvo NoopRenderBuffer$Noop now implements VertexConsumer.addVertex(float,float,float) while preserving no-op behavior: "
-                    + alienEvoNoopRenderBufferChanges + " method addition(s)");
+            result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float) and setColor(int,int,int,int) methods: "
+                    + alienEvoNoopRenderBufferChanges + " method change(s)");
         }
         if (alienEvoLateEffectBuffersChanges > 0) {
             result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
