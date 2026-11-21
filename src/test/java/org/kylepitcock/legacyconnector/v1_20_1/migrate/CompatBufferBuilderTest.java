@@ -8,30 +8,16 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
-import net.minecraft.SharedConstants;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.server.Bootstrap;
-import org.junit.jupiter.api.BeforeAll;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
 class CompatBufferBuilderTest {
 
-    @BeforeAll
-    static void bootstrapMinecraftRegistries() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
-    }
-
-    private static final class CapturingRenderType extends RenderType {
+    private static final class CapturingDraw implements Consumer<MeshData> {
         private MeshData drawn;
 
-        private CapturingRenderType(boolean sortOnUpload) {
-            super("legacy_connector_test", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS,
-                    256, false, sortOnUpload, () -> {}, () -> {});
-        }
-
         @Override
-        public void draw(MeshData mesh) {
+        public void accept(MeshData mesh) {
             drawn = mesh;
         }
     }
@@ -39,7 +25,7 @@ class CompatBufferBuilderTest {
     @Test
     void renderTypeCompatibilityPathSortsTranslucentQuadsBeforeDrawing() {
         CompatBufferBuilder builder = new CompatBufferBuilder(256);
-        CapturingRenderType renderType = new CapturingRenderType(true);
+        CapturingDraw draw = new CapturingDraw();
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         builder.vertex(0.0, 0.0, 0.0);
         builder.vertex(1.0, 0.0, 0.0);
@@ -47,12 +33,12 @@ class CompatBufferBuilderTest {
         builder.vertex(0.0, 1.0, 0.0);
 
         try {
-            CompatBufferBuilder.drawWithRenderType(renderType, builder, VertexSorting.DISTANCE_TO_ORIGIN);
+            CompatBufferBuilder.drawWithRenderType(builder, true, VertexSorting.DISTANCE_TO_ORIGIN, draw);
 
-            assertNotNull(renderType.drawn, "RenderType.draw must receive the built mesh");
-            assertNotNull(renderType.drawn.indexBuffer(), "translucent quad indices must be sorted before draw");
+            assertNotNull(draw.drawn, "the draw callback must receive the built mesh");
+            assertNotNull(draw.drawn.indexBuffer(), "translucent quad indices must be sorted before draw");
         } finally {
-            if (renderType.drawn != null) renderType.drawn.close();
+            if (draw.drawn != null) draw.drawn.close();
             builder.discard();
         }
     }
@@ -60,7 +46,7 @@ class CompatBufferBuilderTest {
     @Test
     void nonSortingRenderTypeDrawsWithoutCreatingSortedIndices() {
         CompatBufferBuilder builder = new CompatBufferBuilder(256);
-        CapturingRenderType renderType = new CapturingRenderType(false);
+        CapturingDraw draw = new CapturingDraw();
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         builder.vertex(0.0, 0.0, 0.0);
         builder.vertex(1.0, 0.0, 0.0);
@@ -68,13 +54,13 @@ class CompatBufferBuilderTest {
         builder.vertex(0.0, 1.0, 0.0);
 
         try {
-            CompatBufferBuilder.drawWithRenderType(renderType, builder, VertexSorting.DISTANCE_TO_ORIGIN);
+            CompatBufferBuilder.drawWithRenderType(builder, false, VertexSorting.DISTANCE_TO_ORIGIN, draw);
 
-            assertNotNull(renderType.drawn, "RenderType.draw must receive the built mesh");
-            org.junit.jupiter.api.Assertions.assertNull(renderType.drawn.indexBuffer(),
+            assertNotNull(draw.drawn, "the draw callback must receive the built mesh");
+            org.junit.jupiter.api.Assertions.assertNull(draw.drawn.indexBuffer(),
                     "non-translucent layers should not allocate sorted quad indices");
         } finally {
-            if (renderType.drawn != null) renderType.drawn.close();
+            if (draw.drawn != null) draw.drawn.close();
             builder.discard();
         }
     }
