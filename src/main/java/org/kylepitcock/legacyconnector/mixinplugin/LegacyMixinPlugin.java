@@ -30,9 +30,12 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
     private static final String ADDITIONS_SUFFIX = ".coremod-additions.json";
     private static final String PROVENANCE = "META-INF/legacyconnector/provenance.json";
     private static volatile boolean installed;
+    /** One plugin instance exists per config (legacyconnector.mixins.json and legacyconnector.compat.mixins.json share this class). */
+    private String mixinPackage = "";
 
     @Override
     public void onLoad(String mixinPackage) {
+        this.mixinPackage = mixinPackage;
         install();
     }
 
@@ -55,6 +58,9 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
     @Override
     public List<String> getMixins() {
         install();
+        // Only the main config owns the guarded mixins: they are relative to its package, and the compat config (package ...mixin.compat) would
+        // otherwise look for them there and log "The specified mixin ... was not found" errors.
+        if (mixinPackage != null && mixinPackage.endsWith(".compat")) return null;
         // Mixins whose target is a NeoForge class. Other mods (Sinytra Connector's updateModuleReads loads classes through the game layer very early) may have
         // loaded that class before Mixin prepares this config, and Mixin then throws MixinTargetAlreadyLoadedException, a critical error that stops the game.
         // They are therefore listed here, not in the json, and dropped with a warning when the target is already loaded.

@@ -15,12 +15,15 @@ public final class BetaClassForName implements Opcodes {
 
     private BetaClassForName() {}
 
+    /** {@code Class.forName}, or the JDK compatibility redirect that already replaced it (it runs first and cannot see a Beta mod's own package). */
+    private static final java.util.Set<String> FOR_NAME_OWNERS = java.util.Set.of("java/lang/Class", "org/kylepitcock/legacyconnector/compat/jdk/ReflectionCompat");
+
     public static int apply(ClassNode node, LegacyVersion version) {
         if (version != LegacyVersion.VB1_7_3 || node.name.startsWith("legacyconnector/") || node.name.startsWith("legacyconnector_synth/")) return 0;
         int count = 0;
         for (MethodNode method : node.methods) {
             for (AbstractInsnNode insn : method.instructions.toArray()) {
-                if (!(insn instanceof MethodInsnNode call) || call.getOpcode() != INVOKESTATIC || !call.owner.equals("java/lang/Class") || !call.name.equals("forName")) continue;
+                if (!(insn instanceof MethodInsnNode call) || call.getOpcode() != INVOKESTATIC || !FOR_NAME_OWNERS.contains(call.owner) || !call.name.equals("forName")) continue;
                 String desc;
                 if (call.desc.equals("(Ljava/lang/String;)Ljava/lang/Class;")) desc = "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Class;";
                 else if (call.desc.equals("(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;")) desc = "(Ljava/lang/String;ZLjava/lang/ClassLoader;Ljava/lang/Class;)Ljava/lang/Class;";

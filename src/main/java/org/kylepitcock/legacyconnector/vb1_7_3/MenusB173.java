@@ -223,6 +223,12 @@ public final class MenusB173 {
         if(PlayerInventoryNetworkB173.offer(screen))return;
         Actor actor=ACTOR.get();
         if(actor!=null){actor.requested=screen;actor.pending=true;return;}
+        // a container screen original code shows from a tick running for a server player (Beta single player had one world: a mod built it
+        // over the real player and entity, the airship's cargo screen) opens as OpenGUI does, on a menu that syncs and takes the clicks
+        if(screen instanceof legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.ingame.HandledScreen){
+            var acting=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$currentPlayerContext();
+            if(acting!=null&&acting.mcc$modern instanceof ServerPlayer player){requestScreen(player,screen);return;}
+        }
         Client c = client;
         if (c != null) c.setScreen(screen);
     }

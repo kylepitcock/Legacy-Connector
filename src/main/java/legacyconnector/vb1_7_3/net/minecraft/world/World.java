@@ -381,7 +381,7 @@ public class World implements BlockView {
         var access=mcc$access();if(!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,p,next))return false;
         boolean changed=access.setBlock(p,next,writeFlags(access instanceof net.minecraft.server.level.WorldGenRegion?2:flags));
         if(changed&&chestChange)chestChanged(p);
-        if(changed&&(next.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock||previous.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock))connectBars(p);
+        if(changed&&skipsShapes(access,flags))org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.refreshShapes(access,p);
         // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
         if(changed&&unsupportedTorch&&state(x,y,z)==next)access.destroyBlock(p,true);
         // Beta's chunk write ran the new block's onBlockAdded during population too (Twilight Forest's trees place fireflies with metadata 0
@@ -400,24 +400,9 @@ public class World implements BlockView {
         }
     }
 
-    /** Beta fences and panes joined their neighbours when drawn; batched writes (no neighbour notification) leave the native connection flags stale. */
-    private void connectBars(BlockPos pos){
-        var access=mcc$access();
-        if(access==null)return;
-        var around=new java.util.ArrayList<BlockPos>();around.add(pos);
-        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL)around.add(pos.relative(side));
-        for(var at:around){
-            if(!access.hasChunkAt(at))continue;
-            BlockState current=access.getBlockState(at);
-            if(!(current.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock))continue;
-            BlockState updated=current;
-            for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){
-                var neighbour=at.relative(side);
-                if(access.hasChunkAt(neighbour))updated=updated.updateShape(side,access.getBlockState(neighbour),access,at,neighbour);
-            }
-            if(updated!=current&&org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,at,updated))
-                access.setBlock(at,updated,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
-        }
+    /** A write the native game makes without neighbour shape updates: in a generation region, or with the known-shape flag (edit mode). */
+    private boolean skipsShapes(net.minecraft.world.level.LevelAccessor access,int flags){
+        return access instanceof net.minecraft.server.level.WorldGenRegion||(writeFlags(flags)&net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE)!=0;
     }
 
     private void chestChanged(BlockPos pos){
@@ -488,7 +473,7 @@ public class World implements BlockView {
         var access=mcc$access();boolean changed=org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,next)&&access.setBlock(pos,next,writeFlags(access instanceof net.minecraft.server.level.WorldGenRegion?2:flags));
         if(changed&&chest)chestChanged(pos);
         // a metadata write rebuilds a fence or pane from its unconnected default state (Millenaire writes metadata after placing its fences)
-        if(changed&&next.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock)connectBars(pos);
+        if(changed&&skipsShapes(access,flags))org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.refreshShapes(access,pos);
         return changed;
     }
 
@@ -837,12 +822,16 @@ public class World implements BlockView {
             if(level instanceof net.minecraft.client.multiplayer.ClientLevel client)client.entitiesForRendering().forEach(out::add);
         }
     }
-    /** Bumped whenever an entity joins or leaves any level: the entity list snapshots below stay valid until then or the next tick. */
-    private static final java.util.concurrent.atomic.AtomicLong ENTITY_VERSION=new java.util.concurrent.atomic.AtomicLong();
+    /**
+     * Bumped whenever an entity joins or leaves that level: the entity list snapshots below stay valid until then or the next tick. Per level, so
+     * drops, arrows and spawns in other dimensions (or on the other side in single player) do not rebuild this level's list.
+     */
+    private static final java.util.Map<Level,java.util.concurrent.atomic.AtomicLong> ENTITY_VERSIONS=new com.google.common.collect.MapMaker().weakKeys().makeMap();
+    private static java.util.concurrent.atomic.AtomicLong entityVersion(Level level){return ENTITY_VERSIONS.computeIfAbsent(level,l->new java.util.concurrent.atomic.AtomicLong());}
     static{
         try{
-            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e)->ENTITY_VERSION.incrementAndGet());
-            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent e)->ENTITY_VERSION.incrementAndGet());
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.EntityJoinLevelEvent e)->entityVersion(e.getLevel()).incrementAndGet());
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent e)->entityVersion(e.getLevel()).incrementAndGet());
         }catch(RuntimeException|LinkageError ignored){} // offline tools without the event bus rebuild every time
     }
     private record EntitySnapshot(long time,long version,List<net.minecraft.world.entity.Entity> entities){}
@@ -853,7 +842,7 @@ public class World implements BlockView {
             // Beta mods walk loadedEntityList by index every tick or frame (size() then get(i)); rebuilding the list per call was quadratic,
             // so one snapshot serves until an entity joins or leaves or the game time moves on
             private List<net.minecraft.world.entity.Entity> snapshot() {
-                int slot=onlyPlayers?1:0;long time=mcc$level.getGameTime(),version=ENTITY_VERSION.get();
+                int slot=onlyPlayers?1:0;long time=mcc$level.getGameTime(),version=entityVersion(mcc$level).get();
                 var cached=mcc$entitySnapshots[slot];
                 if(cached!=null&&cached.time()==time&&cached.version()==version)return cached.entities();
                 var fresh=build();mcc$entitySnapshots[slot]=new EntitySnapshot(time,version,fresh);return fresh;
