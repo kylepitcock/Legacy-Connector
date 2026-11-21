@@ -276,7 +276,10 @@ public final class MiddleClientCompat {
                                            java.util.function.IntConsumer removeExisting,
                                            java.util.function.Consumer<T> add) {
         T existing = getExisting.apply(id);
-        if (existing != null && existing != entity) {
+        if (existing == entity) {
+            return;
+        }
+        if (existing != null) {
             removeExisting.accept(id);
         }
         add.accept(entity);

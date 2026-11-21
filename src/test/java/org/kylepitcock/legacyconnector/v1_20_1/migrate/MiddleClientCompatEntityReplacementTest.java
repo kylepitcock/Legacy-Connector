@@ -60,10 +60,13 @@ class MiddleClientCompatEntityReplacementTest {
         List<String> calls = new ArrayList<>();
 
         MiddleClientCompat.replaceNonPlayerEntity(0, currentEntity,
-                id -> currentEntity,
+                id -> {
+                    calls.add("lookup");
+                    return currentEntity;
+                },
                 id -> calls.add("remove"),
                 entity -> calls.add("add"));
 
-        assertEquals(List.of("add"), calls);
+        assertEquals(List.of("lookup"), calls);
     }
 }
