@@ -33,6 +33,18 @@ public final class ModLoader {
         return event;
     }
 
+    /**
+     * {@code ModLoader.get().runEventGenerator(container -> event)}: one event per mod, built from that mod's container and sent to that mod's own bus
+     * (Cracker's Wither Storm and CrackersLib gather per-mod registrations this way). An event that is not a mod bus event is not posted.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T extends Event> void runEventGenerator(java.util.function.Function<net.neoforged.fml.ModContainer, T> generator) {
+        for (net.neoforged.fml.ModContainer container : net.neoforged.fml.ModList.get().getSortedMods()) {
+            T event = generator.apply(container);
+            if (event instanceof IModBusEvent) container.acceptEvent((Event & IModBusEvent) event);
+        }
+    }
+
     /** Whether no loading error has happened so far. */
     public static boolean isLoadingStateValid() {
         return !net.neoforged.fml.ModLoader.hasErrors();

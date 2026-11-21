@@ -698,6 +698,21 @@ public final class MiscCompat {
     }
 
     /**
+     * The mixin invoker {@code JigsawPlacement.addPieces(...)} of 1.20.1 (the private recursive piece placer, reached by structures that grow extra jigsaw
+     * branches themselves): 1.21.1 added the pool alias lookup and the liquid settings; the 1.20.1 behaviour is no aliases and waterlogging next to water.
+     */
+    public static void jigsawAddPieces(net.minecraft.world.level.levelgen.RandomState randomState, int maxDepth, boolean useExpansionHack,
+            net.minecraft.world.level.chunk.ChunkGenerator generator, net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager templates,
+            net.minecraft.world.level.LevelHeightAccessor heightAccessor, net.minecraft.util.RandomSource random,
+            net.minecraft.core.Registry<net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool> pools,
+            net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece piece,
+            java.util.List<net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece> pieces, net.minecraft.world.phys.shapes.VoxelShape shape) {
+        net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement.addPieces(randomState, maxDepth, useExpansionHack, generator, templates, heightAccessor, random,
+                pools, piece, pieces, shape, net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup.EMPTY,
+                net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING);
+    }
+
+    /**
      * {@code CriteriaTriggers.CRITERIA} (a mixin accessor of YUNG's API and others): the id-to-trigger map is the {@code TRIGGER_TYPES} registry in 1.21.1. A view
      * over it; {@code put} registers late (the registry may be frozen), the rest reads the registry.
      */
