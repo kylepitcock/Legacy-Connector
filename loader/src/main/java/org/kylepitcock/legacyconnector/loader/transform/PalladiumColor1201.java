@@ -10,6 +10,7 @@ import org.objectweb.asm.tree.MethodNode;
 final class PalladiumColor1201 implements Opcodes {
     static final String COLORABLE_SUIT_STAND_LAYER =
             "net/threetag/palladium/client/renderer/renderlayer/ColorableSuitStandLayer";
+    static final String LASER_RENDERER = "net/threetag/palladium/client/renderer/LaserRenderer";
     private static final String SHEEP = "net/minecraft/world/entity/animal/Sheep";
     private static final String DYE_COLOR = "net/minecraft/world/item/DyeColor";
     private static final String RENDER_DESC =
@@ -24,10 +25,36 @@ final class PalladiumColor1201 implements Opcodes {
     private PalladiumColor1201() {
     }
 
-    /** Rewrites exactly the three old Sheep color calls in render(); rejects partial or changed shapes. */
+    /**
+     * Rewrites the removed Sheep.getColorArray call for every Palladium caller.
+     * ColorableSuitStandLayer retains its exact three-call guard; LaserRenderer
+     * uses the same legacy float-array result for its beam tint calculation.
+     */
     static int apply(ClassNode node) {
-        if (!COLORABLE_SUIT_STAND_LAYER.equals(node.name)) return 0;
+        if (COLORABLE_SUIT_STAND_LAYER.equals(node.name)) {
+            return adaptSuitStand(node);
+        }
+        if (!LASER_RENDERER.equals(node.name)) return 0;
 
+        int changes = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode instruction : method.instructions.toArray()) {
+                if (!(instruction instanceof MethodInsnNode call)) continue;
+                if (!SHEEP.equals(call.owner) || !LEGACY_METHOD.equals(call.name)) continue;
+                if (call.getOpcode() != INVOKESTATIC || !LEGACY_DESC.equals(call.desc)) {
+                    throw new IllegalStateException("Palladium " + node.name
+                            + " has an unexpected Sheep.getColorArray call shape: " + call.desc);
+                }
+                method.instructions.set(call, new MethodInsnNode(
+                        INVOKESTATIC, HELPER, HELPER_METHOD, LEGACY_DESC, false));
+                changes++;
+            }
+        }
+        return changes;
+    }
+
+    private static int adaptSuitStand(ClassNode node) {
         MethodNode render = null;
         for (MethodNode method : node.methods) {
             if ("render".equals(method.name) && RENDER_DESC.equals(method.desc)) {

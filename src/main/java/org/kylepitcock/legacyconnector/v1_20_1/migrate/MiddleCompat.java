@@ -311,6 +311,11 @@ public final class MiddleCompat {
         return be.getUpdateTag(provider(be));
     }
 
+    /** The 1.20.1 {@code super.getUpdateTag()} base implementation, without virtual redispatch to a translated override. */
+    public static CompoundTag getUpdateTagSuper(BlockEntity be) {
+        return be.saveWithoutMetadata(provider(be));
+    }
+
     /** {@code BlockEntity.saveWithId()}. */
     public static CompoundTag saveWithId(BlockEntity be) {
         return be.saveWithId(provider(be));

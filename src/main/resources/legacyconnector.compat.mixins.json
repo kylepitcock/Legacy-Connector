@@ -11,7 +11,8 @@
     "KubeJSBlockEntityLegacyInventoryMixin",
     "KubeJSItemBuilderLegacyGlowMixin",
     "KubeJSItemModificationLegacyBuilderMixin",
-    "KubeJSBlockEntityTickLegacyViewMixin"
+    "KubeJSBlockEntityTickLegacyViewMixin",
+    "KubeJSConsoleExecutorShutdownRaceMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",

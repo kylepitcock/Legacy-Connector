@@ -433,6 +433,67 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacyPostChainAddPassKeepsNearestNeighborFiltering() {
+        String postChain = "net/minecraft/client/renderer/PostChain";
+        String renderTarget = "com/mojang/blaze3d/pipeline/RenderTarget";
+        String postPass = "net/minecraft/client/renderer/PostPass";
+        String oldDesc = "(Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";)L" + postPass + ";";
+        String newDesc = "(Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";Z)L" + postPass + ";";
+
+        ClassNode c = cls("test/CrispPostPass", "java/lang/Object");
+        MethodNode add = method(c, ACC_PUBLIC | ACC_STATIC, "add",
+                "(L" + postChain + ";Ljava/lang/String;L" + renderTarget + ";L" + renderTarget + ";)L" + postPass + ";");
+        add.maxLocals = 4;
+        add.maxStack = 4;
+        add.instructions.add(new VarInsnNode(ALOAD, 0));
+        add.instructions.add(new VarInsnNode(ALOAD, 1));
+        add.instructions.add(new VarInsnNode(ALOAD, 2));
+        add.instructions.add(new VarInsnNode(ALOAD, 3));
+        add.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, postChain, "addPass", oldDesc, false));
+        add.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).calls);
+        MethodInsnNode call = find(add, postChain, "addPass");
+        assertNotNull(call);
+        assertEquals(newDesc, call.desc);
+        assertEquals(ICONST_0, call.getPrevious().getOpcode(),
+                "the 1.20.1 PostPass default is nearest-neighbor filtering");
+        verify(c);
+    }
+
+    @Test
+    void legacyPostChainConstructorUsesResourceProviderDescriptor() {
+        String postChain = "net/minecraft/client/renderer/PostChain";
+        String textureManager = "net/minecraft/client/renderer/texture/TextureManager";
+        String resourceManager = "net/minecraft/server/packs/resources/ResourceManager";
+        String resourceProvider = "net/minecraft/server/packs/resources/ResourceProvider";
+        String renderTarget = "com/mojang/blaze3d/pipeline/RenderTarget";
+        String resourceLocation = "net/minecraft/resources/ResourceLocation";
+        String oldDesc = "(L" + textureManager + ";L" + resourceManager + ";L" + renderTarget + ";L" + resourceLocation + ";)V";
+        String newDesc = "(L" + textureManager + ";L" + resourceProvider + ";L" + renderTarget + ";L" + resourceLocation + ";)V";
+
+        ClassNode c = cls("test/LegacyPostChainFactory", "java/lang/Object");
+        MethodNode create = method(c, ACC_PUBLIC | ACC_STATIC, "create",
+                "(L" + textureManager + ";L" + resourceManager + ";L" + renderTarget + ";L" + resourceLocation + ";)L" + postChain + ";");
+        create.maxLocals = 4;
+        create.maxStack = 6;
+        create.instructions.add(new TypeInsnNode(NEW, postChain));
+        create.instructions.add(new InsnNode(DUP));
+        create.instructions.add(new VarInsnNode(ALOAD, 0));
+        create.instructions.add(new VarInsnNode(ALOAD, 1));
+        create.instructions.add(new VarInsnNode(ALOAD, 2));
+        create.instructions.add(new VarInsnNode(ALOAD, 3));
+        create.instructions.add(new MethodInsnNode(INVOKESPECIAL, postChain, "<init>", oldDesc, false));
+        create.instructions.add(new InsnNode(ARETURN));
+
+        apply(c);
+        MethodInsnNode constructor = find(create, postChain, "<init>");
+        assertNotNull(constructor);
+        assertEquals(newDesc, constructor.desc);
+        verify(c);
+    }
+
+    @Test
     void directMinecraftCallsUseRenamedMemberTable() {
         String gameRenderer = "net/minecraft/client/renderer/GameRenderer";
         String shaderInstance = "net/minecraft/client/renderer/ShaderInstance";
@@ -517,6 +578,35 @@ class Mc1201MigrationTest implements Opcodes {
         assertEquals(1, apply(item, c).calls);
         assertNotNull(find(m, "test/MyItem", "getMaxDamage"));
         assertNotNull(find(m, MIGRATE + "MiscCompat", "getMaxDamage"));
+    }
+
+    @Test
+    void blockEntityGetUpdateTagSuperCallDoesNotRedispatchThroughTheTranslatedOverride() {
+        ClassNode c = cls("test/DiamondBlockEntity", BE);
+        MethodNode legacyOverride = method(c, ACC_PUBLIC, "getUpdateTag", "()L" + CT + ";");
+        legacyOverride.instructions.add(new VarInsnNode(ALOAD, 0));
+        legacyOverride.instructions.add(new MethodInsnNode(INVOKESPECIAL, BE, "getUpdateTag", "()L" + CT + ";", false));
+        legacyOverride.instructions.add(new InsnNode(ARETURN));
+
+        MethodNode ordinaryCall = method(c, ACC_PUBLIC | ACC_STATIC, "ordinaryUpdateTag", "(L" + BE + ";)L" + CT + ";");
+        ordinaryCall.instructions.add(new VarInsnNode(ALOAD, 0));
+        ordinaryCall.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, BE, "getUpdateTag", "()L" + CT + ";", false));
+        ordinaryCall.instructions.add(new InsnNode(ARETURN));
+
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(2, counts.calls);
+
+        MethodInsnNode superCall = find(legacyOverride, MIGRATE + "MiddleCompat", "getUpdateTagSuper");
+        assertNotNull(superCall);
+        assertEquals(INVOKESTATIC, superCall.getOpcode());
+        assertEquals("(L" + BE + ";)L" + CT + ";", superCall.desc);
+        assertNull(find(legacyOverride, MIGRATE + "MiddleCompat", "getUpdateTag"));
+
+        MethodInsnNode virtualCall = find(ordinaryCall, MIGRATE + "MiddleCompat", "getUpdateTag");
+        assertNotNull(virtualCall);
+        assertEquals(INVOKESTATIC, virtualCall.getOpcode());
+        assertNull(find(ordinaryCall, MIGRATE + "MiddleCompat", "getUpdateTagSuper"));
+        verify(c);
     }
 
     @Test
@@ -1024,6 +1114,28 @@ class Mc1201MigrationTest implements Opcodes {
         assertNotNull(find(bridge, builder, "of"));
         assertNotNull(find(bridge, "test/GlowType", "begin"));
         assertNotNull(find(bridge, builder, "handOver"));
+        verify(c);
+    }
+
+    @Test
+    void inheritedPlayerStepHeightSetterUsesTheLivingEntityAttributeAdapter() {
+        String player = "net/minecraft/world/entity/player/Player";
+        String entityCompat = MIGRATE + "EntityCompat";
+        ClassNode c = cls("net/habb/alienevo/aliens/petrosapien/CrystalSurfController", "java/lang/Object");
+        MethodNode move = method(c, ACC_PUBLIC | ACC_STATIC, "temporarilyRaiseStepHeight",
+                "(L" + player + ";F)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(FLOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, player, "setMaxUpStep", "(F)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(1, counts.calls);
+        MethodInsnNode setter = find(move, entityCompat, "setMaxUpStep");
+        assertNotNull(setter,
+                "the inherited Entity.setMaxUpStep call must route to the STEP_HEIGHT attribute helper");
+        assertEquals(INVOKESTATIC, setter.getOpcode());
+        assertEquals("(Lnet/minecraft/world/entity/Entity;F)V", setter.desc);
         verify(c);
     }
 

@@ -77,6 +77,11 @@ class PalladiumFlightHandler1201Test implements Opcodes {
         tick.maxLocals = 1;
         tick.maxStack = 2;
         node.methods.add(tick);
+
+        MethodNode updateMovement = new MethodNode(ACC_PRIVATE, "updateMovement", "()V", null, null);
+        updateMovement.instructions.add(new InsnNode(RETURN));
+        updateMovement.maxLocals = 1;
+        node.methods.add(updateMovement);
         return node;
     }
 
@@ -176,6 +181,31 @@ class PalladiumFlightHandler1201Test implements Opcodes {
             node.accept(writer);
             writer.toByteArray();
         });
+    }
+
+
+    private static boolean hasHelperCall(MethodNode method, String helperName) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && call.owner.equals("legacyconnector/v1_20_1/PalladiumFlightDebugCompat")
+                    && call.name.equals(helperName)) return true;
+        }
+        return false;
+    }
+
+    @Test
+    void addsOptInTracingAtFlightActivationTickAndMovementStages() {
+        ClassNode node = takeoffFixture();
+
+        assertEquals(3, PalladiumFlightHandler1201.applyDiagnostics(node));
+        assertTrue(hasHelperCall(method(node, "setFlightType",
+                "(L" + PalladiumFlightHandler1201.FLIGHT_TYPE + ";)V"), "logFlightType"));
+        assertTrue(hasHelperCall(method(node, "tick", "()V"), "logFlightState"));
+        assertTrue(hasHelperCall(method(node, "updateMovement", "()V"), "logFlightState"));
+
+        assertEquals(0, PalladiumFlightHandler1201.applyDiagnostics(node),
+                "diagnostic injection must be idempotent");
     }
 
     @Test

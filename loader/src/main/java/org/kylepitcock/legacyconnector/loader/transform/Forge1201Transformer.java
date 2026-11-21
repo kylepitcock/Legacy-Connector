@@ -61,6 +61,18 @@ public final class Forge1201Transformer {
     private static final String KUBEJS6_CONSOLE = "dev/latvian/mods/kubejs/util/ConsoleJS";
     private static final String KUBEJS7_CONSOLE = "dev/latvian/mods/kubejs/script/ConsoleJS";
 
+    /**
+     * Curated aliases which must target the native NeoForge class even when a
+     * same-named Forge facade exists. Other overlapping aliases retain the
+     * compatibility facade by default.
+     */
+    private static final java.util.Set<String> NATIVE_ALIAS_OVERRIDES = java.util.Set.of(
+            "net/minecraftforge/event/TickEvent$PlayerTickEvent",
+            "net/minecraftforge/event/TickEvent$ServerTickEvent",
+            "net/minecraftforge/event/TickEvent$RenderTickEvent",
+            "net/minecraftforge/client/event/RenderGuiOverlayEvent",
+            "net/minecraftforge/client/gui/overlay/VanillaGuiOverlay");
+
     private static final String[][] PACKAGE_MOVES = {
             {"net/minecraftforge/fml/", "net/neoforged/fml/"},
             {"net/minecraftforge/eventbus/", "net/neoforged/bus/"},
@@ -146,11 +158,23 @@ public final class Forge1201Transformer {
             return KUBEJS7_CONSOLE + name.substring(KUBEJS6_CONSOLE.length());
         }
         if (!name.startsWith("net/minecraftforge/")) return name;
+        int dollar = name.indexOf('$');
+        String outerName = dollar > 0 ? name.substring(0, dollar) : name;
+        boolean nativeAliasMustWin = NATIVE_ALIAS_OVERRIDES.contains(name)
+                || NATIVE_ALIAS_OVERRIDES.contains(outerName);
         String facade = LegacyVersion.V1_20_1.shimPrefix() + name;
-        if (shim.contains(facade)) return facade;
+        // Preserve compatibility facades except for APIs whose new NeoForge class
+        // is required by a dedicated migration adapter. RegisterGuiOverlaysEvent
+        // deliberately remains shim-backed for PalladiumCore.
+        if (!nativeAliasMustWin && shim.contains(facade)) return facade;
         String direct = classRenames.get(name);
         if (direct != null) return direct;
-        int dollar = name.indexOf('$');
+        if (dollar > 0) {
+            // Curated aliases on outer event classes also apply to their nested classes.
+            String directOuter = classRenames.get(outerName);
+            if (directOuter != null) return directOuter + name.substring(dollar);
+        }
+        if (shim.contains(facade)) return facade;
         if (dollar > 0) {
             String outer = mapClass(name.substring(0, dollar));
             if (!outer.equals(name.substring(0, dollar))) return outer + name.substring(dollar);
@@ -192,6 +216,7 @@ public final class Forge1201Transformer {
         Mapper(Set<String> own) {
             this.own = own;
         }
+        private int authlibPropertyMethodReferences;
 
         @Override
         public String map(String internalName) {
@@ -205,6 +230,14 @@ public final class Forge1201Transformer {
 
         @Override
         public String mapMethodName(String owner, String name, String descriptor) {
+            // Authlib 1.21.1 changed Property from a JavaBean class to a record.
+            // Apply this before the isolated-library fast path so old 1.20.1
+            // calls and method handles always target the runtime record accessors.
+            String authlibName = AuthlibProperty1201.mapMethodName(owner, name, descriptor);
+            if (!authlibName.equals(name)) {
+                authlibPropertyMethodReferences++;
+                return authlibName;
+            }
             if (isForeignIsolated(owner)) return srgOnly(name);
             if (owner != null) {
                 String forge = forgeMembers().get(owner + "." + name);
@@ -314,7 +347,12 @@ public final class Forge1201Transformer {
         List<ClassNode> nodes = new ArrayList<>();
         Mc1201Hierarchy hierarchy = new Mc1201Hierarchy().peers(peers);
         java.util.Set<String> serializable = SerialUids.serializable(classes);
+        int palladiumLegacyCheckboxClassesDropped = 0;
         for (var e : classes.entrySet()) {
+            if (PalladiumAddonPackCheckbox1201.dropLegacyClass(e.getKey())) {
+                palladiumLegacyCheckboxClassesDropped++;
+                continue;
+            }
             ClassNode node = new ClassNode();
             try {
                 new ClassReader(e.getValue()).accept(SerialUids.head(serializable, e.getValue(), new ClassRemapper(node, mapper)), 0);
@@ -354,8 +392,11 @@ public final class Forge1201Transformer {
         int palladiumAddonPackChanges = 0;
         int palladiumWidgetButtonChanges = 0;
         int palladiumMixinChanges = 0;
+        int palladiumCrossbowChanges = 0;
+        int palladiumCrossbowApiChanges = 0;
         int palladiumLootChanges = 0;
         int palladiumAccessoryScreenChanges = 0;
+        int palladiumAddonPackCheckboxChanges = 0;
         int palladiumAdvancementWidgetChanges = 0;
         int palladiumPowersScreenChanges = 0;
         int palladiumSelectionListChanges = 0;
@@ -371,11 +412,33 @@ public final class Forge1201Transformer {
         int palladiumPlayerSkinFetcherChanges = 0;
         int palladiumFlightHandlerChanges = 0;
         int palladiumFlightTakeoffGraceChanges = 0;
+        int palladiumFlightStateTraceChanges = 0;
+        int palladiumFlightInputTraceChanges = 0;
         int palladiumCustomProjectileChanges = 0;
         int palladiumProjectileExplosionChanges = 0;
         int palladiumCustomProjectileRendererChanges = 0;
         int palladiumCoreOverlayChanges = 0;
         int palladiumCoreLightningMixinChanges = 0;
+        int alienEvoForgeEventChanges = 0;
+        int alienEvoMixinChanges = 0;
+        int alienEvoGeckoMixinChanges = 0;
+        int alienEvoGeckoRenderLayerChanges = 0;
+        int alienEvoGeckoRenderLayerModelChanges = 0;
+        int alienEvoGeckoExceptionChanges = 0;
+        int alienEvoLegacyMixinChanges = 0;
+        int alienEvoStepHeightChanges = 0;
+        int alienEvoWorldGenChanges = 0;
+        int alienEvoVertexConsumerChanges = 0;
+        int alienEvoBufferingGlowConsumerChanges = 0;
+        int alienEvoNoopRenderBufferChanges = 0;
+        int alienEvoDynamicColorParticleRenderTypeChanges = 0;
+        int alienEvoBoneAnchorsChanges = 0;
+        int alienEvoBeamAbilityParticlesChanges = 0;
+        int alienEvoColoredProjectileRendererChanges = 0;
+        int alienEvoSuperheroFlightControllerChanges = 0;
+        int alienEvoLateEffectBuffersChanges = 0;
+        int alienEvoMolangCompatChanges = 0;
+        int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -393,6 +456,12 @@ public final class Forge1201Transformer {
             int palladiumGeckoModelAnimationChange = PalladiumGeckoRenderLayerModel1201.apply(node);
             palladiumGeckoModelAnimationChanges += palladiumGeckoModelAnimationChange;
             viaCalls += palladiumGeckoModelAnimationChange;
+            int alienEvoGeckoRenderLayerChange = AlienEvoGeckoRenderLayer1201.apply(node);
+            alienEvoGeckoRenderLayerChanges += alienEvoGeckoRenderLayerChange;
+            viaCalls += alienEvoGeckoRenderLayerChange;
+            int alienEvoGeckoRenderLayerModelChange = AlienEvoGeckoRenderLayerModel1201.apply(node);
+            alienEvoGeckoRenderLayerModelChanges += alienEvoGeckoRenderLayerModelChange;
+            viaCalls += alienEvoGeckoRenderLayerModelChange;
             int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
             palladiumSuitStandChanges += palladiumSuitStandChange;
             int palladiumRendererRotationChange = PalladiumRendererRotation1201.apply(node);
@@ -427,10 +496,29 @@ public final class Forge1201Transformer {
             int vertexBridges = VertexConsumerBridge1201.apply(node);
             rewrites += RegistryBufBridge1201.apply(node, hierarchy);
             if (forgeBusDefaults > 0) result.notes.add(node.name.replace('/', '.') + ": " + forgeBusDefaults + " handler(s) of mod bus events on the default (FORGE) bus of @Mod.EventBusSubscriber never ran in Forge 1.20.1 and are inert here too");
+            int palladiumAddonPackCheckboxChange = PalladiumAddonPackCheckbox1201.apply(node);
+            palladiumAddonPackCheckboxChanges += palladiumAddonPackCheckboxChange;
+            int alienEvoMixinChange = AlienEvoMixins1201.apply(node);
+            alienEvoMixinChanges += alienEvoMixinChange;
+            int alienEvoGeckoMixinChange = AlienEvoGeckoMixins1201.apply(node);
+            alienEvoGeckoMixinChanges += alienEvoGeckoMixinChange;
+            int alienEvoGeckoExceptionChange = AlienEvoGeckoException1201.apply(node);
+            alienEvoGeckoExceptionChanges += alienEvoGeckoExceptionChange;
+            int alienEvoLegacyMixinChange = AlienEvoLegacyMixins1201.apply(node);
+            alienEvoLegacyMixinChanges += alienEvoLegacyMixinChange;
+            int alienEvoWorldGenChange = AlienEvoWorldGen1201.apply(node);
+            alienEvoWorldGenChanges += alienEvoWorldGenChange;
+            viaCalls += alienEvoWorldGenChange;
+            int alienEvoForgeEventChange = AlienEvoForgeEvents1201.apply(node);
+            alienEvoForgeEventChanges += alienEvoForgeEventChange;
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumFlightTakeoffGraceChange = PalladiumFlightHandler1201.applyGroundTakeoffGrace(node);
             palladiumFlightTakeoffGraceChanges += palladiumFlightTakeoffGraceChange;
+            int palladiumFlightStateTraceChange = PalladiumFlightHandler1201.applyDiagnostics(node);
+            palladiumFlightStateTraceChanges += palladiumFlightStateTraceChange;
+            int palladiumFlightInputTraceChange = PalladiumFlightInputTrace1201.apply(node);
+            palladiumFlightInputTraceChanges += palladiumFlightInputTraceChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
             palladiumCustomProjectileChanges += palladiumCustomProjectileChange;
             int palladiumProjectileExplosionChange = PalladiumProjectileExplosion1201.apply(node);
@@ -452,6 +540,10 @@ public final class Forge1201Transformer {
             palladiumWidgetButtonChanges += palladiumWidgetButtonChange;
             int palladiumMixinChange = PalladiumMixinCompat1201.apply(node);
             palladiumMixinChanges += palladiumMixinChange;
+            int palladiumCrossbowChange = PalladiumCrossbowItem1201.apply(node);
+            palladiumCrossbowChanges += palladiumCrossbowChange;
+            int palladiumCrossbowApiChange = PalladiumCrossbowApi1201.apply(node);
+            palladiumCrossbowApiChanges += palladiumCrossbowApiChange;
             int palladiumLootChange = PalladiumLootCompat1201.apply(node);
             palladiumLootChanges += palladiumLootChange;
             int palladiumAccessoryScreenChange = PalladiumAccessoryScreen1201.apply(node);
@@ -462,17 +554,141 @@ public final class Forge1201Transformer {
             palladiumPowersScreenChanges += palladiumPowersScreenChange;
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
-            int mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
+            int mixinResigned = 0;
+            int alienEvoStepHeightChange = AlienEvoStepHeight1201.apply(node);
+            alienEvoStepHeightChanges += alienEvoStepHeightChange;
+            int alienEvoVertexConsumerChange = AlienEvoVertexConsumer1201.apply(node);
+            alienEvoVertexConsumerChanges += alienEvoVertexConsumerChange;
+            int alienEvoBufferingGlowConsumerChange = AlienEvoBufferingGlowConsumer1201.apply(node);
+            alienEvoBufferingGlowConsumerChanges += alienEvoBufferingGlowConsumerChange;
+            int alienEvoNoopRenderBufferChange = AlienEvoNoopRenderBuffer1201.apply(node);
+            alienEvoNoopRenderBufferChanges += alienEvoNoopRenderBufferChange;
+            int alienEvoDynamicColorParticleRenderTypeChange = AlienEvoDynamicColorParticleRenderType1201.apply(node);
+            alienEvoDynamicColorParticleRenderTypeChanges += alienEvoDynamicColorParticleRenderTypeChange;
+            int alienEvoBoneAnchorsChange = AlienEvoBoneAnchors1201.apply(node);
+            alienEvoBoneAnchorsChanges += alienEvoBoneAnchorsChange;
+            int alienEvoBeamAbilityParticlesChange = AlienEvoBeamAbilityParticles1201.apply(node);
+            alienEvoBeamAbilityParticlesChanges += alienEvoBeamAbilityParticlesChange;
+            int alienEvoColoredProjectileRendererChange = AlienEvoColoredProjectileRenderer1201.apply(node);
+            alienEvoColoredProjectileRendererChanges += alienEvoColoredProjectileRendererChange;
+            int alienEvoSuperheroFlightControllerChange = AlienEvoSuperheroFlightController1201.apply(node);
+            alienEvoSuperheroFlightControllerChanges += alienEvoSuperheroFlightControllerChange;
+            int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
+            alienEvoLateEffectBuffersChanges += alienEvoLateEffectBuffersChange;
+            viaCalls += alienEvoLateEffectBuffersChange;
+            int alienEvoMolangChange = AlienEvoMolang1201.apply(node);
+            alienEvoMolangCompatChanges += alienEvoMolangChange;
+            if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
+                mixinStats.mixinClasses++;
+                mixinStats.dropped.add(node.name + " (replaced by the 1.21.1 STEP_HEIGHT attribute adapter)");
+                mixinStats.droppedClasses.add(node.name);
+            } else if (node.name.equals("net/habb/alienevo/mixin/MolangParserThreadSafetyMixin")) {
+                // The 1.21.1 runtime in this profile does not provide GeckoLib's old
+                // MolangParser package. Keep AlienEvo's other mixins, but don't load
+                // this optional wrap-method hook against a class that is absent.
+                mixinStats.mixinClasses++;
+                mixinStats.dropped.add(node.name + " (optional GeckoLib MolangParser target is absent from the 1.21.1 runtime)");
+                mixinStats.droppedClasses.add(node.name);
+                alienEvoMolangMixinDropped++;
+            } else {
+                mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
+            }
             migrated.put(node, vertexBridges + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
-                    + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
-                    + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
+                    + palladiumWidgetButtonChange + palladiumMixinChange + palladiumCrossbowChange + palladiumCrossbowApiChange + palladiumLootChange
+                    + palladiumAccessoryScreenChange + palladiumAddonPackCheckboxChange
+                    + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
-                    + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumCustomProjectileChange
+                    + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumFlightStateTraceChange
+                    + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
-                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
+                    + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
+                    + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange
+                    + alienEvoDynamicColorParticleRenderTypeChange + alienEvoBoneAnchorsChange
+                    + alienEvoBeamAbilityParticlesChange + alienEvoSuperheroFlightControllerChange
+                    + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
+        }
+        if (mapper.authlibPropertyMethodReferences > 0) {
+            result.notes.add("Authlib 1.20.1 Property JavaBean getters migrated to the 1.21.1 record accessors: "
+                    + mapper.authlibPropertyMethodReferences + " method reference(s)");
+        }
+        if (alienEvoMolangMixinDropped > 0) {
+            result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
+        }
+        if (alienEvoWorldGenChanges > 0) {
+            result.notes.add("AlienEvo CampgroundTrailFeature now samples the candidate block's exact quart biome during feature generation, avoiding BiomeManager's jittered neighboring-chunk lookup: "
+                    + alienEvoWorldGenChanges + " biome lookup(s)");
+        }
+        if (alienEvoVertexConsumerChanges > 0) {
+            result.notes.add("AlienEvo flat loot-effect renderer migrated from the removed DefaultedVertexConsumer superclass to 1.21.1 VertexConsumer: "
+                    + alienEvoVertexConsumerChanges + " bytecode change(s)");
+        }
+        if (alienEvoBufferingGlowConsumerChanges > 0) {
+            result.notes.add("AlienEvo BufferingGlowConsumer now bridges VertexConsumer.addVertex and flushes recorded glow vertices after setNormal: "
+                    + alienEvoBufferingGlowConsumerChanges + " bytecode change(s)");
+        }
+        if (alienEvoStepHeightChanges > 0) {
+            result.notes.add("AlienEvo surf step-height access migrated to the 1.21.1 STEP_HEIGHT attribute; its step-height scaling mixin now targets LivingEntity.maxUpStep(): "
+                    + alienEvoStepHeightChanges + " bytecode change(s)");
+        }
+        if (alienEvoLegacyMixinChanges > 0) {
+            result.notes.add("AlienEvo tinted glint shader, RenderBuffers, rifle heat HUD and Whirlpool camera migrated to 1.21.1 renderer APIs: "
+                    + alienEvoLegacyMixinChanges + " mixin class(es)");
+        }
+        if (alienEvoMixinChanges > 0) {
+            result.notes.add("AlienEvo Minecraft render/shield mixin handler descriptors adapted for 1.21.1: "
+                    + alienEvoMixinChanges + " handler(s)");
+        }
+        if (alienEvoGeckoRenderLayerChanges > 0) {
+            result.notes.add("AlienEvo first-person AlienGeckoRenderLayer adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + alienEvoGeckoRenderLayerChanges + " call site(s)");
+        }
+        if (alienEvoGeckoRenderLayerModelChanges > 0) {
+            result.notes.add("AlienEvo AlienGeckoRenderLayerModel.renderToBuffer adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + alienEvoGeckoRenderLayerModelChanges + " call site(s)");
+        }
+        if (alienEvoColoredProjectileRendererChanges > 0) {
+            result.notes.add("AlienEvo ColoredProjectileRenderer EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
+                    + alienEvoColoredProjectileRendererChanges + " field read(s)");
+        }
+        if (alienEvoSuperheroFlightControllerChanges > 0) {
+            result.notes.add("AlienEvo SuperheroFlightController EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
+                    + alienEvoSuperheroFlightControllerChanges + " field read(s)");
+        }
+        if (alienEvoNoopRenderBufferChanges > 0) {
+            result.notes.add("AlienEvo NoopRenderBuffer$Noop supplies no-op VertexConsumer.addVertex(float,float,float), setColor(int,int,int,int), setUv(float,float), setUv1(int,int), setUv2(int,int), and setNormal(float,float,float) methods: "
+                    + alienEvoNoopRenderBufferChanges + " method change(s)");
+        }
+        if (alienEvoDynamicColorParticleRenderTypeChanges > 0) {
+            result.notes.add("AlienEvo DynamicColorParticleRenderType migrated from the 1.20.1 BufferBuilder-based ParticleRenderType.begin method to the 1.21.1 Tesselator.begin contract: "
+                    + alienEvoDynamicColorParticleRenderTypeChanges + " method rewrite(s)");
+        }
+        if (alienEvoBoneAnchorsChanges > 0) {
+            result.notes.add("AlienEvo BoneAnchors inverse-view rotation migrated to the 1.21.1 active camera rotation API: "
+                    + alienEvoBoneAnchorsChanges + " call site(s)");
+        }
+        if (alienEvoBeamAbilityParticlesChanges > 0) {
+            result.notes.add("AlienEvo BeamAbility particle parsing migrated ParticleArgument.readParticle to the 1.21.1 HolderLookup.Provider signature: "
+                    + alienEvoBeamAbilityParticlesChanges + " call site(s)");
+        }
+        if (alienEvoLateEffectBuffersChanges > 0) {
+            result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
+                    + alienEvoLateEffectBuffersChanges + " bytecode rewrite(s)");
+        }
+        if (alienEvoGeckoMixinChanges > 0) {
+            result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "
+                    + alienEvoGeckoMixinChanges + " mixin class(es)");
+        }
+        if (alienEvoGeckoExceptionChanges > 0) {
+            result.notes.add("AlienEvo GeckoLib 4.9 catch migration: replaced the removed GeckoLibException with RuntimeException in AlienGeckoRenderLayer: "
+                    + alienEvoGeckoExceptionChanges + " catch handler(s)");
+        }
+        if (alienEvoForgeEventChanges > 0) {
+            result.notes.add("Native Forge event callbacks migrated to NeoForge tick phases and ResourceLocation GUI layers: "
+                    + alienEvoForgeEventChanges + " bytecode rewrite(s)");
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -483,9 +699,22 @@ public final class Forge1201Transformer {
             result.notes.add("Palladium addon-pack repository adapted: FolderRepositorySource uses Minecraft's symlink validator; the discovery callback rebuilds immutable 1.21.1 PackLocationInfo/PackSelectionConfig with the legacy addonpack: ID prefix and required-selection setting: "
                     + palladiumAddonPackChanges + " constructor call(s)");
         }
+        if (palladiumAddonPackCheckboxChanges > 0 || palladiumLegacyCheckboxClassesDropped > 0) {
+            result.notes.add("Palladium AddonPackLogScreen filter checkboxes migrated to the 1.21.1 Checkbox builder; selection callbacks and log refresh retained: "
+                    + palladiumAddonPackCheckboxChanges + " screen rewrite(s), "
+                    + palladiumLegacyCheckboxClassesDropped + " obsolete nested CheckboxButton class(es) removed");
+        }
         if (palladiumWidgetButtonChanges > 0) {
             result.notes.add("Palladium default button backgrounds migrated to 1.21.1 GUI sprites: "
                     + palladiumWidgetButtonChanges + " button class(es)");
+        }
+        if (palladiumCrossbowApiChanges > 0) {
+            result.notes.add("Palladium AddonCrossbowItem and client charge-progress calls migrated to 1.21.1 ChargedProjectiles and CrossbowItem instance APIs: "
+                    + palladiumCrossbowApiChanges + " class(es)");
+        }
+        if (palladiumCrossbowChanges > 0) {
+            result.notes.add("Palladium custom crossbow ammo migrated to the 1.21.1 createProjectile hook; vanilla now handles the subsequent projectile launch: "
+                    + palladiumCrossbowChanges + " mixin class(es)");
         }
         if (palladiumMixinChanges > 0) {
             result.notes.add("Palladium 1.21.1 compatibility adapters applied to "
@@ -502,6 +731,14 @@ public final class Forge1201Transformer {
         if (palladiumFlightTakeoffGraceChanges > 0) {
             result.notes.add("Palladium FlightHandler now gives a newly activated grounded flyer up to six ticks to lift off, then preserves its original landing cancellation: "
                     + palladiumFlightTakeoffGraceChanges + " FlightHandler class(es)");
+        }
+        if (palladiumFlightStateTraceChanges > 0) {
+            result.notes.add("Optional Palladium FlightHandler state tracing installed at setFlightType/tick/updateMovement: "
+                    + palladiumFlightStateTraceChanges + " method(s)");
+        }
+        if (palladiumFlightInputTraceChanges > 0) {
+            result.notes.add("Optional PalladiumCore InputEvent.Key callback tracing installed: "
+                    + palladiumFlightInputTraceChanges + " handler method(s)");
         }
         if (palladiumCustomProjectileChanges > 0) {
             result.notes.add("Palladium CustomProjectile EntityDimensions.width field access migrated to the public 1.21.1 record accessor: "
@@ -554,6 +791,10 @@ public final class Forge1201Transformer {
         if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
         for (ClassNode node : nodes) {
+            if (AlienEvoMolang1201.dropLegacyRollSinceClass(node.name)) {
+                result.notes.add("Replaced AlienEvo's obsolete McLib roll_since function class with the GeckoLib 4.9 MathFunction.Factory bridge");
+                continue;
+            }
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
             dropDuplicateBridges(node, result);
             // two classes renamed onto one (TextureStitchEvent and its Post): the inner class entry would name the class as its own outer class, which the JVM rejects
@@ -585,6 +826,14 @@ public final class Forge1201Transformer {
         }
         for (String standIn : mc.itemPredicateStandIns) {
             if (outClasses.putIfAbsent(standIn + ".class", ItemPredicateStandIn1201.generate(standIn)) == null) result.classes++;
+        }
+        if (alienEvoMolangCompatChanges > 0) {
+            for (var helperClass : AlienEvoMolang1201.generateHelperClasses().entrySet()) {
+                outClasses.put(helperClass.getKey(), helperClass.getValue());
+                result.classes++;
+            }
+            result.notes.add("AlienEvo GeckoLib 4.8 MolangParser calls migrated to GeckoLib 4.9 MathParser/Variable, including the roll_since MathFunction factory; the special default/-default animation reset token is pre-registered as a neutral zero transform offset: "
+                    + alienEvoMolangCompatChanges + " compatibility rewrite(s)");
         }
         if (soft != null && soft.stats.symbols() > 0) {
             result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
@@ -746,7 +995,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo resources migrate legacy ResourceLocation and typed SoundEvent/SoundSource arguments for 8-argument Level.playSound calls, persistent NBT integer/string values, Quick Change playlist/slot NBT integer access, playlist-cycle NBT integer reads/writes and the ten-playlist bound, KubeJS 7 NetworkEvents.dataReceived player access for jump/palette/nickname packets and redeclarable injected Java aliases across shared script contexts; preserve Omnitrix layout scoreboard state when moving DNA into/out of the prototype core, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs and legacy Attribute_Mod operation names, migrate Slam gravity modifier operation names to 1.21.1 enums and track Cannonbolt descent/landing with unconditional gravity/effect cleanup on impact, water, or timeout, convert Cannonbolt block-particle arguments to 1.21.1 block_state/item syntax, migrate Entity.setSecondsOnFire to igniteForSeconds across rolling/directional/entity/area damage scripts, remove the obsolete EditBox.tick call, normalize the color editor's HEX prefix without invoking Java String.replace with a JavaScript regex, route Diamondhead crystal-block tick listeners into a SERVER data script while keeping ticker setup in STARTUP, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
+            result.notes.add("AlienEvo compatibility rewrote present legacy script resources and/or inspected data and asset resources: "
                     + alienEvoResourceChanges + " resource file(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
@@ -757,6 +1006,12 @@ public final class Forge1201Transformer {
         }
         if (AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(outResources)) {
             result.notes.add("AlienEvo: made the Ad Astra oxygen damage-type tag optional; it is used when ad_astra:oxygen is registered and skipped when Ad Astra is absent");
+        }
+        if (AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(outResources)) {
+            result.notes.add("AlienEvo: removed the single malformed Kineceleran kick_stop armorHead.position channel whose vector contained easing names; valid rotation/easing data is preserved");
+        }
+        if (AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(outResources)) {
+            result.notes.add("AlienEvo: unshaded entity shader migrated to the 1.21.1 fog_distance(Position, FogShape) contract; obsolete IViewRotMat uniform removed");
         }
         if (AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(outResources)) {
             result.notes.add("AlienEvo: added the 1.21.1 addon resource-root marker for its nonstandard addon/ asset tree");
@@ -790,7 +1045,7 @@ public final class Forge1201Transformer {
     // ---- side-by-side libraries ---------------------------------------------------------------------------------------------
 
     private static final String MOD_DESC = "Lnet/neoforged/fml/common/Mod;";
-    private static final String SUBSCRIBER_DESC = "Lnet/neoforged/fml/common/Mod$EventBusSubscriber;";
+    private static final String SUBSCRIBER_DESC = "Lnet/neoforged/fml/common/EventBusSubscriber;";
 
     /** Relocates string constants and annotation values that name isolated classes, and swaps the mod id of an isolated library's own annotations. */
     /**

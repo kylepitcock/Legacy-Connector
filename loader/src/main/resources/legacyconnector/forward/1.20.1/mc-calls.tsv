@@ -365,6 +365,7 @@ net/minecraft/world/entity/player/Player	disableShield	(Z)V	MiddleCompat	disable
 net/minecraft/world/entity/player/Player	startAutoSpinAttack	(I)V	MiddleCompat	startAutoSpinAttack
 net/minecraft/world/entity/player/Player	canReach	(Lnet/minecraft/core/BlockPos;D)Z	MiddleCompat	canReach
 net/minecraft/world/entity/player/Player	canReach	(Lnet/minecraft/world/entity/Entity;D)Z	MiddleCompat	canReach
+net/minecraft/world/level/block/entity/BlockEntity	getUpdateTag	()Lnet/minecraft/nbt/CompoundTag;@special	MiddleCompat	getUpdateTagSuper
 net/minecraft/world/level/block/entity/BlockEntity	getUpdateTag	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	getUpdateTag
 net/minecraft/world/level/block/entity/BlockEntity	saveWithId	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	saveWithId
 net/minecraft/world/level/block/entity/BlockEntity	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	serializeNBT
@@ -1087,3 +1088,5 @@ net/minecraft/world/level/levelgen/structure/templatesystem/rule/blockentity/App
 net/minecraft/world/level/block/BrushableBlock	<init>	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;)V	=args	0,2,3,1	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 net/neoforged/fml/util/ObfuscationReflectionHelper	findMethod	(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;	Round7Compat	findMethod	(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
 net/minecraft/client/renderer/RenderBuffers	$get$fixedBuffers	()Ljava/util/SortedMap;	FixedBuffersView	of	(Lnet/minecraft/client/renderer/RenderBuffers;)Ljava/util/SortedMap;
+net/minecraft/client/renderer/PostChain	<init>	(Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/server/packs/resources/ResourceManager;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lnet/minecraft/resources/ResourceLocation;)V	=	-	(Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/server/packs/resources/ResourceProvider;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lnet/minecraft/resources/ResourceLocation;)V
+net/minecraft/client/renderer/PostChain	addPass	(Ljava/lang/String;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lnet/minecraft/client/renderer/PostPass;	=args	0,1,2,false	(Ljava/lang/String;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lcom/mojang/blaze3d/pipeline/RenderTarget;Z)Lnet/minecraft/client/renderer/PostPass;
