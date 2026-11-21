@@ -887,6 +887,9 @@ public final class Forge1201Transformer {
         if (AlienEvoResourceCompat1201.repairKineceleranKickStopPositionVector(outResources)) {
             result.notes.add("AlienEvo: removed the single malformed Kineceleran kick_stop armorHead.position channel whose vector contained easing names; valid rotation/easing data is preserved");
         }
+        if (AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(outResources)) {
+            result.notes.add("AlienEvo: unshaded entity shader migrated to the 1.21.1 fog_distance(Position, FogShape) contract; obsolete IViewRotMat uniform removed");
+        }
         if (AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(outResources)) {
             result.notes.add("AlienEvo: added the 1.21.1 addon resource-root marker for its nonstandard addon/ asset tree");
         }

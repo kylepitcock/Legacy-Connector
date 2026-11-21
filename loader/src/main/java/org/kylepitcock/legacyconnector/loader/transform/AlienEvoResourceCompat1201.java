@@ -9,11 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Evidence-based resource repairs for AlienEvo: cleanup of its hidden,
- * unreferenced code-system test power, and marking its Ad Astra damage-type
- * tag entry optional so the JAR remains loadable when that integration mod
- * is absent. The shipping code system uses the registered
- * alienevo:display_code ability.
+ * Evidence-based resource repairs for AlienEvo, including its 1.21.1
+ * unshaded-entity shader migration, malformed Kineceleran animation cleanup,
+ * optional Ad Astra tag entry, and hidden test-power cleanup.
  */
 final class AlienEvoResourceCompat1201 {
     static final String ORPHAN_CODE_POWER =
@@ -23,6 +21,15 @@ final class AlienEvoResourceCompat1201 {
     static final String ADDON_RESOURCE_ROOT_MARKER = "addon/.mcassetsroot";
     static final String KINECELERAN_ANIMATION =
             "assets/alienevo/animations/aliens/kineceleran/kineceleran.animation.json";
+    static final String UNSHADED_ENTITY_SHADER_JSON =
+            "assets/minecraft/shaders/core/alienevo_rendertype_entity_unshaded.json";
+    static final String UNSHADED_ENTITY_SHADER_VERTEX =
+            "assets/minecraft/shaders/core/alienevo_rendertype_entity_unshaded.vsh";
+    static final String LEGACY_UNSHADED_FOG_DISTANCE =
+            "vertexDistance = fog_distance(ModelViewMat, IViewRotMat * Position, FogShape);";
+    static final String MODERN_UNSHADED_FOG_DISTANCE =
+            "vertexDistance = fog_distance(Position, FogShape);";
+    private static final String LEGACY_VIEW_ROTATION_UNIFORM = "uniform mat3 IViewRotMat;";
 
     private AlienEvoResourceCompat1201() {}
 
@@ -138,6 +145,92 @@ final class AlienEvoResourceCompat1201 {
         } catch (RuntimeException ignored) {
             return false;
         }
+    }
+
+
+    /**
+     * AlienEvo's 1.20.1 unshaded entity shader uses the old fog-distance
+     * overload and IViewRotMat transform. In 1.21.1, entity Position is already
+     * camera-relative and fog_distance accepts (vec3, int). Rewrite the vertex
+     * source and its shader JSON together so the removed uniform is not bound.
+     *
+     * This is deliberately fail-closed: only the exact dev.24 shader pair and
+     * expected IViewRotMat declaration/uniform are changed.
+     */
+    static boolean repairUnshadedEntityShaderFor121(Map<String, byte[]> resources) {
+        byte[] jsonBytes = resources.get(UNSHADED_ENTITY_SHADER_JSON);
+        byte[] vertexBytes = resources.get(UNSHADED_ENTITY_SHADER_VERTEX);
+        if (jsonBytes == null || vertexBytes == null) return false;
+
+        String vertex = new String(vertexBytes, StandardCharsets.UTF_8);
+        if (countOccurrences(vertex, LEGACY_UNSHADED_FOG_DISTANCE) != 1
+                || countOccurrences(vertex, LEGACY_VIEW_ROTATION_UNIFORM) != 1
+                || countOccurrences(vertex, "IViewRotMat") != 2
+                || countOccurrences(vertex, "fog_distance(") != 1) {
+            return false;
+        }
+
+        JsonObject shaderJson;
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(jsonBytes, StandardCharsets.UTF_8));
+            if (!parsed.isJsonObject()) return false;
+            shaderJson = parsed.getAsJsonObject();
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+
+        if (!shaderJson.has("vertex") || !shaderJson.get("vertex").isJsonPrimitive()
+                || !"alienevo_rendertype_entity_unshaded".equals(shaderJson.get("vertex").getAsString())
+                || !shaderJson.has("uniforms") || !shaderJson.get("uniforms").isJsonArray()) {
+            return false;
+        }
+
+        JsonArray uniforms = shaderJson.getAsJsonArray("uniforms");
+        int viewRotationIndex = -1;
+        for (int i = 0; i < uniforms.size(); i++) {
+            JsonElement element = uniforms.get(i);
+            if (!element.isJsonObject()) continue;
+            JsonObject uniform = element.getAsJsonObject();
+            if (!uniform.has("name") || !uniform.get("name").isJsonPrimitive()
+                    || !"IViewRotMat".equals(uniform.get("name").getAsString())) {
+                continue;
+            }
+            if (viewRotationIndex >= 0
+                    || !uniform.has("type") || !uniform.get("type").isJsonPrimitive()
+                    || !"matrix3x3".equals(uniform.get("type").getAsString())
+                    || !uniform.has("count") || !uniform.get("count").isJsonPrimitive()
+                    || !uniform.get("count").getAsJsonPrimitive().isNumber()
+                    || uniform.get("count").getAsInt() != 9) {
+                return false;
+            }
+            viewRotationIndex = i;
+        }
+        if (viewRotationIndex < 0) return false;
+
+        String migratedVertex = vertex
+                .replace(LEGACY_UNSHADED_FOG_DISTANCE, MODERN_UNSHADED_FOG_DISTANCE)
+                .replace(LEGACY_VIEW_ROTATION_UNIFORM, "");
+        if (migratedVertex.contains("IViewRotMat")
+                || countOccurrences(migratedVertex, MODERN_UNSHADED_FOG_DISTANCE) != 1) {
+            return false;
+        }
+
+        uniforms.remove(viewRotationIndex);
+        resources.put(UNSHADED_ENTITY_SHADER_JSON,
+                shaderJson.toString().getBytes(StandardCharsets.UTF_8));
+        resources.put(UNSHADED_ENTITY_SHADER_VERTEX,
+                migratedVertex.getBytes(StandardCharsets.UTF_8));
+        return true;
+    }
+
+    private static int countOccurrences(String text, String token) {
+        int count = 0;
+        int from = 0;
+        while ((from = text.indexOf(token, from)) >= 0) {
+            count++;
+            from += token.length();
+        }
+        return count;
     }
 
     private static JsonObject getObject(JsonObject parent, String key) {

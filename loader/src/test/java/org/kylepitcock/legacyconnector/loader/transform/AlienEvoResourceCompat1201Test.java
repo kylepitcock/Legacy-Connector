@@ -20,6 +20,42 @@ class AlienEvoResourceCompat1201Test {
             }
             """;
 
+
+    private static final String UNSHADED_VERTEX = """
+            #version 150
+            #moj_import <fog.glsl>
+            in vec3 Position;
+            uniform mat4 ModelViewMat;
+            uniform mat4 ProjMat;
+            uniform mat3 IViewRotMat;
+            uniform int FogShape;
+            out float vertexDistance;
+            void main() {
+                gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+                vertexDistance = fog_distance(ModelViewMat, IViewRotMat * Position, FogShape);
+            }
+            """;
+
+    private static final String UNSHADED_JSON = """
+            {
+              "vertex": "alienevo_rendertype_entity_unshaded",
+              "uniforms": [
+                {"name":"ModelViewMat","type":"matrix4x4","count":16,"values":[]},
+                {"name":"IViewRotMat","type":"matrix3x3","count":9,"values":[]},
+                {"name":"FogShape","type":"int","count":1,"values":[0]}
+              ]
+            }
+            """;
+
+    private static Map<String, byte[]> unshadedShaderResources() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
+                UNSHADED_JSON.getBytes(StandardCharsets.UTF_8));
+        resources.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_VERTEX,
+                UNSHADED_VERTEX.getBytes(StandardCharsets.UTF_8));
+        return resources;
+    }
+
     private static Map<String, byte[]> resources(String json) {
         Map<String, byte[]> resources = new LinkedHashMap<>();
         resources.put(AlienEvoResourceCompat1201.ORPHAN_CODE_POWER,
@@ -182,4 +218,80 @@ class AlienEvoResourceCompat1201Test {
                 "alienevo:check_code".getBytes(StandardCharsets.UTF_8));
         assertFalse(AlienEvoResourceCompat1201.removeUnreferencedHiddenCodePower(resources, classes));
     }
+
+    @Test
+    void migratesTheUnshadedEntityShaderToThe121FogDistanceContract() {
+        Map<String, byte[]> resources = unshadedShaderResources();
+
+        assertTrue(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(resources));
+
+        String vertex = new String(resources.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_VERTEX),
+                StandardCharsets.UTF_8);
+        assertTrue(vertex.contains("vertexDistance = fog_distance(Position, FogShape);"), vertex);
+        assertFalse(vertex.contains("IViewRotMat"), vertex);
+        assertFalse(vertex.contains("fog_distance(ModelViewMat"), vertex);
+
+        String json = new String(resources.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON),
+                StandardCharsets.UTF_8);
+        assertFalse(json.contains("IViewRotMat"), json);
+        assertTrue(json.contains("ModelViewMat"), json);
+        assertTrue(json.contains("FogShape"), json);
+
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(resources));
+    }
+
+    @Test
+    void leavesMissingOrUnexpectedUnshadedShaderAssetsUntouched() {
+        Map<String, byte[]> missing = new LinkedHashMap<>();
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(missing));
+
+        Map<String, byte[]> changedVertex = unshadedShaderResources();
+        byte[] originalJson = changedVertex.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON).clone();
+        byte[] unexpected = UNSHADED_VERTEX.replace(
+                "fog_distance(ModelViewMat, IViewRotMat * Position, FogShape)",
+                "length(Position)").getBytes(StandardCharsets.UTF_8);
+        changedVertex.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_VERTEX, unexpected);
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(changedVertex));
+        assertTrue(java.util.Arrays.equals(originalJson,
+                changedVertex.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON)));
+
+        Map<String, byte[]> extraReference = unshadedShaderResources();
+        extraReference.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_VERTEX,
+                (UNSHADED_VERTEX + "\n// IViewRotMat must not be used elsewhere").getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(extraReference));
+    }
+
+    @Test
+    void doesNotPartiallyRewriteWhenTheShaderJsonLayoutIsUnexpected() {
+        Map<String, byte[]> malformed = unshadedShaderResources();
+        String originalVertex = new String(
+                malformed.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_VERTEX), StandardCharsets.UTF_8);
+        malformed.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
+                "{not json".getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(malformed));
+        assertTrue(originalVertex.equals(new String(
+                malformed.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_VERTEX), StandardCharsets.UTF_8)));
+
+        Map<String, byte[]> missingUniform = unshadedShaderResources();
+        String jsonWithoutViewUniform = UNSHADED_JSON.replace(
+                "{\"name\":\"IViewRotMat\",\"type\":\"matrix3x3\",\"count\":9,\"values\":[]},", "");
+        missingUniform.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
+                jsonWithoutViewUniform.getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(missingUniform));
+
+        Map<String, byte[]> wrongUniformType = unshadedShaderResources();
+        wrongUniformType.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
+                UNSHADED_JSON.replace("matrix3x3", "matrix4x4").getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(wrongUniformType));
+
+        Map<String, byte[]> duplicateUniform = unshadedShaderResources();
+        String duplicated = UNSHADED_JSON.replace(
+                "{\"name\":\"FogShape\"",
+                "{\"name\":\"IViewRotMat\",\"type\":\"matrix3x3\",\"count\":9,\"values\":[]},"
+                        + "{\"name\":\"FogShape\"");
+        duplicateUniform.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
+                duplicated.getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(duplicateUniform));
+    }
+
 }
