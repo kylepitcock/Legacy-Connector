@@ -197,6 +197,8 @@ public final class Forge1201Transformer {
     }
 
     private final class Mapper extends Remapper {
+        private int authlibPropertyMethodReferences;
+
         @Override
         public String map(String internalName) {
             String moved = plan.isEmpty() ? null : plan.mapClass(VER, internalName);
@@ -209,6 +211,14 @@ public final class Forge1201Transformer {
 
         @Override
         public String mapMethodName(String owner, String name, String descriptor) {
+            // Authlib 1.21.1 changed Property from a JavaBean class to a record.
+            // Apply this before the isolated-library fast path so old 1.20.1
+            // calls and method handles always target the runtime record accessors.
+            String authlibName = AuthlibProperty1201.mapMethodName(owner, name, descriptor);
+            if (!authlibName.equals(name)) {
+                authlibPropertyMethodReferences++;
+                return authlibName;
+            }
             if (isForeignIsolated(owner)) return srgOnly(name);
             if (owner != null) {
                 String forge = forgeMembers().get(owner + "." + name);
@@ -483,6 +493,10 @@ public final class Forge1201Transformer {
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoExceptionChange);
+        }
+        if (mapper.authlibPropertyMethodReferences > 0) {
+            result.notes.add("Authlib 1.20.1 Property JavaBean getters migrated to the 1.21.1 record accessors: "
+                    + mapper.authlibPropertyMethodReferences + " method reference(s)");
         }
         if (alienEvoMolangMixinDropped > 0) {
             result.notes.add("Optional AlienEvo GeckoLib MolangParser thread-safety mixin skipped because its target class is not present in this 1.21.1 runtime");
