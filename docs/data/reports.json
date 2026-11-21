@@ -1115,6 +1115,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/crackers-wither-storm-mod",
    "date": "2026-11-21",
    "open": true
+  },
+  {
+   "issue": 321,
+   "mod": "NTM Space 1.0.27X5853",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Some weapons and armor don't show up in the Creative Inventory menu. Images below are taken from 1.7.10. <img width=\"406\" height=\"329\" alt=\"image\" src=\"https://github.com/user-attachments/assets/1bbe3e4e-d8e6-471f-a5fc-0bff32c5b0c1\" /> <img width=\"405\" height=\"331\" alt=\"image\" src=\"https://github.com/user-attachments/assets/c50f1a67-4df9-4de9-a44b-1a9113fdf3d2\" /> <img width=\"387\" height=\"322\" al…",
+   "lc": "0.5.0",
+   "neoforge": "21.1.267",
+   "link": "https://modrinth.com/mod/ntmspace/version/1.0.27X5853",
+   "date": "2026-11-21",
+   "open": true
   }
  ]
 }
