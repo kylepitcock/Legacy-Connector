@@ -21,6 +21,27 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122;
  * of that type.</p>
  */
 public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.command.ICommandSender, ICapabilityProvider {
+    /** Vanilla's shared data keys (ids 0-5); their values are the modern entity's, see {@link org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122}. */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Byte> FLAGS = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(0,
+            legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BYTE, Entity.class, (byte) 0, e -> {
+                int bits = 0;
+                for (int flag : new int[] {0, 1, 3, 5, 6, 7}) if (e.getFlag(flag)) bits |= 1 << flag;
+                return (byte) bits;
+            }, (e, v) -> {
+                for (int flag : new int[] {1, 3, 5, 6}) e.setFlag(flag, (v & (1 << flag)) != 0);
+            });
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Integer> AIR = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(1,
+            legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.VARINT, Entity.class, 300, Entity::getAir, (e, v) -> e.setAir(v));
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<String> CUSTOM_NAME = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(2,
+            legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.STRING, Entity.class, "", Entity::getCustomNameTag, (e, v) -> e.setCustomNameTag(v));
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Boolean> CUSTOM_NAME_VISIBLE = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(3,
+            legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BOOLEAN, Entity.class, false, Entity::getAlwaysRenderNameTag,
+            (e, v) -> e.setAlwaysRenderNameTag(v));
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Boolean> SILENT = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(4,
+            legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BOOLEAN, Entity.class, false, Entity::isSilent, (e, v) -> e.setSilent(v));
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Boolean> NO_GRAVITY = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(5,
+            legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BOOLEAN, Entity.class, false, Entity::hasNoGravity, (e, v) -> e.setNoGravity(v));
+
     /** Phantom field: {@link #mcc$get$world}. */
     @Deprecated
     public World world;

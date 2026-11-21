@@ -51,6 +51,11 @@ public final class KeyBindingsB173 {
         if(installed)return;installed=true;
         LegacyNetwork.registerReceiver(FAMILY,(payload,context)->{
             if(context.flow()!=net.minecraft.network.protocol.PacketFlow.SERVERBOUND||payload.data().length>1024)return;
+            if(VELOCITY_CHANNEL.equals(payload.channel())){
+                if(payload.data().length!=24)return;var data=java.nio.ByteBuffer.wrap(payload.data());double x=data.getDouble(),y=data.getDouble(),z=data.getDouble();
+                context.enqueueWork(()->{if(context.player() instanceof ServerPlayer player)velocity(player,x,y,z);});
+                return;
+            }
             if(RAW_CHANNEL.equals(payload.channel())){
                 if(payload.data().length!=32)return;var bits=payload.data().clone();
                 context.enqueueWork(()->{if(context.player() instanceof ServerPlayer player)raw(player,bits);});
@@ -76,8 +81,8 @@ public final class KeyBindingsB173 {
                 }
             }
         });
-        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{HELD.remove(event.getEntity().getUUID());JUMP.remove(event.getEntity().getUUID());RAW.remove(event.getEntity().getUUID());});
-        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->{HELD.clear();JUMP.clear();RAW.clear();});
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{HELD.remove(event.getEntity().getUUID());JUMP.remove(event.getEntity().getUUID());RAW.remove(event.getEntity().getUUID());VELOCITY.remove(event.getEntity().getUUID());});
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->{HELD.clear();JUMP.clear();RAW.clear();VELOCITY.clear();});
     }
     /** Only pre-registered identifiers can select a callback; identity is always the receiving connection's player. */
     /** The player's jump key, which Beta code reads as {@code isJumping}; a server never receives it from the native client. */
@@ -101,6 +106,20 @@ public final class KeyBindingsB173 {
         return (((byte[])state[0])[code>>3]&(1<<(code&7)))!=0;
     }
     public static LegacyPayload rawPacket(byte[] bits){return new LegacyPayload(FAMILY,RAW_CHANNEL,0,bits);}
+    /** The velocity a player's client moves it with (the server's own copy of a client-moved player is stale), reported whenever it changes. */
+    private static final String VELOCITY_CHANNEL="velocity";
+    private static final Map<UUID,double[]> VELOCITY=new java.util.concurrent.ConcurrentHashMap<>();
+    public static void velocity(ServerPlayer player,double x,double y,double z){
+        if(Double.isFinite(x)&&Double.isFinite(y)&&Double.isFinite(z))VELOCITY.put(player.getUUID(),new double[]{x,y,z,player.server.getTickCount()});
+    }
+    /** The last reported client velocity, or null when none arrived for a second (a client without the layer, a stalled one). */
+    public static net.minecraft.world.phys.Vec3 reportedVelocity(ServerPlayer player){
+        var v=VELOCITY.get(player.getUUID());if(v==null||player.server.getTickCount()-v[3]>20)return null;
+        return new net.minecraft.world.phys.Vec3(v[0],v[1],v[2]);
+    }
+    public static LegacyPayload velocityPacket(double x,double y,double z){
+        return new LegacyPayload(FAMILY,VELOCITY_CHANNEL,0,java.nio.ByteBuffer.allocate(24).putDouble(x).putDouble(y).putDouble(z).array());
+    }
     public static void input(ServerPlayer player,String id,boolean down,boolean screen){
         if(JUMP_ID.equals(id)){JUMP.put(player.getUUID(),new long[]{down?1:0,player.server.getTickCount()});return;}
         synchronized(KeyBindingsB173.class){if(!KEYS.containsKey(id))return;}

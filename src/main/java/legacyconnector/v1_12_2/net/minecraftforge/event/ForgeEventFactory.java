@@ -278,7 +278,7 @@ public class ForgeEventFactory {
 
     private static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result mcc$positionCheck(Object entity, World world, boolean spawner) {
         var mob = mcc$mob(entity);
-        var level = world == null ? null : world.mcc$level();
+        var level = world == null ? null : world.mcc$access(); // the generation region while a mod generator populates a chunk (the real level would wait for it)
         if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) {
             return legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
         }
@@ -442,7 +442,7 @@ public class ForgeEventFactory {
     public static boolean doSpecialSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
             legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
         var mob = mcc$mob(entity);
-        var level = world == null ? null : world.mcc$level();
+        var level = world == null ? null : world.mcc$access();
         if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) return false;
         var event = new net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent(mob, accessor, x, y, z,
                 mcc$difficulty(accessor, mob.blockPosition()),

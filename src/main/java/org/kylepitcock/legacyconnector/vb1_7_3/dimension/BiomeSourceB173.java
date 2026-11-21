@@ -32,12 +32,25 @@ public final class BiomeSourceB173 extends BiomeSource {
  }
  @Override protected MapCodec<? extends BiomeSource> codec(){return CODEC;}
  @Override protected Stream<Holder<Biome>> collectPossibleBiomes(){return biomes.stream();}
+ /** Beta biomes are per column: one sample serves every height of a column (a chunk asks each of its 24 sections), so the serialized original manager runs once per column. */
+ private record Column(long key,Object provider,Holder<Biome> biome){}
+ private static final int COLUMNS=4096;
+ private final Column[] columns=new Column[COLUMNS];
+ private Holder<Biome> fallback;
  @Override public Holder<Biome> getNoiseBiome(int x,int y,int z,Climate.Sampler sampler){
   // Bootstrap can ask before server levels exist; the supplied holders are the registered dimension biomes.
-  Holder<Biome> fallback=biomes.stream().findFirst().orElseThrow();
+  Holder<Biome> fallback=this.fallback;if(fallback==null)this.fallback=fallback=biomes.stream().findFirst().orElseThrow();
   try{
    var provider=DimensionsB173.provider(dimension);
    if(provider==null||provider.biomeSource==null)return fallback;
+   long key=((long)x<<32)|(z&0xFFFFFFFFL);int slot=(int)((x*0x9E3779B1L+z*0x85EBCA77L)>>>7)&(COLUMNS-1);
+   var cached=columns[slot];
+   if(cached!=null&&cached.key()==key&&cached.provider()==provider)return cached.biome();
+   var sampled=sample(provider,x,z,fallback);columns[slot]=new Column(key,provider,sampled);return sampled;
+  }catch(RuntimeException|LinkageError error){failure(()->error);return fallback;}
+ }
+ private Holder<Biome> sample(legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension provider,int x,int z,Holder<Biome> fallback){
+  {
    var result=new java.util.concurrent.atomic.AtomicReference<Holder<Biome>>(fallback);
    LegacyModLocks.generation(LegacyModLocks.of(provider),()->{
     var manager=provider.biomeSource;
@@ -49,13 +62,14 @@ public final class BiomeSourceB173 extends BiomeSource {
      ResourceLocation key=legacy==null?null:DimensionsB173.biomeKey(dimension,legacy);
      var holder=key==null?null:byKey.get(key);
      if(holder!=null)result.set(holder);
-     else failure(new IllegalStateException("Unregistered legacy biome "+(legacy==null?"null":legacy.getClass().getName())));
+     else failure(()->new IllegalStateException("Unregistered legacy biome "+(legacy==null?"null":legacy.getClass().getName())));
      }finally{minecraft.world=previousWorld;}
     }
    });
    return result.get();
-  }catch(RuntimeException|LinkageError error){failure(error);return fallback;}
+  }
  }
- private void failure(Throwable error){long count=failures.incrementAndGet();if(count<=4||(count&(count-1))==0)LoggerFactory.getLogger("LegacyConnector/B173Dimensions").error("Beta dimension {} biome sampling failed ({} failures)",dimension,count,error);}
+ /** The error is built only when it is logged: a failing column used to construct (and fill the stack trace of) one exception per sample. */
+ private void failure(java.util.function.Supplier<Throwable> error){long count=failures.incrementAndGet();if(count<=4||(count&(count-1))==0)LoggerFactory.getLogger("LegacyConnector/B173Dimensions").error("Beta dimension {} biome sampling failed ({} failures)",dimension,count,error.get());}
  public long mcc$failures(){return failures.get();}
 }

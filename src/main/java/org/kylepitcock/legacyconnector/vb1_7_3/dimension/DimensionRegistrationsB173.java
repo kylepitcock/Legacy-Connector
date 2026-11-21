@@ -88,15 +88,19 @@ public final class DimensionRegistrationsB173 {
             world.dimension=provider;provider.setWorld(world);registration.prototype=provider;
             var source=provider.biomeSource;
             if(source==null)throw new IllegalStateException("Registered dimension has no biome source: "+registration.original.number);
-            for(Class<?> type=source.getClass();type!=null;type=type.getSuperclass())for(var field:type.getDeclaredFields()){
-                if(Modifier.isStatic(field.getModifiers()))continue;
+            // the biome fields of the source and of the provider (instance and static: a mod keeps its biomes as constants), then a wide
+            // sample: a biome found later while generating has no registered holder and falls back to the first one
+            for(Object owner:new Object[]{source,provider})
+            for(Class<?> type=owner.getClass();type!=null&&type!=Object.class;type=type.getSuperclass())for(var field:type.getDeclaredFields()){
                 if(field.getType()!=Biome.class&&!field.getType().equals(Biome[].class))continue;
-                try{field.setAccessible(true);Object value=field.get(source);
+                try{field.setAccessible(true);Object value=field.get(Modifier.isStatic(field.getModifiers())?null:owner);
                     if(value instanceof Biome biome)biomeKey(registration.original.number,biome);
                     else if(value instanceof Biome[] biomes)for(var biome:biomes)if(biome!=null)biomeKey(registration.original.number,biome);
-                }catch(ReflectiveOperationException error){throw new IllegalStateException("Cannot inspect registered biome source",error);}
+                }catch(ReflectiveOperationException|RuntimeException error){
+                    if(owner==source)throw new IllegalStateException("Cannot inspect registered biome source",error);
+                }
             }
-            for(int x:new int[]{-4096,-256,0,256,4096})for(int z:new int[]{-4096,-256,0,256,4096})biomeKey(registration.original.number,source.getBiome(x,z));
+            for(int x=-8192;x<=8192;x+=512)for(int z=-8192;z<=8192;z+=512)biomeKey(registration.original.number,source.getBiome(x,z));
             return null;
         });
     }
