@@ -14,6 +14,6 @@ public final class AlienEvoCameraRotation1201Runtime {
     private AlienEvoCameraRotation1201Runtime() {}
 
     public static Matrix3f getInverseViewRotationMatrix() {
-        return new Matrix3f(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
+        return new Matrix3f().rotation(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
     }
 }
