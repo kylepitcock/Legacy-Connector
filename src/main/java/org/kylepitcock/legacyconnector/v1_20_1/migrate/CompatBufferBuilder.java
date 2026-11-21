@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.VertexSorting;
+import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -45,6 +47,30 @@ public final class CompatBufferBuilder implements VertexConsumer {
     public static void end(Tesselator tesselator) {
         MeshData mesh = of(tesselator).end();
         if (mesh != null) BufferUploader.drawWithShader(mesh);
+    }
+
+    /**
+     * 1.20.1 RenderType.end(BufferBuilder, VertexSorting), adapted to 1.21.1.
+     *
+     * The modern RenderType owns render-state setup/cleanup and draws MeshData;
+     * translucent layers still need their quad indices sorted using the same
+     * allocator that produced the mesh. LateEffectBuffers creates its builders
+     * with the private-capacity constructor, so that allocator is available here.
+     */
+    public static void drawWithRenderType(RenderType renderType, CompatBufferBuilder builder, VertexSorting sorting) {
+        if (renderType == null || builder == null || sorting == null) {
+            throw new IllegalArgumentException("RenderType, builder and vertex sorting must be non-null");
+        }
+        if (renderType.sortOnUpload() && builder.own == null) {
+            throw new IllegalStateException("Cannot sort a RenderType mesh without its original ByteBufferBuilder");
+        }
+
+        MeshData mesh = builder.end();
+        if (mesh == null) return;
+        if (renderType.sortOnUpload()) mesh.sortQuads(builder.own, sorting);
+        // RenderType.draw performs the 1.21.1 setup/draw/clear sequence and
+        // transfers MeshData ownership to the renderer, which closes it.
+        renderType.draw(mesh);
     }
 
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
