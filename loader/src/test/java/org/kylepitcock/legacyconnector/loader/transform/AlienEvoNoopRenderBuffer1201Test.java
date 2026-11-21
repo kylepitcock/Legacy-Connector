@@ -34,7 +34,7 @@ class AlienEvoNoopRenderBuffer1201Test implements Opcodes {
 
         assertNoop(node, "addVertex", "(FFF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
         assertNoop(node, "setColor", "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
-        assertNoop(node, "setUv", "(FF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";
+        assertNoop(node, "setUv", "(FF)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
         assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
     }
 
@@ -45,7 +45,7 @@ class AlienEvoNoopRenderBuffer1201Test implements Opcodes {
                 "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";", null, null);
         node.methods.add(color);
 
-        assertEquals(2, AlienEvoNoopRenderBuffer1201.apply(node));
+        assertEquals(3, AlienEvoNoopRenderBuffer1201.apply(node));
         assertEquals(0, color.access & ACC_ABSTRACT);
         assertNoop(node, "setColor", "(IIII)L" + AlienEvoNoopRenderBuffer1201.VERTEX + ";");
         assertEquals(0, AlienEvoNoopRenderBuffer1201.apply(node));
