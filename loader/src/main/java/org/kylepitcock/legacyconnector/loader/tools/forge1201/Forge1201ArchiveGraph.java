@@ -788,6 +788,13 @@ public final class Forge1201ArchiveGraph {
                     } else if (!safe) {
                         skippedClassEntries++;
                         warnings.add(archivePath + "!/" + name + " skipped: unsafe class-entry path.");
+                        if (captureMixinResources) {
+                            mixinResources.put(name, new NestedMixinResource(name, null,
+                                    entry.getSize(), entry.getCompressedSize(), 1,
+                                    NestedMixinResourceStatus.LIMIT_EXCEEDED,
+                                    "Class entry path is unsafe and was not captured."));
+                            mixinResourceIndexIncomplete = true;
+                        }
                     }
                 }
                 boolean captureClass = classCandidate && safe && !duplicateClassEntry
