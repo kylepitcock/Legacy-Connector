@@ -100,4 +100,16 @@ class CrossVersionPackagesTest {
         CrossVersionPackages c = shared();
         assertEquals(a.fingerprint(), c.fingerprint(), "and it is stable");
     }
+
+    @Test
+    void versionsThatShareAShimStillGetSeparateRelocationPrefixes() {
+        CrossVersionPackages c = new CrossVersionPackages();
+        for (LegacyVersion v : new LegacyVersion[] {LegacyVersion.V1_4_7, LegacyVersion.V1_5_2, LegacyVersion.V1_6_4}) c.add(v, "lib/api/Thing");
+        c.done();
+        String a = c.map(LegacyVersion.V1_5_2, "lib/api/Thing");
+        String b = c.map(LegacyVersion.V1_6_4, "lib/api/Thing");
+        assertEquals("lib/api/Thing", c.map(LegacyVersion.V1_4_7, "lib/api/Thing"));
+        assertFalse(a.equals(b), "1.5.2 and 1.6.4 copies must not land on the same name: " + a);
+        assertEquals("legacyconnector_relocated/v1_7_10/", CrossVersionPackages.prefix(LegacyVersion.V1_7_10));
+    }
 }

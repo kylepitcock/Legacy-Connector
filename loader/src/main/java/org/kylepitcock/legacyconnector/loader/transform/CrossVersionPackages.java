@@ -77,7 +77,8 @@ public final class CrossVersionPackages {
 
     /** Where the copy of {@code version} goes. */
     public static String prefix(LegacyVersion version) {
-        return "legacyconnector_relocated/" + version.shimPrefix().substring("legacyconnector/".length());
+        // per source version (not per shim: 1.4.7, 1.5.2 and 1.6.4 share one shim, but their copies of a package differ and must not merge)
+        return "legacyconnector_relocated/v" + version.id().replace('.', '_') + "/";
     }
 
     /**
