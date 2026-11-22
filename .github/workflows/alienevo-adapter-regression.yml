@@ -44,6 +44,6 @@ jobs:
 
       - name: Run runtime helper unit test
         run: |
-          ./gradlew test \
+          ./gradlew :test \
             --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoBufferRefresh1201Test' \
             --no-daemon --stacktrace
