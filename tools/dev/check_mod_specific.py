@@ -44,7 +44,8 @@ def scan():
     found = {}
     for root in SOURCES:
         for d, _, files in os.walk(ROOT / root):
-            if "worktrees" in d:
+            # skip nested worktrees below the checkout, but not the checkout itself when it is a worktree (.claude/worktrees/x)
+            if "worktrees" in pathlib.Path(d).relative_to(ROOT).parts:
                 continue
             for f in files:
                 if not f.endswith(".java"):
