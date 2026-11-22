@@ -50,6 +50,32 @@ public final class Forge1201AccessTransformerAnalyzer {
         }
     }
 
+    public static Result notPresent() {
+        return new Result(RESOURCE_PATH, ResultStatus.NOT_PRESENT, 0, null,
+                List.of(), 0, 0, 0, 0, 0, List.of());
+    }
+
+    /** Analyze a nested Access Transformer from its already-bounded in-memory bytes. */
+    static Result analyzeNested(byte[] bytes) {
+        if (bytes == null) return notPresent();
+        if (bytes.length > MAX_FILE_BYTES) {
+            return unavailable(ResultStatus.OVERSIZED, bytes.length,
+                    "Nested Access Transformer exceeds the " + MAX_FILE_BYTES + " byte inventory limit.");
+        }
+        final String source;
+        try {
+            source = StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(bytes)).toString();
+        } catch (CharacterCodingException exception) {
+            return new Result(RESOURCE_PATH, ResultStatus.INVALID_UTF8, bytes.length, sha256(bytes),
+                    List.of(), 0, 0, 0, 0, 0,
+                    List.of("Nested Access Transformer is not valid UTF-8; no lines were interpreted."));
+        }
+        return parse(source, bytes.length, sha256(bytes));
+    }
+
     public static Result analyze(Path jarPath) throws IOException {
         if (jarPath == null || !Files.isRegularFile(jarPath)) {
             throw new IllegalArgumentException("Access Transformer input must be an existing JAR: " + jarPath);
@@ -57,8 +83,7 @@ public final class Forge1201AccessTransformerAnalyzer {
         try (ZipFile zip = new ZipFile(jarPath.toFile())) {
             ZipEntry entry = zip.getEntry(RESOURCE_PATH);
             if (entry == null || entry.isDirectory()) {
-                return new Result(RESOURCE_PATH, ResultStatus.NOT_PRESENT, 0, null,
-                        List.of(), 0, 0, 0, 0, 0, List.of());
+                return notPresent();
             }
             if (entry.getSize() > MAX_FILE_BYTES) {
                 return unavailable(ResultStatus.OVERSIZED, entry.getSize(),
