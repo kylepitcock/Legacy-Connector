@@ -24,17 +24,17 @@
 
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="#/mods" aria-label="Legacy Connector compatibility, home">
+    <a class="brand" href="#/" aria-label="Legacy Connector compatibility, home">
       <img src="images/legacyconnector.png" width="32" height="32" alt="">
       Legacy Connector
     </a>
     <nav class="mainnav" id="mainnav" aria-label="Sections">
-      <a href="#/mods" data-route="mods">Mods</a>
-      <a href="#/automated" data-route="automated">Automated results</a>
-      <a href="#/resources" data-route="resources">Missing resources</a>
-      <a href="#/about" data-route="about">Report &amp; how it works</a>
+      <a href="#/" data-route="search">Find a mod</a>
+      <a href="#/automated" data-route="automated">Automated checks</a>
+      <a href="#/about" data-route="about">How it works</a>
     </nav>
     <div class="toolbar">
+      <a class="btn report-link" href="#" target="_blank" rel="noopener">Report a result</a>
       <button type="button" class="iconbtn" id="theme" aria-label="Switch to dark theme" title="Toggle light / dark theme">
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -43,49 +43,50 @@
   </div>
 </header>
 
-<section class="hero" aria-labelledby="hero-title">
-  <div class="wrap">
-    <p class="kicker">Forge 1.7.10, 1.12.2 and 1.6.4 (beta), 1.4.7, 1.5.2, 1.20.1 and Beta 1.7.3 (alpha), 1.2.5 (experimental, opt-in) &rarr; NeoForge 1.21.1</p>
-    <h1 id="hero-title">Old Forge mods, <em>unmodified</em>, in a modern game.</h1>
-    <p class="pitch">Legacy Connector translates legacy Forge mods at load time. See which ones work, check the automated results, or tell us how yours went.</p>
-    <div class="cta">
-      <a class="btn" id="report-top" href="#" target="_blank" rel="noopener">Report a mod</a>
-      <a class="btn alt" href="https://github.com/kylepitcock/Legacy-Connector/releases" target="_blank" rel="noopener">Download</a>
-      <a class="btn alt" href="https://github.com/kylepitcock/Legacy-Connector" target="_blank" rel="noopener">GitHub</a>
-    </div>
-    <div class="glance" id="glance" aria-label="Headline numbers"></div>
-  </div>
-</section>
-
 <main id="main" class="wrap" tabindex="-1">
 
-  <!-- MODS -->
-  <section class="view" id="view-mods" data-view="mods" aria-label="Mod compatibility list" hidden>
-    <div class="tabs" id="tabs" role="tablist" aria-label="Legacy Minecraft version"></div>
+  <!-- SEARCH (landing) -->
+  <section class="view" id="view-search" data-view="search" aria-label="Find a mod" hidden>
+    <div class="finder">
+      <h1>Does your old Forge mod work on NeoForge 1.21.1?</h1>
+      <form id="searchform" role="search" class="searchbox">
+        <label for="q" class="sr">Search mods by name, across all Minecraft versions</label>
+        <input type="search" id="q" placeholder="Search a mod, e.g. Thaumcraft" autocomplete="off" autofocus>
+        <button type="button" class="btn alt" id="clear" hidden>Clear</button>
+      </form>
+      <p class="hint">Searches every legacy Minecraft version. Press <kbd>/</kbd> anywhere to jump here. <a href="#/about">How results are rated</a> &middot; <a class="report-link" href="#" target="_blank" rel="noopener">Report a result</a></p>
+    </div>
+
+    <div class="vcards" id="vcards" role="group" aria-label="Filter by Minecraft version"></div>
     <div class="vnote card" id="vnote-mods" hidden></div>
-    <div class="stats" id="stats"></div>
-    <div class="controls">
-      <input type="search" id="q" placeholder="Search mods…" aria-label="Search mods" autocomplete="off">
+
+    <div class="chips" id="chips" role="group" aria-label="Filter by rating"></div>
+    <div class="controls resultbar">
+      <span id="rcount" aria-live="polite"></span>
       <label class="sortlab">Sort by
-        <select id="sort" aria-label="Sort mods">
+        <select id="sort" aria-label="Sort results">
+          <option value="relevance">Best match</option>
           <option value="name">Name (A-Z)</option>
-          <option value="namez">Name (Z-A)</option>
+          <option value="best">Best rating first</option>
+          <option value="worst">Worst rating first</option>
           <option value="most">Most results</option>
-          <option value="fewest">Fewest results</option>
-          <option value="best">Best result first</option>
-          <option value="worst">Worst result first</option>
           <option value="newest">Newest result</option>
         </select>
       </label>
     </div>
-    <div class="chips" id="chips" role="group" aria-label="Filter by result"></div>
-    <div id="list" role="tabpanel" aria-label="Mods"></div>
+    <div id="list" aria-label="Results"></div>
     <div id="legend-mods"></div>
+  </section>
+
+  <!-- ONE MOD -->
+  <section class="view" id="view-mod" data-view="mod" aria-label="Mod result" hidden>
+    <div id="modpage"></div>
   </section>
 
   <!-- AUTOMATED -->
   <section class="view" id="view-automated" data-view="automated" aria-label="Automated results" hidden>
-    <h2 class="sec" style="margin-top:26px">Automated results</h2>
+    <p class="subnav"><b>Automated checks</b> &middot; <a href="#/resources">Missing resources</a> &middot; <a href="#/">Back to mod search</a></p>
+    <h1 class="sec">Automated results</h1>
     <p class="lead">Every mod jar is translated offline, outside the game, and checked: is everything it uses there? This sorts popular legacy Forge mods by what, if anything, is still missing. It is a quick first check, not a test of play.</p>
     <div class="compare" id="compare"></div>
 
@@ -123,14 +124,15 @@
       <p class="small"><b>The categories.</b> <b>Ready to test</b>: the mod translates and everything it uses exists, so it is worth trying in game. <b>Partly placeholder</b>: it translates, but 10 or more features it uses are empty placeholders, so large parts probably do nothing. <b>Missing game features</b>: it needs old Minecraft or Forge functionality (or an API the layer provides itself, such as NEI) that we have not built yet; this is our work to do. <b>Needs another mod</b>: it depends on code from another mod, such as Thaumcraft, IC2 or AE2, that is not available or does not match the version it expects. <b>Needs removed code</b>: it uses old Java or library code that no longer exists. <b>Not needed</b>: 1.7.10 and 1.12.2 engine patches (performance, bug fixes, ID extenders) with nothing to do on 1.21.1, and on 1.20.1 the libraries (Architectury, Curios, Patchouli, GeckoLib, Cloth Config...) that exist as native 1.21.1 mods and replace the old jar.</p>
       <p class="small"><b>1.20.1.</b> There is no old game to link against: the jar is remapped in place (SRG to Mojang names, Forge to NeoForge, the Minecraft 1.20.1 to 1.21.1 migration, the layer's Forge facades) and every reference is then resolved against Minecraft 1.21.1, NeoForge and the other jars of the run (<code>./gradlew gap1201 -Pgap.translate=true</code>). <b>Ready to test</b> therefore means "links against 1.21.1 plus the facades". The support is experimental and on by default, and does nothing unless a Forge 1.20.1 jar is installed (<code>experimental.forge1201=false</code> turns it off).</p>
       <p class="small"><b>Resource check.</b> The same run also checks every translated mod's models, blockstates and textures for references that point at nothing (the usual start of a purple-and-black texture or an invisible block), without starting the game. It separates references the translation lost from ones the mod never shipped itself. It cannot judge what anything looks like.</p>
-      <p class="small"><b>"Ready to test" does not mean "works".</b> The game is never started: this only shows the jar translates and nothing it uses is missing. Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="#/mods">mod list</a>, where player reports and in-game tests outrank this probe.</p>
+      <p class="small"><b>"Ready to test" does not mean "works".</b> The game is never started: this only shows the jar translates and nothing it uses is missing. Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="#/">mod search</a>, where player reports and in-game tests outrank this probe.</p>
       <p class="small">The jars come from Modrinth's most downloaded Forge mods and are discarded after the run. If a result is wrong, <a class="report-link" href="#" target="_blank" rel="noopener">open a compatibility report</a>.</p>
     </div>
   </section>
 
   <!-- MISSING RESOURCES -->
   <section class="view" id="view-resources" data-view="resources" aria-label="Missing resources" hidden>
-    <h2 class="sec" style="margin-top:26px">Missing resources</h2>
+    <p class="subnav"><a href="#/automated">Automated checks</a> &middot; <b>Missing resources</b> &middot; <a href="#/">Back to mod search</a></p>
+    <h1 class="sec">Missing resources</h1>
     <p class="lead">The automated check also looks inside every translated mod for models, blockstates and textures that point at a file that does not exist: the usual start of a purple-and-black texture or an invisible block. This page lists exactly which files are missing, and for whom. The game is never started, so it cannot judge how anything looks.</p>
     <div class="tabs" id="rtabs" role="tablist" aria-label="Minecraft version of the resource check"></div>
     <div class="card" id="rsummary" role="tabpanel" aria-label="Resource check summary"></div>
@@ -158,11 +160,13 @@
 
   <!-- ABOUT -->
   <section class="view" id="view-about" data-view="about" aria-label="Report a mod and how it works" hidden>
-    <h2 class="sec" style="margin-top:26px">How to report a mod</h2>
+    <h1 class="sec">How it works and how to report</h1>
+    <p class="lead">Legacy Connector translates legacy Forge mods at load time so they run unmodified on NeoForge 1.21.1. Beta: 1.7.10, 1.12.2 and 1.6.4; alpha: 1.5.2, 1.4.7, 1.2.5, Forge 1.20.1 and Beta 1.7.3. <a href="https://github.com/kylepitcock/Legacy-Connector/releases" target="_blank" rel="noopener">Download</a> &middot; <a href="https://github.com/kylepitcock/Legacy-Connector" target="_blank" rel="noopener">GitHub</a></p>
+    <h2 class="sec">How to report a mod</h2>
     <div class="card">
       <ol class="steps">
         <li>Start the game once with the mod installed; Legacy Connector writes <code>logs/legacyconnector-report.txt</code>.</li>
-        <li>Press <b>Report a mod</b> (or <b>Report this mod</b> on a mod in the list). It opens a GitHub issue form with the mod name filled in.</li>
+        <li>Press <b>Report a mod</b> (or <b>Report your result</b> on a mod page, which also fills in the Minecraft version). It opens a GitHub issue form with the mod name filled in.</li>
         <li>Pick the result, describe what you tried, attach the report file, and submit. The list updates within a few minutes of your submission.</li>
       </ol>
       <p class="small" style="margin-bottom:14px">You need a free GitHub account. Please don't attach mod jars, only logs and screenshots.</p>
@@ -174,8 +178,8 @@
     <div id="legend-about"></div>
     <h2 class="sec">The pieces</h2>
     <div class="twocol">
-      <div class="card"><h3>Mod list</h3><p class="small" style="margin:0">Per Minecraft version, one row per mod with every result behind it: <a href="#/mods">open the list</a>.</p></div>
-      <div class="card"><h3>Automated results</h3><p class="small" style="margin:0">Weekly offline check of popular mods, per legacy version side by side: <a href="#/automated">see the numbers</a>.</p></div>
+      <div class="card"><h3>Find a mod</h3><p class="small" style="margin:0">One search across all versions, one page per mod with every result behind it: <a href="#/">search the list</a>.</p></div>
+      <div class="card"><h3>Automated results</h3><p class="small" style="margin:0">Weekly offline check of popular mods, per legacy version side by side: <a href="#/automated">see the numbers</a>, or the <a href="#/resources">missing resources</a>.</p></div>
       <div class="card"><h3>Documentation</h3><p class="small" style="margin:0">Architecture, bridges and the addon API are in the <a href="https://github.com/kylepitcock/Legacy-Connector/tree/master/docs/wiki" target="_blank" rel="noopener">wiki folder</a>.</p></div>
     </div>
   </section>
