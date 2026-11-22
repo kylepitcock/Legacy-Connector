@@ -1163,6 +1163,18 @@
    "link": "",
    "date": "2026-11-22",
    "open": true
+  },
+  {
+   "issue": 325,
+   "mod": "Witchest and more V12",
+   "mc": "1.6.4 (in development)",
+   "status": "partial",
+   "details": "it spawns the mods and everything works fine but the dimensions dont work and the structures cant generate because of the mod using blocks to generate them instead of being a normal world generation structure (examples are the piramids, castles, etc.) you can try this out in the original 1.6.4/1.6.2 versions of the game and see how it should work",
+   "lc": "0.5.0",
+   "neoforge": "21.1.267",
+   "link": "https://mcmodarchive.femtopedia.de/#Mods/W/witches%20and%20more/1.6.4/",
+   "date": "2026-11-22",
+   "open": true
   }
  ]
 }
