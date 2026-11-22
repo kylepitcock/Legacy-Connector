@@ -1248,7 +1248,9 @@ public class Block {
                 var current = serverLevel.getBlockState(pos);
                 if (current.getBlock() == state.getBlock()) state = current;
                 for (var drop : net.minecraft.world.level.block.Block.getDrops(state, serverLevel, pos, serverLevel.getBlockEntity(pos))) {
-                    ret.add(ItemStack.mcc$wrap(drop));
+                    ItemStack legacy = ItemStack.mcc$wrap(drop);
+                    // an empty loot roll wraps to null; legacy callers iterate the list without checks (IC2's explosions)
+                    if (legacy != null && legacy.getItem() != null) ret.add(legacy);
                 }
                 return ret;
             } catch (RuntimeException | LinkageError e) {
