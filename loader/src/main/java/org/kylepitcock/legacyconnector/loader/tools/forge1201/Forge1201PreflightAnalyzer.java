@@ -607,7 +607,7 @@ public final class Forge1201PreflightAnalyzer {
                     "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
                     "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
                     "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
-                    "Access Transformer inventory covers the outer source JAR and bounded source-nested archives. It preserves original line locations, reports class-owner/member/descriptor namespace evidence, and never applies directives, resolves selectors, or remaps them. Nested resource presence is distinct from the pinned Forge/NeoForge loader consumer eligibility reported per archive.",
+                    "Access Transformer inventory covers the outer source JAR and bounded source-nested archives. It preserves original line locations, reports class-owner/member/descriptor namespace evidence, and never applies directives, resolves selectors, or remaps them. Nested resource presence is distinct from the pinned Forge/NeoForge loader consumer eligibility reported per archive; that structural eligibility models the normal ModInfo-backed sort path and is conditional on successful loader validation/sorting, not a guarantee against unrelated duplicate-ID, dependency, cycle, or global loading errors.",
                     "Coremod metadata inventory covers META-INF/coremods.json in the outer source JAR and bounded source-nested archives. Script paths are checked against a bounded in-memory archive path index; duplicate paths and incomplete indexes are reported as ambiguous/unknown rather than falsely present or missing. The NeoForge accessTransformers TOML list is not expanded into individual file paths in this slice; when such a list is declared, selection is reported as unresolved rather than assuming the default cfg is consumed. No JavaScript is evaluated, no transformer is created, and Forge 47.3.0 script/API/transformer compatibility with the NeoForged engine remains unverified."
             );
 
@@ -873,7 +873,8 @@ public final class Forge1201PreflightAnalyzer {
                     .append(", Forge AT=").append(nested.forgeAccessTransformerConsumerEligible())
                     .append(", NeoForge Coremod=").append(nested.neoForgeCoremodConsumerEligible())
                     .append(", NeoForge default AT=").append(nested.neoForgeAccessTransformerConsumerEligible())
-                    .append(" [").append(nested.neoForgeDefaultAtDisposition()).append("]\n");
+                    .append(" [").append(nested.neoForgeDefaultAtDisposition()).append("]")
+                    .append(" (structural eligibility assumes successful loader validation/sorting)\n");
             out.append("    META-INF/coremods.json: ").append(nested.coremodRegistryResourceStatus());
             if (nested.coremodMetadata() != null) {
                 out.append(" [").append(nested.coremodMetadata().status())
