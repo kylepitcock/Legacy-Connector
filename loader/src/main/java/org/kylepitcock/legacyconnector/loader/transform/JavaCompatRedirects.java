@@ -273,6 +273,12 @@ public final class JavaCompatRedirects {
         staticToStatic(al, "alGetListener", "(ILjava/nio/FloatBuffer;)V", al, "alGetListenerfv");
         staticToStatic(al, "alListener", "(ILjava/nio/FloatBuffer;)V", al, "alListenerfv");
         staticToStatic(al, "alSource", "(IILjava/nio/FloatBuffer;)V", al, "alSourcefv");
+        staticToStatic(al, "alSource", "(IILjava/nio/IntBuffer;)V", al, "alSourceiv");
+        staticToStatic(al, "alGetSource", "(IILjava/nio/FloatBuffer;)V", al, "alGetSourcefv");
+        staticToStatic(al, "alSourcePlay", "(Ljava/nio/IntBuffer;)V", al, "alSourcePlayv");
+        staticToStatic(al, "alSourceStop", "(Ljava/nio/IntBuffer;)V", al, "alSourceStopv");
+        staticToStatic(al, "alSourcePause", "(Ljava/nio/IntBuffer;)V", al, "alSourcePausev");
+        staticToStatic(al, "alSourceRewind", "(Ljava/nio/IntBuffer;)V", al, "alSourceRewindv");
         INVOKES.put(al + ".alIsExtensionPresent(Ljava/lang/String;)Z",
                 new MethodInsnNode(Opcodes.INVOKESTATIC, al, "alIsExtensionPresent", "(Ljava/lang/CharSequence;)Z", false));
         // javac widens a byte or short argument to int; Kotlin and some bytecode generators name the narrow overload, which does not exist
