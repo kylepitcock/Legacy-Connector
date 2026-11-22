@@ -288,7 +288,7 @@ public final class InjectionRepair {
         String old = desc != null ? desc : hint;
         if (old == null) {
             if (captured.isEmpty()) return Outcome.EXACT;
-            for (String d : decl) if (callbackFits(voidCb, d) && isPrefix(captured, Arrays.asList(Type.getArgumentTypes(d)))) return Outcome.EXACT;
+            for (String d : decl) if (callbackFits(voidCb, d) && captured.equals(Arrays.asList(Type.getArgumentTypes(d)))) return Outcome.EXACT; // Mixin takes all target parameters or none: a prefix is no valid handler
             List<String> cands = new ArrayList<>();
             List<ParamAlignment.Insert> ins = null;
             for (String d : decl) {
@@ -331,7 +331,7 @@ public final class InjectionRepair {
     /** The insertions that lie before the last captured parameter; a parameter added after it needs no handler change (the handler captures a prefix). */
     private static List<ParamAlignment.Insert> leading(List<ParamAlignment.Insert> ins, int capturedCount) {
         List<ParamAlignment.Insert> out = new ArrayList<>();
-        for (ParamAlignment.Insert i : ins) if (i.index() < capturedCount) out.add(i);
+        for (ParamAlignment.Insert i : ins) if (i.index() <= capturedCount) out.add(i);
         return out;
     }
 
