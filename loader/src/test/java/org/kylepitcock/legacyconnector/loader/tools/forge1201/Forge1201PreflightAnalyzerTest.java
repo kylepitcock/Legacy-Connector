@@ -598,7 +598,9 @@ final class Forge1201PreflightAnalyzerTest {
         assertFalse(transformation.forgeCoremodConsumerEligible());
         assertFalse(transformation.forgeAccessTransformerConsumerEligible());
         assertTrue(transformation.neoForgeCoremodConsumerEligible());
-        assertTrue(transformation.neoForgeAccessTransformerConsumerEligible());
+        assertFalse(transformation.neoForgeAccessTransformerConsumerEligible());
+        assertEquals(Forge1201PreflightAnalyzer.NeoForgeDefaultAtDisposition.EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED,
+                transformation.neoForgeDefaultAtDisposition());
         assertEquals(Forge1201CoremodAnalyzer.ScriptStatus.RESOURCE_PRESENT,
                 transformation.coremodMetadata().declarations().getFirst().scriptStatus());
     }
@@ -967,6 +969,9 @@ final class Forge1201PreflightAnalyzerTest {
                 [[mods]]
                 modId="native_nested"
                 version="1.0.0"
+
+                [[accessTransformers]]
+                file="META-INF/native-at.cfg"
                 """;
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -985,6 +990,8 @@ final class Forge1201PreflightAnalyzerTest {
             put(zip, "scripts/native_core.js", "// inert; never evaluated".getBytes(StandardCharsets.UTF_8));
             put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
                     "public net.minecraft.world.entity.Entity\n".getBytes(StandardCharsets.UTF_8));
+            put(zip, "META-INF/native-at.cfg",
+                    "public net.minecraft.world.entity.LivingEntity\n".getBytes(StandardCharsets.UTF_8));
         }
         return bytes.toByteArray();
     }
