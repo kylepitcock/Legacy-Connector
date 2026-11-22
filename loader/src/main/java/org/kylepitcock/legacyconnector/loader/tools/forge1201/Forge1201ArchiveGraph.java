@@ -681,8 +681,10 @@ public final class Forge1201ArchiveGraph {
                             + ": nested archive declares NeoForge metadata and was excluded from legacy Mixin analysis.");
                 } else {
                     nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
-                            snapshot.incompleteKind(), List.of(), snapshot.modsToml() != null,
-                            snapshot.neoForgeModsToml() != null, snapshot.modsToml(), snapshot.neoForgeModsToml(),
+                            snapshot.incompleteKind(), List.of(),
+                            snapshot.modsToml() != null || snapshot.resourcePaths().contains("META-INF/mods.toml"),
+                            snapshot.neoForgeModsToml() != null || snapshot.resourcePaths().contains("META-INF/neoforge.mods.toml"),
+                            snapshot.modsToml(), snapshot.neoForgeModsToml(),
                             snapshot.mixinResources(),
                             snapshot.resourcePaths(), snapshot.duplicateResourcePaths(),
                             snapshot.resourcePathIndexIncomplete(), Map.of(), true,
@@ -734,7 +736,9 @@ public final class Forge1201ArchiveGraph {
                     .sorted(Comparator.comparing(Forge1201PreflightAnalyzer.ModMetadata::modId)
                             .thenComparing(Forge1201PreflightAnalyzer.ModMetadata::version)).toList();
             nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
-                    parsed.kind(), nestedMods, snapshot.modsToml() != null, snapshot.neoForgeModsToml() != null,
+                    parsed.kind(), nestedMods,
+                    snapshot.modsToml() != null || snapshot.resourcePaths().contains("META-INF/mods.toml"),
+                    snapshot.neoForgeModsToml() != null || snapshot.resourcePaths().contains("META-INF/neoforge.mods.toml"),
                     snapshot.modsToml(), snapshot.neoForgeModsToml(),
                     snapshot.mixinResources(), snapshot.resourcePaths(), snapshot.duplicateResourcePaths(),
                     snapshot.resourcePathIndexIncomplete(), mixinClasses,
