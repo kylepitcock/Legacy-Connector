@@ -528,7 +528,29 @@ public final class Forge1201MixinAnalyzer {
         }
     }
 
-    private record IndexedEntry(ZipEntry entry, int occurrences) {}
+    /** One bounded entry supplied by an in-memory nested source archive. */
+    public record MemoryEntry(
+            String path, byte[] bytes, long sizeBytes, long compressedSizeBytes,
+            int occurrences, String unavailableDiagnostic) {
+        public MemoryEntry {
+            if (path == null || path.isBlank()) throw new IllegalArgumentException("Memory entry path is required");
+            if (occurrences < 1) throw new IllegalArgumentException("Memory entry occurrence count must be positive");
+            bytes = bytes == null ? null : bytes.clone();
+        }
+        @Override public byte[] bytes() { return bytes == null ? null : bytes.clone(); }
+    }
+
+    /** Read-only archive view for a source-nested JAR; no temporary file or class loading is used. */
+    public record MemoryArchive(String archivePath, List<MemoryEntry> entries, boolean entryIndexIncomplete) {
+        public MemoryArchive {
+            if (archivePath == null || archivePath.isBlank()) throw new IllegalArgumentException("Archive path is required");
+            entries = List.copyOf(entries);
+        }
+    }
+
+    private record IndexedEntry(
+            ZipEntry entry, byte[] memoryBytes, long sizeBytes, long compressedSizeBytes,
+            int occurrences, String unavailableDiagnostic) {}
 
     private record ParsedConfig(
             String packageName,
@@ -588,13 +610,41 @@ public final class Forge1201MixinAnalyzer {
         if (sourceJar == null || !java.nio.file.Files.isRegularFile(sourceJar)) {
             throw new IllegalArgumentException("Mixin analysis input must be an existing archive: " + sourceJar);
         }
+        try (ZipFile zip = new ZipFile(sourceJar.toFile())) {
+            return analyzeArchive("source/" + sourceJar.getFileName(), zip, null, declarations,
+                    targetIndex, sourceToTargetClassMappings, classMappingVersion, requestedRefmapContextKey);
+        }
+    }
+
+    /** Analyze a bounded in-memory nested archive using the same parser as the outer JAR. */
+    public static Result analyze(
+            MemoryArchive archive,
+            Collection<ConfigDeclaration> declarations,
+            Forge1201TargetApiVerifier.TargetIndex targetIndex,
+            Map<String, String> sourceToTargetClassMappings,
+            String classMappingVersion,
+            String requestedRefmapContextKey) throws IOException {
+        if (archive == null) throw new IllegalArgumentException("Nested Mixin archive view is required");
+        return analyzeArchive(archive.archivePath(), null, archive, declarations,
+                targetIndex, sourceToTargetClassMappings, classMappingVersion, requestedRefmapContextKey);
+    }
+
+    private static Result analyzeArchive(
+            String archivePath,
+            ZipFile zip,
+            MemoryArchive memoryArchive,
+            Collection<ConfigDeclaration> declarations,
+            Forge1201TargetApiVerifier.TargetIndex targetIndex,
+            Map<String, String> sourceToTargetClassMappings,
+            String classMappingVersion,
+            String requestedRefmapContextKey) throws IOException {
+        if (zip == null && memoryArchive == null) throw new IllegalArgumentException("Archive input is required");
         if (declarations == null) throw new IllegalArgumentException("Mixin config declarations are required");
 
         Map<String, String> classMappings = sourceToTargetClassMappings == null
                 ? Map.of() : Map.copyOf(sourceToTargetClassMappings);
         String mappingVersion = classMappingVersion == null || classMappingVersion.isBlank()
                 ? "unavailable" : classMappingVersion;
-        String archivePath = "source/" + sourceJar.getFileName();
 
         List<String> warnings = new ArrayList<>();
         Map<String, LinkedHashSet<DiscoverySource>> grouped = new TreeMap<>();
@@ -603,19 +653,34 @@ public final class Forge1201MixinAnalyzer {
         }
 
         Map<String, IndexedEntry> entries = new HashMap<>();
-        try (ZipFile zip = new ZipFile(sourceJar.toFile())) {
-            var enumeration = zip.entries();
+        try {
             int count = 0;
-            while (enumeration.hasMoreElements()) {
-                ZipEntry entry = enumeration.nextElement();
-                if (++count > MAX_ARCHIVE_ENTRIES) {
-                    warnings.add("Archive entry inventory reached the " + MAX_ARCHIVE_ENTRIES
-                            + " entry limit; remaining entries were not indexed.");
-                    break;
+            if (zip != null) {
+                var enumeration = zip.entries();
+                while (enumeration.hasMoreElements()) {
+                    ZipEntry entry = enumeration.nextElement();
+                    if (++count > MAX_ARCHIVE_ENTRIES) {
+                        warnings.add("Archive entry inventory reached the " + MAX_ARCHIVE_ENTRIES
+                                + " entry limit; remaining entries were not indexed.");
+                        break;
+                    }
+                    entries.compute(entry.getName(), (name, current) ->
+                            current == null
+                                    ? new IndexedEntry(entry, null, entry.getSize(), entry.getCompressedSize(), 1, null)
+                                    : new IndexedEntry(current.entry(), null, current.sizeBytes(),
+                                            current.compressedSizeBytes(), current.occurrences() + 1,
+                                            current.unavailableDiagnostic()));
                 }
-                entries.compute(entry.getName(), (name, current) ->
-                        current == null ? new IndexedEntry(entry, 1)
-                                : new IndexedEntry(current.entry(), current.occurrences() + 1));
+            } else {
+                for (MemoryEntry entry : memoryArchive.entries()) {
+                    if (++count > MAX_ARCHIVE_ENTRIES) {
+                        warnings.add("Nested archive entry inventory reached the " + MAX_ARCHIVE_ENTRIES
+                                + " entry limit; remaining entries were not indexed.");
+                        break;
+                    }
+                    entries.put(entry.path(), new IndexedEntry(null, entry.bytes(), entry.sizeBytes(),
+                            entry.compressedSizeBytes(), entry.occurrences(), entry.unavailableDiagnostic()));
+                }
             }
 
             List<ConfigFinding> configFindings = new ArrayList<>();
@@ -623,7 +688,8 @@ public final class Forge1201MixinAnalyzer {
             List<TargetFinding> targetFindings = new ArrayList<>();
             List<MemberAnnotationFinding> memberFindings = new ArrayList<>();
             List<InjectorFinding> injectorFindings = new ArrayList<>();
-            boolean archiveEntryIndexIncomplete = count > MAX_ARCHIVE_ENTRIES;
+            boolean archiveEntryIndexIncomplete = count > MAX_ARCHIVE_ENTRIES
+                    || (memoryArchive != null && memoryArchive.entryIndexIncomplete());
             long totalConfigBytes = 0;
             long totalClassBytes = 0;
             int processedConfigs = 0;
@@ -665,7 +731,7 @@ public final class Forge1201MixinAnalyzer {
 
                 byte[] configBytes;
                 try {
-                    configBytes = readBounded(zip, configEntry.entry(), MAX_CONFIG_BYTES);
+                    configBytes = readBounded(zip, configEntry, MAX_CONFIG_BYTES);
                 } catch (EntryLimitException exception) {
                     configFindings.add(configFailure(archivePath, configPath, sources,
                             ConfigStatus.CONFIG_LIMIT_EXCEEDED, exception.getMessage()));
@@ -768,7 +834,7 @@ public final class Forge1201MixinAnalyzer {
 
                         byte[] classBytes;
                         try {
-                            classBytes = readBounded(zip, classEntry.entry(), MAX_CLASS_BYTES);
+                            classBytes = readBounded(zip, classEntry, MAX_CLASS_BYTES);
                         } catch (EntryLimitException exception) {
                             classFindings.add(new MixinClassFinding(
                                     archivePath, configPath, section, mixinName, classEntryPath,
@@ -1029,12 +1095,12 @@ public final class Forge1201MixinAnalyzer {
         }
         final byte[] bytes;
         try {
-            bytes = readBounded(zip, indexed.entry(), readLimit);
+            bytes = readBounded(zip, indexed, readLimit);
         } catch (EntryLimitException exception) {
             budget.inflatedBytes += exception.bytesRead();
             return new RefmapResourceFinding(
                     archivePath, path, configPaths, origins, RefmapResourceStatus.LIMIT_EXCEEDED,
-                    indexed.entry().getSize(), indexed.entry().getCompressedSize(),
+                    indexed.sizeBytes(), indexed.compressedSizeBytes(),
                     exception.bytesRead(), null, false, false, List.of(), 0, 0, List.of(), List.of(),
                     List.of(exception.getMessage() + " Refmap parsing was not completed."));
         } catch (IOException exception) {
@@ -2643,8 +2709,21 @@ public final class Forge1201MixinAnalyzer {
                 ? value.getAsBoolean() : null;
     }
 
-    private static byte[] readBounded(ZipFile zip, ZipEntry entry, int limit) throws IOException {
-        try (InputStream input = zip.getInputStream(entry);
+    private static byte[] readBounded(ZipFile zip, IndexedEntry entry, int limit) throws IOException {
+        if (entry.memoryBytes() != null) {
+            if (entry.memoryBytes().length > limit) {
+                throw new EntryLimitException("Nested archive resource exceeded " + limit + " bytes.",
+                        entry.memoryBytes().length);
+            }
+            return entry.memoryBytes().clone();
+        }
+        if (entry.entry() == null || zip == null) {
+            String message = entry.unavailableDiagnostic() == null
+                    ? "Archive resource was not captured by the bounded nested-resource inventory."
+                    : entry.unavailableDiagnostic();
+            throw new EntryLimitException(message, (int) Math.min(Integer.MAX_VALUE, Math.max(1, entry.sizeBytes())));
+        }
+        try (InputStream input = zip.getInputStream(entry.entry());
                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[8192];
             int total = 0;
