@@ -44,6 +44,35 @@ public final class Crafting1122 {
         }
     }
 
+    /**
+     * Vanilla's log to planks recipe for grids read while mods load (a sawmill, a chipper, a wood-processing machine builds its table
+     * from the crafting result of every log): the modern recipe manager does not exist then, and vanilla's recipes are not in the
+     * legacy registry. Only meaningful when {@link #modernResult} found nothing; empty when the grid is not one log.
+     */
+    public static ItemStack earlyResult(InventoryCrafting inv) {
+        try {
+            ItemStack only = ItemStack.EMPTY;
+            for (int i = 0; i < inv.getSizeInventory(); i++) {
+                ItemStack s = inv.getStackInSlot(i);
+                if (s.isEmpty()) continue;
+                if (!only.isEmpty()) return ItemStack.EMPTY;
+                only = s;
+            }
+            if (only.isEmpty()) return ItemStack.EMPTY;
+            int meta = only.getMetadata() & 3;
+            Object planks = legacyconnector.v1_12_2.net.minecraft.init.Blocks.PLANKS;
+            if (only.getItem() == legacyconnector.v1_12_2.net.minecraft.item.Item.getItemFromBlock(legacyconnector.v1_12_2.net.minecraft.init.Blocks.LOG)) {
+                return new ItemStack((legacyconnector.v1_12_2.net.minecraft.block.Block) planks, 4, meta);
+            }
+            if (only.getItem() == legacyconnector.v1_12_2.net.minecraft.item.Item.getItemFromBlock(legacyconnector.v1_12_2.net.minecraft.init.Blocks.LOG2)) {
+                return new ItemStack((legacyconnector.v1_12_2.net.minecraft.block.Block) planks, 4, 4 + (meta & 1));
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // not resolvable yet: no result
+        }
+        return ItemStack.EMPTY;
+    }
+
     /** What the modern recipe leaves in the grid (buckets, ...), laid out over the whole legacy grid; null when no modern recipe matches. */
     public static NonNullList<ItemStack> modernRemaining(InventoryCrafting inv, World world) {
         try {
