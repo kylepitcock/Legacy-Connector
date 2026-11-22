@@ -369,7 +369,8 @@ public final class Forge1201PreflightAnalyzer {
                 // Native NeoForge archives are inventoried for transformation resources, but their Mixin
                 // metadata is not passed through the legacy Forge 1.20.1 Mixin source analyzer.
                 if (archive.neoForgeModsTomlPresent()
-                        || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD) {
+                        || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD
+                        || (archive.resourcePathIndexIncomplete() && !archive.forgeModsTomlPresent())) {
                     return;
                 }
                 List<String> nestedWarnings = new ArrayList<>(archive.warnings());
