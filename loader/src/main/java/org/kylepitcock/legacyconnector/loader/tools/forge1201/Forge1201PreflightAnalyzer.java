@@ -766,6 +766,15 @@ public final class Forge1201PreflightAnalyzer {
                         .append(", mixin classes=").append(nestedResult.mixinClasses().size())
                         .append(", selectors=").append(nestedResult.targets().size())
                         .append(", target-index=").append(nestedResult.targetIndexStatus()).append('\n');
+                for (Forge1201MixinAnalyzer.ConfigFinding config : nestedResult.configs()) {
+                    out.append("      config ").append(config.configPath()).append(" [").append(config.status())
+                            .append(", discovered by ").append(config.discoverySources())
+                            .append(", refmap=").append(config.refmapSelection())
+                            .append(", candidate=").append(config.refmapCandidatePath())
+                            .append(", wrapper=").append(config.refmapWrapperClass()).append("]\n");
+                    config.warnings().forEach(warning ->
+                            out.append("        warning: ").append(warning).append('\n'));
+                }
             }
         }
         out.append("\nMixin injectors (").append(mixins.injectors().size()).append("):\n");
