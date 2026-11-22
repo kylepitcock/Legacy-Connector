@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -46,6 +47,7 @@ public final class Forge1201CoremodAnalyzer {
     public enum ScriptStatus {
         RESOURCE_PRESENT,
         RESOURCE_MISSING,
+        RESOURCE_NOT_INDEXED,
         UNSAFE_RESOURCE_PATH,
         INVALID_DECLARATION
     }
@@ -74,6 +76,34 @@ public final class Forge1201CoremodAnalyzer {
         }
     }
 
+    public static Result notPresent() {
+        return new Result(RESOURCE_PATH, ResultStatus.NOT_PRESENT, 0, null,
+                List.of(), 0, 0, 0, 0, List.of());
+    }
+
+    /** Analyze a nested archive resource from its already-bounded in-memory bytes. */
+    static Result analyzeNested(byte[] metadataBytes, Set<String> resourcePaths, boolean resourceIndexIncomplete) {
+        if (metadataBytes == null) return notPresent();
+        if (metadataBytes.length > MAX_FILE_BYTES) {
+            return unavailable(ResultStatus.OVERSIZED, metadataBytes.length,
+                    "Nested Coremod metadata exceeds the " + MAX_FILE_BYTES + " byte inventory limit.");
+        }
+        final String source;
+        try {
+            source = StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(metadataBytes)).toString();
+        } catch (CharacterCodingException exception) {
+            return new Result(RESOURCE_PATH, ResultStatus.INVALID_UTF8, metadataBytes.length, sha256(metadataBytes),
+                    List.of(), 0, 0, 0, 0,
+                    List.of("Nested Coremod metadata is not valid UTF-8; no declarations were interpreted."));
+        }
+        Set<String> indexedPaths = resourcePaths == null ? Set.of() : resourcePaths;
+        return parse(source, metadataBytes.length, sha256(metadataBytes), indexedPaths::contains,
+                resourceIndexIncomplete);
+    }
+
     public static Result analyze(Path jarPath) throws IOException {
         if (jarPath == null || !Files.isRegularFile(jarPath)) {
             throw new IllegalArgumentException("Coremod metadata input must be an existing JAR: " + jarPath);
@@ -82,8 +112,7 @@ public final class Forge1201CoremodAnalyzer {
         try (ZipFile zip = new ZipFile(jarPath.toFile())) {
             ZipEntry metadata = zip.getEntry(RESOURCE_PATH);
             if (metadata == null || metadata.isDirectory()) {
-                return new Result(RESOURCE_PATH, ResultStatus.NOT_PRESENT, 0, null,
-                        List.of(), 0, 0, 0, 0, List.of());
+                return notPresent();
             }
             if (metadata.getSize() > MAX_FILE_BYTES) {
                 return unavailable(ResultStatus.OVERSIZED, metadata.getSize(),
@@ -111,13 +140,26 @@ public final class Forge1201CoremodAnalyzer {
                         List.of("Coremod metadata is not valid UTF-8; no declarations were interpreted."));
             }
 
-            return parse(source, bytes.length, sha256(bytes), zip);
+            return parse(source, bytes.length, sha256(bytes), path -> {
+                ZipEntry script = zip.getEntry(path);
+                return script != null && !script.isDirectory();
+            }, false);
         }
     }
 
     static Result parse(String source, long sizeBytes, String sha256, ZipFile zip) {
-        if (source == null) throw new IllegalArgumentException("Coremod metadata source is required.");
         if (zip == null) throw new IllegalArgumentException("Source archive is required.");
+        return parse(source, sizeBytes, sha256, path -> {
+            ZipEntry script = zip.getEntry(path);
+            return script != null && !script.isDirectory();
+        }, false);
+    }
+
+    private static Result parse(
+            String source, long sizeBytes, String sha256,
+            Predicate<String> resourceExists, boolean resourceIndexIncomplete) {
+        if (source == null) throw new IllegalArgumentException("Coremod metadata source is required.");
+        if (resourceExists == null) throw new IllegalArgumentException("Script resource lookup is required.");
 
         List<CoremodDeclaration> declarations = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
@@ -126,6 +168,7 @@ public final class Forge1201CoremodAnalyzer {
         int malformed = 0;
         int duplicates = 0;
         int missing = 0;
+        int unindexed = 0;
         boolean truncated = false;
         boolean invalidJson = false;
         String parseDiagnostic = null;
@@ -176,11 +219,16 @@ public final class Forge1201CoremodAnalyzer {
                     continue;
                 }
 
-                ZipEntry script = zip.getEntry(scriptPath);
-                if (script == null || script.isDirectory()) {
-                    missing++;
-                    declarations.add(new CoremodDeclaration(name, scriptPath, ScriptStatus.RESOURCE_MISSING,
-                            duplicateName, "Declared JavaScript resource is not present in the outer archive."));
+                if (!resourceExists.test(scriptPath)) {
+                    if (resourceIndexIncomplete) {
+                        unindexed++;
+                        declarations.add(new CoremodDeclaration(name, scriptPath, ScriptStatus.RESOURCE_NOT_INDEXED,
+                                duplicateName, "The nested resource-path index is incomplete; script presence could not be determined."));
+                    } else {
+                        missing++;
+                        declarations.add(new CoremodDeclaration(name, scriptPath, ScriptStatus.RESOURCE_MISSING,
+                                duplicateName, "Declared JavaScript resource is not present in the archive."));
+                    }
                 } else {
                     valid++;
                     declarations.add(new CoremodDeclaration(name, scriptPath, ScriptStatus.RESOURCE_PRESENT,
@@ -214,11 +262,15 @@ public final class Forge1201CoremodAnalyzer {
             warnings.add(duplicates + " duplicate coremod name occurrence(s) were retained for review.");
         }
         if (missing > 0) {
-            warnings.add(missing + " declared coremod script resource(s) are missing from the outer archive.");
+            warnings.add(missing + " declared coremod script resource(s) are missing from the archive.");
+        }
+        if (unindexed > 0) {
+            warnings.add(unindexed + " declared coremod script resource(s) could not be classified because nested resource indexing was incomplete.");
         }
 
         ResultStatus status = invalidJson ? ResultStatus.INVALID_JSON
-                : truncated || malformed > 0 || duplicates > 0 ? ResultStatus.PARTIALLY_PARSED : ResultStatus.PARSED;
+                : truncated || malformed > 0 || duplicates > 0 || unindexed > 0
+                        ? ResultStatus.PARTIALLY_PARSED : ResultStatus.PARSED;
         return new Result(RESOURCE_PATH, status, sizeBytes, sha256, declarations,
                 valid, malformed, duplicates, missing, warnings);
     }
