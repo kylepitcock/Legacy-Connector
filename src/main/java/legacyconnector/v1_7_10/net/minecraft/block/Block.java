@@ -1239,6 +1239,22 @@ public class Block {
 
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
         ArrayList<ItemStack> ret = new ArrayList<>();
+        if (mcc$vanilla != null && world != null && world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            // The shim's vanilla blocks are shells without 1.7.10's drop logic (stone gave cobblestone for every variant, an ore its own block
+            // like silk touch): what a mod asks of a vanilla block (a quarry's mined blocks) is the modern block's loot table.
+            try {
+                var pos = new net.minecraft.core.BlockPos(x, y, z);
+                var state = org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.toModern(this, metadata);
+                var current = serverLevel.getBlockState(pos);
+                if (current.getBlock() == state.getBlock()) state = current;
+                for (var drop : net.minecraft.world.level.block.Block.getDrops(state, serverLevel, pos, serverLevel.getBlockEntity(pos))) {
+                    ret.add(ItemStack.mcc$wrap(drop));
+                }
+                return ret;
+            } catch (RuntimeException | LinkageError e) {
+                ret.clear(); // fall back to the shell's own answer
+            }
+        }
         int count = quantityDropped(metadata, fortune, world.rand);
         for (int i = 0; i < count; i++) {
             Item item = getItemDropped(metadata, world.rand, fortune);

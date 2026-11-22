@@ -81,6 +81,16 @@ public interface IForgeRegistryEntry<V> {
             return (Class<V>) getClass();
         }
 
+        /** The name the registry files a vanilla-overriding entry under, in the registering mod's namespace (the layer cannot replace vanilla's own). */
+        public final void mcc$overrideName(ResourceLocation name) {
+            this.registryName = name;
+        }
+
+        /** The mod registering right now, the namespace of such entries. */
+        public static String mcc$activeModId() {
+            return activeModId();
+        }
+
         /** Forge named unprefixed registry names after the active mod container. */
         private static String activeModId() {
             var container = org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.active();

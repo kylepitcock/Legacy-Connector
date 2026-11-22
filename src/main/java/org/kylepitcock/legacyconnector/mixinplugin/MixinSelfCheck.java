@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class MixinSelfCheck {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Mixins");
-    static final List<String> CONFIGS = List.of("legacyconnector.mixins.json", "legacyconnector.compat.mixins.json");
+    static final List<String> CONFIGS = List.of("legacyconnector.mixins.json", "legacyconnector.compat.mixins.json", "legacyconnector.mixinextras.mixins.json");
     private static final String HOOK_DESC = Type.getDescriptor(CoremodHook.class);
     private static final Set<String> INJECTORS = Set.of("Inject", "Redirect", "ModifyArg", "ModifyArgs", "ModifyConstant", "ModifyVariable", "WrapOperation", "WrapMethod",
             "ModifyExpressionValue", "ModifyReturnValue", "WrapWithCondition", "ModifyReceiver");

@@ -72,12 +72,18 @@ public class Fluid {
         return this;
     }
 
+    /** Forge's water and lava fluids carry the vanilla liquid block (mods build an ItemBlock from {@code Fluid.getBlock()} in preInit); resolved on first read. */
+    protected Block vanillaBlock() {
+        return null;
+    }
+
     public Block getBlock() {
+        if (block == null) block = vanillaBlock();
         return block;
     }
 
     public boolean canBePlacedInWorld() {
-        return block != null;
+        return getBlock() != null;
     }
 
     public Fluid setLuminosity(int luminosity) {

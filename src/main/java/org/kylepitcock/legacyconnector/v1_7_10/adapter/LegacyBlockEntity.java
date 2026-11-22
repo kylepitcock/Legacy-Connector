@@ -68,6 +68,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
 
     private static final java.util.Set<String> CREATE_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private boolean createFailed;
+    private boolean chunkUnloading;
 
     /** Whether creating the legacy tile entity threw (as opposed to the block having none for this metadata). */
     public boolean createFailed() {
@@ -290,12 +291,15 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
 
     @Override
     public void setRemoved() {
-        if (legacy != null) invalidateLegacy(legacy);
+        // Forge never invalidated a tile entity whose chunk unloaded (only onChunkUnload): BuildCraft's quarry releases its chunk loading ticket in invalidate()
+        // and the ticket would be gone from the world's save.
+        if (legacy != null && !chunkUnloading) invalidateLegacy(legacy);
         super.setRemoved();
     }
 
     @Override
     public void onChunkUnloaded() {
+        chunkUnloading = true;
         if (legacy != null) legacy.onChunkUnload();
         super.onChunkUnloaded();
     }

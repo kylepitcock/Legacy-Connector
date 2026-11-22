@@ -23,6 +23,12 @@ public class BlockTorch extends Block {
         this(Material.circuits);
     }
 
+    /** 1.4.7 {@code BlockTorch(id, textureIndex)}: the tile of the mod's sheet the torch is drawn with (the id is claimed by the version's facade). */
+    protected BlockTorch(int textureIndex) {
+        this(Material.circuits);
+        this.blockIndexInTexture = textureIndex;
+    }
+
     protected BlockTorch(Material material) {
         super(material);
         setTickRandomly(true);

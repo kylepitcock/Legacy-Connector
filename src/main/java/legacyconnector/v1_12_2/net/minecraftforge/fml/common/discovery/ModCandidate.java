@@ -43,7 +43,8 @@ public class ModCandidate {
         List<ModContainer> out = new ArrayList<>();
         if (modContainer == null) return out;
         for (ModContainer c : Loader.instance().getActiveModList()) {
-            if (modContainer.equals(c.getSource())) out.add(c);
+            if (modContainer.equals(c.getSource())
+                    || c instanceof org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122 l && modContainer.equals(l.record().sourceFile().toFile())) out.add(c);
         }
         return out;
     }

@@ -11,6 +11,13 @@ import org.kylepitcock.legacyconnector.v1_6_4.bridge.Manager164;
 public final class NetHandlerPlayServer {
     private NetHandlerPlayServer() {}
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("Minecraft");
+
+    /** 1.4.7 and 1.5.2 {@code NetServerHandler.logger}: a java.util.logging logger (IC2's TextureIndex adds a handler to it). */
+    public static java.util.logging.Logger mcc$get$logger() {
+        return LOGGER;
+    }
+
     private static volatile Field floatCounter;
     private static volatile boolean floatCounterMissing;
 

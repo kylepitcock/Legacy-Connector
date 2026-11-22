@@ -256,6 +256,7 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
   and startup-test results, and the script never overwrites those. Re-running refreshes earlier probe entries.
 - Every run is also appended to `docs/data/probe.json` (counts per result plus the per-mod list of the last 10 runs per version), which the
   pie chart page `docs/probe.html` ("Automated results" on the compatibility site) shows with a run selector and a history table.
+  Site routes (hash, `docs/assets/site.js`): `#/` search across all versions (filters in the query: `#/?q=thaum&mc=1.7.10&s=works`), `#/mod/<mc>/<name>` one mod with every result and a prefilled report link, `#/automated[/<mc>]`, `#/resources[/<mc>]`, `#/about`; the old `#/mods[/<mc>]` and `#<mc>` links redirect to the search.
   Runs carry a `source` (the jar population: `modrinth` in CI, `mcarchive`, none = the maintainer's local corpus). The page shows one source per
   Minecraft version with a source switch (default: the source whose latest run has the most mods), and `probe.py` compares a run (`vs`,
   `--fail-on-regression`) only with the previous run of the same version and source. Scheduled and manual CI runs record a nightly-style version

@@ -27,7 +27,7 @@ public final class InterfaceFlags {
                 if (insn instanceof MethodInsnNode m) {
                     if (m.owner.startsWith("[")) continue;
                     Boolean itf = interfaceOwner(m.owner, h);
-                    if (m.getOpcode() == Opcodes.INVOKEINTERFACE) itf = Boolean.TRUE;
+                    if (itf == null && m.getOpcode() == Opcodes.INVOKEINTERFACE) itf = Boolean.TRUE; // unknown owner: keep it an interface call
                     if (itf != null && m.itf != itf) {
                         m.itf = itf;
                         // A call written against a class that the shim models as an interface (1.6.4's NetHandler is 1.7.10's INetHandler) or the other way round
@@ -58,7 +58,8 @@ public final class InterfaceFlags {
 
     private static Handle fix(Handle handle, Hierarchy h) {
         if (handle.getTag() < Opcodes.H_INVOKEVIRTUAL) return handle; // field handles
-        Boolean itf = handle.getTag() == Opcodes.H_INVOKEINTERFACE ? Boolean.TRUE : interfaceOwner(handle.getOwner(), h);
+        Boolean itf = interfaceOwner(handle.getOwner(), h);
+        if (itf == null && handle.getTag() == Opcodes.H_INVOKEINTERFACE) itf = Boolean.TRUE;
         if (itf == null || itf == handle.isInterface()) return handle;
         int tag = handle.getTag();
         if (itf && tag == Opcodes.H_INVOKEVIRTUAL) tag = Opcodes.H_INVOKEINTERFACE;

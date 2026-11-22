@@ -55,7 +55,7 @@ public class NBTTagCompound extends NBTBase {
                     @Override
                     public NBTBase setValue(NBTBase v) {
                         NBTBase old = super.setValue(v);
-                        c.setTag(key, v);
+                        c.mcc$putTag(key, v);
                         return old;
                     }
                 });
@@ -75,7 +75,7 @@ public class NBTTagCompound extends NBTBase {
             @Override
             public NBTBase put(String key, NBTBase value) {
                 NBTBase old = get(key);
-                c.setTag(key, value);
+                c.mcc$putTag(key, value);
                 return old;
             }
 
@@ -83,7 +83,7 @@ public class NBTTagCompound extends NBTBase {
             public NBTBase remove(Object key) {
                 if (!(key instanceof String k)) return null;
                 NBTBase old = get(k);
-                c.removeTag(k);
+                c.mcc$dropTag(k);
                 return old;
             }
 
@@ -95,8 +95,8 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public static void mcc$set$tagMap(NBTTagCompound c, Map<String, NBTBase> map) {
-        for (String key : new java.util.ArrayList<>(c.getKeySet())) c.removeTag(key);
-        if (map != null) for (Map.Entry<String, NBTBase> e : map.entrySet()) c.setTag(e.getKey(), e.getValue());
+        for (String key : new java.util.ArrayList<>(c.getKeySet())) c.mcc$dropTag(key);
+        if (map != null) for (Map.Entry<String, NBTBase> e : map.entrySet()) c.mcc$putTag(e.getKey(), e.getValue());
     }
 
     public Set<String> getKeySet() {
@@ -104,6 +104,11 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public void setTag(String key, NBTBase value) {
+        mcc$putTag(key, value);
+    }
+
+    /** What 1.12's {@code tagMap.put} did, without the subclass's setTag override (a subclass that stores through its tagMap would recurse). */
+    public final void mcc$putTag(String key, NBTBase value) {
         if (value == null) return; // legacy stored null and failed later when writing the tag
         mcc$children.remove(key);
         mcc$tag.put(key, value.mcc$modern());
@@ -249,6 +254,11 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public void removeTag(String key) {
+        mcc$dropTag(key);
+    }
+
+    /** What 1.12's {@code tagMap.remove} did, without the subclass's removeTag override. */
+    public final void mcc$dropTag(String key) {
         mcc$children.remove(key);
         mcc$tag.remove(key);
         mcc$markDirty();

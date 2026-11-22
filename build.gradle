@@ -258,6 +258,8 @@ sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 tasks.withType(Test).configureEach { useJUnitPlatform() }
 tasks.named('test', Test) {
     useJUnitPlatform { excludeTags 'actual-mod' }
+    // ShimClientTypesTest: ./gradlew test --tests '*ShimClientTypesTest' -Dshim.client.update=true rewrites tools/dev/shim-client-baseline.txt (shrinking only)
+    if (System.getProperty('shim.client.update') != null) systemProperty 'shim.client.update', System.getProperty('shim.client.update')
 }
 
 // Local original jars are developer-supplied fixtures, never a dependency of check/build or release packaging.

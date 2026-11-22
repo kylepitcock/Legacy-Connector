@@ -57,7 +57,8 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 - Server tests: `tools/dev/run-subset.sh <jar-name-fragments>` (a few mods, 1-2 min, prints the block/item/entity
   self tests), `tools/dev/run-corpus.sh [dir]` (a whole directory of jars). Test mods are user-supplied and
   gitignored (`test-mods/`, `test-mods2/`); never commit or redistribute mod jars. Run only one server at a time and never
-  compile while one runs; kill stale ones with `pkill -9 -f "serverSubTestRunProgramArg[s]"` (the `[s]` stops the pattern matching itself).
+  compile while one runs (per worktree; parallel workers each use their own worktree and `VERIFY_PORT_BASE`); kill a stale server of your
+  own by its PID. `pkill -9 -f "serverSubTestRunProgramArg[s]"` kills every worktree's servers: use it only when no other worker or session runs one.
 - Translation results are cached per jar and mod set (`run-*/.legacyconnector/cache`). After changing the loader,
   linker, stubber or shim, delete the cache or the old translation is reused.
 - Scripted client scenarios (real window, unattended): `tools/dev/verify-client.sh [scenario ...]`, scenarios in `tools/dev/verify/scenarios/*.txt` (verbs, `expect <regex> :: <JavaScript>`, `shot`, `logabsent`); results and screenshots in `build/devtools/verify-client/`; see wiki Development, "Client scenarios".

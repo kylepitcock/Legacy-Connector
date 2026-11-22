@@ -85,6 +85,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean customRemoval;
     /** The mod overrides harvestBlock (drops twice with an axe, awards stats...): its code runs instead of the plain drop. */
     private final boolean customHarvest;
+    /** The mod overrides {@code Block.canHarvestBlock(player, meta)}: it decides itself whether the drop needs a tool (IC2's cables: always). */
+    private final boolean customCanHarvest;
     private final boolean sustainsPlants;
     private final boolean customExplosion;
     private final boolean enchantBonus;
@@ -142,6 +144,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class);
         this.entityDestroy = overrides(legacy, "canEntityDestroy", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
                 int.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
+        this.customCanHarvest = overrides(legacy, "canHarvestBlock", EntityPlayer.class, int.class);
         this.customHarvest = overrides(legacy, "harvestBlock", World.class, EntityPlayer.class, int.class, int.class, int.class, int.class);
         this.customRemoval = overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class)
                 || overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class, boolean.class);
@@ -1050,6 +1053,18 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     }
 
     // ------------------------------------------------------------------ drops
+
+    @Override
+    public boolean canHarvestBlock(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, Player player) {
+        if (customCanHarvest) {
+            try {
+                return legacy.canHarvestBlock(player(player), meta(state));
+            } catch (RuntimeException | LinkageError e) {
+                // fall through to the default tool check
+            }
+        }
+        return super.canHarvestBlock(state, level, pos, player);
+    }
 
     @Override
     public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, net.minecraft.world.level.block.entity.BlockEntity be,

@@ -1,6 +1,9 @@
-package org.kylepitcock.legacyconnector.mixin;
+package org.kylepitcock.legacyconnector.mixin.mixinextras;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.Entity;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.spongepowered.asm.mixin.Final;
@@ -20,7 +23,10 @@ public abstract class AttackArrowCheckHookMixin {
     @Shadow(aliases = "val$entity", remap = false)
     private Entity val$entity;
 
-    @ModifyExpressionValue(method = "onAttack", at = @At(value = "CONSTANT", args = "classValue=net/minecraft/world/entity/projectile/AbstractArrow", ordinal = 0), require = 0)
+    // An expression on the instanceof itself: the CONSTANT/classValue target is typed Class by MixinExtras, so a boolean handler there failed at class load.
+    @Definition(id = "arrow", type = AbstractArrow.class)
+    @Expression("? instanceof arrow")
+    @ModifyExpressionValue(method = "onAttack", at = @At("MIXINEXTRAS:EXPRESSION"), require = 0)
     private boolean legacyconnector$coremodAttackArrow(boolean arrow) {
         return arrow && !(CoremodSites.ARROW_TARGET.listed() && !CoremodSites.isArrowTarget(val$entity));
     }

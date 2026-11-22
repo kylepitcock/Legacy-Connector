@@ -8,7 +8,9 @@ public final class ItemStack {
 
     /** ItemStack.itemID */
     public static int mcc$get$itemID(legacyconnector.v1_7_10.net.minecraft.item.ItemStack self) {
-        return Ids.itemId(self.getItem());
+        var item = self.getItem();
+        if (item == null && self.mcc$pendingBlock() != null) return Ids.blockId(self.mcc$pendingBlock()); // new ItemStack(block) of a block not registered yet
+        return Ids.itemId(item);
     }
 
     public static void mcc$set$itemID(legacyconnector.v1_7_10.net.minecraft.item.ItemStack self, int id) {

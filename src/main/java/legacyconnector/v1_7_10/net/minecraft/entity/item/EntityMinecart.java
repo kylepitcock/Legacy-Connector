@@ -175,6 +175,58 @@ public abstract class EntityMinecart extends Entity {
         if (cargoItems != null && slot >= 0 && slot < cargoItems.length) cargoItems[slot] = stack;
     }
 
+    // 1.2.x to 1.5.2 carts were all inventories (EntityMinecart implemented IInventory itself, with the 27 slots of the chest cart): a mod's cart that
+    // implements IInventory and overrides only some of the methods (Railcraft's carts override getSizeInventory) relies on these for the rest.
+    // They are plain public methods, not an interface, so a 1.7.10 mod's cart is not taken for an inventory.
+
+    public int getSizeInventory() {
+        return 27;
+    }
+
+    public ItemStack getStackInSlot(int slot) {
+        return cargoItems != null && slot >= 0 && slot < cargoItems.length ? cargoItems[slot] : null;
+    }
+
+    public ItemStack decrStackSize(int slot, int amount) {
+        if (cargoItems == null || slot < 0 || slot >= cargoItems.length || cargoItems[slot] == null) return null;
+        ItemStack stack = cargoItems[slot];
+        if (stack.mcc$count() <= amount) {
+            cargoItems[slot] = null;
+            return stack;
+        }
+        ItemStack out = stack.splitStack(amount);
+        if (stack.mcc$count() == 0) cargoItems[slot] = null;
+        return out;
+    }
+
+    public ItemStack getStackInSlotOnClosing(int slot) {
+        if (cargoItems == null || slot < 0 || slot >= cargoItems.length) return null;
+        ItemStack stack = cargoItems[slot];
+        cargoItems[slot] = null;
+        return stack;
+    }
+
+    public String getInventoryName() {
+        return "container.minecart";
+    }
+
+    public int getInventoryStackLimit() {
+        return 64;
+    }
+
+    public void markDirty() {
+    }
+
+    public boolean isUseableByPlayer(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return isEntityAlive() && player.getDistanceSqToEntity(this) <= 64.0D;
+    }
+
+    public void openInventory() {
+    }
+
+    public void closeInventory() {
+    }
+
     public void setMinecartName(String name) {
         this.entityName = name;
         this.hasCustomName = name != null && !name.isEmpty();
@@ -254,9 +306,9 @@ public abstract class EntityMinecart extends Entity {
         dataWatcher.addObject(17, Integer.valueOf(0));
         dataWatcher.addObject(18, Integer.valueOf(1));
         dataWatcher.addObject(19, Float.valueOf(0.0F));
-        dataWatcher.addObject(20, Integer.valueOf(0));
-        dataWatcher.addObject(21, Integer.valueOf(6));
-        dataWatcher.addObject(22, Byte.valueOf((byte) 0));
+        dataWatcher.mcc$addSoftObject(20, Integer.valueOf(0));
+        dataWatcher.mcc$addSoftObject(21, Integer.valueOf(6));
+        dataWatcher.mcc$addSoftObject(22, Byte.valueOf((byte) 0));
     }
 
     // ------------------------------------------------------------------ Forge: collision handler, rail use and speed
