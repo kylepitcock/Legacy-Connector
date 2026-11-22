@@ -222,6 +222,6 @@ public final class GapCompat {
         } catch (ReflectiveOperationException | RuntimeException e) {
             // falls through to the empty potion
         }
-        return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.withDefaultNamespace("empty"));
+        return org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.POTION, net.minecraft.resources.ResourceLocation.withDefaultNamespace("empty"));
     }
 }

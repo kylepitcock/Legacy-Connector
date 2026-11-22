@@ -33,7 +33,7 @@ public final class BlockBridge1122 {
         }
         var legacySound = block.getSoundType();
         // a mod-made sound type (its own events, volume and pitch) keeps them; the material's sounds only stand in when the block has none
-        BlockBehaviour.Properties p = BlockBehaviour.Properties.of().sound(legacySound != null ? legacySound.mcc$toModern() : sound(block.getMaterialLegacy()));
+        BlockBehaviour.Properties p = org.kylepitcock.legacyconnector.core.host.HostProperties.block().sound(legacySound != null ? legacySound.mcc$toModern() : sound(block.getMaterialLegacy()));
         float hardness = block.mcc$hardness();
         if (hardness < 0) p.strength(-1.0F, 3600000.0F);
         // 1.12 kept three times the setResistance value and divided by five when an explosion asked (stone: 30 -> 6, modern stone 6)

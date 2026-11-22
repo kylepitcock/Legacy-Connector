@@ -126,7 +126,7 @@ public final class Hosts1122 {
             if (BuiltInRegistries.ITEM.containsKey(eggId)) return;
             // named as 1.12's one spawn egg item was: "Spawn <entity name>" (the mod's own translation of the entity), not an item key no lang file has
             var item = new net.neoforged.neoforge.common.DeferredSpawnEggItem(() -> (EntityType) type, egg.primaryColor, egg.secondaryColor,
-                    new net.minecraft.world.item.Item.Properties()) {
+                    org.kylepitcock.legacyconnector.core.host.HostProperties.item()) {
                 @Override
                 public net.minecraft.network.chat.Component getName(net.minecraft.world.item.ItemStack stack) {
                     var entity = displayName(type);

@@ -316,7 +316,7 @@ public final class VanillaB173 {
         String path = MODERN_BY_ID.get(id);
         if (path == null) return null;
         ResourceLocation rl = ResourceLocation.withDefaultNamespace(path);
-        return BuiltInRegistries.BLOCK.containsKey(rl) ? BuiltInRegistries.BLOCK.get(rl) : null;
+        return BuiltInRegistries.BLOCK.containsKey(rl) ? org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, rl) : null;
     }
 
     /** The modern item of a vanilla item or block id with its damage/metadata (wool and dye colours, log woods, slabs, charcoal). */
@@ -336,7 +336,7 @@ public final class VanillaB173 {
         if (path == null) return null;
         ResourceLocation rl = ResourceLocation.withDefaultNamespace(path);
         if (!BuiltInRegistries.ITEM.containsKey(rl)) return null;
-        var item = BuiltInRegistries.ITEM.get(rl);
+        var item = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, rl);
         return item == net.minecraft.world.item.Items.AIR ? null : item;
     }
 

@@ -124,7 +124,7 @@ public final class ClientSelfTest {
         // Spawn eggs (modern items, not legacy ones): the model must be the egg template with two layers, tinted.
         StringBuilder eggs = new StringBuilder();
         for (ResourceLocation id : org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs.ids()) {
-            var egg = BuiltInRegistries.ITEM.get(id);
+            var egg = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id);
             var stack = new net.minecraft.world.item.ItemStack(egg);
             var model = mc.getItemRenderer().getModel(stack, null, null, 0);
             var quads = model.getQuads(null, null, random);

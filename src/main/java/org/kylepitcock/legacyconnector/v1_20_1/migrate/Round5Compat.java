@@ -88,7 +88,7 @@ public final class Round5Compat {
 
     /** {@code Blocks.woodenButton(type, requiredFeatures...)} (private static in both versions; vanilla's own button shape, the feature flags only matter for experimental vanilla blocks). */
     public static net.minecraft.world.level.block.ButtonBlock woodenButton(net.minecraft.world.level.block.state.properties.BlockSetType type, net.minecraft.world.flag.FeatureFlag[] features) {
-        net.minecraft.world.level.block.state.BlockBehaviour.Properties p = net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().noCollission().strength(0.5F)
+        net.minecraft.world.level.block.state.BlockBehaviour.Properties p = org.kylepitcock.legacyconnector.core.host.HostProperties.block().noCollission().strength(0.5F)
                 .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY);
         if (features != null && features.length > 0) p = p.requiredFeatures(features);
         return new net.minecraft.world.level.block.ButtonBlock(type, 30, p);

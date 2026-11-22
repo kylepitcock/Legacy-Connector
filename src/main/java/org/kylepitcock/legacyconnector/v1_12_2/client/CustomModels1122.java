@@ -109,7 +109,7 @@ public final class CustomModels1122 {
             IModel model = loadVariant(variant);
             if (model == null) continue;
             try {
-                if (!(net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(variant.block()) instanceof
+                if (!(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.BLOCK, variant.block()) instanceof
                         org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block block)) continue;
                 IBakedModel baked = model.bake(model.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
                 if (baked == null) continue;

@@ -110,7 +110,7 @@ public final class ModernPieces1122 {
             NBTTagList list = tag.getTagList("mcc:pieces", 10);
             for (int i = 0; i < list.tagCount(); i++) {
                 var modern = list.getCompoundTagAt(i).mcc$modern();
-                var type = net.minecraft.core.registries.BuiltInRegistries.STRUCTURE_PIECE.get(net.minecraft.resources.ResourceLocation.parse(modern.getString("id")));
+                var type = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.STRUCTURE_PIECE, net.minecraft.resources.ResourceLocation.parse(modern.getString("id")));
                 if (type != null) out.add(type.load(context, modern));
             }
         } catch (RuntimeException e) {

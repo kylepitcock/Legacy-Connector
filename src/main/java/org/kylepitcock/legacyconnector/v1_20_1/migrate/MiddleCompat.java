@@ -735,7 +735,7 @@ public final class MiddleCompat {
 
     /** {@code Potion.byName(String)}. */
     public static net.minecraft.world.item.alchemy.Potion potionByName(String name) {
-        return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.parse(name));
+        return org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.POTION, net.minecraft.resources.ResourceLocation.parse(name));
     }
 
     // ------------------------------------------------------------------ registration codecs, goals, attributes, scores, loot

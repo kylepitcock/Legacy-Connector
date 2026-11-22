@@ -117,6 +117,6 @@ public final class BlocksB173 {
 
     private static void put(Map<net.minecraft.world.level.block.Block, int[]> r, String path, int id, int meta) {
         ResourceLocation rl = ResourceLocation.withDefaultNamespace(path);
-        if (BuiltInRegistries.BLOCK.containsKey(rl)) r.put(BuiltInRegistries.BLOCK.get(rl), new int[] {id, meta});
+        if (BuiltInRegistries.BLOCK.containsKey(rl)) r.put(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, rl), new int[] {id, meta});
     }
 }

@@ -326,7 +326,7 @@ public final class Registries1122 {
             if (v == null && key != null && "minecraft".equals(key.getNamespace()) && type == legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.class) {
                 // a vanilla sound nobody asked for through SoundEvents yet (a packet names it): wrap the modern event
                 var id = net.minecraft.resources.ResourceLocation.tryBuild("minecraft", key.getPath());
-                var modern = id == null ? null : net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
+                var modern = id == null ? null : org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT, id);
                 if (modern != null) {
                     var legacy = new legacyconnector.v1_12_2.net.minecraft.util.SoundEvent(key);
                     legacy.mcc$modern = modern;

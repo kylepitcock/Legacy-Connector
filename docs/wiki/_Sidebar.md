@@ -24,3 +24,4 @@
 - [Legacy 1.2.5](Legacy-1.2.5.md)
 - [Legacy 1.2.5 corpus](Legacy-1.2.5-Corpus.md)
 - [Version roadmap](Version-Roadmap.md)
+- [Host version upgrades](Host-Version-Upgrades.md)

@@ -155,7 +155,7 @@ public final class ItemStackNbt {
         if (tag == null || !tag.contains("id", Tag.TAG_STRING)) return ItemStack.EMPTY;
         ResourceLocation id = ResourceLocation.tryParse(tag.getString("id"));
         if (id == null || !BuiltInRegistries.ITEM.containsKey(id)) return ItemStack.EMPTY;
-        Item item = BuiltInRegistries.ITEM.get(id);
+        Item item = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id);
         if (tag.contains("components", Tag.TAG_COMPOUND)) {
             CompoundTag modern = new CompoundTag();
             modern.putString("id", id.toString());
