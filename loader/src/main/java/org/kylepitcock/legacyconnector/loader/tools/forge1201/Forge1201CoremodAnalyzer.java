@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -245,7 +244,7 @@ public final class Forge1201CoremodAnalyzer {
     }
 
     private static String printable(String value) {
-        return value == null ? "<null>" : value.replace("\\n", " ").replace("\\r", " ");
+        return value == null ? "<null>" : value.replace('\n', ' ').replace('\r', ' ');
     }
 
     private static byte[] readBounded(InputStream input, int limit) throws IOException {
