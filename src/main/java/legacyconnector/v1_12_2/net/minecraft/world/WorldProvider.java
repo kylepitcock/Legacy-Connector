@@ -265,11 +265,11 @@ public abstract class WorldProvider {
     }
 
     public int getHeight() {
-        return 256;
+        return World.mcc$inShiftedPass() ? world.getHeight() : 256;
     }
 
     public int getActualHeight() {
-        return nether ? 128 : 256;
+        return nether ? 128 : getHeight();
     }
 
     public double getHorizon() {
