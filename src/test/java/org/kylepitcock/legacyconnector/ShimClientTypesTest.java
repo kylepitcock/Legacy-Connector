@@ -66,8 +66,9 @@ class ShimClientTypesTest {
         Boolean cached = clientOnly.get(name);
         if (cached != null) return cached;
         boolean result = false;
-        if (!name.startsWith("legacyconnector/")) {
-            for (String p : CLIENT_PACKAGES) if (name.startsWith(p)) result = true;
+        // shim classes count by their own @OnlyIn(CLIENT) only (client holder classes); modern classes also by package
+        if (!name.startsWith("legacyconnector/")) for (String p : CLIENT_PACKAGES) if (name.startsWith(p)) result = true;
+        {
             if (!result) {
                 ClassNode c = node(name);
                 List<AnnotationNode> anns = new ArrayList<>();
