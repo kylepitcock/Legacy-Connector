@@ -107,7 +107,7 @@ final class Forge1201AccessTransformerAnalyzerTest {
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED, result.status());
         assertEquals(1, result.validDirectiveCount());
         assertEquals(Forge1201AccessTransformerAnalyzer.RESOURCE_PATH, result.resourcePath());
-        assertEquals(Files.size(jar) > 0, true);
+        assertTrue(Files.size(jar) > 0);
 
         Path misplaced = tempDir.resolve("misplaced-at.jar");
         writeJar(misplaced, "config/accesstransformer.cfg",
