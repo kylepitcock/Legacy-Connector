@@ -261,6 +261,7 @@ public final class VanillaFlattening {
     private static final Map<String, String> FIXED_IDS = new HashMap<>();
     private static boolean fixedLoaded;
     private static boolean fixedDirty;
+    private static boolean saveHookRegistered;
 
     private static java.nio.file.Path fixedFile() {
         return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve(".legacyconnector").resolve("vanilla-items-" + dataVersion() + ".txt");
@@ -318,6 +319,12 @@ public final class VanillaFlattening {
                 id = out.get("id").asString("minecraft:air");
                 FIXED_IDS.put(fixedKey, id);
                 fixedDirty = true;
+                if (!saveHookRegistered) {
+                    // a pack without a 1.7.10/1.12.2 mod (1.20.1 mods only) never reaches the save after the legacy load, and asked the data fixers for the same
+                    // names on every launch (0.75 s): the names are written when the game stops, too
+                    saveHookRegistered = true;
+                    Runtime.getRuntime().addShutdownHook(new Thread(VanillaFlattening::saveFixedItems, "legacyconnector-save-flattened-items"));
+                }
             }
             result = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
         } catch (RuntimeException e) {
