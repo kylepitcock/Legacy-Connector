@@ -1187,6 +1187,18 @@
    "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
    "date": "2026-11-22",
    "open": true
+  },
+  {
+   "issue": 328,
+   "mod": "IC2 1.115.231-lf",
+   "mc": "1.4.7 (planned)",
+   "status": "fails",
+   "details": "Mod doesn't load [debug.log](https://github.com/user-attachments/files/35235808/debug.log)",
+   "lc": "legacyconnector-0.5.0-nightly.131.11974…",
+   "neoforge": "21.1.265",
+   "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-22",
+   "open": true
   }
  ]
 }
