@@ -111,6 +111,12 @@ public class GL11 extends GL11Guard {
     }
 
     public static int glGetInteger(int pname) {
+        if (pname == GL_TEXTURE_BINDING_2D && RenderSystem.isOnRenderThread() && RenderContext.onDefaultTextureUnit()) {
+            // legacy code saves the bound texture and binds it back after an overlay pass (eyes, glow layers); the binding it drew with is the
+            // emulated one, which the real GL binding does not follow
+            int id = RenderContext.currentTextureGlId();
+            if (id != 0) return id;
+        }
         return legacyOnly(pname) ? 0 : GL11Guard.glGetInteger(pname);
     }
 
