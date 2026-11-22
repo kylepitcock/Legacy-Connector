@@ -60,8 +60,15 @@ public abstract class FluidRegistry {
         return fluidName != null && IDS.containsKey(fluidName);
     }
 
-    public static synchronized Fluid getFluid(String fluidName) {
-        return fluidName == null ? null : FLUIDS.get(fluidName);
+    public static Fluid getFluid(String fluidName) {
+        if (fluidName == null) return null;
+        Fluid f = registered(fluidName);
+        // a fluid only a modern mod has: its legacy mirror is made on demand (outside the lock: the bridge takes its own)
+        return f != null ? f : org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.mirrorNamed(fluidName);
+    }
+
+    private static synchronized Fluid registered(String fluidName) {
+        return FLUIDS.get(fluidName);
     }
 
     public static synchronized Fluid getFluid(int fluidID) {
