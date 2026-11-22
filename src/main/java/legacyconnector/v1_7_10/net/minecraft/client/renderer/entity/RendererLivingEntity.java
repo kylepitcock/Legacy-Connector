@@ -186,6 +186,7 @@ public abstract class RendererLivingEntity extends Render {
      * Client-only code in its own class: passing {@code mc.player} (a LocalPlayer) as a Player makes the verifier load LocalPlayer with this
      * class, and 1.6.4 mods construct their renderers in preInit on dedicated servers too (Michael's World was skipped there).
      */
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     private static final class ClientView {
         static boolean canRenderName(net.minecraft.world.entity.Entity e) {
             var mc = net.minecraft.client.Minecraft.getInstance();
