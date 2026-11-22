@@ -39,7 +39,9 @@ public class CraftingManager {
     /** The result of the grid: a legacy recipe's, else a modern (vanilla or data pack) recipe's. */
     public static ItemStack findMatchingResult(InventoryCrafting craftMatrix, World worldIn) {
         IRecipe recipe = findMatchingRecipe(craftMatrix, worldIn);
-        return recipe == null ? org.kylepitcock.legacyconnector.v1_12_2.bridge.Crafting1122.modernResult(craftMatrix, worldIn) : recipe.getCraftingResult(craftMatrix);
+        if (recipe != null) return recipe.getCraftingResult(craftMatrix);
+        ItemStack modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Crafting1122.modernResult(craftMatrix, worldIn);
+        return modern.isEmpty() ? org.kylepitcock.legacyconnector.v1_12_2.bridge.Crafting1122.earlyResult(craftMatrix) : modern;
     }
 
     /** What crafting leaves in the grid: the matching recipe's remaining items, else each stack's container item (Forge's default). */
