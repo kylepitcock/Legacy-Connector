@@ -110,7 +110,11 @@ final class Mixin1201 {
         }
         if (targets.size() == 1 && (node.access & org.objectweb.asm.Opcodes.ACC_INTERFACE) != 0) {
             boolean instanceStoodIn = false;
-            for (MethodNode m : node.methods) instanceStoodIn |= standInRemovedInstanceAccessor(m, targets.get(0), node.name, st);
+            List<MethodNode> stoodIn = new ArrayList<>();
+            for (MethodNode m : node.methods) if (standInRemovedInstanceAccessor(m, targets.get(0), node.name, st)) stoodIn.add(m);
+            instanceStoodIn = !stoodIn.isEmpty();
+            // the stood-in method must leave the interface: an abstract method without @Accessor makes Mixin treat the rest as a plain interface mixin, which cannot target a class
+            if (instanceStoodIn) node.methods.removeAll(stoodIn);
             // an accessor interface left without annotations has nothing to apply: a plain interface out of the config (the call sites go to the helper)
             if (instanceStoodIn && node.methods.stream().allMatch(m -> (m.invisibleAnnotations == null || m.invisibleAnnotations.isEmpty()) && (m.visibleAnnotations == null || m.visibleAnnotations.isEmpty()))) {
                 st.droppedClasses.add(node.name);
@@ -158,7 +162,9 @@ final class Mixin1201 {
     /** Instance fields of Minecraft 1.20.1 that 1.21.1 removed, read by a mixin accessor interface: "owner.field" to the {@code Round6Compat} helper (takes the instance). */
     private static final Map<String, String> REMOVED_INSTANCE_FIELDS = Map.of(
             "net/minecraft/server/level/WorldGenRegion.structureManager", "worldGenRegionStructureManager",
-            "net/minecraft/server/level/WorldGenRegion.cache", "worldGenRegionCache");
+            "net/minecraft/server/level/WorldGenRegion.cache", "worldGenRegionCache",
+            "net/minecraft/client/renderer/ShaderInstance.blend", "shaderInstanceBlend",
+            "com/mojang/blaze3d/vertex/VertexFormat.offsets", "vertexFormatOffsets");
 
     /**
      * An abstract {@code @Accessor getX()} of a field in {@link #REMOVED_INSTANCE_FIELDS} cannot apply (Mixin fails with "No candidates", or the class is dropped and
@@ -173,6 +179,10 @@ final class Mixin1201 {
         if (a == null) return false;
         String name = null;
         if (a.values != null) for (int i = 0; i + 1 < a.values.size(); i += 2) if ("value".equals(a.values.get(i)) && a.values.get(i + 1) instanceof String s) name = s;
+        if (name == null) { // @Accessor without a value names the field after the method: getBlend / isBlend -> blend
+            String n = m.name.startsWith("get") && m.name.length() > 3 ? m.name.substring(3) : m.name.startsWith("is") && m.name.length() > 2 ? m.name.substring(2) : null;
+            if (n != null) name = Character.toLowerCase(n.charAt(0)) + n.substring(1);
+        }
         if (name == null) return false;
         String helper = REMOVED_INSTANCE_FIELDS.get(target + "." + name);
         if (helper == null) return false;

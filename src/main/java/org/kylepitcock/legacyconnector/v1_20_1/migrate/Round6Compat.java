@@ -231,6 +231,16 @@ public final class Round6Compat {
         return DIRECTION_CODEC;
     }
 
+    /** The mixin accessor {@code ShaderInstance.blend} (read by particle/effect libraries to apply a shader's blend state): 1.21.1 moved blending to the render type, so the default alpha blend stands in. */
+    public static com.mojang.blaze3d.shaders.BlendMode shaderInstanceBlend(Object shader) {
+        return new com.mojang.blaze3d.shaders.BlendMode();
+    }
+
+    /** The mixin accessor {@code VertexFormat.offsets} (an IntList in 1.20.1, the int array {@code offsetsByElement} in 1.21.1). */
+    public static it.unimi.dsi.fastutil.ints.IntList vertexFormatOffsets(Object format) {
+        return new it.unimi.dsi.fastutil.ints.IntArrayList(((com.mojang.blaze3d.vertex.VertexFormat) format).getOffsetsByElement());
+    }
+
     /** The mixin accessor {@code WorldGenRegion.structureManager}: the field is gone, the structure manager of the region's level is the same object. */
     public static net.minecraft.world.level.StructureManager worldGenRegionStructureManager(Object region) {
         return ((net.minecraft.server.level.WorldGenRegion) region).getLevel().structureManager();
