@@ -198,6 +198,15 @@ public class World implements IBlockAccess {
             w.mcc$building = created;
             try {
                 created.registerWorld(w);
+                // Forge's server tells every provider which spawn types are allowed when the world is created (and again when the difficulty
+                // changes); a mod provider that keeps the flags to run its own spawner (getCanSpawnHostiles) would otherwise report "none".
+                if (created.getClass() != WorldProvider.class && !created.getClass().getName().startsWith("legacyconnector.v1_7_10.")) {
+                    try {
+                        created.setAllowedSpawnTypes(true, true);
+                    } catch (RuntimeException | LinkageError ignored) {
+                        // a provider that cannot take the call keeps its defaults
+                    }
+                }
             } catch (RuntimeException | LinkageError e) {
                 w.mcc$providerFailed = true;
                 w.mcc$provider = created; // stays, half built
