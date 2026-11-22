@@ -31,8 +31,9 @@ import java.util.zip.ZipFile;
 /**
  * Deterministic, read-only preflight inventory for one Forge 1.20.1 archive.
  *
- * <p>Slice 1 inventories the outer archive only. It records nested archive paths but does not recursively
- * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
+ * <p>Preflight inventories the source archive and bounded source-nested archives without extracting
+ * nested JARs. Mixin analysis is static metadata/bytecode evidence only; it does not prove injection
+ * success, gameplay compatibility, or runtime behavior.</p>
  */
 public final class Forge1201PreflightAnalyzer {
     public static final String SCHEMA_VERSION = "1.13";
@@ -320,7 +321,8 @@ public final class Forge1201PreflightAnalyzer {
                 nestedWarnings.add("Nested Mixin archive analysis limit (" + MAX_NESTED_MIXIN_ARCHIVES
                         + ") was reached; this archive was inventoried but not parsed.");
                 nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), List.of(), true, null, nestedWarnings));
+                        archive.depth(), archive.archiveKind(), List.of(), true, null,
+                        nestedWarnings.stream().distinct().sorted().toList()));
                 return;
             }
             int remainingConfigs = Math.max(0, MAX_NESTED_MIXIN_CONFIGS - nestedMixinConfigCount[0]);
@@ -380,7 +382,8 @@ public final class Forge1201PreflightAnalyzer {
             if (declarations.isEmpty()) {
                 nestedWarnings.add("No nested Mixin config could be parsed within the current aggregate limits.");
                 nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null, nestedWarnings));
+                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
+                        nestedWarnings.stream().distinct().sorted().toList()));
                 return;
             }
 
@@ -403,7 +406,8 @@ public final class Forge1201PreflightAnalyzer {
             } catch (IOException | RuntimeException exception) {
                 nestedWarnings.add("Nested Mixin analysis failed: " + conciseMessage(exception));
                 nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null, nestedWarnings));
+                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
+                        nestedWarnings.stream().distinct().sorted().toList()));
             }
         };
         Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
