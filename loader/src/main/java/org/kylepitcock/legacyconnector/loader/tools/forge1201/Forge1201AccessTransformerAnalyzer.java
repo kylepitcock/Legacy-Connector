@@ -118,20 +118,29 @@ public final class Forge1201AccessTransformerAnalyzer {
             }
         }
 
-        Map<String, TreeSet<String>> transforms = new TreeMap<>();
+        Map<String, TargetTransforms> transforms = new TreeMap<>();
         Map<String, Integer> occurrences = new TreeMap<>();
         for (Directive directive : directives) {
             if (directive.status() == DirectiveStatus.MALFORMED) continue;
             String key = targetKey(directive);
             occurrences.merge(key, 1, Integer::sum);
-            transforms.computeIfAbsent(key, ignored -> new TreeSet<>()).add(directive.modifier());
+            TargetTransforms target = transforms.computeIfAbsent(key, ignored -> new TargetTransforms());
+            target.visibilities().add(directive.visibility());
+            if (directive.finalChange() != FinalChange.UNCHANGED) {
+                target.finalChanges().add(directive.finalChange());
+            }
         }
         int duplicates = 0, conflicts = 0;
         for (Map.Entry<String, Integer> item : occurrences.entrySet()) {
             if (item.getValue() > 1) duplicates++;
-            if (transforms.get(item.getKey()).size() > 1) conflicts++;
+            TargetTransforms target = transforms.get(item.getKey());
+            if (target.visibilities().size() > 1
+                    || (target.finalChanges().contains(FinalChange.ADD_FINAL)
+                        && target.finalChanges().contains(FinalChange.REMOVE_FINAL))) {
+                conflicts++;
+            }
         }
-        if (conflicts > 0) warnings.add(conflicts + " target selector(s) have conflicting Access Transformer modifiers.");
+        if (conflicts > 0) warnings.add(conflicts + " target selector(s) have incompatible Access Transformer changes.");
         ResultStatus status = malformed == 0 ? ResultStatus.PARSED : ResultStatus.PARTIALLY_PARSED;
         return new Result(RESOURCE_PATH, status, sizeBytes, sha256, directives,
                 valid, wildcard, malformed, duplicates, conflicts, warnings);
@@ -256,4 +265,12 @@ public final class Forge1201AccessTransformerAnalyzer {
     }
 
     private record ParsedModifier(Visibility visibility, FinalChange finalChange) {}
+
+    private static final class TargetTransforms {
+        private final TreeSet<Visibility> visibilities = new TreeSet<>();
+        private final TreeSet<FinalChange> finalChanges = new TreeSet<>();
+
+        TreeSet<Visibility> visibilities() { return visibilities; }
+        TreeSet<FinalChange> finalChanges() { return finalChanges; }
+    }
 }
