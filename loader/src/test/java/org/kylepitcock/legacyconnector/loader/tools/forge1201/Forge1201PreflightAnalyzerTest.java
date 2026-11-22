@@ -119,8 +119,8 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.13", first.schemaVersion());
-        assertEquals("1.13.0", first.analyzerVersion());
+        assertEquals("1.14", first.schemaVersion());
+        assertEquals("1.14.0", first.analyzerVersion());
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
                 first.accessTransformers().status());
         assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
