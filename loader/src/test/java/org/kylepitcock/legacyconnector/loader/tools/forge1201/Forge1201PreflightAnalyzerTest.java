@@ -671,6 +671,21 @@ final class Forge1201PreflightAnalyzerTest {
 
     @Test
     void distinguishesExplicitGameLibraryEarlyReturnAndPluginType() throws IOException {
+        Path declaredGameLibraryModJar = createForgeModJar("nested-toml-gamelibrary.jar", false,
+                nestedTransformationArchive(true, "GAMELIBRARY"));
+        var declaredGameLibraryResult = Forge1201PreflightAnalyzer.analyze(declaredGameLibraryModJar, List.of());
+        var declaredGameLibraryMod = declaredGameLibraryResult.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertEquals("GAMELIBRARY", declaredGameLibraryMod.forgeEffectiveFileType());
+        assertEquals("GAMELIBRARY", declaredGameLibraryMod.neoForgeEffectiveFileType());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                declaredGameLibraryMod.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                declaredGameLibraryMod.neoForgeDisposition());
+        assertTrue(declaredGameLibraryMod.forgeCoremodConsumerEligible());
+        assertTrue(declaredGameLibraryMod.neoForgeCoremodConsumerEligible());
+
         Path libraryJar = createForgeModJar("nested-explicit-gamelibrary.jar", false,
                 nestedTransformationArchive(false, "GAMELIBRARY"));
         var libraryResult = Forge1201PreflightAnalyzer.analyze(libraryJar, List.of());
