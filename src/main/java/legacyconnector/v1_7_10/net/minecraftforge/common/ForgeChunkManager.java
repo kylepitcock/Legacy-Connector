@@ -20,8 +20,9 @@ import net.minecraft.server.level.ServerLevel;
 
 /**
  * Forge's chunk loading tickets. Forced chunks are really kept loaded ({@link ServerLevel#setChunkForced}); a chunk
- * stays forced while any ticket holds it. Tickets are not persisted across restarts (mods re-request them when their
- * blocks load). Per-mod limits come from {@code config/forgeChunkLoading.cfg}, as in Forge.
+ * stays forced while any ticket holds it. Tickets of each level are saved with it (saved data, as Forge's forcedchunks.dat) and handed
+ * back to their mod's {@link LoadingCallback} when the server has started: BuildCraft's quarry marks itself alive in that callback and
+ * stalls without it. Per-mod limits come from {@code config/forgeChunkLoading.cfg}, as in Forge.
  */
 public class ForgeChunkManager {
     private static final Map<String, LoadingCallback> CALLBACKS = new ConcurrentHashMap<>();
@@ -32,10 +33,132 @@ public class ForgeChunkManager {
     private static final Map<String, Integer> ticketConstraints = new ConcurrentHashMap<>();
     private static final Map<String, Integer> chunkConstraints = new ConcurrentHashMap<>();
 
+    private static final String STORE_NAME = "legacyconnector_forced_chunk_tickets";
+    private static final Map<ServerLevel, Store> STORES = new ConcurrentHashMap<>();
+
+    /** The tickets of one level as saved data: written from the live tickets on save, read back once when the server starts. */
+    private static final class Store extends net.minecraft.world.level.saveddata.SavedData {
+        net.minecraft.nbt.ListTag loaded;
+        ServerLevel owner;
+
+        @Override
+        public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+            net.minecraft.nbt.ListTag out = new net.minecraft.nbt.ListTag();
+            SetMultimap<ChunkCoordIntPair, Ticket> forced = owner == null ? null : FORCED.get(owner);
+            if (forced != null) {
+                Set<Ticket> tickets;
+                synchronized (forced) {
+                    tickets = new LinkedHashSet<>(forced.values());
+                }
+                for (Ticket t : tickets) {
+                    if (t.ticketType != Type.NORMAL) continue; // an entity ticket is bound again by its entity
+                    net.minecraft.nbt.CompoundTag e = new net.minecraft.nbt.CompoundTag();
+                    e.putString("mod", t.modId);
+                    e.putInt("depth", t.maxDepth);
+                    if (t.player != null) e.putString("player", t.player);
+                    e.put("data", t.modData.mcc$modern().copy());
+                    net.minecraft.nbt.ListTag chunks = new net.minecraft.nbt.ListTag();
+                    for (ChunkCoordIntPair c : t.requestedChunks) chunks.add(net.minecraft.nbt.LongTag.valueOf(net.minecraft.world.level.ChunkPos.asLong(c.chunkXPos, c.chunkZPos)));
+                    e.put("chunks", chunks);
+                    out.add(e);
+                }
+            }
+            tag.put("tickets", out);
+            return tag;
+        }
+    }
+
+    private static Store store(ServerLevel level) {
+        return STORES.computeIfAbsent(level, l -> {
+            Store st = l.getDataStorage().computeIfAbsent(new net.minecraft.world.level.saveddata.SavedData.Factory<Store>(Store::new, (tag, reg) -> {
+                Store loaded = new Store();
+                loaded.loaded = tag.getList("tickets", 10);
+                return loaded;
+            }, null), STORE_NAME);
+            st.owner = l;
+            return st;
+        });
+    }
+
+    private static void markDirty(ServerLevel level) {
+        try {
+            store(level).setDirty();
+        } catch (RuntimeException e) {
+            // saved data is unavailable this early or late: the tickets are then just not persisted
+        }
+    }
+
+    /** Hands the tickets a level saved to their mods' callbacks (Forge does it when a world loads). */
+    private static void restoreTickets(ServerLevel level) {
+        Store st = store(level);
+        net.minecraft.nbt.ListTag saved = st.loaded;
+        st.loaded = null;
+        if (saved == null || saved.isEmpty()) return;
+        World world = World.mcc$wrap(level);
+        Map<String, java.util.List<Ticket>> byMod = new java.util.LinkedHashMap<>();
+        for (int i = 0; i < saved.size(); i++) {
+            net.minecraft.nbt.CompoundTag e = saved.getCompound(i);
+            String mod = e.getString("mod");
+            Ticket t = new Ticket(mod, Type.NORMAL, world, e.contains("player") ? e.getString("player") : null);
+            t.maxDepth = e.getInt("depth");
+            net.minecraft.nbt.CompoundTag data = e.getCompound("data");
+            for (String k : data.getAllKeys()) t.modData.mcc$modern().put(k, data.get(k).copy());
+            SetMultimap<ChunkCoordIntPair, Ticket> forced = FORCED.computeIfAbsent(level, l -> LinkedHashMultimap.create());
+            net.minecraft.nbt.ListTag chunks = e.getList("chunks", 4);
+            for (int c = 0; c < chunks.size(); c++) {
+                long packed = ((net.minecraft.nbt.LongTag) chunks.get(c)).getAsLong();
+                ChunkCoordIntPair pair = new ChunkCoordIntPair(net.minecraft.world.level.ChunkPos.getX(packed), net.minecraft.world.level.ChunkPos.getZ(packed));
+                t.requestedChunks.add(pair);
+                synchronized (forced) {
+                    forced.put(pair, t);
+                }
+                level.setChunkForced(pair.chunkXPos, pair.chunkZPos, true);
+            }
+            byMod.computeIfAbsent(mod, k -> new java.util.ArrayList<>()).add(t);
+        }
+        for (var entry : byMod.entrySet()) {
+            LoadingCallback callback = CALLBACKS.get(entry.getKey());
+            java.util.List<Ticket> tickets = entry.getValue();
+            if (callback == null) {
+                for (Ticket t : tickets) releaseTicket(t); // the mod is gone
+                continue;
+            }
+            try {
+                if (callback instanceof OrderedLoadingCallback ordered) {
+                    java.util.List<Ticket> kept = ordered.ticketsLoaded(tickets, world, getMaxTicketLengthFor(entry.getKey()));
+                    if (kept == null) kept = tickets;
+                    for (Ticket t : tickets) if (!kept.contains(t)) releaseTicket(t);
+                    callback.ticketsLoaded(kept, world); // Forge hands the kept tickets to the plain callback too
+                } else {
+                    callback.ticketsLoaded(tickets, world);
+                }
+            } catch (RuntimeException | LinkageError ex) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/ChunkLoading").error("Chunk loading callback of {} failed on load", entry.getKey(), ex);
+            }
+        }
+        markDirty(level);
+    }
+
     static {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) -> {
+            for (ServerLevel level : e.getServer().getAllLevels()) {
+                try {
+                    restoreTickets(level);
+                } catch (RuntimeException | LinkageError ex) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/ChunkLoading").error("Could not restore the chunk loading tickets of {}", level.dimension().location(), ex);
+                }
+            }
+        });
+        // the tickets and their mod data are written from the live objects on every save of the level
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Save e) -> {
+            if (e.getLevel() instanceof ServerLevel level && FORCED.containsKey(level)) markDirty(level);
+        });
         // perf.releaseUnloadedLevels: as Forge's unloadWorld, the tickets of an unloaded level go with it (they hold its world)
         org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
-            if (level instanceof ServerLevel s) FORCED.remove(s);
+            if (level instanceof ServerLevel s) {
+                FORCED.remove(s);
+                STORES.remove(s);
+            }
         });
     }
 
@@ -234,6 +357,7 @@ public class ForgeChunkManager {
             forced.put(chunk, ticket);
         }
         level.setChunkForced(chunk.chunkXPos, chunk.chunkZPos, true);
+        markDirty(level);
         // Over the depth limit, the oldest chunk is released (Forge's behaviour).
         if (ticket.maxDepth > 0 && ticket.requestedChunks.size() > ticket.maxDepth) {
             unforceChunk(ticket, ticket.requestedChunks.iterator().next());
@@ -255,6 +379,7 @@ public class ForgeChunkManager {
             stillHeld = forced.containsKey(chunk);
         }
         if (!stillHeld) level.setChunkForced(chunk.chunkXPos, chunk.chunkZPos, false);
+        markDirty(level);
     }
 
     public static ImmutableSetMultimap<ChunkCoordIntPair, Ticket> getPersistentChunksFor(World world) {

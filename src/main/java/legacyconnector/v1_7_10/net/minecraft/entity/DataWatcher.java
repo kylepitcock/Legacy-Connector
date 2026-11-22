@@ -54,10 +54,29 @@ public class DataWatcher {
         if (id > 31) throw new IllegalArgumentException("Data value id is too big with " + id + "! (Max is 31)");
         // 1.7.10 living entities register slot 7 (the potion colour, never read here); 1.5.2 and 1.6.4 mods that extend EntityLiving use it for their own data
         // (Mystcraft's linkbook entity), so their registration replaces the shim's instead of failing the construction.
-        if (watched.containsKey(id) && id != 7) throw new IllegalArgumentException("Duplicate id value for " + id + "!");
+        if (watched.containsKey(id) && id != 7 && !soft.remove(id)) {
+            // The real game threw here. In this layer a slot the shim registers for the version it emulates may be one the mod's version never had
+            // (a 1.6.4 EntityZombie subclass adding 12 to 14 itself; Railcraft's carts adding 20), and a mod must not fail to construct over it: its value replaces the shim's.
+            if (DUPLICATES.add(owner == null ? "?" : owner.getClass().getName() + "#" + id)) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/DataWatcher").warn("{} registers data watcher id {} twice; the later value replaces the earlier one",
+                        owner == null ? "?" : owner.getClass().getName(), id);
+            }
+        }
         watched.put(id, new WatchableObject(type, id, value));
         isBlank = false;
     }
+
+    /**
+     * A slot the shim registers for 1.7.10 behaviour that older versions never had (the minecart's display tile, ids 20 to 22): a 1.4.7 to 1.6.4 mod's
+     * subclass that uses the same id for its own data replaces it instead of failing with "Duplicate id value" (Railcraft's carts).
+     */
+    public void mcc$addSoftObject(int id, Object value) {
+        addObject(id, value);
+        soft.add(id);
+    }
+
+    private static final java.util.Set<String> DUPLICATES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final java.util.Set<Integer> soft = new java.util.HashSet<>();
 
     public void addObjectByDataType(int id, int type) {
         WatchableObject o = new WatchableObject(type, id, null);
