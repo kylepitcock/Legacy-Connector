@@ -56,13 +56,16 @@ public final class PalladiumRendererRegistryDebugCompat {
         try {
             Object resolved = supplier.get();
             if (resolved instanceof EntityType<?> entityType) {
-                ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
-                return key == null ? "<unregistered-entity-type>" : key.toString();
+                return formatEntityTypeKey(BuiltInRegistries.ENTITY_TYPE.getKey(entityType));
             }
             return resolved == null ? "<null>" : String.valueOf(resolved);
         } catch (RuntimeException | LinkageError error) {
             return "<supplier-error:" + error.getClass().getSimpleName() + ">";
         }
+    }
+
+    static String formatEntityTypeKey(ResourceLocation key) {
+        return key == null ? "<unregistered-entity-type>" : key.toString();
     }
 
     private static String className(Object value) {
