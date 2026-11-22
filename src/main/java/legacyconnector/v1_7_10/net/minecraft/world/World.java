@@ -201,10 +201,15 @@ public class World implements IBlockAccess {
                 // Forge's server tells every provider which spawn types are allowed when the world is created (and again when the difficulty
                 // changes); a mod provider that keeps the flags to run its own spawner (getCanSpawnHostiles) would otherwise report "none".
                 if (created.getClass() != WorldProvider.class && !created.getClass().getName().startsWith("legacyconnector.v1_7_10.")) {
+                    // without the world attached while it runs: the base method would reach for the real level, which a generation thread must not
+                    var attached = created.worldObj;
                     try {
+                        created.worldObj = null;
                         created.setAllowedSpawnTypes(true, true);
                     } catch (RuntimeException | LinkageError ignored) {
                         // a provider that cannot take the call keeps its defaults
+                    } finally {
+                        created.worldObj = attached;
                     }
                 }
             } catch (RuntimeException | LinkageError e) {
