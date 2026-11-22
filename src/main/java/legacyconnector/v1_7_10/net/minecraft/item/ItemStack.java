@@ -77,6 +77,11 @@ public final class ItemStack {
     private int mcc$deferredCount;
     private int mcc$deferredMeta;
 
+    /** The block of a stack whose item does not exist yet (the block was not registered): its id is the block's id in 1.4.7 to 1.6.4. */
+    public Block mcc$pendingBlock() {
+        return mcc$deferredBlock;
+    }
+
     /** Binds the item of a stack made from a block that had none yet, once the block's item exists. */
     private void mcc$resolveDeferred() {
         Block block = mcc$deferredBlock;
