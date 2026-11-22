@@ -9,6 +9,12 @@ public class EntityAIWatchClosest extends GoalTask {
     }
 
     public EntityAIWatchClosest(EntityLiving entity, Class<?> watchTarget, float distance, float chance) {
-        super(entity, 2, m -> new LookAtPlayerGoal(m, LegacyTargets.search(watchTarget), distance, chance));
+        super(entity, 2, m -> new LookAtPlayerGoal(m, LegacyTargets.search(watchTarget), distance, chance) {
+            {
+                // 1.7.10 found the entity to watch by distance alone (getClosestPlayerToEntity); the modern goal also needs a clear line of sight, so
+                // a mob whose own block's collision box surrounds it (Witchery's mirror face, 0.4 in front of the mirror) never turned to the player
+                lookAtContext.ignoreLineOfSight();
+            }
+        });
     }
 }
