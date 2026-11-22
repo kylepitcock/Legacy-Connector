@@ -175,14 +175,23 @@ public final class Forge1201AccessTransformerAnalyzer {
         TargetKind kind;
         DirectiveStatus status;
         if (descriptorStart >= 0) {
-            if (!"*".equals(memberName) && !validMethodName(memberName)) {
-                return malformed(lineNumber, raw, "Invalid method selector name '" + memberName + "'.");
+            if ("*".equals(memberName)) {
+                // Forge's wildcard-method form is the special selector "*()", not a JVM descriptor.
+                if (!"()".equals(descriptor)) {
+                    return malformed(lineNumber, raw, "Wildcard method selector must use the Forge *() form.");
+                }
+                kind = TargetKind.WILDCARD_METHOD;
+                status = DirectiveStatus.WILDCARD_REQUIRES_REVIEW;
+            } else {
+                if (!validMethodName(memberName)) {
+                    return malformed(lineNumber, raw, "Invalid method selector name '" + memberName + "'.");
+                }
+                if (!validMethodDescriptor(descriptor)) {
+                    return malformed(lineNumber, raw, "Invalid method JVM descriptor '" + descriptor + "'.");
+                }
+                kind = TargetKind.METHOD;
+                status = DirectiveStatus.VALID;
             }
-            if (!validMethodDescriptor(descriptor)) {
-                return malformed(lineNumber, raw, "Invalid method JVM descriptor '" + descriptor + "'.");
-            }
-            kind = "*".equals(memberName) ? TargetKind.WILDCARD_METHOD : TargetKind.METHOD;
-            status = "*".equals(memberName) ? DirectiveStatus.WILDCARD_REQUIRES_REVIEW : DirectiveStatus.VALID;
         } else {
             if (!"*".equals(memberName) && !validMemberName(memberName)) {
                 return malformed(lineNumber, raw, "Invalid field selector name '" + memberName + "'.");
@@ -192,10 +201,13 @@ public final class Forge1201AccessTransformerAnalyzer {
         }
 
         String memberNamespace = owner.startsWith("net.minecraft.")
-                ? "FORGE_SRG_1.20.1" : "DECLARED_MEMBER_NAMESPACE_UNVERIFIED";
+                ? "*".equals(memberName) ? "FORGE_SRG_1.20.1_WILDCARD_PATTERN" : "FORGE_SRG_1.20.1"
+                : "DECLARED_MEMBER_NAMESPACE_UNVERIFIED";
         String descriptorNamespace = descriptor == null ? "NOT_APPLICABLE"
+                : "*".equals(memberName) ? "WILDCARD_METHOD_PATTERN_NOT_JVM_DESCRIPTOR"
                 : owner.startsWith("net.minecraft.")
-                        ? "SOURCE_MOJANG_OFFICIAL_1.20.1_WITH_EXTERNAL_BINARY_TYPES" : "DECLARED_DESCRIPTOR_NAMESPACE_UNVERIFIED";
+                        ? "SOURCE_MOJANG_OFFICIAL_1.20.1_WITH_EXTERNAL_BINARY_TYPES"
+                        : "DECLARED_DESCRIPTOR_NAMESPACE_UNVERIFIED";
         String diagnostic = status == DirectiveStatus.WILDCARD_REQUIRES_REVIEW
                 ? "Wildcard member target is inventoried but cannot be resolved as one symbol." : null;
         return new Directive(lineNumber, raw, tokens[0], modifier.visibility(), modifier.finalChange(),
