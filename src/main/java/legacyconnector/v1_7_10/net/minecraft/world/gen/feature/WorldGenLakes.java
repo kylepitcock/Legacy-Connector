@@ -7,14 +7,23 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** A lake of {@code block}: a blob of blobs hollowed into the ground (water and lava lakes, mods' tar and oil lakes). */
 public class WorldGenLakes extends WorldGenerator {
-    private final Block field_150556_a;
+    private Block field_150556_a;
+    /** The block of a 1.6.4 id constructor, looked up when generating (1.6.4 read {@code blocksList[id]} then). */
+    private java.util.function.Supplier<Block> mcc$byId;
 
     public WorldGenLakes(Block block) {
         this.field_150556_a = block;
     }
 
+    /** 1.6.4: {@code new WorldGenLakes(blockId)}. */
+    public WorldGenLakes(int blockId) {
+        this.mcc$byId = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(blockId);
+    }
+
     @Override
     public boolean generate(World world, Random random, int x, int y, int z) {
+        if (field_150556_a == null && mcc$byId != null) field_150556_a = mcc$byId.get();
+        if (field_150556_a == null) return false;
         x -= 8;
         z -= 8;
         while (y > 5 && world.isAirBlock(x, y, z)) y--;

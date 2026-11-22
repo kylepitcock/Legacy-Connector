@@ -1,6 +1,7 @@
 package legacyconnector.v1_7_10.net.minecraft.world.gen.feature;
 
 import java.util.Random;
+import java.util.function.Supplier;
 import legacyconnector.v1_7_10.net.minecraft.block.Block;
 import legacyconnector.v1_7_10.net.minecraft.init.Blocks;
 import legacyconnector.v1_7_10.net.minecraft.util.MathHelper;
@@ -8,10 +9,12 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** Vanilla 1.7.10 ore vein generator, ported line for line. */
 public class WorldGenMinable extends WorldGenerator {
-    private final Block field_150519_a;
+    private Block field_150519_a;
     private final int numberOfBlocks;
-    private final Block field_150518_c;
+    private Block field_150518_c;
     private int mineableBlockMeta;
+    /** Ore and target of a 1.6.4 id constructor, looked up when generating (1.6.4 read {@code blocksList[id]} then). */
+    private Supplier<Block> mcc$oreById, mcc$targetById;
 
     public WorldGenMinable(Block block, int count) {
         this(block, count, Blocks.stone);
@@ -28,8 +31,29 @@ public class WorldGenMinable extends WorldGenerator {
         this.mineableBlockMeta = meta;
     }
 
+    /** 1.6.4: {@code new WorldGenMinable(blockId, count)} (in stone). */
+    public WorldGenMinable(int blockId, int count) {
+        this(blockId, count, 1);
+    }
+
+    /** 1.6.4: {@code new WorldGenMinable(blockId, count, targetId)}. */
+    public WorldGenMinable(int blockId, int count, int targetId) {
+        this.numberOfBlocks = count;
+        this.mcc$oreById = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(blockId);
+        this.mcc$targetById = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(targetId);
+    }
+
+    /** Forge 1.6.4: {@code new WorldGenMinable(blockId, meta, count, targetId)}. */
+    public WorldGenMinable(int blockId, int meta, int count, int targetId) {
+        this(blockId, count, targetId);
+        this.mineableBlockMeta = meta;
+    }
+
     @Override
     public boolean generate(World world, Random rand, int x, int y, int z) {
+        if (field_150519_a == null && mcc$oreById != null) field_150519_a = mcc$oreById.get();
+        if (field_150518_c == null && mcc$targetById != null) field_150518_c = mcc$targetById.get();
+        if (field_150519_a == null || field_150518_c == null) return false;
         float f = rand.nextFloat() * (float) Math.PI;
         double d0 = x + 8 + MathHelper.sin(f) * numberOfBlocks / 8.0F;
         double d1 = x + 8 - MathHelper.sin(f) * numberOfBlocks / 8.0F;

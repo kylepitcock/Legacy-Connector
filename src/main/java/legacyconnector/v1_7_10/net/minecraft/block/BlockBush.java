@@ -41,9 +41,19 @@ public class BlockBush extends legacyconnector.v1_7_10.net.minecraft.block.Block
         return super.canPlaceBlockAt(world, x, y, z) && canPlaceBlockOn(world.getBlock(x, y - 1, z));
     }
 
+    /** Plants of 1.6.4 and older mods (their BlockFlower needed light); computed per class. */
+    private static final ClassValue<Boolean> NEEDS_LIGHT = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> cls) {
+            return legacyconnector.v1_6_4.net.minecraft.util.Ids.idEraClass(cls);
+        }
+    };
+
+    /** 1.7.10 (Forge) tests the soil only; 1.6.4's BlockFlower also wanted light 8 or open sky (#326: 1.7.10 plants dropped in the dark). */
     @Override
     public boolean canBlockStay(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
-        return (world.getFullBlockLightValue(x, y, z) >= 8 || world.canBlockSeeTheSky(x, y, z)) && canPlaceBlockOn(world.getBlock(x, y - 1, z));
+        if (NEEDS_LIGHT.get(getClass()) && world.getFullBlockLightValue(x, y, z) < 8 && !world.canBlockSeeTheSky(x, y, z)) return false;
+        return canPlaceBlockOn(world.getBlock(x, y - 1, z));
     }
 
     @Override

@@ -9,16 +9,26 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
 
 /** Scatters a plant (tall grass, ferns, mod plants) on the ground around a position. */
 public class WorldGenTallGrass extends WorldGenerator {
-    private final Block block;
-    private final int meta;
+    private Block block;
+    /** The block of a 1.6.4 id constructor, looked up when generating (1.6.4 read {@code blocksList[id]} then). */
+    private java.util.function.Supplier<Block> mcc$byId;
+    private int meta;
 
     public WorldGenTallGrass(Block block, int meta) {
         this.block = block;
         this.meta = meta;
     }
 
+    /** 1.6.4: {@code new WorldGenTallGrass(blockId, meta)}. */
+    public WorldGenTallGrass(int blockId, int meta) {
+        this.mcc$byId = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(blockId);
+        this.meta = meta;
+    }
+
     @Override
     public boolean generate(World world, Random random, int x, int y, int z) {
+        if (block == null && mcc$byId != null) block = mcc$byId.get();
+        if (block == null) return false;
         var level = world.mcc$level();
         // Down through air and leaves to the ground.
         while (y > level.getMinBuildHeight()) {

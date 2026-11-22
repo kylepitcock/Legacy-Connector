@@ -8,14 +8,23 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** A spring: a liquid source set into a stone wall with exactly one open side (vanilla's water and lava springs). */
 public class WorldGenLiquids extends WorldGenerator {
-    private final Block field_150521_a;
+    private Block field_150521_a;
+    /** The block of a 1.6.4 id constructor, looked up when generating (1.6.4 read {@code blocksList[id]} then). */
+    private java.util.function.Supplier<Block> mcc$byId;
 
     public WorldGenLiquids(Block liquid) {
         this.field_150521_a = liquid;
     }
 
+    /** 1.6.4: {@code new WorldGenLiquids(blockId)}. */
+    public WorldGenLiquids(int blockId) {
+        this.mcc$byId = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(blockId);
+    }
+
     @Override
     public boolean generate(World world, Random random, int x, int y, int z) {
+        if (field_150521_a == null && mcc$byId != null) field_150521_a = mcc$byId.get();
+        if (field_150521_a == null) return false;
         if (world.getBlock(x, y + 1, z) != Blocks.stone) return false;
         if (world.getBlock(x, y - 1, z) != Blocks.stone) return false;
         Block here = world.getBlock(x, y, z);

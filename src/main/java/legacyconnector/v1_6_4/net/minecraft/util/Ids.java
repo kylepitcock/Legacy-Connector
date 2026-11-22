@@ -61,6 +61,12 @@ public final class Ids {
                 .map(f -> LOADER_VERSION.get(f.getDeclaringClass().getClassLoader())).filter(java.util.Objects::nonNull).findFirst().orElse(null));
     }
 
+    /** Whether a class belongs to a mod with a numeric id space (1.6.4 and older; 1.7.10 mods have none). */
+    public static boolean idEraClass(Class<?> cls) {
+        ClassLoader loader = cls.getClassLoader();
+        return loader != null && LOADER_VERSION.containsKey(loader);
+    }
+
     private static String versionOfCaller() {
         String v = phaseVersion;
         if (v != null) return v;
@@ -139,6 +145,22 @@ public final class Ids {
     public static synchronized Block block(int id) {
         reg();
         return id > 0 && id < blocks.length ? blocks[id] : null;
+    }
+
+    /**
+     * {@code Block.blocksList[id]} looked up later, in the id space of the caller now. 1.6.4 world generators took block ids
+     * ({@code new WorldGenFlowers(id)}) and read {@code blocksList[id]} only when generating: a mod may build its biome decorator
+     * before it constructs the block. Never switches the global space (generation runs on worker threads).
+     */
+    public static java.util.function.Supplier<Block> lazyBlock(int id) {
+        String version = versionOfCaller();
+        return () -> {
+            synchronized (Ids.class) {
+                Space s = SPACES.get(version);
+                if (s == null || s.blocks == null) return block(id);
+                return id > 0 && id < s.blocks.length ? s.blocks[id] : null;
+            }
+        };
     }
 
     /** Id of a block (0 for null and air); a block nobody claimed gets the next free one. */

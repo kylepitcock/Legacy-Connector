@@ -887,7 +887,11 @@ public class World implements IBlockAccess {
 
     public boolean canBlockSeeTheSky(int x, int y, int z) {
         if (inDeepPass() && !shiftedPass()) return false; // the deep layer is buried (see mcc$aboveDeepLayer)
-        return lvl().canSeeSky(pos(x, y, z));
+        BlockPos p = pos(x, y, z);
+        // a chunk being generated has no light yet (the modern engine lights it after the features) and canSeeSky reads the sky light:
+        // the heightmap answers, as the legacy height map did (#326: flowers of legacy decorators never generated)
+        if (lvl() instanceof net.minecraft.server.level.WorldGenRegion) return p.getY() >= lvl().getHeight(Heightmap.Types.MOTION_BLOCKING, p.getX(), p.getZ());
+        return lvl().canSeeSky(p);
     }
 
     /** Brightness 0..1 (light level scaled by the dimension's ambient light curve). */
@@ -939,8 +943,17 @@ public class World implements IBlockAccess {
         return level == null ? 0.0F : level.getThunderLevel(partialTicks);
     }
 
+    /**
+     * The light at a block without the night's darkening (legacy {@code Chunk.getBlockLightValue(x, y, z, 0)}): 1.6.4 plants test it
+     * ({@code >= 8}), so the darkened value made them drop under any roof at night (#326). In a chunk being generated, which has no light
+     * yet, open sky counts as full light (leaves let it through, as legacy's sky map did).
+     */
     public int getFullBlockLightValue(int x, int y, int z) {
-        return getBlockLightValue(x, y, z);
+        BlockPos p = pos(x, y, z);
+        int raw = lvl().getRawBrightness(p, 0);
+        if (raw < 15 && lvl() instanceof net.minecraft.server.level.WorldGenRegion
+                && p.getY() >= lvl().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, p.getX(), p.getZ())) return 15;
+        return raw;
     }
 
     @Override

@@ -717,7 +717,11 @@ public class World implements IBlockAccess {
     }
 
     public boolean canSeeSky(BlockPos pos) {
-        return acc() != null && !unloaded(modern(pos)) && acc().canSeeSky(modern(pos));
+        if (acc() == null) return false;
+        var p = modern(pos);
+        // a chunk being generated has no light yet and canSeeSky reads the sky light: the heightmap answers, as 1.12's did (#326)
+        if (acc() instanceof net.minecraft.server.level.WorldGenRegion) return p.getY() >= acc().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, p.getX(), p.getZ());
+        return !unloaded(p) && acc().canSeeSky(p);
     }
 
     public boolean canBlockSeeSky(BlockPos pos) {
@@ -924,8 +928,9 @@ public class World implements IBlockAccess {
 
     // ------------------------------------------------------------------ light
 
+    /** 1.12's {@code getLight(pos)} is {@code getLightSubtracted(pos, 0)}: no night darkening (plants test it, #326); the neighbour form is darkened. */
     public int getLight(BlockPos pos) {
-        return level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion ? 15 : level.getMaxLocalRawBrightness(modern(pos));
+        return level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion ? 15 : level.getRawBrightness(modern(pos), 0);
     }
 
     public int getLight(BlockPos pos, boolean checkNeighbors) {
