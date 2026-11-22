@@ -395,7 +395,7 @@ public final class Forge1201PreflightAnalyzer {
                         new Forge1201MixinAnalyzer.MemoryArchive(
                                 archive.archivePath(),
                                 new ArrayList<>(memoryEntries.values()),
-                                incomplete);
+                                incomplete, remainingClasses);
                 Forge1201MixinAnalyzer.Result nestedAnalysis = Forge1201MixinAnalyzer.analyze(
                         memoryArchive, declarations, nestedTargetIndex, Map.of(),
                         "not-supplied", requestedRefmapContextKey);
