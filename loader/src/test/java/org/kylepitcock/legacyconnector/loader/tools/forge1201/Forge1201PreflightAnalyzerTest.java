@@ -118,8 +118,8 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.12", first.schemaVersion());
-        assertEquals("1.12.0", first.analyzerVersion());
+        assertEquals("1.13", first.schemaVersion());
+        assertEquals("1.13.0", first.analyzerVersion());
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
                 first.accessTransformers().status());
         assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
@@ -472,6 +472,49 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void analyzesNestedMixinManifestConfigClassAndRefmapWithArchiveProvenance() throws IOException {
+        Path sourceJar = createForgeModJar("nested-mixin-preflight.jar", false, nestedMixinArchive());
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertEquals(1, result.nestedMixinAnalyses().size());
+        var nested = result.nestedMixinAnalyses().getFirst();
+        assertTrue(nested.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"));
+        assertEquals(1, nested.depth());
+        assertEquals(Forge1201ArchiveGraph.ArchiveKind.LIBRARY_OR_UNRECOGNIZED, nested.archiveKind());
+        assertEquals(64, nested.sha256().length());
+        assertTrue(nested.configCandidates().stream().anyMatch(candidate ->
+                candidate.path().equals("nested.mixins.json")
+                        && candidate.discoveredBy().contains("manifest")));
+        assertNotNull(nested.mixinAnalysis());
+
+        var config = nested.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("nested.mixins.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.PARSED, config.status());
+        assertEquals(List.of(
+                Forge1201MixinAnalyzer.DiscoverySource.MANIFEST,
+                Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC), config.discoverySources());
+
+        var mixinClass = nested.mixinAnalysis().mixinClasses().stream()
+                .filter(finding -> finding.mixinClassName().equals("nested.mixin.FeatureMixin"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.MixinClassStatus.PRESENT, mixinClass.status());
+        assertTrue(mixinClass.hasMixinAnnotation());
+
+        var refmap = nested.mixinAnalysis().refmapResources().stream()
+                .filter(finding -> finding.resourcePath().equals("nested.refmap.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.RefmapResourceStatus.EMPTY, refmap.status());
+
+        String json = Forge1201PreflightAnalyzer.toJson(result);
+        String report = Forge1201PreflightAnalyzer.toText(result);
+        assertTrue(json.contains("\"nestedMixinAnalyses\""));
+        assertTrue(report.contains("Nested source-archive Mixin analysis"));
+        assertTrue(report.contains("nested.mixins.json"));
+    }
+
+    @Test
     void normalizesOnlyMinecraftSrgMemberNamesAndKeepsUnknownsExplicit() {
         var location = new Forge1201ApiUsageAnalyzer.ApiReferenceLocation(
                 "source/example.jar", "example/UsesMinecraft.class");
@@ -645,6 +688,26 @@ final class Forge1201PreflightAnalyzerTest {
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jar))) {
             put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private byte[] nestedMixinArchive() throws IOException {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().putValue("MixinConfigs", "nested.mixins.json");
+        ByteArrayOutputStream manifestBytes = new ByteArrayOutputStream();
+        manifest.write(manifestBytes);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
+            put(zip, "nested.mixins.json",
+                    ("{\"package\":\"nested.mixin\",\"mixins\":[\"FeatureMixin\"],"
+                            + "\"refmap\":\"nested.refmap.json\"}").getBytes(StandardCharsets.UTF_8));
+            put(zip, "nested.refmap.json", "{}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "nested/mixin/FeatureMixin.class",
+                    mixinTargetClass("nested/mixin/FeatureMixin", "net.minecraft.world.entity.Entity"));
+        }
+        return bytes.toByteArray();
     }
 
     private static byte[] nestedLibraryJar() throws IOException {
