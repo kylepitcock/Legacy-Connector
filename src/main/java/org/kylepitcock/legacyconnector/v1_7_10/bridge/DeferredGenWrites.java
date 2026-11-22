@@ -29,7 +29,8 @@ public final class DeferredGenWrites {
     private static final int MAX = 1_000_000;
 
     /** A block to place, or (state null) a metadata change of the block found there. */
-    private record Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach, boolean intercepted, long durable) {
+    private record Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach, boolean intercepted, long durable, String source) {
+        Write(BlockPos pos,BlockState state,int meta,Consumer<BlockEntity> attach,boolean intercepted,long durable){this(pos,state,meta,attach,intercepted,durable,org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.currentSource());}
         Write(BlockPos pos,BlockState state,int meta,Consumer<BlockEntity> attach,boolean intercepted){this(pos,state,meta,attach,intercepted,0);}
         Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach) {
             this(pos,state,meta,attach,false);
@@ -48,6 +49,22 @@ public final class DeferredGenWrites {
     private static final AtomicInteger COUNT = new AtomicInteger();
     private static volatile boolean listening;
     private static volatile boolean warnedFull;
+    /** Pending non-durable writes by the generator that made them, and the most one generator may hold (a quarter of {@link #MAX}). */
+    private static final Map<String, AtomicInteger> BY_SOURCE = new ConcurrentHashMap<>();
+    private static final int PER_SOURCE = MAX / 4;
+    private static final java.util.Set<String> warnedSources = ConcurrentHashMap.newKeySet();
+
+    /** Takes the non-durable writes of a queue out of the pending counts (the global one and the one of each source). */
+    private static void release(Queue<Write> writes) {
+        for (Write w : writes) {
+            if (w.durable != 0) continue;
+            COUNT.decrementAndGet();
+            if (w.source != null) {
+                AtomicInteger own = BY_SOURCE.get(w.source);
+                if (own != null) own.decrementAndGet();
+            }
+        }
+    }
 
     private DeferredGenWrites() {
     }
@@ -188,12 +205,18 @@ public final class DeferredGenWrites {
 
     /** Queues a write under the chunk whose load (or generation) releases it. */
     private static void add(ServerLevel level, Write write, long key) {
-        if (write.durable==0&&COUNT.get() >= MAX) {
-            if (!warnedFull) {
-                warnedFull = true;
-                LOG.warn("Too many blocks placed by legacy generators outside their chunks; further ones are dropped");
+        if (write.durable==0) {
+            AtomicInteger own = write.source == null ? null : BY_SOURCE.computeIfAbsent(write.source, k -> new AtomicInteger());
+            boolean full = COUNT.get() >= MAX;
+            if (full || (own != null && own.get() >= PER_SOURCE)) {
+                // one runaway generator (a mod that builds a huge island from a populator) must not use up the room of every other one
+                if (warnedSources.add(write.source == null ? "?" : write.source) || full && !warnedFull) {
+                    warnedFull |= full;
+                    LOG.warn("Too many blocks placed by {} outside their chunks ({} of its own, {} of {} in all pending); further ones from it are dropped",
+                            write.source, own == null ? 0 : own.get(), COUNT.get(), MAX);
+                }
+                return;
             }
-            return;
         }
         listen();
         boolean[] created = {false};
@@ -201,7 +224,7 @@ public final class DeferredGenWrites {
             if(queue==null){created[0]=true;queue=new ConcurrentLinkedQueue<>();}
             queue.add(write);return queue;
         });
-        if(write.durable==0)COUNT.incrementAndGet();
+        if(write.durable==0){COUNT.incrementAndGet();if(write.source!=null)BY_SOURCE.computeIfAbsent(write.source,k->new AtomicInteger()).incrementAndGet();}
         // the chunk may be loaded already (generated earlier): place the blocks on the server thread, once the populator is done
         if (created[0]) {
             later(level, () -> {
@@ -236,7 +259,7 @@ public final class DeferredGenWrites {
                 STATES.remove(level);
                 TILES.remove(level);
                 Map<Long, Queue<Write>> dropped = PENDING.remove(level);
-                if (dropped != null) dropped.values().forEach(q -> COUNT.addAndGet(-q.size()));
+                if (dropped != null) dropped.values().forEach(DeferredGenWrites::release);
             }
         });
     }
@@ -259,7 +282,7 @@ public final class DeferredGenWrites {
         if (byChunk == null || byChunk.isEmpty()) return;
         Queue<Write> writes = byChunk.remove(net.minecraft.world.level.ChunkPos.asLong(chunkX, chunkZ));
         if (writes == null) return;
-        COUNT.addAndGet(-(int)writes.stream().filter(write->write.durable==0).count());
+        release(writes);
         for (Write w : writes) {
             if(w.durable!=0){applyIntercepted(level,region,w,net.minecraft.world.level.ChunkPos.asLong(chunkX,chunkZ));continue;}
             try {
@@ -288,7 +311,7 @@ public final class DeferredGenWrites {
         if (byChunk == null) return;
         Queue<Write> writes = byChunk.remove(key);
         if (writes == null) return;
-        COUNT.addAndGet(-(int)writes.stream().filter(write->write.durable==0).count());
+        release(writes);
         for (Write w : writes) {
             try {
                 // a block on a chunk border whose neighbouring chunk is not loaded (onPlace of hoppers, rails, redstone reads the
