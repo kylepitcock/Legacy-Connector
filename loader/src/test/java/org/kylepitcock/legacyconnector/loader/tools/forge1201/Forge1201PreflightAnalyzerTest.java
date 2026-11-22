@@ -67,6 +67,7 @@ final class Forge1201PreflightAnalyzerTest {
         assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"accessTransformers\""));
         assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("AT line 3 [VALID]"));
         assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("member-namespace=FORGE_SRG_1.20.1"));
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, result.coremodMetadata().status());
         assertTrue(result.limitations().stream().anyMatch(value ->
                 value.contains("nested JARs") && value.contains("not inspected")));
     }
@@ -93,10 +94,11 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.11", first.schemaVersion());
-        assertEquals("1.11.0", first.analyzerVersion());
+        assertEquals("1.12", first.schemaVersion());
+        assertEquals("1.12.0", first.analyzerVersion());
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
                 first.accessTransformers().status());
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
         assertEquals(Forge1201MixinAnalyzer.TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH,
                 first.mixinAnalysis().targetIndexStatus());
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED,
@@ -185,7 +187,9 @@ final class Forge1201PreflightAnalyzerTest {
 
         assertEquals(Forge1201PreflightAnalyzer.toJson(first), Forge1201PreflightAnalyzer.toJson(second));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"accessTransformers\""));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"coremodMetadata\""));
         assertTrue(Forge1201PreflightAnalyzer.toText(first).contains("Access Transformer: NOT_PRESENT"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(first).contains("Coremod metadata: NOT_PRESENT"));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"dynamicReferences\""));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"memberAnnotations\""));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"refmapResources\""));
