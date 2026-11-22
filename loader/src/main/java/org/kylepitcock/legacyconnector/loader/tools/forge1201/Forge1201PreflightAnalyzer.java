@@ -103,7 +103,7 @@ public final class Forge1201PreflightAnalyzer {
         UNRECOGNIZED_MOD_METADATA,
         UNSUPPORTED_FILE_TYPE,
         INCOMPLETE_ARCHIVE,
-        UNKNOWN_MANIFEST_TYPE
+        UNKNOWN_LOADER_METADATA
     }
 
     public enum NeoForgeDefaultAtDisposition {
@@ -1171,7 +1171,7 @@ public final class Forge1201PreflightAnalyzer {
         List<String> warnings = new ArrayList<>(archive.warnings());
         NestedResourceStatus manifestStatus = nestedResourceStatus(archive, JarFile.MANIFEST_NAME);
         String declaredType = null;
-        boolean manifestTypeIncomplete = false;
+        boolean loaderMetadataIncomplete = false;
         if (manifestStatus == NestedResourceStatus.CAPTURED) {
             Forge1201ArchiveGraph.NestedMixinResource manifestResource = archive.resources().get(JarFile.MANIFEST_NAME);
             if (manifestResource != null && manifestResource.bytes() != null) {
@@ -1180,22 +1180,38 @@ public final class Forge1201PreflightAnalyzer {
                     declaredType = nestedManifest.getMainAttributes().getValue("FMLModType");
                     // Match the loader's case-sensitive Enum.valueOf semantics; do not normalize invalid manifest values.
                 } catch (IOException | RuntimeException exception) {
-                    manifestTypeIncomplete = true;
+                    loaderMetadataIncomplete = true;
                     warnings.add("Nested manifest could not be parsed for FMLModType: " + conciseMessage(exception));
                 }
             } else {
-                manifestTypeIncomplete = true;
+                loaderMetadataIncomplete = true;
                 warnings.add("Nested manifest was marked captured but its bytes were unavailable.");
             }
         } else if (manifestStatus == NestedResourceStatus.DUPLICATE_ENTRY
                 || manifestStatus == NestedResourceStatus.LIMIT_EXCEEDED
                 || manifestStatus == NestedResourceStatus.INDEX_INCOMPLETE) {
-            manifestTypeIncomplete = true;
+            loaderMetadataIncomplete = true;
             warnings.add("Nested manifest type could not be established because the manifest was duplicated, unavailable, or outside the resource-path index.");
         }
 
         boolean forgeToml = archive.forgeModsTomlPresent();
         boolean neoForgeToml = archive.neoForgeModsTomlPresent();
+        boolean forgeTomlIncomplete = archive.duplicateResourcePaths().contains("META-INF/mods.toml")
+                || (forgeToml && archive.forgeModsToml() == null)
+                || (!forgeToml && archive.resourcePathIndexIncomplete());
+        boolean targetTomlIncomplete = archive.duplicateResourcePaths().contains("META-INF/mods.toml")
+                || archive.duplicateResourcePaths().contains("META-INF/neoforge.mods.toml")
+                || ((forgeToml || neoForgeToml)
+                    && (neoForgeToml ? archive.neoForgeModsToml() : archive.forgeModsToml()) == null)
+                || (!(forgeToml || neoForgeToml) && archive.resourcePathIndexIncomplete());
+        if (forgeTomlIncomplete) {
+            loaderMetadataIncomplete = true;
+            warnings.add("Forge mods.toml presence or contents are incomplete; source ModInfo and final-list eligibility cannot be established.");
+        }
+        if (targetTomlIncomplete) {
+            loaderMetadataIncomplete = true;
+            warnings.add("Target TOML presence or contents are incomplete; NeoForge ModInfo and final-list eligibility cannot be established.");
+        }
         String forgeType = forgeToml
                 ? (declaredType == null ? "MOD" : declaredType)
                 : (declaredType == null ? "GAMELIBRARY" : declaredType);
@@ -1209,11 +1225,11 @@ public final class Forge1201PreflightAnalyzer {
                 && !archive.mods().isEmpty();
 
         boolean archiveInspectionIncomplete = isNestedArchiveInspectionIncomplete(archive.archiveKind());
-        NestedLoaderDisposition forgeDisposition = manifestTypeIncomplete
-                ? NestedLoaderDisposition.UNKNOWN_MANIFEST_TYPE
+        NestedLoaderDisposition forgeDisposition = loaderMetadataIncomplete
+                ? NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
                 : classifyForgeNestedDisposition(forgeType, forgeToml, forgeModInfo, archiveInspectionIncomplete);
-        NestedLoaderDisposition targetDisposition = manifestTypeIncomplete
-                ? NestedLoaderDisposition.UNKNOWN_MANIFEST_TYPE
+        NestedLoaderDisposition targetDisposition = loaderMetadataIncomplete
+                ? NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
                 : classifyNeoForgeNestedDisposition(targetType, forgeToml || neoForgeToml, targetModInfo, archiveInspectionIncomplete);
         boolean forgeParserReached = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER
                 || forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO;
