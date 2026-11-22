@@ -70,7 +70,7 @@ final class Forge1201PreflightAnalyzerTest {
         assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("member-namespace=FORGE_SRG_1.20.1"));
         assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, result.coremodMetadata().status());
         assertTrue(result.limitations().stream().anyMatch(value ->
-                value.contains("nested JARs") && value.contains("not inspected")));
+                value.contains("bounded source-nested archives") && value.contains("consumer eligibility")));
     }
 
     @Test
