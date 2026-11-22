@@ -197,6 +197,7 @@ public final class Forge1201ArchiveGraph {
             String archivePath, String sha256, int depth, ArchiveKind archiveKind,
             List<Forge1201PreflightAnalyzer.ModMetadata> mods,
             boolean forgeModsTomlPresent, boolean neoForgeModsTomlPresent,
+            String forgeModsToml, String neoForgeModsToml,
             Map<String, NestedMixinResource> resources,
             Set<String> resourcePaths, Set<String> duplicateResourcePaths,
             boolean resourcePathIndexIncomplete,
@@ -681,7 +682,8 @@ public final class Forge1201ArchiveGraph {
                 } else {
                     nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
                             snapshot.incompleteKind(), List.of(), snapshot.modsToml() != null,
-                            snapshot.neoForgeModsToml() != null, snapshot.mixinResources(),
+                            snapshot.neoForgeModsToml() != null, snapshot.modsToml(), snapshot.neoForgeModsToml(),
+                            snapshot.mixinResources(),
                             snapshot.resourcePaths(), snapshot.duplicateResourcePaths(),
                             snapshot.resourcePathIndexIncomplete(), Map.of(), true,
                             List.of("Nested archive parsing stopped before complete metadata/resource analysis: "
@@ -734,6 +736,7 @@ public final class Forge1201ArchiveGraph {
                             .thenComparing(Forge1201PreflightAnalyzer.ModMetadata::version)).toList();
             nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
                     parsed.kind(), nestedMods, snapshot.modsToml() != null, snapshot.neoForgeModsToml() != null,
+                    snapshot.modsToml(), snapshot.neoForgeModsToml(),
                     snapshot.mixinResources(), snapshot.resourcePaths(), snapshot.duplicateResourcePaths(),
                     snapshot.resourcePathIndexIncomplete(), mixinClasses,
                     resourceIndexIncomplete, resourceWarnings));
