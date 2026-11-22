@@ -48,6 +48,7 @@ public final class Forge1201CoremodAnalyzer {
         RESOURCE_PRESENT,
         RESOURCE_MISSING,
         RESOURCE_NOT_INDEXED,
+        RESOURCE_DUPLICATE_ENTRY,
         UNSAFE_RESOURCE_PATH,
         INVALID_DECLARATION
     }
@@ -83,6 +84,12 @@ public final class Forge1201CoremodAnalyzer {
 
     /** Analyze a nested archive resource from its already-bounded in-memory bytes. */
     static Result analyzeNested(byte[] metadataBytes, Set<String> resourcePaths, boolean resourceIndexIncomplete) {
+        return analyzeNested(metadataBytes, resourcePaths, Set.of(), resourceIndexIncomplete);
+    }
+
+    static Result analyzeNested(
+            byte[] metadataBytes, Set<String> resourcePaths, Set<String> duplicateResourcePaths,
+            boolean resourceIndexIncomplete) {
         if (metadataBytes == null) return notPresent();
         if (metadataBytes.length > MAX_FILE_BYTES) {
             return unavailable(ResultStatus.OVERSIZED, metadataBytes.length,
@@ -100,8 +107,9 @@ public final class Forge1201CoremodAnalyzer {
                     List.of("Nested Coremod metadata is not valid UTF-8; no declarations were interpreted."));
         }
         Set<String> indexedPaths = resourcePaths == null ? Set.of() : resourcePaths;
+        Set<String> duplicatedPaths = duplicateResourcePaths == null ? Set.of() : duplicateResourcePaths;
         return parse(source, metadataBytes.length, sha256(metadataBytes), indexedPaths::contains,
-                resourceIndexIncomplete);
+                duplicatedPaths::contains, resourceIndexIncomplete);
     }
 
     public static Result analyze(Path jarPath) throws IOException {
@@ -143,7 +151,7 @@ public final class Forge1201CoremodAnalyzer {
             return parse(source, bytes.length, sha256(bytes), path -> {
                 ZipEntry script = zip.getEntry(path);
                 return script != null && !script.isDirectory();
-            }, false);
+            }, ignored -> false, false);
         }
     }
 
@@ -152,14 +160,16 @@ public final class Forge1201CoremodAnalyzer {
         return parse(source, sizeBytes, sha256, path -> {
             ZipEntry script = zip.getEntry(path);
             return script != null && !script.isDirectory();
-        }, false);
+        }, ignored -> false, false);
     }
 
     private static Result parse(
             String source, long sizeBytes, String sha256,
-            Predicate<String> resourceExists, boolean resourceIndexIncomplete) {
+            Predicate<String> resourceExists, Predicate<String> resourceDuplicated,
+            boolean resourceIndexIncomplete) {
         if (source == null) throw new IllegalArgumentException("Coremod metadata source is required.");
-        if (resourceExists == null) throw new IllegalArgumentException("Script resource lookup is required.");
+        if (resourceExists == null || resourceDuplicated == null)
+            throw new IllegalArgumentException("Script resource lookup is required.");
 
         List<CoremodDeclaration> declarations = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
@@ -219,7 +229,11 @@ public final class Forge1201CoremodAnalyzer {
                     continue;
                 }
 
-                if (!resourceExists.test(scriptPath)) {
+                if (resourceDuplicated.test(scriptPath)) {
+                    unindexed++;
+                    declarations.add(new CoremodDeclaration(name, scriptPath, ScriptStatus.RESOURCE_DUPLICATE_ENTRY,
+                            duplicateName, "Multiple nested ZIP entries use the declared script resource path."));
+                } else if (!resourceExists.test(scriptPath)) {
                     if (resourceIndexIncomplete) {
                         unindexed++;
                         declarations.add(new CoremodDeclaration(name, scriptPath, ScriptStatus.RESOURCE_NOT_INDEXED,
@@ -265,7 +279,7 @@ public final class Forge1201CoremodAnalyzer {
             warnings.add(missing + " declared coremod script resource(s) are missing from the archive.");
         }
         if (unindexed > 0) {
-            warnings.add(unindexed + " declared coremod script resource(s) could not be classified because nested resource indexing was incomplete.");
+            warnings.add(unindexed + " declared coremod script resource(s) could not be classified because a resource path was duplicated or nested resource indexing was incomplete.");
         }
 
         ResultStatus status = invalidJson ? ResultStatus.INVALID_JSON
