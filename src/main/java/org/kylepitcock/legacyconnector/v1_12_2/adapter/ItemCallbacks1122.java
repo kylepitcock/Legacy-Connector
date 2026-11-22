@@ -220,12 +220,39 @@ final class ItemCallbacks1122 {
 
     void update(net.minecraft.world.item.ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
         try {
-            legacy.onUpdate(Stacks1122.view(stack), world(level), EntityBridge1122.wrap(entity), slot, selected);
+            legacy.onUpdate(tickView(stack, entity, slot), world(level), EntityBridge1122.wrap(entity), slot, selected);
         } catch (RuntimeException | LinkageError e) {
             failure("onUpdate", e);
         } finally {
             Stacks1122.flushViews();
         }
+    }
+
+    /**
+     * The stack onUpdate gets. For a player's inventory slot it is the very object {@code player.inventory.mainInventory.get(slot)}
+     * answers, because 1.12 mods compare it with the stacks they iterate ({@code if (other == stack) continue;}, {@code stack.equals(other)}):
+     * with a separate view the item charged itself through the other view and the energy vanished.
+     */
+    private static ItemStack tickView(net.minecraft.world.item.ItemStack stack, Entity entity, int slot) {
+        if (entity instanceof Player player && slot >= 0 && slot < 41 && !stack.isEmpty()) {
+            var inv = player.getInventory();
+            if (inv.getItem(slot) == stack) {
+                ItemStack live = org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122.view(player, "inv:" + slot,
+                        new org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122.Slot() {
+                            @Override
+                            public net.minecraft.world.item.ItemStack get() {
+                                return inv.getItem(slot);
+                            }
+
+                            @Override
+                            public void set(net.minecraft.world.item.ItemStack s) {
+                                inv.setItem(slot, s);
+                            }
+                        });
+                if (!live.isEmpty()) return live;
+            }
+        }
+        return Stacks1122.view(stack);
     }
 
     net.minecraft.world.item.ItemStack useFinish(net.minecraft.world.item.ItemStack stack, Level level, LivingEntity entity) {

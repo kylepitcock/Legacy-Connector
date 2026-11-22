@@ -163,5 +163,28 @@ public final class PlacementSelfTest1122 {
         }
         LOG.info("1.12.2 item placement: {} of {} placed ({} only while sneaking: {}; {} only on soil or beside water: {}), failing: {}", placed, total, sneaking.size(), sneaking,
                 onSoil.size(), onSoil, failing);
+        subtypeRoundTrip();
+    }
+
+    /** A stack of each subtype item must give legacy code the same metadata back (CoFH's tiered items read their tier from it). */
+    private static void subtypeRoundTrip() {
+        int total = 0;
+        List<String> wrong = new ArrayList<>();
+        for (var item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Item i) || i.meta() == 0) continue;
+            total++;
+            try {
+                var legacy = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(new ItemStack(item));
+                if (legacy.getMetadata() != i.meta()) wrong.add(BuiltInRegistries.ITEM.getKey(item) + " (meta " + legacy.getMetadata() + " not " + i.meta() + ")");
+            } catch (RuntimeException | LinkageError ex) {
+                wrong.add(BuiltInRegistries.ITEM.getKey(item) + " (threw " + ex + ")");
+            }
+        }
+        var bucket = new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.BUCKET);
+        LOG.info("1.12.2 bucket fluid capability: empty bucket {}, water bucket {}",
+                bucket.hasCapability(legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null),
+                new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.WATER_BUCKET)
+                        .hasCapability(legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null));
+        LOG.info("1.12.2 item subtype metadata: {} of {} subtype items keep their metadata, wrong: {}", total - wrong.size(), total, wrong);
     }
 }

@@ -21,10 +21,47 @@ public class FluidUtil {
             IFluidHandlerItem handler = provider.getCapability(cap, null);
             if (handler != null) return handler;
         }
+        return bucketHandler(copy);
+    }
+
+    /**
+     * The fluid-handler-item capability of a stack whose item attaches none of its own (vanilla's buckets and the generated buckets of fluids): in
+     * 1.12 Forge gave them a FluidBucketWrapper, so {@code stack.hasCapability(FLUID_HANDLER_ITEM_CAPABILITY, null)} (what CoFH's FluidHelper asks
+     * before it fills a tank from a bucket) was true. Null when the item is no bucket.
+     */
+    public static legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider bucketCapabilities(ItemStack stack) {
+        if (stack == null || stack.isEmpty() || CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY == null) return null;
+        ItemStack copy = stack.copy();
+        copy.setCount(1);
+        if (bucketHandler(copy) == null) return null;
+        return new legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider() {
+            @Override
+            public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability,
+                    legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+                return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability,
+                    legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+                if (capability != CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) return null;
+                ItemStack one = stack.copy();
+                one.setCount(1);
+                return (T) bucketHandler(one);
+            }
+        };
+    }
+
+    /** Whether an item is a generated bucket of a fluid (asked for every stack that tests its capabilities). */
+    private static final java.util.Map<legacyconnector.v1_12_2.net.minecraft.item.Item, Boolean> GENERATED_BUCKET = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static IFluidHandlerItem bucketHandler(ItemStack copy) {
         if (copy.getItem() == Items.BUCKET || copy.getItem() == Items.WATER_BUCKET || copy.getItem() == Items.LAVA_BUCKET) return new VanillaBucket(copy);
         // a mod's own filled bucket of its fluid block (ItemBucket subclasses had no fluid capability in 1.12) and the generated buckets
         if (copy.getItem() instanceof UniversalBucket
-                || org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.fluidOfBucket(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(copy).getItem()) != null) {
+                || GENERATED_BUCKET.computeIfAbsent(copy.getItem(), i -> org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122
+                        .fluidOfBucket(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(copy).getItem()) != null)) {
             return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.FluidBucketWrapper(copy);
         }
         return null;

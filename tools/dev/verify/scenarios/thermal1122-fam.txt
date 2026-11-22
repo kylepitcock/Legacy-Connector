@@ -1,0 +1,47 @@
+# Thermal 1.12.2 family (issue 311): tier items keep their tier (name), an active Flux Capacitor in the main hand loses no energy into nothing, a bucket fills a Portable Tank (creative: the bucket stays, no water block is placed beside the tank)
+mods: 1.12.2 Forgelin-1.8
+mods: 1.12.2 CoFHCore-1.12.2
+mods: 1.12.2 RedstoneFlux-1.12
+mods: 1.12.2 CodeChickenLib-1.12.2
+mods: 1.12.2 ThermalFoundation-1.12.2
+mods: 1.12.2 ThermalExpansion-1.12.2
+mods: 1.12.2 ThermalInnovation-1.12.2
+mods: . CodeChickenLib-1.21.1
+cmd /fill -3 148 -3 3 148 3 minecraft:stone
+cmd /tp @s 0.5 150 0.5
+wait 40
+cmd /give @s thermalexpansion:capacitor_1
+cmd /give @s thermalexpansion:capacitor_3
+wait 10
+expect Hardened :: String(mc.player.getInventory().getItem(0).getHoverName().getString())
+expect Signalum :: String(mc.player.getInventory().getItem(1).getHoverName().getString())
+cmd /clear @s
+cmd /give @s thermalexpansion:capacitor_1[minecraft:custom_data={Energy:50000,Active:1b,Mode:0}]
+slot 0
+wait 100
+expect ^E50000$ :: (function(){var p=server.getPlayerList().getPlayers().get(0);var d=p.getMainHandItem().get(Java.type("net.minecraft.core.component.DataComponents").CUSTOM_DATA);return "E"+(d==null?"none":d.copyTag().getInt("Energy"));})()
+cmd /clear @s
+cmd /setblock 0 149 2 thermalexpansion:tank
+cmd /give @s minecraft:water_bucket
+slot 0
+cmd /tp @s 0.5 149 0.5
+wait 10
+look 0 29
+use
+wait 20
+expect ^empty$ :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var f=server.overworld().getFluidState(new BP(0,149,1));return f.isEmpty()?"empty":"water placed";})()
+shot thermal1122-fam
+cmd /clear @s
+cmd /give @s thermalexpansion:cell
+cmd /give @s thermalexpansion:strongbox
+cmd /give @s thermalexpansion:frame
+cmd /give @s thermalexpansion:frame_64
+cmd /give @s thermalexpansion:device
+cmd /give @s thermalexpansion:reservoir_2
+cmd /give @s thermalexpansion:capacitor_3
+cmd /give @s thermalinnovation:drill_2
+wait 20
+inv
+wait 20
+shot thermal1122-fam-items
+logabsent Unable to load model
