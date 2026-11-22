@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -34,11 +35,14 @@ import java.util.zip.ZipFile;
  * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.12";
-    public static final String ANALYZER_VERSION = "1.12.0";
+    public static final String SCHEMA_VERSION = "1.13";
+    public static final String ANALYZER_VERSION = "1.13.0";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
+    private static final int MAX_NESTED_MIXIN_ARCHIVES = 64;
+    private static final int MAX_NESTED_MIXIN_CONFIGS = 256;
+    private static final int MAX_NESTED_MIXIN_CLASSES = 20_000;
     private static final int MAX_TARGET_CLASSPATH_ENTRIES = 4096;
     private static final long MAX_TARGET_CLASSPATH_FILE_BYTES = 4L * 1024 * 1024;
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
@@ -73,6 +77,19 @@ public final class Forge1201PreflightAnalyzer {
     public record ArchiveEntry(String path, boolean directory, long sizeBytes, long compressedSizeBytes) {}
 
     public record MixinConfigCandidate(String path, String discoveredBy) {}
+
+    public record NestedMixinFinding(
+            String archivePath, String sha256, int depth,
+            Forge1201ArchiveGraph.ArchiveKind archiveKind,
+            List<MixinConfigCandidate> configCandidates,
+            boolean entryIndexIncomplete,
+            Forge1201MixinAnalyzer.Result mixinAnalysis,
+            List<String> warnings) {
+        public NestedMixinFinding {
+            configCandidates = List.copyOf(configCandidates);
+            warnings = List.copyOf(warnings);
+        }
+    }
 
     public record ApiTypeFinding(
             String sourceInternalName,
@@ -114,6 +131,7 @@ public final class Forge1201PreflightAnalyzer {
             Forge1201CoremodAnalyzer.Result coremodMetadata,
             List<MixinConfigCandidate> mixinConfigCandidates,
             Forge1201MixinAnalyzer.Result mixinAnalysis,
+            List<NestedMixinFinding> nestedMixinAnalyses,
             Forge1201MappingProfileValidator.Finding mappingProfile,
             String coreModClass,
             List<String> jarInJarPaths,
@@ -143,6 +161,7 @@ public final class Forge1201PreflightAnalyzer {
             resourceNamespaces = List.copyOf(resourceNamespaces);
             manifestAttributes = Collections.unmodifiableMap(new TreeMap<>(manifestAttributes));
             mixinConfigCandidates = List.copyOf(mixinConfigCandidates);
+            nestedMixinAnalyses = List.copyOf(nestedMixinAnalyses);
             jarInJarPaths = List.copyOf(jarInJarPaths);
             modEntrypoints = List.copyOf(modEntrypoints);
             packageReferences = Collections.unmodifiableMap(new TreeMap<>(packageReferences));
@@ -283,9 +302,113 @@ public final class Forge1201PreflightAnalyzer {
         Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
         Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
                 jarInfo == null ? null : usageInventory::scanNestedClass;
+        List<NestedMixinFinding> nestedMixinAnalyses = new ArrayList<>();
+        int[] nestedMixinConfigCount = {0};
+        int[] nestedMixinClassCount = {0};
+        Forge1201ArchiveGraph.NestedMixinArchiveConsumer nestedMixinConsumer = archive -> {
+            List<String> nestedWarnings = new ArrayList<>(archive.warnings());
+            NestedMixinDiscovery discovery = discoverNestedMixinConfigs(archive, nestedWarnings);
+            boolean incomplete = archive.entryIndexIncomplete() || discovery.incomplete();
+            List<Forge1201MixinAnalyzer.ConfigDeclaration> declarations = discovery.sources().entrySet().stream()
+                    .flatMap(entry -> entry.getValue().stream()
+                            .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
+                    .sorted(Comparator.comparing(Forge1201MixinAnalyzer.ConfigDeclaration::path)
+                            .thenComparing(Forge1201MixinAnalyzer.ConfigDeclaration::source))
+                    .toList();
+            if (declarations.isEmpty() && !incomplete) return;
+            if (nestedMixinAnalyses.size() >= MAX_NESTED_MIXIN_ARCHIVES) {
+                nestedWarnings.add("Nested Mixin archive analysis limit (" + MAX_NESTED_MIXIN_ARCHIVES
+                        + ") was reached; this archive was inventoried but not parsed.");
+                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                        archive.depth(), archive.archiveKind(), List.of(), true, null, nestedWarnings));
+                return;
+            }
+            int remainingConfigs = Math.max(0, MAX_NESTED_MIXIN_CONFIGS - nestedMixinConfigCount[0]);
+            if (declarations.size() > remainingConfigs) {
+                declarations = declarations.subList(0, remainingConfigs);
+                incomplete = true;
+                nestedWarnings.add("Aggregate nested Mixin config limit (" + MAX_NESTED_MIXIN_CONFIGS
+                        + ") was reached; additional config declarations were omitted.");
+            }
+            nestedMixinConfigCount[0] += declarations.size();
+
+            List<MixinConfigCandidate> nestedCandidates = discovery.sources().entrySet().stream()
+                    .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
+                            .sorted().map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
+                            .collect(java.util.stream.Collectors.joining("; "))))
+                    .toList();
+
+            Map<String, Forge1201MixinAnalyzer.MemoryEntry> memoryEntries = new TreeMap<>();
+            for (Forge1201ArchiveGraph.NestedMixinResource resource : archive.resources().values().stream()
+                    .sorted(Comparator.comparing(Forge1201ArchiveGraph.NestedMixinResource::path)).toList()) {
+                String diagnostic = resource.status() == Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED
+                        ? null : resource.diagnostic();
+                memoryEntries.put(resource.path(), new Forge1201MixinAnalyzer.MemoryEntry(
+                        resource.path(), resource.bytes(), resource.sizeBytes(), resource.compressedSizeBytes(),
+                        resource.occurrences(), diagnostic));
+            }
+
+            int remainingClasses = Math.max(0, MAX_NESTED_MIXIN_CLASSES - nestedMixinClassCount[0]);
+            int includedClasses = 0;
+            for (Map.Entry<String, byte[]> classEntry : archive.classEntries().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey()).toList()) {
+                if (includedClasses >= remainingClasses) {
+                    incomplete = true;
+                    nestedWarnings.add("Aggregate nested Mixin class-entry limit ("
+                            + MAX_NESTED_MIXIN_CLASSES + ") was reached; additional class entries were omitted.");
+                    break;
+                }
+                byte[] classBytes = classEntry.getValue();
+                memoryEntries.putIfAbsent(classEntry.getKey(), new Forge1201MixinAnalyzer.MemoryEntry(
+                        classEntry.getKey(), classBytes, classBytes.length, classBytes.length, 1, null));
+                includedClasses++;
+            }
+            nestedMixinClassCount[0] += includedClasses;
+
+            // A non-JSON path named explicitly by MixinConfigs is outside the captured resource set.
+            // Mark it as unavailable rather than falsely reporting it absent.
+            for (Forge1201MixinAnalyzer.ConfigDeclaration declaration : declarations) {
+                if (!declaration.path().toLowerCase(Locale.ROOT).endsWith(".json")
+                        && !memoryEntries.containsKey(declaration.path())) {
+                    incomplete = true;
+                    memoryEntries.put(declaration.path(), new Forge1201MixinAnalyzer.MemoryEntry(
+                            declaration.path(), null, -1, -1, 1,
+                            "Explicit MixinConfigs resource is not a captured JSON resource."));
+                }
+            }
+
+            if (declarations.isEmpty()) {
+                nestedWarnings.add("No nested Mixin config could be parsed within the current aggregate limits.");
+                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null, nestedWarnings));
+                return;
+            }
+
+            try (URLClassLoader targetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
+                Forge1201TargetApiVerifier.TargetIndex nestedTargetIndex = targetLoader == null ? null
+                        : Forge1201TargetApiVerifier.createIndex(internalName ->
+                                targetLoader.getResourceAsStream(internalName + ".class"));
+                Forge1201MixinAnalyzer.MemoryArchive memoryArchive =
+                        new Forge1201MixinAnalyzer.MemoryArchive(
+                                archive.archivePath(),
+                                new ArrayList<>(memoryEntries.values()),
+                                incomplete);
+                Forge1201MixinAnalyzer.Result nestedAnalysis = Forge1201MixinAnalyzer.analyze(
+                        memoryArchive, declarations, nestedTargetIndex, Map.of(),
+                        "not-supplied", requestedRefmapContextKey);
+                nestedWarnings.addAll(nestedAnalysis.warnings());
+                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                        archive.depth(), archive.archiveKind(), nestedCandidates, incomplete,
+                        nestedAnalysis, nestedWarnings.stream().distinct().sorted().toList()));
+            } catch (IOException | RuntimeException exception) {
+                nestedWarnings.add("Nested Mixin analysis failed: " + conciseMessage(exception));
+                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null, nestedWarnings));
+            }
+        };
         Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
                 jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
-                nestedClassConsumer);
+                nestedClassConsumer, nestedMixinConsumer);
         if (jarInfo != null) {
             forgeMetadata = new ForgeMetadata(
                     jarInfo.modLoader(), jarInfo.loaderVersion(),
@@ -413,8 +536,9 @@ public final class Forge1201PreflightAnalyzer {
                 "Slice 3 inventories bytecode in the outer source JAR and bounded, safe source-nested Forge/library archives. Installed provider JAR bytecode and embedded native NeoForge mod bytecode are intentionally excluded.",
                 "Source Minecraft SRG member names are normalized to 1.20.1 Mojang names where the generated mapping table has an entry; missing entries remain explicitly UNMAPPED. This source-name normalization is not a 1.21.1 target API or semantic compatibility verdict.",
                 "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
-                "Mixin configs discovered by the manifest and outer-archive resource heuristics are parsed in the current preflight schema. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
-                "Mixin analysis covers outer-archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed. Source-nested JAR config/class provenance remains a future increment.",
+                "Mixin configs discovered by the manifest and resource heuristics are parsed for the outer source JAR and bounded source-nested Forge/library archives. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
+                "Nested Mixin resources are captured in memory only, with limits of 256 resource entries, 1 MiB per resource, 2 MiB per nested archive, and 16 MiB aggregate JSON/manifest bytes. Nested Mixin class input is capped at 20,000 class entries and 32 MiB aggregate. Duplicate, oversized, truncated, and unavailable resources remain explicit findings; installed providers and embedded native NeoForge archives are excluded.",
+                "Mixin analysis covers outer and eligible source-nested archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed.",
                 "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
                 "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
                 "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
@@ -429,7 +553,8 @@ public final class Forge1201PreflightAnalyzer {
                 TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
                 metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
                 archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
-                accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, nestedMixinAnalyses,
+                mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
                 outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
                 fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
                 nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
@@ -631,6 +756,24 @@ public final class Forge1201PreflightAnalyzer {
                     .append(" source-targets=").append(finding.sourceTargetInternalNames())
                     .append(" — ").append(finding.evidence()).append('\n');
             finding.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nNested source-archive Mixin analysis (")
+                .append(result.nestedMixinAnalyses().size()).append(" archives):\n");
+        if (result.nestedMixinAnalyses().isEmpty()) out.append("  none discovered\n");
+        for (NestedMixinFinding nested : result.nestedMixinAnalyses()) {
+            out.append("  ").append(nested.archivePath()).append(" [depth=").append(nested.depth())
+                    .append(", kind=").append(nested.archiveKind())
+                    .append(", configs=").append(nested.configCandidates().size())
+                    .append(", entry-index-incomplete=").append(nested.entryIndexIncomplete())
+                    .append(", sha256=").append(nested.sha256()).append("]\n");
+            nested.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+            if (nested.mixinAnalysis() != null) {
+                Forge1201MixinAnalyzer.Result nestedResult = nested.mixinAnalysis();
+                out.append("    parsed configs=").append(nestedResult.configs().size())
+                        .append(", mixin classes=").append(nestedResult.mixinClasses().size())
+                        .append(", selectors=").append(nestedResult.targets().size())
+                        .append(", target-index=").append(nestedResult.targetIndexStatus()).append('\n');
+            }
         }
         out.append("\nMixin injectors (").append(mixins.injectors().size()).append("):\n");
         if (mixins.injectors().isEmpty()) out.append("  none discovered\n");
@@ -907,6 +1050,68 @@ public final class Forge1201PreflightAnalyzer {
         String name = lower.substring(lower.lastIndexOf('/') + 1);
         return lower.contains("mixin") || name.startsWith("mixins")
                 || name.endsWith(".mixins.json") || name.endsWith(".mixin.json");
+    }
+
+    private record NestedMixinDiscovery(
+            Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> sources,
+            boolean incomplete) {}
+
+    private static NestedMixinDiscovery discoverNestedMixinConfigs(
+            Forge1201ArchiveGraph.NestedMixinArchive archive, List<String> warnings) {
+        Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> sources = new TreeMap<>();
+        boolean incomplete = archive.entryIndexIncomplete();
+        Forge1201ArchiveGraph.NestedMixinResource manifestResource = archive.resources().values().stream()
+                .filter(resource -> resource.path().equalsIgnoreCase(JarFile.MANIFEST_NAME))
+                .findFirst().orElse(null);
+        if (manifestResource != null) {
+            if (manifestResource.status() == Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED
+                    && manifestResource.bytes() != null) {
+                try {
+                    Manifest nestedManifest = new Manifest(new ByteArrayInputStream(manifestResource.bytes()));
+                    String declarations = nestedManifest.getMainAttributes().getValue("MixinConfigs");
+                    for (String config : splitCommaList(declarations)) {
+                        sources.computeIfAbsent(config, ignored -> new TreeSet<>())
+                                .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST);
+                    }
+                } catch (IOException | RuntimeException exception) {
+                    warnings.add("Nested manifest could not be parsed for MixinConfigs: " + conciseMessage(exception));
+                    incomplete = true;
+                }
+            } else {
+                warnings.add("Nested manifest was duplicated or exceeded the resource capture budget; MixinConfigs could not be read.");
+                incomplete = true;
+            }
+        }
+        for (Forge1201ArchiveGraph.NestedMixinResource resource : archive.resources().values().stream()
+                .sorted(Comparator.comparing(Forge1201ArchiveGraph.NestedMixinResource::path)).toList()) {
+            if (!resource.path().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
+            byte[] bytes = resource.bytes();
+            if (bytes == null) {
+                if (isMixinPathCandidate(resource.path())) {
+                    sources.computeIfAbsent(resource.path(), ignored -> new TreeSet<>())
+                            .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
+                }
+                if (resource.status() != Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED) {
+                    warnings.add(resource.path() + ": nested JSON resource is unavailable for Mixin discovery ("
+                            + resource.status() + ").");
+                    incomplete = true;
+                }
+                continue;
+            }
+            if (isMixinPathCandidate(resource.path()) || looksLikeMixinConfig(bytes)) {
+                sources.computeIfAbsent(resource.path(), ignored -> new TreeSet<>())
+                        .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
+            }
+        }
+        return new NestedMixinDiscovery(sources, incomplete);
+    }
+
+    private static boolean looksLikeMixinConfig(byte[] bytes) {
+        if (bytes == null || bytes.length > MAX_MIXIN_JSON_BYTES) return false;
+        String json = new String(bytes, StandardCharsets.UTF_8);
+        return hasJsonKey(json, "mixins")
+                && (hasJsonKey(json, "package") || hasJsonKey(json, "plugin")
+                        || hasJsonKey(json, "client") || hasJsonKey(json, "server"));
     }
 
     private static boolean looksLikeMixinConfig(ZipFile zip, ZipEntry entry) {
