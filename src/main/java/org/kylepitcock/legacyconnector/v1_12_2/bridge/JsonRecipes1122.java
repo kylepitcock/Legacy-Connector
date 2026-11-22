@@ -117,6 +117,8 @@ public final class JsonRecipes1122 {
         return fallback == null ? null : fallback.getResourceAsStream("legacyconnector_legacy/assets/" + modId + "/recipes/" + file);
     }
 
+    private static final java.util.concurrent.atomic.AtomicInteger CONSTANT_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
+
     private static void loadConstants(java.nio.file.Path root, JsonContext ctx) {
         java.nio.file.Path file = root.resolve("_constants.json");
         if (!Files.exists(file)) return;
@@ -133,6 +135,7 @@ public final class JsonRecipes1122 {
                     ctx.mcc$addConstant(json.get("name").getAsString(), CraftingHelper.getIngredient(json.get("ingredient"), ctx));
                 } catch (RuntimeException ex) {
                     // an ingredient this game cannot read is left out
+                    if (CONSTANT_FAILURES.getAndIncrement() < 3) LOG.warn("Recipe constant {} of {} cannot be read: {}", json.get("name"), ctx.getModId(), ex.toString());
                 }
             }
         } catch (java.io.IOException | RuntimeException e) {

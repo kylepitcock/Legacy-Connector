@@ -97,6 +97,12 @@ public class CraftingHelper {
         }
         String type = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(obj, "type", "minecraft:item");
         if (type.equals("forge:ore_dict") && obj.has("ore")) return new OreIngredient(obj.get("ore").getAsString());
+        if (!type.equals("minecraft:item") && !type.equals("forge:ore_dict")) {
+            // a registered ingredient factory, or the mod's own from _factories.json
+            IIngredientFactory factory = ingredients.get(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(type));
+            if (factory == null && customFactory(context, type, "ingredients") instanceof IIngredientFactory f) factory = f;
+            if (factory != null) return factory.parse(context, obj);
+        }
         if (obj.has("item")) {
             ItemStack stack = getItemStackBasic(obj, context);
             int data = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getInt(obj, "data", 0);
