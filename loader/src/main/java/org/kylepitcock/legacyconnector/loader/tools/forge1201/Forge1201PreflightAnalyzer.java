@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -30,15 +31,19 @@ import java.util.zip.ZipFile;
 /**
  * Deterministic, read-only preflight inventory for one Forge 1.20.1 archive.
  *
- * <p>Slice 1 inventories the outer archive only. It records nested archive paths but does not recursively
- * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
+ * <p>Preflight inventories the source archive and bounded source-nested archives without extracting
+ * nested JARs. Mixin analysis is static metadata/bytecode evidence only; it does not prove injection
+ * success, gameplay compatibility, or runtime behavior.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.10";
-    public static final String ANALYZER_VERSION = "1.10.0";
+    public static final String SCHEMA_VERSION = "1.14";
+    public static final String ANALYZER_VERSION = "1.14.0";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
+    private static final int MAX_NESTED_MIXIN_ARCHIVES = 64;
+    private static final int MAX_NESTED_MIXIN_CONFIGS = 256;
+    private static final int MAX_NESTED_MIXIN_CLASSES = 20_000;
     private static final int MAX_TARGET_CLASSPATH_ENTRIES = 4096;
     private static final long MAX_TARGET_CLASSPATH_FILE_BYTES = 4L * 1024 * 1024;
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
@@ -74,6 +79,69 @@ public final class Forge1201PreflightAnalyzer {
 
     public record MixinConfigCandidate(String path, String discoveredBy) {}
 
+    public record NestedMixinFinding(
+            String archivePath, String sha256, int depth,
+            Forge1201ArchiveGraph.ArchiveKind archiveKind,
+            List<MixinConfigCandidate> configCandidates,
+            boolean entryIndexIncomplete,
+            Forge1201MixinAnalyzer.Result mixinAnalysis,
+            List<String> warnings) {
+        public NestedMixinFinding {
+            configCandidates = List.copyOf(configCandidates);
+            warnings = List.copyOf(warnings);
+        }
+    }
+
+    public enum NestedResourceStatus { ABSENT, CAPTURED, DUPLICATE_ENTRY, LIMIT_EXCEEDED, INDEX_INCOMPLETE }
+
+    public enum NestedLoaderDisposition {
+        FINAL_TRANSFORMATION_PROVIDER,
+        PARSER_REACHED_BUT_NO_MOD_INFO,
+        EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO,
+        REJECTED_MOD_WITHOUT_MOD_INFO,
+        PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER,
+        UNRECOGNIZED_MOD_METADATA,
+        UNSUPPORTED_FILE_TYPE,
+        INCOMPLETE_ARCHIVE,
+        UNKNOWN_LOADER_METADATA
+    }
+
+    public enum NeoForgeDefaultAtDisposition {
+        DEFAULT_PATH_FALLBACK_CANDIDATE,
+        EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED,
+        RESOURCE_ABSENT_OR_UNAVAILABLE,
+        NOT_A_FINAL_TRANSFORMATION_PROVIDER,
+        NOT_EVALUATED
+    }
+
+    /**
+     * Static nested transformation metadata evidence. Resource presence, loader parser reachability,
+     * final ModInfo-backed provider membership, and target consumer eligibility are independent.
+     */
+    public record NestedTransformationFinding(
+            String archivePath, String sha256, int depth,
+            Forge1201ArchiveGraph.ArchiveKind archiveKind,
+            List<ModMetadata> mods,
+            boolean forgeModsTomlPresent, boolean neoForgeModsTomlPresent,
+            String declaredFmlModType, String forgeEffectiveFileType, String neoForgeEffectiveFileType,
+            boolean forgeModInfoBacked, boolean neoForgeModInfoBacked,
+            boolean forgeIdentifyModsReachesTransformationMetadata,
+            boolean neoForgeIdentifyModsReachesTransformationMetadata,
+            NestedLoaderDisposition forgeDisposition, NestedLoaderDisposition neoForgeDisposition,
+            NestedResourceStatus coremodRegistryResourceStatus,
+            Forge1201CoremodAnalyzer.Result coremodMetadata,
+            NestedResourceStatus accessTransformerResourceStatus,
+            Forge1201AccessTransformerAnalyzer.Result accessTransformers,
+            boolean forgeCoremodConsumerEligible, boolean forgeAccessTransformerConsumerEligible,
+            boolean neoForgeCoremodConsumerEligible, boolean neoForgeAccessTransformerConsumerEligible,
+            NeoForgeDefaultAtDisposition neoForgeDefaultAtDisposition,
+            boolean resourcePathIndexIncomplete, String neoForgeCoremodCompatibility,
+            List<String> warnings) {
+        public NestedTransformationFinding {
+            mods = List.copyOf(mods);
+            warnings = List.copyOf(warnings);
+        }
+    }
     public record ApiTypeFinding(
             String sourceInternalName,
             Forge1201MappingCatalog.Kind classification,
@@ -110,8 +178,12 @@ public final class Forge1201PreflightAnalyzer {
             List<ArchiveEntry> archiveEntries,
             List<String> resourceNamespaces,
             Map<String, String> manifestAttributes,
+            Forge1201AccessTransformerAnalyzer.Result accessTransformers,
+            Forge1201CoremodAnalyzer.Result coremodMetadata,
             List<MixinConfigCandidate> mixinConfigCandidates,
             Forge1201MixinAnalyzer.Result mixinAnalysis,
+            List<NestedMixinFinding> nestedMixinAnalyses,
+            List<NestedTransformationFinding> nestedTransformationAnalyses,
             Forge1201MappingProfileValidator.Finding mappingProfile,
             String coreModClass,
             List<String> jarInJarPaths,
@@ -141,6 +213,8 @@ public final class Forge1201PreflightAnalyzer {
             resourceNamespaces = List.copyOf(resourceNamespaces);
             manifestAttributes = Collections.unmodifiableMap(new TreeMap<>(manifestAttributes));
             mixinConfigCandidates = List.copyOf(mixinConfigCandidates);
+            nestedMixinAnalyses = List.copyOf(nestedMixinAnalyses);
+            nestedTransformationAnalyses = List.copyOf(nestedTransformationAnalyses);
             jarInJarPaths = List.copyOf(jarInJarPaths);
             modEntrypoints = List.copyOf(modEntrypoints);
             packageReferences = Collections.unmodifiableMap(new TreeMap<>(packageReferences));
@@ -214,6 +288,9 @@ public final class Forge1201PreflightAnalyzer {
         }
 
         Map<String, String> manifest = readManifest(jar);
+        Forge1201AccessTransformerAnalyzer.Result accessTransformers =
+                Forge1201AccessTransformerAnalyzer.analyze(jar);
+        Forge1201CoremodAnalyzer.Result coremodMetadata = Forge1201CoremodAnalyzer.analyze(jar);
         List<String> manifestMixins = splitCommaList(valueIgnoreCase(manifest, "MixinConfigs"));
         String coreModClass = valueIgnoreCase(manifest, "FMLCorePlugin");
 
@@ -274,159 +351,278 @@ public final class Forge1201PreflightAnalyzer {
         AnalysisStatus analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_SKIPPED_METADATA_NOT_RECOGNIZED;
         ForgeMetadata forgeMetadata = null;
 
-        Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
-        Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
-        Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
-                jarInfo == null ? null : usageInventory::scanNestedClass;
-        Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
-                jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
-                nestedClassConsumer);
-        if (jarInfo != null) {
-            forgeMetadata = new ForgeMetadata(
-                    jarInfo.modLoader(), jarInfo.loaderVersion(),
-                    jarInfo.minecraftVersionRange(), jarInfo.forgeVersionRange());
-
-            for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
-                mods.add(new ModMetadata(mod.modId(), mod.version(), mod.displayName()));
-            }
-            mods.sort(Comparator.comparing(ModMetadata::modId).thenComparing(ModMetadata::version));
-
-            Map<String, Integer> idCounts = new TreeMap<>();
-            jarInfo.mods().forEach(mod -> idCounts.merge(mod.modId(), 1, Integer::sum));
-            idCounts.forEach((id, count) -> {
-                if (count > 1) duplicateModIds.add(id);
-            });
-
-            List<Forge1201DependencyResolver.Resolution> resolutions =
-                    Forge1201DependencyResolver.resolve(jarInfo, nativeIds);
-            int resolutionIndex = 0;
-            for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
-                for (Forge1201JarInfo.Dependency dependency : mod.dependencies()) {
-                    Forge1201DependencyResolver.Resolution resolution = resolutions.get(resolutionIndex++);
-                    dependencies.add(new DependencyFinding(
-                            mod.modId(), dependency.modId(), dependency.versionRange(), dependency.mandatory(),
-                            dependency.ordering(), dependency.side(), resolution.status()));
-                }
-            }
-            dependencies.sort(Comparator.comparing(DependencyFinding::declaringModId)
-                    .thenComparing(DependencyFinding::modId)
-                    .thenComparing(DependencyFinding::versionRange)
-                    .thenComparing(DependencyFinding::mandatory));
-
-            usageInventory.scanOuterJar(jar);
-            Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
-            classCount = usage.classCount();
-            outerClassScannedCount = usageInventory.outerClassScannedCount();
-            nestedClassCount = archiveGraph.classScanSummaries().stream()
-                    .mapToInt(Forge1201ArchiveGraph.ClassScanSummary::discoveredClassEntries).sum();
-            nestedClassScannedCount = usageInventory.nestedClassScannedCount();
-            normalizedMemberReferences.addAll(usageInventory.normalizedSrgMemberReferences());
-            classScanWarnings.addAll(usageInventory.classScanWarnings());
-            entrypoints.addAll(usage.modEntrypoints());
-            entrypoints.sort(String::compareTo);
-            usage.packageReferences().entrySet().stream().sorted(Map.Entry.comparingByKey())
-                    .forEach(entry -> packageReferences.put(entry.getKey(), entry.getValue()));
-
-            for (String sourceType : usage.referencedApiClasses().stream().distinct().sorted().toList()) {
-                Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(sourceType);
-                apiTypes.add(new ApiTypeFinding(decision.sourceInternalName(), decision.kind(),
-                        decision.targetInternalName(), decision.reason()));
-            }
-            methodReferences.addAll(usage.methodReferences().stream()
-                    .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
-                    .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
-                            .thenComparing(ApiMemberFinding::descriptor)).toList());
-            fieldReferences.addAll(usage.fieldReferences().stream()
-                    .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
-                    .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
-                            .thenComparing(ApiMemberFinding::descriptor)).toList());
-            methodCallSites.addAll(usage.methodCallSites().stream()
-                    .map(call -> new ApiMethodCallSite(call.callerClass(), call.callerMethod(),
-                            call.callerDescriptor(), call.targetOwner(), call.targetName(),
-                            call.targetDescriptor(), call.opcode(), call.count()))
-                    .sorted(Comparator.comparing(ApiMethodCallSite::callerClass)
-                            .thenComparing(ApiMethodCallSite::callerMethod)
-                            .thenComparing(ApiMethodCallSite::callerDescriptor)
-                            .thenComparing(ApiMethodCallSite::targetOwner)
-                            .thenComparing(ApiMethodCallSite::targetName)
-                            .thenComparing(ApiMethodCallSite::targetDescriptor)
-                            .thenComparingInt(ApiMethodCallSite::opcode)).toList());
-            fieldCallSites.addAll(usage.fieldCallSites().stream()
-                    .map(call -> new ApiFieldCallSite(call.callerClass(), call.callerMethod(),
-                            call.callerDescriptor(), call.targetOwner(), call.targetName(),
-                            call.targetDescriptor(), call.opcode(), call.count()))
-                    .sorted(Comparator.comparing(ApiFieldCallSite::callerClass)
-                            .thenComparing(ApiFieldCallSite::callerMethod)
-                            .thenComparing(ApiFieldCallSite::callerDescriptor)
-                            .thenComparing(ApiFieldCallSite::targetOwner)
-                            .thenComparing(ApiFieldCallSite::targetName)
-                            .thenComparing(ApiFieldCallSite::targetDescriptor)
-                            .thenComparingInt(ApiFieldCallSite::opcode)).toList());
-            dynamicReferences.addAll(usage.dynamicReferences());
-            analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR;
-        }
-
-        Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> mixinSources = new TreeMap<>();
-        manifestMixins.forEach(path -> mixinSources.computeIfAbsent(path, ignored -> new TreeSet<>())
-                .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST));
-        try (ZipFile zip = new ZipFile(jar.toFile())) {
-            var entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (entry.isDirectory() || !entry.getName().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
-                if (isMixinPathCandidate(entry.getName()) || looksLikeMixinConfig(zip, entry)) {
-                    mixinSources.computeIfAbsent(entry.getName(), ignored -> new TreeSet<>())
-                            .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
-                }
-            }
-        }
-        List<MixinConfigCandidate> mixinCandidates = mixinSources.entrySet().stream()
-                .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
-                        .map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
-                        .collect(java.util.stream.Collectors.joining("; "))))
-                .toList();
-        List<Forge1201MixinAnalyzer.ConfigDeclaration> mixinDeclarations = mixinSources.entrySet().stream()
-                .flatMap(entry -> entry.getValue().stream()
-                        .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
-                .toList();
-        Forge1201MixinAnalyzer.Result mixinAnalysis;
-        try (URLClassLoader targetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
-            Forge1201TargetApiVerifier.TargetIndex targetIndex = targetLoader == null ? null
+        try (URLClassLoader sharedTargetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
+            Forge1201TargetApiVerifier.TargetIndex sharedTargetIndex = sharedTargetLoader == null ? null
                     : Forge1201TargetApiVerifier.createIndex(internalName ->
-                            targetLoader.getResourceAsStream(internalName + ".class"));
+                            sharedTargetLoader.getResourceAsStream(internalName + ".class"));
+            Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
+            Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
+            Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
+                    jarInfo == null ? null : usageInventory::scanNestedClass;
+            List<NestedMixinFinding> nestedMixinAnalyses = new ArrayList<>();
+            List<NestedTransformationFinding> nestedTransformationAnalyses = new ArrayList<>();
+            int[] nestedMixinConfigCount = {0};
+            int[] nestedMixinClassCount = {0};
+            Forge1201ArchiveGraph.NestedMixinArchiveConsumer nestedMixinConsumer = archive -> {
+                NestedTransformationFinding transformationFinding = analyzeNestedTransformationArchive(archive);
+                nestedTransformationAnalyses.add(transformationFinding);
+                // Native NeoForge archives are inventoried for transformation resources, but their Mixin
+                // metadata is not passed through the legacy Forge 1.20.1 Mixin source analyzer.
+                if (archive.neoForgeModsTomlPresent()
+                        || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD
+                        || (archive.resourcePathIndexIncomplete() && !archive.forgeModsTomlPresent())) {
+                    return;
+                }
+                List<String> nestedWarnings = new ArrayList<>(archive.warnings());
+                NestedMixinDiscovery discovery = discoverNestedMixinConfigs(archive, nestedWarnings);
+                boolean incomplete = archive.entryIndexIncomplete() || discovery.incomplete();
+                List<Forge1201MixinAnalyzer.ConfigDeclaration> declarations = discovery.sources().entrySet().stream()
+                        .flatMap(entry -> entry.getValue().stream()
+                                .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
+                        .sorted(Comparator.comparing(Forge1201MixinAnalyzer.ConfigDeclaration::path)
+                                .thenComparing(Forge1201MixinAnalyzer.ConfigDeclaration::source))
+                        .toList();
+                if (declarations.isEmpty() && !incomplete) return;
+                if (nestedMixinAnalyses.size() >= MAX_NESTED_MIXIN_ARCHIVES) {
+                    nestedWarnings.add("Nested Mixin archive analysis limit (" + MAX_NESTED_MIXIN_ARCHIVES
+                            + ") was reached; this archive was inventoried but not parsed.");
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), List.of(), true, null,
+                            nestedWarnings.stream().distinct().sorted().toList()));
+                    return;
+                }
+                int remainingConfigs = Math.max(0, MAX_NESTED_MIXIN_CONFIGS - nestedMixinConfigCount[0]);
+                if (declarations.size() > remainingConfigs) {
+                    declarations = declarations.subList(0, remainingConfigs);
+                    incomplete = true;
+                    nestedWarnings.add("Aggregate nested Mixin config limit (" + MAX_NESTED_MIXIN_CONFIGS
+                            + ") was reached; additional config declarations were omitted.");
+                }
+                nestedMixinConfigCount[0] += declarations.size();
+
+                List<MixinConfigCandidate> nestedCandidates = discovery.sources().entrySet().stream()
+                        .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
+                                .sorted().map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
+                                .collect(java.util.stream.Collectors.joining("; "))))
+                        .toList();
+
+                Map<String, Forge1201MixinAnalyzer.MemoryEntry> memoryEntries = new TreeMap<>();
+                for (Forge1201ArchiveGraph.NestedMixinResource resource : archive.resources().values().stream()
+                        .sorted(Comparator.comparing(Forge1201ArchiveGraph.NestedMixinResource::path)).toList()) {
+                    String diagnostic = resource.status() == Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED
+                            ? null : resource.diagnostic();
+                    memoryEntries.put(resource.path(), new Forge1201MixinAnalyzer.MemoryEntry(
+                            resource.path(), resource.bytes(), resource.sizeBytes(), resource.compressedSizeBytes(),
+                            resource.occurrences(), diagnostic));
+                }
+
+                int remainingClasses = Math.max(0, MAX_NESTED_MIXIN_CLASSES - nestedMixinClassCount[0]);
+                for (Map.Entry<String, byte[]> classEntry : archive.classEntries().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey()).toList()) {
+                    byte[] classBytes = classEntry.getValue();
+                    memoryEntries.putIfAbsent(classEntry.getKey(), new Forge1201MixinAnalyzer.MemoryEntry(
+                            classEntry.getKey(), classBytes, classBytes.length, classBytes.length, 1, null));
+                }
+
+                // A non-JSON path named explicitly by MixinConfigs is outside the captured resource set.
+                // Mark it as unavailable rather than falsely reporting it absent.
+                for (Forge1201MixinAnalyzer.ConfigDeclaration declaration : declarations) {
+                    if (!declaration.path().toLowerCase(Locale.ROOT).endsWith(".json")
+                            && !memoryEntries.containsKey(declaration.path())) {
+                        incomplete = true;
+                        memoryEntries.put(declaration.path(), new Forge1201MixinAnalyzer.MemoryEntry(
+                                declaration.path(), null, -1, -1, 1,
+                                "Explicit MixinConfigs resource is not a captured JSON resource."));
+                    }
+                }
+
+                if (declarations.isEmpty()) {
+                    nestedWarnings.add("No nested Mixin config could be parsed within the current aggregate limits.");
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
+                            nestedWarnings.stream().distinct().sorted().toList()));
+                    return;
+                }
+
+                try {
+                    Forge1201TargetApiVerifier.TargetIndex nestedTargetIndex = sharedTargetIndex;
+                    Forge1201MixinAnalyzer.MemoryArchive memoryArchive =
+                            new Forge1201MixinAnalyzer.MemoryArchive(
+                                    archive.archivePath(),
+                                    new ArrayList<>(memoryEntries.values()),
+                                    incomplete, remainingClasses);
+                    Forge1201MixinAnalyzer.Result nestedAnalysis = Forge1201MixinAnalyzer.analyze(
+                            memoryArchive, declarations, nestedTargetIndex, Map.of(),
+                            "not-supplied", requestedRefmapContextKey);
+                    nestedWarnings.addAll(nestedAnalysis.warnings());
+                    nestedMixinClassCount[0] += nestedAnalysis.mixinClasses().size();
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), nestedCandidates, incomplete,
+                            nestedAnalysis, nestedWarnings.stream().distinct().sorted().toList()));
+                } catch (IOException | RuntimeException exception) {
+                    nestedWarnings.add("Nested Mixin analysis failed: " + conciseMessage(exception));
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
+                            nestedWarnings.stream().distinct().sorted().toList()));
+                }
+            };
+            Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
+                    jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
+                    nestedClassConsumer, nestedMixinConsumer);
+            Set<String> analyzedNestedPaths = new java.util.HashSet<>();
+            nestedTransformationAnalyses.forEach(finding -> analyzedNestedPaths.add(finding.archivePath()));
+            for (Forge1201ArchiveGraph.ArchiveFinding archiveFinding : archiveGraph.archives()) {
+                if (archiveFinding.origin() == Forge1201ArchiveGraph.ArchiveOrigin.INPUT_NESTED
+                        && analyzedNestedPaths.add(archiveFinding.archivePath())) {
+                    nestedTransformationAnalyses.add(unavailableNestedTransformationFinding(archiveFinding));
+                }
+            }
+            nestedTransformationAnalyses.sort(Comparator.comparing(NestedTransformationFinding::archivePath));
+            if (jarInfo != null) {
+                forgeMetadata = new ForgeMetadata(
+                        jarInfo.modLoader(), jarInfo.loaderVersion(),
+                        jarInfo.minecraftVersionRange(), jarInfo.forgeVersionRange());
+
+                for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
+                    mods.add(new ModMetadata(mod.modId(), mod.version(), mod.displayName()));
+                }
+                mods.sort(Comparator.comparing(ModMetadata::modId).thenComparing(ModMetadata::version));
+
+                Map<String, Integer> idCounts = new TreeMap<>();
+                jarInfo.mods().forEach(mod -> idCounts.merge(mod.modId(), 1, Integer::sum));
+                idCounts.forEach((id, count) -> {
+                    if (count > 1) duplicateModIds.add(id);
+                });
+
+                List<Forge1201DependencyResolver.Resolution> resolutions =
+                        Forge1201DependencyResolver.resolve(jarInfo, nativeIds);
+                int resolutionIndex = 0;
+                for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
+                    for (Forge1201JarInfo.Dependency dependency : mod.dependencies()) {
+                        Forge1201DependencyResolver.Resolution resolution = resolutions.get(resolutionIndex++);
+                        dependencies.add(new DependencyFinding(
+                                mod.modId(), dependency.modId(), dependency.versionRange(), dependency.mandatory(),
+                                dependency.ordering(), dependency.side(), resolution.status()));
+                    }
+                }
+                dependencies.sort(Comparator.comparing(DependencyFinding::declaringModId)
+                        .thenComparing(DependencyFinding::modId)
+                        .thenComparing(DependencyFinding::versionRange)
+                        .thenComparing(DependencyFinding::mandatory));
+
+                usageInventory.scanOuterJar(jar);
+                Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
+                classCount = usage.classCount();
+                outerClassScannedCount = usageInventory.outerClassScannedCount();
+                nestedClassCount = archiveGraph.classScanSummaries().stream()
+                        .mapToInt(Forge1201ArchiveGraph.ClassScanSummary::discoveredClassEntries).sum();
+                nestedClassScannedCount = usageInventory.nestedClassScannedCount();
+                normalizedMemberReferences.addAll(usageInventory.normalizedSrgMemberReferences());
+                classScanWarnings.addAll(usageInventory.classScanWarnings());
+                entrypoints.addAll(usage.modEntrypoints());
+                entrypoints.sort(String::compareTo);
+                usage.packageReferences().entrySet().stream().sorted(Map.Entry.comparingByKey())
+                        .forEach(entry -> packageReferences.put(entry.getKey(), entry.getValue()));
+
+                for (String sourceType : usage.referencedApiClasses().stream().distinct().sorted().toList()) {
+                    Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(sourceType);
+                    apiTypes.add(new ApiTypeFinding(decision.sourceInternalName(), decision.kind(),
+                            decision.targetInternalName(), decision.reason()));
+                }
+                methodReferences.addAll(usage.methodReferences().stream()
+                        .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
+                        .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
+                                .thenComparing(ApiMemberFinding::descriptor)).toList());
+                fieldReferences.addAll(usage.fieldReferences().stream()
+                        .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
+                        .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
+                                .thenComparing(ApiMemberFinding::descriptor)).toList());
+                methodCallSites.addAll(usage.methodCallSites().stream()
+                        .map(call -> new ApiMethodCallSite(call.callerClass(), call.callerMethod(),
+                                call.callerDescriptor(), call.targetOwner(), call.targetName(),
+                                call.targetDescriptor(), call.opcode(), call.count()))
+                        .sorted(Comparator.comparing(ApiMethodCallSite::callerClass)
+                                .thenComparing(ApiMethodCallSite::callerMethod)
+                                .thenComparing(ApiMethodCallSite::callerDescriptor)
+                                .thenComparing(ApiMethodCallSite::targetOwner)
+                                .thenComparing(ApiMethodCallSite::targetName)
+                                .thenComparing(ApiMethodCallSite::targetDescriptor)
+                                .thenComparingInt(ApiMethodCallSite::opcode)).toList());
+                fieldCallSites.addAll(usage.fieldCallSites().stream()
+                        .map(call -> new ApiFieldCallSite(call.callerClass(), call.callerMethod(),
+                                call.callerDescriptor(), call.targetOwner(), call.targetName(),
+                                call.targetDescriptor(), call.opcode(), call.count()))
+                        .sorted(Comparator.comparing(ApiFieldCallSite::callerClass)
+                                .thenComparing(ApiFieldCallSite::callerMethod)
+                                .thenComparing(ApiFieldCallSite::callerDescriptor)
+                                .thenComparing(ApiFieldCallSite::targetOwner)
+                                .thenComparing(ApiFieldCallSite::targetName)
+                                .thenComparing(ApiFieldCallSite::targetDescriptor)
+                                .thenComparingInt(ApiFieldCallSite::opcode)).toList());
+                dynamicReferences.addAll(usage.dynamicReferences());
+                analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR;
+            }
+
+            Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> mixinSources = new TreeMap<>();
+            manifestMixins.forEach(path -> mixinSources.computeIfAbsent(path, ignored -> new TreeSet<>())
+                    .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST));
+            try (ZipFile zip = new ZipFile(jar.toFile())) {
+                var entries = zip.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    if (entry.isDirectory() || !entry.getName().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
+                    if (isMixinPathCandidate(entry.getName()) || looksLikeMixinConfig(zip, entry)) {
+                        mixinSources.computeIfAbsent(entry.getName(), ignored -> new TreeSet<>())
+                                .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
+                    }
+                }
+            }
+            List<MixinConfigCandidate> mixinCandidates = mixinSources.entrySet().stream()
+                    .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
+                            .map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
+                            .collect(java.util.stream.Collectors.joining("; "))))
+                    .toList();
+            List<Forge1201MixinAnalyzer.ConfigDeclaration> mixinDeclarations = mixinSources.entrySet().stream()
+                    .flatMap(entry -> entry.getValue().stream()
+                            .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
+                    .toList();
             // No 1.20.1 -> 1.21.1 Minecraft class map is supplied yet; Mojang names are never assumed identical.
-            mixinAnalysis = Forge1201MixinAnalyzer.analyze(
-                    jar, mixinDeclarations, targetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
-        }
+            Forge1201MixinAnalyzer.Result mixinAnalysis = Forge1201MixinAnalyzer.analyze(
+                    jar, mixinDeclarations, sharedTargetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
 
-        Forge1201MappingProfileValidator.Finding mappingProfile =
-                Forge1201MappingProfileValidator.inspect(mappingProfilePath);
+            Forge1201MappingProfileValidator.Finding mappingProfile =
+                    Forge1201MappingProfileValidator.inspect(mappingProfilePath);
 
-        List<String> observedNativeIds = nativeIds.stream().sorted().toList();
-        List<String> limitations = List.of(
-                "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
-                "Slice 3 inventories bytecode in the outer source JAR and bounded, safe source-nested Forge/library archives. Installed provider JAR bytecode and embedded native NeoForge mod bytecode are intentionally excluded.",
-                "Source Minecraft SRG member names are normalized to 1.20.1 Mojang names where the generated mapping table has an entry; missing entries remain explicitly UNMAPPED. This source-name normalization is not a 1.21.1 target API or semantic compatibility verdict.",
-                "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
-                "Mixin configs discovered by the manifest and outer-archive resource heuristics are parsed in the current preflight schema. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
-                "Mixin analysis covers outer-archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed. Source-nested JAR config/class provenance remains a future increment.",
-                "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
-                "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
-                "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
-                "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
-                "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics."
-        );
+            List<String> observedNativeIds = nativeIds.stream().sorted().toList();
+            List<String> limitations = List.of(
+                    "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
+                    "Slice 3 inventories bytecode in the outer source JAR and bounded, safe source-nested Forge/library archives. Installed provider JAR bytecode and embedded native NeoForge mod bytecode are intentionally excluded.",
+                    "Source Minecraft SRG member names are normalized to 1.20.1 Mojang names where the generated mapping table has an entry; missing entries remain explicitly UNMAPPED. This source-name normalization is not a 1.21.1 target API or semantic compatibility verdict.",
+                    "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
+                    "Mixin configs discovered by the manifest and resource heuristics are parsed for the outer source JAR and bounded source-nested Forge/library archives. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
+                    "Nested metadata resource bytes (JSON, manifests, and the default Access Transformer resource) are captured in memory only, with limits of 256 resource entries, 1 MiB per resource, 2 MiB per nested archive, and 16 MiB aggregate. A separate safe resource-path index is capped at 20,000 paths per nested archive and 250,000 paths across the analysis. Mixin parsing is attempted for at most 64 nested source archives; additional eligible archives retain explicit analysis-limit findings. The number of declared Mixin-class analyses is capped at 20,000, with nested class bytes supplied to the analyzer separately capped at 32 MiB aggregate. Duplicate, oversized, truncated, and unavailable resources remain explicit findings; installed providers and any nested archive declaring META-INF/neoforge.mods.toml are excluded from legacy Mixin analysis.",
+                    "Mixin analysis covers outer and eligible source-nested archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed.",
+                    "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
+                    "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
+                    "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
+                    "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
+                    "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
+                    "Access Transformer inventory covers the outer source JAR and bounded source-nested archives. It preserves original line locations, reports class-owner/member/descriptor namespace evidence, and never applies directives, resolves selectors, or remaps them. Nested resource presence is distinct from the pinned Forge/NeoForge loader consumer eligibility reported per archive; that structural eligibility models the normal ModInfo-backed sort path and is conditional on successful loader validation/sorting, not a guarantee against unrelated duplicate-ID, dependency, cycle, or global loading errors.",
+                    "Coremod metadata inventory covers META-INF/coremods.json in the outer source JAR and bounded source-nested archives. Script paths are checked against a bounded in-memory archive path index; duplicate paths and incomplete indexes are reported as ambiguous/unknown rather than falsely present or missing. The NeoForge accessTransformers TOML list is not expanded into individual file paths in this slice; when such a list is declared, selection is reported as unresolved rather than assuming the default cfg is consumed. No JavaScript is evaluated, no transformer is created, and Forge 47.3.0 script/API/transformer compatibility with the NeoForged engine remains unverified."
+            );
 
-        return new PreflightResult(
-                SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
-                TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
-                metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
-                archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
-                mixinCandidates, mixinAnalysis, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
-                outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
-                fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
-                nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
+            return new PreflightResult(
+                    SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
+                    TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
+                    metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
+                    archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
+                    accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, nestedMixinAnalyses,
+                    nestedTransformationAnalyses, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                    outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
+                    fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
+                    nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
                 observedNativeIds, limitations, archiveGraph);
+        }
     }
 
     private static void appendSliceBoundaryText(
@@ -485,8 +681,49 @@ public final class Forge1201PreflightAnalyzer {
                 .append(result.resourceNamespaces().isEmpty() ? "none" : String.join(", ", result.resourceNamespaces()))
                 .append('\n')
                 .append("Manifest attributes: ").append(result.manifestAttributes()).append('\n')
-                .append("Coremod class: ").append(result.coreModClass() == null ? "none" : result.coreModClass()).append('\n')
-                .append("Mixin config candidates: ").append(result.mixinConfigCandidates().size()).append('\n');
+                .append("Coremod class: ").append(result.coreModClass() == null ? "none" : result.coreModClass()).append('\n');
+        Forge1201CoremodAnalyzer.Result coremods = result.coremodMetadata();
+        out.append("Coremod metadata: ").append(coremods.status())
+                .append(" declarations=").append(coremods.declarations().size())
+                .append(" valid=").append(coremods.validDeclarationCount())
+                .append(" malformed=").append(coremods.malformedDeclarationCount())
+                .append(" duplicate-names=").append(coremods.duplicateNameCount())
+                .append(" missing-scripts=").append(coremods.missingScriptCount())
+                .append(" sha256=").append(coremods.sha256() == null ? "n/a" : coremods.sha256()).append('\n');
+        for (Forge1201CoremodAnalyzer.CoremodDeclaration declaration : coremods.declarations()) {
+            out.append("  coremod ").append(declaration.name()).append(" -> ")
+                    .append(declaration.scriptPath()).append(" [").append(declaration.scriptStatus()).append(']');
+            if (declaration.duplicateName()) out.append(" duplicate-name");
+            if (declaration.diagnostic() != null) out.append(" — ").append(declaration.diagnostic());
+            out.append('\n');
+        }
+        coremods.warnings().forEach(warning -> out.append("  Coremod warning: ").append(warning).append('\n'));
+        out.append("Mixin config candidates: ").append(result.mixinConfigCandidates().size()).append('\n');
+        Forge1201AccessTransformerAnalyzer.Result accessTransformers = result.accessTransformers();
+        out.append("Access Transformer: ").append(accessTransformers.status())
+                .append(" path=").append(accessTransformers.resourcePath())
+                .append(" bytes=").append(accessTransformers.sizeBytes())
+                .append(" valid=").append(accessTransformers.validDirectiveCount())
+                .append(" wildcard=").append(accessTransformers.wildcardDirectiveCount())
+                .append(" malformed=").append(accessTransformers.malformedLineCount())
+                .append(" duplicate-targets=").append(accessTransformers.duplicateTargetCount())
+                .append(" conflicting-targets=").append(accessTransformers.conflictingTargetCount())
+                .append(" sha256=").append(accessTransformers.sha256() == null ? "n/a" : accessTransformers.sha256())
+                .append('\n');
+        for (Forge1201AccessTransformerAnalyzer.Directive directive : accessTransformers.directives()) {
+            out.append("  AT line ").append(directive.lineNumber()).append(" [")
+                    .append(directive.status()).append("] ").append(directive.rawLine());
+            if (directive.ownerNamespace() != null) {
+                out.append(" owner-namespace=").append(directive.ownerNamespace())
+                        .append(" member-namespace=").append(directive.memberNamespace())
+                        .append(" descriptor-namespace=").append(directive.descriptorNamespace());
+            }
+            if (directive.diagnostic() != null) out.append(" — ").append(directive.diagnostic());
+            out.append('\n');
+        }
+        accessTransformers.warnings().forEach(warning ->
+                out.append("  AT warning: ").append(warning).append('\n'));
+
         for (MixinConfigCandidate candidate : result.mixinConfigCandidates()) {
             out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\n");
         }
@@ -583,6 +820,83 @@ public final class Forge1201PreflightAnalyzer {
                     .append(" source-targets=").append(finding.sourceTargetInternalNames())
                     .append(" — ").append(finding.evidence()).append('\n');
             finding.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nNested source-archive Mixin analysis (")
+                .append(result.nestedMixinAnalyses().size()).append(" archives):\n");
+        if (result.nestedMixinAnalyses().isEmpty()) out.append("  none discovered\n");
+        for (NestedMixinFinding nested : result.nestedMixinAnalyses()) {
+            out.append("  ").append(nested.archivePath()).append(" [depth=").append(nested.depth())
+                    .append(", kind=").append(nested.archiveKind())
+                    .append(", configs=").append(nested.configCandidates().size())
+                    .append(", entry-index-incomplete=").append(nested.entryIndexIncomplete())
+                    .append(", sha256=").append(nested.sha256()).append("]\n");
+            nested.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+            if (nested.mixinAnalysis() != null) {
+                Forge1201MixinAnalyzer.Result nestedResult = nested.mixinAnalysis();
+                out.append("    parsed configs=").append(nestedResult.configs().size())
+                        .append(", mixin classes=").append(nestedResult.mixinClasses().size())
+                        .append(", selectors=").append(nestedResult.targets().size())
+                        .append(", target-index=").append(nestedResult.targetIndexStatus()).append('\n');
+                for (Forge1201MixinAnalyzer.ConfigFinding config : nestedResult.configs()) {
+                    out.append("      config ").append(config.configPath()).append(" [").append(config.status())
+                            .append(", discovered by ").append(config.discoverySources())
+                            .append(", refmap=").append(config.refmapSelection())
+                            .append(", candidate=").append(config.refmapCandidatePath())
+                            .append(", wrapper=").append(config.refmapWrapperClass()).append("]\n");
+                    config.warnings().forEach(warning ->
+                            out.append("        warning: ").append(warning).append('\n'));
+                }
+            }
+        }
+        out.append("\nNested Coremod / Access Transformer inventory (")
+                .append(result.nestedTransformationAnalyses().size()).append(" archives):\n");
+        if (result.nestedTransformationAnalyses().isEmpty()) out.append("  none discovered\n");
+        for (NestedTransformationFinding nested : result.nestedTransformationAnalyses()) {
+            out.append("  ").append(nested.archivePath()).append(" [depth=").append(nested.depth())
+                    .append(", kind=").append(nested.archiveKind())
+                    .append(", source-type=").append(nested.forgeEffectiveFileType())
+                    .append(", target-type=").append(nested.neoForgeEffectiveFileType())
+                    .append(", source-disposition=").append(nested.forgeDisposition())
+                    .append(", target-disposition=").append(nested.neoForgeDisposition())
+                    .append(", sha256=").append(nested.sha256()).append("]\n");
+            out.append("    Forge metadata: mods.toml=").append(nested.forgeModsTomlPresent())
+                    .append(", NeoForge metadata=").append(nested.neoForgeModsTomlPresent())
+                    .append(", manifest FMLModType=").append(nested.declaredFmlModType() == null
+                            ? "default/absent" : nested.declaredFmlModType())
+                    .append(", ModInfo-backed source=").append(nested.forgeModInfoBacked())
+                    .append(", target=").append(nested.neoForgeModInfoBacked()).append('\n');
+            out.append("    Transformation metadata parser reached: Forge=")
+                    .append(nested.forgeIdentifyModsReachesTransformationMetadata())
+                    .append(", NeoForge=").append(nested.neoForgeIdentifyModsReachesTransformationMetadata())
+                    .append("; final consumer eligibility: Forge Coremod=")
+                    .append(nested.forgeCoremodConsumerEligible())
+                    .append(", Forge AT=").append(nested.forgeAccessTransformerConsumerEligible())
+                    .append(", NeoForge Coremod=").append(nested.neoForgeCoremodConsumerEligible())
+                    .append(", NeoForge default AT=").append(nested.neoForgeAccessTransformerConsumerEligible())
+                    .append(" [").append(nested.neoForgeDefaultAtDisposition()).append("]")
+                    .append(" (structural eligibility assumes successful loader validation/sorting)\n");
+            out.append("    META-INF/coremods.json: ").append(nested.coremodRegistryResourceStatus());
+            if (nested.coremodMetadata() != null) {
+                out.append(" [").append(nested.coremodMetadata().status())
+                        .append(", declarations=").append(nested.coremodMetadata().declarations().size())
+                        .append(", valid=").append(nested.coremodMetadata().validDeclarationCount())
+                        .append(", missing=").append(nested.coremodMetadata().missingScriptCount()).append(']');
+                for (Forge1201CoremodAnalyzer.CoremodDeclaration declaration : nested.coremodMetadata().declarations()) {
+                    out.append("\n      coremod ").append(declaration.name()).append(" -> ")
+                            .append(declaration.scriptPath()).append(" [").append(declaration.scriptStatus()).append(']');
+                }
+            }
+            out.append('\n').append("    META-INF/accesstransformer.cfg: ")
+                    .append(nested.accessTransformerResourceStatus());
+            if (nested.accessTransformers() != null) {
+                out.append(" [").append(nested.accessTransformers().status())
+                        .append(", valid=").append(nested.accessTransformers().validDirectiveCount())
+                        .append(", wildcard=").append(nested.accessTransformers().wildcardDirectiveCount())
+                        .append(", malformed=").append(nested.accessTransformers().malformedLineCount()).append(']');
+            }
+            out.append("\n    Coremod target compatibility: ").append(nested.neoForgeCoremodCompatibility())
+                    .append("; resource-index-incomplete=").append(nested.resourcePathIndexIncomplete()).append('\n');
+            nested.warnings().forEach(warning -> out.append("      warning: ").append(warning).append('\n'));
         }
         out.append("\nMixin injectors (").append(mixins.injectors().size()).append("):\n");
         if (mixins.injectors().isEmpty()) out.append("  none discovered\n");
@@ -854,11 +1168,297 @@ public final class Forge1201PreflightAnalyzer {
                         && lower.endsWith(".jar"));
     }
 
+    private static NestedTransformationFinding analyzeNestedTransformationArchive(
+            Forge1201ArchiveGraph.NestedMixinArchive archive) {
+        List<String> warnings = new ArrayList<>(archive.warnings());
+        NestedResourceStatus manifestStatus = nestedResourceStatus(archive, JarFile.MANIFEST_NAME);
+        String declaredType = null;
+        boolean manifestTypeIncomplete = false;
+        if (manifestStatus == NestedResourceStatus.CAPTURED) {
+            Forge1201ArchiveGraph.NestedMixinResource manifestResource = archive.resources().get(JarFile.MANIFEST_NAME);
+            if (manifestResource != null && manifestResource.bytes() != null) {
+                try {
+                    Manifest nestedManifest = new Manifest(new ByteArrayInputStream(manifestResource.bytes()));
+                    declaredType = nestedManifest.getMainAttributes().getValue("FMLModType");
+                    // Match the loader's case-sensitive Enum.valueOf semantics; do not normalize invalid manifest values.
+                } catch (IOException | RuntimeException exception) {
+                    manifestTypeIncomplete = true;
+                    warnings.add("Nested manifest could not be parsed for FMLModType: " + conciseMessage(exception));
+                }
+            } else {
+                manifestTypeIncomplete = true;
+                warnings.add("Nested manifest was marked captured but its bytes were unavailable.");
+            }
+        } else if (manifestStatus == NestedResourceStatus.DUPLICATE_ENTRY
+                || manifestStatus == NestedResourceStatus.LIMIT_EXCEEDED
+                || manifestStatus == NestedResourceStatus.INDEX_INCOMPLETE) {
+            manifestTypeIncomplete = true;
+            warnings.add("Nested manifest type could not be established because the manifest was duplicated, unavailable, or outside the resource-path index.");
+        }
+
+        boolean forgeToml = archive.forgeModsTomlPresent();
+        boolean neoForgeToml = archive.neoForgeModsTomlPresent();
+        boolean forgeTomlIncomplete = archive.duplicateResourcePaths().contains("META-INF/mods.toml")
+                || (forgeToml && archive.forgeModsToml() == null)
+                || (!forgeToml && archive.resourcePathIndexIncomplete());
+        boolean targetTomlIncomplete = archive.duplicateResourcePaths().contains("META-INF/mods.toml")
+                || archive.duplicateResourcePaths().contains("META-INF/neoforge.mods.toml")
+                || ((forgeToml || neoForgeToml)
+                    && (neoForgeToml ? archive.neoForgeModsToml() : archive.forgeModsToml()) == null)
+                || (!(forgeToml || neoForgeToml) && archive.resourcePathIndexIncomplete());
+        boolean forgeMetadataIncomplete = manifestTypeIncomplete || forgeTomlIncomplete;
+        boolean targetMetadataIncomplete = manifestTypeIncomplete || targetTomlIncomplete;
+        if (forgeTomlIncomplete) {
+            warnings.add("Forge mods.toml presence or contents are incomplete; source ModInfo and final-list eligibility cannot be established.");
+        }
+        if (targetTomlIncomplete) {
+            warnings.add("Target TOML presence or contents are incomplete; NeoForge ModInfo and final-list eligibility cannot be established.");
+        }
+        String forgeType = forgeToml
+                ? (declaredType == null ? "MOD" : declaredType)
+                : (declaredType == null ? "GAMELIBRARY" : declaredType);
+        String targetType = declaredType == null ? "MOD" : declaredType;
+        boolean forgeModInfo = forgeToml
+                && archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.FORGE_1201_MOD
+                && !archive.mods().isEmpty();
+        boolean targetModInfo = (forgeToml || neoForgeToml)
+                && (archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.FORGE_1201_MOD
+                    || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD)
+                && !archive.mods().isEmpty();
+
+        boolean archiveInspectionIncomplete = isNestedArchiveInspectionIncomplete(archive.archiveKind());
+        NestedLoaderDisposition forgeDisposition = forgeMetadataIncomplete
+                ? NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
+                : classifyForgeNestedDisposition(forgeType, forgeToml, forgeModInfo, archiveInspectionIncomplete);
+        NestedLoaderDisposition targetDisposition = targetMetadataIncomplete
+                ? NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
+                : classifyNeoForgeNestedDisposition(targetType, forgeToml || neoForgeToml, targetModInfo, archiveInspectionIncomplete);
+        boolean forgeParserReached = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER
+                || forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO;
+        boolean targetParserReached = targetDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+
+        NestedResourceStatus coremodStatus = nestedResourceStatus(archive, Forge1201CoremodAnalyzer.RESOURCE_PATH);
+        Forge1201CoremodAnalyzer.Result coremodResult = null;
+        if (coremodStatus == NestedResourceStatus.CAPTURED) {
+            Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(Forge1201CoremodAnalyzer.RESOURCE_PATH);
+            if (resource != null) {
+                coremodResult = Forge1201CoremodAnalyzer.analyzeNested(
+                        resource.bytes(), archive.resourcePaths(), archive.duplicateResourcePaths(),
+                        archive.resourcePathIndexIncomplete() || isNestedArchiveInspectionIncomplete(archive.archiveKind()));
+            }
+        } else if (coremodStatus == NestedResourceStatus.ABSENT) {
+            coremodResult = Forge1201CoremodAnalyzer.notPresent();
+        }
+
+        NestedResourceStatus atStatus = nestedResourceStatus(archive, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH);
+        Forge1201AccessTransformerAnalyzer.Result atResult = null;
+        if (atStatus == NestedResourceStatus.CAPTURED) {
+            Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(Forge1201AccessTransformerAnalyzer.RESOURCE_PATH);
+            if (resource != null) atResult = Forge1201AccessTransformerAnalyzer.analyzeNested(resource.bytes());
+        } else if (atStatus == NestedResourceStatus.ABSENT) {
+            atResult = Forge1201AccessTransformerAnalyzer.notPresent();
+        }
+
+        boolean forgeFinalProvider = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        boolean targetFinalProvider = targetDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        boolean forgeCoremodConsumer = forgeFinalProvider && coremodStatus == NestedResourceStatus.CAPTURED;
+        boolean forgeAtConsumer = forgeFinalProvider && atStatus == NestedResourceStatus.CAPTURED;
+        boolean targetCoremodConsumer = targetFinalProvider && coremodStatus == NestedResourceStatus.CAPTURED;
+        boolean explicitTargetAtList = hasExplicitNeoForgeAccessTransformerList(
+                neoForgeToml ? archive.neoForgeModsToml() : archive.forgeModsToml());
+        NeoForgeDefaultAtDisposition targetAtDisposition;
+        if (targetDisposition == NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
+                || targetDisposition == NestedLoaderDisposition.INCOMPLETE_ARCHIVE
+                || targetDisposition == NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_EVALUATED;
+        } else if (!targetFinalProvider) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_A_FINAL_TRANSFORMATION_PROVIDER;
+        } else if (explicitTargetAtList) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED;
+        } else if (atStatus != NestedResourceStatus.CAPTURED) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.RESOURCE_ABSENT_OR_UNAVAILABLE;
+        } else {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE;
+        }
+        boolean targetAtConsumer = targetAtDisposition == NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE;
+        String coremodCompatibility = targetCoremodConsumer
+                ? "FML 4.0.45 recognizes META-INF/coremods.json; Forge 47.3.0 script/API/transformer compatibility remains UNVERIFIED. No script was evaluated."
+                : "NOT_EVALUATED: target final-provider/descriptor intake conditions were not both established.";
+        if (forgeMetadataIncomplete || targetMetadataIncomplete || archiveInspectionIncomplete) {
+            warnings.add("Loader intake disposition is conservative because nested archive or manifest inspection was incomplete.");
+        }
+        if (archive.resourcePathIndexIncomplete()) {
+            warnings.add("One or more referenced nested resources may be UNKNOWN because the bounded resource-path index was incomplete.");
+        }
+        if (explicitTargetAtList) {
+            warnings.add("A NeoForge accessTransformers TOML list is declared; its individual file selectors are not expanded in this inventory. The default cfg path is not assumed to be selected.");
+        }
+        if (forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO) {
+            warnings.add("Forge 47.3.0 may transiently parse this manifest-only child, but its empty DefaultModFileInfo has no ModInfo and is excluded from the final Coremod/AT consumer list.");
+        }
+        if (forgeDisposition == NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA) {
+            warnings.add("The static Forge metadata reader did not establish a ModInfo. Loader parser reachability and final consumer membership remain UNKNOWN, not a proven rejection.");
+        }
+        if (targetDisposition == NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA) {
+            warnings.add("The static target metadata reader did not establish a ModInfo. NeoForge parser reachability and final consumer membership remain UNKNOWN, not a proven rejection.");
+        }
+        if (targetDisposition == NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO) {
+            warnings.add("NeoForge accepts this non-MOD child as a game library but returns before Coremod/AT parsing; GAME module inclusion is not transformation-provider eligibility.");
+        }
+        return new NestedTransformationFinding(
+                archive.archivePath(), archive.sha256(), archive.depth(), archive.archiveKind(),
+                archive.mods(), forgeToml, neoForgeToml, declaredType, forgeType, targetType,
+                forgeModInfo, targetModInfo, forgeParserReached, targetParserReached,
+                forgeDisposition, targetDisposition, coremodStatus, coremodResult, atStatus, atResult,
+                forgeCoremodConsumer, forgeAtConsumer, targetCoremodConsumer, targetAtConsumer,
+                targetAtDisposition, archive.resourcePathIndexIncomplete(), coremodCompatibility,
+                warnings.stream().distinct().sorted().toList());
+    }
+
+    private static NestedLoaderDisposition classifyForgeNestedDisposition(
+            String type, boolean forgeToml, boolean hasModInfo, boolean incomplete) {
+        if (incomplete) return NestedLoaderDisposition.INCOMPLETE_ARCHIVE;
+        if ("LIBRARY".equals(type) || "LANGPROVIDER".equals(type))
+            return NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER;
+        if (!"MOD".equals(type) && !"GAMELIBRARY".equals(type))
+            return NestedLoaderDisposition.UNSUPPORTED_FILE_TYPE;
+        if (!forgeToml) return NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO;
+        if (hasModInfo) return NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        return NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA;
+    }
+
+    private static NestedLoaderDisposition classifyNeoForgeNestedDisposition(
+            String type, boolean hasModMetadata, boolean hasModInfo, boolean incomplete) {
+        if (incomplete) return NestedLoaderDisposition.INCOMPLETE_ARCHIVE;
+        if ("LIBRARY".equals(type))
+            return NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER;
+        if (!"MOD".equals(type) && !"GAMELIBRARY".equals(type))
+            return NestedLoaderDisposition.UNSUPPORTED_FILE_TYPE;
+        if (!hasModMetadata) {
+            return "GAMELIBRARY".equals(type)
+                    ? NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO
+                    : NestedLoaderDisposition.REJECTED_MOD_WITHOUT_MOD_INFO;
+        }
+        if (hasModInfo) return NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        return NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA;
+    }
+
+    private static NestedResourceStatus nestedResourceStatus(
+            Forge1201ArchiveGraph.NestedMixinArchive archive, String path) {
+        Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(path);
+        if (resource != null) {
+            return switch (resource.status()) {
+                case CAPTURED -> NestedResourceStatus.CAPTURED;
+                case DUPLICATE_ENTRY -> NestedResourceStatus.DUPLICATE_ENTRY;
+                case LIMIT_EXCEEDED -> NestedResourceStatus.LIMIT_EXCEEDED;
+            };
+        }
+        if (archive.duplicateResourcePaths().contains(path)) return NestedResourceStatus.DUPLICATE_ENTRY;
+        if (archive.resourcePaths().contains(path)) return NestedResourceStatus.LIMIT_EXCEEDED;
+        if (archive.resourcePathIndexIncomplete() || isNestedArchiveInspectionIncomplete(archive.archiveKind()))
+            return NestedResourceStatus.INDEX_INCOMPLETE;
+        return NestedResourceStatus.ABSENT;
+    }
+
+    private static boolean hasExplicitNeoForgeAccessTransformerList(String toml) {
+        if (toml == null || toml.isBlank()) return false;
+        return java.util.regex.Pattern.compile("(?im)^\\s*\\[\\[\\s*accessTransformers\\s*\\]\\]").matcher(toml).find();
+    }
+
+    private static boolean isNestedArchiveInspectionIncomplete(Forge1201ArchiveGraph.ArchiveKind kind) {
+        return kind == Forge1201ArchiveGraph.ArchiveKind.CORRUPT_ARCHIVE
+                || kind == Forge1201ArchiveGraph.ArchiveKind.UNSAFE_PATH
+                || kind == Forge1201ArchiveGraph.ArchiveKind.MISSING_DECLARED_ARCHIVE
+                || kind == Forge1201ArchiveGraph.ArchiveKind.SIZE_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.DEPTH_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.ARCHIVE_COUNT_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.ENTRY_COUNT_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.DUPLICATE_CONTENT_SKIPPED;
+    }
+
+    private static NestedTransformationFinding unavailableNestedTransformationFinding(
+            Forge1201ArchiveGraph.ArchiveFinding archive) {
+        List<String> warnings = new ArrayList<>(archive.warnings());
+        warnings.add("Nested archive bytes were unavailable to the Coremod/AT analyzer; resource presence and loader intake were not evaluated.");
+        return new NestedTransformationFinding(
+                archive.archivePath(), archive.sha256(), archive.depth(), archive.kind(),
+                archive.mods(), false, false, null, "UNKNOWN", "UNKNOWN",
+                false, false, false, false,
+                NestedLoaderDisposition.INCOMPLETE_ARCHIVE, NestedLoaderDisposition.INCOMPLETE_ARCHIVE,
+                NestedResourceStatus.INDEX_INCOMPLETE, null,
+                NestedResourceStatus.INDEX_INCOMPLETE, null,
+                false, false, false, false, NeoForgeDefaultAtDisposition.NOT_EVALUATED,
+                true, "NOT_EVALUATED: archive bytes were not inspected within the bounded archive graph.",
+                warnings.stream().distinct().sorted().toList());
+    }
+
     private static boolean isMixinPathCandidate(String path) {
         String lower = path.toLowerCase(Locale.ROOT);
         String name = lower.substring(lower.lastIndexOf('/') + 1);
         return lower.contains("mixin") || name.startsWith("mixins")
                 || name.endsWith(".mixins.json") || name.endsWith(".mixin.json");
+    }
+
+    private record NestedMixinDiscovery(
+            Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> sources,
+            boolean incomplete) {}
+
+    private static NestedMixinDiscovery discoverNestedMixinConfigs(
+            Forge1201ArchiveGraph.NestedMixinArchive archive, List<String> warnings) {
+        Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> sources = new TreeMap<>();
+        boolean incomplete = archive.entryIndexIncomplete();
+        Forge1201ArchiveGraph.NestedMixinResource manifestResource = archive.resources().values().stream()
+                .filter(resource -> resource.path().equalsIgnoreCase(JarFile.MANIFEST_NAME))
+                .findFirst().orElse(null);
+        if (manifestResource != null) {
+            if (manifestResource.status() == Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED
+                    && manifestResource.bytes() != null) {
+                try {
+                    Manifest nestedManifest = new Manifest(new ByteArrayInputStream(manifestResource.bytes()));
+                    String declarations = nestedManifest.getMainAttributes().getValue("MixinConfigs");
+                    for (String config : splitCommaList(declarations)) {
+                        sources.computeIfAbsent(config, ignored -> new TreeSet<>())
+                                .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST);
+                    }
+                } catch (IOException | RuntimeException exception) {
+                    warnings.add("Nested manifest could not be parsed for MixinConfigs: " + conciseMessage(exception));
+                    incomplete = true;
+                }
+            } else {
+                warnings.add("Nested manifest was duplicated or exceeded the resource capture budget; MixinConfigs could not be read.");
+                incomplete = true;
+            }
+        }
+        for (Forge1201ArchiveGraph.NestedMixinResource resource : archive.resources().values().stream()
+                .sorted(Comparator.comparing(Forge1201ArchiveGraph.NestedMixinResource::path)).toList()) {
+            if (!resource.path().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
+            byte[] bytes = resource.bytes();
+            if (bytes == null) {
+                if (isMixinPathCandidate(resource.path())) {
+                    sources.computeIfAbsent(resource.path(), ignored -> new TreeSet<>())
+                            .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
+                }
+                if (resource.status() != Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED) {
+                    warnings.add(resource.path() + ": nested JSON resource is unavailable for Mixin discovery ("
+                            + resource.status() + ").");
+                    incomplete = true;
+                }
+                continue;
+            }
+            if (isMixinPathCandidate(resource.path()) || looksLikeMixinConfig(bytes)) {
+                sources.computeIfAbsent(resource.path(), ignored -> new TreeSet<>())
+                        .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
+            }
+        }
+        return new NestedMixinDiscovery(sources, incomplete);
+    }
+
+    private static boolean looksLikeMixinConfig(byte[] bytes) {
+        if (bytes == null || bytes.length > MAX_MIXIN_JSON_BYTES) return false;
+        String json = new String(bytes, StandardCharsets.UTF_8);
+        return hasJsonKey(json, "mixins")
+                && (hasJsonKey(json, "package") || hasJsonKey(json, "plugin")
+                        || hasJsonKey(json, "client") || hasJsonKey(json, "server"));
     }
 
     private static boolean looksLikeMixinConfig(ZipFile zip, ZipEntry entry) {

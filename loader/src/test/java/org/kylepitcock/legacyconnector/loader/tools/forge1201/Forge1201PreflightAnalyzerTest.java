@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,6 +45,59 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void includesOuterJarAccessTransformerInventoryInUnifiedPreflightReport() throws IOException {
+        Path sourceJar = tempDir.resolve("access-transformer-only.jar");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(sourceJar))) {
+            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH, """
+                    # Forge 1.20.1 AT example
+                    public net.minecraft.world.entity.Entity
+                    protected-f net.minecraft.server.MinecraftServer f_129758_ # random
+                    public net.minecraft.Util m_137477_(Ljava/lang/String;)Ljava/util/concurrent/ExecutorService;
+                    """.getBytes(StandardCharsets.UTF_8));
+        }
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertEquals(Forge1201PreflightAnalyzer.MetadataStatus.MISSING_MODS_TOML, result.metadataStatus());
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED,
+                result.accessTransformers().status());
+        assertEquals(3, result.accessTransformers().validDirectiveCount());
+        assertEquals(0, result.accessTransformers().malformedLineCount());
+        assertEquals("FORGE_SRG_1.20.1",
+                result.accessTransformers().directives().get(1).memberNamespace());
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"accessTransformers\""));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("AT line 3 [VALID]"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("member-namespace=FORGE_SRG_1.20.1"));
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, result.coremodMetadata().status());
+        assertTrue(result.limitations().stream().anyMatch(value ->
+                value.contains("bounded source-nested archives") && value.contains("consumer eligibility")));
+    }
+
+    @Test
+    void includesOuterJarCoremodRegistryAndScriptPresenceInUnifiedPreflightReport() throws IOException {
+        Path sourceJar = tempDir.resolve("coremod-registry.jar");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(sourceJar))) {
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH, """
+                    {
+                      "sample_core": "coremods/sample.js",
+                      "missing_core": "coremods/missing.js"
+                    }
+                    """.getBytes(StandardCharsets.UTF_8));
+            put(zip, "coremods/sample.js", "// inventory only; must not be evaluated".getBytes(StandardCharsets.UTF_8));
+        }
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARSED, result.coremodMetadata().status());
+        assertEquals(2, result.coremodMetadata().declarations().size());
+        assertEquals(1, result.coremodMetadata().validDeclarationCount());
+        assertEquals(1, result.coremodMetadata().missingScriptCount());
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"coremodMetadata\""));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("Coremod metadata: PARSED"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("coremod sample_core -> coremods/sample.js [RESOURCE_PRESENT]"));
+    }
+
+    @Test
     void buildsDeterministicInventoryAndPreservesDependencyEvidence() throws IOException {
         Path modsDirectory = Files.createDirectories(tempDir.resolve("installed-mods"));
         createNativeMod(modsDirectory.resolve("geckolib.jar"), "geckolib");
@@ -65,8 +119,11 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.10", first.schemaVersion());
-        assertEquals("1.10.0", first.analyzerVersion());
+        assertEquals("1.14", first.schemaVersion());
+        assertEquals("1.14.0", first.analyzerVersion());
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
+                first.accessTransformers().status());
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
         assertEquals(Forge1201MixinAnalyzer.TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH,
                 first.mixinAnalysis().targetIndexStatus());
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED,
@@ -154,6 +211,10 @@ final class Forge1201PreflightAnalyzerTest {
                         && reference.instructionOrdinal() >= 0));
 
         assertEquals(Forge1201PreflightAnalyzer.toJson(first), Forge1201PreflightAnalyzer.toJson(second));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"accessTransformers\""));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"coremodMetadata\""));
+        assertTrue(Forge1201PreflightAnalyzer.toText(first).contains("Access Transformer: NOT_PRESENT"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(first).contains("Coremod metadata: NOT_PRESENT"));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"dynamicReferences\""));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"memberAnnotations\""));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"refmapResources\""));
@@ -412,6 +473,249 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void analyzesNestedMixinManifestConfigClassAndRefmapWithArchiveProvenance() throws IOException {
+        Path sourceJar = createForgeModJar("nested-mixin-preflight.jar", false, nestedMixinArchive());
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertEquals(1, result.nestedMixinAnalyses().size());
+        var nested = result.nestedMixinAnalyses().getFirst();
+        assertTrue(nested.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"));
+        assertEquals(1, nested.depth());
+        assertEquals(Forge1201ArchiveGraph.ArchiveKind.LIBRARY_OR_UNRECOGNIZED, nested.archiveKind());
+        assertEquals(64, nested.sha256().length());
+        assertTrue(nested.configCandidates().stream().anyMatch(candidate ->
+                candidate.path().equals("nested.mixins.json")
+                        && candidate.discoveredBy().contains("manifest")));
+        assertNotNull(nested.mixinAnalysis());
+
+        var config = nested.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("nested.mixins.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.PARSED, config.status());
+        assertEquals(List.of(
+                Forge1201MixinAnalyzer.DiscoverySource.MANIFEST,
+                Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC), config.discoverySources());
+
+        var mixinClass = nested.mixinAnalysis().mixinClasses().stream()
+                .filter(finding -> finding.mixinClassName().equals("nested.mixin.FeatureMixin"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.MixinClassStatus.PRESENT, mixinClass.status());
+        assertTrue(mixinClass.hasMixinAnnotation());
+
+        var refmap = nested.mixinAnalysis().refmapResources().stream()
+                .filter(finding -> finding.resourcePath().equals("nested.refmap.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.RefmapResourceStatus.EMPTY, refmap.status());
+
+        String json = Forge1201PreflightAnalyzer.toJson(result);
+        String report = Forge1201PreflightAnalyzer.toText(result);
+        assertTrue(json.contains("\"nestedMixinAnalyses\""));
+        assertTrue(report.contains("Nested source-archive Mixin analysis"));
+        assertTrue(report.contains("nested.mixins.json"));
+    }
+
+    @Test
+    void discoversNestedMixinConfigByJsonHeuristicWithoutManifestDeclaration() throws IOException {
+        Path sourceJar = createForgeModJar("nested-mixin-heuristic.jar", false, nestedMixinHeuristicArchive());
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        var nested = result.nestedMixinAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        var config = nested.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("arbitrary-feature.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.PARSED, config.status());
+        assertEquals(List.of(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC),
+                config.discoverySources());
+        assertTrue(nested.mixinAnalysis().mixinClasses().stream().anyMatch(finding ->
+                finding.mixinClassName().equals("heuristic.mixin.ProbeMixin")
+                        && finding.status() == Forge1201MixinAnalyzer.MixinClassStatus.PRESENT));
+    }
+
+    @Test
+    void reportsOversizedNestedMixinConfigAsLimitExceededRatherThanMissing() throws IOException {
+        String oversized = "{\"package\":\"large.mixin\",\"mixins\":[]}" 
+                + " ".repeat((int) Forge1201ArchiveGraph.MAX_NESTED_MIXIN_RESOURCE_BYTES_PER_ENTRY);
+        Path sourceJar = createForgeModJar("oversized-nested-mixin-config.jar", false,
+                nestedArchiveWithResource("mixins.oversized.json", oversized.getBytes(StandardCharsets.UTF_8)));
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        var nested = result.nestedMixinAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertTrue(nested.entryIndexIncomplete());
+        var config = nested.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("mixins.oversized.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.CONFIG_LIMIT_EXCEEDED, config.status());
+    }
+
+    @Test
+    void reportsDuplicateNestedMixinConfigEntriesInsteadOfTreatingThemAsMissing() throws IOException {
+        byte[] config = ("{\"package\":\"duplicate.mixin\",\"mixins\":[]}")
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] nested = rawZipWithDuplicateStoredEntry("mixins.duplicate.json", config);
+        Path sourceJar = createForgeModJar("duplicate-nested-mixin-config.jar", false, nested);
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        var nestedFinding = result.nestedMixinAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        var configFinding = nestedFinding.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("mixins.duplicate.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.CONFIG_DUPLICATE_ENTRY, configFinding.status());
+    }
+
+    @Test
+    void excludesNestedNativeNeoForgeMixinConfigsFromLegacySourceAnalysis() throws IOException {
+        byte[] nested = nestedNeoForgeMixinArchive();
+        Path sourceJar = createForgeModJar("nested-native-mixin-exclusion.jar", false, nested);
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertTrue(result.archiveGraph().archives().stream().anyMatch(archive ->
+                archive.archivePath().endsWith("META-INF/jarjar/sample-nested.jar")
+                        && archive.kind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD));
+        assertTrue(result.nestedMixinAnalyses().isEmpty());
+        var transformation = result.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertTrue(transformation.neoForgeModsTomlPresent());
+        assertEquals("MOD", transformation.neoForgeEffectiveFileType());
+        assertEquals("GAMELIBRARY", transformation.forgeEffectiveFileType());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO,
+                transformation.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                transformation.neoForgeDisposition());
+        assertTrue(transformation.forgeIdentifyModsReachesTransformationMetadata());
+        assertTrue(transformation.neoForgeIdentifyModsReachesTransformationMetadata());
+        assertFalse(transformation.forgeCoremodConsumerEligible());
+        assertFalse(transformation.forgeAccessTransformerConsumerEligible());
+        assertTrue(transformation.neoForgeCoremodConsumerEligible());
+        assertFalse(transformation.neoForgeAccessTransformerConsumerEligible());
+        assertEquals(Forge1201PreflightAnalyzer.NeoForgeDefaultAtDisposition.EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED,
+                transformation.neoForgeDefaultAtDisposition());
+        assertEquals(Forge1201CoremodAnalyzer.ScriptStatus.RESOURCE_PRESENT,
+                transformation.coremodMetadata().declarations().getFirst().scriptStatus());
+    }
+
+    @Test
+    void inventoriesNestedCoremodAndAtResourcesWithFinalProviderEligibility() throws IOException {
+        Path sourceJar = createForgeModJar("nested-transform-metadata.jar", false,
+                nestedTransformationArchive(true, null));
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+        var nested = result.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+
+        assertEquals("MOD", nested.forgeEffectiveFileType());
+        assertEquals("MOD", nested.neoForgeEffectiveFileType());
+        assertTrue(nested.forgeModInfoBacked());
+        assertTrue(nested.neoForgeModInfoBacked());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                nested.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                nested.neoForgeDisposition());
+        assertTrue(nested.forgeIdentifyModsReachesTransformationMetadata());
+        assertTrue(nested.neoForgeIdentifyModsReachesTransformationMetadata());
+
+        assertEquals(Forge1201PreflightAnalyzer.NestedResourceStatus.CAPTURED,
+                nested.coremodRegistryResourceStatus());
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARSED, nested.coremodMetadata().status());
+        assertEquals(Forge1201CoremodAnalyzer.ScriptStatus.RESOURCE_PRESENT,
+                nested.coremodMetadata().declarations().getFirst().scriptStatus());
+        assertEquals(Forge1201PreflightAnalyzer.NestedResourceStatus.CAPTURED,
+                nested.accessTransformerResourceStatus());
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED, nested.accessTransformers().status());
+        assertEquals(1, nested.accessTransformers().validDirectiveCount());
+        assertTrue(nested.forgeCoremodConsumerEligible());
+        assertTrue(nested.forgeAccessTransformerConsumerEligible());
+        assertTrue(nested.neoForgeCoremodConsumerEligible());
+        assertTrue(nested.neoForgeAccessTransformerConsumerEligible());
+        assertEquals(Forge1201PreflightAnalyzer.NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE,
+                nested.neoForgeDefaultAtDisposition());
+
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("nestedTransformationAnalyses"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("Nested Coremod / Access Transformer inventory"));
+    }
+
+    @Test
+    void distinguishesForgeManifestOnlyParserReachabilityFromNeoForgeModRejection() throws IOException {
+        Path sourceJar = createForgeModJar("nested-manifest-only-transform-metadata.jar", false,
+                nestedTransformationArchive(false, null));
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+        var nested = result.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+
+        assertEquals("GAMELIBRARY", nested.forgeEffectiveFileType());
+        assertEquals("MOD", nested.neoForgeEffectiveFileType());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO,
+                nested.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.REJECTED_MOD_WITHOUT_MOD_INFO,
+                nested.neoForgeDisposition());
+        assertTrue(nested.forgeIdentifyModsReachesTransformationMetadata());
+        assertTrue(!nested.neoForgeIdentifyModsReachesTransformationMetadata());
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARSED, nested.coremodMetadata().status());
+        assertFalse(nested.forgeCoremodConsumerEligible());
+        assertFalse(nested.forgeAccessTransformerConsumerEligible());
+        assertFalse(nested.neoForgeCoremodConsumerEligible());
+        assertFalse(nested.neoForgeAccessTransformerConsumerEligible());
+    }
+
+    @Test
+    void distinguishesExplicitGameLibraryEarlyReturnAndPluginType() throws IOException {
+        Path declaredGameLibraryModJar = createForgeModJar("nested-toml-gamelibrary.jar", false,
+                nestedTransformationArchive(true, "GAMELIBRARY"));
+        var declaredGameLibraryResult = Forge1201PreflightAnalyzer.analyze(declaredGameLibraryModJar, List.of());
+        var declaredGameLibraryMod = declaredGameLibraryResult.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertEquals("GAMELIBRARY", declaredGameLibraryMod.forgeEffectiveFileType());
+        assertEquals("GAMELIBRARY", declaredGameLibraryMod.neoForgeEffectiveFileType());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                declaredGameLibraryMod.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                declaredGameLibraryMod.neoForgeDisposition());
+        assertTrue(declaredGameLibraryMod.forgeCoremodConsumerEligible());
+        assertTrue(declaredGameLibraryMod.neoForgeCoremodConsumerEligible());
+
+        Path libraryJar = createForgeModJar("nested-explicit-gamelibrary.jar", false,
+                nestedTransformationArchive(false, "GAMELIBRARY"));
+        var libraryResult = Forge1201PreflightAnalyzer.analyze(libraryJar, List.of());
+        var library = libraryResult.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO,
+                library.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO,
+                library.neoForgeDisposition());
+        assertTrue(library.forgeIdentifyModsReachesTransformationMetadata());
+        assertFalse(library.neoForgeIdentifyModsReachesTransformationMetadata());
+
+        Path pluginJar = createForgeModJar("nested-explicit-library.toml.jar", false,
+                nestedTransformationArchive(true, "LIBRARY"));
+        var pluginResult = Forge1201PreflightAnalyzer.analyze(pluginJar, List.of());
+        var plugin = pluginResult.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER,
+                plugin.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER,
+                plugin.neoForgeDisposition());
+        assertFalse(plugin.forgeCoremodConsumerEligible());
+        assertFalse(plugin.neoForgeCoremodConsumerEligible());
+    }
+
+    @Test
     void normalizesOnlyMinecraftSrgMemberNamesAndKeepsUnknownsExplicit() {
         var location = new Forge1201ApiUsageAnalyzer.ApiReferenceLocation(
                 "source/example.jar", "example/UsesMinecraft.class");
@@ -585,6 +889,130 @@ final class Forge1201PreflightAnalyzerTest {
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jar))) {
             put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private static byte[] nestedTransformationArchive(boolean includeModsToml, String fmlModType) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        if (fmlModType != null) manifest.getMainAttributes().putValue("FMLModType", fmlModType);
+        ByteArrayOutputStream manifestBytes = new ByteArrayOutputStream();
+        manifest.write(manifestBytes);
+
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
+            if (includeModsToml) {
+                String metadata = """
+                        modLoader="javafml"
+                        loaderVersion="[47.2,)"
+                        license="MIT"
+
+                        [[mods]]
+                        modId="nested_probe"
+                        version="1.0.0"
+                        displayName="Nested Probe"
+
+                        [[dependencies.nested_probe]]
+                        modId="minecraft"
+                        mandatory=true
+                        versionRange="[1.20.1,1.20.2)"
+                        ordering="NONE"
+                        side="BOTH"
+
+                        [[dependencies.nested_probe]]
+                        modId="forge"
+                        mandatory=true
+                        versionRange="[47.3.0,)"
+                        ordering="NONE"
+                        side="BOTH"
+                        """;
+                put(zip, "META-INF/mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
+            }
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH,
+                    """
+                    {"nested_probe":"scripts/nested_probe.js"}
+                    """.getBytes(StandardCharsets.UTF_8));
+            put(zip, "scripts/nested_probe.js", "// inert; never evaluated by preflight".getBytes(StandardCharsets.UTF_8));
+            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
+                    """
+                    public net.minecraft.world.entity.Entity
+                    """.getBytes(StandardCharsets.UTF_8));
+        }
+        return bytes.toByteArray();
+    }
+
+    private byte[] nestedMixinHeuristicArchive() throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "arbitrary-feature.json",
+                    ("{\"package\":\"heuristic.mixin\",\"mixins\":[\"ProbeMixin\"],"
+                            + "\"refmap\":\"private.refmap.json\"}").getBytes(StandardCharsets.UTF_8));
+            put(zip, "private.refmap.json", "{}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "heuristic/mixin/ProbeMixin.class",
+                    mixinTargetClass("heuristic/mixin/ProbeMixin", "net.minecraft.world.entity.Entity"));
+        }
+        return bytes.toByteArray();
+    }
+
+    private static byte[] nestedArchiveWithResource(String path, byte[] resource) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, path, resource);
+        }
+        return bytes.toByteArray();
+    }
+
+    private byte[] nestedNeoForgeMixinArchive() throws IOException {
+        String metadata = """
+                modLoader="javafml"
+                loaderVersion="[4,)"
+                [[mods]]
+                modId="native_nested"
+                version="1.0.0"
+
+                [[accessTransformers]]
+                file="META-INF/native-at.cfg"
+                """;
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().putValue("MixinConfigs", "native.mixins.json");
+        ByteArrayOutputStream manifestBytes = new ByteArrayOutputStream();
+        manifest.write(manifestBytes);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
+            put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
+            put(zip, "native.mixins.json",
+                    "{\"package\":\"native.mixin\",\"mixins\":[]}".getBytes(StandardCharsets.UTF_8));
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH,
+                    "{\"native_core\":\"scripts/native_core.js\"}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "scripts/native_core.js", "// inert; never evaluated".getBytes(StandardCharsets.UTF_8));
+            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
+                    "public net.minecraft.world.entity.Entity\n".getBytes(StandardCharsets.UTF_8));
+            put(zip, "META-INF/native-at.cfg",
+                    "public net.minecraft.world.entity.LivingEntity\n".getBytes(StandardCharsets.UTF_8));
+        }
+        return bytes.toByteArray();
+    }
+    private byte[] nestedMixinArchive() throws IOException {
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().putValue("MixinConfigs", "nested.mixins.json");
+        ByteArrayOutputStream manifestBytes = new ByteArrayOutputStream();
+        manifest.write(manifestBytes);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
+            put(zip, "nested.mixins.json",
+                    ("{\"package\":\"nested.mixin\",\"mixins\":[\"FeatureMixin\"],"
+                            + "\"refmap\":\"nested.refmap.json\"}").getBytes(StandardCharsets.UTF_8));
+            put(zip, "nested.refmap.json", "{}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "nested/mixin/FeatureMixin.class",
+                    mixinTargetClass("nested/mixin/FeatureMixin", "net.minecraft.world.entity.Entity"));
+        }
+        return bytes.toByteArray();
     }
 
     private static byte[] nestedLibraryJar() throws IOException {
