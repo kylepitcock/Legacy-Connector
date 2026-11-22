@@ -437,6 +437,7 @@ public final class Forge1201Transformer {
         int alienEvoColoredProjectileRendererChanges = 0;
         int alienEvoSuperheroFlightControllerChanges = 0;
         int alienEvoLateEffectBuffersChanges = 0;
+        int alienEvoSlimeDecalMeshChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
         for (ClassNode node : nodes) {
@@ -576,6 +577,9 @@ public final class Forge1201Transformer {
             int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
             alienEvoLateEffectBuffersChanges += alienEvoLateEffectBuffersChange;
             viaCalls += alienEvoLateEffectBuffersChange;
+            int alienEvoSlimeDecalMeshChange = AlienEvoSlimeDecalMesh1201.apply(node);
+            alienEvoSlimeDecalMeshChanges += alienEvoSlimeDecalMeshChange;
+            viaCalls += alienEvoSlimeDecalMeshChange;
             int alienEvoMolangChange = AlienEvoMolang1201.apply(node);
             alienEvoMolangCompatChanges += alienEvoMolangChange;
             if (AlienEvoStepHeight1201.isLegacyAccessor(node.name)) {
@@ -671,12 +675,16 @@ public final class Forge1201Transformer {
                     + alienEvoBoneAnchorsChanges + " call site(s)");
         }
         if (alienEvoBeamAbilityParticlesChanges > 0) {
-            result.notes.add("AlienEvo BeamAbility particle parsing migrated ParticleArgument.readParticle to the 1.21.1 HolderLookup.Provider signature: "
+            result.notes.add("AlienEvo BeamAbility particle parsing redirected through the client RegistryAccess-backed ParticleArgument bridge: "
                     + alienEvoBeamAbilityParticlesChanges + " call site(s)");
         }
         if (alienEvoLateEffectBuffersChanges > 0) {
             result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
                     + alienEvoLateEffectBuffersChanges + " bytecode rewrite(s)");
+        }
+        if (alienEvoSlimeDecalMeshChanges > 0) {
+            result.notes.add("AlienEvo SlimeDecalRenderer.bake now skips an empty 1.21.1 MeshData result before close/upload: "
+                    + alienEvoSlimeDecalMeshChanges + " null-result guard(s)");
         }
         if (alienEvoGeckoMixinChanges > 0) {
             result.notes.add("AlienEvo GeckoLib mixin descriptors adapted for GeckoLib 4.9 partial-tick and packed-color renderer signatures: "

@@ -11,7 +11,7 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
-/** Regression tests for AlienEvo's 1.20.1 ParticleArgument signature in beam particle rendering. */
+/** Regression tests for the AlienEvo 1.20.1 particle parser compatibility bridge. */
 class AlienEvoBeamAbilityParticles1201Test implements Opcodes {
     private static ClassNode fixture() {
         ClassNode node = new ClassNode();
@@ -38,20 +38,20 @@ class AlienEvoBeamAbilityParticles1201Test implements Opcodes {
         for (var instruction : node.methods.get(0).instructions.toArray()) {
             if (instruction instanceof MethodInsnNode call) return call;
         }
-        throw new AssertionError("ParticleArgument.readParticle call not found");
+        throw new AssertionError("Particle parser call not found");
     }
 
     @Test
-    void migratesHolderLookupToProviderAndIsIdempotent() {
+    void redirectsToRegistryAccessBridgeAndPreservesLegacyDescriptor() {
         ClassNode node = fixture();
 
         assertEquals(1, AlienEvoBeamAbilityParticles1201.apply(node));
 
         MethodInsnNode call = particleCall(node);
         assertEquals(INVOKESTATIC, call.getOpcode());
-        assertEquals(AlienEvoBeamAbilityParticles1201.PARTICLE_ARGUMENT, call.owner);
-        assertEquals(AlienEvoBeamAbilityParticles1201.METHOD, call.name);
-        assertEquals(AlienEvoBeamAbilityParticles1201.MODERN_DESC, call.desc);
+        assertEquals(AlienEvoBeamAbilityParticles1201.BRIDGE_OWNER, call.owner);
+        assertEquals(AlienEvoBeamAbilityParticles1201.BRIDGE_NAME, call.name);
+        assertEquals(AlienEvoBeamAbilityParticles1201.LEGACY_DESC, call.desc);
         assertFalse(call.itf);
         assertEquals(0, AlienEvoBeamAbilityParticles1201.apply(node));
     }
@@ -89,5 +89,16 @@ class AlienEvoBeamAbilityParticles1201Test implements Opcodes {
 
         assertEquals(0, AlienEvoBeamAbilityParticles1201.apply(node));
         assertEquals(AlienEvoBeamAbilityParticles1201.LEGACY_DESC, particleCall(node).desc);
+    }
+
+    @Test
+    void acceptsAnAlreadyBridgedCallIdempotently() {
+        ClassNode node = fixture();
+        MethodInsnNode call = particleCall(node);
+        call.owner = AlienEvoBeamAbilityParticles1201.BRIDGE_OWNER;
+        call.name = AlienEvoBeamAbilityParticles1201.BRIDGE_NAME;
+
+        assertEquals(0, AlienEvoBeamAbilityParticles1201.apply(node));
+        assertEquals(AlienEvoBeamAbilityParticles1201.LEGACY_DESC, call.desc);
     }
 }

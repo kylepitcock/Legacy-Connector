@@ -26,7 +26,13 @@ final class AlienEvoBufferingGlowConsumer1201 implements Opcodes {
     static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
     static final String LEGACY_END =
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEndVertexConsumer";
+    static final String RENDER_TYPE = "net/minecraft/client/renderer/RenderType";
+    static final String MULTI_BUFFER_SOURCE = "net/minecraft/client/renderer/MultiBufferSource";
+    static final String BUFFER_REFRESH =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoBufferRefresh1201";
 
+    private static final String SOLID_TYPE_DESC = "(L" + RENDER_TYPE + ";)V";
+    private static final String REFRESH_SOLID_DESC = "(L" + MULTI_BUFFER_SOURCE + ";)V";
     private static final String POSITION_DESC = "(DDD)L" + VERTEX + ";";
     private static final String NEW_POSITION_DESC = "(FFF)L" + VERTEX + ";";
     private static final String ATTRIBUTE_DESC = "(FFF)L" + VERTEX + ";";
@@ -41,8 +47,12 @@ final class AlienEvoBufferingGlowConsumer1201 implements Opcodes {
             throw new IllegalStateException("Unexpected BufferingGlowConsumer class hierarchy");
         }
 
-        requireField(node, "solid", "L" + VERTEX + ";");
+        FieldNode solidField = requireField(node, "solid", "L" + VERTEX + ";");
+        requireField(node, "glowType", "L" + RENDER_TYPE + ";");
         requireField(node, "recordedVertices", "Ljava/util/List;");
+        MethodNode constructor = requireMethod(node, "<init>",
+                "(L" + VERTEX + ";L" + RENDER_TYPE + ";)V");
+        requireFieldWrites(constructor, node.name, "solid", "glowType");
         requireField(node, "vx", "D");
         requireField(node, "vy", "D");
         requireField(node, "vz", "D");
@@ -68,55 +78,123 @@ final class AlienEvoBufferingGlowConsumer1201 implements Opcodes {
         MethodNode flush = findUnique(node, "legacyFlushPending", "()V");
         MethodNode legacyEnd = findUnique(node, "legacyEndVertex", "()V");
         boolean markerInterface = node.interfaces.contains(LEGACY_END);
-        boolean anyInstalledPart = addVertex != null || pending != null || flush != null
+        boolean vertexPartAny = addVertex != null || pending != null || flush != null
                 || legacyEnd != null || markerInterface;
+        boolean vertexPartComplete = addVertex != null && pending != null && flush != null
+                && legacyEnd != null && markerInterface
+                && calls(normal, node.name, "legacyFlushPending", "()V");
+        if (vertexPartAny && !vertexPartComplete) {
+            throw new IllegalStateException("Partial BufferingGlowConsumer VertexConsumer adapter state detected");
+        }
 
-        if (anyInstalledPart) {
-            if (addVertex == null || pending == null || flush == null || legacyEnd == null
-                    || !markerInterface || !calls(normal, node.name, "legacyFlushPending", "()V")) {
-                throw new IllegalStateException("Partial BufferingGlowConsumer adapter state detected");
-            }
-            return 0;
+        FieldNode solidTypeField = findField(node, "legacySolidType", "L" + RENDER_TYPE + ";");
+        MethodNode setSolidType = findUnique(node, "legacySetSolidType", SOLID_TYPE_DESC);
+        MethodNode refreshSolid = findUnique(node, "legacyRefreshSolid", REFRESH_SOLID_DESC);
+        boolean solidMutable = (solidField.access & ACC_FINAL) == 0;
+        boolean refreshPartAny = solidTypeField != null || setSolidType != null || refreshSolid != null || solidMutable;
+        boolean refreshPartComplete = solidTypeField != null && setSolidType != null
+                && refreshSolid != null && solidMutable;
+        if (refreshPartAny && !refreshPartComplete) {
+            throw new IllegalStateException("Partial BufferingGlowConsumer solid-delegate refresh state detected");
+        }
+        if (refreshPartComplete
+                && (!calls(refreshSolid, BUFFER_REFRESH, "needsRefresh", "(L" + VERTEX + ";)Z")
+                || !calls(refreshSolid, MULTI_BUFFER_SOURCE, "getBuffer",
+                        "(L" + RENDER_TYPE + ";)L" + VERTEX + ";")
+                || !hasFieldWrite(refreshSolid, node.name, "solid"))) {
+            throw new IllegalStateException("BufferingGlowConsumer solid refresh body no longer matches its contract");
         }
 
         int changes = 0;
-        if (!"setNormal".equals(normal.name)) {
-            normal.name = "setNormal";
-            changes++;
-        }
-        changes += renameIfPresent(node, "color", "(IIII)L" + VERTEX + ";", "setColor");
-        changes += renameIfPresent(node, "uv", "(FF)L" + VERTEX + ";", "setUv");
-        changes += renameIfPresent(node, "overlayCoords", "(II)L" + VERTEX + ";", "setUv1");
-        changes += renameIfPresent(node, "uv2", "(II)L" + VERTEX + ";", "setUv2");
-
-        if (!node.interfaces.contains(LEGACY_END)) {
-            node.interfaces.add(LEGACY_END);
-            changes++;
-        }
-        node.fields.add(new FieldNode(ACC_PRIVATE | ACC_SYNTHETIC, "legacyPendingVertex", "Z", null, null));
-        changes++;
-
-        node.methods.add(legacyFlushPending(node.name));
-        changes++;
-        node.methods.add(legacyEndVertex(node.name));
-        changes++;
-        node.methods.add(addVertexBridge(node.name));
-        changes++;
-
-        // The modern VertexConsumer chain calls setNormal last. Preserve the old
-        // deferred endVertex() operation only after the normal has been recorded.
-        for (AbstractInsnNode instruction : normal.instructions.toArray()) {
-            if (instruction.getOpcode() == ARETURN) {
-                InsnList flushAfterNormal = new InsnList();
-                flushAfterNormal.add(new VarInsnNode(ALOAD, 0));
-                flushAfterNormal.add(new MethodInsnNode(INVOKESPECIAL, node.name,
-                        "legacyFlushPending", "()V", false));
-                normal.instructions.insertBefore(instruction, flushAfterNormal);
+        if (!vertexPartComplete) {
+            if (!"setNormal".equals(normal.name)) {
+                normal.name = "setNormal";
                 changes++;
+            }
+            changes += renameIfPresent(node, "color", "(IIII)L" + VERTEX + ";", "setColor");
+            changes += renameIfPresent(node, "uv", "(FF)L" + VERTEX + ";", "setUv");
+            changes += renameIfPresent(node, "overlayCoords", "(II)L" + VERTEX + ";", "setUv1");
+            changes += renameIfPresent(node, "uv2", "(II)L" + VERTEX + ";", "setUv2");
+
+            if (!node.interfaces.contains(LEGACY_END)) {
+                node.interfaces.add(LEGACY_END);
+                changes++;
+            }
+            node.fields.add(new FieldNode(ACC_PRIVATE | ACC_SYNTHETIC, "legacyPendingVertex", "Z", null, null));
+            changes++;
+
+            node.methods.add(legacyFlushPending(node.name));
+            changes++;
+            node.methods.add(legacyEndVertex(node.name));
+            changes++;
+            node.methods.add(addVertexBridge(node.name));
+            changes++;
+
+            for (AbstractInsnNode instruction : normal.instructions.toArray()) {
+                if (instruction.getOpcode() == ARETURN) {
+                    InsnList flushAfterNormal = new InsnList();
+                    flushAfterNormal.add(new VarInsnNode(ALOAD, 0));
+                    flushAfterNormal.add(new MethodInsnNode(INVOKESPECIAL, node.name,
+                            "legacyFlushPending", "()V", false));
+                    normal.instructions.insertBefore(instruction, flushAfterNormal);
+                    changes++;
+                }
             }
         }
 
+        if (!refreshPartComplete) {
+            solidField.access &= ~ACC_FINAL;
+            node.fields.add(new FieldNode(ACC_PRIVATE | ACC_SYNTHETIC,
+                    "legacySolidType", "L" + RENDER_TYPE + ";", null, null));
+            changes++;
+            node.methods.add(legacySetSolidType(node.name));
+            changes++;
+            node.methods.add(legacyRefreshSolid(node.name));
+            changes++;
+        }
+
         return changes;
+    }
+
+    private static MethodNode legacySetSolidType(String owner) {
+        MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC,
+                "legacySetSolidType", SOLID_TYPE_DESC, null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new VarInsnNode(ALOAD, 1));
+        method.instructions.add(new FieldInsnNode(PUTFIELD, owner,
+                "legacySolidType", "L" + RENDER_TYPE + ";"));
+        method.instructions.add(new InsnNode(RETURN));
+        method.maxLocals = 2;
+        method.maxStack = 2;
+        return method;
+    }
+
+    private static MethodNode legacyRefreshSolid(String owner) {
+        MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC,
+                "legacyRefreshSolid", REFRESH_SOLID_DESC, null, null);
+        LabelNode done = new LabelNode();
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(GETFIELD, owner,
+                "legacySolidType", "L" + RENDER_TYPE + ";"));
+        method.instructions.add(new JumpInsnNode(IFNULL, done));
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(GETFIELD, owner, "solid", "L" + VERTEX + ";"));
+        method.instructions.add(new MethodInsnNode(INVOKESTATIC, BUFFER_REFRESH,
+                "needsRefresh", "(L" + VERTEX + ";)Z", false));
+        method.instructions.add(new JumpInsnNode(IFEQ, done));
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new VarInsnNode(ALOAD, 1));
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(GETFIELD, owner,
+                "legacySolidType", "L" + RENDER_TYPE + ";"));
+        method.instructions.add(new MethodInsnNode(INVOKEINTERFACE, MULTI_BUFFER_SOURCE,
+                "getBuffer", "(L" + RENDER_TYPE + ";)L" + VERTEX + ";", true));
+        method.instructions.add(new FieldInsnNode(PUTFIELD, owner, "solid", "L" + VERTEX + ";"));
+        method.instructions.add(done);
+        method.instructions.add(new InsnNode(RETURN));
+        method.maxLocals = 2;
+        method.maxStack = 3;
+        return method;
     }
 
     private static MethodNode addVertexBridge(String owner) {
@@ -231,10 +309,12 @@ final class AlienEvoBufferingGlowConsumer1201 implements Opcodes {
         return found;
     }
 
-    private static void requireField(ClassNode node, String name, String desc) {
-        if (findField(node, name, desc) == null) {
+    private static FieldNode requireField(ClassNode node, String name, String desc) {
+        FieldNode field = findField(node, name, desc);
+        if (field == null) {
             throw new IllegalStateException("Missing BufferingGlowConsumer field " + name + ":" + desc);
         }
+        return field;
     }
 
     private static void requireFieldWrites(MethodNode method, String owner, String... fields) {
@@ -251,6 +331,14 @@ final class AlienEvoBufferingGlowConsumer1201 implements Opcodes {
                 throw new IllegalStateException("Unexpected " + method.name + " write count for " + field);
             }
         }
+    }
+
+    private static boolean hasFieldWrite(MethodNode method, String owner, String name) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof FieldInsnNode field && field.getOpcode() == PUTFIELD
+                    && field.owner.equals(owner) && field.name.equals(name)) return true;
+        }
+        return false;
     }
 
     private static boolean callsListAdd(MethodNode method) {

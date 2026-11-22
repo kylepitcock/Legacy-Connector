@@ -1479,6 +1479,29 @@ class Mc1201MigrationTest implements Opcodes {
         verify(c);
     }
 
+    @Test
+    void palladiumEnergyBeamSyntheticEntityRegistrationUsesReplacementHelper() {
+        String clientLevel = "net/minecraft/client/multiplayer/ClientLevel";
+        String entity = "net/minecraft/world/entity/Entity";
+        ClassNode effect = cls("net/threetag/palladium/entity/effect/EnergyBeamEffect", "java/lang/Object");
+        MethodNode start = method(effect, ACC_PUBLIC | ACC_STATIC, "registerLocalEffect",
+                "(L" + clientLevel + ";L" + entity + ";)V");
+        start.instructions.add(new VarInsnNode(ALOAD, 0));
+        start.instructions.add(new InsnNode(ICONST_0));
+        start.instructions.add(new VarInsnNode(ALOAD, 1));
+        start.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, clientLevel, "putNonPlayerEntity",
+                "(IL" + entity + ";)V", false));
+        start.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(effect);
+        assertEquals(1, counts.calls);
+        MethodInsnNode rewritten = find(start, MIGRATE + "MiddleClientCompat", "putNonPlayerEntity");
+        assertNotNull(rewritten, "the Palladium call must enter the ID-replacement helper");
+        assertEquals(INVOKESTATIC, rewritten.getOpcode());
+        assertEquals("(L" + clientLevel + ";IL" + entity + ";)V", rewritten.desc);
+        verify(effect);
+    }
+
     private static void verify(ClassNode c) {
         // structural check only (frames are not required for these straight-line methods at class version 17 when no branch exists)
         ClassWriter w = new ClassWriter(0);

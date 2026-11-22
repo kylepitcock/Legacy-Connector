@@ -44,6 +44,22 @@ class AlienEvoBufferingGlowConsumer1201Test implements Opcodes {
             node.fields.add(new FieldNode(ACC_PRIVATE, field, "F", null, null));
         }
 
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>",
+                "(L" + VERTEX + ";Lnet/minecraft/client/renderer/RenderType;)V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 1));
+        constructor.instructions.add(new FieldInsnNode(PUTFIELD, TARGET, "solid", "L" + VERTEX + ";"));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 2));
+        constructor.instructions.add(new FieldInsnNode(PUTFIELD, TARGET, "glowType",
+                "Lnet/minecraft/client/renderer/RenderType;"));
+        constructor.instructions.add(new InsnNode(RETURN));
+        constructor.maxLocals = 3;
+        constructor.maxStack = 2;
+        node.methods.add(constructor);
+
         MethodNode position = new MethodNode(ACC_PUBLIC, "vertex", POSITION_DESC, null, null);
         node.methods.add(position);
         int[] doubleSlots = {1, 3, 5};
@@ -108,6 +124,32 @@ class AlienEvoBufferingGlowConsumer1201Test implements Opcodes {
         assertTrue(node.interfaces.contains(AlienEvoBufferingGlowConsumer1201.LEGACY_END));
         assertTrue(node.fields.stream().anyMatch(field ->
                 field.name.equals("legacyPendingVertex") && field.desc.equals("Z")));
+
+        FieldNode solid = field(node, "solid", "L" + VERTEX + ";");
+        FieldNode glowType = field(node, "glowType", "Lnet/minecraft/client/renderer/RenderType;");
+        FieldNode recordedVertices = field(node, "recordedVertices", "Ljava/util/List;");
+        assertNotNull(solid);
+        assertNotNull(glowType);
+        assertNotNull(recordedVertices);
+        assertEquals(0, solid.access & ACC_FINAL);
+        assertTrue((glowType.access & ACC_FINAL) != 0);
+        assertTrue((recordedVertices.access & ACC_FINAL) != 0);
+
+        MethodNode setSolidType = find(node, "legacySetSolidType",
+                "(Lnet/minecraft/client/renderer/RenderType;)V");
+        MethodNode refreshSolid = find(node, "legacyRefreshSolid",
+                "(Lnet/minecraft/client/renderer/MultiBufferSource;)V");
+        assertNotNull(setSolidType);
+        assertNotNull(refreshSolid);
+        assertTrue(hasFieldWrite(setSolidType, TARGET, "legacySolidType"));
+        assertNotNull(findCall(refreshSolid, AlienEvoBufferingGlowConsumer1201.BUFFER_REFRESH,
+                "needsRefresh", "(L" + VERTEX + ";)Z"));
+        assertNotNull(findCall(refreshSolid, "net/minecraft/client/renderer/MultiBufferSource",
+                "getBuffer", "(Lnet/minecraft/client/renderer/RenderType;)L" + VERTEX + ";"));
+        assertTrue(hasFieldWrite(refreshSolid, TARGET, "solid"));
+        assertFalse(hasFieldWrite(refreshSolid, TARGET, "glowType"));
+        assertFalse(hasFieldWrite(refreshSolid, TARGET, "recordedVertices"));
+        assertEquals(0, countOpcode(refreshSolid, NEW));
 
         MethodNode bridge = find(node, "addVertex", FLOAT_POSITION_DESC);
         assertNotNull(bridge);
@@ -182,6 +224,13 @@ class AlienEvoBufferingGlowConsumer1201Test implements Opcodes {
         normal.instructions.add(new VarInsnNode(ALOAD, 0));
         normal.instructions.add(new InsnNode(ARETURN));
         assertThrows(IllegalStateException.class, () -> AlienEvoBufferingGlowConsumer1201.apply(node));
+    }
+
+    private static FieldNode field(ClassNode node, String name, String desc) {
+        for (FieldNode field : node.fields) {
+            if (field.name.equals(name) && field.desc.equals(desc)) return field;
+        }
+        return null;
     }
 
     private static MethodNode find(ClassNode node, String name, String desc) {

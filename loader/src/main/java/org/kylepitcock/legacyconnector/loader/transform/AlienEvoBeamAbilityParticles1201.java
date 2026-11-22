@@ -5,17 +5,19 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
 /**
- * Migrates AlienEvo 1.5.0-dev.24's ParticleArgument.readParticle call from
- * the old HolderLookup parameter to Minecraft 1.21.1's HolderLookup.Provider.
+ * Redirects AlienEvo's legacy particle parser to a client-registry bridge.
+ * A descriptor-only change is unsafe: its second argument is a registry-specific
+ * HolderLookup, not the 1.21.1 HolderLookup.Provider required by ParticleArgument.
  */
 final class AlienEvoBeamAbilityParticles1201 implements Opcodes {
     static final String TARGET = "net/habb/alienevo/ability/BeamAbility";
     static final String PARTICLE_ARGUMENT = "net/minecraft/commands/arguments/ParticleArgument";
     static final String METHOD = "readParticle";
+    static final String BRIDGE_OWNER =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiddleClientCompat";
+    static final String BRIDGE_NAME = "readParticle";
     static final String LEGACY_DESC =
             "(Lcom/mojang/brigadier/StringReader;Lnet/minecraft/core/HolderLookup;)Lnet/minecraft/core/particles/ParticleOptions;";
-    static final String MODERN_DESC =
-            "(Lcom/mojang/brigadier/StringReader;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/core/particles/ParticleOptions;";
 
     private AlienEvoBeamAbilityParticles1201() {}
 
@@ -23,40 +25,42 @@ final class AlienEvoBeamAbilityParticles1201 implements Opcodes {
         if (!TARGET.equals(node.name)) return 0;
 
         int legacyCalls = 0;
-        int modernCalls = 0;
+        int bridgeCalls = 0;
         MethodInsnNode legacyCall = null;
         for (var method : node.methods) {
             if (!"parseParticleSpec".equals(method.name) || method.instructions == null) continue;
             for (var instruction : method.instructions.toArray()) {
-                if (!(instruction instanceof MethodInsnNode call)
-                        || !PARTICLE_ARGUMENT.equals(call.owner)
-                        || !METHOD.equals(call.name)) {
-                    continue;
-                }
+                if (!(instruction instanceof MethodInsnNode call)) continue;
+                boolean particleCall = PARTICLE_ARGUMENT.equals(call.owner) && METHOD.equals(call.name);
+                boolean bridgeCall = BRIDGE_OWNER.equals(call.owner) && BRIDGE_NAME.equals(call.name);
+                if (!particleCall && !bridgeCall) continue;
                 if (call.getOpcode() != INVOKESTATIC || call.itf) {
-                    throw new IllegalStateException(
-                            "AlienEvo BeamAbility ParticleArgument.readParticle call changed invocation kind");
+                    throw new IllegalStateException("AlienEvo BeamAbility particle parser call changed invocation kind");
                 }
-                if (LEGACY_DESC.equals(call.desc)) {
+                if (!LEGACY_DESC.equals(call.desc)) {
+                    throw new IllegalStateException(
+                            "AlienEvo BeamAbility particle parser has an unexpected descriptor: " + call.desc);
+                }
+                if (particleCall) {
                     legacyCalls++;
                     legacyCall = call;
-                } else if (MODERN_DESC.equals(call.desc)) {
-                    modernCalls++;
                 } else {
-                    throw new IllegalStateException(
-                            "AlienEvo BeamAbility ParticleArgument.readParticle has an unknown descriptor: " + call.desc);
+                    bridgeCalls++;
                 }
             }
         }
 
-        if (legacyCalls == 0 && modernCalls == 1) return 0;
-        if (legacyCalls != 1 || modernCalls != 0) {
+        if (legacyCalls == 0 && bridgeCalls == 1) return 0;
+        if (legacyCalls != 1 || bridgeCalls != 0) {
             throw new IllegalStateException(
                     "AlienEvo BeamAbility.parseParticleSpec expected exactly one legacy ParticleArgument.readParticle call; found "
-                            + legacyCalls + " legacy and " + modernCalls + " migrated");
+                            + legacyCalls + " legacy and " + bridgeCalls + " bridged");
         }
 
-        legacyCall.desc = MODERN_DESC;
+        legacyCall.owner = BRIDGE_OWNER;
+        legacyCall.name = BRIDGE_NAME;
+        // Keep LEGACY_DESC unchanged. The bridge converts the old registry object
+        // into the current level's full RegistryAccess / HolderLookup.Provider.
         return 1;
     }
 }
