@@ -556,6 +556,22 @@ public final class RenderContext {
         return STATE.get().texture;
     }
 
+    /**
+     * GL id of the texture legacy code bound last (what glGetInteger(GL_TEXTURE_BINDING_2D) answered in 1.7.10), 0 when none is known. The id is
+     * remembered so that binding it back by id returns to this very location.
+     */
+    public static int currentTextureGlId() {
+        ResourceLocation rl = STATE.get().texture;
+        if (rl == null) return 0;
+        try {
+            int id = net.minecraft.client.Minecraft.getInstance().getTextureManager().getTexture(rl).getId();
+            if (id > 0) RawGlTextures.remember(id, rl);
+            return id;
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
     /** glColor4f: components are clamped to [0, 1] as GL did (Thaumcraft's crystals pass 255 / 220; unclamped they wrapped dark). */
     public static void color(float red, float green, float blue, float alpha) {
         red = Math.max(0.0F, Math.min(1.0F, red));

@@ -16,6 +16,11 @@ public final class RawGlTextures {
 
     private RawGlTextures() {}
 
+    /** A GL texture id that belongs to a known location: binding the id by number draws with that location again. */
+    public static void remember(int glId, ResourceLocation rl) {
+        BY_ID.putIfAbsent(glId, rl);
+    }
+
     /** The location drawing with the given GL texture (render thread). */
     public static ResourceLocation location(int glId) {
         return BY_ID.computeIfAbsent(glId, id -> {

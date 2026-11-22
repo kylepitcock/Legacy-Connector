@@ -29,7 +29,11 @@ public abstract class CameraLegacyOverrideMixin1710 {
         return LegacyRendererOverrides.thirdPersonDistance(normal);
     }
 
-    @Inject(method = "setup", at = @At("TAIL"), require = 0)
+    /**
+     * The raise goes in right after the eyes are placed, before the third person camera backs away: 1.7.10 started that ray at the lifted eye and
+     * stopped it at the blocks it met there. Lifted only afterwards, the ray started low and a giant suit's camera ran into every hill and wall near the ground.
+     */
+    @Inject(method = "setup", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setPosition(DDD)V", shift = At.Shift.AFTER), require = 0)
     private void legacyconnector$eyeHeight(BlockGetter level, Entity entity, boolean detached, boolean reverse, float partialTick, CallbackInfo ci) {
         double raise = LegacyRendererOverrides.cameraRaise(entity);
         if (raise == 0.0) return;
