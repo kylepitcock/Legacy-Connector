@@ -481,6 +481,8 @@ public final class ItemStack {
             try {
                 NBTTagCompound tag = getTagCompound();
                 mcc$capabilities = item.initCapabilities(this, tag != null && tag.hasKey("ForgeCaps", 10) ? tag.getCompoundTag("ForgeCaps") : null);
+                // vanilla's buckets and the generated buckets had Forge's FluidBucketWrapper
+                if (mcc$capabilities == null) mcc$capabilities = legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidUtil.bucketCapabilities(this);
                 if (mcc$capabilities != null) org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.mcc$pin(this);
             } catch (RuntimeException | LinkageError e) {
                 mcc$capabilities = null;
