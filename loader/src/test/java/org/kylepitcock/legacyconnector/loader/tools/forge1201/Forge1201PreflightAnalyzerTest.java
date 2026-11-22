@@ -894,10 +894,14 @@ final class Forge1201PreflightAnalyzerTest {
                 put(zip, "META-INF/mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
             }
             put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH,
-                    "{\"nested_probe\":\"scripts/nested_probe.js\"}".getBytes(StandardCharsets.UTF_8));
+                    """
+                    {"nested_probe":"scripts/nested_probe.js"}
+                    """.getBytes(StandardCharsets.UTF_8));
             put(zip, "scripts/nested_probe.js", "// inert; never evaluated by preflight".getBytes(StandardCharsets.UTF_8));
             put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
-                    "public net.minecraft.world.entity.Entity\\n".getBytes(StandardCharsets.UTF_8));
+                    """
+                    public net.minecraft.world.entity.Entity
+                    """.getBytes(StandardCharsets.UTF_8));
         }
         return bytes.toByteArray();
     }
