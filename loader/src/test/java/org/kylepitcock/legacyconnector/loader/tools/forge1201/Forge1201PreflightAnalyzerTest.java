@@ -515,6 +515,45 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void discoversNestedMixinConfigByJsonHeuristicWithoutManifestDeclaration() throws IOException {
+        Path sourceJar = createForgeModJar("nested-mixin-heuristic.jar", false, nestedMixinHeuristicArchive());
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        var nested = result.nestedMixinAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        var config = nested.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("arbitrary-feature.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.PARSED, config.status());
+        assertEquals(List.of(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC),
+                config.discoverySources());
+        assertTrue(nested.mixinAnalysis().mixinClasses().stream().anyMatch(finding ->
+                finding.mixinClassName().equals("heuristic.mixin.ProbeMixin")
+                        && finding.status() == Forge1201MixinAnalyzer.MixinClassStatus.PRESENT));
+    }
+
+    @Test
+    void reportsOversizedNestedMixinConfigAsLimitExceededRatherThanMissing() throws IOException {
+        String oversized = "{\"package\":\"large.mixin\",\"mixins\":[]}" 
+                + " ".repeat((int) Forge1201ArchiveGraph.MAX_NESTED_MIXIN_RESOURCE_BYTES_PER_ENTRY);
+        Path sourceJar = createForgeModJar("oversized-nested-mixin-config.jar", false,
+                nestedArchiveWithResource("mixins.oversized.json", oversized.getBytes(StandardCharsets.UTF_8)));
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        var nested = result.nestedMixinAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertTrue(nested.entryIndexIncomplete());
+        var config = nested.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("mixins.oversized.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.CONFIG_LIMIT_EXCEEDED, config.status());
+    }
+
+    @Test
     void reportsDuplicateNestedMixinConfigEntriesInsteadOfTreatingThemAsMissing() throws IOException {
         byte[] config = ("{\"package\":\"duplicate.mixin\",\"mixins\":[]}")
                 .getBytes(StandardCharsets.UTF_8);
@@ -719,6 +758,27 @@ final class Forge1201PreflightAnalyzerTest {
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jar))) {
             put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private byte[] nestedMixinHeuristicArchive() throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "arbitrary-feature.json",
+                    ("{\"package\":\"heuristic.mixin\",\"mixins\":[\"ProbeMixin\"],"
+                            + "\"refmap\":\"private.refmap.json\"}").getBytes(StandardCharsets.UTF_8));
+            put(zip, "private.refmap.json", "{}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "heuristic/mixin/ProbeMixin.class",
+                    mixinTargetClass("heuristic/mixin/ProbeMixin", "net.minecraft.world.entity.Entity"));
+        }
+        return bytes.toByteArray();
+    }
+
+    private static byte[] nestedArchiveWithResource(String path, byte[] resource) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, path, resource);
+        }
+        return bytes.toByteArray();
     }
 
     private byte[] nestedNeoForgeMixinArchive() throws IOException {
