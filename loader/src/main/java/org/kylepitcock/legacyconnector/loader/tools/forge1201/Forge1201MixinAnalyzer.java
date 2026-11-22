@@ -1121,7 +1121,7 @@ public final class Forge1201MixinAnalyzer {
         } catch (IOException | RuntimeException exception) {
             return new RefmapResourceFinding(
                     archivePath, path, configPaths, origins, RefmapResourceStatus.INVALID_JSON,
-                    indexed.entry().getSize(), indexed.entry().getCompressedSize(),
+                    indexed.sizeBytes(), indexed.compressedSizeBytes(),
                     bytes.length, digest, false, false, List.of(), 0, 0, List.of(), List.of(),
                     List.of("Refmap is not strict UTF-8 JSON or contains duplicate object member names: "
                             + conciseMessage(exception)));
@@ -1129,7 +1129,7 @@ public final class Forge1201MixinAnalyzer {
         if (!parsed.isJsonObject()) {
             return new RefmapResourceFinding(
                     archivePath, path, configPaths, origins, RefmapResourceStatus.UNSUPPORTED_SHAPE,
-                    indexed.entry().getSize(), indexed.entry().getCompressedSize(),
+                    indexed.sizeBytes(), indexed.compressedSizeBytes(),
                     bytes.length, digest, false, false, List.of(), 0, 0, List.of(), List.of(),
                     List.of("Refmap root must be a JSON object."));
         }
@@ -1195,7 +1195,7 @@ public final class Forge1201MixinAnalyzer {
                 : state.entryCount == 0 ? RefmapResourceStatus.EMPTY : RefmapResourceStatus.PARSED;
         return new RefmapResourceFinding(
                 archivePath, path, configPaths, origins, status,
-                indexed.entry().getSize(), indexed.entry().getCompressedSize(), bytes.length, digest,
+                indexed.sizeBytes(), indexed.compressedSizeBytes(), bytes.length, digest,
                 mappingsPresent, dataPresent, contextKeys, state.ownerBucketCount, state.entryCount,
                 unknownFields, tables,
                 state.warnings.stream().distinct().sorted().toList());
