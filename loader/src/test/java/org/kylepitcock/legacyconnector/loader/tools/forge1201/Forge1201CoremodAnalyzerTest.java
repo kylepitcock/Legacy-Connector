@@ -64,6 +64,21 @@ final class Forge1201CoremodAnalyzerTest {
     }
 
     @Test
+    void reportsDuplicateNestedScriptResourcePathsAsAmbiguous() {
+        byte[] metadata = """
+                {"probe":"scripts/duplicate.js"}
+                """.getBytes(StandardCharsets.UTF_8);
+        var result = Forge1201CoremodAnalyzer.analyzeNested(metadata,
+                java.util.Set.of(Forge1201CoremodAnalyzer.RESOURCE_PATH),
+                java.util.Set.of("scripts/duplicate.js"), false);
+
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARTIALLY_PARSED, result.status());
+        assertEquals(0, result.missingScriptCount());
+        assertEquals(Forge1201CoremodAnalyzer.ScriptStatus.RESOURCE_DUPLICATE_ENTRY,
+                result.declarations().getFirst().scriptStatus());
+    }
+
+    @Test
     void preservesDuplicateNamesAndRejectsMalformedOrUnsafeDeclarations() throws Exception {
         Path jar = tempDir.resolve("malformed-coremods.jar");
         writeJar(jar, Map.of(
