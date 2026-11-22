@@ -515,6 +515,37 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void reportsDuplicateNestedMixinConfigEntriesInsteadOfTreatingThemAsMissing() throws IOException {
+        byte[] config = ("{\"package\":\"duplicate.mixin\",\"mixins\":[]}")
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] nested = rawZipWithDuplicateStoredEntry("mixins.duplicate.json", config);
+        Path sourceJar = createForgeModJar("duplicate-nested-mixin-config.jar", false, nested);
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        var nestedFinding = result.nestedMixinAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        var configFinding = nestedFinding.mixinAnalysis().configs().stream()
+                .filter(finding -> finding.configPath().equals("mixins.duplicate.json"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201MixinAnalyzer.ConfigStatus.CONFIG_DUPLICATE_ENTRY, configFinding.status());
+    }
+
+    @Test
+    void excludesNestedNativeNeoForgeMixinConfigsFromLegacySourceAnalysis() throws IOException {
+        byte[] nested = nestedNeoForgeMixinArchive();
+        Path sourceJar = createForgeModJar("nested-native-mixin-exclusion.jar", false, nested);
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertTrue(result.archiveGraph().archives().stream().anyMatch(archive ->
+                archive.archivePath().endsWith("META-INF/jarjar/sample-nested.jar")
+                        && archive.kind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD));
+        assertTrue(result.nestedMixinAnalyses().isEmpty());
+    }
+
+    @Test
     void normalizesOnlyMinecraftSrgMemberNamesAndKeepsUnknownsExplicit() {
         var location = new Forge1201ApiUsageAnalyzer.ApiReferenceLocation(
                 "source/example.jar", "example/UsesMinecraft.class");
@@ -688,6 +719,30 @@ final class Forge1201PreflightAnalyzerTest {
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jar))) {
             put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private byte[] nestedNeoForgeMixinArchive() throws IOException {
+        String metadata = """
+                modLoader="javafml"
+                loaderVersion="[4,)"
+                [[mods]]
+                modId="native_nested"
+                version="1.0.0"
+                """;
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().putValue("MixinConfigs", "native.mixins.json");
+        ByteArrayOutputStream manifestBytes = new ByteArrayOutputStream();
+        manifest.write(manifestBytes);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
+            put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
+            put(zip, "native.mixins.json",
+                    "{\"package\":\"native.mixin\",\"mixins\":[]}".getBytes(StandardCharsets.UTF_8));
+        }
+        return bytes.toByteArray();
     }
 
     private byte[] nestedMixinArchive() throws IOException {
