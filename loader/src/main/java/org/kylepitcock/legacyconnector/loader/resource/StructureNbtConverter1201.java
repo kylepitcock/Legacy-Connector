@@ -118,14 +118,16 @@ final class StructureNbtConverter1201 {
             for (;;) {
                 int type = in.readUnsignedByte();
                 if (type == TAG_END) return;
-                String name = in.readUTF();
+                int nameAt = in.pos;
+                in.skipUTF();
                 countTag();
-                boolean attributeName = attributeEntry && type == TAG_STRING && "Name".equals(name);
-                parsePayload(type, name, attributeName, depth + 1);
+                boolean attributeName = attributeEntry && type == TAG_STRING && in.utfEquals(nameAt, "Name");
+                parsePayload(type, nameAt, attributeName, depth + 1);
             }
         }
 
-        private void parsePayload(int type, String name, boolean attributeEntry, int depth) throws IOException {
+        /** {@code nameAt}: where the tag's name sits in the array (a name is only compared, never built into a String), -1 for a list element. */
+        private void parsePayload(int type, int nameAt, boolean attributeEntry, int depth) throws IOException {
             checkDepth(depth);
             switch (type) {
                 case TAG_BYTE -> in.readByte();
@@ -136,8 +138,8 @@ final class StructureNbtConverter1201 {
                 case TAG_FLOAT -> in.readInt();
                 case TAG_DOUBLE -> in.readLong();
                 case TAG_BYTE_ARRAY -> skipArray(in.readInt(), 1);
-                case TAG_STRING -> parseString(name, attributeEntry);
-                case TAG_LIST -> parseList(name, depth + 1);
+                case TAG_STRING -> parseString(attributeEntry);
+                case TAG_LIST -> parseList(nameAt, depth + 1);
                 // This flag is true only for a compound directly used as an Attributes-list element; nested compound children receive false.
                 case TAG_COMPOUND -> parseCompound(attributeEntry, depth + 1);
                 case TAG_INT_ARRAY -> skipArray(in.readInt(), Integer.BYTES);
@@ -146,10 +148,13 @@ final class StructureNbtConverter1201 {
             }
         }
 
-        private void parseString(String name, boolean attributeEntry) throws IOException {
+        private void parseString(boolean attributeEntry) throws IOException {
             int start = in.pos;
+            if (!attributeEntry) {
+                in.skipUTF();
+                return;
+            }
             String value = in.readUTF();
-            if (!attributeEntry || !"Name".equals(name)) return;
             // Vanilla generic.* names are handled by Minecraft's template DataFixer; only Forge's namespace is outside that mapping.
             if (!value.startsWith("forge:")) return;
             String migrated = DataConverter1201.mapAttributeId(value);
@@ -162,15 +167,15 @@ final class StructureNbtConverter1201 {
             patches.add(new Patch(start, end, encoded.toByteArray()));
         }
 
-        private void parseList(String name, int depth) throws IOException {
+        private void parseList(int nameAt, int depth) throws IOException {
             int elementType = in.readUnsignedByte();
             int length = in.readInt();
             if (length < 0 || length > MAX_TAGS) throw new IOException("invalid NBT list length " + length);
             if (elementType == TAG_END && length != 0) throw new IOException("nonempty TAG_End list");
-            boolean attributeList = "Attributes".equals(name) && elementType == TAG_COMPOUND;
+            boolean attributeList = elementType == TAG_COMPOUND && nameAt >= 0 && in.utfEquals(nameAt, "Attributes");
             for (int i = 0; i < length; i++) {
                 countTag();
-                parsePayload(elementType, null, attributeList, depth + 1);
+                parsePayload(elementType, -1, attributeList, depth + 1);
             }
         }
 
@@ -239,6 +244,28 @@ final class StructureNbtConverter1201 {
         private void skip(int n) throws IOException {
             need(n);
             pos += n;
+        }
+
+        /** Reads past a modified-UTF-8 string with the checks of {@link #readUTF()}; plain ASCII needs no decoding. */
+        private void skipUTF() throws IOException {
+            need(2);
+            int len = ((data[pos] & 0xff) << 8) | (data[pos + 1] & 0xff);
+            need(2 + len);
+            for (int i = pos + 2, end = pos + 2 + len; i < end; i++) {
+                if (data[i] <= 0) {
+                    readUTF();
+                    return;
+                }
+            }
+            pos += 2 + len;
+        }
+
+        /** Whether the ASCII string whose length prefix sits at {@code at} equals {@code ascii}. */
+        private boolean utfEquals(int at, String ascii) {
+            int len = ((data[at] & 0xff) << 8) | (data[at + 1] & 0xff);
+            if (len != ascii.length()) return false;
+            for (int i = 0; i < len; i++) if (data[at + 2 + i] != (byte) ascii.charAt(i)) return false;
+            return true;
         }
 
         /** Same result and errors as {@link DataInputStream#readUTF()}; plain ASCII (nearly every tag name) skips the decoder. */

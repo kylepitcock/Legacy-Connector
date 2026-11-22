@@ -58,13 +58,19 @@ public final class VanillaFlattening {
         states = new BlockState[4096];
         reverseStates = new HashMap<>();
         reverseBlocks = new HashMap<>();
+        long t0 = System.nanoTime();
+        boolean fromFile = loadBlockTable();
+        if (!fromFile) {
+            for (int key = 0; key < 4096; key++) states[key] = upgrade(BlockStateData.getTag(key));
+            saveBlockTable();
+        }
         for (int key = 0; key < 4096; key++) {
-            BlockState s = upgrade(BlockStateData.getTag(key));
-            states[key] = s;
+            BlockState s = states[key];
             if (s == null) continue;
             reverseStates.putIfAbsent(s, key);
             reverseBlocks.putIfAbsent(s.getBlock(), key);
         }
+        LOG.info("[LegacyConnector/Perf] legacy block flattening table {} in {} ms", fromFile ? "read from the cache" : "built with the data fixers", (System.nanoTime() - t0) / 1_000_000);
         blockIds = new HashMap<>();
         blockNames = new String[256];
         for (Object2IntMap.Entry<String> e : BlockStateData.ID_BY_OLD_NAME.object2IntEntrySet()) {
@@ -74,6 +80,60 @@ public final class VanillaFlattening {
         }
         nearest = new java.util.concurrent.ConcurrentHashMap<>();
         LOG.debug("Built legacy block flattening table: {} states", reverseStates.size());
+    }
+
+    private static java.nio.file.Path blockTableFile() {
+        return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve(".legacyconnector").resolve("vanilla-blocks-" + dataVersion() + ".txt");
+    }
+
+    /**
+     * The table of the 4096 legacy ids is the data fixers' answer for each (a few hundred ms on every launch); it depends on the game's data version
+     * only, so it is kept next to the item names ({@code vanilla-blocks-<data version>.txt}: key TAB block state string). Any unreadable line
+     * discards the file and the table is built again.
+     */
+    private static boolean loadBlockTable() {
+        try {
+            java.nio.file.Path file = blockTableFile();
+            if (!java.nio.file.Files.exists(file)) return false;
+            java.util.List<String> lines = java.nio.file.Files.readAllLines(file, java.nio.charset.StandardCharsets.UTF_8);
+            if (lines.isEmpty() || !lines.get(0).equals("#4096")) return false;
+            BlockState[] read = new BlockState[4096];
+            Map<String, BlockState> parsed = new HashMap<>();
+            for (int i = 1; i < lines.size(); i++) {
+                String line = lines.get(i);
+                int tab = line.indexOf('\t');
+                int key = Integer.parseInt(line.substring(0, tab));
+                String text = line.substring(tab + 1);
+                BlockState s = parsed.get(text);
+                if (s == null) {
+                    s = net.minecraft.commands.arguments.blocks.BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), text, false).blockState();
+                    parsed.put(text, s);
+                }
+                read[key] = s;
+            }
+            System.arraycopy(read, 0, states, 0, 4096);
+            return true;
+        } catch (java.io.IOException | RuntimeException | com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+            LOG.debug("Could not read the cache of the legacy block table", e);
+            java.util.Arrays.fill(states, null);
+            return false;
+        }
+    }
+
+    private static void saveBlockTable() {
+        try {
+            StringBuilder sb = new StringBuilder("#4096\n");
+            for (int key = 0; key < 4096; key++) {
+                if (states[key] != null) sb.append(key).append('\t').append(net.minecraft.commands.arguments.blocks.BlockStateParser.serialize(states[key])).append('\n');
+            }
+            java.nio.file.Path file = blockTableFile();
+            java.nio.file.Files.createDirectories(file.getParent());
+            java.nio.file.Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+            java.nio.file.Files.writeString(tmp, sb, java.nio.charset.StandardCharsets.UTF_8);
+            java.nio.file.Files.move(tmp, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (java.io.IOException | RuntimeException e) {
+            LOG.debug("Could not write the cache of the legacy block table", e);
+        }
     }
 
     private static BlockState upgrade(Dynamic<?> flattened) {
