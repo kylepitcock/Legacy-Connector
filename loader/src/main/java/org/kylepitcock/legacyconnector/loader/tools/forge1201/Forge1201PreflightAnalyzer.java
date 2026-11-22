@@ -351,21 +351,12 @@ public final class Forge1201PreflightAnalyzer {
             }
 
             int remainingClasses = Math.max(0, MAX_NESTED_MIXIN_CLASSES - nestedMixinClassCount[0]);
-            int includedClasses = 0;
             for (Map.Entry<String, byte[]> classEntry : archive.classEntries().entrySet().stream()
                     .sorted(Map.Entry.comparingByKey()).toList()) {
-                if (includedClasses >= remainingClasses) {
-                    incomplete = true;
-                    nestedWarnings.add("Aggregate nested Mixin class-entry limit ("
-                            + MAX_NESTED_MIXIN_CLASSES + ") was reached; additional class entries were omitted.");
-                    break;
-                }
                 byte[] classBytes = classEntry.getValue();
                 memoryEntries.putIfAbsent(classEntry.getKey(), new Forge1201MixinAnalyzer.MemoryEntry(
                         classEntry.getKey(), classBytes, classBytes.length, classBytes.length, 1, null));
-                includedClasses++;
             }
-            nestedMixinClassCount[0] += includedClasses;
 
             // A non-JSON path named explicitly by MixinConfigs is outside the captured resource set.
             // Mark it as unavailable rather than falsely reporting it absent.
@@ -400,6 +391,7 @@ public final class Forge1201PreflightAnalyzer {
                         memoryArchive, declarations, nestedTargetIndex, Map.of(),
                         "not-supplied", requestedRefmapContextKey);
                 nestedWarnings.addAll(nestedAnalysis.warnings());
+                nestedMixinClassCount[0] += nestedAnalysis.mixinClasses().size();
                 nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
                         archive.depth(), archive.archiveKind(), nestedCandidates, incomplete,
                         nestedAnalysis, nestedWarnings.stream().distinct().sorted().toList()));
