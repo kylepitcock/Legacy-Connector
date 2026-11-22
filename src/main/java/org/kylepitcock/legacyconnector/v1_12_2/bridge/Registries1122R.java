@@ -8,6 +8,12 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event;
 public final class Registries1122R {
     private Registries1122R() {}
 
+    /** The vanilla potion types as entries of the registry (idempotent); the event of the registry still goes out later. */
+    public static void registerVanillaPotionTypes() {
+        Registries1122.POTION_TYPES.mcc$type("net.minecraft.potion.PotionType");
+        Vanilla1122.registerPotionTypes(Registries1122.POTION_TYPES.getRegistrySuperType());
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void postSynthesized(Consumer<Event> post) {
         Registries1122.POTION_TYPES.mcc$type("net.minecraft.potion.PotionType");

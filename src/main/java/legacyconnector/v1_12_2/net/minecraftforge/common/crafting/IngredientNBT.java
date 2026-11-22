@@ -12,6 +12,11 @@ public class IngredientNBT extends Ingredient {
         this.stack = stack;
     }
 
+    /** The stack this ingredient matches (recipe translation turns its NBT into a data component ingredient). */
+    public ItemStack mcc$stack() {
+        return stack;
+    }
+
     @Override
     public boolean apply(ItemStack input) {
         if (input == null) return false;

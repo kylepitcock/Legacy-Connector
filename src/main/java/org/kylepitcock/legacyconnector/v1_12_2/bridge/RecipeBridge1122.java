@@ -228,6 +228,19 @@ public final class RecipeBridge1122 {
         if (ing == null || ing == Ingredient.EMPTY) return null;
         if (ing instanceof OreIngredient ore) return tag(ore.mcc$ore());
         if (ing.mcc$source instanceof String name) return tag(name);
+        if (ing instanceof legacyconnector.v1_12_2.net.minecraftforge.common.crafting.IngredientNBT nbt && nbt.mcc$stack() != null) {
+            // an exact stack with NBT (potions, enchanted books...): a data component ingredient, so only that variant matches
+            var modern = Stacks1122.toModern(nbt.mcc$stack());
+            if (!modern.isEmpty() && !modern.getComponentsPatch().isEmpty()) {
+                try {
+                    var ops = RegistryOps.create(JsonOps.INSTANCE, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
+                    return net.minecraft.world.item.crafting.Ingredient.CODEC.encodeStart(ops,
+                            net.neoforged.neoforge.common.crafting.DataComponentIngredient.of(false, modern)).getOrThrow();
+                } catch (RuntimeException e) {
+                    // fall through to the plain item
+                }
+            }
+        }
         Set<String> ids = new LinkedHashSet<>();
         for (ItemStack stack : ing.getMatchingStacks()) {
             if (stack.isEmpty()) continue;

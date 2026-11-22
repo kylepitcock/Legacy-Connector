@@ -426,6 +426,8 @@ public final class Platform1122 implements LegacyPlatform {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTIONS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.RECIPES));
+        // vanilla potion types are registry entries before any mod code runs (JSON recipe ingredients and constants name them)
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122R.registerVanillaPotionTypes();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.JsonRecipes1122.load(); // Forge then loaded each mod's assets/<mod>/recipes JSON
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BIOMES));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENTITIES));
