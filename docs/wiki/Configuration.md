@@ -9,6 +9,7 @@ In game they can be edited from Mods -> Legacy Connector -> Config: a toggle or 
 | Key | Default | Effect |
 | --- | --- | --- |
 | `mods.skip` | empty | Comma separated legacy mod ids to leave out entirely; a jar is skipped when all of its mods are listed (it is reported as switched off in `logs/legacyconnector-report.txt`). Read by the loader at startup |
+| `warnings.riskyMods` | `true` | Show one warning on NeoForge's loading screen, once per mod set, listing translated mods that may not work fully (see [Troubleshooting](Troubleshooting.md)); `false` hides it |
 | `mods.alias.<id>` | none | Treat a legacy dependency on `<id>` as satisfied by another id (load ordering and the generated mod metadata), one line per id, e.g. `mods.alias.oldname = newname` for a renamed mod or a library provided under another id |
 | `bridges.<name>.enabled` | `true` | Library bridges (`baubles`, `waila`, `nei`, `cofhEnergy`, `patchouli`): `false` loads the legacy library itself instead of replacing it with its modern equivalent (see [Bridges](Bridges.md#outdated-dependencies)). `bridges.patchouli.enabled` covers the 1.12.2 Patchouli API and the conversion of legacy mods' books for the modern Patchouli ([details](Bridges.md#patchouli-books)). Read by the loader at startup |
 | `oreBackgrounds.enabled` | `true` | Replace the old stone/netherrack/end stone behind legacy ore textures |
