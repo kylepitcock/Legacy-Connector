@@ -585,6 +585,101 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void inventoriesNestedCoremodAndAtResourcesWithFinalProviderEligibility() throws IOException {
+        Path sourceJar = createForgeModJar("nested-transform-metadata.jar", false,
+                nestedTransformationArchive(true, null));
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+        var nested = result.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+
+        assertEquals("MOD", nested.forgeEffectiveFileType());
+        assertEquals("MOD", nested.neoForgeEffectiveFileType());
+        assertTrue(nested.forgeModInfoBacked());
+        assertTrue(nested.neoForgeModInfoBacked());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                nested.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                nested.neoForgeDisposition());
+        assertTrue(nested.forgeIdentifyModsReachesTransformationMetadata());
+        assertTrue(nested.neoForgeIdentifyModsReachesTransformationMetadata());
+
+        assertEquals(Forge1201PreflightAnalyzer.NestedResourceStatus.CAPTURED,
+                nested.coremodRegistryResourceStatus());
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARSED, nested.coremodMetadata().status());
+        assertEquals(Forge1201CoremodAnalyzer.ScriptStatus.RESOURCE_PRESENT,
+                nested.coremodMetadata().declarations().getFirst().scriptStatus());
+        assertEquals(Forge1201PreflightAnalyzer.NestedResourceStatus.CAPTURED,
+                nested.accessTransformerResourceStatus());
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED, nested.accessTransformers().status());
+        assertEquals(1, nested.accessTransformers().validDirectiveCount());
+        assertTrue(nested.forgeCoremodConsumerEligible());
+        assertTrue(nested.forgeAccessTransformerConsumerEligible());
+        assertTrue(nested.neoForgeCoremodConsumerEligible());
+        assertTrue(nested.neoForgeAccessTransformerConsumerEligible());
+        assertEquals(Forge1201PreflightAnalyzer.NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE,
+                nested.neoForgeDefaultAtDisposition());
+
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("nestedTransformationAnalyses"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("Nested Coremod / Access Transformer inventory"));
+    }
+
+    @Test
+    void distinguishesForgeManifestOnlyParserReachabilityFromNeoForgeModRejection() throws IOException {
+        Path sourceJar = createForgeModJar("nested-manifest-only-transform-metadata.jar", false,
+                nestedTransformationArchive(false, null));
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+        var nested = result.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+
+        assertEquals("GAMELIBRARY", nested.forgeEffectiveFileType());
+        assertEquals("MOD", nested.neoForgeEffectiveFileType());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO,
+                nested.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.REJECTED_MOD_WITHOUT_MOD_INFO,
+                nested.neoForgeDisposition());
+        assertTrue(nested.forgeIdentifyModsReachesTransformationMetadata());
+        assertTrue(!nested.neoForgeIdentifyModsReachesTransformationMetadata());
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARSED, nested.coremodMetadata().status());
+        assertFalse(nested.forgeCoremodConsumerEligible());
+        assertFalse(nested.forgeAccessTransformerConsumerEligible());
+        assertFalse(nested.neoForgeCoremodConsumerEligible());
+        assertFalse(nested.neoForgeAccessTransformerConsumerEligible());
+    }
+
+    @Test
+    void distinguishesExplicitGameLibraryEarlyReturnAndPluginType() throws IOException {
+        Path libraryJar = createForgeModJar("nested-explicit-gamelibrary.jar", false,
+                nestedTransformationArchive(false, "GAMELIBRARY"));
+        var libraryResult = Forge1201PreflightAnalyzer.analyze(libraryJar, List.of());
+        var library = libraryResult.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO,
+                library.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO,
+                library.neoForgeDisposition());
+        assertTrue(library.forgeIdentifyModsReachesTransformationMetadata());
+        assertFalse(library.neoForgeIdentifyModsReachesTransformationMetadata());
+
+        Path pluginJar = createForgeModJar("nested-explicit-library.toml.jar", false,
+                nestedTransformationArchive(true, "LIBRARY"));
+        var pluginResult = Forge1201PreflightAnalyzer.analyze(pluginJar, List.of());
+        var plugin = pluginResult.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER,
+                plugin.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER,
+                plugin.neoForgeDisposition());
+        assertFalse(plugin.forgeCoremodConsumerEligible());
+        assertFalse(plugin.neoForgeCoremodConsumerEligible());
+    }
+
+    @Test
     void normalizesOnlyMinecraftSrgMemberNamesAndKeepsUnknownsExplicit() {
         var location = new Forge1201ApiUsageAnalyzer.ApiReferenceLocation(
                 "source/example.jar", "example/UsesMinecraft.class");
@@ -758,6 +853,52 @@ final class Forge1201PreflightAnalyzerTest {
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jar))) {
             put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private static byte[] nestedTransformationArchive(boolean includeModsToml, String fmlModType) throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        if (fmlModType != null) manifest.getMainAttributes().putValue("FMLModType", fmlModType);
+        ByteArrayOutputStream manifestBytes = new ByteArrayOutputStream();
+        manifest.write(manifestBytes);
+
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
+            if (includeModsToml) {
+                String metadata = """
+                        modLoader="javafml"
+                        loaderVersion="[47.2,)"
+                        license="MIT"
+
+                        [[mods]]
+                        modId="nested_probe"
+                        version="1.0.0"
+                        displayName="Nested Probe"
+
+                        [[dependencies.nested_probe]]
+                        modId="minecraft"
+                        mandatory=true
+                        versionRange="[1.20.1,1.20.2)"
+                        ordering="NONE"
+                        side="BOTH"
+
+                        [[dependencies.nested_probe]]
+                        modId="forge"
+                        mandatory=true
+                        versionRange="[47.3.0,)"
+                        ordering="NONE"
+                        side="BOTH"
+                        """;
+                put(zip, "META-INF/mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
+            }
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH,
+                    "{\"nested_probe\":\"scripts/nested_probe.js\"}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "scripts/nested_probe.js", "// inert; never evaluated by preflight".getBytes(StandardCharsets.UTF_8));
+            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
+                    "public net.minecraft.world.entity.Entity\\n".getBytes(StandardCharsets.UTF_8));
+        }
+        return bytes.toByteArray();
     }
 
     private byte[] nestedMixinHeuristicArchive() throws IOException {
