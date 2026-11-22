@@ -38,6 +38,12 @@ public final class ItemBridge1122 {
             if (vanilla != null && vanilla.mcc$vanillaModern != null) item = vanilla;
             else if (block.mcc$modern instanceof net.minecraft.world.level.block.Block mb && mb.asItem() != net.minecraft.world.item.Items.AIR) item = Vanilla1122.itemForModern(mb.asItem());
         }
+        // an ItemBlock a mod already created (IC2 Classic's ItemBlockFluid for Blocks.WATER) is known before the registry event adds it
+        if (item == null && block != null) {
+            synchronized (legacyconnector.v1_12_2.net.minecraftforge.registries.GameData.getBlockItemMap()) {
+                item = legacyconnector.v1_12_2.net.minecraftforge.registries.GameData.getBlockItemMap().get(block);
+            }
+        }
         return item;
     }
 

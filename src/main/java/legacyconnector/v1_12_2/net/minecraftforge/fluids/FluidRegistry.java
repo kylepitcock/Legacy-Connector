@@ -14,8 +14,18 @@ public abstract class FluidRegistry {
     private static boolean universalBucket;
     private static final java.util.Set<Fluid> BUCKET_FLUIDS = new java.util.LinkedHashSet<>();
 
-    public static final Fluid WATER = new Fluid("water", new ResourceLocation("blocks/water_still"), new ResourceLocation("blocks/water_flow"));
-    public static final Fluid LAVA = new Fluid("lava", new ResourceLocation("blocks/lava_still"), new ResourceLocation("blocks/lava_flow"))
+    public static final Fluid WATER = new Fluid("water", new ResourceLocation("blocks/water_still"), new ResourceLocation("blocks/water_flow")) {
+        @Override
+        protected legacyconnector.v1_12_2.net.minecraft.block.Block vanillaBlock() {
+            return legacyconnector.v1_12_2.net.minecraft.init.Blocks.WATER;
+        }
+    };
+    public static final Fluid LAVA = new Fluid("lava", new ResourceLocation("blocks/lava_still"), new ResourceLocation("blocks/lava_flow")) {
+        @Override
+        protected legacyconnector.v1_12_2.net.minecraft.block.Block vanillaBlock() {
+            return legacyconnector.v1_12_2.net.minecraft.init.Blocks.LAVA;
+        }
+    }
             .setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1300);
 
     static {
