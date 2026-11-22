@@ -42,10 +42,9 @@ class AlienEvoGeckoRenderLayerModel1201Test implements Opcodes {
         MethodNode method = new MethodNode(ACC_PUBLIC, "renderRecursively", RECURSIVE_DESC, null, null);
         method.instructions.add(new VarInsnNode(ALOAD, 1));
         method.instructions.add(new VarInsnNode(ALOAD, 3));
-        method.instructions.add(new MethodInsnNode(INVOKESTATIC, "software/bernie/geckolib/util/RenderUtils",
-                "prepMatrixForBone",
-                "(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/core/animatable/model/CoreGeoBone;)V",
-                false));
+        method.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                AlienEvoGeckoRenderLayerModel1201.RENDER_UTIL, "prepMatrixForBone",
+                AlienEvoGeckoRenderLayerModel1201.PREP_MATRIX_FOR_BONE_DESC, false));
         method.instructions.add(new VarInsnNode(ALOAD, 0));
         method.instructions.add(new VarInsnNode(ALOAD, 1));
         method.instructions.add(new VarInsnNode(ALOAD, 2));
@@ -122,8 +121,11 @@ class AlienEvoGeckoRenderLayerModel1201Test implements Opcodes {
 
         MethodNode recursive = find(node, "renderRecursively", RECURSIVE_DESC);
         assertNotNull(recursive);
-        MethodInsnNode prep = findCall(recursive, "software/bernie/geckolib/util/RenderUtils", "prepMatrixForBone");
+        MethodInsnNode prep = findCall(recursive,
+                AlienEvoGeckoRenderLayerModel1201.RENDER_UTIL, "prepMatrixForBone");
         assertNotNull(prep);
+        assertEquals(INVOKESTATIC, prep.getOpcode());
+        assertEquals(AlienEvoGeckoRenderLayerModel1201.PREP_MATRIX_FOR_BONE_DESC, prep.desc);
         AbstractInsnNode guard = nextMeaningful(prep);
         assertTrue(guard instanceof VarInsnNode load && load.getOpcode() == ALOAD && load.var == 7);
         assertTrue(nextMeaningful(guard) instanceof JumpInsnNode jump && jump.getOpcode() == IFNE);
@@ -162,11 +164,26 @@ class AlienEvoGeckoRenderLayerModel1201Test implements Opcodes {
     }
 
     @Test
+    void failsClosedWhenThePreRemapGeckoLib48AnchorReachesThePostRemapAdapter() {
+        ClassNode node = node(AlienEvoGeckoRenderLayerModel1201.TARGET_CLASS,
+                animationMethod(PalladiumGeckoRenderLayer1201.OLD_HANDLE_ANIMATIONS_DESC));
+        MethodNode recursive = find(node, "renderRecursively", RECURSIVE_DESC);
+        MethodInsnNode prep = findCall(recursive,
+                AlienEvoGeckoRenderLayerModel1201.RENDER_UTIL, "prepMatrixForBone");
+        assertNotNull(prep);
+        prep.owner = "software/bernie/geckolib/util/RenderUtils";
+        prep.desc = "(Lcom/mojang/blaze3d/vertex/PoseStack;"
+                + "Lsoftware/bernie/geckolib/core/animatable/model/CoreGeoBone;)V";
+        assertThrows(IllegalStateException.class, () -> AlienEvoGeckoRenderLayerModel1201.apply(node));
+    }
+
+    @Test
     void failsClosedWhenTheRecursiveMatrixAnchorChanges() {
         ClassNode node = node(AlienEvoGeckoRenderLayerModel1201.TARGET_CLASS,
                 animationMethod(PalladiumGeckoRenderLayer1201.OLD_HANDLE_ANIMATIONS_DESC));
         MethodNode recursive = find(node, "renderRecursively", RECURSIVE_DESC);
-        recursive.instructions.remove(findCall(recursive, "software/bernie/geckolib/util/RenderUtils", "prepMatrixForBone"));
+        recursive.instructions.remove(findCall(recursive,
+                AlienEvoGeckoRenderLayerModel1201.RENDER_UTIL, "prepMatrixForBone"));
         assertThrows(IllegalStateException.class, () -> AlienEvoGeckoRenderLayerModel1201.apply(node));
     }
 
