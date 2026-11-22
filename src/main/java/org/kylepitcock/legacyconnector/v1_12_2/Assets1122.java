@@ -134,6 +134,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         RESOURCE_EXISTS.clear();
         JSON_FILES.clear();
         STATE_MODELS_BUILDING.clear();
+        STATE_MODELS_USED.set(0);
         clientProxies();
         vanillaModelAliases(out);
         itemModels(out);
@@ -180,6 +181,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         for (int ticks = 1; ticks <= 4; ticks++) {
             renames.add(new String[] {"repeater_on_" + ticks + "tick", "repeater_" + ticks + "tick_on"});
             renames.add(new String[] {"repeater_on_" + ticks + "tick_locked", "repeater_" + ticks + "tick_on_locked"});
+            // 1.12's own names of the locked repeater (blockstates of mods that copy vanilla's, Colored Redstone)
+            renames.add(new String[] {"repeater_locked_" + ticks + "tick", "repeater_" + ticks + "tick_locked"});
+            renames.add(new String[] {"repeater_on_locked_" + ticks + "tick", "repeater_" + ticks + "tick_on_locked"});
         }
         for (String[] r : renames) {
             byte[] bytes = ("{\"parent\":\"minecraft:block/" + r[1] + "\"}").getBytes(java.nio.charset.StandardCharsets.UTF_8);
@@ -580,7 +584,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * Most states beyond the metadata one block may have for them to get models of their own (more are connection states from
      * getActualState, drawn by the models of their metadata as before).
      */
-    private static final int MAX_STATE_MODELS = 64;
+    private static final int MAX_STATE_MODELS = 512;
+    /**
+     * Most such models of all blocks together: a colour times a facing/delay property is hundreds per block (Colored Redstone's repeaters:
+     * 16 colours x 4 delays x 4 facings x 2 locked, 496 states beyond the metadata, each its own textures and rotation); the budget keeps a pack
+     * of many such blocks from baking without bound. A block past either cap keeps the models of its metadata (all or nothing per block).
+     */
+    private static final int STATE_MODEL_BUDGET = 16384;
+    private static final java.util.concurrent.atomic.AtomicInteger STATE_MODELS_USED = new java.util.concurrent.atomic.AtomicInteger();
     /** Most states beyond the metadata of one block whose variants are resolved at all. */
     private static final int MAX_STATE_MODEL_STATES = 1024;
     private static final Map<String, ResourceLocation> STATE_MODELS_BUILDING = new java.util.concurrent.ConcurrentHashMap<>();
@@ -665,11 +676,19 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             String content = GSON.toJson(all);
             ResourceLocation model = byContent.get(content);
             if (model == null) {
-                if (byContent.size() >= MAX_STATE_MODELS) return; // connection states, not render parts: the models of their metadata draw them
+                if (byContent.size() >= MAX_STATE_MODELS) {
+                    // connection states, not render parts: the models of their metadata draw them
+                    LOG.info("1.12.2 state models: {} has more than {} distinct variants beyond its metadata; its metadata models draw them", id, MAX_STATE_MODELS);
+                    return;
+                }
                 model = stateModelFile(id, key, all, out);
                 if (model != null) byContent.put(content, model);
             }
             if (model != null) byName.put(name, model);
+        }
+        if (STATE_MODELS_USED.addAndGet(byContent.size()) > STATE_MODEL_BUDGET) {
+            LOG.info("1.12.2 state models: the budget of {} models is used up; {} keeps the models of its metadata", STATE_MODEL_BUDGET, id);
+            return;
         }
         STATE_MODELS_BUILDING.putAll(byName);
     }
