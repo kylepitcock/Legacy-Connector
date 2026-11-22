@@ -74,6 +74,15 @@ final class Forge1201AccessTransformerAnalyzerTest {
         assertEquals(Forge1201AccessTransformerAnalyzer.DirectiveStatus.WILDCARD_REQUIRES_REVIEW,
                 result.directives().get(0).status());
         assertNotNull(result.directives().get(0).diagnostic());
+
+        String compatibleChanges = """
+                public net.minecraft.world.entity.Entity f_same_
+                public-f net.minecraft.world.entity.Entity f_same_
+                """;
+        var compatible = Forge1201AccessTransformerAnalyzer.parse(
+                compatibleChanges, compatibleChanges.length(), "d".repeat(64));
+        assertEquals(1, compatible.duplicateTargetCount());
+        assertEquals(0, compatible.conflictingTargetCount());
     }
 
     @Test
