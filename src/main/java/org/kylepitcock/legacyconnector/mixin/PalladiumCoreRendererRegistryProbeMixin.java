@@ -1,7 +1,7 @@
 package org.kylepitcock.legacyconnector.mixin;
 
 import java.util.Map;
-import org.kylepitcock.legacyconnector.v1_20_1.PalladiumRendererRegistryDebugCompat;
+import legacyconnector.v1_20_1.PalladiumRendererRegistryDebugCompat;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
