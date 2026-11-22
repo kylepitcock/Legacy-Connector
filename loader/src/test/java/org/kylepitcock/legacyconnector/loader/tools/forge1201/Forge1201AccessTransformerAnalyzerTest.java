@@ -61,19 +61,26 @@ final class Forge1201AccessTransformerAnalyzerTest {
         String source = """
                 public net.minecraft.world.entity.Entity *
                 private net.minecraft.world.entity.Entity *
+                protected net.minecraft.world.entity.Entity *()
                 public net.minecraft.world.entity.Entity m_12345_()V
                 """;
 
         var result = Forge1201AccessTransformerAnalyzer.parse(source, source.length(), "b".repeat(64));
 
-        assertEquals(3, result.directives().size());
-        assertEquals(2, result.wildcardDirectiveCount());
+        assertEquals(4, result.directives().size());
+        assertEquals(3, result.wildcardDirectiveCount());
         assertEquals(1, result.validDirectiveCount());
         assertEquals(1, result.duplicateTargetCount());
         assertEquals(1, result.conflictingTargetCount());
         assertEquals(Forge1201AccessTransformerAnalyzer.DirectiveStatus.WILDCARD_REQUIRES_REVIEW,
                 result.directives().get(0).status());
         assertNotNull(result.directives().get(0).diagnostic());
+        var wildcardMethod = result.directives().get(2);
+        assertEquals(Forge1201AccessTransformerAnalyzer.TargetKind.WILDCARD_METHOD, wildcardMethod.targetKind());
+        assertEquals("*", wildcardMethod.memberName());
+        assertEquals("()", wildcardMethod.descriptor());
+        assertEquals("FORGE_SRG_1.20.1_WILDCARD_PATTERN", wildcardMethod.memberNamespace());
+        assertEquals("WILDCARD_METHOD_PATTERN_NOT_JVM_DESCRIPTOR", wildcardMethod.descriptorNamespace());
 
         String compatibleChanges = """
                 public net.minecraft.world.entity.Entity f_same_
@@ -83,6 +90,14 @@ final class Forge1201AccessTransformerAnalyzerTest {
                 compatibleChanges, compatibleChanges.length(), "d".repeat(64));
         assertEquals(1, compatible.duplicateTargetCount());
         assertEquals(0, compatible.conflictingTargetCount());
+    }
+
+    @Test
+    void rejectsNonCanonicalWildcardMethodPatterns() {
+        String source = "public net.minecraft.world.entity.Entity *()V";
+        var result = Forge1201AccessTransformerAnalyzer.parse(source, source.length(), "f".repeat(64));
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARTIALLY_PARSED, result.status());
+        assertEquals(1, result.malformedLineCount());
     }
 
     @Test
