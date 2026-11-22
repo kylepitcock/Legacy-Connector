@@ -226,7 +226,7 @@ public final class Forge1201CoremodAnalyzer {
 
     private static boolean isSafeResourcePath(String path) {
         if (path == null || path.isBlank() || path.startsWith("/")
-                || path.indexOf('\\\\') >= 0 || path.indexOf(':') >= 0
+                || path.indexOf('\\') >= 0 || path.indexOf(':') >= 0
                 || containsControlCharacters(path)) {
             return false;
         }
