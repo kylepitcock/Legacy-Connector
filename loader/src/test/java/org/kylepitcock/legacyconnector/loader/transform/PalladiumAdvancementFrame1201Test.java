@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -16,7 +17,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 class PalladiumAdvancementFrame1201Test implements Opcodes {
     private static final String ADVANCEMENT_TYPE = "net/minecraft/advancements/AdvancementType";
     private static final String HELPER =
-            "org/kylepitcock/legacyconnector/v1_20_1/migrate/PalladiumFrameTypeCompat";
+            "org/kylepitcock/legacyconnector/v1_20_1/compat/PalladiumFrameTypeCompat";
     private static final String HELPER_DESC =
             "(Lnet/minecraft/advancements/AdvancementType;)I";
 

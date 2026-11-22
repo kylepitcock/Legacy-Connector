@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -147,7 +148,7 @@ class PalladiumSelectionLists1201Test implements Opcodes {
         for (var instruction : method.instructions.toArray()) {
             if (instruction instanceof MethodInsnNode call
                     && call.getOpcode() == INVOKESTATIC
-                    && call.owner.equals("legacyconnector/v1_20_1/PalladiumSelectionListCompat")
+                    && call.owner.equals("legacyconnector/v1_20_1/compat/PalladiumSelectionListCompat")
                     && call.name.equals(name)
                     && call.desc.equals("(Ljava/lang/Object;Z)V")) return true;
         }

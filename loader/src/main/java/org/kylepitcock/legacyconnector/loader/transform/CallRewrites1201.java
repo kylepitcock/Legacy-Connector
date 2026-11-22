@@ -30,7 +30,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  *   <li>Palladium 4.5.x's synthesized mod-pack metadata declares the active 1.21.1 resource/data pack format.</li>
  * </ul>
  */
-final class CallRewrites1201 {
+public final class CallRewrites1201 {
     static final String HELPERS = "legacyconnector/v1_20_1/Compat1201";
 
     /** owner.&lt;init&gt;desc to {owner, factory name, factory descriptor}. */

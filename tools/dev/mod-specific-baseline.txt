@@ -6,3 +6,8 @@ src/main/java/org/kylepitcock/legacyconnector/core/Ids.java	2
 src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java	5
 src/main/java/org/kylepitcock/legacyconnector/v1_7_10/bridge/ForeignEnergy1710.java	8
 src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/WorldScreenshotTest.java	2
+# 2026-11-22: AlienEvo/Palladium rewrite orchestration still inline in the core; move into compat/ when next touched
+loader/src/main/java/org/kylepitcock/legacyconnector/loader/resource/DataConverter1201.java	2
+loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/CallRewrites1201.java	5
+loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/Forge1201Transformer.java	62
+src/main/java/legacyconnector/v1_20_1/Compat1201.java	3

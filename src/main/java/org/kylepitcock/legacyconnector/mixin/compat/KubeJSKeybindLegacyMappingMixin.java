@@ -1,7 +1,7 @@
 package org.kylepitcock.legacyconnector.mixin.compat;
 
 import java.util.List;
-import legacyconnector.v1_20_1.KubeJSKeybindCompat;
+import legacyconnector.v1_20_1.compat.KubeJSKeybindCompat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Unique;

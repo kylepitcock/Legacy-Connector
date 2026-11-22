@@ -1,6 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_20_1;
 
-import legacyconnector.v1_20_1.PalladiumFlightDebugCompat;
+import legacyconnector.v1_20_1.compat.PalladiumFlightDebugCompat;
 import legacyconnector.v1_20_1.net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory;
 import legacyconnector.v1_20_1.net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import legacyconnector.v1_20_1.net.minecraftforge.client.event.RenderGuiOverlayEvent;

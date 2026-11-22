@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -26,7 +27,7 @@ class PalladiumColor1201Test implements Opcodes {
         assertEquals(3, PalladiumColor1201.apply(node));
         MethodNode render = findRender(node);
         assertEquals(0, count(render, "net/minecraft/world/entity/animal/Sheep", "getColorArray"));
-        assertEquals(3, count(render, "legacyconnector/v1_20_1/PalladiumColorCompat", "sheepColorArray"));
+        assertEquals(3, count(render, "legacyconnector/v1_20_1/compat/PalladiumColorCompat", "sheepColorArray"));
         assertEquals(0, PalladiumColor1201.apply(node));
         assertSerializes(node);
     }
@@ -51,7 +52,7 @@ class PalladiumColor1201Test implements Opcodes {
 
         assertEquals(2, PalladiumColor1201.apply(node));
         assertEquals(0, count(render, "net/minecraft/world/entity/animal/Sheep", "getColorArray"));
-        assertEquals(2, count(render, "legacyconnector/v1_20_1/PalladiumColorCompat", "sheepColorArray"));
+        assertEquals(2, count(render, "legacyconnector/v1_20_1/compat/PalladiumColorCompat", "sheepColorArray"));
         assertEquals(0, PalladiumColor1201.apply(node));
         assertSerializes(node);
     }
@@ -69,7 +70,7 @@ class PalladiumColor1201Test implements Opcodes {
         ClassNode node = legacyLayer();
         MethodNode render = findRender(node);
         render.instructions.insertBefore(render.instructions.getLast(), new MethodInsnNode(
-                INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumColorCompat", "sheepColorArray", DESC, false));
+                INVOKESTATIC, "legacyconnector/v1_20_1/compat/PalladiumColorCompat", "sheepColorArray", DESC, false));
         assertThrows(IllegalStateException.class, () -> PalladiumColor1201.apply(node));
     }
 

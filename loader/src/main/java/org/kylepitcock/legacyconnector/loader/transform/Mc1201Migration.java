@@ -34,7 +34,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  * </ol>
  * A call is only touched when no class of the mod declares the method on the way up from its receiver type: the mod's own methods keep their signatures.
  */
-final class Mc1201Migration {
+public final class Mc1201Migration {
     private static final String CONTEXT = Mc1201Tables.HELPER_PACKAGE + "MigrateContext";
     private static final String PROVIDER = "net/minecraft/core/HolderLookup$Provider";
     private static final String HOLDER = "net/minecraft/core/Holder";

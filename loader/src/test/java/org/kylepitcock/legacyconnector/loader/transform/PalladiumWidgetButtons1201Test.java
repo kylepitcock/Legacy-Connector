@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,6 +23,8 @@ class PalladiumWidgetButtons1201Test implements Opcodes {
             "net/minecraft/client/gui/GuiGraphics";
     private static final String BLIT_HELPER =
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiddleClientCompat";
+    private static final String BUTTON_HELPER =
+            "org/kylepitcock/legacyconnector/v1_20_1/compat/PalladiumClientCompat";
     private static final String LEGACY_BLIT_DESCRIPTOR =
             "(L" + GUI_GRAPHICS + ";" + RESOURCE_LOCATION + "IIIIIIIIII)V";
 
@@ -40,7 +43,7 @@ class PalladiumWidgetButtons1201Test implements Opcodes {
                 "net/threetag/palladium/client/screen/components/FlatIconButton",
                 "WIDGETS_LOCATION"),
                 "IconButton's separate custom texture path must remain untouched");
-        assertTrue(hasCall(render, BLIT_HELPER, "blitPalladiumDefaultButton"),
+        assertTrue(hasCall(render, BUTTON_HELPER, "blitPalladiumDefaultButton"),
                 "the sentinel must only be consumed by the sprite-aware helper");
         assertFalse(hasCall(render, BLIT_HELPER, "blitNineSliced"),
                 "the null sentinel must not reach the raw-texture nine-slice helper");
@@ -54,7 +57,7 @@ class PalladiumWidgetButtons1201Test implements Opcodes {
 
         MethodNode render = node.methods.get(0);
         assertFalse(hasStaticField(render, node.name, "WIDGETS_LOCATION"));
-        assertTrue(hasCall(render, BLIT_HELPER, "blitPalladiumDefaultButton"));
+        assertTrue(hasCall(render, BUTTON_HELPER, "blitPalladiumDefaultButton"));
         assertFalse(hasCall(render, BLIT_HELPER, "blitNineSliced"));
     }
 
@@ -67,7 +70,7 @@ class PalladiumWidgetButtons1201Test implements Opcodes {
         MethodNode render = node.methods.get(0);
         assertTrue(hasStaticField(render, node.name, "WIDGETS_LOCATION"));
         assertTrue(hasCall(render, BLIT_HELPER, "blitNineSliced"));
-        assertFalse(hasCall(render, BLIT_HELPER, "blitPalladiumDefaultButton"));
+        assertFalse(hasCall(render, BUTTON_HELPER, "blitPalladiumDefaultButton"));
     }
 
     private static ClassNode buttonNode(String name, boolean includeFlatIconTexture) {

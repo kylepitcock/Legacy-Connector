@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,7 +34,7 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
                     + "Lnet/minecraft/server/packs/repository/PackSource;)"
                     + "Lnet/minecraft/server/packs/repository/FolderRepositorySource;";
     private static final String PACK = "net/minecraft/server/packs/repository/Pack";
-    private static final String PACK_HELPER = "legacyconnector/v1_20_1/PalladiumAddonPackCompat";
+    private static final String PACK_HELPER = "legacyconnector/v1_20_1/compat/PalladiumAddonPackCompat";
     private static final String PACK_TYPE = "net/minecraft/server/packs/PackType";
     private static final String PACK_HELPER_DESC =
             "(L" + PACK + ";L" + PACK_TYPE + ";)L" + PACK + ";";
@@ -60,7 +61,7 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
         MethodInsnNode rewritten = findFolderSourceConstructor(constructor);
         assertEquals(TARGET_DESCRIPTOR, rewritten.desc);
         assertTrue(hasCallBefore(constructor, rewritten, INVOKESTATIC,
-                "legacyconnector/v1_20_1/PalladiumAddonPackCompat",
+                "legacyconnector/v1_20_1/compat/PalladiumAddonPackCompat",
                 "addonPackDirectoryValidator", HELPER_DESCRIPTOR));
         assertEquals(6, constructor.maxStack, "the validator return value adds one stack slot");
         assertFalse(hasLegacyFolderSourceConstructor(constructor));
@@ -108,7 +109,7 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
         assertEquals(1, PalladiumAddonPackManager1201.apply(node));
         assertEquals(TARGET_DESCRIPTOR, findFolderSourceConstructor(findConstructor(node)).desc);
         assertFalse(hasCallBefore(findConstructor(node), findFolderSourceConstructor(findConstructor(node)),
-                INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumAddonPackCompat",
+                INVOKESTATIC, "legacyconnector/v1_20_1/compat/PalladiumAddonPackCompat",
                 "addonPackDirectoryValidator", HELPER_DESCRIPTOR));
         assertTrue(hasCall(find(node, "lambda$getWrappedPackFinder$0", PACK_CALLBACK_DESC),
                 INVOKESTATIC, PACK_HELPER, "prefixAndRequireAddonPack", PACK_HELPER_DESC));

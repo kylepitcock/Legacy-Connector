@@ -17,7 +17,8 @@
   "client": [
     "RocketnauticsStarPlasmaMixin",
     "AurorasIrisStateMixin",
-    "KubeJSKeybindLegacyMappingMixin"
+    "KubeJSKeybindLegacyMappingMixin",
+    "PalladiumCoreRendererRegistryProbeMixin"
   ],
   "injectors": {
     "defaultRequire": 0

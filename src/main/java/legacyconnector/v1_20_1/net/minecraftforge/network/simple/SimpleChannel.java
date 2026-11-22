@@ -27,7 +27,6 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * registered when NeoForge fires {@link RegisterPayloadHandlersEvent} ({@link #registerAll}); messages may be added to a channel until then and after.
  */
 public class SimpleChannel {
-    private static final org.slf4j.Logger FLIGHT_TRACE_LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/PalladiumFlight");
     private static final List<SimpleChannel> CHANNELS = new ArrayList<>();
 
     private final ResourceLocation name;
@@ -146,16 +145,7 @@ public class SimpleChannel {
     }
 
     private void logFlightTrace(String stage, Object message, String direction) {
-        if (!Boolean.getBoolean("legacyconnector.debug.palladiumFlight") || message == null) return;
-        String messageName = message instanceof Class<?> type ? type.getName() : message.getClass().getName();
-        String lower = messageName.toLowerCase(Locale.ROOT);
-        boolean palladiumCoreChannel = "palladiumcore".equals(name.getNamespace());
-        boolean flightMessage = lower.contains("flight") || lower.contains("flying")
-                || lower.contains("movement") || lower.contains("key");
-        if (palladiumCoreChannel || flightMessage) {
-            FLIGHT_TRACE_LOG.info("[PalladiumFlightTrace] network stage={} channel={} direction={} message={}",
-                    stage, name, direction, messageName);
-        }
+        legacyconnector.v1_20_1.compat.PalladiumFlightDebugCompat.traceNetwork(stage, name, message, direction);
     }
 
     // ---- Forge's API --------------------------------------------------------------------------------------------------------

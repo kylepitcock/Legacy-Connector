@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -188,7 +189,7 @@ class PalladiumFlightHandler1201Test implements Opcodes {
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction instanceof MethodInsnNode call
                     && call.getOpcode() == INVOKESTATIC
-                    && call.owner.equals("legacyconnector/v1_20_1/PalladiumFlightDebugCompat")
+                    && call.owner.equals("legacyconnector/v1_20_1/compat/PalladiumFlightDebugCompat")
                     && call.name.equals(helperName)) return true;
         }
         return false;

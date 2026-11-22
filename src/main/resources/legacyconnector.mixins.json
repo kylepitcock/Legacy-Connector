@@ -153,8 +153,7 @@
     "OptionsScreenLegacySettingsMixin",
     "ClientLanguageLegacyKeysMixin",
     "CustomHeadLayerLegacyArmorMixin",
-    "BlockExpressionModelMixin",
-    "PalladiumCoreRendererRegistryProbeMixin"
+    "BlockExpressionModelMixin"
   ],
   "legacyconnector_guarded": [
     "ConfigValueUnloadedMixin",

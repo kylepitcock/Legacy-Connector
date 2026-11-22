@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +31,7 @@ class PalladiumFlightInputTrace1201Test implements Opcodes {
         MethodInsnNode callbackTrace = null;
         for (var instruction : input.instructions) {
             if (instruction instanceof MethodInsnNode methodCall
-                    && methodCall.owner.equals("legacyconnector/v1_20_1/PalladiumFlightDebugCompat")
+                    && methodCall.owner.equals("legacyconnector/v1_20_1/compat/PalladiumFlightDebugCompat")
                     && methodCall.name.equals("logKeyEvent")) {
                 callbackTrace = methodCall;
                 break;
@@ -46,7 +47,7 @@ class PalladiumFlightInputTrace1201Test implements Opcodes {
         boolean loadMarker = false;
         for (var instruction : initializer.instructions) {
             if (instruction instanceof MethodInsnNode methodCall
-                    && methodCall.owner.equals("legacyconnector/v1_20_1/PalladiumFlightDebugCompat")
+                    && methodCall.owner.equals("legacyconnector/v1_20_1/compat/PalladiumFlightDebugCompat")
                     && methodCall.name.equals("logInputTraceInstalled")) {
                 loadMarker = true;
                 break;
