@@ -176,6 +176,48 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
     public void setLevel(Level level) {
         super.setLevel(level);
         if (legacy != null) legacy.setWorldObj(World.mcc$wrap(level));
+        if (level instanceof net.minecraft.server.level.ServerLevel) {
+            LIVE.add(this);
+            listenForSaves();
+        }
+    }
+
+    // ------------------------------------------------------------------ saving
+
+    /** Server-side hosts of loaded chunks (removed when the host is removed or its chunk unloads). */
+    private static final java.util.Set<LegacyBlockEntity> LIVE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static boolean listening;
+
+    /**
+     * 1.4.7 to 1.7.10 saved a chunk whenever it was "modified" or held entities and a player was around (Chunk.needsSaving), and most tile entities never
+     * called markDirty when a field of theirs changed (an engine's heat, a conduit's liquid, a machine's progress): their state reached the disk with the
+     * regular chunk save. A modern chunk is written only when something set it unsaved, so those tile entities lost everything since their chunk was last
+     * dirtied. Before a level or a chunk is written, the chunks that hold a live legacy tile entity are therefore marked unsaved.
+     */
+    private static synchronized void listenForSaves() {
+        if (listening) return;
+        listening = true;
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Save e) -> {
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel sl) markChunksUnsaved(sl);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
+            if (e.getChunk() instanceof net.minecraft.world.level.chunk.LevelChunk chunk && !chunk.getLevel().isClientSide) {
+                for (BlockEntity be : chunk.getBlockEntities().values()) {
+                    if (be instanceof LegacyBlockEntity host && host.legacy != null) {
+                        chunk.setUnsaved(true);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    private static void markChunksUnsaved(net.minecraft.server.level.ServerLevel level) {
+        for (LegacyBlockEntity be : LIVE) {
+            if (be.level != level || be.isRemoved() || be.legacy == null) continue;
+            net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunkSource().getChunkNow(be.worldPosition.getX() >> 4, be.worldPosition.getZ() >> 4);
+            if (chunk != null) chunk.setUnsaved(true);
+        }
     }
 
     private static final java.util.Map<Class<?>, Boolean> UPDATES = new java.util.concurrent.ConcurrentHashMap<>();
@@ -294,12 +336,14 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         // Forge never invalidated a tile entity whose chunk unloaded (only onChunkUnload): BuildCraft's quarry releases its chunk loading ticket in invalidate()
         // and the ticket would be gone from the world's save.
         if (legacy != null && !chunkUnloading) invalidateLegacy(legacy);
+        LIVE.remove(this);
         super.setRemoved();
     }
 
     @Override
     public void onChunkUnloaded() {
         chunkUnloading = true;
+        LIVE.remove(this);
         if (legacy != null) legacy.onChunkUnload();
         super.onChunkUnloaded();
     }
