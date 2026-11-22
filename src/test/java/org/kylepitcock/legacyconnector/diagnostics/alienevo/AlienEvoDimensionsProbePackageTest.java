@@ -2,9 +2,14 @@ package org.kylepitcock.legacyconnector.diagnostics.alienevo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import net.minecraft.world.entity.player.Player;
 import org.junit.jupiter.api.Test;
 
@@ -21,15 +26,29 @@ class AlienEvoDimensionsProbePackageTest {
     }
 
     @Test
-    void mixinConfigurationRegistersOnlyTheMixinAdapter() throws Exception {
-        try (var input = AlienEvoDimensionsProbePackageTest.class.getResourceAsStream(
-                "/legacyconnector.mixins.json")) {
-            assertTrue(input != null, "legacyconnector.mixins.json must be present");
-            String json = new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+    void utilityBytecodeIsOutsideTheMixinOwnedPackage() {
+        assertNotNull(getClass().getResource(
+                "/org/kylepitcock/legacyconnector/diagnostics/alienevo/AlienEvoDimensionsProbe.class"));
+        assertNotNull(getClass().getResource(
+                "/org/kylepitcock/legacyconnector/mixin/AlienEvoDimensionsProbeMixin.class"));
+        assertNull(getClass().getResource(
+                "/org/kylepitcock/legacyconnector/mixin/AlienEvoDimensionsProbe.class"),
+                "A non-Mixin helper must not be emitted in the configured Mixin package");
+    }
+
+    @Test
+    void mixinConfigurationRegistersTheMixinAdapterButNotTheHelper() throws IOException {
+        try (InputStream input = getClass().getResourceAsStream("/legacyconnector.mixins.json")) {
+            assertNotNull(input, "legacyconnector.mixins.json must be on the runtime classpath");
+            String config = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+
+            assertTrue(config.contains("\"package\": \"org.kylepitcock.legacyconnector.mixin\""));
+
             com.google.gson.JsonObject root =
-                    com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+                    com.google.gson.JsonParser.parseString(config).getAsJsonObject();
             var mixins = root.getAsJsonArray("mixins");
-            assertTrue(mixins != null);
+            assertNotNull(mixins);
+
             boolean adapterRegistered = false;
             boolean utilityRegistered = false;
             for (var entry : mixins) {
@@ -37,8 +56,11 @@ class AlienEvoDimensionsProbePackageTest {
                 adapterRegistered |= name.equals("AlienEvoDimensionsProbeMixin");
                 utilityRegistered |= name.equals("AlienEvoDimensionsProbe");
             }
-            assertTrue(adapterRegistered);
-            assertFalse(utilityRegistered);
+
+            assertTrue(adapterRegistered, "The dimensions diagnostic Mixin adapter must be registered");
+            assertFalse(utilityRegistered, "The plain diagnostics utility must not be registered as a Mixin");
+            assertTrue(config.contains("\"AlienEvoDimensionsProbeMixin\""));
+            assertFalse(config.contains("\"AlienEvoDimensionsProbe\","));
         }
     }
 }
