@@ -127,7 +127,7 @@ class AlienEvoGeckoRenderLayerModel1201Test implements Opcodes {
         assertEquals(INVOKESTATIC, prep.getOpcode());
         assertEquals(AlienEvoGeckoRenderLayerModel1201.PREP_MATRIX_FOR_BONE_DESC, prep.desc);
         AbstractInsnNode guard = nextMeaningful(prep);
-        assertTrue(guard instanceof VarInsnNode load && load.getOpcode() == ALOAD && load.var == 7);
+        assertTrue(guard instanceof VarInsnNode load && load.getOpcode() == ILOAD && load.var == 7);
         assertTrue(nextMeaningful(guard) instanceof JumpInsnNode jump && jump.getOpcode() == IFNE);
         assertNotNull(findCall(recursive, BGC, "legacyRefreshSolid"));
         assertNotNull(findCall(recursive, AlienEvoGeckoRenderLayerModel1201.BUFFER_REFRESH, "needsRefresh"));
