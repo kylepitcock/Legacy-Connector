@@ -35,13 +35,7 @@ same as "works in play"; per-mod results are on the compatibility site. Details 
 Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era. Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md); how the
 work is organised: [Work plan](docs/wiki/Work-Plan.md). Missing features and known problems: [Compatibility and status](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues).
 
-Recent changes (0.4.15, 2026-11-16, and the nightly since): a boot crash in every pack with FerriteCore is fixed; Thermal Expansion works
-further on 1.7.10 (items no longer black, no freeze when placing) and on 1.4.7 (Tesseract GUIs, machine facing after a reload); CoFH Core,
-Thermal Foundation, Redstone Arsenal and Ensorcellation for 1.20.1 load into a world; CustomOreGen 1.12.2 generates its ores; ability keys of
-mods that register one packet class for both sides work (The Legends Mod); the original Minecraft jar that legacy coremods need is now
-downloaded from Mojang by default when no launcher has it (`coremods.downloadVanilla`); Minecraft 1.2.5 mods can be tried behind
-`experimental.minecraft125`. `checkLegacyMod` now verifies translated bytecode offline, which finds client-only load failures without
-starting the game. The [addon API](docs/wiki/Addon-API.md) 0.3 covers every supported version.
+Recent changes (0.5.1 and the nightly since): 1.2.5 is on by default; village buildings of 1.4.7 and 1.5.2 mods are built whole; RedPower works further on 1.4.7 and 1.2.5; Thermal Expansion 1.4.7 draws its machines and conduits; 1.12.2 mods that share one event class no longer register twice, and Twilight Forest and Techguns run further; legacy ores below y=0 come from one shifted pass (`deepLayer.mode`); Forge 1.20.1 got four more rounds of API coverage (Wither Storm, LDLib, Ars Nouveau, Iron's Spells, Cyclops Core); Beta 1.7.3 mobs, mounts and screens behave better; a NeoForge mixin clash with Sinytra Connector no longer stops the game. Release notes: [0.5.1](docs/release-notes/0.5.1.md). The [addon API](docs/wiki/Addon-API.md) 0.3 covers every supported version.
 
 ## Install
 
