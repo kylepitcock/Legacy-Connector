@@ -590,7 +590,7 @@ public final class Forge1201Transformer {
                     + alienEvoBoneAnchorsChanges + " call site(s)");
         }
         if (alienEvoBeamAbilityParticlesChanges > 0) {
-            result.notes.add("AlienEvo BeamAbility particle parsing migrated ParticleArgument.readParticle to the 1.21.1 HolderLookup.Provider signature: "
+            result.notes.add("AlienEvo BeamAbility particle parsing redirected through the client RegistryAccess-backed ParticleArgument bridge: "
                     + alienEvoBeamAbilityParticlesChanges + " call site(s)");
         }
         if (alienEvoLateEffectBuffersChanges > 0) {
