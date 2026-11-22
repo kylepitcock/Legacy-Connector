@@ -92,6 +92,7 @@ public final class Forge1201AccessTransformerAnalyzer {
         List<Directive> directives = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         int valid = 0, wildcard = 0, malformed = 0;
+        boolean truncated = false;
         String[] lines = source.split("\\R", -1);
         for (int i = 0; i < lines.length; i++) {
             String raw = lines[i];
@@ -103,6 +104,7 @@ public final class Forge1201AccessTransformerAnalyzer {
             if (line.isEmpty()) continue;
             if (directives.size() >= MAX_DIRECTIVES) {
                 warnings.add("Directive count exceeded " + MAX_DIRECTIVES + "; remaining lines were not parsed.");
+                truncated = true;
                 break;
             }
             Directive directive = parseLine(i + 1, raw, line);
@@ -140,7 +142,8 @@ public final class Forge1201AccessTransformerAnalyzer {
             }
         }
         if (conflicts > 0) warnings.add(conflicts + " target selector(s) have incompatible Access Transformer changes.");
-        ResultStatus status = malformed == 0 ? ResultStatus.PARSED : ResultStatus.PARTIALLY_PARSED;
+        ResultStatus status = malformed == 0 && !truncated
+                ? ResultStatus.PARSED : ResultStatus.PARTIALLY_PARSED;
         return new Result(RESOURCE_PATH, status, sizeBytes, sha256, directives,
                 valid, wildcard, malformed, duplicates, conflicts, warnings);
     }
