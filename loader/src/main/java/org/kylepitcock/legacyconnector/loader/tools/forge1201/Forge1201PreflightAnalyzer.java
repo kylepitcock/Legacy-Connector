@@ -468,6 +468,15 @@ public final class Forge1201PreflightAnalyzer {
             Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
                     jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
                     nestedClassConsumer, nestedMixinConsumer);
+            Set<String> analyzedNestedPaths = new java.util.HashSet<>();
+            nestedTransformationAnalyses.forEach(finding -> analyzedNestedPaths.add(finding.archivePath()));
+            for (Forge1201ArchiveGraph.ArchiveFinding archiveFinding : archiveGraph.archives()) {
+                if (archiveFinding.origin() == Forge1201ArchiveGraph.ArchiveOrigin.INPUT_NESTED
+                        && analyzedNestedPaths.add(archiveFinding.archivePath())) {
+                    nestedTransformationAnalyses.add(unavailableNestedTransformationFinding(archiveFinding));
+                }
+            }
+            nestedTransformationAnalyses.sort(Comparator.comparing(NestedTransformationFinding::archivePath));
             if (jarInfo != null) {
                 forgeMetadata = new ForgeMetadata(
                         jarInfo.modLoader(), jarInfo.loaderVersion(),
@@ -1199,12 +1208,13 @@ public final class Forge1201PreflightAnalyzer {
                     || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD)
                 && !archive.mods().isEmpty();
 
+        boolean archiveInspectionIncomplete = isNestedArchiveInspectionIncomplete(archive.archiveKind());
         NestedLoaderDisposition forgeDisposition = manifestTypeIncomplete
                 ? NestedLoaderDisposition.UNKNOWN_MANIFEST_TYPE
-                : classifyForgeNestedDisposition(forgeType, forgeToml, forgeModInfo, archive.entryIndexIncomplete());
+                : classifyForgeNestedDisposition(forgeType, forgeToml, forgeModInfo, archiveInspectionIncomplete);
         NestedLoaderDisposition targetDisposition = manifestTypeIncomplete
                 ? NestedLoaderDisposition.UNKNOWN_MANIFEST_TYPE
-                : classifyNeoForgeNestedDisposition(targetType, forgeToml || neoForgeToml, targetModInfo, archive.entryIndexIncomplete());
+                : classifyNeoForgeNestedDisposition(targetType, forgeToml || neoForgeToml, targetModInfo, archiveInspectionIncomplete);
         boolean forgeParserReached = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER
                 || forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO;
         boolean targetParserReached = targetDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
@@ -1251,7 +1261,7 @@ public final class Forge1201PreflightAnalyzer {
         String coremodCompatibility = targetCoremodConsumer
                 ? "FML 4.0.45 recognizes META-INF/coremods.json; Forge 47.3.0 script/API/transformer compatibility remains UNVERIFIED. No script was evaluated."
                 : "NOT_EVALUATED: target final-provider/descriptor intake conditions were not both established.";
-        if (manifestTypeIncomplete || archive.entryIndexIncomplete()) {
+        if (manifestTypeIncomplete || archiveInspectionIncomplete) {
             warnings.add("Loader intake disposition is conservative because nested archive or manifest inspection was incomplete.");
         }
         if (archive.resourcePathIndexIncomplete()) {
@@ -1323,6 +1333,33 @@ public final class Forge1201PreflightAnalyzer {
     private static boolean hasExplicitNeoForgeAccessTransformerList(String toml) {
         if (toml == null || toml.isBlank()) return false;
         return java.util.regex.Pattern.compile("(?im)^\\s*\\[\\[\\s*accessTransformers\\s*\\]\\]").matcher(toml).find();
+    }
+
+    private static boolean isNestedArchiveInspectionIncomplete(Forge1201ArchiveGraph.ArchiveKind kind) {
+        return kind == Forge1201ArchiveGraph.ArchiveKind.CORRUPT_ARCHIVE
+                || kind == Forge1201ArchiveGraph.ArchiveKind.UNSAFE_PATH
+                || kind == Forge1201ArchiveGraph.ArchiveKind.MISSING_DECLARED_ARCHIVE
+                || kind == Forge1201ArchiveGraph.ArchiveKind.SIZE_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.DEPTH_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.ARCHIVE_COUNT_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.ENTRY_COUNT_LIMIT
+                || kind == Forge1201ArchiveGraph.ArchiveKind.DUPLICATE_CONTENT_SKIPPED;
+    }
+
+    private static NestedTransformationFinding unavailableNestedTransformationFinding(
+            Forge1201ArchiveGraph.ArchiveFinding archive) {
+        List<String> warnings = new ArrayList<>(archive.warnings());
+        warnings.add("Nested archive bytes were unavailable to the Coremod/AT analyzer; resource presence and loader intake were not evaluated.");
+        return new NestedTransformationFinding(
+                archive.archivePath(), archive.sha256(), archive.depth(), archive.kind(),
+                archive.mods(), false, false, null, "UNKNOWN", "UNKNOWN",
+                false, false, false, false,
+                NestedLoaderDisposition.INCOMPLETE_ARCHIVE, NestedLoaderDisposition.INCOMPLETE_ARCHIVE,
+                NestedResourceStatus.INDEX_INCOMPLETE, null,
+                NestedResourceStatus.INDEX_INCOMPLETE, null,
+                false, false, false, false, NeoForgeDefaultAtDisposition.NOT_EVALUATED,
+                true, "NOT_EVALUATED: archive bytes were not inspected within the bounded archive graph.",
+                warnings.stream().distinct().sorted().toList());
     }
 
     private static boolean isMixinPathCandidate(String path) {
