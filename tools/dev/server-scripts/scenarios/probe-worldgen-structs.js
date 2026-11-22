@@ -7,7 +7,7 @@ if (typeof PROBED === "undefined" && tick >= 150) {
   var RK = T("net.minecraft.resources.ResourceKey"), RL = T("net.minecraft.resources.ResourceLocation"), Regs = T("net.minecraft.core.registries.Registries");
   var CS = T("net.minecraft.world.level.chunk.status.ChunkStatus"), BP = T("net.minecraft.core.BlockPos");
   var BI = T("net.minecraft.core.registries.BuiltInRegistries");
-  var dims = ["legacyconnector:dim_45", "minecraft:the_end"];
+  var dims = ["minecraft:the_end", "minecraft:overworld"];
   var re = /door|bookshelf|window|stairs|brick|plank|wamwood|fence|torch|rail|spawner|chest|thatch|shingles|glass|sandstone|ladder|table|bed/;
   dims.forEach(function (d) {
     var level = server.getLevel(RK.create(Regs.DIMENSION, RL.parse(d)));

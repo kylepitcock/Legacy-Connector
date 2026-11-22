@@ -91,6 +91,24 @@ public final class InPlaceStructureGuard {
 
     /** As {@link #run}, for a body with a result (false when the call was undone). */
     public static boolean guarded(WorldGenLevel level, Object owner, BooleanSupplier body) {
+        String previous = SOURCE.get();
+        SOURCE.set(owner == null ? null : owner instanceof String str ? str : owner.getClass().getName());
+        try {
+            return guarded0(level, owner, body);
+        } finally {
+            if (previous == null) SOURCE.remove();
+            else SOURCE.set(previous);
+        }
+    }
+
+    /** The legacy generator (class name) whose call this thread is running under the guard, or null: who a deferred write belongs to. */
+    private static final ThreadLocal<String> SOURCE = new ThreadLocal<>();
+
+    public static String currentSource() {
+        return SOURCE.get();
+    }
+
+    private static boolean guarded0(WorldGenLevel level, Object owner, BooleanSupplier body) {
         if (!ENABLED || !(level instanceof WorldGenRegion region)) return body.getAsBoolean();
         List<BoundingBox> boxes = boxes(region);
         Journal outer = JOURNAL.get();
