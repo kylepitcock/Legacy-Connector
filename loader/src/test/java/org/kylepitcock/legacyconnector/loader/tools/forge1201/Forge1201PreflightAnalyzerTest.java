@@ -44,6 +44,34 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void includesOuterJarAccessTransformerInventoryInUnifiedPreflightReport() throws IOException {
+        Path sourceJar = tempDir.resolve("access-transformer-only.jar");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(sourceJar))) {
+            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH, """
+                    # Forge 1.20.1 AT example
+                    public net.minecraft.world.entity.Entity
+                    protected-f net.minecraft.server.MinecraftServer f_129758_ # random
+                    public net.minecraft.Util m_137477_(Ljava/lang/String;)Ljava/util/concurrent/ExecutorService;
+                    """.getBytes(StandardCharsets.UTF_8));
+        }
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertEquals(Forge1201PreflightAnalyzer.MetadataStatus.MISSING_MODS_TOML, result.metadataStatus());
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED,
+                result.accessTransformers().status());
+        assertEquals(3, result.accessTransformers().validDirectiveCount());
+        assertEquals(0, result.accessTransformers().malformedLineCount());
+        assertEquals("FORGE_SRG_1.20.1",
+                result.accessTransformers().directives().get(1).memberNamespace());
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"accessTransformers\""));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("AT line 3 [VALID]"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("member-namespace=FORGE_SRG_1.20.1"));
+        assertTrue(result.limitations().stream().anyMatch(value ->
+                value.contains("nested JARs") && value.contains("not inspected")));
+    }
+
+    @Test
     void buildsDeterministicInventoryAndPreservesDependencyEvidence() throws IOException {
         Path modsDirectory = Files.createDirectories(tempDir.resolve("installed-mods"));
         createNativeMod(modsDirectory.resolve("geckolib.jar"), "geckolib");
@@ -65,8 +93,10 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.10", first.schemaVersion());
-        assertEquals("1.10.0", first.analyzerVersion());
+        assertEquals("1.11", first.schemaVersion());
+        assertEquals("1.11.0", first.analyzerVersion());
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
+                first.accessTransformers().status());
         assertEquals(Forge1201MixinAnalyzer.TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH,
                 first.mixinAnalysis().targetIndexStatus());
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED,
@@ -154,6 +184,8 @@ final class Forge1201PreflightAnalyzerTest {
                         && reference.instructionOrdinal() >= 0));
 
         assertEquals(Forge1201PreflightAnalyzer.toJson(first), Forge1201PreflightAnalyzer.toJson(second));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"accessTransformers\""));
+        assertTrue(Forge1201PreflightAnalyzer.toText(first).contains("Access Transformer: NOT_PRESENT"));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"dynamicReferences\""));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"memberAnnotations\""));
         assertTrue(Forge1201PreflightAnalyzer.toJson(first).contains("\"refmapResources\""));
