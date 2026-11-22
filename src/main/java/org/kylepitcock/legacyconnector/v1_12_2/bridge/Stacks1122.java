@@ -260,7 +260,13 @@ public final class Stacks1122 {
             }
             meta = variant != null ? (Integer) variant[1] : 0;
         }
-        if (legacy.isDamageable() || stack.isDamageableItem()) meta = stack.getDamageValue();
+        // a damageable item's metadata is its damage; but an item with subtypes that only claims to be damageable (CoFH's multi-tier energy items
+        // report isDamageable() for the charge bar) keeps its subtype in the variant, not in a durability the modern item does not have
+        if (!standIn && legacy.getHasSubtypes() && stack.getMaxDamage() <= 0 && variantMeta(stack.getItem()) >= 0) {
+            // keeps the variant's subtype
+        } else if (legacy.isDamageable() || stack.isDamageableItem()) {
+            meta = stack.getDamageValue();
+        }
         var mapId = stack.get(DataComponents.MAP_ID);
         if (mapId != null) meta = mapId.id();
         ItemStack out = new ItemStack(legacy, stack.getCount(), meta);
@@ -271,6 +277,13 @@ public final class Stacks1122 {
         if (standIn) keepComponents(stack, out);
         for (Hook hook : HOOKS) hook.fromModern(stack, out);
         return out;
+    }
+
+    /** The subtype of a mod item's variant (-1 for anything else). */
+    private static int variantMeta(net.minecraft.world.item.Item item) {
+        if (item instanceof Legacy1122Item i) return i.meta();
+        if (item instanceof Legacy1122BlockItem b) return b.meta();
+        return -1;
     }
 
     private static final String COMPONENTS = "mcc$components";
