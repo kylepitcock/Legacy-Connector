@@ -18,6 +18,23 @@ public class ItemMonsterPlacer extends Item {
         setCreativeTab(legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs.tabMisc);
     }
 
+    private static final legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap EGG_ICONS =
+            new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
+
+    /** 1.7.10's egg is drawn in two passes (shell, then spots), each tinted by {@code getColorFromItemStack}: a mod's egg item subclass inherits that. */
+    @Override
+    public boolean requiresMultipleRenderPasses() {
+        return mcc$vanilla == null;
+    }
+
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getIconFromDamageForRenderPass(int damage, int pass) {
+        if (pass > 0 && mcc$vanilla == null && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            return EGG_ICONS.registerIcon("minecraft:spawn_egg_overlay");
+        }
+        return super.getIconFromDamageForRenderPass(damage, pass);
+    }
+
     /** Spawns the egg mob {@code id} at the position (random yaw, egg spawn data, living sound); null for ids without an egg. */
     public static Entity spawnCreature(World world, int id, double x, double y, double z) {
         if (world == null || !EntityList.entityEggs.containsKey(id)) return null;
