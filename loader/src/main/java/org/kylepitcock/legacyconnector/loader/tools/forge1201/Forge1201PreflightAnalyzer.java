@@ -1225,7 +1225,8 @@ public final class Forge1201PreflightAnalyzer {
             Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(Forge1201CoremodAnalyzer.RESOURCE_PATH);
             if (resource != null) {
                 coremodResult = Forge1201CoremodAnalyzer.analyzeNested(
-                        resource.bytes(), archive.resourcePaths(), archive.resourcePathIndexIncomplete());
+                        resource.bytes(), archive.resourcePaths(), archive.duplicateResourcePaths(),
+                        archive.resourcePathIndexIncomplete() || isNestedArchiveInspectionIncomplete(archive.archiveKind()));
             }
         } else if (coremodStatus == NestedResourceStatus.ABSENT) {
             coremodResult = Forge1201CoremodAnalyzer.notPresent();
@@ -1326,7 +1327,8 @@ public final class Forge1201PreflightAnalyzer {
         }
         if (archive.duplicateResourcePaths().contains(path)) return NestedResourceStatus.DUPLICATE_ENTRY;
         if (archive.resourcePaths().contains(path)) return NestedResourceStatus.LIMIT_EXCEEDED;
-        if (archive.resourcePathIndexIncomplete()) return NestedResourceStatus.INDEX_INCOMPLETE;
+        if (archive.resourcePathIndexIncomplete() || isNestedArchiveInspectionIncomplete(archive.archiveKind()))
+            return NestedResourceStatus.INDEX_INCOMPLETE;
         return NestedResourceStatus.ABSENT;
     }
 
