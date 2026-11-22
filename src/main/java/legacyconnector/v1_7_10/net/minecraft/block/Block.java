@@ -1239,7 +1239,9 @@ public class Block {
 
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
         ArrayList<ItemStack> ret = new ArrayList<>();
-        if (mcc$vanilla != null && world != null && world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+        // the live level only: while a chunk generates (a legacy generator's flowing liquid breaking a block) the real level must not be
+        // touched from the generation thread (it deadlocked: The Lion King's liquid generator), and the shell's own answer serves there
+        if (mcc$vanilla != null && world != null && world.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             // The shim's vanilla blocks are shells without 1.7.10's drop logic (stone gave cobblestone for every variant, an ore its own block
             // like silk touch): what a mod asks of a vanilla block (a quarry's mined blocks) is the modern block's loot table.
             try {
