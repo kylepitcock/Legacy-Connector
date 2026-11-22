@@ -495,8 +495,19 @@ public class World implements IBlockAccess {
      * up until they reach air never stopped otherwise (Thaumcraft's WorldGenEldritchRing.LocationIsValidSpawn hung world
      * creation, every other generator thread waiting on the legacy generation lock).
      */
-    private static boolean mcc$aboveLegacyTop(int legacyY) {
-        return inDeepPass() && legacyY >= 256;
+    private boolean mcc$aboveLegacyTop(int legacyY) {
+        return inDeepPass() && legacyY >= legacyTop();
+    }
+
+    /**
+     * One above the highest legacy y of this thread's deep pass: 256 (the 1.7.10 world) in the split pass, whose rock above y=0 is
+     * buried; in the shifted pass the real column shifted down, so veins reach the modern top (320 - (-64) = 384; they stopped at
+     * modern 192, CustomOreGen #82).
+     */
+    private int legacyTop() {
+        if (!shiftedPass()) return 256;
+        LevelAccessor level = lvl();
+        return level == null ? 256 : Math.max(256, level.getMaxBuildHeight() - deepShift());
     }
 
     // ------------------------------------------------------------------ virtual fields
@@ -987,6 +998,7 @@ public class World implements IBlockAccess {
     /** One above the highest y blocks can be at (see {@link #mcc$buildBottom}); 256 in generation views. */
     public int mcc$buildTop() {
         LevelAccessor level = lvl();
+        if (level != null && shiftedPass()) return legacyTop();
         return level == null || mcc$legacyRange(level) ? 256 : level.getMaxBuildHeight();
     }
 

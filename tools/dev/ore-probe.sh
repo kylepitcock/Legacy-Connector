@@ -19,7 +19,19 @@ IFS=',' read -r -a list <<< "$jars"
 for j in "${list[@]}"; do cp -f "$j" "$D/mods/$ver/"; done
 echo "eula=true" > "$D/eula.txt"
 printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\nmax-tick-time=-1\nspawn-protection=0\n' "${ORE_PROBE_PORT:-25777}" > "$D/server.properties"
+# ORE_PROBE_TALL=1: a superflat world with stone from -64 up to y=319 (to check ores high up: veins only replace stone)
+[ -n "${ORE_PROBE_LEVEL_TYPE:-}" ] && echo "level-type=$ORE_PROBE_LEVEL_TYPE" >> "$D/server.properties"
+if [ -n "${ORE_PROBE_TALL:-}" ]; then
+  # a flat world does not run biome-modifier features; use the normal biome source with an all-stone overworld instead
+  P="$D/world/datapacks/solid"
+  mkdir -p "$P/data/minecraft/worldgen/noise_settings"
+  echo '{"pack":{"pack_format":48,"description":"solid overworld"}}' > "$P/pack.mcmeta"
+  python tools/dev/server-scripts/solid_noise.py > "$P/data/minecraft/worldgen/noise_settings/overworld.json"
+  echo 'initial-enabled-packs=vanilla,file/solid' >> "$D/server.properties"
+fi
 : > "$D/config/legacyconnector.properties"
+# ORE_PROBE_CONFIG: a folder copied into the run's config (e.g. CustomOreGen/CustomOreGen_Config.xml with veins up to y=380)
+[ -n "${ORE_PROBE_CONFIG:-}" ] && cp -r "$ORE_PROBE_CONFIG"/. "$D/config/"
 for line in "$@"; do echo "$line" >> "$D/config/legacyconnector.properties"; done
 rm -f "$OUT"
 script="build/devtools/serverscript-ore-$label.js"

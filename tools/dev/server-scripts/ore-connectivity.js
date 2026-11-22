@@ -56,6 +56,7 @@ function analyse() {
   for (var i = 0; i < n; i++) { counts.push(0); bx.push(0); by.push(0); bz.push(0); }
   var down = {};
   var slice = [];
+  var maxY = -9999, minY = 9999, maxBy = {};
   var it = st.map.entrySet().iterator();
   while (it.hasNext()) {
     var e = it.next();
@@ -63,6 +64,9 @@ function analyse() {
     var y = key % 1024 - 128; var r = Math.floor(key / 1024);
     var z = r % 8192 - 4096; var x = Math.floor(r / 8192) - 4096;
     counts[t]++;
+    if (y > maxY) maxY = y;
+    if (maxBy[t] === undefined || y > maxBy[t]) maxBy[t] = y;
+    if (y < minY) minY = y;
     var has = function (X, Y, Z) { var v = st.map.get(pack(X, Y, Z)); return v !== null && v !== undefined && Number(v) === t; };
     if (has(x + 1, y, z) || has(x - 1, y, z)) bx[t]++;
     if (has(x, y + 1, z) || has(x, y - 1, z)) by[t]++;
@@ -71,7 +75,7 @@ function analyse() {
     d[0]++; if (has(x, y - 1, z)) d[1]++;
     if (x >= 0 && x < 8) slice.push([z, y, t]);
   }
-  var out = { radius: R, names: st.names, counts: counts, bondX: [], bondY: [], bondZ: [], down: down, slice: slice, total: 0 };
+  var out = { maxY: maxY, minY: minY, maxByType: maxBy, radius: R, names: st.names, counts: counts, bondX: [], bondY: [], bondZ: [], down: down, slice: slice, total: 0 };
   for (var i = 0; i < n; i++) {
     out.total += counts[i];
     out.bondX.push(counts[i] ? bx[i] / counts[i] : 0);
@@ -86,8 +90,8 @@ function analyse() {
   out.bondDownAt0 = rate(0); out.bondDownAt1 = rate(1); out.bondDownAround = mean;
   T_("java.nio.file.Files").writeString(T_("java.nio.file.Path").of(OUT), JSON.stringify(out));
   var top = [];
-  for (var i = 0; i < n; i++) top.push(st.names[i] + "=" + counts[i]);
-  return "OREPROBE total=" + out.total + " bondDown(y=0)=" + out.bondDownAt0 + " bondDown(y=1)=" + out.bondDownAt1 + " bondDown(around)=" + mean + " " + top.join(" ");
+  for (var i = 0; i < n; i++) top.push(st.names[i] + "=" + counts[i] + "(maxY " + maxBy[i] + ")");
+  return "OREPROBE maxY=" + maxY + " minY=" + minY + " total=" + out.total + " bondDown(y=0)=" + out.bondDownAt0 + " bondDown(y=1)=" + out.bondDownAt1 + " bondDown(around)=" + mean + " " + top.join(" ");
 }
 var __r = undefined;
 if (!st.done) {

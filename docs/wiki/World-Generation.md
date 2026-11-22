@@ -97,6 +97,13 @@ described below (for 1.12.2 it means no ores below y=0, as before this mode exis
 generator, `<modid>:legacy_worldgen_deep/<name>` (type `legacyconnector:legacy_generator_deep` for 1.12.2; `legacyconnector:legacy_worldgen_deep` for
 1.7.10), step `underground_ores`, placed `above_bottom 0`.
 
+**Height and floor of the shifted pass.** The shift is the dimension's own bottom (`above_bottom 0` of the placed feature, clamped to the level's
+minimum build height), not a constant -64: the Nether and the End (bottom 0) run no shifted pass, a mod dimension with another floor shifts by that
+floor, and a data pack can move it per generator. Legacy y=0 is the floor, so the top the generator may use is the modern top minus the shift
+(384 in the overworld). Until 0.5.1 the pass reported the unshifted height (1.7.10: 256, 1.12.2: 320), so veins that reached for the old
+or modern limit stopped at modern y=192 (1.7.10) or 256 (1.12.2), a flat face (CustomOreGen #82, #295); `World.getHeight()` (1.12.2) and the 1.7.10 top of the shifted view (`getHeight`, the air-above-the-world line) now answer the shifted range,
+and only during the shifted pass (`WorldProvider.getHeight()` keeps 256). The probe `ORE_PROBE_TALL=1 tools/dev/ore-probe.sh` generates an all-stone overworld (veins only replace stone) and prints the highest ore per type.
+
 The probe `tools/dev/ore-probe.sh` (with `tools/dev/server-scripts/ore-connectivity.js`, `tools/dev/render_ore_slice.py`) counts ores and
 measures vein connectivity over 11x11 chunks of one seed, for before/after comparisons.
 

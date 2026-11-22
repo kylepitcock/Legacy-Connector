@@ -1950,7 +1950,14 @@ public class World implements IBlockAccess {
     }
 
     public int getHeight() {
-        return acc() == null ? 256 : acc().getMaxBuildHeight();
+        // the shifted pass sees the column moved down by its shift (legacy y 0 = modern -64): its top is the modern top minus the shift
+        // (384, not 320: veins stopped at modern 256, CustomOreGen #295)
+        return acc() == null ? 256 : acc().getMaxBuildHeight() - SHIFT.get()[0];
+    }
+
+    /** Whether this thread runs a shifted pass (the provider reports the shifted height only then). */
+    public static boolean mcc$inShiftedPass() {
+        return shifted();
     }
 
     public int getActualHeight() {
