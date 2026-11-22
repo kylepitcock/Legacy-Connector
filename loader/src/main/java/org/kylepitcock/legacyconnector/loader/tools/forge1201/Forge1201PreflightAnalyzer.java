@@ -1278,7 +1278,7 @@ public final class Forge1201PreflightAnalyzer {
         String coremodCompatibility = targetCoremodConsumer
                 ? "FML 4.0.45 recognizes META-INF/coremods.json; Forge 47.3.0 script/API/transformer compatibility remains UNVERIFIED. No script was evaluated."
                 : "NOT_EVALUATED: target final-provider/descriptor intake conditions were not both established.";
-        if (manifestTypeIncomplete || archiveInspectionIncomplete) {
+        if (loaderMetadataIncomplete || archiveInspectionIncomplete) {
             warnings.add("Loader intake disposition is conservative because nested archive or manifest inspection was incomplete.");
         }
         if (archive.resourcePathIndexIncomplete()) {
