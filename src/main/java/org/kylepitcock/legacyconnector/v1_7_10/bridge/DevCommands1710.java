@@ -206,7 +206,7 @@ public final class DevCommands1710 {
 
     private static int place(CommandSourceStack source, ResourceLocation id, int meta) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        var block = BuiltInRegistries.BLOCK.get(id);
+        var block = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, id);
         if (!(block instanceof LegacyBlockAdapter adapter)) {
             source.sendFailure(Component.literal(id + " is not a legacy block"));
             return 0;
@@ -225,10 +225,10 @@ public final class DevCommands1710 {
             source.sendFailure(Component.literal("Unknown item " + id + " (tab completion lists the legacy items)"));
             return 0;
         }
-        var item = BuiltInRegistries.ITEM.get(id);
+        var item = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id);
         if (meta != 0) {
             ResourceLocation variant = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_" + meta);
-            if (BuiltInRegistries.ITEM.containsKey(variant)) item = BuiltInRegistries.ITEM.get(variant);
+            if (BuiltInRegistries.ITEM.containsKey(variant)) item = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, variant);
         }
         if (!BuiltInRegistries.ITEM.containsKey(BuiltInRegistries.ITEM.getKey(item)) || item == net.minecraft.world.item.Items.AIR) {
             source.sendFailure(Component.literal("Unknown item " + id));
@@ -246,7 +246,7 @@ public final class DevCommands1710 {
             source.sendFailure(Component.literal("Unknown entity " + id));
             return 0;
         }
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(id);
+        EntityType<?> type = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ENTITY_TYPE, id);
         var look = player.getLookAngle();
         int made = 0;
         for (int i = 0; i < count; i++) {

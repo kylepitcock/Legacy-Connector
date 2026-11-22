@@ -184,7 +184,7 @@ public final class SoundBridge {
         String renamed = RENAMES.get(legacyName.startsWith("minecraft:") ? legacyName.substring("minecraft:".length()) : legacyName);
         if (renamed != null) {
             var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace(renamed);
-            known = net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
+            known = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT, id);
             if (known != null) {
                 SOUNDS.put(legacyName, known);
                 return known;
@@ -320,7 +320,7 @@ public final class SoundBridge {
         };
         // the exact event only (the two 1.7.10 names that do not follow the rule are in RENAMES)
         var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace("entity." + mob + "." + action);
-        return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(id) ? net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id) : null;
+        return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(id) ? org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT, id) : null;
     }
 
     public static void play(Level level, Player except, double x, double y, double z, String name, float volume, float pitch) {

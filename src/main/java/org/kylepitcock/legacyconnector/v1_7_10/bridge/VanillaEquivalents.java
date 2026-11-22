@@ -30,7 +30,7 @@ public final class VanillaEquivalents {
         if (colon < 0 || legacyName.startsWith("minecraft:")) return;
         String vanilla = BY_NAME.get(legacyName.substring(colon + 1).toLowerCase(java.util.Locale.ROOT));
         if (vanilla == null) return;
-        var modern = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(vanilla));
+        var modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, ResourceLocation.parse(vanilla));
         if (modern != null) BLOCKS.put(block, modern);
     }
 

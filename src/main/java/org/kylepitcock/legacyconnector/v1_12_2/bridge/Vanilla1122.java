@@ -101,7 +101,7 @@ public final class Vanilla1122 {
         b.setRegistryName("minecraft", legacy);
         ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));
         if (id != null) {
-            var modern = BuiltInRegistries.BLOCK.get(id);
+            var modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, id);
             b.mcc$modern = modern;
             synchronized (Vanilla1122.class) {
                 BLOCK_REVERSE.putIfAbsent(modern, b);
@@ -147,7 +147,7 @@ public final class Vanilla1122 {
     public static synchronized Item item(String field) {
         String legacy = legacyPath(field);
         ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, BLOCK_NAMES.getOrDefault(field, legacy)));
-        var modern = id == null ? null : BuiltInRegistries.ITEM.get(id);
+        var modern = id == null ? null : org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id);
         Item i = wrap(modern);
         i.setRegistryName("minecraft", legacy);
         if (modern != null) {
@@ -240,7 +240,7 @@ public final class Vanilla1122 {
         var name = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", id == null ? field.toLowerCase(java.util.Locale.ROOT).replace('_', '.') : id);
         var sound = new legacyconnector.v1_12_2.net.minecraft.util.SoundEvent(name);
         sound.setRegistryName(name);
-        if (id != null) sound.mcc$modern = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.withDefaultNamespace(id));
+        if (id != null) sound.mcc$modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.SOUND_EVENT, ResourceLocation.withDefaultNamespace(id));
         return sound;
     }
 
@@ -408,7 +408,7 @@ public final class Vanilla1122 {
             b.setRegistryName("minecraft", legacy);
             ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));
             if (id != null) {
-                var modern = BuiltInRegistries.BLOCK.get(id);
+                var modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, id);
                 b.mcc$modern = modern;
                 synchronized (Vanilla1122.class) {
                     BLOCK_REVERSE.putIfAbsent(modern, b);
@@ -419,7 +419,7 @@ public final class Vanilla1122 {
             i.setRegistryName("minecraft", legacy);
             ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacy));
             if (id != null) {
-                var modern = BuiltInRegistries.ITEM.get(id);
+                var modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id);
                 i.mcc$modern = modern;
                 i.mcc$vanillaModern = modern;
                 synchronized (Vanilla1122.class) {
@@ -711,7 +711,7 @@ public final class Vanilla1122 {
     public static Block blockByName(String legacyPath) {
         String field = fieldOf(legacyPath);
         ResourceLocation modern = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacyPath));
-        if (modern == null || BuiltInRegistries.BLOCK.get(modern) == net.minecraft.world.level.block.Blocks.AIR && !legacyPath.equals("air")) return null;
+        if (modern == null || org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, modern) == net.minecraft.world.level.block.Blocks.AIR && !legacyPath.equals("air")) return null;
         return block(field);
     }
 
@@ -719,7 +719,7 @@ public final class Vanilla1122 {
         String field = fieldOf(legacyPath);
         // a block's item has the block's legacy name (minecraft:double_plant)
         ResourceLocation modern = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, BLOCK_NAMES.getOrDefault(field, legacyPath)));
-        if (modern == null || BuiltInRegistries.ITEM.get(modern) == net.minecraft.world.item.Items.AIR && !legacyPath.equals("air")) return null;
+        if (modern == null || org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, modern) == net.minecraft.world.item.Items.AIR && !legacyPath.equals("air")) return null;
         return item(field);
     }
 

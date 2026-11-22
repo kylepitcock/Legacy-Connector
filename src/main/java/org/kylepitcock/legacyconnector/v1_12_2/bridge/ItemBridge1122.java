@@ -156,7 +156,7 @@ public final class ItemBridge1122 {
     }
 
     private static net.minecraft.world.item.Item.Properties properties(Item item) {
-        var p = new net.minecraft.world.item.Item.Properties();
+        var p = org.kylepitcock.legacyconnector.core.host.HostProperties.item();
         if (item.isDamageable()) p.durability(item.getMaxDamage());
         else p.stacksTo(Math.max(1, Math.min(99, item.getItemStackLimit())));
         var songKey = Records1122.songKey(item);

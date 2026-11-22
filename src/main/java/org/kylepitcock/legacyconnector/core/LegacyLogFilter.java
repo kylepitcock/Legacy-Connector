@@ -40,7 +40,7 @@ public final class LegacyLogFilter extends AbstractFilter {
         if (end < 0) return Filter.Result.NEUTRAL;
         ResourceLocation id = ResourceLocation.tryParse(text.substring(FAILED.length(), end));
         if (id == null) return Filter.Result.NEUTRAL;
-        var block = BuiltInRegistries.BLOCK.get(id);
+        var block = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, id);
         return block instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyEntityBlockAdapter
                 || block instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122EntityBlock ? Filter.Result.DENY : Filter.Result.NEUTRAL;
     }

@@ -36,7 +36,7 @@ final class BookStacks1122 {
             @Override
             public void fromModern(net.minecraft.world.item.ItemStack modern, ItemStack legacy) {
                 if (!isGuideBook(modern)) return;
-                DataComponentType<?> type = BuiltInRegistries.DATA_COMPONENT_TYPE.get(BOOK_COMPONENT);
+                DataComponentType<?> type = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.DATA_COMPONENT_TYPE, BOOK_COMPONENT);
                 if (type == null) return;
                 Object book = modern.get(type);
                 if (book == null) return;

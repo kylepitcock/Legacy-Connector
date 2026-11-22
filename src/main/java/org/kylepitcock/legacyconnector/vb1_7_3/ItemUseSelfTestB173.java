@@ -26,7 +26,7 @@ final class ItemUseSelfTestB173 {
             int id = legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS.length - 1;
             while (legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS[id] != null) id--;
             legacy = new ProbeItem(id - 256);
-            host = new LegacyB173Item(legacy, new net.minecraft.world.item.Item.Properties());
+            host = new LegacyB173Item(legacy, org.kylepitcock.legacyconnector.core.host.HostProperties.item());
             org.kylepitcock.legacyconnector.core.registry.LegacyRegistrar.register(net.minecraft.core.registries.BuiltInRegistries.ITEM,
                     net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector", "b173_item_use_test"), host);
         } finally {

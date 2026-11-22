@@ -180,7 +180,7 @@ public final class FluidBridge1122 {
         }
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(fluidId.getNamespace(), fluidId.getPath() + "_bucket");
         if (BuiltInRegistries.ITEM.containsKey(id)) id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "b1122_" + fluidId.getNamespace() + "_" + fluidId.getPath() + "_bucket");
-        var bucket = new Legacy1122BucketItem(modern, new net.minecraft.world.item.Item.Properties().stacksTo(1).craftRemainder(Items.BUCKET));
+        var bucket = new Legacy1122BucketItem(modern, org.kylepitcock.legacyconnector.core.host.HostProperties.item().stacksTo(1).craftRemainder(Items.BUCKET));
         LegacyRegistrar.register(BuiltInRegistries.ITEM, id, bucket);
         BUCKETS.put(name, bucket);
         BUCKET_FLUIDS.put(bucket, name);

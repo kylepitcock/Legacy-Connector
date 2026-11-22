@@ -567,7 +567,7 @@ public final class BlockBridge {
             if (stripped != null) return stripped;
         }
         ResourceLocation rl = ResourceLocation.tryParse(full.toLowerCase(java.util.Locale.ROOT));
-        if (rl != null && BuiltInRegistries.BLOCK.containsKey(rl)) return legacyBlock(BuiltInRegistries.BLOCK.get(rl).defaultBlockState());
+        if (rl != null && BuiltInRegistries.BLOCK.containsKey(rl)) return legacyBlock(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, rl).defaultBlockState());
         return null;
     }
 

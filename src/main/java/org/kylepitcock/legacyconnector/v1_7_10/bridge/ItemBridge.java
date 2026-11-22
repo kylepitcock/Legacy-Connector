@@ -614,7 +614,7 @@ public final class ItemBridge {
     }
 
     private static net.minecraft.world.item.Item.Properties properties(Item item) {
-        var p = new net.minecraft.world.item.Item.Properties();
+        var p = org.kylepitcock.legacyconnector.core.host.HostProperties.item();
         if (item.isDamageable()) p.durability(item.getMaxDamage());
         else p.stacksTo(Math.max(1, Math.min(99, item.getItemStackLimit())));
         float damage;
@@ -1033,7 +1033,7 @@ public final class ItemBridge {
         if (nbt.hasKey("mcc:legacy")) item = byName(nbt.getString("mcc:legacy"));
         if (item == null && nbt.hasKey("mcc:item")) {
             ResourceLocation rl = ResourceLocation.tryParse(nbt.getString("mcc:item"));
-            if (rl != null && BuiltInRegistries.ITEM.containsKey(rl)) item = legacyOfModern(BuiltInRegistries.ITEM.get(rl));
+            if (rl != null && BuiltInRegistries.ITEM.containsKey(rl)) item = legacyOfModern(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, rl));
         }
         if (item == null && nbt.getTagId("id") == 8) item = byName(nbt.getString("id"));
         if (item == null) item = byId(nbt.getShort("id"));
@@ -1109,7 +1109,7 @@ public final class ItemBridge {
         Block b = BlockBridge.byName(full);
         if (b != null) return fromBlock(b);
         ResourceLocation rl = ResourceLocation.tryParse(full.toLowerCase(java.util.Locale.ROOT));
-        if (rl != null && BuiltInRegistries.ITEM.containsKey(rl)) return legacyOfModern(BuiltInRegistries.ITEM.get(rl));
+        if (rl != null && BuiltInRegistries.ITEM.containsKey(rl)) return legacyOfModern(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, rl));
         return null;
     }
 

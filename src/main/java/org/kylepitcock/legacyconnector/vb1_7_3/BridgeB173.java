@@ -127,7 +127,7 @@ public final class BridgeB173 {
 
     private static void register(Block block, LegacyModRecord mod) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(mod.modernId, unique(mod.modernId, name(block.getTranslationKey(), "tile.", "block_" + block.id)));
-        BlockBehaviour.Properties p = BlockBehaviour.Properties.of();
+        BlockBehaviour.Properties p = org.kylepitcock.legacyconnector.core.host.HostProperties.block();
         p.sound(block.soundGroup != null ? block.soundGroup.mcc$modern() : net.minecraft.world.level.block.SoundType.STONE);
         if (block.hardness < 0) p.strength(-1.0F, 3600000.0F);
         // b1.7.3 kept three times the setResistance value and divided by five for explosions, like 1.12
@@ -176,13 +176,13 @@ public final class BridgeB173 {
             Block block = bi.mcc$blockId() >= 0 && bi.mcc$blockId() < Block.BLOCKS.length ? Block.BLOCKS[bi.mcc$blockId()] : null;
             if (block == null || block.mcc$modern == null) return;
             id = BuiltInRegistries.BLOCK.getKey(block.mcc$modern);
-            LegacyB173BlockItem blockItem = new LegacyB173BlockItem(block.mcc$modern, new net.minecraft.world.item.Item.Properties());
+            LegacyB173BlockItem blockItem = new LegacyB173BlockItem(block.mcc$modern, org.kylepitcock.legacyconnector.core.host.HostProperties.item());
             if (item.hasSubtypes()) blockItem.setNames(subtypeNames(item, id));
             blockItem.setLegacy(item);
             modern = blockItem;
         } else {
             id = ResourceLocation.fromNamespaceAndPath(mod.modernId, unique(mod.modernId, name(item.getTranslationKey(), "item.", "item_" + item.id)));
-            var p = new net.minecraft.world.item.Item.Properties();
+            var p = org.kylepitcock.legacyconnector.core.host.HostProperties.item();
             if (item.isDamageable()) p.durability(item.getMaxDamage());
             else p.stacksTo(Math.max(1, Math.min(99, item.getMaxCount())));
             if(item instanceof legacyconnector.vb1_7_3.net.minecraft.item.ArmorItem armor){

@@ -35,6 +35,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.20.1 corpus](Legacy-1.20.1-Corpus.md) | Measured gap report of 140 real Forge 1.20.1 jars (72 abandoned content mods): ranked unresolved symbols, mixins, cheap/medium/heavy, order of work |
 | [Legacy 1.19.2 estimate](Legacy-1.19.2-Estimate.md) | Scoping (2026-11-16): 451 Forge 1.19.2 jars through the 1.20.1 pipeline, what is rename and what is new API, staged plan and effort |
 | [Version roadmap](Version-Roadmap.md) | Which versions come when, and why |
+| [Host version upgrades](Host-Version-Upgrades.md) | Preparing for NeoForge/Minecraft 1.21.2+ hosts: where the layer touches the host, what changed, effort per area, isolation steps done |
 | [Work plan](Work-Plan.md) | How the work is organised: defect classes, automated verification, generic features, who does what |
 | [Plan for 1.19.2, 1.18.2, 1.16.5](Legacy-1.16-1.19-Plan.md) | Where each supported version stands, and the staged design for the next three Forge versions |
 | [Legacy 1.6.4 estimate](Legacy-1.6.4-Estimate.md) | Effort and approach for a 1.6.4 layer on top of the 1.7.10 shim |

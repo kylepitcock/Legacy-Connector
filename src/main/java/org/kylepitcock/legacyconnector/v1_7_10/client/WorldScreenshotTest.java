@@ -634,7 +634,7 @@ public final class WorldScreenshotTest {
                             for (int i = 0; i < batch.size(); i++) {
                                 double x = fx0 + (i % 6) * 4 + 0.5, z = fz0 + (i / 6) * 5 + 0.5;
                                 try {
-                                    var type = BuiltInRegistries.ENTITY_TYPE.get(batch.get(i));
+                                    var type = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ENTITY_TYPE, batch.get(i));
                                     var e = type.create(level);
                                     if (e == null) {
                                         LOG.warn("Entity {} could not be created (null)", batch.get(i));
@@ -820,7 +820,7 @@ public final class WorldScreenshotTest {
         LOG.info("Showcase blocks (rows of six, front row first): {}", ids);
         for (ResourceLocation id : ids) {
             try {
-                var b = BuiltInRegistries.BLOCK.get(id);
+                var b = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, id);
                 if (b instanceof LegacyBlockAdapter adapter && adapter.legacy() instanceof legacyconnector.v1_7_10.net.minecraft.block.Block lb) {
                     int rt = lb.getRenderType();
                     var access = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(mc.level);

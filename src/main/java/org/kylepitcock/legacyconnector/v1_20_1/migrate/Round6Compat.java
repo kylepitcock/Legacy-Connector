@@ -47,7 +47,7 @@ public final class Round6Compat {
     public static net.minecraft.advancements.Criterion<?> newCriterion(CriterionTriggerInstance instance) {
         net.minecraft.advancements.CriterionTrigger trigger = null;
         ResourceLocation id = criterionId(instance);
-        if (id != null) trigger = net.minecraft.core.registries.BuiltInRegistries.TRIGGER_TYPES.get(id);
+        if (id != null) trigger = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.TRIGGER_TYPES, id);
         if (trigger == null) throw new IllegalArgumentException("No advancement trigger known for the condition " + instance);
         return new net.minecraft.advancements.Criterion(trigger, instance);
     }

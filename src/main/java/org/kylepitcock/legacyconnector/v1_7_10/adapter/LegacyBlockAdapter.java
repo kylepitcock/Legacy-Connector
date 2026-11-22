@@ -182,7 +182,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         Material material = legacy.getMaterial();
         // Mod materials may be built from map colours the shim does not provide yet; fall back to stone.
         var legacyColor = material == null ? null : material.getMaterialMapColor();
-        BlockBehaviour.Properties p = BlockBehaviour.Properties.of().mapColor(legacyColor == null
+        BlockBehaviour.Properties p = org.kylepitcock.legacyconnector.core.host.HostProperties.block().mapColor(legacyColor == null
                 ? net.minecraft.world.level.material.MapColor.STONE : legacyColor.mcc$modern());
         float hardness = legacy.mcc$hardness();
         float resistance = legacy.getExplosionResistance(null);

@@ -55,7 +55,7 @@ public final class LegacyPotionUtils {
     public static Potion getPotion(net.minecraft.nbt.CompoundTag tag) {
         if (tag != null && tag.contains("Potion", net.minecraft.nbt.Tag.TAG_STRING)) {
             net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(tag.getString("Potion"));
-            if (id != null && net.minecraft.core.registries.BuiltInRegistries.POTION.containsKey(id)) return net.minecraft.core.registries.BuiltInRegistries.POTION.get(id);
+            if (id != null && net.minecraft.core.registries.BuiltInRegistries.POTION.containsKey(id)) return org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.POTION, id);
         }
         return Potions.WATER.value();
     }

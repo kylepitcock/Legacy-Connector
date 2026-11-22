@@ -259,7 +259,7 @@ public final class VanillaFlattening {
                 FIXED_IDS.put(fixedKey, id);
                 fixedDirty = true;
             }
-            result = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
+            result = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, ResourceLocation.parse(id));
         } catch (RuntimeException e) {
             LOG.debug("Could not upgrade legacy item {}:{}", name, meta, e);
         }

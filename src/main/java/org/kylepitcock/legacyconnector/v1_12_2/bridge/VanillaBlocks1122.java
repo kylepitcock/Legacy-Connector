@@ -33,7 +33,7 @@ public final class VanillaBlocks1122 {
         if (id >= 0) modern = VanillaFlattening.state(id, 0).getBlock();
         if (modern == null || modern == net.minecraft.world.level.block.Blocks.AIR && !path.equals("air")) {
             ResourceLocation rl = ResourceLocation.withDefaultNamespace(path);
-            if (BuiltInRegistries.BLOCK.containsKey(rl)) modern = BuiltInRegistries.BLOCK.get(rl);
+            if (BuiltInRegistries.BLOCK.containsKey(rl)) modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.BLOCK, rl);
         }
         if (modern != null) {
             b.mcc$modern = modern;
@@ -56,7 +56,7 @@ public final class VanillaBlocks1122 {
         i.setRegistryName("minecraft", path);
         ResourceLocation rl = ResourceLocation.withDefaultNamespace(modernPath == null ? path : modernPath);
         if (BuiltInRegistries.ITEM.containsKey(rl)) {
-            var modern = BuiltInRegistries.ITEM.get(rl);
+            var modern = org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, rl);
             i.mcc$modern = modern;
             i.mcc$vanillaModern = modern;
             reverseItem(modern, i);

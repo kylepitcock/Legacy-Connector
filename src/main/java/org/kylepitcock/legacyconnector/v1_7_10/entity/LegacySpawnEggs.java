@@ -42,7 +42,7 @@ public final class LegacySpawnEggs {
 
     public static void addToTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() != CreativeModeTabs.SPAWN_EGGS) return;
-        for (ResourceLocation id : EGGS) event.accept(BuiltInRegistries.ITEM.get(id));
+        for (ResourceLocation id : EGGS) event.accept(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id));
     }
 
     /** Generated item models (the vanilla spawn egg template; NeoForge tints its two layers). */
@@ -55,7 +55,7 @@ public final class LegacySpawnEggs {
         private final EntityType<?> type;
 
         Egg(Supplier<EntityType<? extends Mob>> supplier, int background, int foreground, EntityType<?> type) {
-            super(supplier, background, foreground, new Item.Properties());
+            super(supplier, background, foreground, org.kylepitcock.legacyconnector.core.host.HostProperties.item());
             this.type = type;
         }
 
