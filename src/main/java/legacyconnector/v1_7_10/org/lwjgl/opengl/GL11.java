@@ -255,10 +255,12 @@ public class GL11 extends GL11Guard {
         if (DisplayLists.recording() && DisplayLists.record(() -> glBindTexture(target, texture))) return;
         if (!RenderSystem.isOnRenderThread()) return;
         if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) {
+            // an animated tile that binds its sheet with raw GL (its id came from getTexture(path)): Animations147 learns the sheet from the path
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.mcc$noteBinding(texture);
             // a bind on another unit (the lightmap's) is not the texture legacy geometry draws with; the modern renderer binds
             // its own lightmap
             if (!RenderContext.onDefaultTextureUnit()) return;
-            int tex = legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.mcc$resolve(texture);
+            int tex =legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.mcc$resolve(texture);
             // an id RenderEngine.getTexture(path) returned for a texture the game had not loaded yet: bind it by its location
             var named = legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.mcc$handleLocation(tex);
             if (named != null) {

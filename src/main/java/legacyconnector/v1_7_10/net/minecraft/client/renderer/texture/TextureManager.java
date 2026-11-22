@@ -22,6 +22,8 @@ public class TextureManager implements ITickable {
     /** 1.4.7 and 1.5.2 (RenderEngine.bindTexture(int)): a texture by the OpenGL id {@link #getTexture} returned. */
     public void bindTexture(int glId) {
         glId = mcc$resolve(glId);
+        String viaPath = mcc$handlePaths.get(glId);
+        if (viaPath != null) mcc$lastPath = viaPath; // a TextureFX binds the id getTexture(path) gave it: Animations147 learns the sheet from the path
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
         var named = mcc$handles.get(glId);
         if (named != null) {
@@ -69,11 +71,12 @@ public class TextureManager implements ITickable {
         mcc$lastPath = path;
         var modern = TextureLocations.modern(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
         var mc = net.minecraft.client.Minecraft.getInstance();
-        if (mc == null || mc.getTextureManager() == null) return 0;
-        var tex = mc.getTextureManager().getTexture(modern, null);
+        // a mod asking during its own initialization (Railcraft's animated tiles keep the id in their constructor) has no texture manager yet: it gets a handle
+        var tex = mc == null || mc.getTextureManager() == null ? null : mc.getTextureManager().getTexture(modern, null);
         if (tex != null) {
             // draws of the legacy GUI code name their texture through the render context, so the id is mapped back to its location when it is bound
             mcc$handles.putIfAbsent(tex.getId(), org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
+            if (path != null) mcc$handlePaths.put(tex.getId(), path);
             return tex.getId();
         }
         // not loaded yet (a mod's GUI image is first bound through this id): a handle that bindTexture(int) maps back to the location
@@ -81,6 +84,7 @@ public class TextureManager implements ITickable {
         return mcc$handleIds.computeIfAbsent(location, l -> {
             int id = 0x40000000 + mcc$handleIds.size();
             mcc$handles.put(id, l);
+            if (path != null) mcc$handlePaths.put(id, path);
             return id;
         });
     }
@@ -191,6 +195,13 @@ public class TextureManager implements ITickable {
         return glId >= 0x40000000 ? mcc$handles.get(glId) : null;
     }
 
+    /** A texture was bound by the id {@code getTexture(path)} gave: its path becomes the last one seen (a sheet's animation finds its sheet that way). */
+    public void mcc$noteBinding(int glId) {
+        String path = mcc$handlePaths.get(glId);
+        if (path != null) mcc$lastPath = path;
+    }
+
+    private final java.util.Map<Integer, String> mcc$handlePaths =new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.Map<Integer, ResourceLocation> mcc$handles = new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.Map<ResourceLocation, Integer> mcc$handleIds = new java.util.concurrent.ConcurrentHashMap<>();
 
