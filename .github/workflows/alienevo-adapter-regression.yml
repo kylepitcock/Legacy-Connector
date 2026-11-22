@@ -47,3 +47,9 @@ jobs:
           ./gradlew :test \
             --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoBufferRefresh1201Test' \
             --no-daemon --stacktrace
+
+      - name: Run dimensions probe package regression test
+        run: |
+          ./gradlew :test \
+            --tests 'org.kylepitcock.legacyconnector.diagnostics.alienevo.AlienEvoDimensionsProbePackageTest' \
+            --no-daemon --stacktrace
