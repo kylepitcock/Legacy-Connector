@@ -1272,10 +1272,10 @@ public final class Forge1201PreflightAnalyzer {
             targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_EVALUATED;
         } else if (!targetFinalProvider) {
             targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_A_FINAL_TRANSFORMATION_PROVIDER;
-        } else if (atStatus != NestedResourceStatus.CAPTURED) {
-            targetAtDisposition = NeoForgeDefaultAtDisposition.RESOURCE_ABSENT_OR_UNAVAILABLE;
         } else if (explicitTargetAtList) {
             targetAtDisposition = NeoForgeDefaultAtDisposition.EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED;
+        } else if (atStatus != NestedResourceStatus.CAPTURED) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.RESOURCE_ABSENT_OR_UNAVAILABLE;
         } else {
             targetAtDisposition = NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE;
         }
