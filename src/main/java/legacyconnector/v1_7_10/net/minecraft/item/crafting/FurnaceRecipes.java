@@ -42,9 +42,12 @@ public class FurnaceRecipes {
 
     public ItemStack getSmeltingResult(ItemStack input) {
         if (input == null) return null;
+        getSmeltingList();
         for (Object o : smeltingList.entrySet()) {
             Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
             if (!func_151397_a(input, (ItemStack) e.getKey())) continue;
+            // a vanilla entry: once a server runs the recipe manager decides (a data pack may have removed or changed it)
+            if (vanilla.contains(e.getKey()) && net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() != null) return mcc$modernResult(input);
             // a data pack or KubeJS changed or removed the translated recipe: the recipe manager decides
             if (RecipeBridge.replacementOf(e.getKey()) != null) return mcc$modernResult(input);
             return (ItemStack) e.getValue();
@@ -89,9 +92,52 @@ public class FurnaceRecipes {
         return b.getItem() == a.getItem() && (b.getItemDamage() == 32767 || b.getItemDamage() == a.getItemDamage());
     }
 
-    @SuppressWarnings("rawtypes")
+    /** The input keys of the vanilla entries (modern recipes already, so never translated again). */
+    private final java.util.Set<Object> vanilla = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    private final java.util.concurrent.atomic.AtomicBoolean seeded = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * 1.7.10's list held vanilla's smelting recipes, and mods copy it into their own machines (a powered furnace) while loading, when
+     * the modern recipe manager does not exist yet: so it is seeded once with the 1.7.10 set (the map only: no recipes are translated,
+     * vanilla has them). Claimed without a lock because resolving the init fields may wait for another thread's class initialisation.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Map getSmeltingList() {
+        if (seeded.compareAndSet(false, true)) {
+            for (String[] r : new String[][] {
+                {"B", "sand", "32767", "B", "glass", "0", "0.1"}, {"B", "iron_ore", "32767", "I", "iron_ingot", "0", "0.7"},
+                {"B", "gold_ore", "32767", "I", "gold_ingot", "0", "1.0"}, {"B", "diamond_ore", "32767", "I", "diamond", "0", "1.0"},
+                {"B", "emerald_ore", "32767", "I", "emerald", "0", "1.0"}, {"B", "lapis_ore", "32767", "I", "dye", "4", "0.2"},
+                {"B", "coal_ore", "32767", "I", "coal", "0", "0.1"}, {"B", "redstone_ore", "32767", "I", "redstone", "0", "0.7"},
+                {"B", "quartz_ore", "32767", "I", "quartz", "0", "0.2"}, {"B", "log", "32767", "I", "coal", "1", "0.15"},
+                {"B", "log2", "32767", "I", "coal", "1", "0.15"}, {"B", "netherrack", "32767", "I", "netherbrick", "0", "0.1"},
+                {"B", "clay", "32767", "B", "hardened_clay", "0", "0.35"}, {"B", "cactus", "32767", "I", "dye", "2", "0.2"},
+                {"B", "cobblestone", "32767", "B", "stone", "0", "0.1"}, {"B", "stonebrick", "0", "B", "stonebrick", "2", "0.1"},
+                {"I", "clay_ball", "32767", "I", "brick", "0", "0.3"}, {"I", "porkchop", "32767", "I", "cooked_porkchop", "0", "0.35"},
+                {"I", "beef", "32767", "I", "cooked_beef", "0", "0.35"}, {"I", "chicken", "32767", "I", "cooked_chicken", "0", "0.35"},
+                {"I", "fish", "0", "I", "cooked_fished", "0", "0.35"}, {"I", "fish", "1", "I", "cooked_fished", "1", "0.35"},
+                {"I", "potato", "32767", "I", "baked_potato", "0", "0.35"},
+            }) {
+                try {
+                    ItemStack in = mcc$stack(r[0], r[1], Integer.parseInt(r[2]));
+                    ItemStack out = mcc$stack(r[3], r[4], Integer.parseInt(r[5]));
+                    if (in.getItem() == null || out.getItem() == null) continue;
+                    smeltingList.put(in, out);
+                    experienceList.put(out, Float.parseFloat(r[6]));
+                    vanilla.add(in);
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // an entry the host cannot resolve is left out
+                }
+            }
+        }
         return smeltingList;
+    }
+
+    private static ItemStack mcc$stack(String kind, String field, int damage) throws ReflectiveOperationException {
+        if (kind.equals("B")) {
+            return new ItemStack((Block) legacyconnector.v1_7_10.net.minecraft.init.Blocks.class.getField(field).get(null), 1, damage);
+        }
+        return new ItemStack((Item) legacyconnector.v1_7_10.net.minecraft.init.Items.class.getField(field).get(null), 1, damage);
     }
 
     public float getSmeltingExperience(ItemStack stack) {
