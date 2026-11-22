@@ -134,8 +134,7 @@ public final class FluidBridge {
         if (FluidRegistry.isFluidRegistered(name) || MODERN.containsKey(name)) return null;
         try {
             var type = modern.getFluidType();
-            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid(name);
-            legacy.setUnlocalizedName(type.getDescriptionId());
+            var legacy = new ModernMirrorFluid(name, modern);
             legacy.setLuminosity(type.getLightLevel()).setDensity(type.getDensity()).setTemperature(type.getTemperature()).setViscosity(type.getViscosity());
             MODERN.put(name, modern);
             FluidRegistry.registerFluid(legacy);
@@ -144,6 +143,98 @@ public final class FluidBridge {
             MODERN.remove(name);
             LOG.warn("Could not mirror the modern fluid {} as a legacy fluid", key, e);
             return null;
+        }
+    }
+
+    /** The modern source fluids by the name {@link #legacyFor} would give their mirror (path, namespace_path, registry id); rebuilt when the registry grows. */
+    private static volatile Map<String, Fluid> mirrorIndex = Map.of();
+    private static volatile int mirrorIndexSize = -1;
+
+    /**
+     * The legacy mirror of the modern fluid a legacy name stands for (null when none): a tanker saved with {@code FluidName=bio_diesel} must
+     * find the fluid after a restart, when nothing has asked for the mirror yet ({@code FluidStack.loadFluidStackFromNBT} dropped the contents).
+     */
+    public static legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid mirrorNamed(String name) {
+        if (name == null || name.isEmpty()) return null;
+        try {
+            int size = BuiltInRegistries.FLUID.size();
+            if (size != mirrorIndexSize) {
+                Map<String, Fluid> idx = new HashMap<>();
+                for (var e : BuiltInRegistries.FLUID.entrySet()) {
+                    Fluid f = e.getValue();
+                    if (f == net.minecraft.world.level.material.Fluids.EMPTY || f instanceof LegacyModernFluid) continue;
+                    if (f instanceof net.minecraft.world.level.material.FlowingFluid flowing && flowing.getSource() != f) continue;
+                    var key = e.getKey().location();
+                    idx.putIfAbsent(key.getPath().replace('/', '_'), f);
+                    idx.put(key.getNamespace() + "_" + key.getPath().replace('/', '_'), f);
+                    idx.put(key.toString(), f);
+                }
+                mirrorIndex = idx;
+                mirrorIndexSize = size;
+            }
+            Fluid modern = mirrorIndex.get(name);
+            return modern == null ? null : legacyFor(modern);
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
+    /**
+     * A legacy fluid standing for a fluid of a modern mod: the name the translation has for it, the texture from its client extension (the
+     * tanker draws {@code getStillIcon} from the block atlas) and its tint, instead of a name with no translation and no icon.
+     */
+    public static final class ModernMirrorFluid extends legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid {
+        private final Fluid modern;
+        private legacyconnector.v1_7_10.net.minecraft.util.IIcon still;
+        private legacyconnector.v1_7_10.net.minecraft.util.IIcon flowing;
+
+        ModernMirrorFluid(String name, Fluid modern) {
+            super(name);
+            this.modern = modern;
+            this.unlocalizedName = modern.getFluidType().getDescriptionId();
+        }
+
+        @Override
+        public String getUnlocalizedName() {
+            return unlocalizedName;
+        }
+
+        @Override
+        public String getLocalizedName() {
+            return net.minecraft.network.chat.Component.translatable(unlocalizedName).getString();
+        }
+
+        @Override
+        public legacyconnector.v1_7_10.net.minecraft.util.IIcon getStillIcon() {
+            if (still == null) still = icon(true);
+            return still;
+        }
+
+        @Override
+        public legacyconnector.v1_7_10.net.minecraft.util.IIcon getFlowingIcon() {
+            if (flowing == null) flowing = icon(false);
+            return flowing;
+        }
+
+        private legacyconnector.v1_7_10.net.minecraft.util.IIcon icon(boolean still) {
+            if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
+            try {
+                var ext = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(modern);
+                ResourceLocation tex = still ? ext.getStillTexture() : ext.getFlowingTexture();
+                return tex == null ? null : legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureAtlasSprite.makeAtlasSprite(tex.toString());
+            } catch (RuntimeException | LinkageError e) {
+                return null;
+            }
+        }
+
+        @Override
+        public int getColor() {
+            if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return 0xFFFFFF;
+            try {
+                return net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(modern).getTintColor() & 0xFFFFFF;
+            } catch (RuntimeException | LinkageError e) {
+                return 0xFFFFFF;
+            }
         }
     }
 

@@ -9,6 +9,7 @@ import legacyconnector.v1_7_10.net.minecraft.item.Item;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaRecipes1710;
 
 /**
  * The legacy crafting registry. Its list holds the recipes legacy mods registered (vanilla recipes live in the modern
@@ -180,7 +181,56 @@ public class CraftingManager {
                 }
             }
         }
+        if (recipes instanceof RecipeList) {
+            List<IRecipe> vanilla = VanillaRecipes1710.views();
+            if (!vanilla.isEmpty()) return new WithVanilla(vanilla, recipes);
+        }
         return recipes;
+    }
+
+    /**
+     * The list as 1.7.10 showed it once a server runs: vanilla's recipes first (read-only views, see {@link VanillaRecipes1710}), then what
+     * legacy mods registered. Additions go to the mods' list (and so to the recipe bridge); a vanilla entry cannot be removed or replaced.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static final class WithVanilla extends java.util.AbstractList<Object> {
+        private final List<IRecipe> vanilla;
+        private final List backing;
+
+        WithVanilla(List<IRecipe> vanilla, List backing) {
+            this.vanilla = vanilla;
+            this.backing = backing;
+        }
+
+        @Override
+        public Object get(int index) {
+            return index < vanilla.size() ? vanilla.get(index) : backing.get(index - vanilla.size());
+        }
+
+        @Override
+        public int size() {
+            return vanilla.size() + backing.size();
+        }
+
+        @Override
+        public boolean add(Object o) {
+            return backing.add(o);
+        }
+
+        @Override
+        public void add(int index, Object o) {
+            backing.add(Math.max(0, index - vanilla.size()), o);
+        }
+
+        @Override
+        public Object remove(int index) {
+            return index < vanilla.size() ? vanilla.get(index) : backing.remove(index - vanilla.size());
+        }
+
+        @Override
+        public Object set(int index, Object o) {
+            return index < vanilla.size() ? vanilla.get(index) : backing.set(index - vanilla.size(), o);
+        }
     }
 
     /** A copy of the list (the recipe bridge compares it with what it translated); throws if it is being edited. */

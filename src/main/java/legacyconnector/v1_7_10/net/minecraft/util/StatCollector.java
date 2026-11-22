@@ -37,6 +37,13 @@ public class StatCollector {
             String modern = key.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT);
             return modern.equals(key) ? null : modern;
         }
+        // dye colour names: 1.7.10 "item.fireworksCharge.silver" / ".lightBlue" (ProjectE's alchemical bag "Alchemical Bag (White)"), 1.21 "color.minecraft.light_gray"
+        if (key.startsWith("item.fireworksCharge.") && key.indexOf('.', 21) < 0 && key.length() > 21) {
+            String colour = key.substring(21);
+            if (colour.equals("silver")) colour = "light_gray";
+            else colour = colour.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT);
+            return "color.minecraft." + colour;
+        }
         if (key.startsWith("entity.") && key.endsWith(".name") && key.indexOf('.', 7) == key.length() - 5) {
             String name = key.substring(7, key.length() - 5);
             String id = MCC$ENTITY_RENAMES.getOrDefault(name, name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT));
