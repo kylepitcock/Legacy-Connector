@@ -191,7 +191,12 @@ public final class DeferredGenWrites {
         if (write.durable==0&&COUNT.get() >= MAX) {
             if (!warnedFull) {
                 warnedFull = true;
-                LOG.warn("Too many blocks placed by legacy generators outside their chunks; further ones are dropped");
+                String from = "?";
+                for (StackTraceElement f : new Throwable().getStackTrace()) {
+                    String c = f.getClassName();
+                    if (!c.startsWith("legacyconnector.") && !c.startsWith("org.kylepitcock.") && !c.startsWith("java.") && !c.startsWith("net.minecraft.") && !c.startsWith("jdk.")) { from = f.toString(); break; }
+                }
+                LOG.warn("Too many blocks placed by legacy generators outside their chunks; further ones are dropped (the last one came from {}, {} pending)", from, COUNT.get());
             }
             return;
         }
