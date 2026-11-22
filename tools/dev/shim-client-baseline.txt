@@ -79,7 +79,6 @@ legacyconnector/v1_7_10/net/minecraft/client/renderer/entity/RenderBiped	net/min
 legacyconnector/v1_7_10/net/minecraft/client/renderer/entity/RenderItem	net/minecraft/client/multiplayer/ClientLevel
 legacyconnector/v1_7_10/net/minecraft/client/renderer/entity/RenderPlayer	net/minecraft/client/player/AbstractClientPlayer
 legacyconnector/v1_7_10/net/minecraft/client/renderer/entity/RenderPlayer	net/minecraft/client/renderer/entity/player/PlayerRenderer
-legacyconnector/v1_7_10/net/minecraft/client/renderer/entity/RendererLivingEntity	net/minecraft/client/player/LocalPlayer
 legacyconnector/v1_7_10/net/minecraft/client/renderer/texture/DynamicTexture	net/minecraft/client/renderer/texture/DynamicTexture
 legacyconnector/v1_7_10/net/minecraft/client/renderer/texture/DynamicTexture$Modern	net/minecraft/client/renderer/texture/DynamicTexture
 legacyconnector/v1_7_10/net/minecraft/client/renderer/texture/TextureManager	net/minecraft/client/renderer/texture/AbstractTexture
