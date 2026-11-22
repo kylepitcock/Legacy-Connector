@@ -73,6 +73,30 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     @Test
+    void includesOuterJarCoremodRegistryAndScriptPresenceInUnifiedPreflightReport() throws IOException {
+        Path sourceJar = tempDir.resolve("coremod-registry.jar");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(sourceJar))) {
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH, """
+                    {
+                      "sample_core": "coremods/sample.js",
+                      "missing_core": "coremods/missing.js"
+                    }
+                    """.getBytes(StandardCharsets.UTF_8));
+            put(zip, "coremods/sample.js", "// inventory only; must not be evaluated".getBytes(StandardCharsets.UTF_8));
+        }
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
+
+        assertEquals(Forge1201CoremodAnalyzer.ResultStatus.PARSED, result.coremodMetadata().status());
+        assertEquals(2, result.coremodMetadata().declarations().size());
+        assertEquals(1, result.coremodMetadata().validDeclarationCount());
+        assertEquals(1, result.coremodMetadata().missingScriptCount());
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\\"coremodMetadata\\""));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("Coremod metadata: PARSED"));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("coremod sample_core -> coremods/sample.js [RESOURCE_PRESENT]"));
+    }
+
+    @Test
     void buildsDeterministicInventoryAndPreservesDependencyEvidence() throws IOException {
         Path modsDirectory = Files.createDirectories(tempDir.resolve("installed-mods"));
         createNativeMod(modsDirectory.resolve("geckolib.jar"), "geckolib");
