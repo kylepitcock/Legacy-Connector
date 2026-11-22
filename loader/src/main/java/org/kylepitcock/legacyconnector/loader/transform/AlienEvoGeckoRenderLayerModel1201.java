@@ -131,7 +131,7 @@ final class AlienEvoGeckoRenderLayerModel1201 implements Opcodes {
         LabelNode skip = new LabelNode();
         LabelNode ordinary = new LabelNode();
         InsnList code = new InsnList();
-        code.add(new VarInsnNode(ALOAD, 7));
+        code.add(new VarInsnNode(ILOAD, 7));
         code.add(new JumpInsnNode(IFNE, skip));
 
         code.add(new VarInsnNode(ALOAD, 6));
