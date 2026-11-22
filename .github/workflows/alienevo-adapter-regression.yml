@@ -41,3 +41,9 @@ jobs:
 
       - name: Compile runtime helper and mod sources
         run: ./gradlew :compileJava --no-daemon --stacktrace
+
+      - name: Run runtime helper unit test
+        run: |
+          ./gradlew test \
+            --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoBufferRefresh1201Test' \
+            --no-daemon --stacktrace
