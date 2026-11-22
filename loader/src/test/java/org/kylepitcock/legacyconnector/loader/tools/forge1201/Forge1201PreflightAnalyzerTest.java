@@ -91,7 +91,7 @@ final class Forge1201PreflightAnalyzerTest {
         assertEquals(2, result.coremodMetadata().declarations().size());
         assertEquals(1, result.coremodMetadata().validDeclarationCount());
         assertEquals(1, result.coremodMetadata().missingScriptCount());
-        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\\"coremodMetadata\\""));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"coremodMetadata\""));
         assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("Coremod metadata: PARSED"));
         assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("coremod sample_core -> coremods/sample.js [RESOURCE_PRESENT]"));
     }
