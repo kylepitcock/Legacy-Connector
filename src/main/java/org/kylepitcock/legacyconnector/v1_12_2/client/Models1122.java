@@ -250,7 +250,11 @@ public final class Models1122 {
         }
         for (var item : ItemBridge1122.modItems()) {
             var subtypes = ItemBridge1122.variants(item);
-            for (int meta = 0; meta < 16; meta++) {
+            // the subtypes an item lists (CoFH's frames and capacitors have metadata 64, 128, 32000...), at least metadata 0-15
+            java.util.TreeSet<Integer> metas = new java.util.TreeSet<>();
+            for (int m = 0; m < 16; m++) metas.add(m);
+            if (subtypes.size() > 1) metas.addAll(subtypes.keySet());
+            for (int meta : metas) {
                 // a model registered for a subtype belongs to that subtype's modern item; an item with several subtypes has no stand-in for the
                 // ones it does not list (the base subtype's item would take the model of every unlisted metadata: BuildCraft's engines showed
                 // the model put last, whichever type it was meant for)
