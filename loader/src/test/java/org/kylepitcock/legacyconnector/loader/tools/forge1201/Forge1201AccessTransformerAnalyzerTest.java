@@ -19,7 +19,9 @@ final class Forge1201AccessTransformerAnalyzerTest {
 
     @Test
     void analyzesNestedAccessTransformerBytesWithoutExtractingAnArchive() {
-        byte[] bytes = "public net.minecraft.world.entity.Entity\\n".getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = """
+                public net.minecraft.world.entity.Entity
+                """.getBytes(StandardCharsets.UTF_8);
         var result = Forge1201AccessTransformerAnalyzer.analyzeNested(bytes);
 
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED, result.status());
