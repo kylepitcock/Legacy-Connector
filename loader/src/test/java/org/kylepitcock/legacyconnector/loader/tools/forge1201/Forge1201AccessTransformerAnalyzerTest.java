@@ -18,6 +18,17 @@ final class Forge1201AccessTransformerAnalyzerTest {
     Path tempDir;
 
     @Test
+    void analyzesNestedAccessTransformerBytesWithoutExtractingAnArchive() {
+        byte[] bytes = "public net.minecraft.world.entity.Entity\\n".getBytes(StandardCharsets.UTF_8);
+        var result = Forge1201AccessTransformerAnalyzer.analyzeNested(bytes);
+
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED, result.status());
+        assertEquals(1, result.validDirectiveCount());
+        assertEquals(Forge1201AccessTransformerAnalyzer.TargetKind.CLASS,
+                result.directives().getFirst().targetKind());
+    }
+
+    @Test
     void parsesClassFieldAndMethodDirectivesWithTheirDistinctNamespaceEvidence() {
         String source = """
                 # class target
