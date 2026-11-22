@@ -257,8 +257,32 @@ public final class MiddleClientCompat {
     }
 
     public static void putNonPlayerEntity(net.minecraft.client.multiplayer.ClientLevel level, int id, net.minecraft.world.entity.Entity entity) {
-        entity.setId(id);
-        level.addEntity(entity);
+        replaceNonPlayerEntity(id, entity, level::getEntity,
+                existingId -> level.removeEntity(existingId, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED),
+                replacement -> {
+                    replacement.setId(id);
+                    level.addEntity(replacement);
+                });
+    }
+
+    /**
+     * Replaces an existing client-only entity occupying a synthetic network ID before
+     * inserting its successor. Palladium's EnergyBeamEffect uses ID 0 for local
+     * transformation effects, so repeated activations must not leave an older
+     * EffectEntity registered under the same ID as the new one.
+     */
+    static <T> void replaceNonPlayerEntity(int id, T entity,
+                                           java.util.function.IntFunction<T> getExisting,
+                                           java.util.function.IntConsumer removeExisting,
+                                           java.util.function.Consumer<T> add) {
+        T existing = getExisting.apply(id);
+        if (existing == entity) {
+            return;
+        }
+        if (existing != null) {
+            removeExisting.accept(id);
+        }
+        add.accept(entity);
     }
 
     public static net.minecraft.core.RegistryAccess registryAccess(net.minecraft.client.multiplayer.ClientPacketListener listener) {

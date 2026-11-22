@@ -32,6 +32,31 @@ class PalladiumColor1201Test implements Opcodes {
     }
 
     @Test
+    void laserRendererColorLookupsAreAlsoAdapted() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "net/threetag/palladium/client/renderer/LaserRenderer";
+        node.superName = "java/lang/Object";
+        MethodNode render = new MethodNode(ACC_PUBLIC, "renderLaser", "()V", null, null);
+        node.methods.add(render);
+        for (int i = 0; i < 2; i++) {
+            render.instructions.add(new InsnNode(ACONST_NULL));
+            render.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                    "net/minecraft/world/entity/animal/Sheep", "getColorArray", DESC, false));
+            render.instructions.add(new InsnNode(POP));
+        }
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = 1;
+
+        assertEquals(2, PalladiumColor1201.apply(node));
+        assertEquals(0, count(render, "net/minecraft/world/entity/animal/Sheep", "getColorArray"));
+        assertEquals(2, count(render, "legacyconnector/v1_20_1/PalladiumColorCompat", "sheepColorArray"));
+        assertEquals(0, PalladiumColor1201.apply(node));
+        assertSerializes(node);
+    }
+
+    @Test
     void unrelatedClassesAreNotChanged() {
         ClassNode node = legacyLayer();
         node.name = "example/OtherLayer";

@@ -72,6 +72,7 @@ public final class MigrateContext {
     private static final class Client {
         static RegistryAccess registries() {
             var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc == null) return null; // unit tests and early loading: no client instance yet
             return mc.level != null ? mc.level.registryAccess() : (mc.getConnection() != null ? mc.getConnection().registryAccess() : null);
         }
     }

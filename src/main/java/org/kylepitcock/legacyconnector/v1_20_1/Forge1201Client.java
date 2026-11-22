@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_20_1;
 
+import legacyconnector.v1_20_1.PalladiumFlightDebugCompat;
 import legacyconnector.v1_20_1.net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory;
 import legacyconnector.v1_20_1.net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import legacyconnector.v1_20_1.net.minecraftforge.client.event.RenderGuiOverlayEvent;
@@ -10,6 +11,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -25,12 +27,24 @@ final class Forge1201Client {
     }
 
     static void init(IEventBus modBus) {
+        boolean flightDiagnosticsEnabled = PalladiumFlightDebugCompat.isEnabled();
+        if (flightDiagnosticsEnabled) {
+            // This observer is owned by Legacy Connector, not by PalladiumCore's translated nested jar.
+            // It proves whether the NeoForge client event bus itself receives the relevant key input.
+            NeoForge.EVENT_BUS.addListener(Forge1201Client::onKeyInput);
+        }
+        PalladiumFlightDebugCompat.logClientBootstrap(flightDiagnosticsEnabled);
+
         NeoForge.EVENT_BUS.addListener(Forge1201Client::onClientTickPre);
         NeoForge.EVENT_BUS.addListener(Forge1201Client::onClientTickPost);
         modBus.addListener(Forge1201Client::onRegisterLayers);
         modBus.addListener(Forge1201Client::onClientSetup);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Client::onLayerPre);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOW, Forge1201Client::onLayerPost);
+    }
+
+    private static void onKeyInput(InputEvent.Key event) {
+        PalladiumFlightDebugCompat.logKeyEvent("LegacyConnector NeoForge.EVENT_BUS", event);
     }
 
     private static void onClientTickPre(ClientTickEvent.Pre e) {
