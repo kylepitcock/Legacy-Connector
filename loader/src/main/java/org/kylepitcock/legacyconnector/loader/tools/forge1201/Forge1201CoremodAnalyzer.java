@@ -218,7 +218,7 @@ public final class Forge1201CoremodAnalyzer {
         }
 
         ResultStatus status = invalidJson ? ResultStatus.INVALID_JSON
-                : truncated || malformed > 0 ? ResultStatus.PARTIALLY_PARSED : ResultStatus.PARSED;
+                : truncated || malformed > 0 || duplicates > 0 ? ResultStatus.PARTIALLY_PARSED : ResultStatus.PARSED;
         return new Result(RESOURCE_PATH, status, sizeBytes, sha256, declarations,
                 valid, malformed, duplicates, missing, warnings);
     }
