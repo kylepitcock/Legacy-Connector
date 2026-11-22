@@ -1,0 +1,43 @@
+name: AlienEvo adapter regression tests
+
+on:
+  push:
+    branches:
+      - fix/forge1201-palladium-runtime-adapters
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alien-evo-adapter-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focused-tests:
+    name: Focused ASM tests and runtime compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run focused AlienEvo transformer tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :loader:test \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBufferingGlowConsumer1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoRenderLayerModel1201Test' \
+            --no-daemon --stacktrace
+
+      - name: Compile runtime helper and mod sources
+        run: ./gradlew :compileJava --no-daemon --stacktrace
