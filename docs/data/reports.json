@@ -1175,6 +1175,18 @@
    "link": "https://mcmodarchive.femtopedia.de/#Mods/W/witches%20and%20more/1.6.4/",
    "date": "2026-11-22",
    "open": true
+  },
+  {
+   "issue": 327,
+   "mod": "Xycraft 0.10.18",
+   "mc": "1.4.7 (planned)",
+   "status": "partial",
+   "details": "Works Worldgen is happening <img width=\"1920\" height=\"1009\" alt=\"2026-11-22_15 20 41\" src=\"https://github.com/user-attachments/assets/c2e3ceb2-1e83-4346-96e0-df64fe60b5e2\" /> <img width=\"1920\" height=\"1009\" alt=\"2026-11-22_15 20 47\" src=\"https://github.com/user-attachments/assets/53a5d70d-1254-41f7-b417-9c0adadc1f63\" /> mod torches give off light <img width=\"1920\" height=\"1009\" alt=\"2026-11-22_15…",
+   "lc": "0.5.0-nightly.131.1197437",
+   "neoforge": "21.1.265",
+   "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-22",
+   "open": true
   }
  ]
 }
