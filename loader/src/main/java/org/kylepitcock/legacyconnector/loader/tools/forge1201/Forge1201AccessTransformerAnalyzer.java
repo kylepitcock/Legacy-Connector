@@ -18,7 +18,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.objectweb.asm.Type;
 
 /** Read-only inventory of the production Forge 1.20.1 Access Transformer resource. */
 public final class Forge1201AccessTransformerAnalyzer {
@@ -176,12 +175,7 @@ public final class Forge1201AccessTransformerAnalyzer {
             if (!"*".equals(memberName) && !validMemberName(memberName)) {
                 return malformed(lineNumber, raw, "Invalid method selector name '" + memberName + "'.");
             }
-            try {
-                Type parsed = Type.getMethodType(descriptor);
-                if (!parsed.getDescriptor().equals(descriptor)) {
-                    return malformed(lineNumber, raw, "Method selector has a non-canonical JVM descriptor.");
-                }
-            } catch (IllegalArgumentException exception) {
+            if (!validMethodDescriptor(descriptor)) {
                 return malformed(lineNumber, raw, "Invalid method JVM descriptor '" + descriptor + "'.");
             }
             kind = "*".equals(memberName) ? TargetKind.WILDCARD_METHOD : TargetKind.METHOD;
@@ -232,6 +226,39 @@ public final class Forge1201AccessTransformerAnalyzer {
 
     private static boolean validMemberName(String value) {
         return value.matches("[A-Za-z_$][A-Za-z0-9_$]*");
+    }
+
+    private static boolean validMethodDescriptor(String descriptor) {
+        if (descriptor == null || descriptor.length() < 3 || descriptor.charAt(0) != '(') return false;
+        int index = 1;
+        while (index < descriptor.length() && descriptor.charAt(index) != ')') {
+            int next = consumeDescriptorType(descriptor, index, false);
+            if (next < 0) return false;
+            index = next;
+        }
+        if (index >= descriptor.length() || descriptor.charAt(index) != ')') return false;
+        int returnType = consumeDescriptorType(descriptor, index + 1, true);
+        return returnType == descriptor.length();
+    }
+
+    private static int consumeDescriptorType(String descriptor, int start, boolean allowVoid) {
+        int index = start;
+        int dimensions = 0;
+        while (index < descriptor.length() && descriptor.charAt(index) == '[') {
+            dimensions++;
+            if (dimensions > 255) return -1;
+            index++;
+        }
+        if (index >= descriptor.length()) return -1;
+        char type = descriptor.charAt(index);
+        if (type == 'V') return allowVoid && dimensions == 0 ? index + 1 : -1;
+        if ("BCDFIJSZ".indexOf(type) >= 0) return index + 1;
+        if (type != 'L') return -1;
+        int end = descriptor.indexOf(';', index + 1);
+        if (end < 0) return -1;
+        String internalName = descriptor.substring(index + 1, end);
+        if (!internalName.matches("[A-Za-z0-9_$]+(?:/[A-Za-z0-9_$]+)*")) return -1;
+        return end + 1;
     }
 
     private static String targetKey(Directive directive) {
