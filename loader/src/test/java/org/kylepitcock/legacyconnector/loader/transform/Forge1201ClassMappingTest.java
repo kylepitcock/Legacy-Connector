@@ -23,27 +23,19 @@ class Forge1201ClassMappingTest {
     }
 
     @Test
-    void explicitTickEventAliasesTakePrecedenceOverLegacyFacades() {
+    void forgeTickEventsKeepTheirPhaseBearingFacades() {
+        // The NeoForge Pre/Post tick classes have no `phase` field, so mods reading `event.phase` (CoFH Core and most others)
+        // must keep the facade; a curated alias onto ...$Post broke them with a NoSuchFieldError.
         Forge1201Transformer transformer = new Forge1201Transformer(shimWithFacades(
                 "net/minecraftforge/event/TickEvent$PlayerTickEvent",
                 "net/minecraftforge/event/TickEvent$ServerTickEvent",
                 "net/minecraftforge/event/TickEvent$RenderTickEvent",
                 "net/minecraftforge/event/TickEvent$ClientTickEvent"));
-
-        assertEquals(
-                "net/neoforged/neoforge/event/tick/PlayerTickEvent$Post",
-                transformer.mapClass("net/minecraftforge/event/TickEvent$PlayerTickEvent"));
-        assertEquals(
-                "net/neoforged/neoforge/event/tick/ServerTickEvent$Post",
-                transformer.mapClass("net/minecraftforge/event/TickEvent$ServerTickEvent"));
-        assertEquals(
-                "net/neoforged/neoforge/client/event/RenderFrameEvent$Pre",
-                transformer.mapClass("net/minecraftforge/event/TickEvent$RenderTickEvent"));
-
-        // No curated alias exists for ClientTickEvent, so its legacy facade remains in use.
-        assertEquals(
-                SHIM_PREFIX + "net/minecraftforge/event/TickEvent$ClientTickEvent",
-                transformer.mapClass("net/minecraftforge/event/TickEvent$ClientTickEvent"));
+        for (String name : List.of("PlayerTickEvent", "ServerTickEvent", "RenderTickEvent", "ClientTickEvent")) {
+            assertEquals(
+                    SHIM_PREFIX + "net/minecraftforge/event/TickEvent$" + name,
+                    transformer.mapClass("net/minecraftforge/event/TickEvent$" + name));
+        }
     }
 
     @Test

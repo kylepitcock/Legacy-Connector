@@ -165,6 +165,3 @@ net/minecraftforge/common/loot/CanToolPerformAction	net/neoforged/neoforge/commo
 # Native event API changes: phase-based Forge tick events and GUI overlay wrappers.
 net/minecraftforge/client/event/RenderGuiOverlayEvent	net/neoforged/neoforge/client/event/RenderGuiLayerEvent
 net/minecraftforge/client/gui/overlay/VanillaGuiOverlay	net/neoforged/neoforge/client/gui/VanillaGuiLayers
-net/minecraftforge/event/TickEvent$PlayerTickEvent	net/neoforged/neoforge/event/tick/PlayerTickEvent$Post
-net/minecraftforge/event/TickEvent$ServerTickEvent	net/neoforged/neoforge/event/tick/ServerTickEvent$Post
-net/minecraftforge/event/TickEvent$RenderTickEvent	net/neoforged/neoforge/client/event/RenderFrameEvent$Pre
