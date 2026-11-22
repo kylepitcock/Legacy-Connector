@@ -1151,6 +1151,18 @@
    "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
    "date": "2026-11-21",
    "open": true
+  },
+  {
+   "issue": 324,
+   "mod": "IC2Classic-1.7.10-1.2.6 / 1.12.2-1.5.15",
+   "mc": "1.12.2",
+   "status": "fails",
+   "details": "Claude said to post reply updates in original issue but I don't think it actually checks replies after closing. Original issues: https://github.com/kylepitcock/Legacy-Connector/issues/233 (1.12) https://github.com/kylepitcock/Legacy-Connector/issues/292 (1.7.10) **IC2 1.12.2-1.5.15** Fails to load with latest Legacyconnector 0.5 [Worker-Main-2/ERROR,Legacy Connector/]: ic2: Legacy mod ic2 (1.12.2…",
+   "lc": "0.5.0",
+   "neoforge": "21.1.266",
+   "link": "",
+   "date": "2026-11-22",
+   "open": true
   }
  ]
 }
