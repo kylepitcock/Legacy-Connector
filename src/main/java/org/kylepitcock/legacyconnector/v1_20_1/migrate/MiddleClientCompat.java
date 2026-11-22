@@ -256,13 +256,71 @@ public final class MiddleClientCompat {
         box.moveCursorToStart(false);
     }
 
+    private static final org.slf4j.Logger PLAYER_EFFECT_DIAGNOSTICS =
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/PlayerEffectDiagnostics");
+
+    /**
+     * Adapter for AlienEvo 1.20.1 bytecode. Its HolderLookup argument is registry-specific;
+     * Minecraft 1.21.1 requires a full HolderLookup.Provider, supplied by the active ClientLevel.
+     */
+    public static net.minecraft.core.particles.ParticleOptions readParticle(
+            com.mojang.brigadier.StringReader reader, net.minecraft.core.HolderLookup<?> ignoredLookup)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        net.minecraft.client.multiplayer.ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            throw new IllegalStateException(
+                    "AlienEvo attempted to parse a beam particle without an active client level");
+        }
+        return net.minecraft.commands.arguments.ParticleArgument.readParticle(reader, level.registryAccess());
+    }
+
     public static void putNonPlayerEntity(net.minecraft.client.multiplayer.ClientLevel level, int id, net.minecraft.world.entity.Entity entity) {
-        replaceNonPlayerEntity(id, entity, level::getEntity,
-                existingId -> level.removeEntity(existingId, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED),
+        replaceNonPlayerEntity(id, entity,
+                existingId -> {
+                    net.minecraft.world.entity.Entity existing = level.getEntity(existingId);
+                    if (id == 0) {
+                        PLAYER_EFFECT_DIAGNOSTICS.info(
+                                "[PalladiumEffectProbe] stage=lookup id=0 incoming={} existing={} player={}",
+                                describeEffectEntity(entity), describeEffectEntity(existing), describeClientPlayer(level));
+                    }
+                    return existing;
+                },
+                existingId -> {
+                    net.minecraft.world.entity.Entity previous = level.getEntity(existingId);
+                    level.removeEntity(existingId, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                    if (id == 0) {
+                        PLAYER_EFFECT_DIAGNOSTICS.info(
+                                "[PalladiumEffectProbe] stage=removed id=0 previous={} remaining={}",
+                                describeEffectEntity(previous), describeEffectEntity(level.getEntity(existingId)));
+                    }
+                },
                 replacement -> {
                     replacement.setId(id);
                     level.addEntity(replacement);
+                    if (id == 0) {
+                        net.minecraft.world.entity.Entity registered = level.getEntity(id);
+                        PLAYER_EFFECT_DIAGNOSTICS.info(
+                                "[PalladiumEffectProbe] stage=added id=0 incoming={} registered={} sameInstance={} player={}",
+                                describeEffectEntity(replacement), describeEffectEntity(registered), registered == replacement,
+                                describeClientPlayer(level));
+                    }
                 });
+    }
+
+    private static String describeEffectEntity(net.minecraft.world.entity.Entity entity) {
+        if (entity == null) return "null";
+        return entity.getType() + "{id=" + entity.getId()
+                + ",uuid=" + entity.getUUID()
+                + ",pos=" + entity.position()
+                + ",removed=" + entity.isRemoved() + "}";
+    }
+
+    private static String describeClientPlayer(net.minecraft.client.multiplayer.ClientLevel level) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return "null";
+        return "{uuid=" + player.getUUID()
+                + ",pos=" + player.position()
+                + ",sameLevel=" + (player.level() == level) + "}";
     }
 
     /**
