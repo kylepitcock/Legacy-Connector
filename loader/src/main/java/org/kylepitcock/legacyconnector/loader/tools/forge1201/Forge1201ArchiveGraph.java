@@ -717,7 +717,6 @@ public final class Forge1201ArchiveGraph {
             if (nativeNeoForgeArchive) {
                 resourceWarnings.add("Nested archive declares NeoForge metadata; its Mixin resources are not passed to the legacy Forge Mixin analyzer.");
                 budget.warnings.add(displayPath + ": nested NeoForge archive was excluded from legacy Mixin analysis; Coremod/AT resources remain inventoried.");
-                resourceIndexIncomplete = true;
             } else {
                 for (Map.Entry<String, byte[]> classEntry : snapshot.classEntries().entrySet()) {
                     long next = budget.nestedMixinClassBytesCaptured + classEntry.getValue().length;
