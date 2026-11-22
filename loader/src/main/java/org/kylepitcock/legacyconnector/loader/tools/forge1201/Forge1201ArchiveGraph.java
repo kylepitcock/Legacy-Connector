@@ -776,6 +776,12 @@ public final class Forge1201ArchiveGraph {
                             }
                             warnings.add(archivePath + "!/" + name
                                     + " is duplicated within the archive; all entries with this name were skipped.");
+                            if (captureMixinResources) {
+                                mixinResources.put(name, new NestedMixinResource(name, null,
+                                        entry.getSize(), entry.getCompressedSize(), 2,
+                                        NestedMixinResourceStatus.DUPLICATE_ENTRY,
+                                        "Multiple ZIP entries use the same class path."));
+                            }
                         } else {
                             skippedClassEntries++;
                         }
@@ -848,6 +854,12 @@ public final class Forge1201ArchiveGraph {
                         skippedClassEntries++;
                         warnings.add(archivePath + "!/" + name + " skipped: class payload exceeded the "
                                 + "per-class or per-archive class-byte capture limit.");
+                        if (captureMixinResources) {
+                            mixinResources.put(name, new NestedMixinResource(name, null, entryBytes,
+                                    entry.getCompressedSize(), 1, NestedMixinResourceStatus.LIMIT_EXCEEDED,
+                                    "Class payload exceeded the nested class capture limit."));
+                            mixinResourceIndexIncomplete = true;
+                        }
                     } else {
                         byte[] classBytes = output.toByteArray();
                         classEntries.put(name, classBytes);
@@ -858,6 +870,7 @@ public final class Forge1201ArchiveGraph {
                     if (duplicateMixinResource) {
                         // The first occurrence was already invalidated above; do not retain either copy.
                     } else if (!mixinResourceBudgetAvailable || output == null || entryBytes > mixinResourceLimit) {
+                        mixinResourceIndexIncomplete = true;
                         if (mixinResourceBudgetAvailable) {
                             budget.nestedMixinResourceCount++;
                             mixinResources.put(name, new NestedMixinResource(name, null, entryBytes,
