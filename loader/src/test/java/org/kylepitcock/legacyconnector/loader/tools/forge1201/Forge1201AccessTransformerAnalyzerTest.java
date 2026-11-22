@@ -86,6 +86,21 @@ final class Forge1201AccessTransformerAnalyzerTest {
     }
 
     @Test
+    void acceptsJvmConstructorAndClassInitializerMethodNames() {
+        String source = """
+                public net.minecraft.world.entity.Entity <init>(Lnet/minecraft/world/level/Level;)V
+                public net.minecraft.world.entity.Entity <clinit>()V
+                """;
+
+        var result = Forge1201AccessTransformerAnalyzer.parse(source, source.length(), "e".repeat(64));
+
+        assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.PARSED, result.status());
+        assertEquals(2, result.validDirectiveCount());
+        assertEquals("<init>", result.directives().get(0).memberName());
+        assertEquals("<clinit>", result.directives().get(1).memberName());
+    }
+
+    @Test
     void reportsMalformedLinesButRetainsValidDirectivesAndLineLocations() {
         String source = """
                 public net.minecraft.world.entity.Entity
