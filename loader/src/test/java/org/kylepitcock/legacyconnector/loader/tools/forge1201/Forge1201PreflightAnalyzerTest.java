@@ -77,15 +77,13 @@ final class Forge1201PreflightAnalyzerTest {
     void includesOuterJarCoremodRegistryAndScriptPresenceInUnifiedPreflightReport() throws IOException {
         Path sourceJar = tempDir.resolve("coremod-registry.jar");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(sourceJar))) {
-            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH,
-                    """
-                    {"nested_probe":"scripts/nested_probe.js"}
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH, """
+                    {
+                      "sample_core": "coremods/sample.js",
+                      "missing_core": "coremods/missing.js"
+                    }
                     """.getBytes(StandardCharsets.UTF_8));
-            put(zip, "scripts/nested_probe.js", "// inert; never evaluated by preflight".getBytes(StandardCharsets.UTF_8));
-            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
-                    """
-                    public net.minecraft.world.entity.Entity
-                    """.getBytes(StandardCharsets.UTF_8));
+            put(zip, "coremods/sample.js", "// inventory only; must not be evaluated".getBytes(StandardCharsets.UTF_8));
         }
 
         var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of());
