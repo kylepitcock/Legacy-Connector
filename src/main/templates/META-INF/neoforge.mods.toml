@@ -18,6 +18,10 @@ config = "legacyconnector.mixins.json"
 [[mixins]]
 config = "legacyconnector.compat.mixins.json"
 
+# needs MixinExtras 0.5 (expression targets); optional, so an older NeoForge 21.1 skips only these hooks
+[[mixins]]
+config = "legacyconnector.mixinextras.mixins.json"
+
 [[dependencies."${mod_id}"]]
 modId = "neoforge"
 type = "required"

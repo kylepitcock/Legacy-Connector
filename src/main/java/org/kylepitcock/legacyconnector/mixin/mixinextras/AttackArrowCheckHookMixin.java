@@ -1,4 +1,4 @@
-package org.kylepitcock.legacyconnector.mixin;
+package org.kylepitcock.legacyconnector.mixin.mixinextras;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;

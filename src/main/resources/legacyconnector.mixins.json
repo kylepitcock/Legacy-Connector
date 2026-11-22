@@ -1,7 +1,6 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "mixinextras": { "minVersion": "0.5.0" },
   "package": "org.kylepitcock.legacyconnector.mixin",
   "compatibilityLevel": "JAVA_21",
   "plugin": "org.kylepitcock.legacyconnector.mixinplugin.LegacyMixinPlugin",
@@ -47,8 +46,7 @@
     "UnloadedChunkSlowFallHookMixin",
     "CollisionGetterHookMixin",
     "EntityMovementHookMixin",
-    "NearestTargetPlayerHookMixin",
-    "AttackArrowCheckHookMixin",
+    "NearestTargetPlayerHookMixin",
     "FurnaceTakenOverHookMixin",
     "ServerLevelWeatherHookMixin",
     "ServerLevelNeighborHookMixin",
