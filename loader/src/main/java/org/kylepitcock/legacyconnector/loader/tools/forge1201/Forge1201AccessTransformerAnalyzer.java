@@ -172,7 +172,7 @@ public final class Forge1201AccessTransformerAnalyzer {
         TargetKind kind;
         DirectiveStatus status;
         if (descriptorStart >= 0) {
-            if (!"*".equals(memberName) && !validMemberName(memberName)) {
+            if (!"*".equals(memberName) && !validMethodName(memberName)) {
                 return malformed(lineNumber, raw, "Invalid method selector name '" + memberName + "'.");
             }
             if (!validMethodDescriptor(descriptor)) {
@@ -226,6 +226,10 @@ public final class Forge1201AccessTransformerAnalyzer {
 
     private static boolean validMemberName(String value) {
         return value.matches("[A-Za-z_$][A-Za-z0-9_$]*");
+    }
+
+    private static boolean validMethodName(String value) {
+        return value.equals("<init>") || value.equals("<clinit>") || validMemberName(value);
     }
 
     private static boolean validMethodDescriptor(String descriptor) {
