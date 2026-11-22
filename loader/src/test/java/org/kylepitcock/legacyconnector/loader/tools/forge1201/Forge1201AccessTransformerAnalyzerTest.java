@@ -51,7 +51,7 @@ final class Forge1201AccessTransformerAnalyzerTest {
         assertEquals(Forge1201AccessTransformerAnalyzer.TargetKind.METHOD, method.targetKind());
         assertEquals("m_137477_", method.memberName());
         assertEquals("(Ljava/lang/String;)Ljava/util/concurrent/ExecutorService;", method.descriptor());
-        assertEquals("MOJANG_OFFICIAL_1.20.1", method.descriptorNamespace());
+        assertEquals("SOURCE_MOJANG_OFFICIAL_1.20.1_WITH_EXTERNAL_BINARY_TYPES", method.descriptorNamespace());
         assertEquals("FORGE_SRG_1.20.1", method.memberNamespace());
         assertTrue(result.sha256().matches("[0-9a-f]{64}"));
     }
