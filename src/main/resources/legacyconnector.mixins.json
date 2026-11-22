@@ -46,7 +46,8 @@
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",
-    "ClientLanguageLegacyKeysMixin"
+    "ClientLanguageLegacyKeysMixin",
+    "PalladiumCoreRendererRegistryProbeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
