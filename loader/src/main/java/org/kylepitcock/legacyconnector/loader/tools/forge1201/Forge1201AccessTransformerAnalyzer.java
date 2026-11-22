@@ -192,7 +192,7 @@ public final class Forge1201AccessTransformerAnalyzer {
                 ? "FORGE_SRG_1.20.1" : "DECLARED_MEMBER_NAMESPACE_UNVERIFIED";
         String descriptorNamespace = descriptor == null ? "NOT_APPLICABLE"
                 : owner.startsWith("net.minecraft.")
-                        ? "MOJANG_OFFICIAL_1.20.1" : "DECLARED_DESCRIPTOR_NAMESPACE_UNVERIFIED";
+                        ? "SOURCE_MOJANG_OFFICIAL_1.20.1_WITH_EXTERNAL_BINARY_TYPES" : "DECLARED_DESCRIPTOR_NAMESPACE_UNVERIFIED";
         String diagnostic = status == DirectiveStatus.WILDCARD_REQUIRES_REVIEW
                 ? "Wildcard member target is inventoried but cannot be resolved as one symbol." : null;
         return new Directive(lineNumber, raw, tokens[0], modifier.visibility(), modifier.finalChange(),
