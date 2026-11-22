@@ -26,6 +26,13 @@ final class AlienEvoGeckoRenderLayerModel1201 implements Opcodes {
             "net/threetag/palladium/client/renderer/renderlayer/RenderTypeFunction";
     static final String ALIEN_LAYER_STATE = "net/habb/alienevo/compat/geckolib/renderlayer/AlienLayerState";
     static final String ALIEN_GECKO_RENDER_LAYER = "net/habb/alienevo/compat/geckolib/renderlayer/AlienGeckoRenderLayer";
+    /**
+     * The class remapper has already applied lib-classes.tsv when this adapter runs:
+     * GeckoLib 4.8 RenderUtils/CoreGeoBone become GeckoLib 4.9 RenderUtil/GeoBone.
+     */
+    static final String RENDER_UTIL = "software/bernie/geckolib/util/RenderUtil";
+    static final String PREP_MATRIX_FOR_BONE_DESC =
+            "(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/cache/object/GeoBone;)V";
     static final String BUFFER_REFRESH =
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoBufferRefresh1201";
 
@@ -109,12 +116,16 @@ final class AlienEvoGeckoRenderLayerModel1201 implements Opcodes {
         if (helperCalls == 1 && glowCalls == 1) return 0;
         if (helperCalls != 0 || glowCalls != 0) throw new IllegalStateException("Partial recursive buffer-refresh adapter state");
 
-        MethodInsnNode prep = findUniqueCall(recursive, "software/bernie/geckolib/util/RenderUtils",
-                "prepMatrixForBone",
-                "(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/core/animatable/model/CoreGeoBone;)V");
+        // ClassReader/ClassRemapper has already folded the GeckoLib 4.8 names
+        // before this adapter runs (lib-classes.tsv): inspect the 4.9 owner and
+        // descriptor that are actually present in this ClassNode.
+        MethodInsnNode prep = findUniqueCall(recursive, RENDER_UTIL, "prepMatrixForBone",
+                PREP_MATRIX_FOR_BONE_DESC);
         MethodInsnNode child = findUniqueCall(recursive, node.name, "renderRecursively", RECURSIVE_DESC);
-        if (prep == null || child == null || child.getOpcode() != INVOKEVIRTUAL) {
-            throw new IllegalStateException("AlienEvo recursive rendering shape changed");
+        if (prep == null || prep.getOpcode() != INVOKESTATIC
+                || child == null || child.getOpcode() != INVOKEVIRTUAL) {
+            throw new IllegalStateException(
+                    "AlienEvo recursive rendering anchors changed after GeckoLib 4.9 remapping");
         }
 
         LabelNode skip = new LabelNode();
