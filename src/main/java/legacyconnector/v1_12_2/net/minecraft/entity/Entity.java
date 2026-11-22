@@ -1178,7 +1178,18 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     public final void mcc$markDead() {
         mcc$local_isDead = true;
         var m = mcc$entity;
-        if (m != null && !(m instanceof net.minecraft.world.entity.player.Player)) m.discard();
+        if (m == null || m instanceof net.minecraft.world.entity.player.Player) return;
+        // 1.12 removes a dead entity at the end of the tick, so a mod may send its status event (setEntityState) AFTER setDead(); a modern
+        // discard is immediate and drops such an event. A mod-defined projectile-like entity therefore leaves at the end of the tick.
+        if (!(m instanceof net.minecraft.world.entity.LivingEntity) && !getClass().getName().startsWith("legacyconnector.")
+                && m.level() instanceof net.minecraft.server.level.ServerLevel sl && !m.isRemoved()) {
+            var server = sl.getServer();
+            if (server != null) {
+                server.tell(new net.minecraft.server.TickTask(server.getTickCount(), m::discard));
+                return;
+            }
+        }
+        m.discard();
     }
 
     public void setDropItemsWhenDead(boolean drop) {

@@ -790,8 +790,12 @@ public class World implements IBlockAccess {
     public List<AxisAlignedBB> getCollisionBoxes(Entity entity, AxisAlignedBB bb) {
         List<AxisAlignedBB> out = new ArrayList<>();
         if (acc() == null) return out;
+        var box = bb.mcc$modern();
+        // a NaN or absurdly large box (a projectile with a broken velocity) would make the block iterator run effectively forever and hang the tick
+        if (!(box.getXsize() < 512.0D && box.getYsize() < 512.0D && box.getZsize() < 512.0D)
+                || Double.isNaN(box.minX) || Double.isNaN(box.minY) || Double.isNaN(box.minZ)) return out;
         var modernEntity = entity == null ? null : entity.mcc$modern();
-        for (var shape : acc().getBlockCollisions(modernEntity, bb.mcc$modern())) {
+        for (var shape : acc().getBlockCollisions(modernEntity, box)) {
             for (var part : shape.toAabbs()) out.add(AxisAlignedBB.mcc$of(part));
         }
         var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
