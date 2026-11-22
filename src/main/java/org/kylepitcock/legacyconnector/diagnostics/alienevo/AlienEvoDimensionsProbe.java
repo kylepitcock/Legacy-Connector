@@ -1,8 +1,7 @@
-package org.kylepitcock.legacyconnector.mixin;
+package org.kylepitcock.legacyconnector.diagnostics.alienevo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -13,19 +12,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Non-mixin utility for opt-in-by-presence AlienEvo/Pehkui sizing diagnostics. */
-final class AlienEvoDimensionsProbe {
+public final class AlienEvoDimensionsProbe {
     private static final Logger LOGGER = LoggerFactory.getLogger("LegacyConnector/AlienEvoDimensionsProbe");
     private static final ConcurrentHashMap<String, String> LAST_PLAYER_SNAPSHOTS = new ConcurrentHashMap<>();
 
     private AlienEvoDimensionsProbe() {}
 
-    static void record(Player player, String phase) {
+    public static void record(Player player, String phase) {
         if (!ModList.get().isLoaded("alienevo")) return;
         LOGGER.info("[AlienEvoDimensionsProbe] phase={} player={} uuid={} {}",
                 phase, player.getName().getString(), player.getUUID(), snapshot(player));
     }
 
-    static void sample(Player player) {
+    public static void sample(Player player) {
         if (!ModList.get().isLoaded("alienevo")) return;
         String key = player.getUUID() + (player.level().isClientSide ? ":client" : ":server");
         String state = snapshot(player);
