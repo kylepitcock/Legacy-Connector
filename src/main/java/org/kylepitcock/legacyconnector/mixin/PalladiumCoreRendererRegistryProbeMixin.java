@@ -4,6 +4,7 @@ import java.util.Map;
 import org.kylepitcock.legacyconnector.v1_20_1.PalladiumRendererRegistryDebugCompat;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Captures PalladiumCore's pending entity-renderer registrations around the real NeoForge event callback.
  * The helper is disabled unless its dedicated JVM system property is enabled.
  */
+@Pseudo
 @Mixin(targets = "net.threetag.palladiumcore.registry.client.forge.EntityRendererRegistryImpl")
 public abstract class PalladiumCoreRendererRegistryProbeMixin {
     @Shadow
