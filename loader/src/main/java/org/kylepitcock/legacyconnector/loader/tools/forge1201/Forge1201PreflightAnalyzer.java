@@ -34,8 +34,8 @@ import java.util.zip.ZipFile;
  * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.10";
-    public static final String ANALYZER_VERSION = "1.10.0";
+    public static final String SCHEMA_VERSION = "1.11";
+    public static final String ANALYZER_VERSION = "1.11.0";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
@@ -110,6 +110,7 @@ public final class Forge1201PreflightAnalyzer {
             List<ArchiveEntry> archiveEntries,
             List<String> resourceNamespaces,
             Map<String, String> manifestAttributes,
+            Forge1201AccessTransformerAnalyzer.Result accessTransformers,
             List<MixinConfigCandidate> mixinConfigCandidates,
             Forge1201MixinAnalyzer.Result mixinAnalysis,
             Forge1201MappingProfileValidator.Finding mappingProfile,
@@ -214,6 +215,8 @@ public final class Forge1201PreflightAnalyzer {
         }
 
         Map<String, String> manifest = readManifest(jar);
+        Forge1201AccessTransformerAnalyzer.Result accessTransformers =
+                Forge1201AccessTransformerAnalyzer.analyze(jar);
         List<String> manifestMixins = splitCommaList(valueIgnoreCase(manifest, "MixinConfigs"));
         String coreModClass = valueIgnoreCase(manifest, "FMLCorePlugin");
 
@@ -414,7 +417,8 @@ public final class Forge1201PreflightAnalyzer {
                 "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
                 "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
                 "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
-                "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics."
+                "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
+                "Access Transformer inventory reads only the exact production resource META-INF/accesstransformer.cfg from the outer source JAR. It preserves original line locations and reports class-owner, member-name, and descriptor namespace evidence; it does not apply directives, resolve selectors, or remap them. Access Transformers inside nested JARs and alternate development-only build paths are not inspected."
         );
 
         return new PreflightResult(
@@ -422,7 +426,7 @@ public final class Forge1201PreflightAnalyzer {
                 TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
                 metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
                 archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
-                mixinCandidates, mixinAnalysis, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                accessTransformers, mixinCandidates, mixinAnalysis, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
                 outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
                 fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
                 nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
@@ -487,6 +491,31 @@ public final class Forge1201PreflightAnalyzer {
                 .append("Manifest attributes: ").append(result.manifestAttributes()).append('\n')
                 .append("Coremod class: ").append(result.coreModClass() == null ? "none" : result.coreModClass()).append('\n')
                 .append("Mixin config candidates: ").append(result.mixinConfigCandidates().size()).append('\n');
+        Forge1201AccessTransformerAnalyzer.Result accessTransformers = result.accessTransformers();
+        out.append("Access Transformer: ").append(accessTransformers.status())
+                .append(" path=").append(accessTransformers.resourcePath())
+                .append(" bytes=").append(accessTransformers.sizeBytes())
+                .append(" valid=").append(accessTransformers.validDirectiveCount())
+                .append(" wildcard=").append(accessTransformers.wildcardDirectiveCount())
+                .append(" malformed=").append(accessTransformers.malformedLineCount())
+                .append(" duplicate-targets=").append(accessTransformers.duplicateTargetCount())
+                .append(" conflicting-targets=").append(accessTransformers.conflictingTargetCount())
+                .append(" sha256=").append(accessTransformers.sha256() == null ? "n/a" : accessTransformers.sha256())
+                .append('\n');
+        for (Forge1201AccessTransformerAnalyzer.Directive directive : accessTransformers.directives()) {
+            out.append("  AT line ").append(directive.lineNumber()).append(" [")
+                    .append(directive.status()).append("] ").append(directive.rawLine());
+            if (directive.ownerNamespace() != null) {
+                out.append(" owner-namespace=").append(directive.ownerNamespace())
+                        .append(" member-namespace=").append(directive.memberNamespace())
+                        .append(" descriptor-namespace=").append(directive.descriptorNamespace());
+            }
+            if (directive.diagnostic() != null) out.append(" — ").append(directive.diagnostic());
+            out.append('\n');
+        }
+        accessTransformers.warnings().forEach(warning ->
+                out.append("  AT warning: ").append(warning).append('\n'));
+
         for (MixinConfigCandidate candidate : result.mixinConfigCandidates()) {
             out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\n");
         }
