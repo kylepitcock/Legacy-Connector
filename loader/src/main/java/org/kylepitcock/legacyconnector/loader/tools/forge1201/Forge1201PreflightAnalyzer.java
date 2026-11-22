@@ -303,253 +303,253 @@ public final class Forge1201PreflightAnalyzer {
             Forge1201TargetApiVerifier.TargetIndex sharedTargetIndex = sharedTargetLoader == null ? null
                     : Forge1201TargetApiVerifier.createIndex(internalName ->
                             sharedTargetLoader.getResourceAsStream(internalName + ".class"));
-        Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
-        Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
-        Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
-                jarInfo == null ? null : usageInventory::scanNestedClass;
-        List<NestedMixinFinding> nestedMixinAnalyses = new ArrayList<>();
-        int[] nestedMixinConfigCount = {0};
-        int[] nestedMixinClassCount = {0};
-        Forge1201ArchiveGraph.NestedMixinArchiveConsumer nestedMixinConsumer = archive -> {
-            List<String> nestedWarnings = new ArrayList<>(archive.warnings());
-            NestedMixinDiscovery discovery = discoverNestedMixinConfigs(archive, nestedWarnings);
-            boolean incomplete = archive.entryIndexIncomplete() || discovery.incomplete();
-            List<Forge1201MixinAnalyzer.ConfigDeclaration> declarations = discovery.sources().entrySet().stream()
-                    .flatMap(entry -> entry.getValue().stream()
-                            .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
-                    .sorted(Comparator.comparing(Forge1201MixinAnalyzer.ConfigDeclaration::path)
-                            .thenComparing(Forge1201MixinAnalyzer.ConfigDeclaration::source))
-                    .toList();
-            if (declarations.isEmpty() && !incomplete) return;
-            if (nestedMixinAnalyses.size() >= MAX_NESTED_MIXIN_ARCHIVES) {
-                nestedWarnings.add("Nested Mixin archive analysis limit (" + MAX_NESTED_MIXIN_ARCHIVES
-                        + ") was reached; this archive was inventoried but not parsed.");
-                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), List.of(), true, null,
-                        nestedWarnings.stream().distinct().sorted().toList()));
-                return;
-            }
-            int remainingConfigs = Math.max(0, MAX_NESTED_MIXIN_CONFIGS - nestedMixinConfigCount[0]);
-            if (declarations.size() > remainingConfigs) {
-                declarations = declarations.subList(0, remainingConfigs);
-                incomplete = true;
-                nestedWarnings.add("Aggregate nested Mixin config limit (" + MAX_NESTED_MIXIN_CONFIGS
-                        + ") was reached; additional config declarations were omitted.");
-            }
-            nestedMixinConfigCount[0] += declarations.size();
+            Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
+            Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
+            Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
+                    jarInfo == null ? null : usageInventory::scanNestedClass;
+            List<NestedMixinFinding> nestedMixinAnalyses = new ArrayList<>();
+            int[] nestedMixinConfigCount = {0};
+            int[] nestedMixinClassCount = {0};
+            Forge1201ArchiveGraph.NestedMixinArchiveConsumer nestedMixinConsumer = archive -> {
+                List<String> nestedWarnings = new ArrayList<>(archive.warnings());
+                NestedMixinDiscovery discovery = discoverNestedMixinConfigs(archive, nestedWarnings);
+                boolean incomplete = archive.entryIndexIncomplete() || discovery.incomplete();
+                List<Forge1201MixinAnalyzer.ConfigDeclaration> declarations = discovery.sources().entrySet().stream()
+                        .flatMap(entry -> entry.getValue().stream()
+                                .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
+                        .sorted(Comparator.comparing(Forge1201MixinAnalyzer.ConfigDeclaration::path)
+                                .thenComparing(Forge1201MixinAnalyzer.ConfigDeclaration::source))
+                        .toList();
+                if (declarations.isEmpty() && !incomplete) return;
+                if (nestedMixinAnalyses.size() >= MAX_NESTED_MIXIN_ARCHIVES) {
+                    nestedWarnings.add("Nested Mixin archive analysis limit (" + MAX_NESTED_MIXIN_ARCHIVES
+                            + ") was reached; this archive was inventoried but not parsed.");
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), List.of(), true, null,
+                            nestedWarnings.stream().distinct().sorted().toList()));
+                    return;
+                }
+                int remainingConfigs = Math.max(0, MAX_NESTED_MIXIN_CONFIGS - nestedMixinConfigCount[0]);
+                if (declarations.size() > remainingConfigs) {
+                    declarations = declarations.subList(0, remainingConfigs);
+                    incomplete = true;
+                    nestedWarnings.add("Aggregate nested Mixin config limit (" + MAX_NESTED_MIXIN_CONFIGS
+                            + ") was reached; additional config declarations were omitted.");
+                }
+                nestedMixinConfigCount[0] += declarations.size();
 
-            List<MixinConfigCandidate> nestedCandidates = discovery.sources().entrySet().stream()
+                List<MixinConfigCandidate> nestedCandidates = discovery.sources().entrySet().stream()
+                        .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
+                                .sorted().map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
+                                .collect(java.util.stream.Collectors.joining("; "))))
+                        .toList();
+
+                Map<String, Forge1201MixinAnalyzer.MemoryEntry> memoryEntries = new TreeMap<>();
+                for (Forge1201ArchiveGraph.NestedMixinResource resource : archive.resources().values().stream()
+                        .sorted(Comparator.comparing(Forge1201ArchiveGraph.NestedMixinResource::path)).toList()) {
+                    String diagnostic = resource.status() == Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED
+                            ? null : resource.diagnostic();
+                    memoryEntries.put(resource.path(), new Forge1201MixinAnalyzer.MemoryEntry(
+                            resource.path(), resource.bytes(), resource.sizeBytes(), resource.compressedSizeBytes(),
+                            resource.occurrences(), diagnostic));
+                }
+
+                int remainingClasses = Math.max(0, MAX_NESTED_MIXIN_CLASSES - nestedMixinClassCount[0]);
+                for (Map.Entry<String, byte[]> classEntry : archive.classEntries().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey()).toList()) {
+                    byte[] classBytes = classEntry.getValue();
+                    memoryEntries.putIfAbsent(classEntry.getKey(), new Forge1201MixinAnalyzer.MemoryEntry(
+                            classEntry.getKey(), classBytes, classBytes.length, classBytes.length, 1, null));
+                }
+
+                // A non-JSON path named explicitly by MixinConfigs is outside the captured resource set.
+                // Mark it as unavailable rather than falsely reporting it absent.
+                for (Forge1201MixinAnalyzer.ConfigDeclaration declaration : declarations) {
+                    if (!declaration.path().toLowerCase(Locale.ROOT).endsWith(".json")
+                            && !memoryEntries.containsKey(declaration.path())) {
+                        incomplete = true;
+                        memoryEntries.put(declaration.path(), new Forge1201MixinAnalyzer.MemoryEntry(
+                                declaration.path(), null, -1, -1, 1,
+                                "Explicit MixinConfigs resource is not a captured JSON resource."));
+                    }
+                }
+
+                if (declarations.isEmpty()) {
+                    nestedWarnings.add("No nested Mixin config could be parsed within the current aggregate limits.");
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
+                            nestedWarnings.stream().distinct().sorted().toList()));
+                    return;
+                }
+
+                try {
+                    Forge1201TargetApiVerifier.TargetIndex nestedTargetIndex = sharedTargetIndex;
+                    Forge1201MixinAnalyzer.MemoryArchive memoryArchive =
+                            new Forge1201MixinAnalyzer.MemoryArchive(
+                                    archive.archivePath(),
+                                    new ArrayList<>(memoryEntries.values()),
+                                    incomplete, remainingClasses);
+                    Forge1201MixinAnalyzer.Result nestedAnalysis = Forge1201MixinAnalyzer.analyze(
+                            memoryArchive, declarations, nestedTargetIndex, Map.of(),
+                            "not-supplied", requestedRefmapContextKey);
+                    nestedWarnings.addAll(nestedAnalysis.warnings());
+                    nestedMixinClassCount[0] += nestedAnalysis.mixinClasses().size();
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), nestedCandidates, incomplete,
+                            nestedAnalysis, nestedWarnings.stream().distinct().sorted().toList()));
+                } catch (IOException | RuntimeException exception) {
+                    nestedWarnings.add("Nested Mixin analysis failed: " + conciseMessage(exception));
+                    nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
+                            archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
+                            nestedWarnings.stream().distinct().sorted().toList()));
+                }
+            };
+            Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
+                    jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
+                    nestedClassConsumer, nestedMixinConsumer);
+            if (jarInfo != null) {
+                forgeMetadata = new ForgeMetadata(
+                        jarInfo.modLoader(), jarInfo.loaderVersion(),
+                        jarInfo.minecraftVersionRange(), jarInfo.forgeVersionRange());
+
+                for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
+                    mods.add(new ModMetadata(mod.modId(), mod.version(), mod.displayName()));
+                }
+                mods.sort(Comparator.comparing(ModMetadata::modId).thenComparing(ModMetadata::version));
+
+                Map<String, Integer> idCounts = new TreeMap<>();
+                jarInfo.mods().forEach(mod -> idCounts.merge(mod.modId(), 1, Integer::sum));
+                idCounts.forEach((id, count) -> {
+                    if (count > 1) duplicateModIds.add(id);
+                });
+
+                List<Forge1201DependencyResolver.Resolution> resolutions =
+                        Forge1201DependencyResolver.resolve(jarInfo, nativeIds);
+                int resolutionIndex = 0;
+                for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
+                    for (Forge1201JarInfo.Dependency dependency : mod.dependencies()) {
+                        Forge1201DependencyResolver.Resolution resolution = resolutions.get(resolutionIndex++);
+                        dependencies.add(new DependencyFinding(
+                                mod.modId(), dependency.modId(), dependency.versionRange(), dependency.mandatory(),
+                                dependency.ordering(), dependency.side(), resolution.status()));
+                    }
+                }
+                dependencies.sort(Comparator.comparing(DependencyFinding::declaringModId)
+                        .thenComparing(DependencyFinding::modId)
+                        .thenComparing(DependencyFinding::versionRange)
+                        .thenComparing(DependencyFinding::mandatory));
+
+                usageInventory.scanOuterJar(jar);
+                Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
+                classCount = usage.classCount();
+                outerClassScannedCount = usageInventory.outerClassScannedCount();
+                nestedClassCount = archiveGraph.classScanSummaries().stream()
+                        .mapToInt(Forge1201ArchiveGraph.ClassScanSummary::discoveredClassEntries).sum();
+                nestedClassScannedCount = usageInventory.nestedClassScannedCount();
+                normalizedMemberReferences.addAll(usageInventory.normalizedSrgMemberReferences());
+                classScanWarnings.addAll(usageInventory.classScanWarnings());
+                entrypoints.addAll(usage.modEntrypoints());
+                entrypoints.sort(String::compareTo);
+                usage.packageReferences().entrySet().stream().sorted(Map.Entry.comparingByKey())
+                        .forEach(entry -> packageReferences.put(entry.getKey(), entry.getValue()));
+
+                for (String sourceType : usage.referencedApiClasses().stream().distinct().sorted().toList()) {
+                    Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(sourceType);
+                    apiTypes.add(new ApiTypeFinding(decision.sourceInternalName(), decision.kind(),
+                            decision.targetInternalName(), decision.reason()));
+                }
+                methodReferences.addAll(usage.methodReferences().stream()
+                        .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
+                        .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
+                                .thenComparing(ApiMemberFinding::descriptor)).toList());
+                fieldReferences.addAll(usage.fieldReferences().stream()
+                        .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
+                        .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
+                                .thenComparing(ApiMemberFinding::descriptor)).toList());
+                methodCallSites.addAll(usage.methodCallSites().stream()
+                        .map(call -> new ApiMethodCallSite(call.callerClass(), call.callerMethod(),
+                                call.callerDescriptor(), call.targetOwner(), call.targetName(),
+                                call.targetDescriptor(), call.opcode(), call.count()))
+                        .sorted(Comparator.comparing(ApiMethodCallSite::callerClass)
+                                .thenComparing(ApiMethodCallSite::callerMethod)
+                                .thenComparing(ApiMethodCallSite::callerDescriptor)
+                                .thenComparing(ApiMethodCallSite::targetOwner)
+                                .thenComparing(ApiMethodCallSite::targetName)
+                                .thenComparing(ApiMethodCallSite::targetDescriptor)
+                                .thenComparingInt(ApiMethodCallSite::opcode)).toList());
+                fieldCallSites.addAll(usage.fieldCallSites().stream()
+                        .map(call -> new ApiFieldCallSite(call.callerClass(), call.callerMethod(),
+                                call.callerDescriptor(), call.targetOwner(), call.targetName(),
+                                call.targetDescriptor(), call.opcode(), call.count()))
+                        .sorted(Comparator.comparing(ApiFieldCallSite::callerClass)
+                                .thenComparing(ApiFieldCallSite::callerMethod)
+                                .thenComparing(ApiFieldCallSite::callerDescriptor)
+                                .thenComparing(ApiFieldCallSite::targetOwner)
+                                .thenComparing(ApiFieldCallSite::targetName)
+                                .thenComparing(ApiFieldCallSite::targetDescriptor)
+                                .thenComparingInt(ApiFieldCallSite::opcode)).toList());
+                dynamicReferences.addAll(usage.dynamicReferences());
+                analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR;
+            }
+
+            Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> mixinSources = new TreeMap<>();
+            manifestMixins.forEach(path -> mixinSources.computeIfAbsent(path, ignored -> new TreeSet<>())
+                    .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST));
+            try (ZipFile zip = new ZipFile(jar.toFile())) {
+                var entries = zip.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    if (entry.isDirectory() || !entry.getName().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
+                    if (isMixinPathCandidate(entry.getName()) || looksLikeMixinConfig(zip, entry)) {
+                        mixinSources.computeIfAbsent(entry.getName(), ignored -> new TreeSet<>())
+                                .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
+                    }
+                }
+            }
+            List<MixinConfigCandidate> mixinCandidates = mixinSources.entrySet().stream()
                     .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
-                            .sorted().map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
+                            .map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
                             .collect(java.util.stream.Collectors.joining("; "))))
                     .toList();
+            List<Forge1201MixinAnalyzer.ConfigDeclaration> mixinDeclarations = mixinSources.entrySet().stream()
+                    .flatMap(entry -> entry.getValue().stream()
+                            .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
+                    .toList();
+            // No 1.20.1 -> 1.21.1 Minecraft class map is supplied yet; Mojang names are never assumed identical.
+            Forge1201MixinAnalyzer.Result mixinAnalysis = Forge1201MixinAnalyzer.analyze(
+                    jar, mixinDeclarations, sharedTargetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
 
-            Map<String, Forge1201MixinAnalyzer.MemoryEntry> memoryEntries = new TreeMap<>();
-            for (Forge1201ArchiveGraph.NestedMixinResource resource : archive.resources().values().stream()
-                    .sorted(Comparator.comparing(Forge1201ArchiveGraph.NestedMixinResource::path)).toList()) {
-                String diagnostic = resource.status() == Forge1201ArchiveGraph.NestedMixinResourceStatus.CAPTURED
-                        ? null : resource.diagnostic();
-                memoryEntries.put(resource.path(), new Forge1201MixinAnalyzer.MemoryEntry(
-                        resource.path(), resource.bytes(), resource.sizeBytes(), resource.compressedSizeBytes(),
-                        resource.occurrences(), diagnostic));
-            }
+            Forge1201MappingProfileValidator.Finding mappingProfile =
+                    Forge1201MappingProfileValidator.inspect(mappingProfilePath);
 
-            int remainingClasses = Math.max(0, MAX_NESTED_MIXIN_CLASSES - nestedMixinClassCount[0]);
-            for (Map.Entry<String, byte[]> classEntry : archive.classEntries().entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey()).toList()) {
-                byte[] classBytes = classEntry.getValue();
-                memoryEntries.putIfAbsent(classEntry.getKey(), new Forge1201MixinAnalyzer.MemoryEntry(
-                        classEntry.getKey(), classBytes, classBytes.length, classBytes.length, 1, null));
-            }
+            List<String> observedNativeIds = nativeIds.stream().sorted().toList();
+            List<String> limitations = List.of(
+                    "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
+                    "Slice 3 inventories bytecode in the outer source JAR and bounded, safe source-nested Forge/library archives. Installed provider JAR bytecode and embedded native NeoForge mod bytecode are intentionally excluded.",
+                    "Source Minecraft SRG member names are normalized to 1.20.1 Mojang names where the generated mapping table has an entry; missing entries remain explicitly UNMAPPED. This source-name normalization is not a 1.21.1 target API or semantic compatibility verdict.",
+                    "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
+                    "Mixin configs discovered by the manifest and resource heuristics are parsed for the outer source JAR and bounded source-nested Forge/library archives. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
+                    "Nested Mixin resources are captured in memory only, with limits of 256 resource entries, 1 MiB per resource, 2 MiB per nested archive, and 16 MiB aggregate JSON/manifest bytes. Mixin parsing is attempted for at most 64 nested source archives; additional eligible archives retain explicit analysis-limit findings. The number of declared Mixin-class analyses is capped at 20,000, with nested class bytes supplied to the analyzer separately capped at 32 MiB aggregate. Duplicate, oversized, truncated, and unavailable resources remain explicit findings; installed providers and any nested archive declaring META-INF/neoforge.mods.toml are excluded.",
+                    "Mixin analysis covers outer and eligible source-nested archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed.",
+                    "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
+                    "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
+                    "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
+                    "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
+                    "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
+                    "Access Transformer inventory reads only the exact production resource META-INF/accesstransformer.cfg from the outer source JAR. It preserves original line locations and reports class-owner, member-name, and descriptor namespace evidence; it does not apply directives, resolve selectors, or remap them. Access Transformers inside nested JARs and alternate development-only build paths are not inspected.",
+                    "Coremod metadata inventory reads only META-INF/coremods.json from the outer source JAR, preserves declared names and script paths, and checks referenced script-resource presence. It does not evaluate JavaScript, derive transformer injection sites or targets, execute transformations, or inspect nested-JAR coremod registries."
+            );
 
-            // A non-JSON path named explicitly by MixinConfigs is outside the captured resource set.
-            // Mark it as unavailable rather than falsely reporting it absent.
-            for (Forge1201MixinAnalyzer.ConfigDeclaration declaration : declarations) {
-                if (!declaration.path().toLowerCase(Locale.ROOT).endsWith(".json")
-                        && !memoryEntries.containsKey(declaration.path())) {
-                    incomplete = true;
-                    memoryEntries.put(declaration.path(), new Forge1201MixinAnalyzer.MemoryEntry(
-                            declaration.path(), null, -1, -1, 1,
-                            "Explicit MixinConfigs resource is not a captured JSON resource."));
-                }
-            }
-
-            if (declarations.isEmpty()) {
-                nestedWarnings.add("No nested Mixin config could be parsed within the current aggregate limits.");
-                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
-                        nestedWarnings.stream().distinct().sorted().toList()));
-                return;
-            }
-
-            try {
-                Forge1201TargetApiVerifier.TargetIndex nestedTargetIndex = sharedTargetIndex;
-                Forge1201MixinAnalyzer.MemoryArchive memoryArchive =
-                        new Forge1201MixinAnalyzer.MemoryArchive(
-                                archive.archivePath(),
-                                new ArrayList<>(memoryEntries.values()),
-                                incomplete, remainingClasses);
-                Forge1201MixinAnalyzer.Result nestedAnalysis = Forge1201MixinAnalyzer.analyze(
-                        memoryArchive, declarations, nestedTargetIndex, Map.of(),
-                        "not-supplied", requestedRefmapContextKey);
-                nestedWarnings.addAll(nestedAnalysis.warnings());
-                nestedMixinClassCount[0] += nestedAnalysis.mixinClasses().size();
-                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), nestedCandidates, incomplete,
-                        nestedAnalysis, nestedWarnings.stream().distinct().sorted().toList()));
-            } catch (IOException | RuntimeException exception) {
-                nestedWarnings.add("Nested Mixin analysis failed: " + conciseMessage(exception));
-                nestedMixinAnalyses.add(new NestedMixinFinding(archive.archivePath(), archive.sha256(),
-                        archive.depth(), archive.archiveKind(), nestedCandidates, true, null,
-                        nestedWarnings.stream().distinct().sorted().toList()));
-            }
-        };
-        Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
-                jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
-                nestedClassConsumer, nestedMixinConsumer);
-        if (jarInfo != null) {
-            forgeMetadata = new ForgeMetadata(
-                    jarInfo.modLoader(), jarInfo.loaderVersion(),
-                    jarInfo.minecraftVersionRange(), jarInfo.forgeVersionRange());
-
-            for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
-                mods.add(new ModMetadata(mod.modId(), mod.version(), mod.displayName()));
-            }
-            mods.sort(Comparator.comparing(ModMetadata::modId).thenComparing(ModMetadata::version));
-
-            Map<String, Integer> idCounts = new TreeMap<>();
-            jarInfo.mods().forEach(mod -> idCounts.merge(mod.modId(), 1, Integer::sum));
-            idCounts.forEach((id, count) -> {
-                if (count > 1) duplicateModIds.add(id);
-            });
-
-            List<Forge1201DependencyResolver.Resolution> resolutions =
-                    Forge1201DependencyResolver.resolve(jarInfo, nativeIds);
-            int resolutionIndex = 0;
-            for (Forge1201JarInfo.Mod mod : jarInfo.mods()) {
-                for (Forge1201JarInfo.Dependency dependency : mod.dependencies()) {
-                    Forge1201DependencyResolver.Resolution resolution = resolutions.get(resolutionIndex++);
-                    dependencies.add(new DependencyFinding(
-                            mod.modId(), dependency.modId(), dependency.versionRange(), dependency.mandatory(),
-                            dependency.ordering(), dependency.side(), resolution.status()));
-                }
-            }
-            dependencies.sort(Comparator.comparing(DependencyFinding::declaringModId)
-                    .thenComparing(DependencyFinding::modId)
-                    .thenComparing(DependencyFinding::versionRange)
-                    .thenComparing(DependencyFinding::mandatory));
-
-            usageInventory.scanOuterJar(jar);
-            Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
-            classCount = usage.classCount();
-            outerClassScannedCount = usageInventory.outerClassScannedCount();
-            nestedClassCount = archiveGraph.classScanSummaries().stream()
-                    .mapToInt(Forge1201ArchiveGraph.ClassScanSummary::discoveredClassEntries).sum();
-            nestedClassScannedCount = usageInventory.nestedClassScannedCount();
-            normalizedMemberReferences.addAll(usageInventory.normalizedSrgMemberReferences());
-            classScanWarnings.addAll(usageInventory.classScanWarnings());
-            entrypoints.addAll(usage.modEntrypoints());
-            entrypoints.sort(String::compareTo);
-            usage.packageReferences().entrySet().stream().sorted(Map.Entry.comparingByKey())
-                    .forEach(entry -> packageReferences.put(entry.getKey(), entry.getValue()));
-
-            for (String sourceType : usage.referencedApiClasses().stream().distinct().sorted().toList()) {
-                Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(sourceType);
-                apiTypes.add(new ApiTypeFinding(decision.sourceInternalName(), decision.kind(),
-                        decision.targetInternalName(), decision.reason()));
-            }
-            methodReferences.addAll(usage.methodReferences().stream()
-                    .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
-                    .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
-                            .thenComparing(ApiMemberFinding::descriptor)).toList());
-            fieldReferences.addAll(usage.fieldReferences().stream()
-                    .map(ref -> new ApiMemberFinding(ref.owner(), ref.name(), ref.descriptor(), ref.count()))
-                    .sorted(Comparator.comparing(ApiMemberFinding::owner).thenComparing(ApiMemberFinding::name)
-                            .thenComparing(ApiMemberFinding::descriptor)).toList());
-            methodCallSites.addAll(usage.methodCallSites().stream()
-                    .map(call -> new ApiMethodCallSite(call.callerClass(), call.callerMethod(),
-                            call.callerDescriptor(), call.targetOwner(), call.targetName(),
-                            call.targetDescriptor(), call.opcode(), call.count()))
-                    .sorted(Comparator.comparing(ApiMethodCallSite::callerClass)
-                            .thenComparing(ApiMethodCallSite::callerMethod)
-                            .thenComparing(ApiMethodCallSite::callerDescriptor)
-                            .thenComparing(ApiMethodCallSite::targetOwner)
-                            .thenComparing(ApiMethodCallSite::targetName)
-                            .thenComparing(ApiMethodCallSite::targetDescriptor)
-                            .thenComparingInt(ApiMethodCallSite::opcode)).toList());
-            fieldCallSites.addAll(usage.fieldCallSites().stream()
-                    .map(call -> new ApiFieldCallSite(call.callerClass(), call.callerMethod(),
-                            call.callerDescriptor(), call.targetOwner(), call.targetName(),
-                            call.targetDescriptor(), call.opcode(), call.count()))
-                    .sorted(Comparator.comparing(ApiFieldCallSite::callerClass)
-                            .thenComparing(ApiFieldCallSite::callerMethod)
-                            .thenComparing(ApiFieldCallSite::callerDescriptor)
-                            .thenComparing(ApiFieldCallSite::targetOwner)
-                            .thenComparing(ApiFieldCallSite::targetName)
-                            .thenComparing(ApiFieldCallSite::targetDescriptor)
-                            .thenComparingInt(ApiFieldCallSite::opcode)).toList());
-            dynamicReferences.addAll(usage.dynamicReferences());
-            analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR;
-        }
-
-        Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> mixinSources = new TreeMap<>();
-        manifestMixins.forEach(path -> mixinSources.computeIfAbsent(path, ignored -> new TreeSet<>())
-                .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST));
-        try (ZipFile zip = new ZipFile(jar.toFile())) {
-            var entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (entry.isDirectory() || !entry.getName().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
-                if (isMixinPathCandidate(entry.getName()) || looksLikeMixinConfig(zip, entry)) {
-                    mixinSources.computeIfAbsent(entry.getName(), ignored -> new TreeSet<>())
-                            .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
-                }
-            }
-        }
-        List<MixinConfigCandidate> mixinCandidates = mixinSources.entrySet().stream()
-                .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
-                        .map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
-                        .collect(java.util.stream.Collectors.joining("; "))))
-                .toList();
-        List<Forge1201MixinAnalyzer.ConfigDeclaration> mixinDeclarations = mixinSources.entrySet().stream()
-                .flatMap(entry -> entry.getValue().stream()
-                        .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
-                .toList();
-        // No 1.20.1 -> 1.21.1 Minecraft class map is supplied yet; Mojang names are never assumed identical.
-        Forge1201MixinAnalyzer.Result mixinAnalysis = Forge1201MixinAnalyzer.analyze(
-                jar, mixinDeclarations, sharedTargetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
-
-        Forge1201MappingProfileValidator.Finding mappingProfile =
-                Forge1201MappingProfileValidator.inspect(mappingProfilePath);
-
-        List<String> observedNativeIds = nativeIds.stream().sorted().toList();
-        List<String> limitations = List.of(
-                "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
-                "Slice 3 inventories bytecode in the outer source JAR and bounded, safe source-nested Forge/library archives. Installed provider JAR bytecode and embedded native NeoForge mod bytecode are intentionally excluded.",
-                "Source Minecraft SRG member names are normalized to 1.20.1 Mojang names where the generated mapping table has an entry; missing entries remain explicitly UNMAPPED. This source-name normalization is not a 1.21.1 target API or semantic compatibility verdict.",
-                "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
-                "Mixin configs discovered by the manifest and resource heuristics are parsed for the outer source JAR and bounded source-nested Forge/library archives. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
-                "Nested Mixin resources are captured in memory only, with limits of 256 resource entries, 1 MiB per resource, 2 MiB per nested archive, and 16 MiB aggregate JSON/manifest bytes. Mixin parsing is attempted for at most 64 nested source archives; additional eligible archives retain explicit analysis-limit findings. The number of declared Mixin-class analyses is capped at 20,000, with nested class bytes supplied to the analyzer separately capped at 32 MiB aggregate. Duplicate, oversized, truncated, and unavailable resources remain explicit findings; installed providers and any nested archive declaring META-INF/neoforge.mods.toml are excluded.",
-                "Mixin analysis covers outer and eligible source-nested archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed.",
-                "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
-                "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
-                "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
-                "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
-                "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
-                "Access Transformer inventory reads only the exact production resource META-INF/accesstransformer.cfg from the outer source JAR. It preserves original line locations and reports class-owner, member-name, and descriptor namespace evidence; it does not apply directives, resolve selectors, or remap them. Access Transformers inside nested JARs and alternate development-only build paths are not inspected.",
-                "Coremod metadata inventory reads only META-INF/coremods.json from the outer source JAR, preserves declared names and script paths, and checks referenced script-resource presence. It does not evaluate JavaScript, derive transformer injection sites or targets, execute transformations, or inspect nested-JAR coremod registries."
-        );
-
-        return new PreflightResult(
-                SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
-                TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
-                metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
-                archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
-                accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, nestedMixinAnalyses,
-                mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
-                outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
-                fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
-                nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
+            return new PreflightResult(
+                    SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
+                    TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
+                    metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
+                    archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
+                    accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, nestedMixinAnalyses,
+                    mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                    outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
+                    fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
+                    nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
                 observedNativeIds, limitations, archiveGraph);
         }
     }
