@@ -271,6 +271,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         Path cacheDir = gameDir.resolve(".legacyconnector").resolve("cache");
         try {
             Files.createDirectories(cacheDir);
+            loadDigestStore(gameDir.resolve(".legacyconnector").resolve("jar-digests.txt"));
             currentSide = side();
             Path runtimeJar = extractRuntime(cacheDir);
             if (runtimeJar != null) {
@@ -948,6 +949,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion, Map<LegacyVersion, Set<String>> bundledElsewhere,
             org.kylepitcock.legacyconnector.loader.transform.ModernLibraries modernLibs) throws IOException {
         Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
+        // jars that are not in the digest store are hashed side by side (a first launch or a changed pack); the loop below reads the results
+        legacy.parallelStream().forEach(j -> {
+            try {
+                fileDigest(j.existing());
+            } catch (IOException | RuntimeException e) {
+                // reported by the sequential read below
+            }
+        });
         for (LegacyJar jar : legacy) {
             MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
             md.update(fileDigest(jar.existing()));
@@ -963,6 +972,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         digests.forEach((v, md) -> md.update(Integer.toString(bundledElsewhere.getOrDefault(v, Set.of()).hashCode()).getBytes(StandardCharsets.UTF_8)));
         Map<LegacyVersion, byte[]> out = new EnumMap<>(LegacyVersion.class);
         digests.forEach((v, md) -> out.put(v, md.digest()));
+        saveDigestStore();
         return out;
     }
 
@@ -973,14 +983,65 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return HexFormat.of().formatHex(b);
     }
 
-    /** SHA-256 of a file; the originals are hashed several times per start (cache names, mod set, signatures), so the result is kept. */
+    /** Where the digests of earlier launches are kept ({@code .legacyconnector/jar-digests.txt}), set by {@link #findCandidates}. */
+    private static volatile Path digestStore;
+    private static final java.util.concurrent.ConcurrentHashMap<String, Hashed> PERSISTED = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile boolean digestsDirty;
+
+    /**
+     * SHA-256 of a file; the originals are hashed several times per start (cache names, mod set, signatures), so the result is kept, and across launches
+     * under the file's path, size and modification time (hashing every legacy jar was the largest fixed cost of a launch with a warm translation cache: about
+     * 2 s for six jars, proportional to the pack). A jar that changes changes its size or time, as any build tool assumes.
+     */
     private static byte[] fileDigest(Path p) throws IOException {
         long size = Files.size(p), modified = Files.getLastModifiedTime(p).toMillis();
         Hashed known = HASHED.get(p.toString());
         if (known != null && known.size == size && known.modified == modified) return known.digest;
+        known = PERSISTED.get(p.toString());
+        if (known != null && known.size == size && known.modified == modified) {
+            HASHED.put(p.toString(), known);
+            return known.digest;
+        }
         byte[] d = hashFile(p);
-        HASHED.put(p.toString(), new Hashed(size, modified, d));
+        Hashed fresh = new Hashed(size, modified, d);
+        HASHED.put(p.toString(), fresh);
+        PERSISTED.put(p.toString(), fresh);
+        digestsDirty = true;
         return d;
+    }
+
+    private static void loadDigestStore(Path file) {
+        digestStore = file;
+        PERSISTED.clear();
+        try {
+            if (!Files.exists(file)) return;
+            for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                String[] f = line.split("\t", 4);
+                if (f.length == 4) PERSISTED.put(f[3], new Hashed(Long.parseLong(f[0]), Long.parseLong(f[1]), HexFormat.of().parseHex(f[2])));
+            }
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not read the jar digest store", e);
+            PERSISTED.clear();
+        }
+    }
+
+    /** Writes the digests when one was added; only the jars of this launch are kept (a removed jar drops out). */
+    private static void saveDigestStore() {
+        Path file = digestStore;
+        if (file == null || !digestsDirty) return;
+        digestsDirty = false;
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (var e : new java.util.TreeMap<>(HASHED).entrySet()) {
+                Hashed h = e.getValue();
+                sb.append(h.size).append('\t').append(h.modified).append('\t').append(HexFormat.of().formatHex(h.digest)).append('\t').append(e.getKey()).append('\n');
+            }
+            Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+            Files.writeString(tmp, sb, StandardCharsets.UTF_8);
+            Files.move(tmp, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not write the jar digest store", e);
+        }
     }
 
     private static byte[] hashFile(Path p) throws IOException {
