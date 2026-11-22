@@ -1767,6 +1767,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             named.addProperty("model", id.getNamespace() + ":block/" + id.getPath());
             return named;
         }
+        // a redstone wire of a mod (it replaced vanilla's in 1.12 and was filed under the mod's name, see Registries1122) without a blockstate of
+        // its own: the flat dust, which the block's colour handler tints
+        if (hint == null && BuiltInRegistries.BLOCK.get(id) instanceof Legacy1122Block wire
+                && wire.legacy() instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire) {
+            JsonObject dust = new JsonObject();
+            dust.addProperty("model", "minecraft:block/redstone_dust_dot");
+            return dust;
+        }
         String texture = pickTexture(id, hint);
         JsonObject generated = new JsonObject();
         generated.addProperty("parent", "minecraft:block/cube_all");

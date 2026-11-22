@@ -115,9 +115,12 @@ public class ASMDataTable {
         com.google.common.collect.SetMultimap<String, ASMData> out = com.google.common.collect.LinkedHashMultimap.create();
         File source = container == null ? null : container.getSource();
         if (source == null) return out;
+        // the candidates are the translated jars (cache), the container's source is the jar the user installed
+        File translated = container instanceof org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122 c ? c.record().sourceFile().toFile() : null;
         for (var e : byAnnotation.entrySet()) {
             for (ASMData d : e.getValue()) {
-                if (d.getCandidate() != null && source.equals(d.getCandidate().getModContainer())) out.put(e.getKey(), d);
+                File file = d.getCandidate() == null ? null : d.getCandidate().getModContainer();
+                if (file != null && (source.equals(file) || file.equals(translated))) out.put(e.getKey(), d);
             }
         }
         return out;

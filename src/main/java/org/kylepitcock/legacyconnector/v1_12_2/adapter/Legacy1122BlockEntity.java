@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2.adapter;
 
+import legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState;
 import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
 import legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity;
 import legacyconnector.v1_12_2.net.minecraft.util.ITickable;
@@ -25,6 +26,30 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         super(TileEntityBridge1122.type(), pos, state);
     }
 
+    /**
+     * The legacy state of the {@code World.setBlockState} that is placing a block right now. A modern state keeps only the block's meta, but 1.12 asked
+     * the tile entity of the block for the full state (a colour property that is not part of the meta: Colored Redstone's dust is told its colour that way).
+     */
+    private static final ThreadLocal<IBlockState> PLACING = new ThreadLocal<>();
+    private IBlockState placedState;
+
+    public static void mcc$placing(IBlockState state) {
+        if (state == null) PLACING.remove();
+        else PLACING.set(state);
+    }
+
+    /** The state being placed if it is one of {@code block}, else null. */
+    public static IBlockState mcc$placingOf(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
+        IBlockState s = PLACING.get();
+        return s != null && s.getBlock() == block ? s : null;
+    }
+
+    /** Called when the block creates this entity: takes over the state being placed, if it is a state of this entity's block. */
+    public void mcc$adoptPlacing() {
+        IBlockState s = PLACING.get();
+        if (s != null && s.getBlock() == StatesBridge1122.legacyBlock(getBlockState())) placedState = s;
+    }
+
     private static final java.util.Set<String> MISSING_REPORTED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** The legacy tile entity, created on first use (its creation may need the world). */
@@ -37,9 +62,10 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
                 if (pending != null) {
                     legacy = TileEntityBridge1122.createAndLoad(block, world, state, new NBTTagCompound(pending));
                     pending = null;
-                } else if (block != null && block.hasTileEntity(state)) {
-                    legacy = block.createTileEntity(world, state);
+                } else if (block != null && block.hasTileEntity(placedState != null ? placedState : state)) {
+                    legacy = block.createTileEntity(world, placedState != null ? placedState : state);
                 }
+                placedState = null;
                 if (legacy != null) bind(legacy);
             } catch (RuntimeException | LinkageError e) {
                 failed = true;

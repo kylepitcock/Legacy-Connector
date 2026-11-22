@@ -30,6 +30,32 @@ public class GuiMainMenu extends GuiScreen {
         }
     }
 
+    /**
+     * The 1.12 title screen's buttons, for the subclasses that draw their own title screen and call {@code super.initGui()} for the
+     * buttons (Singleplayer, Multiplayer, Options, Language, Quit: the 1.12 layout); the modern title screen has them itself.
+     */
+    @Override
+    public void initGui() {
+        int j = this.height / 4 + 48;
+        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, j, legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format("menu.singleplayer")));
+        this.buttonList.add(new GuiButton(2, this.width / 2 - 100, j + 24, legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format("menu.multiplayer")));
+        this.buttonList.add(new GuiButton(0, this.width / 2 - 100, j + 72 + 12, 98, 20, legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format("menu.options")));
+        this.buttonList.add(new GuiButton(4, this.width / 2 + 2, j + 72 + 12, 98, 20, legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format("menu.quit")));
+        this.buttonList.add(new GuiButtonLanguage(5, this.width / 2 - 124, j + 72 + 12));
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) throws java.io.IOException {
+        switch (button.id) {
+            case 0 -> this.mc.displayGuiScreen(new GuiOptions(this, legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$gameSettings(this.mc)));
+            case 5 -> this.mc.displayGuiScreen(new GuiLanguage(this, legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$gameSettings(this.mc), this.mc.getLanguageManager()));
+            case 1 -> this.mc.displayGuiScreen(new GuiWorldSelection(this));
+            case 2 -> this.mc.displayGuiScreen(new GuiMultiplayer(this));
+            case 4 -> this.mc.shutdown();
+            default -> { }
+        }
+    }
+
     @Override
     public boolean doesGuiPauseGame() {
         return false;
