@@ -22,7 +22,7 @@
 [**Wiki**](docs/wiki/Home.md) ·
 [**Report a problem**](https://github.com/kylepitcock/Legacy-Connector/issues)
 
-<img src="docs/images/thaumcraft-workshop.png" alt="A Thaumcraft 4 workshop running on NeoForge 1.21.1" width="85%">
+<img src="docs/images/thaumometer.png" alt="Scanning with Thaumcraft 4's Thaumometer on NeoForge 1.21.1" width="85%">
 
 </div>
 
@@ -199,7 +199,7 @@ All taken in a real NeoForge 1.21.1 client, with unmodified legacy mods that hav
 </tr>
 <tr>
 <td><img src="docs/images/thaumonomicon.png" alt="The Thaumonomicon"><br><sub><b>Thaumcraft 4</b>: the Thaumonomicon, drawn by Thaumcraft's own font renderer and book code</sub></td>
-<td><img src="docs/images/thaumometer.png" alt="Scanning with the Thaumometer"><br><sub><b>Thaumcraft 4</b>: the Thaumometer after scanning stone, the Terra aspect in its lens</sub></td>
+<td><img src="docs/images/thaumcraft-workshop.png" alt="A Thaumcraft workshop"><br><sub><b>Thaumcraft 4</b>: a workshop with infusion altar, crucible, alembics, essentia jars and an aura node</sub></td>
 </tr>
 <tr>
 <td><img src="docs/images/hbm-nuke.png" alt="An HBM nuclear explosion"><br><sub><b>HBM's Nuclear Tech (1.7.10)</b>: fireball, mushroom cloud and scorched crater from HBM's own effect code</sub></td>
