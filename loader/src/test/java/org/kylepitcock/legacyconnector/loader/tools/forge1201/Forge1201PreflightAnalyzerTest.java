@@ -583,6 +583,24 @@ final class Forge1201PreflightAnalyzerTest {
                 archive.archivePath().endsWith("META-INF/jarjar/sample-nested.jar")
                         && archive.kind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD));
         assertTrue(result.nestedMixinAnalyses().isEmpty());
+        var transformation = result.nestedTransformationAnalyses().stream()
+                .filter(finding -> finding.archivePath().endsWith("META-INF/jarjar/sample-nested.jar"))
+                .findFirst().orElseThrow();
+        assertTrue(transformation.neoForgeModsTomlPresent());
+        assertEquals("MOD", transformation.neoForgeEffectiveFileType());
+        assertEquals("GAMELIBRARY", transformation.forgeEffectiveFileType());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO,
+                transformation.forgeDisposition());
+        assertEquals(Forge1201PreflightAnalyzer.NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER,
+                transformation.neoForgeDisposition());
+        assertTrue(transformation.forgeIdentifyModsReachesTransformationMetadata());
+        assertTrue(transformation.neoForgeIdentifyModsReachesTransformationMetadata());
+        assertFalse(transformation.forgeCoremodConsumerEligible());
+        assertFalse(transformation.forgeAccessTransformerConsumerEligible());
+        assertTrue(transformation.neoForgeCoremodConsumerEligible());
+        assertTrue(transformation.neoForgeAccessTransformerConsumerEligible());
+        assertEquals(Forge1201CoremodAnalyzer.ScriptStatus.RESOURCE_PRESENT,
+                transformation.coremodMetadata().declarations().getFirst().scriptStatus());
     }
 
     @Test
@@ -947,10 +965,14 @@ final class Forge1201PreflightAnalyzerTest {
             put(zip, "META-INF/MANIFEST.MF", manifestBytes.toByteArray());
             put(zip, "native.mixins.json",
                     "{\"package\":\"native.mixin\",\"mixins\":[]}".getBytes(StandardCharsets.UTF_8));
+            put(zip, Forge1201CoremodAnalyzer.RESOURCE_PATH,
+                    "{\"native_core\":\"scripts/native_core.js\"}".getBytes(StandardCharsets.UTF_8));
+            put(zip, "scripts/native_core.js", "// inert; never evaluated".getBytes(StandardCharsets.UTF_8));
+            put(zip, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH,
+                    "public net.minecraft.world.entity.Entity\n".getBytes(StandardCharsets.UTF_8));
         }
         return bytes.toByteArray();
     }
-
     private byte[] nestedMixinArchive() throws IOException {
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
