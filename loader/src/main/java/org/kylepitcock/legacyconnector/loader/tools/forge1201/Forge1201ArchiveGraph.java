@@ -53,6 +53,8 @@ public final class Forge1201ArchiveGraph {
     public static final long MAX_NESTED_MIXIN_RESOURCE_BYTES_PER_ARCHIVE = 2L * 1024 * 1024;
     public static final long MAX_TOTAL_NESTED_MIXIN_RESOURCE_BYTES = 16L * 1024 * 1024;
     public static final long MAX_TOTAL_NESTED_MIXIN_CLASS_BYTES = 32L * 1024 * 1024;
+    public static final int MAX_NESTED_RESOURCE_PATHS_PER_ARCHIVE = 20_000;
+    public static final int MAX_TOTAL_NESTED_RESOURCE_PATHS = 250_000;
     private static final int MAX_METADATA_BYTES = 1024 * 1024;
     private static final String JARJAR_METADATA = "META-INF/jarjar/metadata.json";
 
@@ -193,10 +195,18 @@ public final class Forge1201ArchiveGraph {
     /** Bounded in-memory resources plus the exact nested archive provenance. */
     public record NestedMixinArchive(
             String archivePath, String sha256, int depth, ArchiveKind archiveKind,
-            Map<String, NestedMixinResource> resources, Map<String, byte[]> classEntries,
+            List<Forge1201PreflightAnalyzer.ModMetadata> mods,
+            boolean forgeModsTomlPresent, boolean neoForgeModsTomlPresent,
+            Map<String, NestedMixinResource> resources,
+            Set<String> resourcePaths, Set<String> duplicateResourcePaths,
+            boolean resourcePathIndexIncomplete,
+            Map<String, byte[]> classEntries,
             boolean entryIndexIncomplete, List<String> warnings) {
         public NestedMixinArchive {
+            mods = List.copyOf(mods);
             resources = Map.copyOf(resources);
+            resourcePaths = Set.copyOf(new TreeSet<>(resourcePaths));
+            duplicateResourcePaths = Set.copyOf(new TreeSet<>(duplicateResourcePaths));
             Map<String, byte[]> copiedClasses = new TreeMap<>();
             classEntries.forEach((name, bytes) -> copiedClasses.put(name, bytes.clone()));
             classEntries = Map.copyOf(copiedClasses);
@@ -260,6 +270,9 @@ public final class Forge1201ArchiveGraph {
             long capturedClassBytes,
             Map<String, NestedMixinResource> mixinResources,
             boolean mixinResourceIndexIncomplete,
+            Set<String> resourcePaths,
+            Set<String> duplicateResourcePaths,
+            boolean resourcePathIndexIncomplete,
             List<String> warnings,
             ArchiveKind incompleteKind,
             String incompleteReason) {}
@@ -283,6 +296,7 @@ public final class Forge1201ArchiveGraph {
         private long nestedMixinClassBytesCaptured;
         private long nestedMixinResourceBytesCaptured;
         private int nestedMixinResourceCount;
+        private int nestedResourcePathCount;
         private boolean archiveCountWarningAdded;
     }
 
@@ -532,7 +546,7 @@ public final class Forge1201ArchiveGraph {
         }
         warnings.addAll(parsed.warnings());
         return new Snapshot(modsToml, neoToml, candidates, Map.of(),
-                0, 0, 0, Map.of(), false, warnings, null, null);
+                0, 0, 0, Map.of(), false, Set.of(), Set.of(), false, warnings, null, null);
     }
 
     private record ParsedJarJarMetadata(Map<String, JarJarCoordinate> coordinates, List<String> warnings) {}
@@ -666,8 +680,11 @@ public final class Forge1201ArchiveGraph {
                             + ": nested archive declares NeoForge metadata and was excluded from legacy Mixin analysis.");
                 } else {
                     nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
-                            snapshot.incompleteKind(), snapshot.mixinResources(), Map.of(), true,
-                            List.of("Nested archive parsing stopped before Mixin resource analysis: "
+                            snapshot.incompleteKind(), List.of(), snapshot.modsToml() != null,
+                            snapshot.neoForgeModsToml() != null, snapshot.mixinResources(),
+                            snapshot.resourcePaths(), snapshot.duplicateResourcePaths(),
+                            snapshot.resourcePathIndexIncomplete(), Map.of(), true,
+                            List.of("Nested archive parsing stopped before complete metadata/resource analysis: "
                                     + snapshot.incompleteReason())));
                 }
             }
@@ -690,12 +707,16 @@ public final class Forge1201ArchiveGraph {
             scanNestedClassEntries(displayPath, parsed.kind(), snapshot, budget, nestedClassConsumer);
         }
         if (origin == ArchiveOrigin.INPUT_NESTED && nestedMixinArchiveConsumer != null) {
-            if (snapshot.neoForgeModsToml() != null || parsed.kind() == ArchiveKind.NEOFORGE_MOD) {
-                budget.warnings.add(displayPath + ": nested archive declares NeoForge metadata and was excluded from legacy Mixin source analysis.");
+            boolean nativeNeoForgeArchive = snapshot.neoForgeModsToml() != null
+                    || parsed.kind() == ArchiveKind.NEOFORGE_MOD;
+            Map<String, byte[]> mixinClasses = new TreeMap<>();
+            boolean resourceIndexIncomplete = snapshot.mixinResourceIndexIncomplete();
+            List<String> resourceWarnings = new ArrayList<>(snapshot.warnings());
+            if (nativeNeoForgeArchive) {
+                resourceWarnings.add("Nested archive declares NeoForge metadata; its Mixin resources are not passed to the legacy Forge Mixin analyzer.");
+                budget.warnings.add(displayPath + ": nested NeoForge archive was excluded from legacy Mixin analysis; Coremod/AT resources remain inventoried.");
+                resourceIndexIncomplete = true;
             } else {
-                Map<String, byte[]> mixinClasses = new TreeMap<>();
-                boolean resourceIndexIncomplete = snapshot.mixinResourceIndexIncomplete();
-                List<String> resourceWarnings = new ArrayList<>(snapshot.warnings());
                 for (Map.Entry<String, byte[]> classEntry : snapshot.classEntries().entrySet()) {
                     long next = budget.nestedMixinClassBytesCaptured + classEntry.getValue().length;
                     if (next > MAX_TOTAL_NESTED_MIXIN_CLASS_BYTES) {
@@ -706,10 +727,16 @@ public final class Forge1201ArchiveGraph {
                     mixinClasses.put(classEntry.getKey(), classEntry.getValue());
                     budget.nestedMixinClassBytesCaptured = next;
                 }
-                nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
-                        parsed.kind(), snapshot.mixinResources(), mixinClasses,
-                        resourceIndexIncomplete, resourceWarnings));
             }
+            List<Forge1201PreflightAnalyzer.ModMetadata> nestedMods = parsed.mods().stream()
+                    .map(mod -> new Forge1201PreflightAnalyzer.ModMetadata(mod.modId(), mod.version(), mod.displayName()))
+                    .sorted(Comparator.comparing(Forge1201PreflightAnalyzer.ModMetadata::modId)
+                            .thenComparing(Forge1201PreflightAnalyzer.ModMetadata::version)).toList();
+            nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
+                    parsed.kind(), nestedMods, snapshot.modsToml() != null, snapshot.neoForgeModsToml() != null,
+                    snapshot.mixinResources(), snapshot.resourcePaths(), snapshot.duplicateResourcePaths(),
+                    snapshot.resourcePathIndexIncomplete(), mixinClasses,
+                    resourceIndexIncomplete, resourceWarnings));
         }
         for (Candidate child : snapshot.nestedJars().values()) {
             processCandidate(child, displayPath, depth + 1, origin, budget,
@@ -723,6 +750,9 @@ public final class Forge1201ArchiveGraph {
         Map<String, byte[]> selected = new TreeMap<>();
         Map<String, byte[]> classEntries = new TreeMap<>();
         Map<String, NestedMixinResource> mixinResources = new TreeMap<>();
+        Set<String> resourcePaths = new TreeSet<>();
+        Set<String> duplicateResourcePaths = new TreeSet<>();
+        boolean resourcePathIndexIncomplete = false;
         Set<String> seenMixinResourceNames = new HashSet<>();
         Set<String> duplicateMixinResourceNames = new HashSet<>();
         long capturedMixinResourceBytes = 0;
@@ -753,7 +783,8 @@ public final class Forge1201ArchiveGraph {
                 boolean jarCandidate = lower.endsWith(".jar");
                 boolean classCandidate = captureClassEntries && !entry.isDirectory() && lower.endsWith(".class");
                 boolean mixinResourceCandidate = captureMixinResources && !entry.isDirectory()
-                        && (lower.equals("meta-inf/manifest.mf") || lower.endsWith(".json"));
+                        && (lower.equals("meta-inf/manifest.mf") || lower.endsWith(".json")
+                                || lower.equals("meta-inf/accesstransformer.cfg"));
                 boolean firstMixinResourceOccurrence = mixinResourceCandidate && seenMixinResourceNames.add(name);
                 boolean duplicateMixinResource = mixinResourceCandidate && !firstMixinResourceOccurrence;
                 if (duplicateMixinResource && duplicateMixinResourceNames.add(name)) {
@@ -766,6 +797,19 @@ public final class Forge1201ArchiveGraph {
                     warnings.add(archivePath + "!/" + name + " is duplicated; all copies are excluded from Mixin analysis.");
                 }
                 boolean safe = isSafeArchivePath(name);
+                if (captureMixinResources && !entry.isDirectory()) {
+                    if (!safe) {
+                        resourcePathIndexIncomplete = true;
+                    } else if (resourcePaths.contains(name)) {
+                        duplicateResourcePaths.add(name);
+                    } else if (resourcePaths.size() >= MAX_NESTED_RESOURCE_PATHS_PER_ARCHIVE
+                            || budget.nestedResourcePathCount >= MAX_TOTAL_NESTED_RESOURCE_PATHS) {
+                        resourcePathIndexIncomplete = true;
+                    } else {
+                        resourcePaths.add(name);
+                        budget.nestedResourcePathCount++;
+                    }
+                }
                 boolean duplicateClassEntry = false;
                 if (classCandidate) {
                     discoveredClassEntries++;
@@ -941,9 +985,13 @@ public final class Forge1201ArchiveGraph {
                 candidates.put(path, new Candidate(path, selected.get(path), coordinate, null));
             }
         }
+        if (resourcePathIndexIncomplete) {
+            warnings.add("Nested resource-path index is incomplete; unindexed Coremod script paths cannot be classified as missing.");
+        }
         return new Snapshot(modsToml, neoToml, candidates, classEntries,
                 discoveredClassEntries, skippedClassEntries, capturedClassBytes,
-                mixinResources, mixinResourceIndexIncomplete, warnings, incompleteKind, incompleteReason);
+                mixinResources, mixinResourceIndexIncomplete, resourcePaths, duplicateResourcePaths,
+                resourcePathIndexIncomplete, warnings, incompleteKind, incompleteReason);
     }
 
     private static void scanNestedClassEntries(
