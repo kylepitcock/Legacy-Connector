@@ -59,6 +59,9 @@ public final class World {
     /** 1.6.4 {@code canPlaceEntityOnSide(blockId, x, y, z, skipCollision, side, entity, stack)}. */
     public static boolean canPlaceEntityOnSide(legacyconnector.v1_7_10.net.minecraft.world.World self, int id, int x, int y, int z, boolean skipCollision, int side,
             legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        // no such block: 1.6.4 threw here (blocksList[id] was null); a mod that asks with an id it never set (Witches and More's water plant
+        // used away from water) is told no, so it stops instead of going on to place blocksList[0]
+        if (id <= 0 || Ids.block(id) == null) return false;
         return self.canPlaceEntityOnSide(blockOf(id), x, y, z, skipCollision, side, entity, stack);
     }
 
