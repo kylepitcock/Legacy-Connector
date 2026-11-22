@@ -1266,7 +1266,11 @@ public final class Forge1201PreflightAnalyzer {
         boolean explicitTargetAtList = hasExplicitNeoForgeAccessTransformerList(
                 neoForgeToml ? archive.neoForgeModsToml() : archive.forgeModsToml());
         NeoForgeDefaultAtDisposition targetAtDisposition;
-        if (!targetFinalProvider) {
+        if (targetDisposition == NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
+                || targetDisposition == NestedLoaderDisposition.INCOMPLETE_ARCHIVE
+                || targetDisposition == NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_EVALUATED;
+        } else if (!targetFinalProvider) {
             targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_A_FINAL_TRANSFORMATION_PROVIDER;
         } else if (atStatus != NestedResourceStatus.CAPTURED) {
             targetAtDisposition = NeoForgeDefaultAtDisposition.RESOURCE_ABSENT_OR_UNAVAILABLE;
