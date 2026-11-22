@@ -263,3 +263,18 @@ h1.sec { font-family: var(--display); font-size: 1.6rem; letter-spacing: -.02em;
   .mainnav a { padding: 7px 10px; font-size: .88rem; } .mainnav { gap: 0; }
 }
 .runbar label { max-width: 100%; display: inline-flex; gap: 8px; align-items: center; } .runbar select { min-width: 0; max-width: 100%; flex: 1 1 auto; text-overflow: ellipsis; }
+
+/* never let long words or wide children force horizontal scroll */
+main, .card, .entry, .hit, .vcard, .mhead, .vhead, .vsec { min-width: 0; overflow-wrap: anywhere; }
+.vtop b { white-space: nowrap; } .vtop { flex-wrap: nowrap; }
+.stage { white-space: nowrap; }
+.mhead h1 { min-width: 0; }
+.entry .top { min-width: 0; }
+.entry .top a, .entry .top b { overflow-wrap: anywhere; min-width: 0; }
+@media (max-width: 600px) {
+  .brand { min-width: 0; font-size: .95rem; }
+  .topbar .wrap { flex-wrap: wrap; }
+  .toolbar { flex: none; gap: 6px; }
+  .toolbar .btn { padding: 6px 9px; font-size: .8rem; white-space: nowrap; }
+  .vsec .btn { white-space: normal; text-align: center; }
+}

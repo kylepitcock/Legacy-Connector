@@ -363,13 +363,13 @@
   }
 
   // ---------- search view (the landing page) ----------
-  var VERSION_STAGE = { "1.7.10": "Supported", "1.12.2": "Beta", "1.6.4": "Beta", "1.5.2": "Alpha", "1.4.7": "Alpha", "1.2.5": "Alpha", "b1.7.3": "Alpha", "1.20.1": "Alpha" };
+  var VERSION_STAGE = { "1.7.10": "Beta", "1.12.2": "Beta", "1.6.4": "Beta", "1.5.2": "Alpha", "1.4.7": "Alpha", "1.2.5": "Alpha", "b1.7.3": "Alpha", "1.20.1": "Alpha" };
   var WHO = { community: "Player report", maintainer: "Maintainer", client: "In-game test", corpus: "Startup test", probe: "Automated check" };
   var STATUS_HINT = { perfect: "survival-ready", playable: "most gameplay works", works: "basics work, not tested deeply", partial: "some features broken", loads: "starts, nobody played it", fails: "disabled at startup", crashes: "takes the game down" };
   function isGood(s) { return s === "perfect" || s === "playable" || s === "works"; }
 
   var SORTS = {
-    relevance: null,
+    relevance: null, // with no query: best rating first, then name
     name: function (a, b) { return a.name.localeCompare(b.name) || byVersion(b.mc, a.mc); },
     best: function (a, b) { return rank(a.status) - rank(b.status) || a.name.localeCompare(b.name); },
     worst: function (a, b) { return rank(b.status) - rank(a.status) || a.name.localeCompare(b.name); },
@@ -405,7 +405,7 @@
     versionNote($("vnote-mods"), state.mc);
 
     var sortFn = SORTS[state.sort], hasText = tokens().length > 0;
-    shown.sort(sortFn ? function (a, b) { return sortFn(a.m, b.m); } : function (a, b) { return a.sc - b.sc || (hasText ? a.m.name.length - b.m.name.length : 0) || a.m.name.localeCompare(b.m.name) || byVersion(b.m.mc, a.m.mc); });
+    shown.sort(sortFn ? function (a, b) { return sortFn(a.m, b.m); } : function (a, b) { return hasText ? a.sc - b.sc || a.m.name.length - b.m.name.length || a.m.name.localeCompare(b.m.name) || byVersion(b.m.mc, a.m.mc) : rank(a.m.status) - rank(b.m.status) || a.m.name.localeCompare(b.m.name) || byVersion(b.m.mc, a.m.mc); });
 
     var info = $("rcount");
     var scope = (state.mc ? " on MC " + state.mc : " across all versions") + (state.status !== "all" ? " rated " + LABEL[state.status].toLowerCase() : "");
@@ -616,7 +616,7 @@
       var vn = el("div", "vnote"); versionNote(vn, m.mc); if (!vn.hidden) { var dd = el("details", "inline"); dd.appendChild(el("summary", null, "About MC " + m.mc + " support")); while (vn.firstChild) dd.appendChild(vn.firstChild); sec.appendChild(dd); }
       var seenEntry = {};
       m.entries.forEach(function (en) {
-        var dk = [en.source, en.version, en.status, en.date, en.notes, en.issue].join("|");
+        var dk = [en.source, String(en.version || "").trim(), en.status, String(en.notes || "").replace(/\s+/g, " ").trim().toLowerCase()].join("|");
         if (seenEntry[dk]) return;
         seenEntry[dk] = true;
         var row = el("div", "entry");
