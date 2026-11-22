@@ -1172,7 +1172,7 @@ public final class Forge1201PreflightAnalyzer {
         List<String> warnings = new ArrayList<>(archive.warnings());
         NestedResourceStatus manifestStatus = nestedResourceStatus(archive, JarFile.MANIFEST_NAME);
         String declaredType = null;
-        boolean loaderMetadataIncomplete = false;
+        boolean manifestTypeIncomplete = false;
         if (manifestStatus == NestedResourceStatus.CAPTURED) {
             Forge1201ArchiveGraph.NestedMixinResource manifestResource = archive.resources().get(JarFile.MANIFEST_NAME);
             if (manifestResource != null && manifestResource.bytes() != null) {
@@ -1181,17 +1181,17 @@ public final class Forge1201PreflightAnalyzer {
                     declaredType = nestedManifest.getMainAttributes().getValue("FMLModType");
                     // Match the loader's case-sensitive Enum.valueOf semantics; do not normalize invalid manifest values.
                 } catch (IOException | RuntimeException exception) {
-                    loaderMetadataIncomplete = true;
+                    manifestTypeIncomplete = true;
                     warnings.add("Nested manifest could not be parsed for FMLModType: " + conciseMessage(exception));
                 }
             } else {
-                loaderMetadataIncomplete = true;
+                manifestTypeIncomplete = true;
                 warnings.add("Nested manifest was marked captured but its bytes were unavailable.");
             }
         } else if (manifestStatus == NestedResourceStatus.DUPLICATE_ENTRY
                 || manifestStatus == NestedResourceStatus.LIMIT_EXCEEDED
                 || manifestStatus == NestedResourceStatus.INDEX_INCOMPLETE) {
-            loaderMetadataIncomplete = true;
+            manifestTypeIncomplete = true;
             warnings.add("Nested manifest type could not be established because the manifest was duplicated, unavailable, or outside the resource-path index.");
         }
 
@@ -1205,12 +1205,12 @@ public final class Forge1201PreflightAnalyzer {
                 || ((forgeToml || neoForgeToml)
                     && (neoForgeToml ? archive.neoForgeModsToml() : archive.forgeModsToml()) == null)
                 || (!(forgeToml || neoForgeToml) && archive.resourcePathIndexIncomplete());
+        boolean forgeMetadataIncomplete = manifestTypeIncomplete || forgeTomlIncomplete;
+        boolean targetMetadataIncomplete = manifestTypeIncomplete || targetTomlIncomplete;
         if (forgeTomlIncomplete) {
-            loaderMetadataIncomplete = true;
             warnings.add("Forge mods.toml presence or contents are incomplete; source ModInfo and final-list eligibility cannot be established.");
         }
         if (targetTomlIncomplete) {
-            loaderMetadataIncomplete = true;
             warnings.add("Target TOML presence or contents are incomplete; NeoForge ModInfo and final-list eligibility cannot be established.");
         }
         String forgeType = forgeToml
@@ -1226,10 +1226,10 @@ public final class Forge1201PreflightAnalyzer {
                 && !archive.mods().isEmpty();
 
         boolean archiveInspectionIncomplete = isNestedArchiveInspectionIncomplete(archive.archiveKind());
-        NestedLoaderDisposition forgeDisposition = loaderMetadataIncomplete
+        NestedLoaderDisposition forgeDisposition = forgeMetadataIncomplete
                 ? NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
                 : classifyForgeNestedDisposition(forgeType, forgeToml, forgeModInfo, archiveInspectionIncomplete);
-        NestedLoaderDisposition targetDisposition = loaderMetadataIncomplete
+        NestedLoaderDisposition targetDisposition = targetMetadataIncomplete
                 ? NestedLoaderDisposition.UNKNOWN_LOADER_METADATA
                 : classifyNeoForgeNestedDisposition(targetType, forgeToml || neoForgeToml, targetModInfo, archiveInspectionIncomplete);
         boolean forgeParserReached = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER
@@ -1279,7 +1279,7 @@ public final class Forge1201PreflightAnalyzer {
         String coremodCompatibility = targetCoremodConsumer
                 ? "FML 4.0.45 recognizes META-INF/coremods.json; Forge 47.3.0 script/API/transformer compatibility remains UNVERIFIED. No script was evaluated."
                 : "NOT_EVALUATED: target final-provider/descriptor intake conditions were not both established.";
-        if (loaderMetadataIncomplete || archiveInspectionIncomplete) {
+        if (forgeMetadataIncomplete || targetMetadataIncomplete || archiveInspectionIncomplete) {
             warnings.add("Loader intake disposition is conservative because nested archive or manifest inspection was incomplete.");
         }
         if (archive.resourcePathIndexIncomplete()) {
