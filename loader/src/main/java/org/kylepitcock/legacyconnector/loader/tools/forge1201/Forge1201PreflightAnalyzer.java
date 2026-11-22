@@ -1295,6 +1295,12 @@ public final class Forge1201PreflightAnalyzer {
         if (forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO) {
             warnings.add("Forge 47.3.0 may transiently parse this manifest-only child, but its empty DefaultModFileInfo has no ModInfo and is excluded from the final Coremod/AT consumer list.");
         }
+        if (forgeDisposition == NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA) {
+            warnings.add("The static Forge metadata reader did not establish a ModInfo. Loader parser reachability and final consumer membership remain UNKNOWN, not a proven rejection.");
+        }
+        if (targetDisposition == NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA) {
+            warnings.add("The static target metadata reader did not establish a ModInfo. NeoForge parser reachability and final consumer membership remain UNKNOWN, not a proven rejection.");
+        }
         if (targetDisposition == NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO) {
             warnings.add("NeoForge accepts this non-MOD child as a game library but returns before Coremod/AT parsing; GAME module inclusion is not transformation-provider eligibility.");
         }
