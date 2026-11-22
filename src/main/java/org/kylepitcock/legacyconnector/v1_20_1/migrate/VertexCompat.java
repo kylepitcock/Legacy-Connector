@@ -64,6 +64,7 @@ public final class VertexCompat {
     /** A vertex is complete once the next one starts: nothing to do, except for the quad baker that emits a quad after its fourth. */
     public static void endVertex(VertexConsumer c) {
         if (c instanceof LegacyQuadBakingVertexConsumer q) q.endLegacyVertex();
+        else if (c instanceof LegacyEndVertexConsumer legacy) legacy.legacyEndVertex();
     }
 
     /** {@code VertexConsumer.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz)} (a whole vertex in one call): {@code addVertex} with a packed colour. */

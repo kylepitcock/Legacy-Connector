@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class PalladiumLootCompat1201Test implements Opcodes {
     private static final String JSON_ELEMENT = "com/google/gson/JsonElement";
     private static final String LOOT_POOL = "net/minecraft/world/level/storage/loot/LootPool";
     private static final String MODIFICATION = MANAGER + "$Modification";
-    private static final String HELPER = "legacyconnector/v1_20_1/PalladiumLootCompat";
+    private static final String HELPER = "legacyconnector/v1_20_1/compat/PalladiumLootCompat";
 
     @Test
     void rewritesOnlyPalladiumLootGsonFactoryAndPoolDecode() {

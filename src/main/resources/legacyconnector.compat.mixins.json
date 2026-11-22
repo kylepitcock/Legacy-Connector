@@ -11,12 +11,14 @@
     "KubeJSBlockEntityLegacyInventoryMixin",
     "KubeJSItemBuilderLegacyGlowMixin",
     "KubeJSItemModificationLegacyBuilderMixin",
-    "KubeJSBlockEntityTickLegacyViewMixin"
+    "KubeJSBlockEntityTickLegacyViewMixin",
+    "KubeJSConsoleExecutorShutdownRaceMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",
     "AurorasIrisStateMixin",
-    "KubeJSKeybindLegacyMappingMixin"
+    "KubeJSKeybindLegacyMappingMixin",
+    "PalladiumCoreRendererRegistryProbeMixin"
   ],
   "injectors": {
     "defaultRequire": 0

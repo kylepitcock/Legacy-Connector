@@ -44,3 +44,7 @@ minefactoryreloaded
 pneumaticcraft
 journeymap
 twilight
+alienevo
+alien evo
+palladium
+palladiumcore

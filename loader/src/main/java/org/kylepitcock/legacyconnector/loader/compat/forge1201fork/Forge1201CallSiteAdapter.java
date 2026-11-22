@@ -56,6 +56,7 @@ public final class Forge1201CallSiteAdapter {
     private static final String OP_CLASS_ANNOTATION_DESCRIPTOR = "class-annotation-descriptor";
     private static final String OP_CLASS_INNER_CLASS_REMOVE = "class-inner-class-remove";
     private static final String OP_FRAME_LOCAL_TYPE = "frame-local-type";
+    private static final String OP_FRAME_STACK_TYPE = "frame-stack-type";
     private static final String OP_LOCAL_VARIABLE = "local-variable";
     private static final String OP_LAZY_DIST_GATE = "lazy-dist-gate";
     private static final String OP_CHECKCAST_TYPE = "checkcast-type";
@@ -138,10 +139,33 @@ public final class Forge1201CallSiteAdapter {
             int expectedMatches,
             int localIndex,
             String replacementName,
-            int replacementOpcode) {
+            int replacementOpcode,
+            int stackIndex) {
         public Operation {
             match = List.copyOf(match);
             replacement = List.copyOf(replacement);
+        }
+
+        public Operation(
+                String type,
+                String owner,
+                String name,
+                String descriptor,
+                String replacementDescriptor,
+                String sourceType,
+                String replacementType,
+                int opcode,
+                List<InstructionSpec> match,
+                List<InstructionSpec> replacement,
+                int minimumMaxStack,
+                int minimumMaxLocals,
+                int expectedMatches,
+                int localIndex,
+                String replacementName,
+                int replacementOpcode) {
+            this(type, owner, name, descriptor, replacementDescriptor, sourceType, replacementType,
+                    opcode, match, replacement, minimumMaxStack, minimumMaxLocals, expectedMatches,
+                    localIndex, replacementName, replacementOpcode, -1);
         }
     }
 
@@ -275,6 +299,7 @@ public final class Forge1201CallSiteAdapter {
             case OP_CLASS_ANNOTATION_DESCRIPTOR -> replaceClassAnnotationDescriptor(classNode, rule, operation);
             case OP_CLASS_INNER_CLASS_REMOVE -> removeClassInnerClassMetadata(classNode, rule, operation);
             case OP_FRAME_LOCAL_TYPE -> replaceFrameLocalType(rule, method, operation);
+            case OP_FRAME_STACK_TYPE -> replaceFrameStackType(rule, method, operation);
             case OP_LOCAL_VARIABLE -> replaceLocalVariable(rule, method, operation);
             case OP_LAZY_DIST_GATE -> rewriteLazyDistGate(classNode, rule, method, operation, generatedLazyHelpers);
             case OP_CHECKCAST_TYPE -> replaceCheckcastType(rule, method, operation);
@@ -355,6 +380,31 @@ public final class Forge1201CallSiteAdapter {
         for (FrameNode frame : matches) {
             int entryIndex = frameLocalEntryIndex(frame.local, operation.localIndex());
             frame.local.set(entryIndex, operation.replacementType());
+        }
+    }
+
+    /**
+     * Replaces one verification entry in the operand stack of explicit full stack-map frames.
+     * The profile index is a zero-based FrameNode.stack entry index, not a JVM word offset.
+     * Compressed frames are intentionally not inferred; exact match counts fail closed.
+     */
+    private static void replaceFrameStackType(Rule rule, MethodNode method, Operation operation)
+            throws IOException {
+        List<FrameNode> matches = new ArrayList<>();
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (!(instruction instanceof FrameNode frame)
+                    || (frame.type != Opcodes.F_FULL && frame.type != Opcodes.F_NEW)
+                    || frame.stack == null
+                    || operation.stackIndex() >= frame.stack.size()) {
+                continue;
+            }
+            if (Objects.equals(frame.stack.get(operation.stackIndex()), operation.sourceType())) {
+                matches.add(frame);
+            }
+        }
+        requireExpectedMatches(rule, operation, matches.size());
+        for (FrameNode frame : matches) {
+            frame.stack.set(operation.stackIndex(), operation.replacementType());
         }
     }
 
@@ -823,6 +873,15 @@ public final class Forge1201CallSiteAdapter {
                         requiredInternalName(json, "sourceType", location),
                         requiredInternalName(json, "replacementType", location),
                         -1, List.of(), List.of(), 0, 0, expected, localIndex, null, -1);
+            }
+            case OP_FRAME_STACK_TYPE -> {
+                int stackIndex = requiredInt(json, "stackIndex", location);
+                if (stackIndex < 0) throw new IOException(location + ".stackIndex must not be negative");
+                yield new Operation(
+                        type, null, null, null, null,
+                        requiredInternalName(json, "sourceType", location),
+                        requiredInternalName(json, "replacementType", location),
+                        -1, List.of(), List.of(), 0, 0, expected, -1, null, -1, stackIndex);
             }
             case OP_LOCAL_VARIABLE -> {
                 int localIndex = requiredInt(json, "localIndex", location);

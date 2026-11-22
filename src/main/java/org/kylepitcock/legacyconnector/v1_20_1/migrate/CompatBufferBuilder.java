@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.VertexSorting;
+import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -113,6 +115,44 @@ public final class CompatBufferBuilder implements VertexConsumer {
     /** {@code putBulkData(pose, quad, r, g, b, light, overlay)} of 1.20.1: 1.21.1 also takes the alpha (opaque here). */
     public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, int light, int overlay) {
         putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
+    }
+
+    /**
+     * 1.20.1 RenderType.end(BufferBuilder, VertexSorting), adapted to 1.21.1.
+     *
+     * The modern RenderType owns render-state setup/cleanup and draws MeshData;
+     * translucent layers still need their quad indices sorted using the same
+     * allocator that produced the mesh. LateEffectBuffers creates its builders
+     * with the private-capacity constructor, so that allocator is available here.
+     */
+    public static void drawWithRenderType(RenderType renderType, CompatBufferBuilder builder, VertexSorting sorting) {
+        if (renderType == null || builder == null || sorting == null) {
+            throw new IllegalArgumentException("RenderType, builder and vertex sorting must be non-null");
+        }
+
+        drawWithRenderType(builder, renderType.sortOnUpload(), sorting, renderType::draw);
+    }
+
+    /**
+     * Shared mesh-building path used by the RenderType bridge and CPU-only tests.
+     * Keeping the draw operation as a callback avoids initializing Minecraft's
+     * client RenderType registry from a standalone JUnit test.
+     */
+    static void drawWithRenderType(CompatBufferBuilder builder, boolean sortOnUpload,
+            VertexSorting sorting, java.util.function.Consumer<MeshData> draw) {
+        if (builder == null || sorting == null || draw == null) {
+            throw new IllegalArgumentException("Builder, vertex sorting and draw callback must be non-null");
+        }
+        if (sortOnUpload && builder.own == null) {
+            throw new IllegalStateException("Cannot sort a RenderType mesh without its original ByteBufferBuilder");
+        }
+
+        MeshData mesh = builder.end();
+        if (mesh == null) return;
+        if (sortOnUpload) mesh.sortQuads(builder.own, sorting);
+        // RenderType.draw performs the 1.21.1 setup/draw/clear sequence and
+        // transfers MeshData ownership to the renderer, which closes it.
+        draw.accept(mesh);
     }
 
     public void begin(VertexFormat.Mode mode, VertexFormat format) {

@@ -38,11 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-<<<<<<< HEAD
     public static final int TRANSFORMER_VERSION = 262;
-=======
-    public static final int TRANSFORMER_VERSION = 260;
->>>>>>> worktree-agent-a127a44972e19c8fd
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 

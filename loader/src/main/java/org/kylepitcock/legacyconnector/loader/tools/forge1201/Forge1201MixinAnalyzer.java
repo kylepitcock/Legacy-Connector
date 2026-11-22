@@ -528,7 +528,35 @@ public final class Forge1201MixinAnalyzer {
         }
     }
 
-    private record IndexedEntry(ZipEntry entry, int occurrences) {}
+    /** One bounded entry supplied by an in-memory nested source archive. */
+    public record MemoryEntry(
+            String path, byte[] bytes, long sizeBytes, long compressedSizeBytes,
+            int occurrences, String unavailableDiagnostic) {
+        public MemoryEntry {
+            if (path == null || path.isBlank()) throw new IllegalArgumentException("Memory entry path is required");
+            if (occurrences < 1) throw new IllegalArgumentException("Memory entry occurrence count must be positive");
+            bytes = bytes == null ? null : bytes.clone();
+        }
+        @Override public byte[] bytes() { return bytes == null ? null : bytes.clone(); }
+    }
+
+    /** Read-only archive view for a source-nested JAR; no temporary file or class loading is used. */
+    public record MemoryArchive(
+            String archivePath, List<MemoryEntry> entries,
+            boolean entryIndexIncomplete, int maxMixinClassCount) {
+        public MemoryArchive {
+            if (archivePath == null || archivePath.isBlank()) throw new IllegalArgumentException("Archive path is required");
+            if (maxMixinClassCount < 0) throw new IllegalArgumentException("Mixin class limit cannot be negative");
+            entries = List.copyOf(entries);
+        }
+        public MemoryArchive(String archivePath, List<MemoryEntry> entries, boolean entryIndexIncomplete) {
+            this(archivePath, entries, entryIndexIncomplete, MAX_MIXIN_CLASS_COUNT);
+        }
+    }
+
+    private record IndexedEntry(
+            ZipEntry entry, byte[] memoryBytes, long sizeBytes, long compressedSizeBytes,
+            int occurrences, String unavailableDiagnostic) {}
 
     private record ParsedConfig(
             String packageName,
@@ -588,13 +616,43 @@ public final class Forge1201MixinAnalyzer {
         if (sourceJar == null || !java.nio.file.Files.isRegularFile(sourceJar)) {
             throw new IllegalArgumentException("Mixin analysis input must be an existing archive: " + sourceJar);
         }
+        try (ZipFile zip = new ZipFile(sourceJar.toFile())) {
+            return analyzeArchive("source/" + sourceJar.getFileName(), zip, null, declarations,
+                    targetIndex, sourceToTargetClassMappings, classMappingVersion, requestedRefmapContextKey);
+        }
+    }
+
+    /** Analyze a bounded in-memory nested archive using the same parser as the outer JAR. */
+    public static Result analyze(
+            MemoryArchive archive,
+            Collection<ConfigDeclaration> declarations,
+            Forge1201TargetApiVerifier.TargetIndex targetIndex,
+            Map<String, String> sourceToTargetClassMappings,
+            String classMappingVersion,
+            String requestedRefmapContextKey) throws IOException {
+        if (archive == null) throw new IllegalArgumentException("Nested Mixin archive view is required");
+        return analyzeArchive(archive.archivePath(), null, archive, declarations,
+                targetIndex, sourceToTargetClassMappings, classMappingVersion, requestedRefmapContextKey);
+    }
+
+    private static Result analyzeArchive(
+            String archivePath,
+            ZipFile zip,
+            MemoryArchive memoryArchive,
+            Collection<ConfigDeclaration> declarations,
+            Forge1201TargetApiVerifier.TargetIndex targetIndex,
+            Map<String, String> sourceToTargetClassMappings,
+            String classMappingVersion,
+            String requestedRefmapContextKey) throws IOException {
+        if (zip == null && memoryArchive == null) throw new IllegalArgumentException("Archive input is required");
         if (declarations == null) throw new IllegalArgumentException("Mixin config declarations are required");
 
         Map<String, String> classMappings = sourceToTargetClassMappings == null
                 ? Map.of() : Map.copyOf(sourceToTargetClassMappings);
         String mappingVersion = classMappingVersion == null || classMappingVersion.isBlank()
                 ? "unavailable" : classMappingVersion;
-        String archivePath = "source/" + sourceJar.getFileName();
+        int mixinClassLimit = memoryArchive == null ? MAX_MIXIN_CLASS_COUNT
+                : Math.min(MAX_MIXIN_CLASS_COUNT, memoryArchive.maxMixinClassCount());
 
         List<String> warnings = new ArrayList<>();
         Map<String, LinkedHashSet<DiscoverySource>> grouped = new TreeMap<>();
@@ -603,9 +661,9 @@ public final class Forge1201MixinAnalyzer {
         }
 
         Map<String, IndexedEntry> entries = new HashMap<>();
-        try (ZipFile zip = new ZipFile(sourceJar.toFile())) {
+        int count = 0;
+        if (zip != null) {
             var enumeration = zip.entries();
-            int count = 0;
             while (enumeration.hasMoreElements()) {
                 ZipEntry entry = enumeration.nextElement();
                 if (++count > MAX_ARCHIVE_ENTRIES) {
@@ -614,283 +672,299 @@ public final class Forge1201MixinAnalyzer {
                     break;
                 }
                 entries.compute(entry.getName(), (name, current) ->
-                        current == null ? new IndexedEntry(entry, 1)
-                                : new IndexedEntry(current.entry(), current.occurrences() + 1));
+                        current == null
+                                ? new IndexedEntry(entry, null, entry.getSize(), entry.getCompressedSize(), 1, null)
+                                : new IndexedEntry(current.entry(), null, current.sizeBytes(),
+                                        current.compressedSizeBytes(), current.occurrences() + 1,
+                                        current.unavailableDiagnostic()));
+            }
+        } else {
+            for (MemoryEntry entry : memoryArchive.entries()) {
+                if (++count > MAX_ARCHIVE_ENTRIES) {
+                    warnings.add("Nested archive entry inventory reached the " + MAX_ARCHIVE_ENTRIES
+                            + " entry limit; remaining entries were not indexed.");
+                    break;
+                }
+                entries.put(entry.path(), new IndexedEntry(null, entry.bytes(), entry.sizeBytes(),
+                        entry.compressedSizeBytes(), entry.occurrences(), entry.unavailableDiagnostic()));
+            }
+        }
+
+        List<ConfigFinding> configFindings = new ArrayList<>();
+        List<MixinClassFinding> classFindings = new ArrayList<>();
+        List<TargetFinding> targetFindings = new ArrayList<>();
+        List<MemberAnnotationFinding> memberFindings = new ArrayList<>();
+        List<InjectorFinding> injectorFindings = new ArrayList<>();
+        boolean archiveEntryIndexIncomplete = count > MAX_ARCHIVE_ENTRIES
+                || (memoryArchive != null && memoryArchive.entryIndexIncomplete());
+        long totalConfigBytes = 0;
+        long totalClassBytes = 0;
+        int processedConfigs = 0;
+        int processedMixins = 0;
+        Map<String, RefmapCandidateAccumulator> refmapCandidates = new TreeMap<>();
+
+        for (Map.Entry<String, LinkedHashSet<DiscoverySource>> candidate : grouped.entrySet()) {
+            String configPath = candidate.getKey();
+            List<DiscoverySource> sources = candidate.getValue().stream().sorted().toList();
+            List<String> configWarnings = new ArrayList<>();
+
+            if (!isSafeArchivePath(configPath)) {
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        ConfigStatus.UNSAFE_CONFIG_PATH, "Config path is absolute, traversing, or malformed."));
+                continue;
+            }
+            IndexedEntry configEntry = entries.get(configPath);
+            if (configEntry == null) {
+                ConfigStatus missingStatus = archiveEntryIndexIncomplete
+                        ? ConfigStatus.CONFIG_LIMIT_EXCEEDED : ConfigStatus.CONFIG_MISSING;
+                String missingEvidence = archiveEntryIndexIncomplete
+                        ? "Archive entry inventory was truncated; config presence cannot be established."
+                        : "Discovered config resource is absent from the source archive.";
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        missingStatus, missingEvidence));
+                continue;
+            }
+            if (configEntry.occurrences() != 1) {
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        ConfigStatus.CONFIG_DUPLICATE_ENTRY, "Multiple ZIP entries use the same config path."));
+                continue;
+            }
+            if (processedConfigs >= MAX_CONFIG_COUNT) {
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        ConfigStatus.CONFIG_LIMIT_EXCEEDED, "Maximum config count was reached."));
+                continue;
+            }
+            processedConfigs++;
+
+            byte[] configBytes;
+            try {
+                configBytes = readBounded(zip, configEntry, MAX_CONFIG_BYTES);
+            } catch (EntryLimitException exception) {
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        ConfigStatus.CONFIG_LIMIT_EXCEEDED, exception.getMessage()));
+                continue;
+            }
+            totalConfigBytes += configBytes.length;
+            if (totalConfigBytes > MAX_TOTAL_CONFIG_BYTES) {
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        ConfigStatus.CONFIG_LIMIT_EXCEEDED, "Aggregate config byte budget was exceeded."));
+                continue;
             }
 
-            List<ConfigFinding> configFindings = new ArrayList<>();
-            List<MixinClassFinding> classFindings = new ArrayList<>();
-            List<TargetFinding> targetFindings = new ArrayList<>();
-            List<MemberAnnotationFinding> memberFindings = new ArrayList<>();
-            List<InjectorFinding> injectorFindings = new ArrayList<>();
-            boolean archiveEntryIndexIncomplete = count > MAX_ARCHIVE_ENTRIES;
-            long totalConfigBytes = 0;
-            long totalClassBytes = 0;
-            int processedConfigs = 0;
-            int processedMixins = 0;
-            Map<String, RefmapCandidateAccumulator> refmapCandidates = new TreeMap<>();
+            ParsedConfig parsed;
+            try {
+                parsed = parseConfig(configBytes);
+            } catch (RuntimeException exception) {
+                configFindings.add(configFailure(archivePath, configPath, sources,
+                        ConfigStatus.CONFIG_INVALID, "Invalid Mixin JSON: " + conciseMessage(exception)));
+                continue;
+            }
+            configWarnings.addAll(parsed.warnings());
 
-            for (Map.Entry<String, LinkedHashSet<DiscoverySource>> candidate : grouped.entrySet()) {
-                String configPath = candidate.getKey();
-                List<DiscoverySource> sources = candidate.getValue().stream().sorted().toList();
-                List<String> configWarnings = new ArrayList<>();
+            PluginStatus pluginStatus = inspectPlugin(parsed.pluginClass(), entries, archiveEntryIndexIncomplete);
+            RefmapSelection refmapSelection;
+            RefmapResourceOrigin refmapOrigin = null;
+            String refmapCandidatePath = null;
+            if (parsed.refmapFieldPresent() && !parsed.refmapFieldValid()) {
+                refmapSelection = RefmapSelection.INVALID_DECLARATION;
+            } else if (parsed.refmapFieldPresent()) {
+                refmapSelection = RefmapSelection.EXPLICIT_RESOURCE;
+                refmapCandidatePath = parsed.refmapPath();
+                refmapOrigin = RefmapResourceOrigin.EXPLICIT_CONFIG_FIELD;
+            } else if (parsed.pluginClass() != null && !parsed.pluginClass().isBlank()) {
+                refmapSelection = RefmapSelection.PLUGIN_DEPENDENT;
+                refmapCandidatePath = DEFAULT_REFMAP_RESOURCE;
+                refmapOrigin = RefmapResourceOrigin.PLUGIN_DEPENDENT_CANDIDATE;
+                configWarnings.add("A declared Mixin plugin may provide a different refmap resource path at runtime; "
+                        + "mixin.refmap.json is only a non-authoritative static candidate. Plugin code was not executed.");
+            } else {
+                refmapSelection = RefmapSelection.DEFAULT_RESOURCE;
+                refmapCandidatePath = DEFAULT_REFMAP_RESOURCE;
+                refmapOrigin = RefmapResourceOrigin.MIXIN_DEFAULT_CANDIDATE;
+            }
+            if (refmapCandidatePath != null) {
+                RefmapCandidateAccumulator accumulator = refmapCandidates.computeIfAbsent(
+                        refmapCandidatePath, ignored -> new RefmapCandidateAccumulator());
+                accumulator.configPaths.add(configPath);
+                accumulator.origins.add(refmapOrigin);
+            }
+            if (parsed.refmapWrapperClass() != null) {
+                configWarnings.add("Custom refmapWrapper '" + parsed.refmapWrapperClass()
+                        + "' is preserved as metadata but is never loaded or executed by preflight.");
+            }
+            configFindings.add(new ConfigFinding(
+                    archivePath, configPath, sources, ConfigStatus.PARSED,
+                    parsed.packageName(), parsed.required(), parsed.minimumVersion(),
+                    parsed.compatibilityLevel(), parsed.pluginClass(), pluginStatus,
+                    parsed.refmapPath(), parsed.refmapWrapperClass(), refmapSelection,
+                    refmapCandidatePath, ResourceStatus.NOT_DECLARED, configWarnings));
 
-                if (!isSafeArchivePath(configPath)) {
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            ConfigStatus.UNSAFE_CONFIG_PATH, "Config path is absolute, traversing, or malformed."));
-                    continue;
-                }
-                IndexedEntry configEntry = entries.get(configPath);
-                if (configEntry == null) {
-                    ConfigStatus missingStatus = archiveEntryIndexIncomplete
-                            ? ConfigStatus.CONFIG_LIMIT_EXCEEDED : ConfigStatus.CONFIG_MISSING;
-                    String missingEvidence = archiveEntryIndexIncomplete
-                            ? "Archive entry inventory was truncated; config presence cannot be established."
-                            : "Discovered config resource is absent from the source archive.";
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            missingStatus, missingEvidence));
-                    continue;
-                }
-                if (configEntry.occurrences() != 1) {
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            ConfigStatus.CONFIG_DUPLICATE_ENTRY, "Multiple ZIP entries use the same config path."));
-                    continue;
-                }
-                if (processedConfigs >= MAX_CONFIG_COUNT) {
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            ConfigStatus.CONFIG_LIMIT_EXCEEDED, "Maximum config count was reached."));
-                    continue;
-                }
-                processedConfigs++;
-
-                byte[] configBytes;
-                try {
-                    configBytes = readBounded(zip, configEntry.entry(), MAX_CONFIG_BYTES);
-                } catch (EntryLimitException exception) {
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            ConfigStatus.CONFIG_LIMIT_EXCEEDED, exception.getMessage()));
-                    continue;
-                }
-                totalConfigBytes += configBytes.length;
-                if (totalConfigBytes > MAX_TOTAL_CONFIG_BYTES) {
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            ConfigStatus.CONFIG_LIMIT_EXCEEDED, "Aggregate config byte budget was exceeded."));
-                    continue;
-                }
-
-                ParsedConfig parsed;
-                try {
-                    parsed = parseConfig(configBytes);
-                } catch (RuntimeException exception) {
-                    configFindings.add(configFailure(archivePath, configPath, sources,
-                            ConfigStatus.CONFIG_INVALID, "Invalid Mixin JSON: " + conciseMessage(exception)));
-                    continue;
-                }
-                configWarnings.addAll(parsed.warnings());
-
-                PluginStatus pluginStatus = inspectPlugin(parsed.pluginClass(), entries, archiveEntryIndexIncomplete);
-                RefmapSelection refmapSelection;
-                RefmapResourceOrigin refmapOrigin = null;
-                String refmapCandidatePath = null;
-                if (parsed.refmapFieldPresent() && !parsed.refmapFieldValid()) {
-                    refmapSelection = RefmapSelection.INVALID_DECLARATION;
-                } else if (parsed.refmapFieldPresent()) {
-                    refmapSelection = RefmapSelection.EXPLICIT_RESOURCE;
-                    refmapCandidatePath = parsed.refmapPath();
-                    refmapOrigin = RefmapResourceOrigin.EXPLICIT_CONFIG_FIELD;
-                } else if (parsed.pluginClass() != null && !parsed.pluginClass().isBlank()) {
-                    refmapSelection = RefmapSelection.PLUGIN_DEPENDENT;
-                    refmapCandidatePath = DEFAULT_REFMAP_RESOURCE;
-                    refmapOrigin = RefmapResourceOrigin.PLUGIN_DEPENDENT_CANDIDATE;
-                    configWarnings.add("A declared Mixin plugin may provide a different refmap resource path at runtime; "
-                            + "mixin.refmap.json is only a non-authoritative static candidate. Plugin code was not executed.");
-                } else {
-                    refmapSelection = RefmapSelection.DEFAULT_RESOURCE;
-                    refmapCandidatePath = DEFAULT_REFMAP_RESOURCE;
-                    refmapOrigin = RefmapResourceOrigin.MIXIN_DEFAULT_CANDIDATE;
-                }
-                if (refmapCandidatePath != null) {
-                    RefmapCandidateAccumulator accumulator = refmapCandidates.computeIfAbsent(
-                            refmapCandidatePath, ignored -> new RefmapCandidateAccumulator());
-                    accumulator.configPaths.add(configPath);
-                    accumulator.origins.add(refmapOrigin);
-                }
-                if (parsed.refmapWrapperClass() != null) {
-                    configWarnings.add("Custom refmapWrapper '" + parsed.refmapWrapperClass()
-                            + "' is preserved as metadata but is never loaded or executed by preflight.");
-                }
-                configFindings.add(new ConfigFinding(
-                        archivePath, configPath, sources, ConfigStatus.PARSED,
-                        parsed.packageName(), parsed.required(), parsed.minimumVersion(),
-                        parsed.compatibilityLevel(), parsed.pluginClass(), pluginStatus,
-                        parsed.refmapPath(), parsed.refmapWrapperClass(), refmapSelection,
-                        refmapCandidatePath, ResourceStatus.NOT_DECLARED, configWarnings));
-
-                boolean pluginDependent = parsed.pluginClass() != null;
-                for (String section : List.of("mixins", "client", "server")) {
-                    for (String mixinName : parsed.mixins().getOrDefault(section, List.of())) {
-                        if (processedMixins >= MAX_MIXIN_CLASS_COUNT) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, null,
-                                    MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
-                                    List.of("Maximum mixin class count was reached.")));
-                            continue;
-                        }
-                        processedMixins++;
-
-                        String classEntryPath = mixinClassEntry(parsed.packageName(), mixinName);
-                        if (classEntryPath == null) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, null,
-                                    MixinClassStatus.INVALID_NAME, false,
-                                    List.of("Mixin class name cannot be safely resolved from the config package.")));
-                            continue;
-                        }
-                        IndexedEntry classEntry = entries.get(classEntryPath);
-                        if (classEntry == null) {
-                            MixinClassStatus missingStatus = archiveEntryIndexIncomplete
-                                    ? MixinClassStatus.CLASS_LIMIT_EXCEEDED : MixinClassStatus.MISSING;
-                            String evidence = archiveEntryIndexIncomplete
-                                    ? "Archive entry inventory was truncated; mixin class presence cannot be established."
-                                    : "Mixin class named by the config is absent from the source archive.";
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, classEntryPath,
-                                    missingStatus, false, List.of(evidence)));
-                            continue;
-                        }
-                        if (classEntry.occurrences() != 1) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, classEntryPath,
-                                    MixinClassStatus.DUPLICATE_ENTRY, false,
-                                    List.of("Multiple ZIP entries use the same mixin class path.")));
-                            continue;
-                        }
-
-                        byte[] classBytes;
-                        try {
-                            classBytes = readBounded(zip, classEntry.entry(), MAX_CLASS_BYTES);
-                        } catch (EntryLimitException exception) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, classEntryPath,
-                                    MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
-                                    List.of(exception.getMessage())));
-                            continue;
-                        }
-                        totalClassBytes += classBytes.length;
-                        if (totalClassBytes > MAX_TOTAL_CLASS_BYTES) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, classEntryPath,
-                                    MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
-                                    List.of("Aggregate mixin class byte budget was exceeded.")));
-                            continue;
-                        }
-
-                        ClassNode mixin = new ClassNode();
-                        try {
-                            new ClassReader(classBytes).accept(
-                                    mixin, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                        } catch (RuntimeException exception) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, classEntryPath,
-                                    MixinClassStatus.INVALID_CLASS, false,
-                                    List.of("Invalid class file: " + conciseMessage(exception))));
-                            continue;
-                        }
-
-                        if (!classEntryPath.equals(mixin.name + ".class")) {
-                            classFindings.add(new MixinClassFinding(
-                                    archivePath, configPath, section, mixinName, classEntryPath,
-                                    MixinClassStatus.INVALID_CLASS, false,
-                                    List.of("Class internal name does not match its config-resolved archive path.")));
-                            continue;
-                        }
-
-                        List<ParsedTarget> parsedTargets = readMixinTargets(mixin);
-                        boolean mixinRemap = parsedTargetsRemap(mixin);
-                        memberFindings.addAll(readMemberAnnotations(
-                                archivePath, configPath, section, mixin.name.replace('/', '.'),
-                                parsedTargets, mixin, pluginDependent, mixinRemap));
-                        injectorFindings.addAll(readInjectorAnnotations(
-                                archivePath, configPath, section, mixin.name.replace('/', '.'), mixin.name,
-                                parsedTargets, mixin, pluginDependent, mixinRemap));
-                        boolean hasMixinAnnotation = hasMixinAnnotation(mixin);
-                        List<String> classWarnings = new ArrayList<>();
-                        if (!hasMixinAnnotation) {
-                            classWarnings.add("Resolved class has no visible or invisible @Mixin annotation.");
-                        } else if (parsedTargets.isEmpty()) {
-                            classWarnings.add("The @Mixin annotation has no statically readable class or string targets.");
-                        }
+            boolean pluginDependent = parsed.pluginClass() != null;
+            mixinClassLoop:
+            for (String section : List.of("mixins", "client", "server")) {
+                for (String mixinName : parsed.mixins().getOrDefault(section, List.of())) {
+                    if (processedMixins >= mixinClassLimit) {
                         classFindings.add(new MixinClassFinding(
-                                archivePath, configPath, section, mixin.name.replace('/', '.'), mixin.name,
-                                classEntryPath, MixinClassStatus.PRESENT, hasMixinAnnotation, classWarnings));
+                                archivePath, configPath, section, mixinName, null,
+                                MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
+                                List.of("Mixin class declaration was not analyzed because the aggregate class limit was reached.")));
+                        warnings.add("Further mixin class declarations were omitted after the configured analysis limit.");
+                        break mixinClassLoop;
+                    }
+                    processedMixins++;
 
-                        for (ParsedTarget target : parsedTargets) {
-                            targetFindings.add(resolveTarget(
-                                    archivePath, configPath, mixin.name.replace('/', '.'),
-                                    target, mixinRemap, pluginDependent,
-                                    classMappings, mappingVersion, targetIndex));
-                        }
+                    String classEntryPath = mixinClassEntry(parsed.packageName(), mixinName);
+                    if (classEntryPath == null) {
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, null,
+                                MixinClassStatus.INVALID_NAME, false,
+                                List.of("Mixin class name cannot be safely resolved from the config package.")));
+                        continue;
+                    }
+                    IndexedEntry classEntry = entries.get(classEntryPath);
+                    if (classEntry == null) {
+                        MixinClassStatus missingStatus = archiveEntryIndexIncomplete
+                                ? MixinClassStatus.CLASS_LIMIT_EXCEEDED : MixinClassStatus.MISSING;
+                        String evidence = archiveEntryIndexIncomplete
+                                ? "Archive entry inventory was truncated; mixin class presence cannot be established."
+                                : "Mixin class named by the config is absent from the source archive.";
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, classEntryPath,
+                                missingStatus, false, List.of(evidence)));
+                        continue;
+                    }
+                    if (classEntry.occurrences() != 1) {
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, classEntryPath,
+                                MixinClassStatus.DUPLICATE_ENTRY, false,
+                                List.of("Multiple ZIP entries use the same mixin class path.")));
+                        continue;
+                    }
+
+                    byte[] classBytes;
+                    try {
+                        classBytes = readBounded(zip, classEntry, MAX_CLASS_BYTES);
+                    } catch (EntryLimitException exception) {
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, classEntryPath,
+                                MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
+                                List.of(exception.getMessage())));
+                        continue;
+                    }
+                    totalClassBytes += classBytes.length;
+                    if (totalClassBytes > MAX_TOTAL_CLASS_BYTES) {
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, classEntryPath,
+                                MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
+                                List.of("Aggregate mixin class byte budget was exceeded.")));
+                        continue;
+                    }
+
+                    ClassNode mixin = new ClassNode();
+                    try {
+                        new ClassReader(classBytes).accept(
+                                mixin, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                    } catch (RuntimeException exception) {
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, classEntryPath,
+                                MixinClassStatus.INVALID_CLASS, false,
+                                List.of("Invalid class file: " + conciseMessage(exception))));
+                        continue;
+                    }
+
+                    if (!classEntryPath.equals(mixin.name + ".class")) {
+                        classFindings.add(new MixinClassFinding(
+                                archivePath, configPath, section, mixinName, classEntryPath,
+                                MixinClassStatus.INVALID_CLASS, false,
+                                List.of("Class internal name does not match its config-resolved archive path.")));
+                        continue;
+                    }
+
+                    List<ParsedTarget> parsedTargets = readMixinTargets(mixin);
+                    boolean mixinRemap = parsedTargetsRemap(mixin);
+                    memberFindings.addAll(readMemberAnnotations(
+                            archivePath, configPath, section, mixin.name.replace('/', '.'),
+                            parsedTargets, mixin, pluginDependent, mixinRemap));
+                    injectorFindings.addAll(readInjectorAnnotations(
+                            archivePath, configPath, section, mixin.name.replace('/', '.'), mixin.name,
+                            parsedTargets, mixin, pluginDependent, mixinRemap));
+                    boolean hasMixinAnnotation = hasMixinAnnotation(mixin);
+                    List<String> classWarnings = new ArrayList<>();
+                    if (!hasMixinAnnotation) {
+                        classWarnings.add("Resolved class has no visible or invisible @Mixin annotation.");
+                    } else if (parsedTargets.isEmpty()) {
+                        classWarnings.add("The @Mixin annotation has no statically readable class or string targets.");
+                    }
+                    classFindings.add(new MixinClassFinding(
+                            archivePath, configPath, section, mixin.name.replace('/', '.'), mixin.name,
+                            classEntryPath, MixinClassStatus.PRESENT, hasMixinAnnotation, classWarnings));
+
+                    for (ParsedTarget target : parsedTargets) {
+                        targetFindings.add(resolveTarget(
+                                archivePath, configPath, mixin.name.replace('/', '.'),
+                                target, mixinRemap, pluginDependent,
+                                classMappings, mappingVersion, targetIndex));
                     }
                 }
             }
-
-            List<RefmapResourceFinding> refmapFindings = inspectRefmapResources(
-                    archivePath, refmapCandidates, entries, zip, archiveEntryIndexIncomplete);
-            Map<String, RefmapResourceFinding> refmapsByPath = new HashMap<>();
-            for (RefmapResourceFinding finding : refmapFindings) {
-                refmapsByPath.put(finding.resourcePath(), finding);
-            }
-            configFindings = new ArrayList<>(configFindings.stream().map(finding -> {
-                if (finding.refmapPath() == null) return finding;
-                RefmapResourceFinding resource = refmapsByPath.get(finding.refmapPath());
-                ResourceStatus legacyStatus = resource == null
-                        ? ResourceStatus.NOT_DECLARED : toLegacyResourceStatus(resource.status());
-                return new ConfigFinding(
-                        finding.archivePath(), finding.configPath(), finding.discoverySources(), finding.status(),
-                        finding.packageName(), finding.required(), finding.minimumVersion(),
-                        finding.compatibilityLevel(), finding.pluginClass(), finding.pluginStatus(),
-                        finding.refmapPath(), finding.refmapWrapperClass(), finding.refmapSelection(),
-                        finding.refmapCandidatePath(), legacyStatus, finding.warnings());
-            }).toList());
-
-            List<RefmapLookupFinding> refmapLookupFindings = correlateRefmapLookups(
-                    archivePath, configFindings, injectorFindings, refmapFindings, requestedRefmapContextKey)
-                    .stream()
-                    .sorted(Comparator.comparing(RefmapLookupFinding::configPath)
-                            .thenComparing(value -> value.mixinInternalName() == null ? "" : value.mixinInternalName())
-                            .thenComparing(RefmapLookupFinding::source)
-                            .thenComparing(RefmapLookupFinding::sourceLocation)
-                            .thenComparing(value -> value.rawReference() == null ? "" : value.rawReference()))
-                    .toList();
-
-            configFindings.sort(Comparator.comparing(ConfigFinding::configPath));
-            classFindings.sort(Comparator.comparing(MixinClassFinding::configPath)
-                    .thenComparing(MixinClassFinding::section)
-                    .thenComparing(MixinClassFinding::mixinClassName));
-            targetFindings.sort(Comparator.comparing(TargetFinding::configPath)
-                    .thenComparing(TargetFinding::mixinClassName)
-                    .thenComparing(TargetFinding::sourceTargetInternalName)
-                    .thenComparing(TargetFinding::selectorForm));
-            memberFindings.sort(Comparator.comparing(MemberAnnotationFinding::configPath)
-                    .thenComparing(MemberAnnotationFinding::mixinClassName)
-                    .thenComparing(MemberAnnotationFinding::annotationKind)
-                    .thenComparing(MemberAnnotationFinding::elementKind)
-                    .thenComparing(MemberAnnotationFinding::sourceMemberName)
-                    .thenComparing(MemberAnnotationFinding::sourceMemberDescriptor));
-            injectorFindings.sort(Comparator.comparing(InjectorFinding::configPath)
-                    .thenComparing(InjectorFinding::mixinClassName)
-                    .thenComparing(InjectorFinding::annotationKind)
-                    .thenComparing(InjectorFinding::elementKind)
-                    .thenComparing(InjectorFinding::sourceMemberName)
-                    .thenComparing(InjectorFinding::sourceMemberDescriptor));
-            return new Result(archivePath, "Minecraft 1.21.1 / NeoForge 21.1.258",
-                    mappingVersion,
-                    targetIndex == null ? TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH
-                            : TargetIndexStatus.AVAILABLE,
-                    configFindings, classFindings, targetFindings, memberFindings, injectorFindings,
-                    refmapFindings, requestedRefmapContextKey, refmapLookupFindings,
-                    warnings.stream().distinct().sorted().toList());
         }
+
+        List<RefmapResourceFinding> refmapFindings = inspectRefmapResources(
+                archivePath, refmapCandidates, entries, zip, archiveEntryIndexIncomplete);
+        Map<String, RefmapResourceFinding> refmapsByPath = new HashMap<>();
+        for (RefmapResourceFinding finding : refmapFindings) {
+            refmapsByPath.put(finding.resourcePath(), finding);
+        }
+        configFindings = new ArrayList<>(configFindings.stream().map(finding -> {
+            if (finding.refmapPath() == null) return finding;
+            RefmapResourceFinding resource = refmapsByPath.get(finding.refmapPath());
+            ResourceStatus legacyStatus = resource == null
+                    ? ResourceStatus.NOT_DECLARED : toLegacyResourceStatus(resource.status());
+            return new ConfigFinding(
+                    finding.archivePath(), finding.configPath(), finding.discoverySources(), finding.status(),
+                    finding.packageName(), finding.required(), finding.minimumVersion(),
+                    finding.compatibilityLevel(), finding.pluginClass(), finding.pluginStatus(),
+                    finding.refmapPath(), finding.refmapWrapperClass(), finding.refmapSelection(),
+                    finding.refmapCandidatePath(), legacyStatus, finding.warnings());
+        }).toList());
+
+        List<RefmapLookupFinding> refmapLookupFindings = correlateRefmapLookups(
+                archivePath, configFindings, injectorFindings, refmapFindings, requestedRefmapContextKey)
+                .stream()
+                .sorted(Comparator.comparing(RefmapLookupFinding::configPath)
+                        .thenComparing(value -> value.mixinInternalName() == null ? "" : value.mixinInternalName())
+                        .thenComparing(RefmapLookupFinding::source)
+                        .thenComparing(RefmapLookupFinding::sourceLocation)
+                        .thenComparing(value -> value.rawReference() == null ? "" : value.rawReference()))
+                .toList();
+
+        configFindings.sort(Comparator.comparing(ConfigFinding::configPath));
+        classFindings.sort(Comparator.comparing(MixinClassFinding::configPath)
+                .thenComparing(MixinClassFinding::section)
+                .thenComparing(MixinClassFinding::mixinClassName));
+        targetFindings.sort(Comparator.comparing(TargetFinding::configPath)
+                .thenComparing(TargetFinding::mixinClassName)
+                .thenComparing(TargetFinding::sourceTargetInternalName)
+                .thenComparing(TargetFinding::selectorForm));
+        memberFindings.sort(Comparator.comparing(MemberAnnotationFinding::configPath)
+                .thenComparing(MemberAnnotationFinding::mixinClassName)
+                .thenComparing(MemberAnnotationFinding::annotationKind)
+                .thenComparing(MemberAnnotationFinding::elementKind)
+                .thenComparing(MemberAnnotationFinding::sourceMemberName)
+                .thenComparing(MemberAnnotationFinding::sourceMemberDescriptor));
+        injectorFindings.sort(Comparator.comparing(InjectorFinding::configPath)
+                .thenComparing(InjectorFinding::mixinClassName)
+                .thenComparing(InjectorFinding::annotationKind)
+                .thenComparing(InjectorFinding::elementKind)
+                .thenComparing(InjectorFinding::sourceMemberName)
+                .thenComparing(InjectorFinding::sourceMemberDescriptor));
+        return new Result(archivePath, "Minecraft 1.21.1 / NeoForge 21.1.258",
+                mappingVersion,
+                targetIndex == null ? TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH
+                        : TargetIndexStatus.AVAILABLE,
+                configFindings, classFindings, targetFindings, memberFindings, injectorFindings,
+                refmapFindings, requestedRefmapContextKey, refmapLookupFindings,
+                warnings.stream().distinct().sorted().toList());
     }
 
     private static ConfigFinding configFailure(
@@ -1029,12 +1103,12 @@ public final class Forge1201MixinAnalyzer {
         }
         final byte[] bytes;
         try {
-            bytes = readBounded(zip, indexed.entry(), readLimit);
+            bytes = readBounded(zip, indexed, readLimit);
         } catch (EntryLimitException exception) {
             budget.inflatedBytes += exception.bytesRead();
             return new RefmapResourceFinding(
                     archivePath, path, configPaths, origins, RefmapResourceStatus.LIMIT_EXCEEDED,
-                    indexed.entry().getSize(), indexed.entry().getCompressedSize(),
+                    indexed.sizeBytes(), indexed.compressedSizeBytes(),
                     exception.bytesRead(), null, false, false, List.of(), 0, 0, List.of(), List.of(),
                     List.of(exception.getMessage() + " Refmap parsing was not completed."));
         } catch (IOException exception) {
@@ -1055,7 +1129,7 @@ public final class Forge1201MixinAnalyzer {
         } catch (IOException | RuntimeException exception) {
             return new RefmapResourceFinding(
                     archivePath, path, configPaths, origins, RefmapResourceStatus.INVALID_JSON,
-                    indexed.entry().getSize(), indexed.entry().getCompressedSize(),
+                    indexed.sizeBytes(), indexed.compressedSizeBytes(),
                     bytes.length, digest, false, false, List.of(), 0, 0, List.of(), List.of(),
                     List.of("Refmap is not strict UTF-8 JSON or contains duplicate object member names: "
                             + conciseMessage(exception)));
@@ -1063,7 +1137,7 @@ public final class Forge1201MixinAnalyzer {
         if (!parsed.isJsonObject()) {
             return new RefmapResourceFinding(
                     archivePath, path, configPaths, origins, RefmapResourceStatus.UNSUPPORTED_SHAPE,
-                    indexed.entry().getSize(), indexed.entry().getCompressedSize(),
+                    indexed.sizeBytes(), indexed.compressedSizeBytes(),
                     bytes.length, digest, false, false, List.of(), 0, 0, List.of(), List.of(),
                     List.of("Refmap root must be a JSON object."));
         }
@@ -1129,7 +1203,7 @@ public final class Forge1201MixinAnalyzer {
                 : state.entryCount == 0 ? RefmapResourceStatus.EMPTY : RefmapResourceStatus.PARSED;
         return new RefmapResourceFinding(
                 archivePath, path, configPaths, origins, status,
-                indexed.entry().getSize(), indexed.entry().getCompressedSize(), bytes.length, digest,
+                indexed.sizeBytes(), indexed.compressedSizeBytes(), bytes.length, digest,
                 mappingsPresent, dataPresent, contextKeys, state.ownerBucketCount, state.entryCount,
                 unknownFields, tables,
                 state.warnings.stream().distinct().sorted().toList());
@@ -2643,8 +2717,21 @@ public final class Forge1201MixinAnalyzer {
                 ? value.getAsBoolean() : null;
     }
 
-    private static byte[] readBounded(ZipFile zip, ZipEntry entry, int limit) throws IOException {
-        try (InputStream input = zip.getInputStream(entry);
+    private static byte[] readBounded(ZipFile zip, IndexedEntry entry, int limit) throws IOException {
+        if (entry.memoryBytes() != null) {
+            if (entry.memoryBytes().length > limit) {
+                throw new EntryLimitException("Nested archive resource exceeded " + limit + " bytes.",
+                        entry.memoryBytes().length);
+            }
+            return entry.memoryBytes().clone();
+        }
+        if (entry.entry() == null || zip == null) {
+            String message = entry.unavailableDiagnostic() == null
+                    ? "Archive resource was not captured by the bounded nested-resource inventory."
+                    : entry.unavailableDiagnostic();
+            throw new EntryLimitException(message, (int) Math.min(Integer.MAX_VALUE, Math.max(1, entry.sizeBytes())));
+        }
+        try (InputStream input = zip.getInputStream(entry.entry());
                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[8192];
             int total = 0;

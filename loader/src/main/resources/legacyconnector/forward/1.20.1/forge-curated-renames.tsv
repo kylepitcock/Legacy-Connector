@@ -161,3 +161,7 @@ net/minecraftforge/gametest/ForgeGameTestHooks	net/neoforged/neoforge/gametest/G
 net/minecraftforge/client/model/ForgeFaceData	net/neoforged/neoforge/client/model/ExtraFaceData
 # --- gap round 12
 net/minecraftforge/common/loot/CanToolPerformAction	net/neoforged/neoforge/common/loot/CanItemPerformAbility
+
+# Native event API changes: phase-based Forge tick events and GUI overlay wrappers.
+net/minecraftforge/client/event/RenderGuiOverlayEvent	net/neoforged/neoforge/client/event/RenderGuiLayerEvent
+net/minecraftforge/client/gui/overlay/VanillaGuiOverlay	net/neoforged/neoforge/client/gui/VanillaGuiLayers

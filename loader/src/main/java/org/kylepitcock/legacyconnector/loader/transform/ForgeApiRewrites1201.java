@@ -17,8 +17,8 @@ import org.objectweb.asm.tree.MethodNode;
  * (table: {@code forward/1.20.1/forge-call-rewrites.tsv}, lines {@code owner.name(desc)ret<TAB>helper}, names as they are after the class renames).
  * An instance call gets its receiver as the first helper argument. Minecraft signature changes are {@link CallRewrites1201}'s.
  */
-final class ForgeApiRewrites1201 {
-    static final String HELPERS = "legacyconnector/v1_20_1/ForgeApi1201";
+public final class ForgeApiRewrites1201 {
+    public static final String HELPERS = "legacyconnector/v1_20_1/ForgeApi1201";
     static final String RESOURCE = "legacyconnector/forward/1.20.1/forge-call-rewrites.tsv";
 
     private static volatile Map<String, String> table;

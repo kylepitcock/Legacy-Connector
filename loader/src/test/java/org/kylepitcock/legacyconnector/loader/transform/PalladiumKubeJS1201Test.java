@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -116,7 +117,7 @@ class PalladiumKubeJS1201Test implements Opcodes {
 
         MethodNode builderTypes = find(node, "registerBuilderTypes",
                 "(Ldev/latvian/mods/kubejs/registry/BuilderTypeRegistry;)V");
-        assertTrue(hasCall(builderTypes, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
+        assertTrue(hasCall(builderTypes, INVOKESTATIC, "legacyconnector/v1_20_1/compat/PalladiumKubeJSCompat",
                 "registerBuilderTypes", "(Ljava/lang/Object;)V"));
 
         MethodNode events = find(node, "registerEvents",
@@ -216,7 +217,7 @@ class PalladiumKubeJS1201Test implements Opcodes {
         assertEquals(4, PalladiumKubeJS1201.apply(node));
 
         MethodNode rewritten = find(node, "loadFromDirectory", "(" + CALLBACK_INFO + ")V");
-        assertTrue(hasCall(rewritten, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
+        assertTrue(hasCall(rewritten, INVOKESTATIC, "legacyconnector/v1_20_1/compat/PalladiumKubeJSCompat",
                 "loadAddonScripts", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V"));
         assertTrue(hasLdc(rewritten, ""));
         assertTrue(hasLdc(rewritten, "_addon_scripts"));
@@ -277,7 +278,7 @@ class PalladiumKubeJS1201Test implements Opcodes {
         assertTrue(hasCall(rewrittenCancel, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/KubeEvent",
                 "cancel", "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;"));
         MethodNode rewrittenPost = find(node, "post", "()V");
-        assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
+        assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/compat/PalladiumKubeJSCompat",
                 "postEvent", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
         assertTrue(hasField(rewrittenPost, GETSTATIC, "dev/latvian/mods/kubejs/script/ScriptType",
                 "SERVER", "Ldev/latvian/mods/kubejs/script/ScriptType;"));

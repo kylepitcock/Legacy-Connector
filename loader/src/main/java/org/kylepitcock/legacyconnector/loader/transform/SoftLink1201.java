@@ -44,7 +44,7 @@ import org.objectweb.asm.tree.TypeInsnNode;
  * class on the way up must be known; a chain that leaves into another mod or a library is left as it was. A symbol that resolves is never changed.
  * Each stand-in is reported, one line per symbol ({@link Stats#lines}); a mod with any is "loads" at best.
  */
-final class SoftLink1201 implements Opcodes {
+public final class SoftLink1201 implements Opcodes {
     static final String RUNTIME = Mc1201Tables.HELPER_PACKAGE + "SoftLink1201Runtime";
     private static final String[] HOST_PREFIXES = {"net/minecraft/", "net/neoforged/neoforge/", "com/mojang/blaze3d/", "com/mojang/math/"};
     private static final Set<String> OBJECT_METHODS = Set.of("equals(Ljava/lang/Object;)Z", "hashCode()I", "toString()Ljava/lang/String;",

@@ -175,6 +175,54 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
                 result.members().getFirst().status());
     }
 
+    @Test
+    void inspectsForgeAddedOfficialMethodsDirectlyThroughTheImplementedExtensionInterface() throws Exception {
+        String blockState = "net/minecraft/world/level/block/state/BlockState";
+        String extension = "net/minecraftforge/common/extensions/IForgeBlockState";
+        Path archive = tempDir.resolve("forge-added-extension-fixture.jar");
+        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(archive))) {
+            addDefaultExtensionInterface(jar, extension, blockState);
+            addClass(jar, blockState, "java/lang/Object",
+                    new String[][] {},
+                    new String[][] {{"FORGE_API_MARKER", "Ljava/lang/String;"}},
+                    new String[] {extension});
+        }
+        Path classpath = tempDir.resolve("direct-official-classpath.txt");
+        Files.writeString(classpath, archive.toAbsolutePath() + System.lineSeparator(), StandardCharsets.UTF_8);
+
+        // No SRG/MCPConfig, Tiny, or Mojang mapping index is constructed for this direct API path.
+        var index = Forge1201SourceRuntimeMemberVerifier.readClasspath(classpath);
+
+        var sticky = index.inspectMethod(blockState, "isStickyBlock", "()Z");
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT,
+                sticky.status());
+        assertEquals(extension, sticky.declaringOwner());
+        assertTrue(sticky.hierarchyVisited().contains(extension));
+
+        var canStick = index.inspectMethod(
+                blockState,
+                "canStickTo",
+                "(Lnet/minecraft/world/level/block/state/BlockState;)Z");
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT,
+                canStick.status());
+        assertEquals(extension, canStick.declaringOwner());
+
+        var descriptorChanged = index.inspectMethod(
+                blockState,
+                "canStickTo",
+                "(Ljava/lang/Object;)Z");
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_NAME_FOUND_DESCRIPTOR_CHANGED,
+                descriptorChanged.status());
+
+        var directField = index.inspectField(blockState, "FORGE_API_MARKER", "Ljava/lang/String;");
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_DECLARED_EXACT,
+                directField.status());
+    }
+
     private Path write(String name, String contents) throws Exception {
         Path file = tempDir.resolve(name);
         Files.writeString(file, contents, StandardCharsets.UTF_8);
@@ -187,8 +235,18 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
             String superName,
             String[][] methods,
             String[][] fields) throws IOException {
+        addClass(jar, name, superName, methods, fields, new String[0]);
+    }
+
+    private static void addClass(
+            JarOutputStream jar,
+            String name,
+            String superName,
+            String[][] methods,
+            String[][] fields,
+            String[] interfaces) throws IOException {
         ClassWriter writer = new ClassWriter(0);
-        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, name, null, superName, null);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, name, null, superName, interfaces);
         for (String[] field : fields) {
             writer.visitField(Opcodes.ACC_PUBLIC, field[0], field[1], null, null).visitEnd();
         }
@@ -197,6 +255,44 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
         }
         writer.visitEnd();
 
+        jar.putNextEntry(new JarEntry(name + ".class"));
+        jar.write(writer.toByteArray());
+        jar.closeEntry();
+    }
+
+    private static void addDefaultExtensionInterface(
+            JarOutputStream jar,
+            String name,
+            String blockState) throws IOException {
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(
+                Opcodes.V17,
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT,
+                name,
+                null,
+                "java/lang/Object",
+                null);
+
+        var sticky = writer.visitMethod(Opcodes.ACC_PUBLIC, "isStickyBlock", "()Z", null, null);
+        sticky.visitCode();
+        sticky.visitInsn(Opcodes.ICONST_1);
+        sticky.visitInsn(Opcodes.IRETURN);
+        sticky.visitMaxs(1, 1);
+        sticky.visitEnd();
+
+        var canStick = writer.visitMethod(
+                Opcodes.ACC_PUBLIC,
+                "canStickTo",
+                "(L" + blockState + ";)Z",
+                null,
+                null);
+        canStick.visitCode();
+        canStick.visitInsn(Opcodes.ICONST_1);
+        canStick.visitInsn(Opcodes.IRETURN);
+        canStick.visitMaxs(1, 2);
+        canStick.visitEnd();
+
+        writer.visitEnd();
         jar.putNextEntry(new JarEntry(name + ".class"));
         jar.write(writer.toByteArray());
         jar.closeEntry();

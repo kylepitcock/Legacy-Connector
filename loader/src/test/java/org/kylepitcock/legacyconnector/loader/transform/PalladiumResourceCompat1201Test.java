@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -1595,6 +1596,40 @@ class PalladiumResourceCompat1201Test {
         assertTrue(fly.contains("afomni:flames_00b"));
         assertTrue(fly.contains("alienevo:flames_05"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void skipsLegacyScriptRewritesForNativeResourcesWithoutScripts() {
+        Map<String, byte[]> resources = new HashMap<>();
+        String cannonbolt = """
+                {
+                  "abilities": {
+                    "multi_hit": {
+                      "type": "alienevo:meteor_barrage",
+                      "launch_height": 5.6,
+                      "slam_count": 6,
+                      "aoe_radius": 6.5
+                    }
+                  }
+                }
+                """;
+        String kineceleran = """
+                {
+                  "abilities": {
+                    "punch_barrage": {
+                      "type": "alienevo:motion_to_entity",
+                      "debug_mode": false,
+                      "motion_strength": 3.2
+                    }
+                  }
+                }
+                """;
+        put(resources, "data/alienevo_aliens/palladium/powers/arburian_pelarota.json", cannonbolt);
+        put(resources, "data/alienevo_aliens/palladium/powers/kineceleran.json", kineceleran);
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(cannonbolt, get(resources, "data/alienevo_aliens/palladium/powers/arburian_pelarota.json"));
+        assertEquals(kineceleran, get(resources, "data/alienevo_aliens/palladium/powers/kineceleran.json"));
     }
 
     @Test

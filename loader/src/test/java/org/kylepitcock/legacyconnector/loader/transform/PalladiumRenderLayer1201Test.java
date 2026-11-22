@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +26,7 @@ class PalladiumRenderLayer1201Test implements Opcodes {
                     + "Lnet/minecraft/client/renderer/MultiBufferSource;I"
                     + "Lnet/minecraft/world/entity/LivingEntity;FFFFFFI)V";
     private static final String OWNER = PalladiumRenderLayer1201.COLORABLE_SUIT_STAND_LAYER;
-    private static final String HELPER = "legacyconnector/v1_20_1/PalladiumColorCompat";
+    private static final String HELPER = "legacyconnector/v1_20_1/compat/PalladiumColorCompat";
 
     @Test
     void replacesTheNineFloatCallWithSixFloatsAndPackedTint() {

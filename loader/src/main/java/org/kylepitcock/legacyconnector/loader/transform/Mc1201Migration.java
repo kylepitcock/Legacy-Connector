@@ -34,7 +34,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  * </ol>
  * A call is only touched when no class of the mod declares the method on the way up from its receiver type: the mod's own methods keep their signatures.
  */
-final class Mc1201Migration {
+public final class Mc1201Migration {
     private static final String CONTEXT = Mc1201Tables.HELPER_PACKAGE + "MigrateContext";
     private static final String PROVIDER = "net/minecraft/core/HolderLookup$Provider";
     private static final String HOLDER = "net/minecraft/core/Holder";
@@ -646,9 +646,15 @@ final class Mc1201Migration {
                 tag = hd.getTag();
             }
             boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
+            boolean special = tag == Opcodes.H_INVOKESPECIAL;
             Call rule = null;
             for (String owner : h.minecraftAncestors(hd.getOwner())) {
-                rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
+                if (special) {
+                    rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc() + "@special");
+                } else if (!ctor && tag != Opcodes.H_INVOKESTATIC) {
+                    rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc() + "@virtual");
+                }
+                if (rule == null) rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
                 if (rule != null) break;
             }
             if (rule == null) continue;
@@ -810,7 +816,7 @@ final class Mc1201Migration {
 
     /**
      * {@code =args}: the call keeps its name and receiver, its arguments are produced again from the old ones. The helper-name column lists one token per
-     * new parameter: {@code N} (old argument N unchanged), {@code Class.method@a+b} (a static helper taking old arguments a and b, returning the new parameter),
+     * new parameter: {@code N} (old argument N unchanged), {@code true}/{@code false} (a new boolean constant), or {@code Class.method@a+b} (a static helper taking old arguments a and b, returning the new parameter),
      * and the helper-descriptor column is the new descriptor. The old arguments are spilled to fresh locals first, so any argument can be dropped, reordered or
      * converted (super constructors that lost an id, took a {@code Holder}...).
      */
@@ -829,6 +835,14 @@ final class Mc1201Migration {
         for (int i = old.length - 1; i >= 0; i--) il.add(new VarInsnNode(old[i].getOpcode(Opcodes.ISTORE), slot[i]));
         for (int j = 0; j < now.length; j++) {
             String tok = tokens[j].strip();
+            if (tok.equals("true") || tok.equals("false")) {
+                if (now[j].getSort() != Type.BOOLEAN) {
+                    throw new IllegalStateException("=args boolean constant for non-boolean parameter " + j + " in "
+                            + call.owner + "." + call.name + call.desc);
+                }
+                il.add(new InsnNode(tok.equals("true") ? Opcodes.ICONST_1 : Opcodes.ICONST_0));
+                continue;
+            }
             int at = tok.indexOf('@');
             if (at < 0) {
                 int i = Integer.parseInt(tok);
@@ -938,6 +952,16 @@ final class Mc1201Migration {
 
     private static void addBridges(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         for (Bridge b : t.bridges) {
+            if (isMobFinalizeSpawnBridge(b)
+                    && (h.isSubclassOf(node.name, b.owner()) || h.reachesUnknown(node.name))
+                    && h.hasNonSyntheticModDeclaration(node.name, b.newName(), b.newDesc())) {
+                throw new IllegalStateException(
+                        "Cannot migrate Mob.finalizeSpawn in " + node.name
+                                + ": a non-synthetic four-argument finalizeSpawn declaration with the target "
+                                + "descriptor exists in this Mob hierarchy. In Forge 1.20.1 that descriptor "
+                                + "was only an overload, not an override point; on NeoForge 1.21.1 it would "
+                                + "become the Mob override and alter vanilla/legacy dispatch.");
+            }
             MethodNode old = declared(node, b.oldName(), b.oldDesc());
             if (old == null || (old.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
             if (declared(node, b.newName(), b.newDesc()) != null) continue;
@@ -951,6 +975,12 @@ final class Mc1201Migration {
             node.methods.add(bridge);
             c.bridges++;
         }
+    }
+
+    private static boolean isMobFinalizeSpawnBridge(Bridge bridge) {
+        return bridge.owner().equals("net/minecraft/world/entity/Mob")
+                && bridge.oldName().equals("finalizeSpawn")
+                && bridge.newName().equals("finalizeSpawn");
     }
 
     private static boolean moreSpecificBridge(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Bridge b) {
@@ -1024,16 +1054,6 @@ final class Mc1201Migration {
                 stack += 1;
                 continue;
             }
-            if (tok.equals("this")) {
-                il.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                stack += 1;
-                continue;
-            }
-            if (tok.equals("null")) {
-                il.add(new InsnNode(Opcodes.ACONST_NULL));
-                stack += 1;
-                continue;
-            }
             String helper = null;
             int at = tok.indexOf('@');
             if (at > 0) {
@@ -1054,6 +1074,24 @@ final class Mc1201Migration {
                 if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
                 il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), hd.toString(), false));
                 stack += oldArgs[p].getSize() + 4;
+                continue;
+            }
+            if (tok.equals("this")) {
+                il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                if (helper != null) {
+                    int dot = helper.lastIndexOf('.');
+                    String cls = helper.substring(0, dot);
+                    if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+                    il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1),
+                            "(Ljava/lang/Object;)" + oldArgs[p].getDescriptor(), false));
+                }
+                stack += oldArgs[p].getSize();
+                continue;
+            }
+            if (tok.equals("null")) {
+                if (helper != null) return null;
+                il.add(new InsnNode(Opcodes.ACONST_NULL));
+                stack += 1;
                 continue;
             }
             int i = Integer.parseInt(tok);

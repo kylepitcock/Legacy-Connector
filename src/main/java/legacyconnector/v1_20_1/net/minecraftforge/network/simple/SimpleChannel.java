@@ -3,6 +3,7 @@ package legacyconnector.v1_20_1.net.minecraftforge.network.simple;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -133,11 +134,18 @@ public class SimpleChannel {
     }
 
     private void handle(Payload payload, IPayloadContext ctx) {
+        String direction = ctx.flow().isServerbound() ? "serverbound" : "clientbound";
+        logFlightTrace("payload-received", payload.message, direction);
         try {
             payload.handler.handle(payload.message, new NetworkEvent.Context(ctx));
         } finally {
             PacketBufferLifetime.release(payload.heldBuffer, payload.heldBuffer != null);
         }
+        logFlightTrace("message-consumer-dispatched", payload.message, direction);
+    }
+
+    private void logFlightTrace(String stage, Object message, String direction) {
+        legacyconnector.v1_20_1.compat.PalladiumFlightDebugCompat.traceNetwork(stage, name, message, direction);
     }
 
     // ---- Forge's API --------------------------------------------------------------------------------------------------------
@@ -149,6 +157,7 @@ public class SimpleChannel {
 
     public <MSG> IndexedMessageCodec.MessageHandler<MSG> registerMessage(int index, Class<MSG> messageType, BiConsumer<MSG, FriendlyByteBuf> encoder,
             Function<FriendlyByteBuf, MSG> decoder, BiConsumer<MSG, Supplier<NetworkEvent.Context>> consumer, Optional<NetworkDirection> direction) {
+        logFlightTrace("message-registered-index-" + index, messageType, "registry");
         IndexedMessageCodec.MessageHandler<MSG> h = new IndexedMessageCodec.MessageHandler<>(index, messageType, encoder, decoder, consumer);
         byIndex.put(index, h);
         byClass.put(messageType, h);
@@ -179,15 +188,18 @@ public class SimpleChannel {
     }
 
     public void sendToServer(Object message) {
+        logFlightTrace("sendToServer", message, "client-to-server");
         net.neoforged.neoforge.network.PacketDistributor.sendToServer(wrap(message));
     }
 
     public void send(PacketDistributor.PacketTarget target, Object message) {
+        logFlightTrace("send-target", message, target.getClass().getName());
         target.send(wrap(message));
     }
 
     /** {@code channel.sendTo(msg, connection, direction)}: straight to one connection. */
     public <MSG> void sendTo(MSG message, net.minecraft.network.Connection manager, NetworkDirection direction) {
+        logFlightTrace("sendTo", message, direction.name());
         Payload payload = wrap(message);
         manager.send(direction == NetworkDirection.PLAY_TO_SERVER || direction == NetworkDirection.LOGIN_TO_SERVER
                 ? new net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket(payload)
@@ -195,6 +207,7 @@ public class SimpleChannel {
     }
 
     public <MSG> void reply(MSG message, NetworkEvent.Context context) {
+        logFlightTrace("reply", message, context.getDirection().name());
         context.mcc$delegate().reply(wrap(message));
     }
 

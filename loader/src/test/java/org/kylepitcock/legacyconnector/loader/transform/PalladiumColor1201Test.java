@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.transform.compat.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -26,7 +27,32 @@ class PalladiumColor1201Test implements Opcodes {
         assertEquals(3, PalladiumColor1201.apply(node));
         MethodNode render = findRender(node);
         assertEquals(0, count(render, "net/minecraft/world/entity/animal/Sheep", "getColorArray"));
-        assertEquals(3, count(render, "legacyconnector/v1_20_1/PalladiumColorCompat", "sheepColorArray"));
+        assertEquals(3, count(render, "legacyconnector/v1_20_1/compat/PalladiumColorCompat", "sheepColorArray"));
+        assertEquals(0, PalladiumColor1201.apply(node));
+        assertSerializes(node);
+    }
+
+    @Test
+    void laserRendererColorLookupsAreAlsoAdapted() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "net/threetag/palladium/client/renderer/LaserRenderer";
+        node.superName = "java/lang/Object";
+        MethodNode render = new MethodNode(ACC_PUBLIC, "renderLaser", "()V", null, null);
+        node.methods.add(render);
+        for (int i = 0; i < 2; i++) {
+            render.instructions.add(new InsnNode(ACONST_NULL));
+            render.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                    "net/minecraft/world/entity/animal/Sheep", "getColorArray", DESC, false));
+            render.instructions.add(new InsnNode(POP));
+        }
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = 1;
+
+        assertEquals(2, PalladiumColor1201.apply(node));
+        assertEquals(0, count(render, "net/minecraft/world/entity/animal/Sheep", "getColorArray"));
+        assertEquals(2, count(render, "legacyconnector/v1_20_1/compat/PalladiumColorCompat", "sheepColorArray"));
         assertEquals(0, PalladiumColor1201.apply(node));
         assertSerializes(node);
     }
@@ -44,7 +70,7 @@ class PalladiumColor1201Test implements Opcodes {
         ClassNode node = legacyLayer();
         MethodNode render = findRender(node);
         render.instructions.insertBefore(render.instructions.getLast(), new MethodInsnNode(
-                INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumColorCompat", "sheepColorArray", DESC, false));
+                INVOKESTATIC, "legacyconnector/v1_20_1/compat/PalladiumColorCompat", "sheepColorArray", DESC, false));
         assertThrows(IllegalStateException.class, () -> PalladiumColor1201.apply(node));
     }
 
