@@ -325,6 +325,14 @@ def checkShimMembers = tasks.register('checkShimMembers', Exec) {
     commandLine isWin ? ['python', 'tools/dev/check_shim_members.py'] : ['python3', 'tools/dev/check_shim_members.py']
 }
 tasks.named('check') { dependsOn checkShimMembers }
+// Code keyed by a specific mod's name belongs under a compat/ package; existing mentions are frozen in tools/dev/mod-specific-baseline.txt and may
+// only go down (CLAUDE.md, "Fix generically first").
+def checkModSpecific = tasks.register('checkModSpecific', Exec) {
+    outputs.upToDateWhen { false }
+    def isWin = System.getProperty('os.name').toLowerCase().contains('win')
+    commandLine isWin ? ['python', 'tools/dev/check_mod_specific.py'] : ['python3', 'tools/dev/check_mod_specific.py']
+}
+tasks.named('check') { dependsOn checkModSpecific }
 sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
 tasks.named('processResources') {
     dependsOn generateShimIndex

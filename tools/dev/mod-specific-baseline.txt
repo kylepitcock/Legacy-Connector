@@ -1,13 +1,18 @@
 # Existing mentions of specific mods outside the designated places (see check_mod_specific.py). Only ever lower these.
+# 2026-11-22: frozen when the check was wired into ./gradlew check (it had not run since ~2026-11-16): 1.2.5/1.7.10 capability adapters for IC2/BuildCraft/Forestry APIs; AlienEvo/Palladium orchestration in the 1.20.1 core (move into compat/ when next touched)
 loader/src/main/java/org/kylepitcock/legacyconnector/loader/LegacyModDecl.java	2
-loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/Ae2CoremodConfig.java	1
-src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java	1
-src/main/java/org/kylepitcock/legacyconnector/core/Ids.java	2
-src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java	5
-src/main/java/org/kylepitcock/legacyconnector/v1_7_10/bridge/ForeignEnergy1710.java	8
-src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/WorldScreenshotTest.java	2
-# 2026-11-22: AlienEvo/Palladium rewrite orchestration still inline in the core; move into compat/ when next touched
 loader/src/main/java/org/kylepitcock/legacyconnector/loader/resource/DataConverter1201.java	2
+loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/Ae2CoremodConfig.java	1
 loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/CallRewrites1201.java	5
 loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/Forge1201Transformer.java	62
 src/main/java/legacyconnector/v1_20_1/Compat1201.java	3
+src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java	1
+src/main/java/org/kylepitcock/legacyconnector/api/LegacySupport.java	3
+src/main/java/org/kylepitcock/legacyconnector/core/Ids.java	2
+src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java	5
+src/main/java/org/kylepitcock/legacyconnector/v1_6_4/bridge/Liquids125.java	2
+src/main/java/org/kylepitcock/legacyconnector/v1_6_4/bridge/LiquidsBc32.java	4
+src/main/java/org/kylepitcock/legacyconnector/v1_6_4/bridge/PipeEntry125.java	3
+src/main/java/org/kylepitcock/legacyconnector/v1_6_4/bridge/SpecialInventory125.java	2
+src/main/java/org/kylepitcock/legacyconnector/v1_7_10/bridge/ForeignEnergy1710.java	14
+src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/WorldScreenshotTest.java	2
