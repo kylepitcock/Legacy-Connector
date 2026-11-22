@@ -1199,6 +1199,18 @@
    "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
    "date": "2026-11-22",
    "open": true
+  },
+  {
+   "issue": 329,
+   "mod": "BuildCraft",
+   "mc": "1.4.7 (planned)",
+   "status": "partial",
+   "details": "What works Recipes both crafting, the Assembly Table with lasers and the Auto Workbench work No JEI for the Assembly Table Recipes though Worldgen Oil gets spawned in world <img width=\"1920\" height=\"1009\" alt=\"2026-11-22_17 35 55\" src=\"https://github.com/user-attachments/assets/ec74e389-fb94-4b87-89d4-8d7ee2a7b7df\" /> Wrench works Engines produce Energy <img width=\"1920\" height=\"1009\" alt=\"2026-1…",
+   "lc": "0.5.0-nightly.131.1197437",
+   "neoforge": "21.1.265",
+   "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-22",
+   "open": true
   }
  ]
 }
