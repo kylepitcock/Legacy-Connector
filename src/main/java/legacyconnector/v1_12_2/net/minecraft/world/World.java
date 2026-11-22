@@ -508,7 +508,12 @@ public class World implements IBlockAccess {
             }
             return placed;
         }
-        return acc().setBlock(p, modernState, flags);
+        org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity.mcc$placing(state);
+        try {
+            return acc().setBlock(p, modernState, flags);
+        } finally {
+            org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity.mcc$placing(null);
+        }
     }
 
     /**

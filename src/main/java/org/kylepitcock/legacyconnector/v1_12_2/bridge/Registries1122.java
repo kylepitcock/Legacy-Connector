@@ -278,6 +278,22 @@ public final class Registries1122 {
             }
             if (byName.containsKey(name)) {
                 V first = byName.get(name);
+                // A mod's block under a vanilla name (Colored Redstone's dust, repeaters and comparators) replaced vanilla's in 1.12; the game's own cannot be
+                // replaced, so the mod's block is registered in the mod's own namespace and the mod's items and code that use it work as they did.
+                if (first != value && name.getNamespace().equals("minecraft") && value instanceof legacyconnector.v1_12_2.net.minecraft.block.Block
+                        && value instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl<?> impl
+                        && first.getClass().getName().startsWith("legacyconnector.v1_12_2.net.minecraft.")) {
+                    String modId = legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl.mcc$activeModId();
+                    ResourceLocation alias = new ResourceLocation(modId, name.getResourcePath());
+                    if (!modId.equals("minecraft") && !byName.containsKey(alias)) {
+                        LOG.info("Block {} of {} overrides the vanilla block of that name; registered as {}", value.getClass().getName(), modId, alias);
+                        impl.mcc$overrideName(alias);
+                        name = alias;
+                    }
+                }
+            }
+            if (byName.containsKey(name)) {
+                V first = byName.get(name);
                 // the same object registered again (a mod that fills the event from two paths) is a no-op, as in Forge
                 if (first != value) LOG.warn("{} {} registered twice; keeping the first (other instance of {}, first was {})", type.getSimpleName(), name, value.getClass().getName(), first.getClass().getName());
                 return;
