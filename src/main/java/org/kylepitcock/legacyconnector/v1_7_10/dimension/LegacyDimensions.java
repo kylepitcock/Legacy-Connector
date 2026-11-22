@@ -59,7 +59,16 @@ public final class LegacyDimensions {
         } catch (RuntimeException | LinkageError e) {
             // A mod's provider that cannot be built here (Mystcraft's needs the age data of a real age) must not take the
             // server down: the dimension generates with the fallback provider's defaults.
-            if (BROKEN.add(dimension)) LOG.error("The world provider of dimension {} cannot be created; using defaults", dimension, e);
+            if (BROKEN.add(dimension)) {
+                if (!DimensionManager.isDimensionRegistered(dimension)) {
+                    // A provider TYPE id (Mystcraft registers its provider type; the real dimensions are the ages, registered with their own ids
+                    // when they are created): the level of this id is a placeholder no player enters and the provider cannot exist without
+                    // its dimension's data. Not an error.
+                    LOG.info("Dimension {} is a provider type without a dimension of its own ({}); its placeholder level uses the default provider", dimension, e.toString());
+                } else {
+                    LOG.error("The world provider of dimension {} cannot be created; using defaults", dimension, e);
+                }
+            }
             return null;
         }
     }

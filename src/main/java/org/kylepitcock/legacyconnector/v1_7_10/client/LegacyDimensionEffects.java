@@ -189,7 +189,7 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
             int kind) {
         Minecraft mc = Minecraft.getInstance();
         PoseStack pose = new PoseStack();
-        pose.last().pose().set(modelView);
+        pose.last().pose().set(handlerMatrix(what, modelView));
         var buffers = mc.renderBuffers().bufferSource();
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, kind);
         try {
@@ -202,6 +202,29 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
             RenderContext.end();
             buffers.endBatch();
         }
+    }
+
+    /**
+     * The matrix a legacy renderer starts from. 1.7.10 ran the sky, cloud and weather renderers with the camera's rotation already on the
+     * modelview stack. Geometry batched through a render type is drawn with the game's current modelview matrix on top of the pose stack,
+     * and from the cloud pass on that matrix already holds the camera rotation (the sky pass runs before it is pushed), so applying
+     * the rotation to the pose as well turned it twice: clouds swung around against the camera. The rotation goes into the pose only
+     * when the game's own matrix does not hold it.
+     */
+    public static Matrix4f handlerMatrix(String what, Matrix4f modelView) {
+        Matrix4f game = com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix();
+        boolean holds = !isIdentityRotation(game);
+        if (DEBUG && !isIdentityRotation(modelView) && DEBUG_SEEN.add(what)) LOG.info("Legacy {} renderer: game modelview {} camera matrix {} (game holds the rotation: {})", what, game, modelView, holds);
+        return holds ? new Matrix4f() : modelView;
+    }
+
+    private static final boolean DEBUG = Boolean.getBoolean("legacyconnector.skyDiag");
+    private static final Set<String> DEBUG_SEEN = ConcurrentHashMap.newKeySet();
+
+    private static boolean isIdentityRotation(Matrix4f m) {
+        return Math.abs(m.m00() - 1) < 1.0E-4F && Math.abs(m.m11() - 1) < 1.0E-4F && Math.abs(m.m22() - 1) < 1.0E-4F
+                && Math.abs(m.m01()) < 1.0E-4F && Math.abs(m.m02()) < 1.0E-4F && Math.abs(m.m10()) < 1.0E-4F && Math.abs(m.m12()) < 1.0E-4F
+                && Math.abs(m.m20()) < 1.0E-4F && Math.abs(m.m21()) < 1.0E-4F;
     }
 
     private static void fail(WorldProvider p, String what, Throwable e) {
