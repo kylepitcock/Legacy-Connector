@@ -36,8 +36,8 @@ import java.util.zip.ZipFile;
  * success, gameplay compatibility, or runtime behavior.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.13";
-    public static final String ANALYZER_VERSION = "1.13.0";
+    public static final String SCHEMA_VERSION = "1.14";
+    public static final String ANALYZER_VERSION = "1.14.0";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
@@ -92,6 +92,56 @@ public final class Forge1201PreflightAnalyzer {
         }
     }
 
+    public enum NestedResourceStatus { ABSENT, CAPTURED, DUPLICATE_ENTRY, LIMIT_EXCEEDED, INDEX_INCOMPLETE }
+
+    public enum NestedLoaderDisposition {
+        FINAL_TRANSFORMATION_PROVIDER,
+        PARSER_REACHED_BUT_NO_MOD_INFO,
+        EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO,
+        REJECTED_MOD_WITHOUT_MOD_INFO,
+        PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER,
+        UNRECOGNIZED_MOD_METADATA,
+        UNSUPPORTED_FILE_TYPE,
+        INCOMPLETE_ARCHIVE,
+        UNKNOWN_MANIFEST_TYPE
+    }
+
+    public enum NeoForgeDefaultAtDisposition {
+        DEFAULT_PATH_FALLBACK_CANDIDATE,
+        EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED,
+        RESOURCE_ABSENT_OR_UNAVAILABLE,
+        NOT_A_FINAL_TRANSFORMATION_PROVIDER,
+        NOT_EVALUATED
+    }
+
+    /**
+     * Static nested transformation metadata evidence. Resource presence, loader parser reachability,
+     * final ModInfo-backed provider membership, and target consumer eligibility are independent.
+     */
+    public record NestedTransformationFinding(
+            String archivePath, String sha256, int depth,
+            Forge1201ArchiveGraph.ArchiveKind archiveKind,
+            List<ModMetadata> mods,
+            boolean forgeModsTomlPresent, boolean neoForgeModsTomlPresent,
+            String declaredFmlModType, String forgeEffectiveFileType, String neoForgeEffectiveFileType,
+            boolean forgeModInfoBacked, boolean neoForgeModInfoBacked,
+            boolean forgeIdentifyModsReachesTransformationMetadata,
+            boolean neoForgeIdentifyModsReachesTransformationMetadata,
+            NestedLoaderDisposition forgeDisposition, NestedLoaderDisposition neoForgeDisposition,
+            NestedResourceStatus coremodRegistryResourceStatus,
+            Forge1201CoremodAnalyzer.Result coremodMetadata,
+            NestedResourceStatus accessTransformerResourceStatus,
+            Forge1201AccessTransformerAnalyzer.Result accessTransformers,
+            boolean forgeCoremodConsumerEligible, boolean forgeAccessTransformerConsumerEligible,
+            boolean neoForgeCoremodConsumerEligible, boolean neoForgeAccessTransformerConsumerEligible,
+            NeoForgeDefaultAtDisposition neoForgeDefaultAtDisposition,
+            boolean resourcePathIndexIncomplete, String neoForgeCoremodCompatibility,
+            List<String> warnings) {
+        public NestedTransformationFinding {
+            mods = List.copyOf(mods);
+            warnings = List.copyOf(warnings);
+        }
+    }
     public record ApiTypeFinding(
             String sourceInternalName,
             Forge1201MappingCatalog.Kind classification,
@@ -133,6 +183,7 @@ public final class Forge1201PreflightAnalyzer {
             List<MixinConfigCandidate> mixinConfigCandidates,
             Forge1201MixinAnalyzer.Result mixinAnalysis,
             List<NestedMixinFinding> nestedMixinAnalyses,
+            List<NestedTransformationFinding> nestedTransformationAnalyses,
             Forge1201MappingProfileValidator.Finding mappingProfile,
             String coreModClass,
             List<String> jarInJarPaths,
@@ -163,6 +214,7 @@ public final class Forge1201PreflightAnalyzer {
             manifestAttributes = Collections.unmodifiableMap(new TreeMap<>(manifestAttributes));
             mixinConfigCandidates = List.copyOf(mixinConfigCandidates);
             nestedMixinAnalyses = List.copyOf(nestedMixinAnalyses);
+            nestedTransformationAnalyses = List.copyOf(nestedTransformationAnalyses);
             jarInJarPaths = List.copyOf(jarInJarPaths);
             modEntrypoints = List.copyOf(modEntrypoints);
             packageReferences = Collections.unmodifiableMap(new TreeMap<>(packageReferences));
@@ -308,9 +360,18 @@ public final class Forge1201PreflightAnalyzer {
             Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
                     jarInfo == null ? null : usageInventory::scanNestedClass;
             List<NestedMixinFinding> nestedMixinAnalyses = new ArrayList<>();
+            List<NestedTransformationFinding> nestedTransformationAnalyses = new ArrayList<>();
             int[] nestedMixinConfigCount = {0};
             int[] nestedMixinClassCount = {0};
             Forge1201ArchiveGraph.NestedMixinArchiveConsumer nestedMixinConsumer = archive -> {
+                NestedTransformationFinding transformationFinding = analyzeNestedTransformationArchive(archive);
+                nestedTransformationAnalyses.add(transformationFinding);
+                // Native NeoForge archives are inventoried for transformation resources, but their Mixin
+                // metadata is not passed through the legacy Forge 1.20.1 Mixin source analyzer.
+                if (archive.neoForgeModsTomlPresent()
+                        || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD) {
+                    return;
+                }
                 List<String> nestedWarnings = new ArrayList<>(archive.warnings());
                 NestedMixinDiscovery discovery = discoverNestedMixinConfigs(archive, nestedWarnings);
                 boolean incomplete = archive.entryIndexIncomplete() || discovery.incomplete();
@@ -536,8 +597,8 @@ public final class Forge1201PreflightAnalyzer {
                     "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
                     "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
                     "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
-                    "Access Transformer inventory reads only the exact production resource META-INF/accesstransformer.cfg from the outer source JAR. It preserves original line locations and reports class-owner, member-name, and descriptor namespace evidence; it does not apply directives, resolve selectors, or remap them. Access Transformers inside nested JARs and alternate development-only build paths are not inspected.",
-                    "Coremod metadata inventory reads only META-INF/coremods.json from the outer source JAR, preserves declared names and script paths, and checks referenced script-resource presence. It does not evaluate JavaScript, derive transformer injection sites or targets, execute transformations, or inspect nested-JAR coremod registries."
+                    "Access Transformer inventory covers the outer source JAR and bounded source-nested archives. It preserves original line locations, reports class-owner/member/descriptor namespace evidence, and never applies directives, resolves selectors, or remaps them. Nested resource presence is distinct from the pinned Forge/NeoForge loader consumer eligibility reported per archive.",
+                    "Coremod metadata inventory covers META-INF/coremods.json in the outer source JAR and bounded source-nested archives. Script paths are checked against a bounded in-memory archive path index; incomplete indexes are reported as unknown rather than falsely missing. No JavaScript is evaluated, no transformer is created, and Forge 47.3.0 script/API/transformer compatibility with the NeoForged engine remains unverified."
             );
 
             return new PreflightResult(
@@ -546,7 +607,7 @@ public final class Forge1201PreflightAnalyzer {
                     metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
                     archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
                     accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, nestedMixinAnalyses,
-                    mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                    nestedTransformationAnalyses, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
                     outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
                     fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
                     nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
@@ -776,6 +837,55 @@ public final class Forge1201PreflightAnalyzer {
                             out.append("        warning: ").append(warning).append('\n'));
                 }
             }
+        }
+        out.append("\nNested Coremod / Access Transformer inventory (")
+                .append(result.nestedTransformationAnalyses().size()).append(" archives):\n");
+        if (result.nestedTransformationAnalyses().isEmpty()) out.append("  none discovered\n");
+        for (NestedTransformationFinding nested : result.nestedTransformationAnalyses()) {
+            out.append("  ").append(nested.archivePath()).append(" [depth=").append(nested.depth())
+                    .append(", kind=").append(nested.archiveKind())
+                    .append(", source-type=").append(nested.forgeEffectiveFileType())
+                    .append(", target-type=").append(nested.neoForgeEffectiveFileType())
+                    .append(", source-disposition=").append(nested.forgeDisposition())
+                    .append(", target-disposition=").append(nested.neoForgeDisposition())
+                    .append(", sha256=").append(nested.sha256()).append("]\n");
+            out.append("    Forge metadata: mods.toml=").append(nested.forgeModsTomlPresent())
+                    .append(", NeoForge metadata=").append(nested.neoForgeModsTomlPresent())
+                    .append(", manifest FMLModType=").append(nested.declaredFmlModType() == null
+                            ? "default/absent" : nested.declaredFmlModType())
+                    .append(", ModInfo-backed source=").append(nested.forgeModInfoBacked())
+                    .append(", target=").append(nested.neoForgeModInfoBacked()).append('\n');
+            out.append("    Transformation metadata parser reached: Forge=")
+                    .append(nested.forgeIdentifyModsReachesTransformationMetadata())
+                    .append(", NeoForge=").append(nested.neoForgeIdentifyModsReachesTransformationMetadata())
+                    .append("; final consumer eligibility: Forge Coremod=")
+                    .append(nested.forgeCoremodConsumerEligible())
+                    .append(", Forge AT=").append(nested.forgeAccessTransformerConsumerEligible())
+                    .append(", NeoForge Coremod=").append(nested.neoForgeCoremodConsumerEligible())
+                    .append(", NeoForge default AT=").append(nested.neoForgeAccessTransformerConsumerEligible())
+                    .append(" [").append(nested.neoForgeDefaultAtDisposition()).append("]\n");
+            out.append("    META-INF/coremods.json: ").append(nested.coremodRegistryResourceStatus());
+            if (nested.coremodMetadata() != null) {
+                out.append(" [").append(nested.coremodMetadata().status())
+                        .append(", declarations=").append(nested.coremodMetadata().declarations().size())
+                        .append(", valid=").append(nested.coremodMetadata().validDeclarationCount())
+                        .append(", missing=").append(nested.coremodMetadata().missingScriptCount()).append(']');
+                for (Forge1201CoremodAnalyzer.CoremodDeclaration declaration : nested.coremodMetadata().declarations()) {
+                    out.append("\n      coremod ").append(declaration.name()).append(" -> ")
+                            .append(declaration.scriptPath()).append(" [").append(declaration.scriptStatus()).append(']');
+                }
+            }
+            out.append('\n').append("    META-INF/accesstransformer.cfg: ")
+                    .append(nested.accessTransformerResourceStatus());
+            if (nested.accessTransformers() != null) {
+                out.append(" [").append(nested.accessTransformers().status())
+                        .append(", valid=").append(nested.accessTransformers().validDirectiveCount())
+                        .append(", wildcard=").append(nested.accessTransformers().wildcardDirectiveCount())
+                        .append(", malformed=").append(nested.accessTransformers().malformedLineCount()).append(']');
+            }
+            out.append("\n    Coremod target compatibility: ").append(nested.neoForgeCoremodCompatibility())
+                    .append("; resource-index-incomplete=").append(nested.resourcePathIndexIncomplete()).append('\n');
+            nested.warnings().forEach(warning -> out.append("      warning: ").append(warning).append('\n'));
         }
         out.append("\nMixin injectors (").append(mixins.injectors().size()).append("):\n");
         if (mixins.injectors().isEmpty()) out.append("  none discovered\n");
@@ -1045,6 +1155,174 @@ public final class Forge1201PreflightAnalyzer {
         return lower.equals("meta-inf/jarjar/metadata.json")
                 || ((lower.startsWith("meta-inf/jarjar/") || lower.startsWith("meta-inf/jars/"))
                         && lower.endsWith(".jar"));
+    }
+
+    private static NestedTransformationFinding analyzeNestedTransformationArchive(
+            Forge1201ArchiveGraph.NestedMixinArchive archive) {
+        List<String> warnings = new ArrayList<>(archive.warnings());
+        NestedResourceStatus manifestStatus = nestedResourceStatus(archive, JarFile.MANIFEST_NAME);
+        String declaredType = null;
+        boolean manifestTypeIncomplete = false;
+        if (manifestStatus == NestedResourceStatus.CAPTURED) {
+            Forge1201ArchiveGraph.NestedMixinResource manifestResource = archive.resources().get(JarFile.MANIFEST_NAME);
+            if (manifestResource != null && manifestResource.bytes() != null) {
+                try {
+                    Manifest nestedManifest = new Manifest(new ByteArrayInputStream(manifestResource.bytes()));
+                    declaredType = nestedManifest.getMainAttributes().getValue("FMLModType");
+                    if (declaredType != null) declaredType = declaredType.trim().toUpperCase(Locale.ROOT);
+                } catch (IOException | RuntimeException exception) {
+                    manifestTypeIncomplete = true;
+                    warnings.add("Nested manifest could not be parsed for FMLModType: " + conciseMessage(exception));
+                }
+            } else {
+                manifestTypeIncomplete = true;
+                warnings.add("Nested manifest was marked captured but its bytes were unavailable.");
+            }
+        } else if (manifestStatus == NestedResourceStatus.DUPLICATE_ENTRY
+                || manifestStatus == NestedResourceStatus.LIMIT_EXCEEDED
+                || manifestStatus == NestedResourceStatus.INDEX_INCOMPLETE) {
+            manifestTypeIncomplete = true;
+            warnings.add("Nested manifest type could not be established because the manifest was duplicated, unavailable, or outside the resource-path index.");
+        }
+
+        boolean forgeToml = archive.forgeModsTomlPresent();
+        boolean neoForgeToml = archive.neoForgeModsTomlPresent();
+        String forgeType = forgeToml
+                ? (declaredType == null ? "MOD" : declaredType)
+                : (declaredType == null ? "GAMELIBRARY" : declaredType);
+        String targetType = declaredType == null ? "MOD" : declaredType;
+        boolean forgeModInfo = forgeToml
+                && archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.FORGE_1201_MOD
+                && !archive.mods().isEmpty();
+        boolean targetModInfo = (forgeToml || neoForgeToml)
+                && (archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.FORGE_1201_MOD
+                    || archive.archiveKind() == Forge1201ArchiveGraph.ArchiveKind.NEOFORGE_MOD)
+                && !archive.mods().isEmpty();
+
+        NestedLoaderDisposition forgeDisposition = manifestTypeIncomplete
+                ? NestedLoaderDisposition.UNKNOWN_MANIFEST_TYPE
+                : classifyForgeNestedDisposition(forgeType, forgeToml, forgeModInfo, archive.entryIndexIncomplete());
+        NestedLoaderDisposition targetDisposition = manifestTypeIncomplete
+                ? NestedLoaderDisposition.UNKNOWN_MANIFEST_TYPE
+                : classifyNeoForgeNestedDisposition(targetType, forgeToml || neoForgeToml, targetModInfo, archive.entryIndexIncomplete());
+        boolean forgeParserReached = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER
+                || forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO;
+        boolean targetParserReached = targetDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+
+        NestedResourceStatus coremodStatus = nestedResourceStatus(archive, Forge1201CoremodAnalyzer.RESOURCE_PATH);
+        Forge1201CoremodAnalyzer.Result coremodResult = null;
+        if (coremodStatus == NestedResourceStatus.CAPTURED) {
+            Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(Forge1201CoremodAnalyzer.RESOURCE_PATH);
+            if (resource != null) {
+                coremodResult = Forge1201CoremodAnalyzer.analyzeNested(
+                        resource.bytes(), archive.resourcePaths(), archive.resourcePathIndexIncomplete());
+            }
+        } else if (coremodStatus == NestedResourceStatus.ABSENT) {
+            coremodResult = Forge1201CoremodAnalyzer.notPresent();
+        }
+
+        NestedResourceStatus atStatus = nestedResourceStatus(archive, Forge1201AccessTransformerAnalyzer.RESOURCE_PATH);
+        Forge1201AccessTransformerAnalyzer.Result atResult = null;
+        if (atStatus == NestedResourceStatus.CAPTURED) {
+            Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(Forge1201AccessTransformerAnalyzer.RESOURCE_PATH);
+            if (resource != null) atResult = Forge1201AccessTransformerAnalyzer.analyzeNested(resource.bytes());
+        } else if (atStatus == NestedResourceStatus.ABSENT) {
+            atResult = Forge1201AccessTransformerAnalyzer.notPresent();
+        }
+
+        boolean forgeFinalProvider = forgeDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        boolean targetFinalProvider = targetDisposition == NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        boolean forgeCoremodConsumer = forgeFinalProvider && coremodStatus == NestedResourceStatus.CAPTURED;
+        boolean forgeAtConsumer = forgeFinalProvider && atStatus == NestedResourceStatus.CAPTURED;
+        boolean targetCoremodConsumer = targetFinalProvider && coremodStatus == NestedResourceStatus.CAPTURED;
+        boolean explicitTargetAtList = hasExplicitNeoForgeAccessTransformerList(
+                neoForgeToml ? archive.neoForgeModsToml() : archive.forgeModsToml());
+        NeoForgeDefaultAtDisposition targetAtDisposition;
+        if (!targetFinalProvider) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.NOT_A_FINAL_TRANSFORMATION_PROVIDER;
+        } else if (atStatus != NestedResourceStatus.CAPTURED) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.RESOURCE_ABSENT_OR_UNAVAILABLE;
+        } else if (explicitTargetAtList) {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.EXPLICIT_ACCESS_TRANSFORMER_LIST_NOT_RESOLVED;
+        } else {
+            targetAtDisposition = NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE;
+        }
+        boolean targetAtConsumer = targetAtDisposition == NeoForgeDefaultAtDisposition.DEFAULT_PATH_FALLBACK_CANDIDATE;
+        String coremodCompatibility = targetCoremodConsumer
+                ? "FML 4.0.45 recognizes META-INF/coremods.json; Forge 47.3.0 script/API/transformer compatibility remains UNVERIFIED. No script was evaluated."
+                : "NOT_EVALUATED: target final-provider/descriptor intake conditions were not both established.";
+        if (manifestTypeIncomplete || archive.entryIndexIncomplete()) {
+            warnings.add("Loader intake disposition is conservative because nested archive or manifest inspection was incomplete.");
+        }
+        if (archive.resourcePathIndexIncomplete()) {
+            warnings.add("One or more referenced nested resources may be UNKNOWN because the bounded resource-path index was incomplete.");
+        }
+        if (explicitTargetAtList) {
+            warnings.add("A NeoForge accessTransformers TOML list is declared; its individual file selectors are not expanded in this inventory. The default cfg path is not assumed to be selected.");
+        }
+        if (forgeDisposition == NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO) {
+            warnings.add("Forge 47.3.0 may transiently parse this manifest-only child, but its empty DefaultModFileInfo has no ModInfo and is excluded from the final Coremod/AT consumer list.");
+        }
+        if (targetDisposition == NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO) {
+            warnings.add("NeoForge accepts this non-MOD child as a game library but returns before Coremod/AT parsing; GAME module inclusion is not transformation-provider eligibility.");
+        }
+        return new NestedTransformationFinding(
+                archive.archivePath(), archive.sha256(), archive.depth(), archive.archiveKind(),
+                archive.mods(), forgeToml, neoForgeToml, declaredType, forgeType, targetType,
+                forgeModInfo, targetModInfo, forgeParserReached, targetParserReached,
+                forgeDisposition, targetDisposition, coremodStatus, coremodResult, atStatus, atResult,
+                forgeCoremodConsumer, forgeAtConsumer, targetCoremodConsumer, targetAtConsumer,
+                targetAtDisposition, archive.resourcePathIndexIncomplete(), coremodCompatibility,
+                warnings.stream().distinct().sorted().toList());
+    }
+
+    private static NestedLoaderDisposition classifyForgeNestedDisposition(
+            String type, boolean forgeToml, boolean hasModInfo, boolean incomplete) {
+        if (incomplete) return NestedLoaderDisposition.INCOMPLETE_ARCHIVE;
+        if ("LIBRARY".equals(type) || "LANGPROVIDER".equals(type))
+            return NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER;
+        if (!"MOD".equals(type) && !"GAMELIBRARY".equals(type))
+            return NestedLoaderDisposition.UNSUPPORTED_FILE_TYPE;
+        if (!forgeToml) return NestedLoaderDisposition.PARSER_REACHED_BUT_NO_MOD_INFO;
+        if (hasModInfo) return NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        return NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA;
+    }
+
+    private static NestedLoaderDisposition classifyNeoForgeNestedDisposition(
+            String type, boolean hasModMetadata, boolean hasModInfo, boolean incomplete) {
+        if (incomplete) return NestedLoaderDisposition.INCOMPLETE_ARCHIVE;
+        if ("LIBRARY".equals(type))
+            return NestedLoaderDisposition.PLUGIN_CATEGORY_NOT_A_TRANSFORMATION_PROVIDER;
+        if (!"MOD".equals(type) && !"GAMELIBRARY".equals(type))
+            return NestedLoaderDisposition.UNSUPPORTED_FILE_TYPE;
+        if (!hasModMetadata) {
+            return "GAMELIBRARY".equals(type)
+                    ? NestedLoaderDisposition.EARLY_RETURN_LIBRARY_WITHOUT_MOD_INFO
+                    : NestedLoaderDisposition.REJECTED_MOD_WITHOUT_MOD_INFO;
+        }
+        if (hasModInfo) return NestedLoaderDisposition.FINAL_TRANSFORMATION_PROVIDER;
+        return NestedLoaderDisposition.UNRECOGNIZED_MOD_METADATA;
+    }
+
+    private static NestedResourceStatus nestedResourceStatus(
+            Forge1201ArchiveGraph.NestedMixinArchive archive, String path) {
+        Forge1201ArchiveGraph.NestedMixinResource resource = archive.resources().get(path);
+        if (resource != null) {
+            return switch (resource.status()) {
+                case CAPTURED -> NestedResourceStatus.CAPTURED;
+                case DUPLICATE_ENTRY -> NestedResourceStatus.DUPLICATE_ENTRY;
+                case LIMIT_EXCEEDED -> NestedResourceStatus.LIMIT_EXCEEDED;
+            };
+        }
+        if (archive.duplicateResourcePaths().contains(path)) return NestedResourceStatus.DUPLICATE_ENTRY;
+        if (archive.resourcePaths().contains(path)) return NestedResourceStatus.LIMIT_EXCEEDED;
+        if (archive.resourcePathIndexIncomplete()) return NestedResourceStatus.INDEX_INCOMPLETE;
+        return NestedResourceStatus.ABSENT;
+    }
+
+    private static boolean hasExplicitNeoForgeAccessTransformerList(String toml) {
+        if (toml == null || toml.isBlank()) return false;
+        return java.util.regex.Pattern.compile("(?im)^\\s*\\[\\[\\s*accessTransformers\\s*\\]\\]").matcher(toml).find();
     }
 
     private static boolean isMixinPathCandidate(String path) {
