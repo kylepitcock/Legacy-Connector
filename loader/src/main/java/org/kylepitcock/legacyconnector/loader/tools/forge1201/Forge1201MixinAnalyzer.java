@@ -541,10 +541,16 @@ public final class Forge1201MixinAnalyzer {
     }
 
     /** Read-only archive view for a source-nested JAR; no temporary file or class loading is used. */
-    public record MemoryArchive(String archivePath, List<MemoryEntry> entries, boolean entryIndexIncomplete) {
+    public record MemoryArchive(
+            String archivePath, List<MemoryEntry> entries,
+            boolean entryIndexIncomplete, int maxMixinClassCount) {
         public MemoryArchive {
             if (archivePath == null || archivePath.isBlank()) throw new IllegalArgumentException("Archive path is required");
+            if (maxMixinClassCount < 0) throw new IllegalArgumentException("Mixin class limit cannot be negative");
             entries = List.copyOf(entries);
+        }
+        public MemoryArchive(String archivePath, List<MemoryEntry> entries, boolean entryIndexIncomplete) {
+            this(archivePath, entries, entryIndexIncomplete, MAX_MIXIN_CLASS_COUNT);
         }
     }
 
@@ -645,6 +651,8 @@ public final class Forge1201MixinAnalyzer {
                 ? Map.of() : Map.copyOf(sourceToTargetClassMappings);
         String mappingVersion = classMappingVersion == null || classMappingVersion.isBlank()
                 ? "unavailable" : classMappingVersion;
+        int mixinClassLimit = memoryArchive == null ? MAX_MIXIN_CLASS_COUNT
+                : Math.min(MAX_MIXIN_CLASS_COUNT, memoryArchive.maxMixinClassCount());
 
         List<String> warnings = new ArrayList<>();
         Map<String, LinkedHashSet<DiscoverySource>> grouped = new TreeMap<>();
@@ -793,14 +801,16 @@ public final class Forge1201MixinAnalyzer {
                         refmapCandidatePath, ResourceStatus.NOT_DECLARED, configWarnings));
 
                 boolean pluginDependent = parsed.pluginClass() != null;
+                mixinClassLoop:
                 for (String section : List.of("mixins", "client", "server")) {
                     for (String mixinName : parsed.mixins().getOrDefault(section, List.of())) {
-                        if (processedMixins >= MAX_MIXIN_CLASS_COUNT) {
+                        if (processedMixins >= mixinClassLimit) {
                             classFindings.add(new MixinClassFinding(
                                     archivePath, configPath, section, mixinName, null,
                                     MixinClassStatus.CLASS_LIMIT_EXCEEDED, false,
-                                    List.of("Maximum mixin class count was reached.")));
-                            continue;
+                                    List.of("Mixin class declaration was not analyzed because the aggregate class limit was reached.")));
+                            warnings.add("Further mixin class declarations were omitted after the configured analysis limit.");
+                            break mixinClassLoop;
                         }
                         processedMixins++;
 
