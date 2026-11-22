@@ -661,10 +661,15 @@ public final class Forge1201ArchiveGraph {
                 budget.warnings.add(displayPath + ": nested class inventory is incomplete because archive parsing stopped.");
             }
             if (origin == ArchiveOrigin.INPUT_NESTED && nestedMixinArchiveConsumer != null) {
-                nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
-                        snapshot.incompleteKind(), snapshot.mixinResources(), Map.of(), true,
-                        List.of("Nested archive parsing stopped before Mixin resource analysis: "
-                                + snapshot.incompleteReason())));
+                if (snapshot.neoForgeModsToml() != null) {
+                    budget.warnings.add(displayPath
+                            + ": nested archive declares NeoForge metadata and was excluded from legacy Mixin analysis.");
+                } else {
+                    nestedMixinArchiveConsumer.analyze(new NestedMixinArchive(displayPath, digest, depth,
+                            snapshot.incompleteKind(), snapshot.mixinResources(), Map.of(), true,
+                            List.of("Nested archive parsing stopped before Mixin resource analysis: "
+                                    + snapshot.incompleteReason())));
+                }
             }
             return;
         }
@@ -685,8 +690,8 @@ public final class Forge1201ArchiveGraph {
             scanNestedClassEntries(displayPath, parsed.kind(), snapshot, budget, nestedClassConsumer);
         }
         if (origin == ArchiveOrigin.INPUT_NESTED && nestedMixinArchiveConsumer != null) {
-            if (parsed.kind() == ArchiveKind.NEOFORGE_MOD) {
-                budget.warnings.add(displayPath + ": nested native NeoForge mod was excluded from legacy Mixin source analysis.");
+            if (snapshot.neoForgeModsToml() != null || parsed.kind() == ArchiveKind.NEOFORGE_MOD) {
+                budget.warnings.add(displayPath + ": nested archive declares NeoForge metadata and was excluded from legacy Mixin source analysis.");
             } else {
                 Map<String, byte[]> mixinClasses = new TreeMap<>();
                 boolean resourceIndexIncomplete = snapshot.mixinResourceIndexIncomplete();
