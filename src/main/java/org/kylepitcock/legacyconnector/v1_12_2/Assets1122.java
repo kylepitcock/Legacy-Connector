@@ -181,6 +181,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         for (int ticks = 1; ticks <= 4; ticks++) {
             renames.add(new String[] {"repeater_on_" + ticks + "tick", "repeater_" + ticks + "tick_on"});
             renames.add(new String[] {"repeater_on_" + ticks + "tick_locked", "repeater_" + ticks + "tick_on_locked"});
+            // 1.12's own names of the locked repeater (blockstates of mods that copy vanilla's, Colored Redstone)
+            renames.add(new String[] {"repeater_locked_" + ticks + "tick", "repeater_" + ticks + "tick_locked"});
+            renames.add(new String[] {"repeater_on_locked_" + ticks + "tick", "repeater_" + ticks + "tick_on_locked"});
         }
         for (String[] r : renames) {
             byte[] bytes = ("{\"parent\":\"minecraft:block/" + r[1] + "\"}").getBytes(java.nio.charset.StandardCharsets.UTF_8);
