@@ -151,6 +151,25 @@ public final class LegacyLifecycle {
         return false;
     }
 
+    /** Where a client-only skip came from: the throwable that names the client class and the first frames under it (a shim class there is a layer bug). */
+    static String clientTouchSite(Throwable t) {
+        for (int i = 0; t != null && i < 12; i++, t = t.getCause()) {
+            String m = t.getMessage();
+            if (m == null || !m.contains("for invalid dist DEDICATED_SERVER")) continue;
+            StringBuilder sb = new StringBuilder(m);
+            int shown = 0;
+            for (StackTraceElement e : t.getStackTrace()) {
+                String c = e.getClassName();
+                if (c.startsWith("java.") || c.startsWith("jdk.") || c.startsWith("sun.") || c.startsWith("cpw.") || c.startsWith("net.neoforged.")
+                        || c.startsWith("org.spongepowered.")) continue; // class loading frames
+                sb.append(shown == 0 ? " at " : " < ").append(c).append('.').append(e.getMethodName());
+                if (++shown == 4) break;
+            }
+            return sb.toString();
+        }
+        return "?";
+    }
+
     public static boolean isClientOnlySkip(LegacyModRecord mod) {
         return CLIENT_ONLY.contains(mod);
     }
@@ -214,7 +233,8 @@ public final class LegacyLifecycle {
                 if (Boolean.getBoolean("legacyconnector.failFast")) throw wrapped;
                 if (touchedClientOnServer(t)) {
                     // A mod that needs the game client on a dedicated server (no side annotation to tell us beforehand): FML would have dropped it there.
-                    LOG.info("Skipping the client-only legacy mod {} on a dedicated server (it touched client classes during {})", mod.legacyId, name);
+                    LOG.info("Skipping the client-only legacy mod {} on a dedicated server (it touched client classes during {}: {})", mod.legacyId, name,
+                            clientTouchSite(t));
                     CLIENT_ONLY.add(mod);
                     FAILED.put(mod, wrapped);
                     continue;

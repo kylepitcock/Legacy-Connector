@@ -179,9 +179,18 @@ public abstract class RendererLivingEntity extends Render {
 
     /** 1.7.10 {@code func_110813_b}/{@code canRenderName}: whether the entity's name tag is drawn (HUD on, not the camera player, visible, not ridden). */
     protected boolean canRenderName(EntityLivingBase entity) {
-        var mc = net.minecraft.client.Minecraft.getInstance();
-        if (entity == null || entity.mcc$entity == null || mc.options.hideGui) return false;
-        var me = mc.getCameraEntity();
-        return entity.mcc$entity != me && !entity.mcc$entity.isInvisibleTo(mc.player) && !entity.mcc$entity.isVehicle();
+        return entity != null && entity.mcc$entity != null && ClientView.canRenderName(entity.mcc$entity);
+    }
+
+    /**
+     * Client-only code in its own class: passing {@code mc.player} (a LocalPlayer) as a Player makes the verifier load LocalPlayer with this
+     * class, and 1.6.4 mods construct their renderers in preInit on dedicated servers too (Michael's World was skipped there).
+     */
+    private static final class ClientView {
+        static boolean canRenderName(net.minecraft.world.entity.Entity e) {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.options.hideGui) return false;
+            return e != mc.getCameraEntity() && !e.isInvisibleTo(mc.player) && !e.isVehicle();
+        }
     }
 }
