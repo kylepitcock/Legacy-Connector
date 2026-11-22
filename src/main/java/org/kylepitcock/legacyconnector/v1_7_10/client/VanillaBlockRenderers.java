@@ -19,7 +19,7 @@ public final class VanillaBlockRenderers {
 
     /** The built-in handler of a vanilla render type, or null. */
     public static ISimpleBlockRenderingHandler forRenderType(int renderType) {
-        return renderType == 18 || renderType == 41 ? PANE : null;
+        return renderType == 18 || renderType == 41 ? PANE : renderType == 7 ? DOOR : null;
     }
 
     /** The built-in handler for a block: its render type's, or the standard renderer for cubes whose icons depend on the world. */
@@ -133,6 +133,42 @@ public final class VanillaBlockRenderers {
         @Override
         public int getRenderId() {
             return 18;
+        }
+    };
+
+    /**
+     * Doors (render type 7, RenderBlocks.renderBlockDoor): a mod door that copies vanilla's BlockDoor draws its halves from the icons
+     * of {@code getIcon(world, x, y, z, side)} within the thin bounds {@code setBlockBoundsBasedOnState} derives from the metadata
+     * (hinge side, open state); a static cube model would show a full block instead.
+     */
+    private static final ISimpleBlockRenderingHandler DOOR = new ISimpleBlockRenderingHandler() {
+        @Override
+        public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
+        }
+
+        @Override
+        public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
+            Tessellator t = Tessellator.mcc$get$instance();
+            long saved = t.mcc$colorState();
+            t.mcc$setColorState(-1L);
+            try {
+                block.setBlockBoundsBasedOnState(world, x, y, z);
+                renderer.setRenderBoundsFromBlock(block);
+                return renderer.renderBlockDoor(block, x, y, z);
+            } finally {
+                renderer.setRenderBounds(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+                t.mcc$setColorState(saved);
+            }
+        }
+
+        @Override
+        public boolean shouldRender3DInInventory(int modelId) {
+            return false;
+        }
+
+        @Override
+        public int getRenderId() {
+            return 7;
         }
     };
 
