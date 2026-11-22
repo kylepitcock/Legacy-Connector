@@ -51,7 +51,9 @@ final class Forge1201CoremodAnalyzerTest {
 
     @Test
     void keepsUnindexedNestedScriptResourcesUnknownInsteadOfReportingMissing() {
-        byte[] metadata = "{\\\"probe\\\":\\\"scripts/not-indexed.js\\\"}".getBytes(StandardCharsets.UTF_8);
+        byte[] metadata = """
+                {"probe":"scripts/not-indexed.js"}
+                """.getBytes(StandardCharsets.UTF_8);
         var result = Forge1201CoremodAnalyzer.analyzeNested(metadata,
                 java.util.Set.of(Forge1201CoremodAnalyzer.RESOURCE_PATH), true);
 
