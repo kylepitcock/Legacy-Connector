@@ -97,6 +97,15 @@ public final class LiveStacks1122 {
                 if (now == e.modern && net.minecraft.world.item.ItemStack.matches(now, e.modernSnapshot)) return e.legacy;
             }
             var current = slot.get();
+            // the same modern stack reached through another key (the main hand is also inventory slot N, the off hand slot 40, armor 36-39) is the
+            // same legacy object: 1.12 mods compare the stacks they iterate with the one they were handed (`if (other == stack) continue;`)
+            if (slots != null && !current.isEmpty()) {
+                for (Entry o : slots.values()) {
+                    if (o == e || o.modern != current) continue;
+                    flush(o);
+                    if (o.slot.get() == current && o.modern == current && net.minecraft.world.item.ItemStack.matches(current, o.modernSnapshot)) return o.legacy;
+                }
+            }
             ItemStack legacy = Stacks1122.fromModern(current);
             if (legacy == ItemStack.EMPTY) {
                 // the shared empty stack is never changed in place; an empty slot needs no tracking
