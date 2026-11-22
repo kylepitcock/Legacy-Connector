@@ -1066,7 +1066,7 @@ public final class Forge1201ArchiveGraph {
     }
 
     private static String findText(Map<String, byte[]> selected, String name) {
-        return selected.entrySet().stream().filter(entry -> entry.getKey().equalsIgnoreCase(name))
+        return selected.entrySet().stream().filter(entry -> entry.getKey().equals(name))
                 .map(entry -> new String(entry.getValue(), StandardCharsets.UTF_8)).findFirst().orElse(null);
     }
 
