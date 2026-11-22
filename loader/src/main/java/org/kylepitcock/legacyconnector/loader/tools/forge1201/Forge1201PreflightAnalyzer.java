@@ -299,6 +299,10 @@ public final class Forge1201PreflightAnalyzer {
         AnalysisStatus analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_SKIPPED_METADATA_NOT_RECOGNIZED;
         ForgeMetadata forgeMetadata = null;
 
+        try (URLClassLoader sharedTargetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
+            Forge1201TargetApiVerifier.TargetIndex sharedTargetIndex = sharedTargetLoader == null ? null
+                    : Forge1201TargetApiVerifier.createIndex(internalName ->
+                            sharedTargetLoader.getResourceAsStream(internalName + ".class"));
         Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
         Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
         Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
@@ -378,10 +382,8 @@ public final class Forge1201PreflightAnalyzer {
                 return;
             }
 
-            try (URLClassLoader targetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
-                Forge1201TargetApiVerifier.TargetIndex nestedTargetIndex = targetLoader == null ? null
-                        : Forge1201TargetApiVerifier.createIndex(internalName ->
-                                targetLoader.getResourceAsStream(internalName + ".class"));
+            try {
+                Forge1201TargetApiVerifier.TargetIndex nestedTargetIndex = sharedTargetIndex;
                 Forge1201MixinAnalyzer.MemoryArchive memoryArchive =
                         new Forge1201MixinAnalyzer.MemoryArchive(
                                 archive.archivePath(),
@@ -513,15 +515,9 @@ public final class Forge1201PreflightAnalyzer {
                 .flatMap(entry -> entry.getValue().stream()
                         .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
                 .toList();
-        Forge1201MixinAnalyzer.Result mixinAnalysis;
-        try (URLClassLoader targetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
-            Forge1201TargetApiVerifier.TargetIndex targetIndex = targetLoader == null ? null
-                    : Forge1201TargetApiVerifier.createIndex(internalName ->
-                            targetLoader.getResourceAsStream(internalName + ".class"));
-            // No 1.20.1 -> 1.21.1 Minecraft class map is supplied yet; Mojang names are never assumed identical.
-            mixinAnalysis = Forge1201MixinAnalyzer.analyze(
-                    jar, mixinDeclarations, targetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
-        }
+        // No 1.20.1 -> 1.21.1 Minecraft class map is supplied yet; Mojang names are never assumed identical.
+        Forge1201MixinAnalyzer.Result mixinAnalysis = Forge1201MixinAnalyzer.analyze(
+                jar, mixinDeclarations, sharedTargetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
 
         Forge1201MappingProfileValidator.Finding mappingProfile =
                 Forge1201MappingProfileValidator.inspect(mappingProfilePath);
@@ -555,6 +551,7 @@ public final class Forge1201PreflightAnalyzer {
                 fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
                 nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
                 observedNativeIds, limitations, archiveGraph);
+        }
     }
 
     private static void appendSliceBoundaryText(
