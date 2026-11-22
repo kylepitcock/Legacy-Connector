@@ -3,15 +3,20 @@ package legacyconnector.v1_20_1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
 class PalladiumRendererRegistryDebugCompatTest {
     @Test
-    void resolvesEntityTypeRegistrySupplierToItsResourceKey() {
-        Supplier<EntityType<?>> supplier = () -> EntityType.PIG;
+    void formatsResolvedEntityTypeRegistryKeyWithoutGlobalBootstrap() {
+        assertEquals("minecraft:pig",
+                PalladiumRendererRegistryDebugCompat.formatEntityTypeKey(ResourceLocation.parse("minecraft:pig")));
+    }
 
-        assertEquals("minecraft:pig", PalladiumRendererRegistryDebugCompat.resolveSupplierType(supplier));
+    @Test
+    void reportsMissingEntityTypeRegistryKey() {
+        assertEquals("<unregistered-entity-type>",
+                PalladiumRendererRegistryDebugCompat.formatEntityTypeKey(null));
     }
 
     @Test
@@ -27,6 +32,16 @@ class PalladiumRendererRegistryDebugCompatTest {
         };
 
         assertEquals("<supplier-error:IllegalStateException>",
+                PalladiumRendererRegistryDebugCompat.resolveSupplierType(supplier));
+    }
+
+    @Test
+    void reportsLinkageErrorsWithoutPropagatingThem() {
+        Supplier<Object> supplier = () -> {
+            throw new ExceptionInInitializerError("Minecraft registry is not bootstrapped in this test");
+        };
+
+        assertEquals("<supplier-error:ExceptionInInitializerError>",
                 PalladiumRendererRegistryDebugCompat.resolveSupplierType(supplier));
     }
 
