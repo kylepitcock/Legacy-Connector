@@ -202,3 +202,16 @@ is cached):
 | MSPT of the heavy windows (ticks 100 to 400), mean | 23.7, 30.6, 17.2 ms (cold); 28.2, 36.0, 17.7 (warm) | 18.3, 25.6, 8.8 (cold); 15.6, 22.0, 9.4 (warm) |
 | `Registries1122$Reg.getValues` share of server CPU / allocation | 20.7% / 49.3% | below 0.3% / below 0.5% |
 | Behaviour metrics (`verify.sh mixed`) | PASS | PASS (blocks_ok 973, placement 348/349, items 2186, blocks 503, entities 768 content, alive 539 vs 521) |
+
+## Load-time round of 2026-11-22
+
+Measured on a shared Windows machine (other workers' servers ran at the same time, so wall-clock numbers vary by tens of percent; JFR sample counts are steadier). Suites `tc4`, `mixed`, `atm9-1201-stable` (20 Forge 1.20.1 mods), headless server self test, JFR (`-Pjfr`).
+
+| Fix | Before | After |
+|---|---|---|
+| Structure NBT scan (`StructureNbtConverter1201`) read through a synchronized `DataInputStream`, tag names built as Strings; datagen name regexes (`Datagen1201`) run per instruction owner; keyword-package renames recomputed per reference | cold translation threads of `atm9-1201-stable`: 361 CPU samples, loader phase 7.0 s | 223 samples (-38%), loader phase 4.4 s |
+| Every legacy jar was SHA-256 hashed on every launch (cache names, mod set). Digests now persist in `.legacyconnector/jar-digests.txt` by path, size and mtime; misses are hashed in parallel | `mixed` warm loader phase 5.1 s (about 1.8 s of it hashing 6 jars; grows with the pack) | 1.1 to 1.3 s (three runs) |
+| `VanillaFlattening.initBlocks` ran the data fixers for 4096 legacy block ids on every launch; kept in `.legacyconnector/vanilla-blocks-<data version>.txt` | 953 to 1138 ms | 19 to 29 ms |
+| Flattened item names were saved only after a 1.7.10/1.12.2 mod loaded, so a 1.20.1-only pack re-ran the data fixers every launch; also saved at shutdown | `atm9-1201-stable` warm, loading threads 462 CPU samples | 334 samples |
+
+Found but not changed: `VillageAdditions` (worldgen, owned elsewhere) calls `ChunkGenerator.getFirstOccupiedHeight` several times per candidate building (about 5% of worker CPU in `mixed`, 2% in `tc4`); the coremod transformers' own ASM parsing under `LegacyCoreModTransformers.apply` (serialized, about 10% of cold translation CPU); `preventCollisions` parses every class twice (peer scan and translation, about 7%); the warm jar inspection (`LegacyJarInspector`) re-reads jars (about 0.5 s for 20 jars). The server tick in the self test is vanilla chunk save and noise (`PalettedContainer.pack`, surface rules), not the layer.

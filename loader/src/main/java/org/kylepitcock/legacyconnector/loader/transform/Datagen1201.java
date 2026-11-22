@@ -58,12 +58,45 @@ final class Datagen1201 {
     private static final java.util.regex.Pattern DATAGEN_NAME = java.util.regex.Pattern.compile(
             "(?i).*/datagens?/.*|.*(RecipeProvider|LootTableProvider|LootSubProvider|BlockLootTables|TagsProvider|LanguageProvider|ItemModelProvider|BlockStateProvider|RecipeBuilder|AdvancementProvider|SoundDefinitionsProvider|ParticleDescriptionProvider)([$].*)?$");
 
+    /** The verdict by name is a pure function of the name and is asked for every instruction owner of every method (a regex each): answered once per name. */
+    private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> NAME_VERDICTS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> ROLE_VERDICTS = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static boolean datagenName(String owner) {
         if (owner == null) return false;
+        Boolean known = NAME_VERDICTS.get(owner);
+        if (known == null) {
+            known = datagenNameUncached(owner);
+            NAME_VERDICTS.put(owner, known);
+        }
+        return known;
+    }
+
+    private static boolean datagenRole(String owner) {
+        Boolean known = ROLE_VERDICTS.get(owner);
+        if (known == null) {
+            known = DATAGEN_ROLE.matcher(owner.substring(owner.lastIndexOf('/') + 1)).matches();
+            ROLE_VERDICTS.put(owner, known);
+        }
+        return known;
+    }
+
+    private static final java.util.concurrent.ConcurrentHashMap<String, Boolean> PATTERN_VERDICTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static boolean nameMatches(String name) {
+        Boolean known = PATTERN_VERDICTS.get(name);
+        if (known == null) {
+            known = DATAGEN_NAME.matcher(name).matches();
+            PATTERN_VERDICTS.put(name, known);
+        }
+        return known;
+    }
+
+    private static boolean datagenNameUncached(String owner) {
         // the world generation "BlockStateProvider" (stateproviders) shares its name with the model data provider
         if (owner.startsWith("net/minecraft/world/level/levelgen/")) return false;
         if (DATAGEN_CLASSES.contains(owner)) return true;
-        if (DATAGEN_NAME.matcher(owner).matches()) return true;
+        if (nameMatches(owner)) return true;
         for (String p : DATAGEN_PREFIXES) if (owner.startsWith(p)) return true;
         return false;
     }
@@ -109,7 +142,7 @@ final class Datagen1201 {
 
     private static boolean isDatagenClass(ClassNode n, Set<String> known, Map<String, ClassNode> byName) {
         // by name alone only a class that has a super class to be a provider of (a plain builder or record is used at run time too: AE2's EntropyRecipeBuilder)
-        if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()
+        if ((n.access & Opcodes.ACC_INTERFACE) == 0 && nameMatches(n.name)
                 && !"java/lang/Object".equals(n.superName) && !"java/lang/Record".equals(n.superName)
                 && !extendsLevelgen(n, byName)) return true;
         if (datagenSuper(n.superName, known, byName)) return true;
@@ -265,7 +298,7 @@ final class Datagen1201 {
             // a static member of the jar's own class in a package called datagen is a plain utility the shell keeps (a mod's tag-key factory used at run time)
             // a static constant of a provider class of the jar (Ars Nouveau BlockTagProvider.FLOURISHING_LOGS): the shell keeps its static fields
             if (in instanceof FieldInsnNode sf && sf.getOpcode() == Opcodes.GETSTATIC && jar.contains(sf.owner) && !datagenType(Type.getType(sf.desc))) continue;
-            if (owner != null && jar.contains(owner) && !DATAGEN_ROLE.matcher(owner.substring(owner.lastIndexOf('/') + 1)).matches() && (in.getOpcode() == Opcodes.INVOKESTATIC || in.getOpcode() == Opcodes.GETSTATIC)) continue;
+            if (owner != null && jar.contains(owner) && !datagenRole(owner) && (in.getOpcode() == Opcodes.INVOKESTATIC || in.getOpcode() == Opcodes.GETSTATIC)) continue;
             // a class of the jar is judged by the verdict on the class (not by its name): AE2's EntropyRecipeBuilder is also what its recipe serializer reads JSON with
             if (owner != null && jar.contains(owner)) {
                 if (datagenClasses.contains(owner)) return true;

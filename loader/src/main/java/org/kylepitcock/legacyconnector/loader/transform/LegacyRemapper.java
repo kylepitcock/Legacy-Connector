@@ -57,6 +57,9 @@ public final class LegacyRemapper extends Remapper {
             // log4j 2.0-beta9 (1.7.10) -> 2.x: the core helpers package became core.util.
             "org/apache/logging/log4j/core/helpers/", "org/apache/logging/log4j/core/util/");
 
+    /** The package relocations as an array: {@link #map} runs for every type reference of every class, and iterating the map allocated an iterator each time. */
+    private static final Map.Entry<String, String>[] JDK_PACKAGE_RELOCATION_LIST = JDK_PACKAGE_RELOCATIONS.entrySet().toArray(new Map.Entry[0]);
+
     private final LegacyVersion version;
     private final McpMappings mcp;
     /** Per-jar overrides, e.g. classes a mod bundles inside {@code net/minecraft/} that the shim does not own. */
@@ -427,7 +430,7 @@ public final class LegacyRemapper extends Remapper {
         }
         String jdk = JDK_RELOCATIONS.get(internalName);
         if (jdk != null) return jdk;
-        for (var e : JDK_PACKAGE_RELOCATIONS.entrySet()) {
+        for (Map.Entry<String, String> e : JDK_PACKAGE_RELOCATION_LIST) {
             if (internalName.startsWith(e.getKey())) return e.getValue() + internalName.substring(e.getKey().length());
         }
         if (LegacyVersion.isRelocatedRoot(internalName) || relocatedForVersion(internalName)) return relocate(internalName);
@@ -457,6 +460,17 @@ public final class LegacyRemapper extends Remapper {
      * mods stay consistent.
      */
     static String renameKeywordPackages(String internalName) {
+        String known = KEYWORD_RENAMES.get(internalName);
+        if (known != null) return known;
+        String renamed = renameKeywordPackagesUncached(internalName);
+        KEYWORD_RENAMES.put(internalName, renamed);
+        return renamed;
+    }
+
+    /** The answer is a function of the name, which comes up once per reference (substrings per segment each time): kept. */
+    private static final java.util.concurrent.ConcurrentHashMap<String, String> KEYWORD_RENAMES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static String renameKeywordPackagesUncached(String internalName) {
         int end = internalName.lastIndexOf('/');
         if (end < 0) return internalName;
         StringBuilder out = null;
