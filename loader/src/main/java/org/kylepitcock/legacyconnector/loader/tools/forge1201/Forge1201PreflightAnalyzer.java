@@ -36,8 +36,8 @@ import java.util.zip.ZipFile;
  * success, gameplay compatibility, or runtime behavior.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.15";
-    public static final String ANALYZER_VERSION = "1.15.0";
+    public static final String SCHEMA_VERSION = "1.16";
+    public static final String ANALYZER_VERSION = "1.16.0";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
@@ -148,6 +148,41 @@ public final class Forge1201PreflightAnalyzer {
             String candidateTargetInternalName,
             String explanation) {}
 
+    public enum TargetApiVerificationStatus {
+        COMPLETED,
+        NOT_RUN_NO_TARGET_CLASSPATH,
+        NOT_RUN_SOURCE_METADATA_NOT_RECOGNIZED
+    }
+
+    public enum TargetApiClassStatus {
+        PRESENT,
+        MISSING,
+        MANUAL_ADAPTER_REQUIRED,
+        NOT_CHECKED_NO_TARGET_CLASSPATH,
+        NOT_AUTOMATICALLY_MAPPED
+    }
+
+    /** Per-type class evidence; manual adapters are not counted as failed class lookups. */
+    public record TargetApiClassFinding(
+            String sourceInternalName,
+            String targetInternalName,
+            Forge1201MappingCatalog.Kind classification,
+            TargetApiClassStatus status,
+            String explanation) {}
+
+    /** Structural-only target API evidence; null memberVerification means member lookup did not run. */
+    public record TargetApiVerificationFinding(
+            TargetApiVerificationStatus status,
+            int targetClasspathEntryCount,
+            int candidateClassCount,
+            int presentTargetClassCount,
+            List<TargetApiClassFinding> classFindings,
+            Forge1201TargetApiVerifier.Result memberVerification) {
+        public TargetApiVerificationFinding {
+            classFindings = List.copyOf(classFindings);
+        }
+    }
+
     public record ApiMemberFinding(String owner, String name, String descriptor, int count) {}
 
     public record ApiMethodCallSite(
@@ -192,6 +227,7 @@ public final class Forge1201PreflightAnalyzer {
             List<String> modEntrypoints,
             Map<String, Integer> packageReferences,
             List<ApiTypeFinding> apiTypes,
+            TargetApiVerificationFinding targetApiVerification,
             List<ApiMemberFinding> methodReferences,
             List<ApiMemberFinding> fieldReferences,
             List<ApiMethodCallSite> methodCallSites,
@@ -350,6 +386,7 @@ public final class Forge1201PreflightAnalyzer {
         int nestedClassScannedCount = 0;
         AnalysisStatus analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_SKIPPED_METADATA_NOT_RECOGNIZED;
         ForgeMetadata forgeMetadata = null;
+        TargetApiVerificationFinding targetApiVerification = null;
 
         try (URLClassLoader sharedTargetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
             Forge1201TargetApiVerifier.TargetIndex sharedTargetIndex = sharedTargetLoader == null ? null
@@ -512,6 +549,8 @@ public final class Forge1201PreflightAnalyzer {
 
                 usageInventory.scanOuterJar(jar);
                 Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
+                targetApiVerification = buildTargetApiVerification(
+                        usage, sharedTargetIndex, normalizedTargetClasspath.size());
                 classCount = usage.classCount();
                 outerClassScannedCount = usageInventory.outerClassScannedCount();
                 nestedClassCount = archiveGraph.classScanSummaries().stream()
@@ -607,10 +646,16 @@ public final class Forge1201PreflightAnalyzer {
                     "The top-level dependency status list is an ID-presence summary only. Detailed version-range-aware provider resolution is in archiveGraph.dependencyEdges; NATIVE_ID_PRESENT alone does not select a dependency or prove version/API compatibility.",
                     "Installed provider discovery records top-level and nested archive paths, mod IDs, loader kinds, and declared versions. For required/optional dependencies, a unique installed NeoForge provider is preferred as a target-native candidate only when its numeric version satisfies the declared range; duplicate native providers, range mismatches, and unparseable versions remain explicit. This is a preflight candidate, not proof of API or behavioral compatibility; installed API compatibility are not verified by this analysis, and no source-bundled archive is removed or suppressed.",
                     "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
-                    "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics.",
+                    "Source API target class/member verification is structural only and runs only when a target compile classpath is supplied; exact JVM descriptors and visible inherited members in the API method/field reference inventories are checked, while manual-adapter types remain explicit blockers. Dynamic/bootstrap references remain separately inventoried for context; exact member verification consumes the collected owner/name/descriptor references, including member handles surfaced through ASM remapping. Invokedynamic call-site linkage and bootstrap behavior are not semantically verified. This does not prove access, generic-signature, semantic, initialization, or runtime compatibility. Shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate injection semantics.",
                     "Access Transformer inventory covers the outer source JAR and bounded source-nested archives. It preserves original line locations, reports class-owner/member/descriptor namespace evidence, and never applies directives, resolves selectors, or remaps them. Nested resource presence is distinct from the pinned Forge/NeoForge loader consumer eligibility reported per archive; that structural eligibility models the normal ModInfo-backed sort path and is conditional on successful loader validation/sorting, not a guarantee against unrelated duplicate-ID, dependency, cycle, or global loading errors.",
                     "Coremod metadata inventory covers META-INF/coremods.json in the outer source JAR and bounded source-nested archives. Script paths are checked against a bounded in-memory archive path index; duplicate paths and incomplete indexes are reported as ambiguous/unknown rather than falsely present or missing. The NeoForge accessTransformers TOML list is not expanded into individual file paths in this slice; when such a list is declared, selection is reported as unresolved rather than assuming the default cfg is consumed. No JavaScript is evaluated, no transformer is created, and Forge 47.3.0 script/API/transformer compatibility with the NeoForged engine remains unverified."
             );
+
+            if (targetApiVerification == null) {
+                targetApiVerification = new TargetApiVerificationFinding(
+                        TargetApiVerificationStatus.NOT_RUN_SOURCE_METADATA_NOT_RECOGNIZED,
+                        normalizedTargetClasspath.size(), 0, 0, List.of(), null);
+            }
 
             return new PreflightResult(
                     SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
@@ -619,11 +664,80 @@ public final class Forge1201PreflightAnalyzer {
                     archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
                     accessTransformers, coremodMetadata, mixinCandidates, mixinAnalysis, nestedMixinAnalyses,
                     nestedTransformationAnalyses, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
-                    outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
-                    fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
+                    outerClassScannedCount, entrypoints, packageReferences, apiTypes, targetApiVerification,
+                    methodReferences, fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
                     nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
                 observedNativeIds, limitations, archiveGraph);
         }
+    }
+
+    private static TargetApiVerificationFinding buildTargetApiVerification(
+            Forge1201ApiUsageAnalyzer.Analysis usage,
+            Forge1201TargetApiVerifier.TargetIndex targetIndex,
+            int targetClasspathEntryCount) throws IOException {
+        List<TargetApiClassFinding> classFindings = new ArrayList<>();
+        Set<String> candidateTargets = new TreeSet<>();
+        Set<String> presentTargets = new TreeSet<>();
+
+        for (String sourceInternalName : usage.referencedApiClasses().stream().distinct().sorted().toList()) {
+            Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(sourceInternalName);
+            Forge1201MappingCatalog.Kind kind = decision.kind();
+            boolean reviewedTargetType = Forge1201MappingCatalog.isReviewedTargetApiType(sourceInternalName)
+                    || Forge1211TargetMethodAliases.isTargetApiOwner(sourceInternalName);
+            if (kind == Forge1201MappingCatalog.Kind.NOT_FORGE_API && !reviewedTargetType) continue;
+
+            if (kind == Forge1201MappingCatalog.Kind.MANUAL_ADAPTER_REQUIRED) {
+                classFindings.add(new TargetApiClassFinding(
+                        sourceInternalName, null, kind, TargetApiClassStatus.MANUAL_ADAPTER_REQUIRED,
+                        decision.reason()));
+                continue;
+            }
+
+            boolean automaticCandidate =
+                    kind == Forge1201MappingCatalog.Kind.PACKAGE_RELOCATION_CANDIDATE
+                    || kind == Forge1201MappingCatalog.Kind.EXPLICIT_TYPE_REPLACEMENT
+                    || reviewedTargetType;
+            if (!automaticCandidate) {
+                classFindings.add(new TargetApiClassFinding(
+                        sourceInternalName, null, kind, TargetApiClassStatus.NOT_AUTOMATICALLY_MAPPED,
+                        decision.reason()));
+                continue;
+            }
+
+            String targetInternalName =
+                    kind == Forge1201MappingCatalog.Kind.PACKAGE_RELOCATION_CANDIDATE
+                            || kind == Forge1201MappingCatalog.Kind.EXPLICIT_TYPE_REPLACEMENT
+                    ? decision.targetInternalName()
+                    : sourceInternalName;
+            candidateTargets.add(targetInternalName);
+            if (targetIndex == null) {
+                classFindings.add(new TargetApiClassFinding(
+                        sourceInternalName, targetInternalName, kind,
+                        TargetApiClassStatus.NOT_CHECKED_NO_TARGET_CLASSPATH,
+                        "A target compile classpath was not supplied; class presence was not checked."));
+                continue;
+            }
+
+            boolean present = targetIndex.classInfo(targetInternalName).isPresent();
+            if (present) presentTargets.add(targetInternalName);
+            classFindings.add(new TargetApiClassFinding(
+                    sourceInternalName, targetInternalName, kind,
+                    present ? TargetApiClassStatus.PRESENT : TargetApiClassStatus.MISSING,
+                    decision.reason()));
+        }
+
+        classFindings.sort(Comparator.comparing(TargetApiClassFinding::sourceInternalName));
+        Forge1201TargetApiVerifier.Result memberVerification =
+                targetIndex == null ? null : targetIndex.verify(usage);
+        return new TargetApiVerificationFinding(
+                targetIndex == null
+                        ? TargetApiVerificationStatus.NOT_RUN_NO_TARGET_CLASSPATH
+                        : TargetApiVerificationStatus.COMPLETED,
+                targetClasspathEntryCount,
+                candidateTargets.size(),
+                presentTargets.size(),
+                classFindings,
+                memberVerification);
     }
 
     private static void appendSliceBoundaryText(
@@ -1026,6 +1140,53 @@ public final class Forge1201PreflightAnalyzer {
             }
             out.append(": ").append(type.explanation()).append('\n');
         }
+        TargetApiVerificationFinding targetApi = result.targetApiVerification();
+        out.append("\nTarget API structural verification: ").append(targetApi.status())
+                .append(" | target classpath entries=").append(targetApi.targetClasspathEntryCount())
+                .append(" | candidate target classes=").append(targetApi.candidateClassCount())
+                .append(" | present=").append(targetApi.presentTargetClassCount()).append('\n');
+        for (TargetApiClassFinding finding : targetApi.classFindings()) {
+            out.append("  ").append(finding.sourceInternalName()).append(" -> ")
+                    .append(finding.targetInternalName() == null ? "<no automatic target>" : finding.targetInternalName())
+                    .append(" [").append(finding.status()).append("] — ")
+                    .append(finding.explanation()).append('\n');
+        }
+        if (targetApi.memberVerification() == null) {
+            out.append("  Member lookup: NOT RUN; no structural member result is available.\n");
+        } else {
+            Forge1201TargetApiVerifier.Result members = targetApi.memberVerification();
+            out.append("  Methods: ").append(members.verifiedMethodReferences()).append('/')
+                    .append(members.uniqueMethodReferences()).append(" exact references verified; issues=")
+                    .append(members.methodIssues().size()).append('\n');
+            for (Forge1201TargetApiVerifier.MemberMatch match : members.verifiedMethods()) {
+                out.append("    ").append(match.display()).append('\n');
+                match.callSites().forEach(site -> out.append("      callsite: ").append(site).append('\n'));
+            }
+            for (Forge1201TargetApiVerifier.MemberIssue issue : members.methodIssues()) {
+                out.append("    ").append(issue.display()).append('\n');
+                if (!issue.hierarchyVisited().isEmpty()) {
+                    out.append("      hierarchy: ").append(issue.hierarchyVisited()).append('\n');
+                }
+                issue.callSites().forEach(site -> out.append("      callsite: ").append(site).append('\n'));
+            }
+            out.append("  Fields: ").append(members.verifiedFieldReferences()).append('/')
+                    .append(members.uniqueFieldReferences()).append(" exact references verified; issues=")
+                    .append(members.fieldIssues().size()).append('\n');
+            for (Forge1201TargetApiVerifier.MemberMatch match : members.verifiedFields()) {
+                out.append("    ").append(match.display()).append('\n');
+                match.callSites().forEach(site -> out.append("      callsite: ").append(site).append('\n'));
+            }
+            for (Forge1201TargetApiVerifier.MemberIssue issue : members.fieldIssues()) {
+                out.append("    ").append(issue.display()).append('\n');
+                if (!issue.hierarchyVisited().isEmpty()) {
+                    out.append("      hierarchy: ").append(issue.hierarchyVisited()).append('\n');
+                }
+                issue.callSites().forEach(site -> out.append("      callsite: ").append(site).append('\n'));
+            }
+        }
+        out.append("  Dynamic/bootstrap references are inventoried separately; member handles surfaced in the method/field references are checked by exact descriptor. Invokedynamic linkage and bootstrap behavior are not semantically verified.\n");
+        out.append("  Structural-only evidence: signature matches are not proof of behavior, access compatibility, "
+                + "semantic equivalence, or runtime linkage.\n");
         out.append("Method references: ").append(result.methodReferences().size())
                 .append(" | field references: ").append(result.fieldReferences().size()).append('\n')
                 .append("Method call sites: ").append(result.methodCallSites().size())

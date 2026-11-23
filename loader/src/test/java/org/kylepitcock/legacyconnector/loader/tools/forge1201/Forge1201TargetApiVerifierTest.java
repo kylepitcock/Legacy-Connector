@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 final class Forge1201TargetApiVerifierTest {
@@ -23,6 +24,10 @@ final class Forge1201TargetApiVerifierTest {
                 TARGET_BUS, targetInterface(TARGET_BUS),
                 "net/neoforged/fml/Base", targetBaseClass());
 
+        var methodCallSite = new Forge1201ApiUsageAnalyzer.ApiMethodCallSite(
+                "fixture/Caller", "register", "()V",
+                "net/minecraftforge/fml/common/Mod", "register",
+                "(Lnet/minecraftforge/eventbus/api/IEventBus;)V", Opcodes.INVOKESTATIC, 1);
         Forge1201TargetApiVerifier.Result result = verify(
                 analysis(
                         List.of("net/minecraftforge/fml/common/Mod", "net/minecraftforge/eventbus/api/IEventBus"),
@@ -35,7 +40,9 @@ final class Forge1201TargetApiVerifierTest {
                                 "net/minecraftforge/fml/common/Mod",
                                 "BUS",
                                 "Lnet/minecraftforge/eventbus/api/IEventBus;",
-                                1))),
+                                1)),
+                        List.of(methodCallSite),
+                        List.of()),
                 classes);
 
         assertEquals(2, result.candidateClassCount());
@@ -44,9 +51,15 @@ final class Forge1201TargetApiVerifierTest {
         assertEquals(1, result.uniqueMethodReferences());
         assertEquals(1, result.verifiedMethodReferences());
         assertTrue(result.methodIssues().isEmpty());
+        assertEquals(1, result.verifiedMethods().size());
+        var verifiedMethod = result.verifiedMethods().getFirst();
+        assertEquals(List.of(TARGET_MOD, "net/neoforged/fml/Base"), verifiedMethod.hierarchyVisited());
+        assertEquals(List.of(methodCallSite.display()), verifiedMethod.callSites());
         assertEquals(1, result.uniqueFieldReferences());
         assertEquals(1, result.verifiedFieldReferences());
         assertTrue(result.fieldIssues().isEmpty());
+        assertEquals(1, result.verifiedFields().size());
+        assertEquals(List.of(TARGET_MOD), result.verifiedFields().getFirst().hierarchyVisited());
     }
 
     @Test
@@ -124,6 +137,8 @@ final class Forge1201TargetApiVerifierTest {
                 result.missingTargetClasses());
         assertEquals(Forge1201TargetApiVerifier.MemberStatus.INCOMPLETE_HIERARCHY,
                 result.methodIssues().get(0).status());
+        assertEquals(List.of(TARGET_MOD, "net/neoforged/fml/UnseenParent"),
+                result.methodIssues().get(0).hierarchyVisited());
     }
 
     @Test
@@ -319,6 +334,89 @@ final class Forge1201TargetApiVerifierTest {
         assertTrue(independent.classInfo(missingParent).isEmpty());
     }
 
+    @Test
+    void sharedTargetIndexVerifiesArrayDescriptorsAndReportsMissingOwnerAsMissing() throws Exception {
+        String arrayDescriptor = "([Lnet/minecraftforge/eventbus/api/IEventBus;)V";
+        Map<String, byte[]> classes = Map.of(
+                TARGET_MOD, targetArrayMethodClass(),
+                TARGET_BUS, targetInterface(TARGET_BUS));
+
+        var indexed = Forge1201TargetApiVerifier.createIndex(internalName -> {
+            byte[] bytes = classes.get(internalName);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        });
+        var arrayAnalysis = analysis(
+                List.of("net/minecraftforge/fml/common/Mod",
+                        "net/minecraftforge/eventbus/api/IEventBus"),
+                List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                        "net/minecraftforge/fml/common/Mod", "registerAll", arrayDescriptor, 1)),
+                List.of());
+        var arrayResult = indexed.verify(arrayAnalysis);
+        assertEquals(1, arrayResult.verifiedMethodReferences());
+        assertTrue(arrayResult.methodIssues().isEmpty());
+
+        String missingOwner = "net/minecraftforge/client/event/DoesNotExist";
+        var missingIndex = Forge1201TargetApiVerifier.createIndex(name -> null);
+        var callSite = new Forge1201ApiUsageAnalyzer.ApiMethodCallSite(
+                "fixture/Caller", "call", "()V", missingOwner, "missing", "()V", Opcodes.INVOKESTATIC, 2);
+        var missingResult = missingIndex.verify(
+                analysis(List.of(missingOwner),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                missingOwner, "missing", "()V", 1)),
+                        List.of(), List.of(callSite), List.of()));
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.MISSING,
+                missingResult.methodIssues().getFirst().status());
+        assertEquals(List.of(callSite.display()), missingResult.methodIssues().getFirst().callSites());
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.MISSING,
+                missingIndex.lookupMethod(missingOwner, "missing", "()V").status());
+    }
+
+    @Test
+    void verifiesForgeApiMethodAndFieldHandlesCollectedFromDynamicConstants() throws Exception {
+        var inventory = new Forge1201ApiUsageAnalyzer.Inventory();
+        assertTrue(inventory.scanNestedClass(
+                "source/fixture.jar!/nested.jar", "fixture/HandleUse.class", forgeHandleReferenceClass()));
+        var analysis = inventory.finish(null);
+
+        assertTrue(analysis.dynamicReferences().stream().anyMatch(reference ->
+                reference.kind() == Forge1201ApiUsageAnalyzer.ApiDynamicReferenceKind.METHOD_HANDLE
+                        && "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "get".equals(reference.name())));
+        assertTrue(analysis.dynamicReferences().stream().anyMatch(reference ->
+                reference.kind() == Forge1201ApiUsageAnalyzer.ApiDynamicReferenceKind.FIELD_HANDLE
+                        && "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "INSTANCE".equals(reference.name())));
+        assertTrue(analysis.methodReferences().stream().anyMatch(reference ->
+                "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "get".equals(reference.name())));
+        assertTrue(analysis.fieldReferences().stream().anyMatch(reference ->
+                "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "INSTANCE".equals(reference.name())));
+
+        String targetModList = "net/neoforged/fml/ModList";
+        ClassWriter targetWriter = new ClassWriter(0);
+        targetWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, targetModList, null, "java/lang/Object", null);
+        targetWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "INSTANCE",
+                "Lnet/neoforged/fml/ModList;", null, null).visitEnd();
+        targetWriter.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "get",
+                "()Lnet/neoforged/fml/ModList;", null, null).visitEnd();
+        targetWriter.visitEnd();
+        Map<String, byte[]> targetClasses = Map.of(targetModList, targetWriter.toByteArray());
+
+        var index = Forge1201TargetApiVerifier.createIndex(internalName -> {
+            byte[] bytes = targetClasses.get(internalName);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        });
+        var result = index.verify(analysis);
+
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertTrue(result.verifiedMethods().getFirst().callSites().isEmpty());
+        assertTrue(result.verifiedFields().getFirst().callSites().isEmpty());
+    }
+
     private static Forge1201ApiUsageAnalyzer.Analysis analysis(
             List<String> classes,
             List<Forge1201ApiUsageAnalyzer.ApiMemberReference> methods,
@@ -342,6 +440,35 @@ final class Forge1201TargetApiVerifierTest {
         return new Forge1201ApiUsageAnalyzer.Analysis(
                 metadata, 1, List.of(), List.of(), null, Map.of(), classes,
                 methodCallSites, fieldCallSites, methods, fields);
+    }
+
+    private static byte[] forgeHandleReferenceClass() {
+        String owner = "net/minecraftforge/fml/ModList";
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, "fixture/HandleUse", null, "java/lang/Object", null);
+        MethodVisitor method = writer.visitMethod(
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "references", "()V", null, null);
+        method.visitCode();
+        method.visitLdcInsn(new org.objectweb.asm.Handle(
+                Opcodes.H_INVOKESTATIC, owner, "get", "()L" + owner + ";", false));
+        method.visitInsn(Opcodes.POP);
+        method.visitLdcInsn(new org.objectweb.asm.Handle(
+                Opcodes.H_GETSTATIC, owner, "INSTANCE", "L" + owner + ";", false));
+        method.visitInsn(Opcodes.POP);
+        method.visitInsn(Opcodes.RETURN);
+        method.visitMaxs(1, 0);
+        method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] targetArrayMethodClass() {
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, TARGET_MOD, null, "java/lang/Object", null);
+        writer.visitMethod(Opcodes.ACC_PUBLIC, "registerAll",
+                "([Lnet/neoforged/bus/api/IEventBus;)V", null, null).visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
     }
 
     private static byte[] targetModClass(String superName, boolean registerMethod, boolean busField) {

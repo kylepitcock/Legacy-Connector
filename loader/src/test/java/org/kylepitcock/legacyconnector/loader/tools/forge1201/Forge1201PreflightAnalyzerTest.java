@@ -119,13 +119,18 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.15", first.schemaVersion());
-        assertEquals("1.15.0", first.analyzerVersion());
+        assertEquals("1.16", first.schemaVersion());
+        assertEquals("1.16.0", first.analyzerVersion());
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
                 first.accessTransformers().status());
         assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
         assertEquals(Forge1201MixinAnalyzer.TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH,
                 first.mixinAnalysis().targetIndexStatus());
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiVerificationStatus.NOT_RUN_NO_TARGET_CLASSPATH,
+                first.targetApiVerification().status());
+        assertEquals(0, first.targetApiVerification().targetClasspathEntryCount());
+        assertTrue(first.targetApiVerification().classFindings().stream().anyMatch(finding ->
+                finding.status() == Forge1201PreflightAnalyzer.TargetApiClassStatus.NOT_CHECKED_NO_TARGET_CLASSPATH));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED,
                 first.mappingProfile().status());
         assertTrue(first.mixinAnalysis().memberAnnotations().isEmpty());
@@ -254,6 +259,53 @@ final class Forge1201PreflightAnalyzerTest {
                 value.contains("ID-presence summary only")));
         assertTrue(Forge1201PreflightAnalyzer.toText(result)
                 .contains("ID-presence summary; range-aware provider selection is below"));
+    }
+
+    @Test
+    void reportsSharedTargetApiClassAndMemberEvidenceAndKeepsManualAdaptersExplicit() throws IOException {
+        Path sourceJar = createForgeModJar(
+                "target-api-structural-report.jar", false,
+                nestedArchiveWithClassBytes(forgeManualApiDescriptorClass()));
+        Path targetRoot = tempDir.resolve("target-api-compile-classpath");
+        Path modList = targetRoot.resolve("net/neoforged/fml/ModList.class");
+        Files.createDirectories(modList.getParent());
+        Files.write(modList, targetModListWithGetMethod());
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of(), List.of(targetRoot));
+        var verification = result.targetApiVerification();
+
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiVerificationStatus.COMPLETED, verification.status());
+        assertEquals(1, verification.targetClasspathEntryCount());
+        assertEquals(2, verification.candidateClassCount());
+        assertEquals(1, verification.presentTargetClassCount());
+        var modFinding = verification.classFindings().stream()
+                .filter(finding -> finding.sourceInternalName().equals("net/minecraftforge/fml/common/Mod"))
+                .findFirst().orElseThrow();
+        assertEquals("net/neoforged/fml/common/Mod", modFinding.targetInternalName());
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiClassStatus.MISSING, modFinding.status());
+        var modListFinding = verification.classFindings().stream()
+                .filter(finding -> finding.sourceInternalName().equals("net/minecraftforge/fml/ModList"))
+                .findFirst().orElseThrow();
+        assertEquals("net/neoforged/fml/ModList", modListFinding.targetInternalName());
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiClassStatus.PRESENT, modListFinding.status());
+        assertEquals(1, verification.memberVerification().verifiedMethodReferences());
+        assertTrue(verification.memberVerification().methodIssues().isEmpty());
+        assertEquals(1, verification.memberVerification().verifiedMethods().size());
+        assertFalse(verification.memberVerification().verifiedMethods().getFirst().callSites().isEmpty());
+
+        var manualAdapter = verification.classFindings().stream()
+                .filter(finding -> finding.sourceInternalName()
+                        .equals("net/minecraftforge/event/TickEvent$Phase"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiClassStatus.MANUAL_ADAPTER_REQUIRED,
+                manualAdapter.status());
+        assertEquals(null, manualAdapter.targetInternalName());
+        assertTrue(manualAdapter.explanation().length() > 0);
+
+        String report = Forge1201PreflightAnalyzer.toText(result);
+        assertTrue(report.contains("Target API structural verification: COMPLETED"));
+        assertTrue(report.contains("MANUAL_ADAPTER_REQUIRED"));
+        assertTrue(report.contains("Structural-only evidence"));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"targetApiVerification\""));
     }
 
     @Test
@@ -799,6 +851,9 @@ final class Forge1201PreflightAnalyzerTest {
         assertEquals(Forge1201PreflightAnalyzer.MetadataStatus.MISSING_MODS_TOML, result.metadataStatus());
         assertEquals(Forge1201PreflightAnalyzer.AnalysisStatus.BYTECODE_INVENTORY_SKIPPED_METADATA_NOT_RECOGNIZED,
                 result.analysisStatus());
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiVerificationStatus.NOT_RUN_SOURCE_METADATA_NOT_RECOGNIZED,
+                result.targetApiVerification().status());
+        assertEquals(0, result.targetApiVerification().candidateClassCount());
         assertEquals(List.of("example"), result.resourceNamespaces());
         assertEquals(2, result.archiveEntryCount());
         assertNotNull(result.sourceSha256());
@@ -1054,6 +1109,27 @@ final class Forge1201PreflightAnalyzerTest {
             put(zip, "nested/LibraryFeature.class", classBytes);
         }
         return bytes.toByteArray();
+    }
+
+    private static byte[] forgeManualApiDescriptorClass() {
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, "fixture/ManualApiUse", null, "java/lang/Object", null);
+        writer.visitField(Opcodes.ACC_PRIVATE, "phase",
+                "Lnet/minecraftforge/event/TickEvent$Phase;", null, null).visitEnd();
+        writer.visitMethod(Opcodes.ACC_PUBLIC, "setPhase",
+                "(Lnet/minecraftforge/event/TickEvent$Phase;)V", null, null).visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] targetModListWithGetMethod() {
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC,
+                "net/neoforged/fml/ModList", null, "java/lang/Object", null);
+        writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "get",
+                "()Lnet/neoforged/fml/ModList;", null, null).visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
     }
 
     private static byte[] plainTargetClass(String internalName) {
