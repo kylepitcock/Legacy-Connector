@@ -92,7 +92,7 @@ veins are never cut at y=0 (nothing is chosen per cell), a generator keyed to be
 ore count per chunk is the mod's own. The cost: ore heights are the mod's numbers + (-64), so an ore meant for y 0-63 lands in
 -64..-1 and ore meant above 64 sits 64 lower; surface-relative ores follow the same shift (use `deepLayer.splitMods` for a mod
 where that is wrong, or whose generators build stone-replacing structures: the normal pass refuses their stone-replacing blocks and the
-shifted pass places them 64 lower). 1.7.10 mod dimensions keep `split`. `split` is the previous scheme, kept as the fallback and
+shifted pass places them 64 lower). 1.7.10 mod dimensions keep `split`, and so do the generators of 1.4.7, 1.5.2 and 1.6.4 mods (their ores sit at y 0-63, which the shifted pass would put at -64..-1 only, #327 #328; `deepLayer.shiftedMods` still selects the shifted pass). `split` is the previous scheme, kept as the fallback and
 described below (for 1.12.2 it means no ores below y=0, as before this mode existed). The shifted pass is a placed feature per
 generator, `<modid>:legacy_worldgen_deep/<name>` (type `legacyconnector:legacy_generator_deep` for 1.12.2; `legacyconnector:legacy_worldgen_deep` for
 1.7.10), step `underground_ores`, placed `above_bottom 0`.
