@@ -58,11 +58,14 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             throw new IllegalStateException("AlienEvo KineceleranRunAnimation.animate has an unexpected method shape");
         }
 
+        int returnCount = countOpcode(method, RETURN);
+        int existingTraces = countCalls(method, "traceKineceleranRun");
+        if (returnCount == 0) throw new IllegalStateException("AlienEvo KineceleranRunAnimation.animate has no return sites to trace");
+        if (existingTraces == returnCount) return 0;
+        if (existingTraces != 0) throw new IllegalStateException("AlienEvo KineceleranRunAnimation has a partial runtime trace");
         int changed = 0;
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
-            if (instruction.getOpcode() != RETURN || hasTraceBeforeReturn(method, instruction, "traceKineceleranRun")) {
-                continue;
-            }
+            if (instruction.getOpcode() != RETURN) continue;
             InsnList trace = new InsnList();
             trace.add(new VarInsnNode(ALOAD, 1)); // Palladium animation builder
             trace.add(new VarInsnNode(ALOAD, 2)); // player
@@ -71,9 +74,6 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
                     "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V", false));
             method.instructions.insertBefore(instruction, trace);
             changed++;
-        }
-        if (changed == 0 && !hasAnyCall(method, "traceKineceleranRun")) {
-            throw new IllegalStateException("AlienEvo KineceleranRunAnimation.animate has no return sites to trace");
         }
         method.maxStack = Math.max(method.maxStack, 3);
         return changed;
@@ -85,12 +85,14 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             throw new IllegalStateException("AlienEvo FirstPersonArmAnimator.apply has an unexpected method shape");
         }
 
-        int returns = 0;
+        int returns = countOpcode(method, RETURN);
+        int existingTraces = countCalls(method, "traceFirstPersonArmApply");
+        if (returns == 0) throw new IllegalStateException("AlienEvo FirstPersonArmAnimator.apply has no return site to trace");
+        if (existingTraces == returns) return 0;
+        if (existingTraces != 0) throw new IllegalStateException("AlienEvo FirstPersonArmAnimator has a partial runtime trace");
         int changed = 0;
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction.getOpcode() != RETURN) continue;
-            returns++;
-            if (hasTraceBeforeReturn(method, instruction, "traceFirstPersonArmApply")) continue;
 
             InsnList trace = new InsnList();
             trace.add(new VarInsnNode(ALOAD, 2)); // resolved PlayerModelPart
@@ -114,12 +116,14 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             throw new IllegalStateException("AlienEvo CancelFirstPersonSwingMixin handler has an unexpected method shape");
         }
 
-        int returns = 0;
+        int returns = countOpcode(method, FRETURN);
+        int existingTraces = countCalls(method, "traceVanillaSwing");
+        if (returns == 0) throw new IllegalStateException("AlienEvo CancelFirstPersonSwingMixin has no FRETURN site to trace");
+        if (existingTraces == returns) return 0;
+        if (existingTraces != 0) throw new IllegalStateException("AlienEvo CancelFirstPersonSwingMixin has a partial runtime trace");
         int changed = 0;
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction.getOpcode() != FRETURN) continue;
-            returns++;
-            if (hasTraceBeforeReturn(method, instruction, "traceVanillaSwing")) continue;
 
             InsnList trace = new InsnList();
             trace.add(new InsnNode(DUP)); // retain the result for FRETURN
@@ -141,15 +145,17 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has an unexpected method shape");
         }
 
-        int returns = 0;
+        int returns = countOpcode(method, ARETURN);
+        int originTraces = countCalls(method, "traceBeamAnchor");
+        int missingTraces = countCalls(method, "traceMissingBeamAnchor");
+        if (returns == 0) throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has no ARETURN site to trace");
+        if (originTraces == returns && missingTraces == returns) return 0;
+        if (originTraces != 0 || missingTraces != 0) {
+            throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has a partial runtime trace");
+        }
         int changed = 0;
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction.getOpcode() != ARETURN) continue;
-            returns++;
-            if (hasTraceBeforeReturn(method, instruction, "traceBeamAnchor")
-                    || hasTraceBeforeReturn(method, instruction, "traceMissingBeamAnchor")) {
-                continue;
-            }
 
             LabelNode missing = new LabelNode();
             LabelNode done = new LabelNode();
@@ -192,34 +198,22 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
         return changed;
     }
 
-    private static boolean hasTraceBeforeReturn(MethodNode method, AbstractInsnNode returnInstruction, String name) {
-        for (AbstractInsnNode instruction = returnInstruction.getPrevious();
-                instruction != null && instruction.getOpcode() < 0 || instruction != null;
-                instruction = instruction.getPrevious()) {
-            if (instruction instanceof MethodInsnNode call
-                    && call.getOpcode() == INVOKESTATIC
-                    && HELPER.equals(call.owner)
-                    && name.equals(call.name)) {
-                return true;
-            }
-            if (instruction.getOpcode() >= 0) {
-                // The trace is inserted directly before the return, after the previous source operation.
-                if (!(instruction instanceof MethodInsnNode) && !(instruction instanceof VarInsnNode)
-                        && !(instruction instanceof InsnNode) && !(instruction instanceof JumpInsnNode)) {
-                    break;
-                }
-            }
+    private static int countOpcode(MethodNode method, int opcode) {
+        int count = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction.getOpcode() == opcode) count++;
         }
-        return false;
+        return count;
     }
 
-    private static boolean hasAnyCall(MethodNode method, String name) {
+    private static int countCalls(MethodNode method, String name) {
+        int count = 0;
         for (AbstractInsnNode instruction : method.instructions) {
             if (instruction instanceof MethodInsnNode call
                     && call.getOpcode() == INVOKESTATIC
-                    && HELPER.equals(call.owner) && name.equals(call.name)) return true;
+                    && HELPER.equals(call.owner) && name.equals(call.name)) count++;
         }
-        return false;
+        return count;
     }
 
     private static MethodNode find(ClassNode node, String name, String descriptor) {
