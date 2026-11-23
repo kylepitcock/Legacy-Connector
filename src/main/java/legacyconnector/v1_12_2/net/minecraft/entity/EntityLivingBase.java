@@ -152,6 +152,33 @@ public abstract class EntityLivingBase extends Entity {
         return mcc$host() instanceof LivingHost1122 h ? h : null;
     }
 
+    /**
+     * The modern damage source of a 1.12 hurt status byte (2 hurt, 33 thorns, 36 drowned, 37 burnt; the hurt sound differs by source), or null
+     * for any other byte. 1.19.4 replaced these bytes with the damage event, whose client handling ({@code handleDamageEvent}) is what 1.12
+     * did for them: red flash (hurtTime), limb swing, invulnerability ticks.
+     */
+    public static net.minecraft.world.damagesource.DamageSource mcc$hurtSource(LivingEntity living, byte state) {
+        var sources = living.damageSources();
+        return switch (state) {
+            case 2, 33 -> sources.generic();
+            case 36 -> sources.drown();
+            case 37 -> sources.onFire();
+            default -> null;
+        };
+    }
+
+    /** 1.12's client handling of the hurt bytes for a legacy entity whose own handleStatusUpdate passes them up (see {@link #mcc$hurtSource}). */
+    @Override
+    public void handleStatusUpdate(byte id) {
+        LivingEntity l = mcc$living();
+        var source = l == null ? null : mcc$hurtSource(l, id);
+        if (source != null && l.level().isClientSide()) {
+            l.handleDamageEvent(source);
+            return;
+        }
+        super.handleStatusUpdate(id);
+    }
+
     // ------------------------------------------------------------------ phantom fields
 
     /** Phantom field: {@link #mcc$get$jumpTicks}. */
@@ -207,6 +234,25 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     private static final java.lang.reflect.Method MCC$TOTEM = mcc$findTotem();
+    private static final java.lang.reflect.Method MCC$ACTUALLY_HURT = mcc$findActuallyHurt();
+    private static final java.lang.reflect.Field MCC$DAMAGE_CONTAINERS = mcc$findDamageContainers();
+
+    private static java.lang.reflect.Method mcc$findActuallyHurt() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(LivingEntity.class, "actuallyHurt",
+                    net.minecraft.world.damagesource.DamageSource.class, float.class);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static java.lang.reflect.Field mcc$findDamageContainers() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(LivingEntity.class, "damageContainers");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
 
     private static java.lang.reflect.Method mcc$findTotem() {
         try {
@@ -505,6 +551,33 @@ public abstract class EntityLivingBase extends Entity {
             return;
         }
         if (isEntityInvulnerable(source)) return;
+        // a modern entity: its own actuallyHurt (armour, enchantments, resistance, absorption, LivingDamageEvent), as 1.12's damageEntity did.
+        // It reads the amount from the top damage container, so this hit gets its own for the call.
+        if (MCC$ACTUALLY_HURT != null && MCC$DAMAGE_CONTAINERS != null) {
+            java.util.Stack<net.neoforged.neoforge.common.damagesource.DamageContainer> containers = null;
+            try {
+                @SuppressWarnings("unchecked")
+                var c = (java.util.Stack<net.neoforged.neoforge.common.damagesource.DamageContainer>) MCC$DAMAGE_CONTAINERS.get(l);
+                containers = c;
+            } catch (ReflectiveOperationException | ClassCastException e) {
+                // fall back to the plain subtraction below
+            }
+            if (containers != null) {
+                containers.push(new net.neoforged.neoforge.common.damagesource.DamageContainer(modern, amount));
+                try {
+                    MCC$ACTUALLY_HURT.invoke(l, modern, amount);
+                } catch (java.lang.reflect.InvocationTargetException e) {
+                    if (e.getCause() instanceof RuntimeException r) throw r;
+                    if (e.getCause() instanceof Error r) throw r;
+                    throw new RuntimeException(e.getCause());
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    containers.pop();
+                }
+                return;
+            }
+        }
         float absorbed = Math.min(amount, l.getAbsorptionAmount());
         l.setAbsorptionAmount(l.getAbsorptionAmount() - absorbed);
         float rest = amount - absorbed;
@@ -520,7 +593,17 @@ public abstract class EntityLivingBase extends Entity {
 
     public void onDeath(DamageSource cause) {
         var h = mcc$livingHost();
-        if (h != null && cause != null) h.mcc$superDie(cause.mcc$modern(mcc$entity.level()));
+        if (h != null) {
+            if (cause != null) h.mcc$superDie(cause.mcc$modern(mcc$entity.level()));
+            return;
+        }
+        // a vanilla or modern entity a mod kills itself (Techguns' damage system sets the health and calls onDeath after cancelling the attack event):
+        // its modern death, which fires LivingDeathEvent (Techguns' gore packet), drops the loot and starts the death animation, as 1.12's onDeath did.
+        // die() does nothing for an entity that is already dead, so a second call (the mod's and the game's) is harmless.
+        LivingEntity l = mcc$living();
+        if (l != null && !l.level().isClientSide()) {
+            l.die(cause != null ? cause.mcc$modern(l.level()) : l.damageSources().generic());
+        }
     }
 
     /** The loot of a death: the loot table (when the mod gives one) or dropFewItems, then the equipment. */
@@ -1381,7 +1464,10 @@ public abstract class EntityLivingBase extends Entity {
     protected void onNewPotionEffect(PotionEffect effect) {
     }
 
-    /** Wears the armour by the damage taken; empty in 1.12's EntityLivingBase too (players and mods' mobs override it). */
+    /**
+     * Wears the armour by the damage taken; empty in 1.12's EntityLivingBase too (players and mods' mobs override it). Mods reach it by
+     * reflection (Techguns' DamageSystem looks it up for every hit on its NPCs; without it the lookup got a placeholder and each melee hit failed).
+     */
     protected void damageArmor(float damage) {
     }
 

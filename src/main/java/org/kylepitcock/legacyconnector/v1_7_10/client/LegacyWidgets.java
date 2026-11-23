@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
  * sprites in 1.20.2, but legacy buttons, sliders and check boxes ({@code GuiUtils.drawContinuousTexturedBox}) still blit from it,
  * so it is composed once from the modern sprites at the old positions and registered under the old name.
  */
-final class LegacyWidgets {
-    static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/widgets.png");
+public final class LegacyWidgets {
+    public static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/widgets.png");
     private static boolean done;
 
     private LegacyWidgets() {}
 
     /** Registers the sheet the first time anything binds it (render thread). */
-    static void ensure() {
+    public static void ensure() {
         if (done || !RenderSystem.isOnRenderThread()) return;
         done = true;
         try {

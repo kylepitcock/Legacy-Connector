@@ -30,6 +30,17 @@ public class ItemBucket extends Item {
         setCreativeTab(legacyconnector.v1_12_2.net.minecraft.creativetab.CreativeTabs.MISC);
     }
 
+    /**
+     * Forge's patch: a vanilla bucket (empty, water, lava) is a fluid handler item, so mods fill and drain it through the capability (Techguns'
+     * chemistry laboratory takes a bucket of water with a right click; without it nothing happened). Subclasses keep their own capabilities.
+     */
+    @Override
+    public legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound nbt) {
+        if (getClass() == ItemBucket.class) return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.FluidBucketWrapper(stack);
+        return super.initCapabilities(stack, nbt);
+    }
+
     /** The block the bucket places (air for the empty bucket): a mod's own filled bucket of its fluid block. */
     public Block mcc$containedBlock() {
         return containedBlock;

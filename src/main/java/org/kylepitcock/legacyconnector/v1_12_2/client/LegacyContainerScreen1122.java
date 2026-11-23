@@ -141,7 +141,11 @@ public class LegacyContainerScreen1122 extends AbstractContainerScreen<LegacyMen
             keys.flush(legacy);
             boolean[] onButton = {false};
             guard(() -> {
-                for (GuiButton b : legacy.mcc$buttons()) if (b.mousePressed(Minecraft.getMinecraft(), (int) x, (int) y)) onButton[0] = true;
+                // a plain hit test, never mousePressed: the legacy mouseClicked below calls that itself, and buttons act in it (Techguns'
+                // inventory toggles send their packet from mousePressed; asked twice per click, safe mode and the rest toggled back at once)
+                for (GuiButton b : legacy.mcc$buttons()) {
+                    if (b.enabled && b.visible && x >= b.x && y >= b.y && x < b.x + b.width && y < b.y + b.height) onButton[0] = true;
+                }
                 legacy.mcc$mouseClicked((int) x, (int) y, button);
             });
             if (onButton[0]) return true;

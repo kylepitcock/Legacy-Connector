@@ -22,6 +22,8 @@ public class ModelLoaderRegistry {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/Models1122");
     private static final Map<ResourceLocation, IModel> CACHE = new ConcurrentHashMap<>();
     private static final Set<ResourceLocation> REQUESTED = ConcurrentHashMap.newKeySet();
+    /** Blockstate variants asked for here ({@code techguns:grenadelauncher_1#inventory}): some name a file no block or item owns (Assets1122.orphanModel). */
+    private static final Set<ModelResourceLocation> REQUESTED_VARIANTS = ConcurrentHashMap.newKeySet();
     private static final IModel MISSING = new GameModel(null);
 
     public static void registerLoader(ICustomModelLoader loader) {
@@ -67,7 +69,8 @@ public class ModelLoaderRegistry {
             model = loader.loadModel(actual);
             if (model == null) throw new LoaderException("Loader " + loader + " returned null for " + location);
         } else {
-            if (!(location instanceof ModelResourceLocation)) REQUESTED.add(location);
+            if (!(location instanceof ModelResourceLocation mrl)) REQUESTED.add(location);
+            else REQUESTED_VARIANTS.add(mrl);
             model = new GameModel(location);
         }
         CACHE.put(location, model);
@@ -157,17 +160,66 @@ public class ModelLoaderRegistry {
         return Set.copyOf(REQUESTED);
     }
 
+    public static Set<ModelResourceLocation> mcc$requestedVariants() {
+        return Set.copyOf(REQUESTED_VARIANTS);
+    }
+
     /** The game's missing model, as a legacy baked model. */
     public static IBakedModel mcc$missingBaked() {
         return org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacy(net.minecraft.client.Minecraft.getInstance().getModelManager().getMissingModel());
     }
 
+    /** The x and y degrees of a model rotation (its constants are named X{x}_Y{y}). */
+    static int[] mcc$degrees(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelRotation rotation) {
+        String name = rotation.name();
+        int y = name.indexOf("_Y");
+        try {
+            return new int[] {Integer.parseInt(name.substring(1, y)), Integer.parseInt(name.substring(y + 2))};
+        } catch (RuntimeException e) {
+            return new int[2];
+        }
+    }
+
     /** A model the game itself bakes (json model, blockstate variant). */
     private static final class GameModel implements IModel {
         private final ResourceLocation location;
+        /** Texture variables a mod set with retexture (null: the json's own), and its uvlock. */
+        private final com.google.common.collect.ImmutableMap<String, String> textures;
+        private final boolean uvlock;
 
         GameModel(ResourceLocation location) {
+            this(location, null, false);
+        }
+
+        private GameModel(ResourceLocation location, com.google.common.collect.ImmutableMap<String, String> textures, boolean uvlock) {
             this.location = location;
+            this.textures = textures;
+            this.uvlock = uvlock;
+        }
+
+        /** Whether this is a plain json model (a model location, not a blockstate variant), the kind retexture and a rotation apply to. */
+        private boolean json() {
+            return location != null && !(location instanceof ModelResourceLocation);
+        }
+
+        /**
+         * Forge's retextured vanilla model: the json with its texture variables set (Techguns bakes its stairs and slabs from vanilla's
+         * {@code block/stairs} and {@code block/half_slab} with its own textures; returned unchanged, every face kept the unresolved
+         * {@code #side} and drew the missing texture).
+         */
+        @Override
+        public IModel retexture(com.google.common.collect.ImmutableMap<String, String> newTextures) {
+            if (!json() || newTextures == null || newTextures.isEmpty()) return this;
+            java.util.Map<String, String> merged = new java.util.LinkedHashMap<>();
+            if (textures != null) merged.putAll(textures);
+            merged.putAll(newTextures);
+            return new GameModel(location, com.google.common.collect.ImmutableMap.copyOf(merged), uvlock);
+        }
+
+        @Override
+        public IModel uvlock(boolean value) {
+            if (!json() || value == uvlock) return this;
+            return new GameModel(location, textures, value);
         }
 
         /**
@@ -248,14 +300,42 @@ public class ModelLoaderRegistry {
         public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
             // a mod asking for a model in init (Dawn of Time bakes its custom models there): the game's model manager does not exist yet
             var mc = net.minecraft.client.Minecraft.getInstance();
-            if (mc == null || mc.getModelManager() == null) return new LazyBaked(this::bakeNow);
+            // a rotation (a blockstate variant's x/y as the model state) or retextured variables: the json baked again with them
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelRotation rotation =
+                    state instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelRotation r ? r : null;
+            boolean rotated = rotation != null && rotation != legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelRotation.X0_Y0;
+            if (json() && (textures != null || uvlock || rotated)) {
+                var getter = bakedTextureGetter != null ? bakedTextureGetter : ModelLoader.defaultTextureGetter();
+                int[] xy = rotation == null ? new int[2] : mcc$degrees(rotation);
+                java.util.function.Supplier<IBakedModel> custom = () -> {
+                    IBakedModel own = org.kylepitcock.legacyconnector.v1_12_2.client.JsonBake1122.bake(location.mcc$modern(), textures, xy[0], xy[1], uvlock, getter);
+                    return own != null ? own : bakeNow();
+                };
+                if (mc == null || mc.getModelManager() == null) return new LazyBaked(custom);
+                return custom.get();
+            }
+            if (mc == null || mc.getModelManager() == null) return new LazyBaked(() -> bakeVariant(state, format, bakedTextureGetter));
             // a texture getter of the mod's own (EnderIO's paint registry gives every texture of a wall model the paint block's sprite): the game's
             // baked model has the textures of its json, so the json is baked again with the getter's sprites
             if (location != null && !(location instanceof ModelResourceLocation) && bakedTextureGetter != null && !(bakedTextureGetter instanceof ModelLoader.DefaultTextureGetter)) {
                 IBakedModel own = org.kylepitcock.legacyconnector.v1_12_2.client.JsonBake1122.bake(location.mcc$modern(), bakedTextureGetter);
                 if (own != null) return own;
             }
-            return bakeNow();
+            return bakeVariant(state, format, bakedTextureGetter);
+        }
+
+        /**
+         * {@link #bakeNow}, and for a blockstate variant the game has no model of whose model is an OBJ file, that file baked by the OBJ loader with
+         * the caller's texture getter (OrphanVariants1122.bakeObj).
+         */
+        private IBakedModel bakeVariant(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> getter) {
+            IBakedModel now = bakeNow();
+            if (location instanceof ModelResourceLocation mrl && (now == null
+                    || org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.modern(now) == org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.missingModern())) {
+                IBakedModel obj = org.kylepitcock.legacyconnector.v1_12_2.client.OrphanVariants1122.bakeObj(mrl, state, format, getter);
+                if (obj != null) return obj;
+            }
+            return now;
         }
 
         private IBakedModel bakeNow() {

@@ -10,6 +10,7 @@ public class LootFunctionManager {
     private static final Map<Class<?>, LootFunction.Serializer<?>> CLASS_TO_SERIALIZER_MAP = new HashMap<>();
 
     public static synchronized <T extends LootFunction> void registerFunction(LootFunction.Serializer<? extends T> serializer) {
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.ensure(); // the vanilla types first, as 1.12's static block registered them
         ResourceLocation name = serializer.getFunctionName();
         Class<?> clazz = serializer.getFunctionClass();
         if (NAME_TO_SERIALIZER_MAP.containsKey(name)) throw new IllegalArgumentException("Can't re-register item function name " + name);
@@ -19,6 +20,7 @@ public class LootFunctionManager {
     }
 
     public static synchronized LootFunction.Serializer<?> getSerializerForName(ResourceLocation location) {
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.ensure();
         LootFunction.Serializer<?> serializer = NAME_TO_SERIALIZER_MAP.get(location);
         if (serializer == null) throw new IllegalArgumentException("Unknown loot item function '" + location + "'");
         return serializer;
@@ -40,7 +42,13 @@ public class LootFunctionManager {
             legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition[] conditions = json.has("conditions")
                     ? context.deserialize(json.get("conditions"), legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition[].class)
                     : new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition[0];
-            return getSerializerForName(name).deserialize(json, context, conditions);
+            LootFunction.Serializer<?> serializer;
+            synchronized (LootFunctionManager.class) {
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.ensure();
+                serializer = NAME_TO_SERIALIZER_MAP.get(name);
+            }
+            if (serializer == null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.unknownFunction(name, conditions);
+            return serializer.deserialize(json, context, conditions);
         }
 
         @Override

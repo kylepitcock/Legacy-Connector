@@ -29,7 +29,9 @@ public final class StatesBridge1122 {
         IBlockState legacy = vanillaToLegacy(state);
         if (legacy != null) return legacy.getBlock();
         Block vanilla = Vanilla1122.legacyBlockOf(state.getBlock());
-        return vanilla != null || state.isAir() ? vanilla : Vanilla1122.standInBlock(state.getBlock());
+        if (vanilla != null || state.isAir()) return vanilla;
+        if (state.getFluidState().is(net.minecraft.tags.FluidTags.WATER) && underwaterPlant(state)) return legacyconnector.v1_12_2.net.minecraft.init.Blocks.WATER;
+        return Vanilla1122.standInBlock(state.getBlock());
     }
 
     public static IBlockState toLegacy(BlockState state) {
@@ -43,9 +45,23 @@ public final class StatesBridge1122 {
         IBlockState legacy = vanillaToLegacy(state);
         if (legacy != null) return legacy;
         Block vanilla = Vanilla1122.legacyBlockOf(state.getBlock());
+        // an underwater plant 1.12.2 never had (seagrass, kelp, a bubble column): 1.12 had plain water there, and legacy generators test for
+        // liquid to stay off the sea, so it reads as water rather than as its (rock) stand-in
+        if (vanilla == null && !state.isAir() && state.getFluidState().is(net.minecraft.tags.FluidTags.WATER) && underwaterPlant(state)) {
+            return legacyconnector.v1_12_2.net.minecraft.init.Blocks.WATER.getDefaultState();
+        }
         // a block 1.12.2 never had (a barrel, a modern mod's machine): its own stand-in, so legacy code does not see air where it stands
         if (vanilla == null && !state.isAir()) vanilla = Vanilla1122.standInBlock(state.getBlock());
         return vanilla == null ? null : vanilla.getDefaultState();
+    }
+
+    /** Whether a block standing in water is a plant or column with nothing to collide with (seagrass, kelp, bubble columns), not a waterlogged solid. */
+    private static boolean underwaterPlant(BlockState state) {
+        try {
+            return !state.blocksMotion() && state.getCollisionShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO).isEmpty();
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     /** The legacy state of a modern vanilla state by its 1.12 id and metadata, or null when 1.12 had no such block. */

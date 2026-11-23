@@ -29,6 +29,25 @@ public final class WorldClient1122 {
         client.addEntity(modern);
     }
 
+    /** Ids of client-only entities count down from here, clear of the ids the server hands out (the client level replaces an entity of the same id). */
+    private static int nextClientId = -1_000_000;
+
+    /**
+     * {@code WorldClient.spawnEntity}: a client-side entity a mod spawns (death effect pieces, client helpers) joins the client level. Its id is moved
+     * to a free negative one when the server's entity of that id is already there (a dedicated server counts ids on its own).
+     */
+    public static boolean spawnClientEntity(Level level, net.minecraft.world.entity.Entity modern) {
+        if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client) || modern == null || modern.isRemoved()) return false;
+        var present = client.getEntity(modern.getId());
+        if (present == modern) return false;
+        if (present != null) {
+            while (client.getEntity(nextClientId) != null) nextClientId--;
+            modern.setId(nextClientId--);
+        }
+        client.addEntity(modern);
+        return true;
+    }
+
     /** {@code WorldClient.removeEntityFromWorld}. */
     public static legacyconnector.v1_12_2.net.minecraft.entity.Entity removeEntity(legacyconnector.v1_12_2.net.minecraft.world.World world, int id) {
         if (!(world.mcc$level() instanceof net.minecraft.client.multiplayer.ClientLevel client)) return null;

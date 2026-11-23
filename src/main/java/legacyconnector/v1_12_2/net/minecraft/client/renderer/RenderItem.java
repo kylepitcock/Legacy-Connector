@@ -170,12 +170,33 @@ public class RenderItem implements legacyconnector.v1_12_2.net.minecraft.client.
         var buffers = RenderContext.buffers();
         if (pose == null || buffers == null || model == null) return;
         try {
-            var buffer = buffers.getBuffer(net.minecraft.client.renderer.Sheets.translucentItemSheet());
+            // a model baked with a mod's private sprite (uvs over a texture of its own, which the mod bound before drawing: Techguns' OBJ guns)
+            // draws with the bound texture; through the block atlas its uvs sampled a corner of the atlas and the gun came out black
+            var buffer = mcc$ownSheet(model) ? org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.modelBuffer()
+                    : buffers.getBuffer(net.minecraft.client.renderer.Sheets.translucentItemSheet());
             modernRenderer().renderModelLists(Models1122.modern(model), stack == null ? net.minecraft.world.item.ItemStack.EMPTY : Stacks1122.toModern(stack),
                     RenderContext.vertexLight(), RenderContext.overlay(), pose, buffer);
         } catch (RuntimeException e) {
             org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing an item model's quads", e);
         }
+    }
+
+    /** Whether the model's quads use a sprite spanning a texture of its own ({@code TextureAtlasSprite.mcc$ownSheet}). */
+    private static boolean mcc$ownSheet(IBakedModel model) {
+        if (model instanceof org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.LegacyView) return false;
+        try {
+            for (var quad : model.getQuads(null, null, 0L)) {
+                return quad.getSprite() != null && quad.getSprite().mcc$ownSheet();
+            }
+            for (legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side : legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.values()) {
+                for (var quad : model.getQuads(null, side, 0L)) {
+                    return quad.getSprite() != null && quad.getSprite().mcc$ownSheet();
+                }
+            }
+        } catch (RuntimeException e) {
+            // a model that cannot list its quads without a state: the atlas, as before
+        }
+        return false;
     }
 
     /** 1.12's quad loop: each quad into the buffer, tinted by the stack's item colours (or the given colour where the quad has no tint). */

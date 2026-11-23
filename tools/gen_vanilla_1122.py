@@ -93,6 +93,8 @@ TYPED_BLOCKS = {
     "OBSERVER": "new %sBlockObserver()" % B,
     "CHEST": "new %sBlockChest(%sBlockChest.Type.BASIC) {}" % (B, B),
     "TRAPPED_CHEST": "new %sBlockChest(%sBlockChest.Type.TRAP) {}" % (B, B),
+    "TRAPDOOR": "new %sBlockTrapDoor(%sWOOD) {}" % (B, M),
+    "IRON_TRAPDOOR": "new %sBlockTrapDoor(%sIRON) {}" % (B, M),
     "FLOWER_POT": "new %sBlockFlowerPot()" % B,
     "RAIL": "new %sBlockRail() {}" % B,
     "GOLDEN_RAIL": "new %sBlockRailPowered() {}" % B,

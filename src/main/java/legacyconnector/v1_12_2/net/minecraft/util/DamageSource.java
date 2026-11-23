@@ -185,6 +185,8 @@ public class DamageSource {
     /** A modern damage source as a 1.12 one: its type by the 1.12 name, its flags from the modern damage tags, its entities as views. */
     public static DamageSource mcc$of(net.minecraft.world.damagesource.DamageSource modern) {
         if (modern == null) return GENERIC;
+        DamageSource made = MCC$MADE.get(modern);
+        if (made != null) return made;
         var key = modern.typeHolder().unwrapKey().map(k -> k.location()).orElse(null);
         String type = key == null ? modern.getMsgId() : LEGACY_NAMES.getOrDefault(key.getPath(), modern.getMsgId());
         Entity direct = org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(modern.getDirectEntity());
@@ -216,8 +218,25 @@ public class DamageSource {
     }
 
     /** The modern damage source of the same kind (vanilla types by name; mod types by their flags), for hurting modern entities. */
+    /**
+     * Modern sources made from legacy ones, back to the legacy object. A hit a mod deals with its own source (a DamageSource subclass with
+     * its own fields) reaches the mod's LivingAttackEvent/LivingHurtEvent handlers as that same object, so their instanceof checks and
+     * custom flags work (1.12 handed the original source through). Weak keys: entries go with the modern source.
+     */
+    private static final java.util.Map<net.minecraft.world.damagesource.DamageSource, DamageSource> MCC$MADE =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     public net.minecraft.world.damagesource.DamageSource mcc$modern(net.minecraft.world.level.Level level) {
         if (mcc$wrapped != null) return mcc$wrapped;
+        var kind = mcc$modernKind(level);
+        // a fresh instance (vanilla shares some sources), so the way back names this legacy source only; not cached on this object,
+        // since mods set flags on a source after making it
+        var made = new net.minecraft.world.damagesource.DamageSource(kind.typeHolder(), kind.getDirectEntity(), kind.getEntity(), kind.sourcePositionRaw());
+        MCC$MADE.put(made, this);
+        return made;
+    }
+
+    private net.minecraft.world.damagesource.DamageSource mcc$modernKind(net.minecraft.world.level.Level level) {
         var sources = level.damageSources();
         Entity trueSource = getTrueSource();
         Entity direct = getImmediateSource();

@@ -172,7 +172,19 @@ public final class CustomModels1122 {
      * Mekanism's glow_panel.obj.mek) for an item registered at {@code mod:block#inventory} that has no item json: Forge loaded that variant for the
      * item. Without it the item drew the plain converted model and lost the loader model's own item transforms (Mekanism's glow panels).
      */
-    private static ResourceLocation inventoryVariantModel(String key) {
+    /** An item's {@code inventory} blockstate variant: its loader model, with the textures and custom data of the defaults and the variant. */
+    private record InventoryVariant(ResourceLocation model, com.google.common.collect.ImmutableMap<String, String> textures,
+            com.google.common.collect.ImmutableMap<String, String> custom) {
+        /** The model set up as Forge's variant loader did: retextured, then given the custom data (Techguns' OBJ guns need their flip-v). */
+        IModel apply(IModel loaded) {
+            IModel out = loaded;
+            if (!textures.isEmpty()) out = out.retexture(textures);
+            if (!custom.isEmpty()) out = out.process(custom);
+            return out;
+        }
+    }
+
+    private static InventoryVariant inventoryVariant(String key) {
         try {
             ModelResourceLocation mrl = new ModelResourceLocation(key);
             if (!"inventory".equals(mrl.getVariant())) return null;
@@ -195,7 +207,21 @@ public final class CustomModels1122 {
                 String path = parsed.getPath();
                 if (!path.startsWith("block/") && !path.startsWith("item/")) path = "block/" + path;
                 ResourceLocation actual = new ResourceLocation(parsed.getNamespace(), "models/" + path);
-                return ModelLoaderRegistry.mcc$loaderFor(actual) != null ? actual : null;
+                if (ModelLoaderRegistry.mcc$loaderFor(actual) == null) return null;
+                // the defaults' textures and custom data, then the variant's own on top (Forge's ForgeBlockStateV1 merge)
+                java.util.Map<String, String> textures = new java.util.LinkedHashMap<>();
+                java.util.Map<String, String> custom = new java.util.LinkedHashMap<>();
+                for (var part : new com.google.gson.JsonElement[] {json.get("defaults"), inv}) {
+                    if (part == null || !part.isJsonObject()) continue;
+                    var o = part.getAsJsonObject();
+                    if (o.has("textures") && o.get("textures").isJsonObject()) {
+                        for (var t : o.getAsJsonObject("textures").entrySet()) if (t.getValue().isJsonPrimitive()) textures.put(t.getKey(), t.getValue().getAsString());
+                    }
+                    if (o.has("custom") && o.get("custom").isJsonObject()) {
+                        for (var c : o.getAsJsonObject("custom").entrySet()) custom.put(c.getKey(), c.getValue().toString());
+                    }
+                }
+                return new InventoryVariant(actual, com.google.common.collect.ImmutableMap.copyOf(textures), com.google.common.collect.ImmutableMap.copyOf(custom));
             }
         } catch (java.io.IOException | RuntimeException | LinkageError e) {
             return null;
@@ -206,6 +232,7 @@ public final class CustomModels1122 {
     private static IModel load(String key) {
         ResourceLocation location;
         ResourceLocation fallback = null;
+        InventoryVariant variant = null;
         try {
             ModelResourceLocation mrl = new ModelResourceLocation(key);
             location = mrl;
@@ -230,12 +257,16 @@ public final class CustomModels1122 {
             // a json model whose parent a loader makes ("parent": "mod:item/internal/x$from_item(mod:x)"): Forge loaded parents through the
             // loaders too, so the item draws the loader's model (the modern bakery cannot, the name is no valid id)
             ResourceLocation parent = loaderParent(location);
-            if (parent == null) parent = inventoryVariantModel(key);
+            if (parent == null) {
+                variant = inventoryVariant(key);
+                if (variant != null) parent = variant.model();
+            }
             if (parent == null) return null;
             location = parent;
         }
         try {
             IModel model = ModelLoaderRegistry.getModel(location);
+            if (variant != null && model != ModelLoaderRegistry.getMissingModel()) model = variant.apply(model);
             if (fallback != null && model == ModelLoaderRegistry.getMissingModel()) return ModelLoaderRegistry.getModel(fallback);
             return model;
         } catch (Exception | LinkageError e) {

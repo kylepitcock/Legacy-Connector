@@ -214,9 +214,21 @@ public final class Models1122 {
         Map<String, List<net.minecraft.client.resources.model.ModelResourceLocation>> map = locations;
         if (map == null) locations = map = buildLocations();
         List<net.minecraft.client.resources.model.ModelResourceLocation> found = map.get(location.toString());
-        if (found != null) return found;
-        var id = location.mcc$modern();
         String variant = location.getVariant();
+        if (found != null) {
+            // a block variant name known only as an item's model (the map was built while the block's state mapper answered nothing: Techguns'
+            // mapper is empty until its ModelBakeEvent, then names the slab states, whose models it puts there): the block's states too
+            if (!"inventory".equals(variant) && found.stream().allMatch(l -> "inventory".equals(l.getVariant()))) {
+                List<net.minecraft.client.resources.model.ModelResourceLocation> states = viaCurrentMapper(location);
+                if (states != null) {
+                    List<net.minecraft.client.resources.model.ModelResourceLocation> both = new ArrayList<>(found);
+                    for (var s : states) if (!both.contains(s)) both.add(s);
+                    return both;
+                }
+            }
+            return found;
+        }
+        var id = location.mcc$modern();
         List<net.minecraft.client.resources.model.ModelResourceLocation> viaMapper = viaCurrentMapper(location);
         if (viaMapper != null) return viaMapper;
         return List.of(new net.minecraft.client.resources.model.ModelResourceLocation(id, variant.equals("normal") ? "" : variant));
@@ -250,11 +262,10 @@ public final class Models1122 {
         }
         for (var item : ItemBridge1122.modItems()) {
             var subtypes = ItemBridge1122.variants(item);
-            // the subtypes an item lists (CoFH's frames and capacitors have metadata 64, 128, 32000...), at least metadata 0-15
-            java.util.TreeSet<Integer> metas = new java.util.TreeSet<>();
-            for (int m = 0; m < 16; m++) metas.add(m);
-            if (subtypes.size() > 1) metas.addAll(subtypes.keySet());
-            for (int meta : metas) {
+            // every subtype, past 15 too, and at least metadata 0-15 (CoFH's frames and capacitors have metadata 64, 128, 32000...; Techguns'
+            // shared item: the magazines and rockets from metadata 16 on kept their flat placeholder models, since the built-in-renderer models
+            // its ModelBakeEvent put under their names reached no modern item)
+            for (int meta : ItemBridge1122.subtypeMetas(item)) {
                 // a model registered for a subtype belongs to that subtype's modern item; an item with several subtypes has no stand-in for the
                 // ones it does not list (the base subtype's item would take the model of every unlisted metadata: BuildCraft's engines showed
                 // the model put last, whichever type it was meant for)

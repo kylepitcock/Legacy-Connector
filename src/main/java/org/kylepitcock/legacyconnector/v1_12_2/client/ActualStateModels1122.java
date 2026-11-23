@@ -42,6 +42,15 @@ final class ActualStateModels1122 {
 
     /** Wraps the block models of legacy blocks with actual states in the baking result (after ModelBakeEvent: mods' replacements stay theirs). */
     static void wrap(Map<ModelResourceLocation, BakedModel> models) {
+        wrap(models, Map.of());
+    }
+
+    /**
+     * As {@link #wrap(Map)}, with the models a mod's ModelBakeEvent put for states beyond the metadata ({@code put}, by legacy state): such a
+     * block is wrapped even though its metadata models are the mod's own (Techguns bakes one stairs model per shape and puts each under the
+     * state's variant name; its models do not look at the state they are asked with).
+     */
+    static void wrap(Map<ModelResourceLocation, BakedModel> models, Map<IBlockState, BakedModel> put) {
         Map<IBlockState, ModelResourceLocation> own = Models1122.stateLocations();
         BakedModel missing = models.get(ModelBakery.MISSING_MODEL_VARIANT);
         Class<?> S = IBlockState.class, A = legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class,
@@ -59,13 +68,22 @@ final class ActualStateModels1122 {
                     if (m instanceof Models1122.ModernView || m instanceof View) custom = true; // a mod model: it is asked with the actual state itself
                     byMeta[meta] = m;
                 }
-                if (custom) continue;
+                boolean putStates = false;
+                if (!put.isEmpty()) {
+                    for (IBlockState state : block.getBlockState().getValidStates()) {
+                        if (put.containsKey(StatesBridge1122.canonical(state))) {
+                            putStates = true;
+                            break;
+                        }
+                    }
+                }
+                if (custom && !putStates) continue;
                 // every legacy state: its own model if it has one, else its metadata's model (1.12 had a variant for each)
                 Map<IBlockState, BakedModel> byState = new HashMap<>();
                 boolean differs = false;
                 for (IBlockState state : block.getBlockState().getValidStates()) {
-                    BakedModel m = null;
-                    ModelResourceLocation location = own.get(state);
+                    BakedModel m = put.get(StatesBridge1122.canonical(state));
+                    ModelResourceLocation location = m != null ? null : own.get(state);
                     if (location != null) {
                         m = models.get(location);
                         if (m == missing) m = null;
@@ -107,7 +125,7 @@ final class ActualStateModels1122 {
                 if (stored != null) {
                     IBlockState actual = legacy.getActualState(stored, WorldBridge1122.access(level),
                             new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(pos.getX(), pos.getY(), pos.getZ()));
-                    if (actual != null && actual != stored) chosen = byState.get(actual);
+                    if (actual != null && actual != stored) chosen = byState.get(StatesBridge1122.canonical(actual));
                 }
             } catch (RuntimeException | LinkageError e) {
                 RenderErrors1122.report("asking a legacy block for its actual state", e);

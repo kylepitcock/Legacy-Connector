@@ -58,6 +58,18 @@ public final class ItemBridge1122 {
         return v == null ? Map.of() : new java.util.LinkedHashMap<>(v);
     }
 
+    /**
+     * The metadata values to look at for an item's subtypes: every registered variant (they go past 15: Techguns' shared item has well over a
+     * hundred), plus 0-15 for an item without listed variants (a vanilla item, whose subtypes are found per metadata).
+     */
+    public static synchronized java.util.SortedSet<Integer> subtypeMetas(Item item) {
+        java.util.SortedSet<Integer> out = new java.util.TreeSet<>();
+        Map<Integer, net.minecraft.world.item.Item> v = VARIANTS.get(item);
+        if (v != null) out.addAll(v.keySet());
+        for (int meta = 0; meta < 16; meta++) out.add(meta);
+        return out;
+    }
+
     public static synchronized net.minecraft.world.item.Item modern(Item item, int meta) {
         Map<Integer, net.minecraft.world.item.Item> v = VARIANTS.get(item);
         if (v == null) return item.mcc$vanillaModern == null ? null : Vanilla1122.modernVariant(item, meta);

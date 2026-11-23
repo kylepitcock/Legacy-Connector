@@ -16,8 +16,8 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
  * legacy stand-ins of the game's container screens use it; clicks go through the player's modern menu, as 1.12's went through
  * {@code player.openContainer}.
  */
-public class ModernContainer1122 extends Container {
-    private static final Map<AbstractContainerMenu, ModernContainer1122> VIEWS = new WeakHashMap<>();
+public class ModernContainer1122 extends Container implements ModernMenuView1122 {
+    private static final Map<AbstractContainerMenu, ModernMenuView1122> VIEWS = new WeakHashMap<>();
     private final AbstractContainerMenu modern;
 
     protected ModernContainer1122(AbstractContainerMenu modern) {
@@ -26,55 +26,48 @@ public class ModernContainer1122 extends Container {
         mcc$sync();
     }
 
-    /** The view of a modern menu (one per menu). */
-    public static ModernContainer1122 of(AbstractContainerMenu modern) {
+    /**
+     * The view of a modern menu (one per menu). The player's inventory menu is a {@code ContainerPlayer} as in 1.12 (mods cast
+     * {@code GuiInventory.inventorySlots} to it: the Galacticraft tab API Techguns ships read its crafting grid and failed, leaving no tabs).
+     */
+    public static Container of(AbstractContainerMenu modern) {
         if (modern == null) return null;
-        ModernContainer1122 view;
+        ModernMenuView1122 view;
         synchronized (VIEWS) {
-            view = VIEWS.computeIfAbsent(modern, ModernContainer1122::new);
+            view = VIEWS.computeIfAbsent(modern, m -> m instanceof net.minecraft.world.inventory.InventoryMenu
+                    ? new ModernPlayerContainer1122(m) : new ModernContainer1122(m));
         }
         view.mcc$sync();
-        return view;
+        return (Container) view;
     }
 
+    @Override
     public AbstractContainerMenu mcc$modern() {
         return modern;
     }
 
-    /** Adds views for modern slots added since the last call (menus add slots in their constructors, a few later). */
+    @Override
     public void mcc$sync() {
         while (inventorySlots.size() < modern.slots.size()) addSlotToContainer(new ViewSlot(modern.slots.get(inventorySlots.size())));
     }
 
     private static net.minecraft.world.entity.player.Player modern(EntityPlayer player) {
-        return player != null && player.mcc$entity instanceof net.minecraft.world.entity.player.Player p ? p : null;
+        return ModernMenuView1122.modern(player);
     }
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        var p = modern(player);
-        return p == null || modern.stillValid(p);
+        return ModernMenuView1122.canInteract(modern, player);
     }
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        var p = modern(player);
-        return p == null ? ItemStack.EMPTY : Stacks1122.fromModern(modern.quickMoveStack(p, index));
+        return ModernMenuView1122.transfer(modern, player, index);
     }
 
-    /** A click as the player makes it: on the client through the game mode (the server is told), elsewhere on the menu directly. */
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickType, EntityPlayer player) {
-        ItemStack before = slotId >= 0 && slotId < inventorySlots.size() ? inventorySlots.get(slotId).getStack().copy() : ItemStack.EMPTY;
-        var p = modern(player);
-        if (p == null) return before;
-        var type = clickType == null ? net.minecraft.world.inventory.ClickType.PICKUP : clickType.mcc$modern();
-        if (p.level().isClientSide) {
-            org.kylepitcock.legacyconnector.v1_12_2.client.ClientMenu1122.click(modern.containerId, slotId, dragType, type);
-        } else {
-            modern.clicked(slotId, dragType, type, p);
-        }
-        return before;
+        return ModernMenuView1122.click(this, modern, slotId, dragType, clickType, player);
     }
 
     @Override
@@ -87,14 +80,19 @@ public class ModernContainer1122 extends Container {
         }
     }
 
+    @Override
+    public void mcc$tickListeners() {
+        if (!listeners.isEmpty()) detectAndSendChanges();
+    }
+
     /** The per-tick call of a server player's open menu: runs {@link #detectAndSendChanges} when a legacy mod listens on its view. */
     public static void mcc$tickListeners(AbstractContainerMenu menu) {
         if (menu == null || menu instanceof LegacyMenu1122) return;
-        ModernContainer1122 view;
+        ModernMenuView1122 view;
         synchronized (VIEWS) {
             view = VIEWS.get(menu);
         }
-        if (view != null && !view.listeners.isEmpty()) view.detectAndSendChanges();
+        if (view != null) view.mcc$tickListeners();
     }
 
     @Override

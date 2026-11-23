@@ -78,6 +78,18 @@ public abstract class RenderLivingBase<T extends EntityLivingBase> extends Rende
 
     @Override
     public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        // 1.12 posted RenderLivingEvent around every living render; a mod's own mobs are drawn here (their modern renderer is no living
+        // renderer, so the modern event is not posted): Techguns cancels it for a mob dying a gore, bio or laser death and draws that itself
+        var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+        if (bus.mcc$hasListeners(legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderLivingEvent.Pre.class)
+                && bus.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderLivingEvent.Pre<>(entity, this, partialTicks, x, y, z))) return;
+        mcc$doRender(entity, x, y, z, entityYaw, partialTicks);
+        if (bus.mcc$hasListeners(legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderLivingEvent.Post.class)) {
+            bus.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderLivingEvent.Post<>(entity, this, partialTicks, x, y, z));
+        }
+    }
+
+    private void mcc$doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
         if (mainModel == null) return;
         GlStateManager.pushMatrix();
         GlStateManager.disableCull();

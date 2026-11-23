@@ -45,7 +45,7 @@ public class GuiMerchant extends GuiContainer {
     }
 
     private net.minecraft.world.inventory.MerchantMenu mcc$menu() {
-        return inventorySlots instanceof ModernContainer1122 c && c.mcc$modern() instanceof net.minecraft.world.inventory.MerchantMenu m ? m : null;
+        return inventorySlots instanceof org.kylepitcock.legacyconnector.v1_12_2.gui.ModernMenuView1122 c && c.mcc$modern() instanceof net.minecraft.world.inventory.MerchantMenu m ? m : null;
     }
 
     private MerchantRecipeList mcc$recipes() {

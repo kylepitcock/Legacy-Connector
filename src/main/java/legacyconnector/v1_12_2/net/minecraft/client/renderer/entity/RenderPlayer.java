@@ -23,8 +23,8 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
  */
 public class RenderPlayer extends RenderLivingBase<AbstractClientPlayer> {
     private final boolean smallArms;
-    /** How many layers vanilla added (the modern renderer draws those itself; later ones are the mods'). */
-    private final int mcc$builtInLayers;
+    /** The layers vanilla added (the modern renderer draws those itself; every other one is a mod's, wherever the mod put it in the list). */
+    private final java.util.Set<Object> mcc$builtInLayers = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
     public RenderPlayer(RenderManager renderManager) {
         this(renderManager, false);
@@ -40,7 +40,7 @@ public class RenderPlayer extends RenderLivingBase<AbstractClientPlayer> {
         addLayer(new LayerCustomHead(getMainModel().bipedHead));
         addLayer(new LayerElytra(this));
         addLayer(new LayerEntityOnShoulder(renderManager));
-        mcc$builtInLayers = layerRenderers.size();
+        mcc$builtInLayers.addAll(layerRenderers);
     }
 
     @Override
@@ -58,7 +58,11 @@ public class RenderPlayer extends RenderLivingBase<AbstractClientPlayer> {
 
     /** The layers mods added (drawn over modern players). */
     public java.util.List<legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.layers.LayerRenderer<AbstractClientPlayer>> mcc$modLayers() {
-        return layerRenderers.size() <= mcc$builtInLayers ? java.util.List.of() : layerRenderers.subList(mcc$builtInLayers, layerRenderers.size());
+        // by identity, not position: mods insert their layers among vanilla's (Techguns puts its jetpack and back items right after the armour
+        // layer; counted by position it was taken for a vanilla layer and never drawn, and the last vanilla layer was drawn twice)
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.layers.LayerRenderer<AbstractClientPlayer>> mods = new java.util.ArrayList<>();
+        for (var layer : layerRenderers) if (!mcc$builtInLayers.contains(layer)) mods.add(layer);
+        return mods;
     }
 
     @Override
