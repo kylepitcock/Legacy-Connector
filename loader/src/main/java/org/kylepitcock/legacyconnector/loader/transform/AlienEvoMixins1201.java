@@ -42,7 +42,8 @@ final class AlienEvoMixins1201 implements Opcodes {
     /** Returns the number of handler methods whose descriptors or bytecode were adapted. */
     static int apply(ClassNode node) {
         Objects.requireNonNull(node, "node");
-        return switch (node.name) {
+        int diagnosticChanges = AlienEvoRuntimeDiagnostics1201.apply(node);
+        int compatibilityChanges = switch (node.name) {
             case HUD -> migrateHudHotbar(node);
             case VIGNETTE -> migrateKineceleranVignette(node);
             case NAME_TAG -> migratePreviewNameTag(node);
@@ -56,6 +57,7 @@ final class AlienEvoMixins1201 implements Opcodes {
             case MODEL_BAKERY -> migrateModelBakeryCrystal(node);
             default -> 0;
         };
+        return diagnosticChanges + compatibilityChanges;
     }
 
     private static int migrateHudHotbar(ClassNode node) {
