@@ -78,6 +78,7 @@ public final class Client1710 {
             if (!e.getAtlas().location().equals(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)) return;
             AtlasUV.invalidate();
             TextureAlpha.clear(); // the block atlas is stitched again on every resource reload
+            DisplayLists.clearBaked(); // baked display lists hold atlas coordinates
             org.kylepitcock.legacyconnector.v1_7_10.Assets1710.postStitched();
         });
         modBus.addListener(Client1710::onRegisterExtensions);

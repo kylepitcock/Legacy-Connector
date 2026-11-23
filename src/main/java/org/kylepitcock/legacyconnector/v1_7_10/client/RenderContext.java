@@ -1299,6 +1299,112 @@ public final class RenderContext {
         st().armorLayering = on;
     }
 
+    // ------------------------------------------------------------------ baked display lists (see BakedLists)
+
+    /** Everything a display list's output depends on that it does not set itself: the emulated state at the call and the frame's light. */
+    record BakeState(ResourceLocation texture, String sheet, boolean texture2d, boolean blend, boolean depthTest, boolean additive,
+            boolean additiveAlpha, boolean lighting, boolean lightmap, boolean legacyDepthTest, boolean depthWrite, boolean lineMode,
+            boolean armorLayering, boolean exactDepthState, boolean compatPack, int forcedLight, int blendSrc, int blendDst, int depthFunc,
+            int colorWrite, int light, int overlay, int kind, float r, float g, float b, float a) {}
+
+    /** A baking run: the frame the list's draws go to, instead of the caller's. */
+    static final class BakeRun {
+        final State s;
+        final PoseStack pose;
+        private final Frame frame;
+        private final int glChanges, attribs;
+
+        private BakeRun(State s, PoseStack pose, Frame frame) {
+            this.s = s;
+            this.pose = pose;
+            this.frame = frame;
+            this.glChanges = s.gl.changes;
+            this.attribs = s.attribs.size();
+        }
+
+        /** Whether the list left the caller's GL as it found it: no real GL change, attribute stack balanced. */
+        boolean clean() {
+            return s.gl.changes == glChanges && s.attribs.size() == attribs;
+        }
+    }
+
+    /**
+     * The state a display list call would draw under, or null when the call is not one that may be baked: not on the render thread, in a
+     * screen, in a capture, under a legacy projection or texture matrix, in Iris's shadow pass, or with legacy code in the middle of a
+     * draw. The geometry of a baked list is drawn at the call, not batched with the caller's, so only world frames qualify.
+     */
+    static BakeState bakeState() {
+        if (!RenderSystem.isOnRenderThread()) return null;
+        State s = st();
+        Frame f = s.frames.peek();
+        if (f == null || f.gui != null || f.buffers == null || s.capture != null || s.projection != null || s.textureMatrix != null
+                || s.texGenMask != 0 || s.bounds != null || s.matrixMode != GL_MODELVIEW || s.activeUnit != 0 || s.immediate.isDrawing()
+                || !s.itemBrightness.isEmpty() || s.frames.size() > 4) return null;
+        if (IrisState.compatShadowPass()) return null;
+        return new BakeState(s.texture, s.sheet, s.texture2d, s.blend, s.depthTest, s.additive, s.additiveAlpha, s.lighting, s.lightmap,
+                s.legacyDepthTest, s.depthWrite, s.lineMode, s.armorLayering, f.exactDepthState, IrisState.compatPack(), s.forcedLight,
+                s.blendSrc, s.blendDst, s.depthFunc, s.colorWrite, f.light, f.overlay, f.kind, s.r, s.g, s.b, s.a);
+    }
+
+    /** The caller's current pose (positions of a baked list are placed with it). */
+    static PoseStack.Pose callerPose() {
+        PoseStack p = pose(st());
+        return p == null ? null : p.last();
+    }
+
+    static BakeRun beginBake(MultiBufferSource recorder) {
+        State s = st();
+        Frame top = s.frames.peek();
+        PoseStack pose = new PoseStack();
+        Frame f = new Frame(null, pose, recorder, top.light, top.overlay, pose.last(), false, top.kind, top.exactDepthState);
+        BakeRun r = new BakeRun(s, pose, f);
+        s.frames.push(f);
+        return r;
+    }
+
+    /** Ends a baking run and puts the emulated state back as it was at the call (the list ran against it only to be recorded). */
+    static void endBake(BakeRun run, BakeState before) {
+        State s = run.s;
+        Frame f = s.frames.peek();
+        if (f == run.frame) s.frames.pop();
+        s.texture = before.texture();
+        s.sheet = before.sheet();
+        s.texture2d = before.texture2d();
+        s.blend = before.blend();
+        s.depthTest = before.depthTest();
+        s.additive = before.additive();
+        s.additiveAlpha = before.additiveAlpha();
+        s.lighting = before.lighting();
+        s.lightmap = before.lightmap();
+        s.legacyDepthTest = before.legacyDepthTest();
+        s.depthWrite = before.depthWrite();
+        s.lineMode = before.lineMode();
+        s.armorLayering = before.armorLayering();
+        s.forcedLight = before.forcedLight();
+        s.blendSrc = before.blendSrc();
+        s.blendDst = before.blendDst();
+        s.depthFunc = before.depthFunc();
+        s.colorWrite = before.colorWrite();
+        s.r = before.r();
+        s.g = before.g();
+        s.b = before.b();
+        s.a = before.a();
+    }
+
+    /** Whether the emulated state is what {@code before} says (a list that changes the state for its caller cannot be baked). */
+    static boolean bakeStateIs(BakeState before) {
+        State s = st();
+        Frame f = s.frames.peek();
+        return f != null && s.matrixMode == GL_MODELVIEW && s.activeUnit == 0 && s.itemBrightness.isEmpty()
+                && bakeStateNow(s, f).equals(before);
+    }
+
+    private static BakeState bakeStateNow(State s, Frame f) {
+        return new BakeState(s.texture, s.sheet, s.texture2d, s.blend, s.depthTest, s.additive, s.additiveAlpha, s.lighting, s.lightmap,
+                s.legacyDepthTest, s.depthWrite, s.lineMode, s.armorLayering, f.exactDepthState, IrisState.compatPack(), s.forcedLight,
+                s.blendSrc, s.blendDst, s.depthFunc, s.colorWrite, f.light, f.overlay, f.kind, s.r, s.g, s.b, s.a);
+    }
+
     // ------------------------------------------------------------------ matrix stack
 
     public static void push() {
