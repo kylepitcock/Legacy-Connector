@@ -397,8 +397,8 @@ class DataConverter1201Test {
         JsonObject o = r.getAsJsonObject();
         same("\"heated\"", o.get("heat_requirement"));
         same("100", o.get("processing_time"));
-        same("{\"amount\":250,\"fluid\":\"minecraft:water\"}", o.getAsJsonArray("ingredients").get(1));
-        assertTrue(o.getAsJsonArray("ingredients").get(2).getAsJsonObject().has("tag"));
+        same("{\"type\":\"neoforge:single\",\"amount\":250,\"fluid\":\"minecraft:water\"}", o.getAsJsonArray("ingredients").get(1));
+        same("{\"type\":\"neoforge:tag\",\"amount\":100,\"tag\":\"c:milk\"}", o.getAsJsonArray("ingredients").get(2));
         same("{\"id\":\"m:out\",\"count\":2,\"chance\":0.5}", o.getAsJsonArray("results").get(0));
         same("{\"id\":\"minecraft:lava\",\"amount\":50}", o.getAsJsonArray("results").get(1));
     }

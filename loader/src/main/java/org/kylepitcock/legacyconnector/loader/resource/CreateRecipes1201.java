@@ -77,6 +77,8 @@ final class CreateRecipes1201 {
             JsonObject o = e.getAsJsonObject();
             if (o.has("fluid") || o.has("fluidTag") || o.has("fluid_tag")) {
                 JsonObject f = new JsonObject();
+                // Create 6 reads NeoForge's sized fluid ingredient, which is a typed object: neoforge:single ({fluid}) or neoforge:tag ({tag})
+                f.addProperty("type", o.has("fluid") ? "neoforge:single" : "neoforge:tag");
                 f.add("amount", o.has("amount") ? o.get("amount") : new com.google.gson.JsonPrimitive(1000));
                 if (o.has("fluid")) f.add("fluid", o.get("fluid"));
                 else f.add("tag", o.has("fluidTag") ? o.get("fluidTag") : o.get("fluid_tag"));
