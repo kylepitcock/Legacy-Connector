@@ -14,8 +14,9 @@ import java.util.List;
 public final class LegacyVertices {
     public static final int GL_POINTS = 0, GL_LINES = 1, GL_LINE_LOOP = 2, GL_LINE_STRIP = 3, GL_TRIANGLES = 4,
             GL_TRIANGLE_STRIP = 5, GL_TRIANGLE_FAN = 6, GL_QUADS = 7, GL_QUAD_STRIP = 8, GL_POLYGON = 9;
-    /** Doubles per vertex: x, y, z, u, v, argb, light, own colour, own light (set by setBrightness, not the context's). */
-    public static final int STRIDE = 9;
+    /** Doubles per vertex: x, y, z, u, v, argb, light, own colour, own light (set by setBrightness, not the context's), normal
+     * current when the vertex was added (three signed bytes like 1.7.10's Tessellator, bit 24 set; 0 = none). */
+    public static final int STRIDE = 10;
     /** Vertex arrays kept for reuse at most (a huge draw must not keep its memory for good). */
     private static final int MAX_SPARE = 16384;
 
@@ -29,6 +30,9 @@ public final class LegacyVertices {
     private int light = -1;
     private float nx, ny = 1, nz;
     private boolean hasNormal;
+    /** Packed normal of the next vertex (see STRIDE), and whether the draw set different normals (one per face or vertex). */
+    private int packedNormal;
+    private boolean normalVaried;
     private double tx, ty, tz;
     private boolean colorDisabled;
 
@@ -38,6 +42,7 @@ public final class LegacyVertices {
         recycle();
         hasColor = false;
         hasNormal = false;
+        normalVaried = false;
         colorDisabled = false;
         light = -1;
     }
@@ -102,10 +107,43 @@ public final class LegacyVertices {
     }
 
     public void normal(float x, float y, float z) {
+        int packed = 0x1000000 | (clampByte(x) & 0xFF) | (clampByte(y) & 0xFF) << 8 | (clampByte(z) & 0xFF) << 16;
+        if (hasNormal && packed != packedNormal) normalVaried = true;
+        packedNormal = packed;
         nx = x;
         ny = y;
         nz = z;
         hasNormal = true;
+    }
+
+    private static int clampByte(float f) {
+        return Math.max(-127, Math.min(127, Math.round(f * 127.0F)));
+    }
+
+    /** The normal a vertex was added with, or null (none set, or a vertex array from elsewhere). */
+    private static float[] ownNormal(double[] v) {
+        if (v.length <= 9) return null;
+        int p = (int) v[9];
+        if ((p & 0x1000000) == 0) return null;
+        return new float[] {(byte) p / 127.0F, (byte) (p >> 8) / 127.0F, (byte) (p >> 16) / 127.0F};
+    }
+
+    /**
+     * The normal of a quad in a draw that set a normal per face or vertex (a Forge OBJ model, which 1.7.10 lit per vertex): the sum of its first
+     * three corners' normals, or null when the draw did not vary its normal (one normal for the whole draw keeps the old handling).
+     */
+    private static float[] variedNormal(Snapshot s, double[] a, double[] b, double[] c) {
+        if (!s.varied) return null;
+        float x = 0, y = 0, z = 0;
+        for (double[] v : new double[][] {a, b, c}) {
+            float[] n = ownNormal(v);
+            if (n == null) continue;
+            x += n[0];
+            y += n[1];
+            z += n[2];
+        }
+        double len = Math.sqrt(x * x + y * y + z * z);
+        return len > 1.0E-6 ? new float[] {(float) (x / len), (float) (y / len), (float) (z / len)} : null;
     }
 
     public void translation(double x, double y, double z) {
@@ -136,6 +174,7 @@ public final class LegacyVertices {
         // [7]: the vertex carries its own colour; otherwise it takes the colour current when the geometry is emitted (display lists replay later)
         a[7] = hasColor ? 1.0D : 0.0D;
         a[8] = light >= 0 ? 1.0D : 0.0D;
+        a[9] = hasNormal ? packedNormal : 0;
         vertices.add(a);
     }
 
@@ -170,22 +209,24 @@ public final class LegacyVertices {
         private final List<double[]> vertices;
         private final float nx, ny, nz;
         private final boolean hasNormal;
+        private final boolean varied;
         private final boolean kept;
         private volatile Compiled compiled;
         /** Emits so far (racy on purpose: only decides when to compile). */
         private int emits;
 
         public Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal) {
-            this(mode, vertices, nx, ny, nz, hasNormal, true);
+            this(mode, vertices, nx, ny, nz, hasNormal, false, true);
         }
 
-        private Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal, boolean kept) {
+        private Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal, boolean varied, boolean kept) {
             this.mode = mode;
             this.vertices = vertices;
             this.nx = nx;
             this.ny = ny;
             this.nz = nz;
             this.hasNormal = hasNormal;
+            this.varied = varied;
             this.kept = kept;
         }
 
@@ -220,7 +261,7 @@ public final class LegacyVertices {
     /** Ends the draw without emitting it; the snapshot owns its vertex arrays. */
     public Snapshot take() {
         drawing = false;
-        Snapshot s = new Snapshot(mode, new ArrayList<>(vertices), nx, ny, nz, hasNormal, true);
+        Snapshot s = new Snapshot(mode, new ArrayList<>(vertices), nx, ny, nz, hasNormal, normalVaried, true);
         vertices.clear();
         return s;
     }
@@ -230,7 +271,7 @@ public final class LegacyVertices {
         drawing = false;
         int n = vertices.size();
         try {
-            emit(new Snapshot(mode, vertices, nx, ny, nz, hasNormal, false));
+            emit(new Snapshot(mode, vertices, nx, ny, nz, hasNormal, normalVaried, false));
         } finally {
             recycle();
         }
@@ -350,6 +391,8 @@ public final class LegacyVertices {
     /** The normal emitFilled gives a quad outside screens: the draw's own, or the face normal of its first three corners. */
     private static float[] faceNormal(Snapshot s, double[] a, double[] b, double[] c) {
         float fx = s.nx, fy = s.ny, fz = s.nz;
+        float[] own = variedNormal(s, a, b, c);
+        if (own != null) return own;
         if (!s.hasNormal) {
             double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
             double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
@@ -483,7 +526,7 @@ public final class LegacyVertices {
      * that single normal every face got the same light, and the block as dark as a face turned from the light. Such a draw is lit by the faces' own normals instead.
      */
     private static boolean uniformItemNormal(RenderContext.State st, Snapshot s) {
-        return !st.itemBrightness.isEmpty() && s.hasNormal() && s.vertices().size() > 4;
+        return !st.itemBrightness.isEmpty() && s.hasNormal() && !s.varied && s.vertices().size() > 4;
     }
 
     private static float[] geometricNormal(double[] a, double[] b, double[] c) {
@@ -507,7 +550,12 @@ public final class LegacyVertices {
     private static void emitFilled(RenderContext.State st, Snapshot s, double[] a, double[] b, double[] c, double[] d) {
         float fx = s.nx(), fy = s.ny(), fz = s.nz();
         boolean gui = RenderContext.gui(st) != null;
-        if (!s.hasNormal() && gui) {
+        float[] own = variedNormal(s, a, b, c);
+        if (own != null) {
+            fx = own[0];
+            fy = own[1];
+            fz = own[2];
+        } else if (!s.hasNormal() && gui) {
             // GL's default current normal, facing the viewer: a face normal of a quad wound for y-down screen space points
             // away, and a screen drawn with GUI item lighting on came out black (the Thaumonomicon's frame)
             fx = 0.0F;

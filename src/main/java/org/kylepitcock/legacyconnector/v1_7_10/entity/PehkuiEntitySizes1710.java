@@ -22,8 +22,12 @@ public final class PehkuiEntitySizes1710 {
         float h = height / own.height();
         set(ScaleTypes.HITBOX_WIDTH, entity, width / own.width());
         set(ScaleTypes.HITBOX_HEIGHT, entity, h);
-        set(ScaleTypes.MODEL_WIDTH, entity, width / own.width());
-        set(ScaleTypes.MODEL_HEIGHT, entity, h);
+        // 1.7.10's setSize only changed the hitbox. The model follows it only for a size change that scales the whole body (Fisk's shrink and grow
+        // powers): a flying hero's hitbox is 0.6 x 0.6 while the body is the same, and a model scaled by that came out squashed (#151)
+        float w = width / own.width();
+        boolean uniform = Math.abs(w - h) <= 0.02F * Math.max(w, h);
+        set(ScaleTypes.MODEL_WIDTH, entity, uniform ? w : 1.0F);
+        set(ScaleTypes.MODEL_HEIGHT, entity, uniform ? h : 1.0F);
         if (!EXPLICIT_EYE.contains(entity)) set(ScaleTypes.EYE_HEIGHT, entity, h);
     }
 
