@@ -66,6 +66,8 @@ public final class InjectionRepair {
         public int handlersChanged;
         /** One line per repaired or dropped injection, for the compatibility report. */
         public final List<String> notes = new ArrayList<>();
+        /** One entry per dropped injection or injection point: {@code kind TAB owner.name+descriptor TAB reason} (kind: method, at), for the census tool. */
+        public final List<String> droppedTargets = new ArrayList<>();
 
         public String summary() {
             return exact + " injection selector(s) exact in 1.21.1, " + repaired + " re-signed for added parameters, " + dropped + " dropped (target gone or not repairable), "
@@ -75,13 +77,18 @@ public final class InjectionRepair {
 
     private enum Kind { EXACT, REPAIR, DEAD, KEEP, REMAP }
 
-    private record Outcome(Kind kind, String selector, List<ParamAlignment.Insert> inserts, String reason, TargetRemap.Entry entry) {
+    private record Outcome(Kind kind, String selector, List<ParamAlignment.Insert> inserts, String reason, TargetRemap.Entry entry, String target) {
         Outcome(Kind kind, String selector, List<ParamAlignment.Insert> inserts, String reason) {
-            this(kind, selector, inserts, reason, null);
+            this(kind, selector, inserts, reason, null, null);
+        }
+
+        /** The same outcome, remembering the 1.20.1 member ({@code owner.name+descriptor}) it concerns (census of dropped targets). */
+        Outcome at(String member) {
+            return new Outcome(kind, selector, inserts, reason, entry, member);
         }
 
         static Outcome remap(String selector, TargetRemap.Entry entry) {
-            return new Outcome(Kind.REMAP, selector, List.of(), null, entry);
+            return new Outcome(Kind.REMAP, selector, List.of(), null, entry, null);
         }
 
         static final Outcome EXACT = new Outcome(Kind.EXACT, null, List.of(), null);
@@ -210,6 +217,7 @@ public final class InjectionRepair {
                     case DEAD -> {
                         counts.dropped++;
                         counts.notes.add("Mixin " + id + ": injection into " + sel + " dropped: " + eff.reason);
+                        counts.droppedTargets.add("method	" + (eff.target != null ? eff.target : String.valueOf(sel)) + "	" + eff.reason + "	" + it.a.desc.substring(it.a.desc.lastIndexOf('/') + 1));
                         changed = true;
                     }
                 }
@@ -251,7 +259,7 @@ public final class InjectionRepair {
             HostIndex.Lookup lk = idx.hasClass(owner) ? idx.methods(owner, name) : null;
             if (lk == null) {
                 // an owner the index lacks is a class 1.21.1 no longer has only when it is a Minecraft class
-                outs.add(ownerPart != null && owner.startsWith("net/minecraft/") ? Outcome.dead("class " + owner.replace('/', '.') + " does not exist in 1.21.1") : Outcome.KEEP);
+                outs.add(ownerPart != null && owner.startsWith("net/minecraft/") ? Outcome.dead("class " + owner.replace('/', '.') + " does not exist in 1.21.1").at(owner + "." + name) : Outcome.KEEP);
             } else {
                 outs.add(one(idx, a.desc, handler, owner, ownerPart, name, desc, hint, lk, a));
             }
@@ -278,6 +286,11 @@ public final class InjectionRepair {
 
 
     private static Outcome one(HostIndex idx, String injector, MethodNode handler, String owner, String ownerPart, String name, String desc, String hint, HostIndex.Lookup lk, AnnotationNode a) {
+        Outcome o = oneInner(idx, injector, handler, owner, ownerPart, name, desc, hint, lk, a);
+        return o.kind == Kind.DEAD ? o.at(owner + "." + name + (desc != null ? desc : hint != null ? hint : "")) : o;
+    }
+
+    private static Outcome oneInner(HostIndex idx, String injector, MethodNode handler, String owner, String ownerPart, String name, String desc, String hint, HostIndex.Lookup lk, AnnotationNode a) {
         String prefix = ownerPart == null ? "" : ownerPart;
         String original = prefix + name + (desc == null ? "" : desc);
         if (lk.gone()) return Outcome.dead("method " + name + " does not exist in " + owner.replace('/', '.') + " (1.21.1)");
@@ -304,11 +317,14 @@ public final class InjectionRepair {
         List<Type> captured = new ArrayList<>(Arrays.asList(ha).subList(0, cb));
         boolean voidCb = ha[cb].getInternalName().endsWith("CallbackInfo");
         String old = desc != null ? desc : hint;
+        // a name-only selector without a refmap: the table may know the one old signature the handler's parameters belong to
+        if (old == null && !captured.isEmpty() && !lk.declared().isEmpty() && !hasLocalsCapture(a) && lk.declared().stream().noneMatch(d -> captured.equals(Arrays.asList(Type.getArgumentTypes(d))))) old = TargetRemap.uniqueOldDescriptor(owner, name, captured);
         if (old != null) {
             // a vanilla method whose parameters 1.21.1 reordered or removed: the table gives the new descriptor and the sources of the old arguments
             TargetRemap.Entry re = TargetRemap.method(owner, name, old);
             if (re != null && lk.declared().contains(re.newDesc()) && isPrefix(captured, Arrays.asList(Type.getArgumentTypes(old)))
-                    && callbackFits(voidCb, re.newDesc()) && captured.size() <= re.argMap().size()) {
+                    && (re.returnConverted() ? !voidCb && Type.getReturnType(re.newDesc()).getSort() == Type.VOID : callbackFits(voidCb, re.newDesc()))
+                    && captured.size() <= re.argMap().size()) {
                 return Outcome.remap(prefix + name + re.newDesc(), re);
             }
         }
@@ -423,6 +439,7 @@ public final class InjectionRepair {
                     case DEAD -> {
                         counts.atDropped++;
                         counts.notes.add("Mixin " + id + ": injection point dropped: " + o.reason);
+                        counts.droppedTargets.add("at	" + (o.target != null ? o.target : string(at, "target")) + "	" + o.reason + "	" + injector.desc.substring(injector.desc.lastIndexOf('/') + 1));
                         it.remove();
                         changed = true;
                     }
@@ -464,6 +481,14 @@ public final class InjectionRepair {
     }
 
     private static Outcome atOutcome(String injector, MethodNode handler, AnnotationNode at, HostIndex idx) {
+        Outcome o = atOutcomeInner(injector, handler, at, idx);
+        if (o.kind != Kind.DEAD) return o;
+        String t = string(at, "target");
+        Matcher m = t == null ? null : AT_TARGET.matcher(t);
+        return m != null && m.matches() ? o.at(m.group(1) + "." + m.group(2) + (m.group(3) == null ? "" : m.group(3))) : o;
+    }
+
+    private static Outcome atOutcomeInner(String injector, MethodNode handler, AnnotationNode at, HostIndex idx) {
         String kind = string(at, "value");
         String target = string(at, "target");
         if (kind == null || target == null) return Outcome.KEEP;

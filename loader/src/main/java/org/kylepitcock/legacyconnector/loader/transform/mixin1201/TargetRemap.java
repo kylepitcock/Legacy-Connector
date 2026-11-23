@@ -36,11 +36,18 @@ import org.objectweb.asm.tree.VarInsnNode;
  */
 public final class TargetRemap {
     /** A method target: its new descriptor and the old parameters' sources. */
-    public record Entry(String newDesc, List<String> argMap) {}
+    public record Entry(String newDesc, List<String> argMap, String oldReturn) {
+        /** True when the old target returned a value and the new one returns void: the handler's {@code CallbackInfoReturnable} is rebuilt from the {@code CallbackInfo}. */
+        public boolean returnConverted() {
+            return !oldReturn.isEmpty();
+        }
+    }
 
     private static final Map<String, Entry> METHODS = new HashMap<>();
     private static final Map<String, String[]> AT = new HashMap<>();
     private static boolean loaded;
+    private static final String CALLBACK_INFO = "org/spongepowered/asm/mixin/injection/callback/CallbackInfo";
+    private static final String CALLBACK_INFO_RETURNABLE = "org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable";
     private static final String HELPER_PACKAGE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/";
 
     private TargetRemap() {}
@@ -55,7 +62,7 @@ public final class TargetRemap {
                 if (line.isBlank() || line.startsWith("#")) continue;
                 String[] f = line.split("\t", -1);
                 if (f.length < 6) continue;
-                if (f[0].equals("M")) METHODS.put(f[1] + "." + f[2] + f[3], new Entry(f[4], List.of(f[5].split(","))));
+                if (f[0].equals("M")) METHODS.put(f[1] + "." + f[2] + f[3], new Entry(f[4], List.of(f[5].split(",")), f.length > 6 ? f[6].trim() : ""));
                 else if (f[0].equals("A")) AT.put(f[1] + "." + f[2] + f[3], new String[] {f[4], f[5]});
             }
         } catch (IOException e) {
@@ -67,6 +74,28 @@ public final class TargetRemap {
     public static synchronized Entry method(String owner, String name, String oldDesc) {
         load();
         return METHODS.get(owner + "." + name + oldDesc);
+    }
+
+    /**
+     * The old descriptor of the one table row of {@code owner.name} whose old parameters start with {@code captured} (a name-only selector without a refmap
+     * names no descriptor), or null when no row or more than one fits.
+     */
+    public static synchronized String uniqueOldDescriptor(String owner, String name, List<Type> captured) {
+        load();
+        String prefix = owner + "." + name + "(";
+        String found = null;
+        for (String key : METHODS.keySet()) {
+            if (!key.startsWith(prefix)) continue;
+            String old = key.substring(owner.length() + 1 + name.length());
+            Type[] args = Type.getArgumentTypes(old);
+            if (captured.size() > args.length) continue;
+            boolean ok = true;
+            for (int i = 0; i < captured.size() && ok; i++) ok = captured.get(i).equals(args[i]);
+            if (!ok) continue;
+            if (found != null) return null;
+            found = old;
+        }
+        return found;
     }
 
     /** The new "name+descriptor" of a called method an {@code @At(target)} names, or null. */
@@ -87,8 +116,9 @@ public final class TargetRemap {
         if (cb < 0 || cb != ha.length - 1 || cb > e.argMap().size()) return false;
         Type[] newArgs = Type.getArgumentTypes(e.newDesc());
         boolean isStatic = (handler.access & Opcodes.ACC_STATIC) != 0;
+        boolean convert = e.returnConverted();
         List<Type> wrapperArgs = new ArrayList<>(List.of(newArgs));
-        wrapperArgs.add(ha[cb]);
+        wrapperArgs.add(convert ? Type.getObjectType(CALLBACK_INFO) : ha[cb]);
         String desc = Type.getMethodDescriptor(Type.VOID_TYPE, wrapperArgs.toArray(new Type[0]));
         String name = handler.name + "$mcc1201";
         for (MethodNode m : node.methods) if (m.name.equals(name) && m.desc.equals(desc)) return false;
@@ -100,6 +130,13 @@ public final class TargetRemap {
             slot += newArgs[i].getSize();
         }
         slots[newArgs.length] = slot;
+        // the new target returns void (CallbackInfo), the old one returned a value (CallbackInfoReturnable): the handler gets a returnable made from the info
+        int cirSlot = slot + 1;
+        if (convert) {
+            il.add(new VarInsnNode(Opcodes.ALOAD, slots[newArgs.length]));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HELPER_PACKAGE + "MixinTargetCompat", "returnableOf", "(L" + CALLBACK_INFO + ";)L" + CALLBACK_INFO_RETURNABLE + ";", false));
+            il.add(new VarInsnNode(Opcodes.ASTORE, cirSlot));
+        }
         if (!isStatic) il.add(new VarInsnNode(Opcodes.ALOAD, 0));
         for (int p = 0; p < cb; p++) {
             String tok = e.argMap().get(p).trim();
@@ -125,13 +162,18 @@ public final class TargetRemap {
             }
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), hd, false));
         }
-        il.add(new VarInsnNode(Opcodes.ALOAD, slots[newArgs.length]));
+        il.add(new VarInsnNode(Opcodes.ALOAD, convert ? cirSlot : slots[newArgs.length]));
         boolean itf = (node.access & Opcodes.ACC_INTERFACE) != 0;
         il.add(new MethodInsnNode(isStatic ? Opcodes.INVOKESTATIC : Opcodes.INVOKESPECIAL, node.name, handler.name, handler.desc, itf));
+        if (convert) {
+            il.add(new VarInsnNode(Opcodes.ALOAD, cirSlot));
+            il.add(new VarInsnNode(Opcodes.ALOAD, slots[newArgs.length]));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HELPER_PACKAGE + "MixinTargetCompat", "propagate", "(L" + CALLBACK_INFO_RETURNABLE + ";L" + CALLBACK_INFO + ";)V", false));
+        }
         il.add(new InsnNode(Opcodes.RETURN));
         MethodNode w = new MethodNode(handler.access, name, desc, null, null);
         w.instructions = il;
-        w.maxLocals = slot + 1;
+        w.maxLocals = slot + 2;
         // helper results (a long takes two slots) and the receiver: generous
         w.maxStack = 4 + ha.length * 2;
         // the injector annotation moves from the handler to the wrapper

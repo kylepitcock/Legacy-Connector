@@ -38,14 +38,32 @@ public final class Mixin1201Survey {
             } else jars.add(p);
         }
         Mc1201Tables t = Mc1201Tables.get();
+        Map<String, String> srg = SrgMojangTable.load();
         Remapper mapper = new Remapper() {
+            @Override
+            public String mapMethodName(String owner, String name, String descriptor) {
+                if (name.length() > 3 && name.charAt(1) == '_') {
+                    String m = srg.get(name);
+                    if (m != null) name = m;
+                }
+                return t.renamedMember(owner, name, descriptor);
+            }
+
+            @Override
+            public String mapFieldName(String owner, String name, String descriptor) {
+                if (name.length() > 3 && name.charAt(1) == '_') {
+                    String m = srg.get(name);
+                    if (m != null) name = m;
+                }
+                return t.renamedMember(owner, name, ":" + descriptor);
+            }
+
             @Override
             public String map(String name) {
                 String r = t.classes.get(name);
                 return r != null && !r.startsWith("org/kylepitcock/") ? r : name;
             }
         };
-        Map<String, String> srg = SrgMojangTable.load();
         StringBuilder out = new StringBuilder();
         Mixin1201.Stats total = new Mixin1201.Stats();
         int jarsWithMixins = 0;
@@ -90,6 +108,9 @@ public final class Mixin1201Survey {
                     .append(", dropped ").append(c.dropped).append(", unproven ").append(c.unproven).append("; @At exact ").append(c.atExact).append(", repaired ").append(c.atRepaired)
                     .append(", dropped ").append(c.atDropped).append(", mixin classes dropped ").append(st.droppedClasses.size()).append('\n');
             for (String n : c.notes) out.append("    ").append(n).append('\n');
+            // machine-readable lines for tools/dev/mixin_census_1201.py
+            for (String d : c.droppedTargets) out.append("@DROP\t").append(jar.getFileName()).append('\t').append(d).append('\n');
+            for (String d : st.dropped) out.append("@CLASS\t").append(jar.getFileName()).append('\t').append(d).append('\n');
             total.mixinClasses += st.mixinClasses;
             total.droppedClasses.addAll(st.droppedClasses);
             total.repair.exact += c.exact;

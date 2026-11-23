@@ -1100,6 +1100,9 @@ public final class Forge1201Transformer {
         String originalSha = Provenance.sha256Hex(jar.existing());
         Provenance.addManifest(outManifest.getMainAttributes(), jar, originalSha);
         outResources.put(Provenance.RESOURCE, Provenance.json(jar, originalSha, LegacyJarTransformer.TRANSFORMER_VERSION));
+        // dropped mixin injections made visible at run time: the runtime notes one line per mod in the degraded-behaviour summary (LegacyMixinPlugin)
+        String droppedMixins = mixinStats.droppedSummary();
+        if (droppedMixins != null) outResources.put("META-INF/legacyconnector/mixin-dropped.txt", droppedMixins.getBytes(StandardCharsets.UTF_8));
         LegacyJarTransformer.write(output, outManifest, outClasses, outResources);
         return result;
     }
