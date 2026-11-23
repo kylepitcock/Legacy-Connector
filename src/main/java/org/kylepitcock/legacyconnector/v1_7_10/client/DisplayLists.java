@@ -26,7 +26,12 @@ public final class DisplayLists {
     public static final int GL_COMPILE_AND_EXECUTE = 4865;
     private static final int MAX_DEPTH = 8;
     private static final Runnable[] EMPTY = new Runnable[0];
-    private static final boolean BAKE = Flags.DISPLAY_LIST_BAKE.get() == null || !"false".equals(Flags.DISPLAY_LIST_BAKE.get());
+    private static volatile boolean bake = !"false".equals(Flags.DISPLAY_LIST_BAKE.get());
+
+    /** Turns baking on or off while the game runs (probes and measurements; the switch only sets the start value). */
+    public static void setBake(boolean on) {
+        bake = on;
+    }
 
     /** A compiled list: its actions and what {@link BakedLists} keeps of it. */
     static final class Entry {
@@ -144,7 +149,7 @@ public final class DisplayLists {
         if (depth[0] >= MAX_DEPTH) return;
         depth[0]++;
         try {
-            if (BAKE && depth[0] == 1 && !e.off && BakedLists.tryCall(e)) return;
+            if (bake && depth[0] == 1 && !e.off && BakedLists.tryCall(e)) return;
             for (Runnable a : e.actions) a.run();
         } finally {
             depth[0]--;
@@ -154,6 +159,11 @@ public final class DisplayLists {
     /** Replays a list's actions once, for the recorder that bakes it. */
     static void runActions(Entry e) {
         for (Runnable a : e.actions) a.run();
+    }
+
+    /** Baked list counts for logs and probes. */
+    public static String bakeStats() {
+        return BakedLists.stats();
     }
 
     /** Drops every baked mesh (the atlas was stitched again: the baked texture coordinates are stale). */
