@@ -1043,6 +1043,24 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void overrideOfFinalRenderThroughImageButtonMovesToRenderWidget() {
+        String graphics = "net/minecraft/client/gui/GuiGraphics";
+        String desc = "(L" + graphics + ";IIF)V";
+        ClassNode c = cls("test/ShopButton", "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyImageButton");
+        MethodNode render = method(c, ACC_PUBLIC, "render", desc);
+        for (int i = 0; i < 5; i++) render.instructions.add(new VarInsnNode(i == 2 || i == 3 ? ILOAD : i == 4 ? FLOAD : ALOAD, i));
+        render.instructions.add(new MethodInsnNode(INVOKESPECIAL, "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyImageButton", "render", desc, false));
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = 5;
+        render.maxLocals = 5;
+        apply(c);
+        boolean renamed = false;
+        for (MethodNode m : c.methods) if (m.name.equals("renderWidget") && m.desc.equals(desc)) renamed = true;
+        assertTrue(renamed, "an override through the ImageButton stand-in must still move to renderWidget");
+        assertNotNull(find(render, "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyImageButton", "renderWidget"), "the super call follows");
+    }
+
+    @Test
     void overrideOfFinalAbstractWidgetRenderMovesToRenderWidget() {
         String widget = "net/minecraft/client/gui/components/AbstractWidget";
         String graphics = "net/minecraft/client/gui/GuiGraphics";
