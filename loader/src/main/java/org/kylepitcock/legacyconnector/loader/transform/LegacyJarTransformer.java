@@ -41,7 +41,7 @@ public final class LegacyJarTransformer {
      * Format number written into a translated jar's provenance file. It is NOT part of the cache key and needs no bump when the loader's
      * output changes: the key holds a content hash of the loader build ({@code loader-build-id.txt}), which changes with every loader change.
      */
-    public static final int TRANSFORMER_VERSION = 262;
+    public static final int TRANSFORMER_VERSION = 263;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -637,7 +637,10 @@ public final class LegacyJarTransformer {
         outResources.putAll(resources.finish());
         if (version == LegacyVersion.V1_12_2 && jar.hasMods()) {
             jar.mixinConfigResources.clear();
-            result.notes.addAll(LegacyMixinConfigs.apply(jar, outResources, nodes, hierarchy));
+            java.util.Set<String> droppedMixins = new java.util.HashSet<>();
+            result.notes.addAll(LegacyMixinConfigs.apply(jar, outResources, nodes, hierarchy, droppedMixins));
+            // a mixin that is not applied is never loaded: what it references of the legacy API is not a placeholder in use
+            result.links.forgetReferencesFrom(droppedMixins);
         }
         byte[] additions = CoremodAdditionMixins.config(jar, nodes.keySet());
         if (additions != null) {
