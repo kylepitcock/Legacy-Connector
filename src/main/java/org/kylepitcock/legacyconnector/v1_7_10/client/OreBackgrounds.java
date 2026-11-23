@@ -214,6 +214,14 @@ public final class OreBackgrounds {
         int dr = ((argb >> 16) & 255) - LEGACY_HOSTS[host][0];
         int dg = ((argb >> 8) & 255) - LEGACY_HOSTS[host][1];
         int db = (argb & 255) - LEGACY_HOSTS[host][2];
-        return Math.sqrt(dr * dr + dg * dg + db * db) < MATCH_DISTANCE[host];
+        if (Math.sqrt(dr * dr + dg * dg + db * db) >= MATCH_DISTANCE[host]) return false;
+        // The distance alone is loose enough to take a mod's own rock (a brown "umberstone" is within 30 of netherrack): also
+        // require the hue of the old vanilla rock. Stone is grey, netherrack is clearly red (R-G 53..67), end stone is yellow.
+        int r = (argb >> 16) & 255, g = (argb >> 8) & 255, b = argb & 255;
+        return switch (host) {
+            case 0 -> Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) <= 24;
+            case 1 -> r - g >= 40 && r - b >= 40;
+            default -> r - b >= 35;
+        };
     }
 }

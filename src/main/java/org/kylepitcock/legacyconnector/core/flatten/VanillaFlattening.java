@@ -64,6 +64,14 @@ public final class VanillaFlattening {
             for (int key = 0; key < 4096; key++) states[key] = upgrade(BlockStateData.getTag(key));
             saveBlockTable();
         }
+        // The data fixers upgrade every vine with up=true (a world's first neighbour update would correct it). Placed without updates,
+        // as legacy world generation does, a vine column keeps it and draws a horizontal sheet in every block: only a vine with no wall
+        // (metadata 0, hanging from the block above) is an "up" vine.
+        for (int key = 106 << 4; key < 107 << 4; key++) {
+            if (states[key] != null && states[key].getBlock() instanceof net.minecraft.world.level.block.VineBlock) {
+                states[key] = states[key].setValue(net.minecraft.world.level.block.VineBlock.UP, (key & 15) == 0);
+            }
+        }
         for (int key = 0; key < 4096; key++) {
             BlockState s = states[key];
             if (s == null) continue;
@@ -163,6 +171,13 @@ public final class VanillaFlattening {
         initBlocks();
         Integer exact = reverseStates.get(state);
         if (exact != null) return exact;
+        if (state.getBlock() instanceof net.minecraft.world.level.block.VineBlock) {
+            // a modern vine's "up" does not change which walls it hangs on
+            boolean walls = state.getValue(net.minecraft.world.level.block.VineBlock.NORTH) || state.getValue(net.minecraft.world.level.block.VineBlock.EAST)
+                    || state.getValue(net.minecraft.world.level.block.VineBlock.SOUTH) || state.getValue(net.minecraft.world.level.block.VineBlock.WEST);
+            Integer vine = reverseStates.get(state.setValue(net.minecraft.world.level.block.VineBlock.UP, !walls));
+            if (vine != null) return vine;
+        }
         Integer byBlock = reverseBlocks.get(state.getBlock());
         return byBlock == null ? -1 : byBlock;
     }
