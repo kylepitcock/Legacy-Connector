@@ -100,7 +100,7 @@ class AlienEvoBoneAnchors1201Test implements Opcodes {
     void redirectsCameraGetterAndSkipsInverseViewForThirdPersonBoneMatrices() {
         ClassNode node = boneAnchors();
 
-        assertEquals(1, AlienEvoBoneAnchors1201.apply(node));
+        assertEquals(2, AlienEvoBoneAnchors1201.apply(node));
 
         MethodInsnNode cameraCall = findCall(findMethod(node, "invView", AlienEvoBoneAnchors1201.DESC));
         assertEquals(INVOKESTATIC, cameraCall.getOpcode());
