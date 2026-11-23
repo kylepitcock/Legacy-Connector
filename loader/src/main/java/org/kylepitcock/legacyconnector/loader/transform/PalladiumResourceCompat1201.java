@@ -587,6 +587,38 @@ final class PalladiumResourceCompat1201 {
         return 1;
     }
 
+    /**
+     * Whether the prepared resource pack actually contains the expected XLR8 HUD
+     * bounds. Exposed to the compatibility report so a runtime capture can show
+     * whether the resource rewrite was present in the installed artifact.
+     */
+    static boolean hasXlr8SpeedLevelTextureBounds(Map<String, byte[]> resources) {
+        byte[] bytes = resources.get(ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE);
+        if (bytes == null) return false;
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(bytes, StandardCharsets.UTF_8));
+            if (parsed == null || !parsed.isJsonObject()) return false;
+            JsonElement variables = parsed.getAsJsonObject().get("variables");
+            if (variables == null || !variables.isJsonObject()) return false;
+            JsonElement score = variables.getAsJsonObject().get("X");
+            if (score == null || !score.isJsonObject()) return false;
+            JsonObject value = score.getAsJsonObject();
+            return isJsonString(value.get("type"), "palladium:objective_score")
+                    && isJsonString(value.get("objective"), "AlienEvo.SpeedLevel")
+                    && isJsonInteger(value.get("min"), 0)
+                    && isJsonInteger(value.get("max"), 5);
+        } catch (RuntimeException malformedJson) {
+            return false;
+        }
+    }
+
+    private static boolean isJsonInteger(JsonElement value, int expected) {
+        return value != null
+                && value.isJsonPrimitive()
+                && value.getAsJsonPrimitive().isNumber()
+                && value.getAsInt() == expected;
+    }
+
     private static boolean isJsonString(JsonElement value, String expected) {
         return value != null
                 && value.isJsonPrimitive()

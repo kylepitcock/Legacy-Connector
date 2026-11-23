@@ -1495,7 +1495,9 @@ class PalladiumResourceCompat1201Test {
                 }
                 """);
 
+        assertFalse(PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(resources));
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        assertTrue(PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(resources));
 
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE);
         assertTrue(migrated.contains("\"min\": 0"));
@@ -1509,11 +1511,14 @@ class PalladiumResourceCompat1201Test {
                 "\"base\": \"alienevo:textures/hud/kineceleran/speed_#X_#UNIFORM.png\""));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertTrue(PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(resources));
     }
 
     @Test
     void leavesMissingMalformedAndUnexpectedXlr8SpeedLevelResourcesUntouched() {
-        assertEquals(0, PalladiumResourceCompat1201.apply(new HashMap<>()));
+        Map<String, byte[]> missing = new HashMap<>();
+        assertEquals(0, PalladiumResourceCompat1201.apply(missing));
+        assertFalse(PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(missing));
 
         Map<String, byte[]> malformed = new HashMap<>();
         String malformedJson =
@@ -1523,6 +1528,7 @@ class PalladiumResourceCompat1201Test {
         assertEquals(0, PalladiumResourceCompat1201.apply(malformed));
         assertEquals(malformedJson,
                 get(malformed, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE));
+        assertFalse(PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(malformed));
 
         Map<String, byte[]> unexpected = new HashMap<>();
         String unexpectedJson = """
@@ -1540,6 +1546,7 @@ class PalladiumResourceCompat1201Test {
         assertEquals(0, PalladiumResourceCompat1201.apply(unexpected));
         assertEquals(unexpectedJson,
                 get(unexpected, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE));
+        assertFalse(PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(unexpected));
     }
 
     @Test

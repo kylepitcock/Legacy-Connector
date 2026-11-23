@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.HumanoidArm;
 import org.joml.Matrix3f;
@@ -23,13 +24,29 @@ public final class AlienEvoCameraRotation1201Runtime {
      * This mirrors its arm-key naming convention for the ability-side lookup.
      */
     public static String firstPersonArmBoneKey(String boneName) {
+        if (boneName == null) return null;
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) return boneName;
-        return firstPersonArmBoneKey(boneName, minecraft.player.getMainArm());
+        return firstPersonArmBoneKey(
+                boneName, minecraft.player == null ? null : minecraft.player.getMainArm());
     }
 
-    static String firstPersonArmBoneKey(String boneName, HumanoidArm arm) {
-        if (boneName == null || arm == null) return boneName;
-        return boneName + arm.name();
+    /**
+     * AlienEvo renders and stores the two first-person arm poses separately.
+     * Side-qualified source bones (for example beamRight / beamLeft) must keep
+     * their own side even when that side is not the player's main hand. This is
+     * important for abilities that average two anchors into a single midpoint.
+     */
+    static String firstPersonArmBoneKey(String boneName, HumanoidArm mainArm) {
+        if (boneName == null) return null;
+        HumanoidArm resolvedArm = armFromBoneName(boneName);
+        if (resolvedArm == null) resolvedArm = mainArm;
+        return resolvedArm == null ? boneName : boneName + resolvedArm.name();
+    }
+
+    private static HumanoidArm armFromBoneName(String boneName) {
+        String normalized = boneName.toLowerCase(Locale.ROOT);
+        if (normalized.endsWith("right")) return HumanoidArm.RIGHT;
+        if (normalized.endsWith("left")) return HumanoidArm.LEFT;
+        return null;
     }
 }

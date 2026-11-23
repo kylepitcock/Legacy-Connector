@@ -17,9 +17,28 @@ class AlienEvoCameraRotation1201RuntimeTest {
     }
 
     @Test
+    void sideQualifiedBoneNamesOverrideThePlayersMainArm() {
+        // Pyronite's midpoint beam requests both bone anchors in one first-person shot.
+        assertEquals("beamRightRIGHT",
+                AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey("beamRight", HumanoidArm.LEFT));
+        assertEquals("beamLeftLEFT",
+                AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey("beamLeft", HumanoidArm.RIGHT));
+    }
+
+    @Test
+    void unqualifiedBoneNamesStillFallBackToThePlayersMainArm() {
+        assertEquals("beamHeadRIGHT",
+                AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey("beamHead", HumanoidArm.RIGHT));
+        assertEquals("beamHeadLEFT",
+                AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey("beamHead", HumanoidArm.LEFT));
+    }
+
+    @Test
     void nullBoneOrArmDoesNotCreateAnInvalidKey() {
         assertNull(AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey(null, HumanoidArm.RIGHT));
-        assertEquals("beamRight",
+        assertEquals("beamRightRIGHT",
                 AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey("beamRight", null));
+        assertEquals("beamHead",
+                AlienEvoCameraRotation1201Runtime.firstPersonArmBoneKey("beamHead", null));
     }
 }

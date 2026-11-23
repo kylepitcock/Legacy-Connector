@@ -890,6 +890,9 @@ public final class Forge1201Transformer {
             result.notes.add("AlienEvo compatibility rewrote present legacy script resources and/or inspected data and asset resources: "
                     + alienEvoResourceChanges + " resource file(s)");
         }
+        if (PalladiumResourceCompat1201.hasXlr8SpeedLevelTextureBounds(outResources)) {
+            result.notes.add("AlienEvo: Kineceleran HUD texture variable X is bounded to frames 0..5 for objective AlienEvo.SpeedLevel");
+        }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
             result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
         }
