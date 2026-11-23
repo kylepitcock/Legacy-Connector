@@ -631,6 +631,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             tex.addProperty("cross", faces[0]);
             model.addProperty("render_type", "minecraft:cutout");
         } else {
+            org.kylepitcock.legacyconnector.v1_7_10.client.VanillaBlockRenderers.noteIfUnhandled(b, rt,
+                    legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(rt) != null);
             String[] names = {"down", "up", "north", "south", "west", "east"};
             for (int i = 0; i < 6; i++) tex.addProperty(names[i], faces[i]);
             double x1 = b.getBlockBoundsMinX(), y1 = b.getBlockBoundsMinY(), z1 = b.getBlockBoundsMinZ();
