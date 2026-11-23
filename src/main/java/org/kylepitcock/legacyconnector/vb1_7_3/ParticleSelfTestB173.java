@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.client.particle.Particle;
 import legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator;
@@ -10,7 +11,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 /** Actual original particle callbacks and constructor-state transport, without graphics or native client classes. */
 public final class ParticleSelfTestB173 {
     private ParticleSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173ParticleTest").error("B1.7.3 PARTICLE TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173ParticleTest").error("B1.7.3 PARTICLE TEST failed",error);}});}
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException("B1.7.3 PARTICLE TEST: "+detail);}
     private static List<Tessellator.Vertex> render(Particle particle){Tessellator.beginCapture();List<Tessellator.Vertex> result;try{particle.render(Tessellator.INSTANCE,.5F,1,1,0,0,0);}finally{result=Tessellator.endCapture();}return result;}
     private static void run(net.minecraft.server.level.ServerLevel level){

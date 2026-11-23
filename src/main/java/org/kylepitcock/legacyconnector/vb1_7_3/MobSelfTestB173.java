@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.minecraft.world.InteractionHand;
@@ -55,7 +56,7 @@ public final class MobSelfTestB173 {
         AnimalLifecycleSelfTestB173.register(game);
         BoundsSelfTestB173.register(game);
         WorldGenEntitiesSelfTestB173.register(game);
-        if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
+        if(Flags.ENTITY_SELF_TEST.on())game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }
     private static void require(boolean condition,String message){if(!condition)throw new IllegalStateException("B1.7.3 MOB TEST: "+message);}
     private static void run(net.minecraft.server.level.ServerLevel level){

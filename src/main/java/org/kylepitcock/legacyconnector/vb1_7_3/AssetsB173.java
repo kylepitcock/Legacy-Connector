@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -247,7 +248,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     @Override
     public synchronized void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (ContentB173.blocks().isEmpty() && ContentB173.items().isEmpty()) return;
-        String selfTest = System.getProperty("legacyconnector.assetsSelfTest");
+        String selfTest = Flags.ASSETS_SELF_TEST.get();
         if (type == PackType.SERVER_DATA && selfTest != null) {
             // a dedicated server never loads client assets: the self test generates them anyway (-PassetsDump=<dir> writes them out)
             Map<String, Supplier<byte[]>> files = new java.util.TreeMap<>();

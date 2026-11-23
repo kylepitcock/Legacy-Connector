@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import java.lang.reflect.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.Entity;
@@ -73,7 +74,7 @@ public final class MoreCreepsWeaponsSelfTestB173 {
             int count=item.getItem().getCount();copy.getItem().shrink(1);require(item.getItem().getCount()==count,"pickup particle mutation leaves original native stack intact");
         }finally{copy.discard();}
     }
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError e){LOG.error("B1.7.3 CREEPS WEAPONS TEST failed",e);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError e){LOG.error("B1.7.3 CREEPS WEAPONS TEST failed",e);}});}
     private static void run(ServerLevel level){
         var items=ContentB173.items().stream().filter(i->i.getClass().getPackageName().equals("legacyconnector_b173.morecreepsandweirdos")).toList();if(items.isEmpty())return;
         var player=net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);var previous=player.getMainHandItem().copy();var inventoryBefore=player.getInventory().save(new net.minecraft.nbt.ListTag());var previousPos=player.position();var failures=new ArrayList<String>();

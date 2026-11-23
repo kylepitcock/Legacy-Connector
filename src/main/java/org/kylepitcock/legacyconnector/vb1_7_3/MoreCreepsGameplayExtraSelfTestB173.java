@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity;
@@ -14,7 +15,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class MoreCreepsGameplayExtraSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173CreepsGameplayExtraTest");
     private MoreCreepsGameplayExtraSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{
         try{run(event.getServer().overworld());}catch(ReflectiveOperationException|RuntimeException|LinkageError error){LOG.error("B1.7.3 CREEPS GAMEPLAY EXTRA TEST failed",error);}
     });}
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}

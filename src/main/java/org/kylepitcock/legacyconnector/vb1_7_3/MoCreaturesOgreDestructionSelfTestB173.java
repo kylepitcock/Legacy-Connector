@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,7 +21,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class MoCreaturesOgreDestructionSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173OgreDestructionTest");
     private MoCreaturesOgreDestructionSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 MOC OGRE DESTRUCTION TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 MOC OGRE DESTRUCTION TEST failed",error);}});}
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}
     private static void put(Object object,String name,Object value)throws ReflectiveOperationException {for(Class<?> type=object.getClass();type!=null;type=type.getSuperclass())try{Field field=type.getDeclaredField(name);field.setAccessible(true);field.set(object,value);return;}catch(NoSuchFieldException ignored){}throw new NoSuchFieldException(name);}
     private static BlockState serialized(net.minecraft.server.level.ServerLevel level,BlockPos pos){

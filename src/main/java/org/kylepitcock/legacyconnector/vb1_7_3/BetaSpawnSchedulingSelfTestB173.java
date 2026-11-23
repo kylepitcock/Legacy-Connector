@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,7 @@ public final class BetaSpawnSchedulingSelfTestB173 {
     private static Session active;
     private BetaSpawnSchedulingSelfTestB173(){}
     public static void register(IEventBus bus){
-        if(!Boolean.getBoolean("legacyconnector.entitySelfTest")||!Boolean.getBoolean("legacyconnector.betaSpawnSchedulingSelfTest"))return;
+        if(!Flags.ENTITY_SELF_TEST.on()||!Flags.BETA_SPAWN_SCHEDULING_SELF_TEST.on())return;
         bus.addListener((ServerStartedEvent event)->{
             if(AnimalsB173.all().stream().noneMatch(i->Set.of("legacyconnector_b173.mocreatures","legacyconnector_b173.morecreepsandweirdos").contains(i.registration().type().getPackageName())))return;
             try{active=new Session(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 BETA SCHEDULING TEST initialization failed",error);}
@@ -45,7 +46,7 @@ public final class BetaSpawnSchedulingSelfTestB173 {
         final EnumMap<SpawnGroup,Long> previous=new EnumMap<>(SpawnGroup.class);final EnumMap<SpawnGroup,Integer> opportunities=new EnumMap<>(SpawnGroup.class);
         final Set<UUID> finalized=new HashSet<>(),inserted=new HashSet<>();final Map<String,Integer> confirmedInsertions=new TreeMap<>();
         final Map<String,Integer> positionChecks=new TreeMap<>();final List<String> failures=new ArrayList<>();final SpawnSchedulerB173.Scope observer;
-        final int duration=Math.max(80,Integer.getInteger("legacyconnector.betaSpawnSchedulingTestTicks",300));int ticks;
+        final int duration=Math.max(80,Flags.BETA_SPAWN_SCHEDULING_TEST_TICKS.getInt(300));int ticks;
         Session(ServerLevel level){
             this.level=level;for(var entity:level.getAllEntities())before.add(entity.getUUID());
             for(var info:AnimalsB173.all())if(SpawnSchedulerB173.managed(info.type()))for(var rule:SpawnRulesB173.all())if(rule.type()==info.registration().type()&&rule.weight()>0)expected.add(rule.group());
@@ -79,7 +80,7 @@ public final class BetaSpawnSchedulingSelfTestB173 {
                 }
             }
             EntityViewsB173.flush();
-            ticks++;if(player.isRemoved()||!player.isAlive()||(player.isSpectator()&&!Boolean.getBoolean("legacyconnector.betaSpawnSchedulingControlTest"))){finish("native actor lost eligibility");active=null;return;}
+            ticks++;if(player.isRemoved()||!player.isAlive()||(player.isSpectator()&&!Flags.BETA_SPAWN_SCHEDULING_CONTROL_TEST.on())){finish("native actor lost eligibility");active=null;return;}
             if(ticks>=duration){finish(null);active=null;}
         }
         void finish(String reason){

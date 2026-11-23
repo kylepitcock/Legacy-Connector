@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class BetaEcologySelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173EcologyTest");
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest")&&Boolean.getBoolean("legacyconnector.betaEcologySelfTest"))bus.addListener((ServerStartedEvent event)->{
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on()&&Flags.BETA_ECOLOGY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{
         if(AnimalsB173.all().stream().noneMatch(i->Set.of("legacyconnector_b173.mocreatures","legacyconnector_b173.morecreepsandweirdos").contains(i.registration().type().getPackageName())))return;
         try{run(event.getServer().overworld());}catch(ReflectiveOperationException|RuntimeException|LinkageError error){LOG.error("B1.7.3 ECOLOGY TEST failed",error);}
     });}

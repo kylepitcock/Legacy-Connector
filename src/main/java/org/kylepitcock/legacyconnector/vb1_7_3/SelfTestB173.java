@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public final class SelfTestB173 {
     private SelfTestB173() {}
 
     public static void register(IEventBus game) {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         game.addListener((ServerStartedEvent e) -> run(e.getServer().overworld()));
     }
 

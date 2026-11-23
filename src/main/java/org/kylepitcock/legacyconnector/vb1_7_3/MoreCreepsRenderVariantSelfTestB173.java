@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public final class MoreCreepsRenderVariantSelfTestB173 {
     private static final ResourceLocation TERRAIN=ResourceLocation.fromNamespaceAndPath("legacyconnector","b173/sheets/terrain");
     private static final ResourceLocation FIRE=ResourceLocation.withDefaultNamespace("textures/block/fire_0.png");
     private MoreCreepsRenderVariantSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 CREEPS RENDER VARIANT TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 CREEPS RENDER VARIANT TEST failed",error);}});}
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}
     private static void put(Object object,String name,Object value)throws ReflectiveOperationException {for(Class<?> type=object.getClass();type!=null;type=type.getSuperclass())try{Field field=type.getDeclaredField(name);field.setAccessible(true);field.set(object,value);return;}catch(NoSuchFieldException ignored){}throw new NoSuchFieldException(name);}
     private record Quad(List<RendererContextB173.Vertex> vertices,ResourceLocation texture){}

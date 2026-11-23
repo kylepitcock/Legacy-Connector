@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class AnimalLifecycleSelfTestB173 {
     private AnimalLifecycleSelfTestB173() {}
     public static void register(IEventBus bus) {
-        if(Boolean.getBoolean("legacyconnector.entitySelfTest"))
+        if(Flags.ENTITY_SELF_TEST.on())
             bus.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }
     private static void require(boolean value,String message) {

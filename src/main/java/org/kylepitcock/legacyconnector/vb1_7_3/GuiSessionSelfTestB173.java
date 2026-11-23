@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import io.netty.buffer.Unpooled;
 import java.lang.reflect.Proxy;
 import java.util.*;
@@ -19,7 +20,7 @@ import org.kylepitcock.legacyconnector.core.network.LegacyPayload;
 /** Actual original naming screen through server ownership, drawing packets and round-tripped remote input. */
 public final class GuiSessionSelfTestB173 {
     private GuiSessionSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173GuiSessionTest").error("B1.7.3 GUI SESSION TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173GuiSessionTest").error("B1.7.3 GUI SESSION TEST failed",error);}});}
     private static void require(boolean condition,String detail){if(!condition)throw new IllegalStateException("B1.7.3 GUI SESSION TEST: "+detail);}
     private static LegacyPayload wire(LegacyPayload payload){var buffer=Unpooled.buffer();try{LegacyPayload.CODEC.encode(buffer,payload);return LegacyPayload.CODEC.decode(buffer);}finally{buffer.release();}}
     private static CompoundTag tag(LegacyPayload payload){var buffer=new FriendlyByteBuf(Unpooled.wrappedBuffer(wire(payload).data()));try{return buffer.readNbt();}finally{buffer.release();}}

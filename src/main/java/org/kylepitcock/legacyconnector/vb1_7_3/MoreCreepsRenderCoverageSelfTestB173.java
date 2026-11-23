@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Supplier;
@@ -13,7 +14,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class MoreCreepsRenderCoverageSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173CreepsRenderCoverageTest");
     private MoreCreepsRenderCoverageSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));}
     private static void require(boolean value,String message){if(!value)throw new IllegalStateException(message);}
     private static Field field(Object object,String name)throws ReflectiveOperationException {for(Class<?> type=object.getClass();type!=null;type=type.getSuperclass())try{var f=type.getDeclaredField(name);f.setAccessible(true);return f;}catch(NoSuchFieldException ignored){}throw new NoSuchFieldException(name);}
     private static void put(Object object,String name,Object value)throws ReflectiveOperationException {field(object,name).set(object,value);}
