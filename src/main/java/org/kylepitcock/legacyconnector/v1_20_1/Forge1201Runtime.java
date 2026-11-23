@@ -61,6 +61,7 @@ public final class Forge1201Runtime {
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
                 legacyconnector.v1_20_1.net.minecraftforge.common.world.ForgeChunkManager.registerControllers(e, modIds));
         org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::contribute);
+        org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addLateContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LenientData1201::contribute);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.simple.SimpleChannel::registerAll);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel::registerAll);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyLibChannel::registerAll);
