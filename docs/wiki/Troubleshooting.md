@@ -73,6 +73,35 @@ Minecraft 1.2.5 support is alpha and on by default. A 1.2.5 jar (detected by its
 
 Put the jars (the server build of a mod on a server) into `mods/1.2.5/`. Expect mods that load and then do little: small mods register their content and draw it in a real client, six small mods (Obsidian Hilt, BucketCraft, Craftable Mob Spawners, Magic Wands, Elemental Creepers, Backpack) were played in survival and keep their items and blocks across a save and restart, and the big Forge-era mods are only link-probed. Details: [Legacy 1.2.5](Legacy-1.2.5.md), the toggle: [Configuration](Configuration.md).
 
+## Reading the "Degraded behaviour" summary
+
+When the layer cannot do something fully it says so in one place instead of failing silently. Every such event is counted, logged once (a `[LegacyConnector/Degraded]` line at WARN, or INFO for approximations that are usually harmless) and summarised per mod:
+
+- in `logs/latest.log` as "Legacy Connector degraded behaviour ..." lines at the title screen, when a server has started and when you join a world;
+- in full, one block per mod, in `logs/legacyconnector-degraded.txt` (rewritten at each of those points and at exit).
+
+```
+Degraded behaviour (written 2026-11-22T14:03:11): 3 distinct event(s) in 1 place(s)
+  somemod
+    block render type without a handler: 1 distinct, 1 time(s)
+      render type 26 some.mod.BlockPortalFrame x1: vanilla render type 26 has no handler and no mod renderer: drawn as a cube
+    GL call not emulated: 2 distinct, 4800 time(s)
+      glGetInteger(0xba2) x4210: glGetInteger reads the real GL context for 0xba2, ...
+```
+
+The heading under each mod says what kind of thing degraded; the numbers are how many different events and how often each happened:
+
+| Heading | Meaning | What to do |
+|---|---|---|
+| asset generation cap hit | A block has more states or variants than the 1.12.2 model generator keeps (`MAX_STATE_MODELS`, `STATE_MODEL_BUDGET`, `MAX_STATE_MODEL_STATES`); the block keeps the models of its metadata, so connected or rotated variants look wrong | Report it with the block id |
+| asset fell back to a default | A blockstate or metadata value could not be translated and draws a plain cube or default model | Report it with the block id and the reason shown |
+| block render type without a handler | A 1.7.10 block uses a vanilla render type (for example 26, the end portal frame, or 10, stairs) that the layer neither models nor draws with a handler, and the mod has no renderer of its own: it shows as a cube | Report it; the type number says which renderer to port next |
+| GL call not emulated | The mod asked the old fixed-function GL for state the layer does not track. "reads the real GL context" means the answer is the modern renderer's, not what the mod set; "answers ... with zero" means a fixed-function value with no equivalent; "has no effect" means the call does nothing | Usually harmless; it matters when a mod's effect (glow, overlay, fog, lighting) looks wrong, then include the line |
+| mixin not applied | A Legacy Connector feature injector did not apply, so that feature silently does nothing (often another mod rewrites the same class) | Report it with the other mods that touch the class |
+| legacy call failed (fallback used) | A mod's own method threw (or referenced a missing class) in a block callback and the layer used a default value instead of crashing | Report it with the mod and the exception shown |
+
+Each key appears once per mod however often it happens; `(layer)` or `(layer mixins)` means the call came from the layer itself. The list is capped per mod (200 keys per heading, the rest is counted as "+N more"). Content problems (missing textures and models, items without names) are a separate list: `/legacyconnector problems` and the "Runtime problems" section of `logs/legacyconnector-report.txt`.
+
 ## Reporting
 
 Open a GitHub issue and attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files, with the Legacy Connector version (for a nightly build, the full version from the jar name), the mod and its Minecraft version.
