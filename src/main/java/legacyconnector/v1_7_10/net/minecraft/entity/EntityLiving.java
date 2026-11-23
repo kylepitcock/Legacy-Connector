@@ -41,6 +41,8 @@ public abstract class EntityLiving extends EntityLivingBase {
     protected EntityMoveHelper moveHelper;
     protected EntityJumpHelper jumpHelper;
     protected PathNavigate navigator;
+    /** 1.5.2: chance per armour slot to pick up dropped loot (mods read and write it). */
+    public float[] pickUpLootProability = new float[] {0.085F, 0.085F, 0.085F, 0.085F, 0.085F};
     public final EntityAITasks tasks;
     public final EntityAITasks targetTasks;
     protected EntitySenses senses;

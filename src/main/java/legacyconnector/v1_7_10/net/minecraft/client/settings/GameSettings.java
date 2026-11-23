@@ -270,7 +270,9 @@ public class GameSettings {
         /** Minecraft 1.2.5 to 1.6.4: the master volume slider (1.7 moved it to the sound categories). Last, so the ordinals of the others stay. */
         SOUND("options.sound", true, false),
         /** Minecraft 1.2.5 to 1.6.4: the music volume slider. */
-        MUSIC("options.music", true, false);
+        MUSIC("options.music", true, false),
+        /** Minecraft 1.4.7 to 1.6.4: the "use server textures" toggle. */
+        USE_SERVER_TEXTURES("options.serverTextures", false, true);
 
         private final boolean enumFloat;
         private final boolean enumBoolean;
