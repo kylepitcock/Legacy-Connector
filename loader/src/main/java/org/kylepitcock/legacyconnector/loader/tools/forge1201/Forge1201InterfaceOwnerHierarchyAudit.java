@@ -116,6 +116,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
             boolean mappingOwnerInHierarchy,
             boolean invocationOwnerDeclaresExact,
             boolean mappingOwnerDeclaresExact,
+            boolean invocationMethodPublicInstance,
+            boolean mappingOwnerMethodPublicInstance,
             String invocationLookupStatus,
             String invocationDeclaringOwner,
             String mappingOwnerLookupStatus,
@@ -156,8 +158,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
 
         List<String> caseReports = new ArrayList<>();
         for (CaseSpec spec : CASES) {
-            SideResult sourceResult = inspectSide(source, spec, true);
-            SideResult targetResult = inspectSide(target, spec, false);
+            SideResult sourceResult = inspectSide(source, spec);
+            SideResult targetResult = inspectSide(target, spec);
             String status = "VERIFIED";
             if (!"VERIFIED".equals(sourceResult.status())) {
                 status = "SOURCE_" + sourceResult.status();
@@ -177,8 +179,7 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
 
     private static SideResult inspectSide(
             Forge1201SourceRuntimeMemberVerifier.Index index,
-            CaseSpec spec,
-            boolean sourceSide) throws IOException {
+            CaseSpec spec) throws IOException {
         String invocationOwner = spec.invocationOwner();
         String mappingOwner = spec.mappingInterfaceOwner();
         String name = spec.officialName();
@@ -200,6 +201,15 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                 invocationInfo.isPresent() ? index.inspectMethod(invocationOwner, name, descriptor) : null;
         Forge1201SourceRuntimeMemberVerifier.MemberResult mappingLookup =
                 mappingInfo.isPresent() ? index.inspectMethod(mappingOwner, name, descriptor) : null;
+        Optional<Integer> invocationAccess = invocationLookup == null
+                || invocationLookup.declaringOwner() == null
+                ? Optional.empty()
+                : index.declaredMethodAccess(invocationLookup.declaringOwner(), name, descriptor);
+        Optional<Integer> mappingAccess = mappingInfo.isPresent()
+                ? index.declaredMethodAccess(mappingOwner, name, descriptor)
+                : Optional.empty();
+        boolean invocationPublicInstance = isPublicInstanceMethod(invocationAccess);
+        boolean mappingPublicInstance = isPublicInstanceMethod(mappingAccess);
 
         List<String> falseCandidates = spec.outOfHierarchyCandidates().stream()
                 .filter(hierarchy.visited()::contains)
@@ -216,11 +226,15 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                 || mappingLookup.status()
                         != Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_DECLARED_EXACT) {
             status = "MAPPING_OWNER_MEMBER_NOT_DECLARED_EXACT";
+        } else if (!mappingPublicInstance) {
+            status = "MAPPING_OWNER_METHOD_NOT_PUBLIC_INSTANCE";
         } else if (invocationLookup.status()
                         != Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_DECLARED_EXACT
                 && invocationLookup.status()
                         != Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT) {
             status = "INVOCATION_MEMBER_NOT_RESOLVABLE";
+        } else if (!invocationPublicInstance) {
+            status = "INVOCATION_METHOD_NOT_PUBLIC_INSTANCE";
         } else if (!falseCandidates.isEmpty()) {
             status = "OUT_OF_HIERARCHY_CANDIDATE_ENTERED_HIERARCHY";
         } else {
@@ -235,6 +249,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                 mappingInHierarchy,
                 invocationDeclares,
                 mappingDeclares,
+                invocationPublicInstance,
+                mappingPublicInstance,
                 invocationLookup == null ? "NOT_CHECKED" : invocationLookup.status().name(),
                 invocationLookup == null ? null : invocationLookup.declaringOwner(),
                 mappingLookup == null ? "NOT_CHECKED" : mappingLookup.status().name(),
@@ -242,6 +258,13 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                 hierarchy.visited(),
                 hierarchy.unresolved(),
                 falseCandidates);
+    }
+
+    private static boolean isPublicInstanceMethod(Optional<Integer> access) {
+        if (access.isEmpty()) return false;
+        int flags = access.get();
+        return (flags & Opcodes.ACC_PUBLIC) != 0
+                && (flags & (Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC)) == 0;
     }
 
     private static HierarchyResult walkHierarchy(
