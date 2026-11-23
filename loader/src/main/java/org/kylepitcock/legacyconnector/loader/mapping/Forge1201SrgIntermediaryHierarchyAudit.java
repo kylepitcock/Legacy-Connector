@@ -189,6 +189,40 @@ public final class Forge1201SrgIntermediaryHierarchyAudit {
                     "The source invocation owner does not directly declare the exact public instance method.");
         }
 
+        Forge1201SrgIntermediaryBridgeResolver.SymbolResolution directIntermediary =
+                intermediaryBridge.resolveMethod(srgOwner, srgName, srgDescriptor);
+        if (directIntermediary.status()
+                != Forge1201SrgIntermediaryBridgeResolver.SymbolStatus.INTERMEDIARY_SOURCE_MISSING) {
+            Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy noFallbackHierarchy =
+                    new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                            srgOwner, sourceCandidate.officialOwner(), false, List.of());
+            Forge1201SrgIntermediaryBridgeResolver.OwnerAwareSymbolResolution directOrRejected =
+                    intermediaryBridge.resolveMethodWithVerifiedHierarchy(
+                            srgName, srgDescriptor, noFallbackHierarchy);
+            if (directOrRejected.status()
+                            != Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_EXACT
+                    && directOrRejected.status()
+                            != Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_WITH_EXTERNAL_TYPES) {
+                return failed(caseId, srgOwner, srgName, srgDescriptor,
+                        AuditStatus.SOURCE_OWNER_FALLBACK_REJECTED, sourceResolution.status(),
+                        directOrRejected, sourceCandidate.officialOwner(), sourceCandidate.officialName(),
+                        sourceCandidate.officialDescriptor(), List.of(sourceCandidate.officialOwner()),
+                        "Exact-owner Intermediary lookup was not eligible for hierarchy fallback: "
+                                + directOrRejected.directStatus());
+            }
+            TargetVerification directTarget = verifyTarget(
+                    srgOwner, directOrRejected.candidates().getFirst(), intermediaryBridge,
+                    targetMappings, targetClasses);
+            return new MethodAuditResult(
+                    caseId, srgOwner, srgName, srgDescriptor,
+                    directTarget.status(), sourceResolution.status(), directOrRejected,
+                    sourceCandidate.officialOwner(), sourceCandidate.officialName(),
+                    sourceCandidate.officialDescriptor(), List.of(sourceCandidate.officialOwner()),
+                    directTarget.invocationOwner(), directTarget.mappingOwner(),
+                    directTarget.methodName(), directTarget.methodDescriptor(),
+                    directTarget.hierarchyVisited(), directTarget.detail());
+        }
+
         SourceHierarchyDiscovery discovery = discoverSourceHierarchy(
                 sourceCandidate.officialOwner(), sourceCandidate.officialName(),
                 sourceCandidate.officialDescriptor(), srgName, srgDescriptor,
