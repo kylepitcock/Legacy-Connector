@@ -601,7 +601,9 @@ public abstract class EntityLivingBase extends Entity {
         // its modern death, which fires LivingDeathEvent (Techguns' gore packet), drops the loot and starts the death animation, as 1.12's onDeath did.
         // die() does nothing for an entity that is already dead, so a second call (the mod's and the game's) is harmless.
         LivingEntity l = mcc$living();
-        if (l != null && !l.level().isClientSide()) {
+        // a player is never killed by a mod's direct onDeath call (health still above zero): the game kills players through damage
+        boolean player = l instanceof net.minecraft.world.entity.player.Player;
+        if (l != null && !l.level().isClientSide() && (!player || l.getHealth() <= 0.0F)) {
             l.die(cause != null ? cause.mcc$modern(l.level()) : l.damageSources().generic());
         }
     }
