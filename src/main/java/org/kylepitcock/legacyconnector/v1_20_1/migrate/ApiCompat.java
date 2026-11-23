@@ -47,6 +47,11 @@ public final class ApiCompat {
 
     // ------------------------------------------------------------------ NBT
 
+    /** The same call typed as the extension interface the Forge method was declared on. */
+    public static CompoundTag serializeNBT(net.neoforged.neoforge.common.extensions.IItemStackExtension stack) {
+        return serializeNBT((ItemStack) stack);
+    }
+
     /** {@code ItemStack.serializeNBT()} (Forge's {@code IForgeItemStack}): the 1.20.1 {@code save(new CompoundTag())}. */
     public static CompoundTag serializeNBT(ItemStack stack) {
         return ItemStackNbt.save(stack, new CompoundTag());

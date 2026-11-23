@@ -579,6 +579,8 @@ public final class Forge1201Transformer {
             palladiumCustomProjectileRendererChanges += palladiumCustomProjectileRendererChange;
             int palladiumCoreOverlayChange = PalladiumCoreOverlay1201.apply(node);
             palladiumCoreOverlayChanges += palladiumCoreOverlayChange;
+            // enum-shaped uses of VanillaGuiOverlay that no adapter turned into layer ids: back to the shim enum
+            viaCalls += VanillaOverlayLeftovers1201.apply(node);
             int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
             palladiumCoreLightningMixinChanges += palladiumCoreLightningMixinChange;
             // The generic rule above should cover this call shape. Palladium 4.5.10's command abilities

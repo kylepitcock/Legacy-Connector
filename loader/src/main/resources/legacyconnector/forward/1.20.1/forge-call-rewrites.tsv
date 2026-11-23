@@ -178,3 +178,15 @@ net/neoforged/neoforge/registries/DeferredHolder.filter(Ljava/util/function/Pred
 *.readRegistryIdSafe(Ljava/lang/Class;)Ljava/lang/Object;	readRegistryIdSafeAny
 net/neoforged/fml/ModContainer.getMod()Ljava/lang/Object;	modContainerGetMod
 net/neoforged/neoforge/client/event/RegisterRecipeBookCategoriesEvent.registerRecipeCategoryFinder(Lnet/minecraft/world/item/crafting/RecipeType;Ljava/util/function/Function;)V	recipeCategoryFinder
+# RenderGuiOverlayEvent members on the native RenderGuiLayerEvent (curated alias)
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent.getOverlay()Llegacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/NamedGuiOverlay;	TailClient.layerOverlay
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent.getPartialTick()F	TailClient.layerPartialTick
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent.getWindow()Lcom/mojang/blaze3d/platform/Window;	TailClient.layerWindow
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Pre.getOverlay()Llegacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/NamedGuiOverlay;	TailClient.layerOverlay
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Pre.getPartialTick()F	TailClient.layerPartialTick
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Pre.getWindow()Lcom/mojang/blaze3d/platform/Window;	TailClient.layerWindow
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Post.getOverlay()Llegacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/NamedGuiOverlay;	TailClient.layerOverlay
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Post.getPartialTick()F	TailClient.layerPartialTick
+net/neoforged/neoforge/client/event/RenderGuiLayerEvent$Post.getWindow()Lcom/mojang/blaze3d/platform/Window;	TailClient.layerWindow
+net/neoforged/neoforge/event/EventHooks.onFinalizeSpawnSpawner(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/world/level/BaseSpawner;)Lnet/neoforged/neoforge/event/entity/living/FinalizeSpawnEvent;	Tail.onFinalizeSpawnSpawner
+net/neoforged/neoforge/event/EventHooks.doPlayerHarvestCheck(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/block/state/BlockState;Z)Z	Tail.doPlayerHarvestCheck

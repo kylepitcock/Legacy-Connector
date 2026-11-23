@@ -212,6 +212,24 @@ public final class ForgeApiTail1201 {
         return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(mob, level, difficulty, type, data);
     }
 
+    /** Forge's {@code onFinalizeSpawnSpawner(mob, level, difficulty, data, tag, spawner)}: the event of a spawner spawn (type SPAWNER) that NeoForge fires with the owning spawner. */
+    public static net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent onFinalizeSpawnSpawner(net.minecraft.world.entity.Mob mob,
+            net.minecraft.world.level.ServerLevelAccessor level, net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.SpawnGroupData data,
+            net.minecraft.nbt.CompoundTag tag, net.minecraft.world.level.BaseSpawner spawner) {
+        return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawnSpawner(mob, level, difficulty, net.minecraft.world.entity.MobSpawnType.SPAWNER, data,
+                (net.neoforged.neoforge.common.extensions.IOwnedSpawner) (Object) spawner, false);
+    }
+
+    /**
+     * Forge's {@code doPlayerHarvestCheck(player, state, success)}: posts {@code PlayerEvent.HarvestCheck}. APPROXIMATION: the old call carried no position, so the
+     * event gets the player's level and block position.
+     */
+    public static boolean doPlayerHarvestCheck(net.minecraft.world.entity.player.Player player, net.minecraft.world.level.block.state.BlockState state, boolean success) {
+        var event = new net.neoforged.neoforge.event.entity.player.PlayerEvent.HarvestCheck(player, state, player.level(), player.blockPosition(), success);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+        return event.canHarvest();
+    }
+
     /** Forge's result: -1 cancelled, 1 bone meal used up, 0 nothing special. */
     public static int onApplyBonemeal(net.minecraft.world.entity.player.Player player, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
             net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.item.ItemStack stack) {
