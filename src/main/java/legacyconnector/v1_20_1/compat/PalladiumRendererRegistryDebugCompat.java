@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class PalladiumRendererRegistryDebugCompat {
     private static final CompatFlags DEBUG = CompatFlags.PALLADIUM_RENDERER_REGISTRY_DEBUG;
+    private static final String DEBUG_PROPERTY = DEBUG.property(); // kept: the shim member snapshot lists it
     private static final Logger LOGGER = LoggerFactory.getLogger("LegacyConnector/PalladiumRendererRegistry");
 
     private PalladiumRendererRegistryDebugCompat() {

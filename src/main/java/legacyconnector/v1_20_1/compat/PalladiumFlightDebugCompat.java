@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class PalladiumFlightDebugCompat {
     private static final CompatFlags DEBUG = CompatFlags.PALLADIUM_FLIGHT_DEBUG;
+    private static final String DEBUG_PROPERTY = DEBUG.property(); // kept: the shim member snapshot lists it
     private static final Logger LOGGER = LoggerFactory.getLogger("LegacyConnector/PalladiumFlight");
     private static final AtomicInteger MOVEMENT_SAMPLES = new AtomicInteger();
 

@@ -242,6 +242,7 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
+    testImplementation project(':loader') // SwitchRegistryTest: the loader's LoaderFlags go into the same documentation page as the runtime's Flags
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // Match the launcher's parser; Nashorn otherwise pulls ASM 7 into standalone tests (cannot read Java 21 fixtures).
     testRuntimeOnly "org.ow2.asm:asm:${asm_version}"
