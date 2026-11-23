@@ -123,6 +123,12 @@ public class OpenGlHelper {
     public static void glUseProgram(int program) {
     }
 
+    /** Sets a 4x4 matrix uniform of the current program (ignored for the location -1, as in GL). */
+    public static void glUniformMatrix4(int location, boolean transpose, java.nio.FloatBuffer matrices) {
+        if (location < 0 || !RenderSystem.isOnRenderThread()) return;
+        org.lwjgl.opengl.GL20.glUniformMatrix4fv(location, transpose, matrices);
+    }
+
     // ------------------------------------------------------------------ framebuffer objects (GL 3.0 on every modern context)
 
     public static int func_153165_e() {

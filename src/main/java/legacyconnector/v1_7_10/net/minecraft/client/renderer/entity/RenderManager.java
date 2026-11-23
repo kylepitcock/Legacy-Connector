@@ -153,6 +153,16 @@ public class RenderManager {
         return renderEntityWithPosYaw(entity, x, y, z, yaw, partialTicks);
     }
 
+    /** Draws the entity at a position ({@code hideDebugBox}: the hitbox overlay is not drawn by the layer anyway). */
+    public boolean doRenderEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, double x, double y, double z, float yaw, float partialTicks, boolean hideDebugBox) {
+        return renderEntityWithPosYaw(entity, x, y, z, yaw, partialTicks);
+    }
+
+    /** Draws the entity where it is, as {@link #renderEntitySimple}. */
+    public boolean renderEntityStatic(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float partialTicks, boolean hideDebugBox) {
+        return renderEntitySimple(entity, partialTicks);
+    }
+
     private static double lerp(double from, double to, float t) {
         return from + (to - from) * t;
     }

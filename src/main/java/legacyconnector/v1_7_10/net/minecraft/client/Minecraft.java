@@ -335,6 +335,28 @@ public class Minecraft {
         mc().execute(() -> mc().reloadResourcePacks());
     }
 
+    /** Whether the game runs on a 64-bit Java. */
+    public boolean isJava64bit() {
+        String arch = System.getProperty("sun.arch.data.model");
+        if (arch == null) arch = System.getProperty("os.arch", "");
+        return arch.contains("64");
+    }
+
+    /** True when the frame rate limit is below its maximum (the options slider's top end means "unlimited"). */
+    public boolean isFramerateLimitBelowMax() {
+        return mc().options.framerateLimit().get() < 260;
+    }
+
+    /** Opens the pause menu. */
+    public void displayInGameMenu() {
+        mc().execute(() -> mc().pauseGame(false));
+    }
+
+    /** The applet's shutdown: ends the game the way the exit button does. */
+    public void shutdownMinecraftApplet() {
+        mc().stop();
+    }
+
     public void shutdown() {
         mc().stop();
     }
