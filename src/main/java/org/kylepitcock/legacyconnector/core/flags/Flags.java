@@ -61,10 +61,6 @@ public enum Flags implements Switch {
     B173_ACTUAL_PLASTIC_CRAFT_ENTITIES("legacyconnector.b173.actualPlasticCraftEntities", Type.FLAG, "false", Category.TEST, "Beta 1.7.3 actual-mod entity fixtures are present (unit test)."),
     /** Beta 1.7.3 vanilla client jar used by unit tests. */
     B173_VANILLA_JAR("legacyconnector.b173.vanillaJar", Type.PATH, "build/devtools/b1.7.3/client.jar", Category.TEST, "Beta 1.7.3 vanilla client jar used by unit tests."),
-    /** Translated artifact a Beta provenance unit test inspects. */
-    BETA_COMBAT_ARTIFACT("legacyconnector.beta.combatArtifact", Type.PATH, "unset", Category.TEST, "Translated artifact a Beta provenance unit test inspects."),
-    /** Compiled shim index a Beta provenance unit test needs. */
-    BETA_COMBAT_SHIM_INDEX("legacyconnector.beta.combatShimIndex", Type.PATH, "unset", Category.TEST, "Compiled shim index a Beta provenance unit test needs."),
     /** Unit test rewrites the generated support matrix in docs/wiki/Addon-API.md (same as API_DOCS_UPDATE=1). */
     API_DOCS_UPDATE("api.docs.update", Type.FLAG, "false", Category.TEST, "Unit test rewrites the generated support matrix in docs/wiki/Addon-API.md (same as API_DOCS_UPDATE=1)."),
     /** true: unit test rewrites the shim client type baseline when nothing is new; force: also adds new entries. */

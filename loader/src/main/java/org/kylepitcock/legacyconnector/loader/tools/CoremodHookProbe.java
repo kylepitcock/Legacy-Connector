@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import org.objectweb.asm.tree.MethodNode;
  */
 public final class CoremodHookProbe {
     /** -Dlegacyconnector.probe.sites=true: only the hook sites, one line each. */
-    private static final boolean SITES_ONLY = Boolean.getBoolean("legacyconnector.probe.sites");
+    private static final boolean SITES_ONLY = LoaderFlags.PROBE_SITES.on();
 
     private CoremodHookProbe() {}
 

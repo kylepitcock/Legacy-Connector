@@ -210,7 +210,7 @@ public final class SideBySide {
 
     /** Config: {@code experimental.sideBySideLibraries} (default true; the 1.20.1 key {@code experimental.forge1201.sideBySideLibraries} is an alias). */
     public static boolean enabled(java.util.Properties config) {
-        String prop = System.getProperty("legacyconnector.sideBySideLibraries");
+        String prop = LoaderFlags.SIDE_BY_SIDE_LIBRARIES.get();
         if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
         String v = config.getProperty("experimental.sideBySideLibraries", config.getProperty("experimental.forge1201.sideBySideLibraries", "true"));
         return !"false".equalsIgnoreCase(v.trim());

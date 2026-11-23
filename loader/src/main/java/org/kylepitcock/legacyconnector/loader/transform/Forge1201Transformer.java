@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoBeamAbilityParticles1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoBoneAnchors1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoBufferingGlowConsumer1201;
@@ -196,7 +197,7 @@ public final class Forge1201Transformer {
 
     /** {@code experimental.forge1201.softlink} (default on; the loader sets the system property from the config). */
     static boolean softLinkEnabled() {
-        return !"false".equalsIgnoreCase(System.getProperty("legacyconnector.forge1201.softlink", "true").trim());
+        return !"false".equalsIgnoreCase(LoaderFlags.FORGE1201_SOFTLINK.get("true").trim());
     }
 
     // ---- names ----------------------------------------------------------------------------------------------------------------

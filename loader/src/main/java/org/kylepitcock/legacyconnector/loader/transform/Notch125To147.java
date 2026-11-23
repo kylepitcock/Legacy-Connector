@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import org.kylepitcock.legacyconnector.loader.LegacyJar;
 import org.kylepitcock.legacyconnector.loader.mapping.NotchNames;
 import org.objectweb.asm.ClassReader;
@@ -198,7 +199,7 @@ public final class Notch125To147 {
         Table[] t = fromResource();
         if (t == null) throw new IllegalStateException("this build has no 1.2.5 table (build with -Pmappings125)");
         List<String> notes = apply(jar.notchSide == 's' ? t[1] : t[0], NotchNames.get("1.4.7"), classes, jar);
-        String dump = System.getProperty("legacyconnector.mc125.unresolved");
+        String dump = LoaderFlags.MC125_UNRESOLVED.get();
         if (dump != null && !dump.isBlank()) {
             // diagnostics (tools/compat/probe.py --mc 1.2.5 -Dlegacyconnector.mc125.unresolved=<file>): one line per game member the join table could not name
             StringBuilder sb = new StringBuilder();

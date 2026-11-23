@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -63,7 +64,7 @@ public final class Forge1201TranslatedJarVerifier {
                 normalization.analysis(),
                 internalName -> ClassLoader.getSystemClassLoader().getResourceAsStream(internalName + ".class"));
 
-        String version = System.getProperty("legacyconnector.targetNeoForgeVersion", "unknown");
+        String version = LoaderFlags.TARGET_NEO_FORGE_VERSION.get("unknown");
         System.out.println("Preliminary Forge 1.20.1 -> NeoForge " + version + " translated JAR audit");
         System.out.println("Mode: read-only ASM inspection; no mod or target classes were executed.");
         System.out.println("JAR: " + jar.toAbsolutePath().normalize());

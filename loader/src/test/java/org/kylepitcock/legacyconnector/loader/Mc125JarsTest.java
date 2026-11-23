@@ -90,7 +90,7 @@ class Mc125JarsTest {
 
     @Test
     void modLoaderJarWithMinecraft125NamesIsReportedNotHostedWhenSwitchedOff(@TempDir Path dir) throws IOException {
-        System.setProperty("legacyconnector.mc125", "false");
+        LoaderFlags.MC125.set("false");
         try {
             List<String[]> calls = table125().subList(0, 40);
             Path jar = modJar(dir, "mod_Test.jar", calls);
@@ -101,7 +101,7 @@ class Mc125JarsTest {
             assertEquals("a.jar: Minecraft 1.2.5 (support is switched off): " + why + "; not loaded (" + Mc125Jars.HOW_TO_ENABLE + ")", Mc125Jars.reportLine("a.jar", why));
             assertNull(Mc125Jars.takeUnsupported(jar), "taken once");
         } finally {
-            System.clearProperty("legacyconnector.mc125");
+            LoaderFlags.MC125.clear();
         }
     }
 
@@ -153,20 +153,20 @@ class Mc125JarsTest {
             assertTrue(resolved[1] >= 50, "calls seen: " + resolved[1]);
             assertTrue(resolved[0] >= resolved[1] * 0.85, resolved[0] + " of " + resolved[1] + " calls resolve in the 1.4.7 notch table");
         } finally {
-            System.clearProperty("legacyconnector.mc125");
+            LoaderFlags.MC125.clear();
         }
     }
 
     @Test
     void jarInTheFolderOf1_2_5IsReportedWithoutFingerprintWhenSwitchedOff(@TempDir Path dir) throws IOException {
-        System.setProperty("legacyconnector.mc125", "false");
+        LoaderFlags.MC125.set("false");
         try {
             Path folder = Files.createDirectories(dir.resolve(Mc125Jars.FOLDER));
             Path jar = modJar(folder, "mod_Test.jar", List.of());
             assertNull(LegacyJarInspector.inspect(jar));
             assertNotNull(Mc125Jars.takeUnsupported(jar));
         } finally {
-            System.clearProperty("legacyconnector.mc125");
+            LoaderFlags.MC125.clear();
         }
     }
 

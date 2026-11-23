@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -55,7 +56,7 @@ public final class Gap1201 {
         Gap1201 gap = new Gap1201();
         gap.loadSrg(Path.of(args[0]));
         // EXPERIMENTAL 1.19.2 scoping: a second table whose names win (SRG ids are stable across versions: an id still present in 1.20.1 gets its 1.20.1 name)
-        if (System.getProperty("gap.srgOverlay") != null) gap.loadSrg(Path.of(System.getProperty("gap.srgOverlay")));
+        if (LoaderFlags.GAP_SRG_OVERLAY.get() != null) gap.loadSrg(Path.of(LoaderFlags.GAP_SRG_OVERLAY.get()));
         for (String f : args[1].split(",")) gap.loadRenames(Path.of(f));
         // "@file": a list file (comma or line separated), for target lists longer than the Windows command line
         // (build.gradle appends the shim class directories after a comma: "@file,dir,dir")
@@ -137,7 +138,7 @@ public final class Gap1201 {
                     byte[] nestedBytes = zip.getInputStream(e).readAllBytes();
                     // a library with a native 1.21.1 build that a mod carries as jar-in-jar (Ars Nouveau's GeckoLib 4.4.4): the game takes the native, newer one
                     // (the 1.21.1 target jars keep theirs: Create 6 carries Ponder and Catnip, which is the native build)
-                    if (nestedMode == 0 && !Boolean.getBoolean("gap.keepNativeLibs") && nestedIsNativeLibrary(nestedBytes)) continue;
+                    if (nestedMode == 0 && !LoaderFlags.GAP_KEEP_NATIVE_LIBS.on() && nestedIsNativeLibrary(nestedBytes)) continue;
                     try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(nestedBytes))) {
                         for (ZipEntry ne; (ne = nested.getNextEntry()) != null; ) {
                             if (!ne.getName().endsWith(".class") || ne.getName().startsWith("META-INF/versions/")) continue;
@@ -197,7 +198,7 @@ public final class Gap1201 {
 
     // ---- renaming -------------------------------------------------------------------------------------------------------------
 
-    private static final boolean TRANSLATED = Boolean.getBoolean("gap.translate");
+    private static final boolean TRANSLATED = LoaderFlags.GAP_TRANSLATE.on();
 
     private String cls(String name) {
         if (name == null) return null;
@@ -333,11 +334,11 @@ public final class Gap1201 {
     }
 
     private void run(List<Path> mods, Path report) throws IOException {
-        if (Boolean.getBoolean("gap.translate")) mods = translated(mods);
+        if (LoaderFlags.GAP_TRANSLATE.on()) mods = translated(mods);
         Map<String, Cls> own = new HashMap<>();
         for (Path m : mods) {
             // a library with a native 1.21.1 build (libraries.tsv) is replaced by that build at run time: its 1.20.1 classes must not shadow the 1.21.1 ones
-            if (!Boolean.getBoolean("gap.keepNativeLibs") && isNativeLibrary(m)) continue;
+            if (!LoaderFlags.GAP_KEEP_NATIVE_LIBS.on() && isNativeLibrary(m)) continue;
             index(m, own);
         }
         // the mods' own members must be renamed like the references to them (descriptors with moved classes, SRG names of overrides)
@@ -365,7 +366,7 @@ public final class Gap1201 {
         PrintStream out = new PrintStream(Files.newOutputStream(report));
         // per jar detail (jar TAB kind TAB symbol), input of tools/compat/gap1201_rank.py
         PrintStream detail = new PrintStream(Files.newOutputStream(report.resolveSibling(report.getFileName() + ".detail.tsv")));
-        out.println("Gap report: Forge " + System.getProperty("gap.mc", "1.20.1") + " jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
+        out.println("Gap report: Forge " + LoaderFlags.GAP_MC.get("1.20.1") + " jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
         for (Path mod : mods) {
             Set<String> mc = new TreeSet<>(), mm = new TreeSet<>(), mf = new TreeSet<>(), mixinSyms = new TreeSet<>();
             int refs = 0;
@@ -442,7 +443,7 @@ public final class Gap1201 {
 
     /** -Dgap.shimIndex=<file>: the real shim index, so the facade classes get the names they have in the game (descriptors of the library tables match). */
     private static org.kylepitcock.legacyconnector.loader.shim.ShimIndex shimIndex() throws IOException {
-        String file = System.getProperty("gap.shimIndex");
+        String file = LoaderFlags.GAP_SHIM_INDEX.get();
         if (file == null || !Files.isRegularFile(Path.of(file))) return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty();
         try (java.io.InputStream in = Files.newInputStream(Path.of(file))) {
             return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read(in);
@@ -454,14 +455,14 @@ public final class Gap1201 {
      * after the layer. The facade classes of the Forge API (legacyconnector/v1_20_1) are not indexed here and count as present.
      */
     private static List<Path> translated(List<Path> mods) throws IOException {
-        String keep = System.getProperty("gap.translated.dir");
+        String keep = LoaderFlags.GAP_TRANSLATED_DIR.get();
         Path dir = keep != null ? Files.createDirectories(Path.of(keep)) : Files.createTempDirectory("gap1201-");
         var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(shimIndex());
         List<Path> out = new ArrayList<>();
         // the classes of all the jars: a mod class that extends a library class of another jar is judged with that class's supertypes and methods
         var peerSet = new org.kylepitcock.legacyconnector.loader.transform.PeerClasses();
         for (Path m : mods) {
-            if (!Boolean.getBoolean("gap.keepNativeLibs") && isNativeLibrary(m)) continue;   // replaced by the native build at run time: nobody extends its 1.20.1 classes
+            if (!LoaderFlags.GAP_KEEP_NATIVE_LIBS.on() && isNativeLibrary(m)) continue;   // replaced by the native build at run time: nobody extends its 1.20.1 classes
             try {
                 var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
                 lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
@@ -480,7 +481,7 @@ public final class Gap1201 {
                 if (res.softLinked > 0) SOFT.computeIfAbsent(m.getFileName().toString(), k -> new TreeSet<>()).addAll(res.softSymbols);
                 if (!res.softMixinSymbols.isEmpty()) SOFT_MIXIN.computeIfAbsent(m.getFileName().toString(), k -> new TreeSet<>()).addAll(res.softMixinSymbols);
                 if (res.softLinked > 0) System.out.println("soft-linked " + res.softLinked + " symbol(s) in " + m.getFileName());
-                if (res.softLinked > 0 && Boolean.getBoolean("gap.softlist")) res.notes.stream().filter(n -> n.startsWith("Soft link: ") && n.length() > 40).forEach(n -> System.out.println("  " + m.getFileName() + " " + n));
+                if (res.softLinked > 0 && LoaderFlags.GAP_SOFTLIST.on()) res.notes.stream().filter(n -> n.startsWith("Soft link: ") && n.length() > 40).forEach(n -> System.out.println("  " + m.getFileName() + " " + n));
                 out.add(t);
             } catch (RuntimeException | IOException e) {
                 System.out.println("translation failed for " + m.getFileName() + ": " + e);
@@ -507,7 +508,7 @@ public final class Gap1201 {
     private static void ranked(PrintStream out, String title, Map<String, Set<String>> map) {
         out.println("\n== " + title + ": " + map.size() + " distinct ==");
         map.entrySet().stream().sorted(Comparator.comparingInt((Map.Entry<String, Set<String>> e) -> -e.getValue().size()).thenComparing(Map.Entry::getKey))
-                .limit(Integer.getInteger("gap.limit", 400)).forEach(e -> out.println(String.format("%3d  %s", e.getValue().size(), e.getKey())));
+                .limit(LoaderFlags.GAP_LIMIT.getInt(400)).forEach(e -> out.println(String.format("%3d  %s", e.getValue().size(), e.getKey())));
     }
 
     private int check(ClassNode n, Map<String, Cls> own, Set<String> mc, Set<String> mm, Set<String> mf) {
@@ -588,7 +589,7 @@ public final class Gap1201 {
      * -Dgap.assumeNative=prefix,prefix: API packages of libraries that have a native 1.21.1 build the pack would install (EMI, REI, The One Probe...) but whose
      * jar this offline run does not have; references to classes under them are not counted as gaps (off by default: it cannot see signature drift).
      */
-    private static final String[] ASSUMED_NATIVE = System.getProperty("gap.assumeNative") == null ? null : System.getProperty("gap.assumeNative").split(",");
+    private static final String[] ASSUMED_NATIVE = LoaderFlags.GAP_ASSUME_NATIVE.get() == null ? null : LoaderFlags.GAP_ASSUME_NATIVE.get().split(",");
 
     /** Libraries a mod gets from the game at run time that this offline tool does not index (annotations, logging, Guava, Gson...). */
     private static boolean isLibrary(String name) {

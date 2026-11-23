@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -54,7 +55,7 @@ public final class Mixin1201Triage {
 
     public static void main(String[] args) throws Exception {
         loadIndex(Path.of(args[0]));
-        String tables = System.getProperty("triage.tables");
+        String tables = LoaderFlags.TRIAGE_TABLES.get();
         if (tables != null) loadTables(Path.of(tables));
         List<Path> jars = new ArrayList<>();
         for (int i = 2; i < args.length; i++) {

@@ -122,14 +122,14 @@ public final class LibraryBridges {
      * {@code experimental.forge1201=false} (config) or {@code -Dlegacyconnector.forge1201=false} turns it off.
      */
     static boolean forge1201On(Path modsDir) {
-        String prop = System.getProperty("legacyconnector.forge1201");
+        String prop = LoaderFlags.FORGE1201.get();
         if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
         return !"false".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201", "true").trim());
     }
 
     /** {@code experimental.forge1201.softlink} (default on): references to 1.21.1 symbols that do not exist become stand-ins that throw when executed. */
     static boolean forge1201SoftLinkOn(Path modsDir) {
-        String prop = System.getProperty("legacyconnector.forge1201.softlink");
+        String prop = LoaderFlags.FORGE1201_SOFTLINK.get();
         if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
         return !"false".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201.softlink", "true").trim());
     }
@@ -205,7 +205,7 @@ public final class LibraryBridges {
         lastModern = modern;
         Properties config = readConfig(modsDir);
         applyUserConfig(config);
-        String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
+        String forced = LoaderFlags.BRIDGES.get("").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         boolean realBaubles = hasJarNamed(modsDir, "baubles");
         // only a legacy CodeChickenLib counts: packs like ATM10 ship the modern one (CodeChickenLib-1.21.1-...), which legacy code cannot

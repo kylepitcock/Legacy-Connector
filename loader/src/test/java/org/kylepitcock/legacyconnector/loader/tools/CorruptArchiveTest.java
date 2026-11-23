@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.gson.JsonArray;
@@ -32,11 +33,11 @@ class CorruptArchiveTest {
         Path index = temp.resolve("shim-index.txt");
         Files.writeString(index, "");
         Path json = temp.resolve("out.json");
-        System.setProperty("legacyconnector.check.json", json.toString());
+        LoaderFlags.CHECK_JSON.set(json.toString());
         try {
             CheckJar.main(new String[] {index.toString(), truncated.toString(), good.toString()});
         } finally {
-            System.clearProperty("legacyconnector.check.json");
+            LoaderFlags.CHECK_JSON.clear();
         }
         JsonArray records = JsonParser.parseString(Files.readString(json)).getAsJsonArray();
         assertEquals(2, records.size());

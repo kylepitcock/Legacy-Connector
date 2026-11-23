@@ -267,7 +267,7 @@ public final class Mc125Jars {
     public static final String CONFIG_KEY = "versions.minecraft125";
     /** The key of the experimental era (before 0.5.0, off by default): still honoured when the new key is absent, so an explicit {@code false} keeps 1.2.5 off. */
     public static final String LEGACY_CONFIG_KEY = "experimental.minecraft125";
-    public static final String PROPERTY = "legacyconnector.mc125";
+    public static final String PROPERTY = LoaderFlags.MC125.property();
     /** Value read from config/legacyconnector.properties by {@link #configure}. */
     private static volatile boolean configured = true;
 
@@ -276,14 +276,14 @@ public final class Mc125Jars {
         String v = config.getProperty(CONFIG_KEY);
         if (v == null || v.isBlank()) v = config.getProperty(LEGACY_CONFIG_KEY);
         configured = parse(v, true);
-        System.clearProperty(ACTIVE_PROPERTY);
+        LoaderFlags.MC125_ACTIVE.clear();
     }
 
     /** Set (to "true") once a 1.2.5 jar is hosted: the run-time side asks it through {@code v1_6_4.bridge.Mc125Host.active()}. */
-    public static final String ACTIVE_PROPERTY = "legacyconnector.mc125.active";
+    public static final String ACTIVE_PROPERTY = LoaderFlags.MC125_ACTIVE.property();
 
     static void markHosting() {
-        System.setProperty(ACTIVE_PROPERTY, "true");
+        LoaderFlags.MC125_ACTIVE.set("true");
     }
 
     private static boolean parse(String value, boolean def) {
@@ -296,7 +296,7 @@ public final class Mc125Jars {
 
     /** THE question "is Minecraft 1.2.5 hosting on": system property when set, else the config key ({@link #CONFIG_KEY}, or the older {@link #LEGACY_CONFIG_KEY}); default true. Every caller goes through this. */
     public static boolean enabled() {
-        String prop = System.getProperty(PROPERTY);
+        String prop = LoaderFlags.MC125.get();
         if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
         return configured;
     }

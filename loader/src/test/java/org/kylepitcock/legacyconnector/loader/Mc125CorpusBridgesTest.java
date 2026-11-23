@@ -26,7 +26,7 @@ class Mc125CorpusBridgesTest {
     @Test
     void realOverridesOfChangedSignaturesAreBridged() throws IOException {
         assumeTrue(Notch125To147.available(), "built without -Pmappings125");
-        Path dir = Path.of(System.getProperty("mc125.corpus", "Y:/Programming/Minecraft/Retrofit/test-mods-mcarchive/1.2.5"));
+        Path dir = Path.of(LoaderFlags.MC125_CORPUS.get("Y:/Programming/Minecraft/Retrofit/test-mods-mcarchive/1.2.5"));
         assumeTrue(Files.isDirectory(dir), "no corpus at " + dir);
         int changed = 0, bridged = 0, units = 0, never = 0, renamedU = 0, leftU = 0;
         Map<String, Integer> adaptedJars = new TreeMap<>(), unadaptedJars = new TreeMap<>();

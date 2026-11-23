@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -108,11 +109,11 @@ public final class LegacyCoreModTransformers {
                 Files.copy(in, apiJar, StandardCopyOption.REPLACE_EXISTING);
             }
             System.setProperty("java.awt.headless", "true");
-            if (side != null) System.setProperty("legacyconnector.side", side);
+            if (side != null) LoaderFlags.SIDE.set(side);
             ClassLoader parent = LegacyCoreModTransformers.class.getClassLoader();
             URLClassLoader apiLoader = new URLClassLoader("legacyconnector-coremod-api", new URL[] {apiJar.toUri().toURL()}, parent);
             Path runtimeClasses = runtimeJar != null ? runtimeJar
-                    : System.getProperty("legacyconnector.runtimeClasses") != null ? Path.of(System.getProperty("legacyconnector.runtimeClasses")) : null;
+                    : LoaderFlags.RUNTIME_CLASSES.get() != null ? Path.of(LoaderFlags.RUNTIME_CLASSES.get()) : null;
             ClassLoader fml = runtimeClasses == null ? apiLoader : new ShimLoader(runtimeClasses, apiLoader, api);
             List<URL> urls = new ArrayList<>();
             for (LegacyJar j : legacy) urls.add(j.path.toUri().toURL());

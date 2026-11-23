@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -104,7 +105,7 @@ final class Datagen1201 {
     /** Applies the pass to all classes of a jar. */
     static Stats apply(List<ClassNode> nodes) {
         Stats stats = new Stats();
-        if (Boolean.getBoolean("legacyconnector.keepDatagen")) return stats; // diagnostics: measure the unresolved references with the datagen code in place
+        if (LoaderFlags.KEEP_DATAGEN.on()) return stats; // diagnostics: measure the unresolved references with the datagen code in place
         Map<String, ClassNode> byName = new java.util.HashMap<>();
         for (ClassNode n : nodes) byName.put(n.name, n);
         Set<String> datagen = new HashSet<>();

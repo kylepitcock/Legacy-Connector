@@ -42,7 +42,7 @@ final class TranslationPool implements AutoCloseable {
     }
 
     static int defaultThreads(int jars) {
-        int configured = Integer.getInteger("legacyconnector.translationThreads", 0);
+        int configured = LoaderFlags.TRANSLATION_THREADS.getInt(0);
         int threads = configured > 0 ? configured : Math.max(1, Math.min(6, Runtime.getRuntime().availableProcessors() - 2));
         return Math.max(1, Math.min(threads, jars));
     }

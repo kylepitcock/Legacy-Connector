@@ -7,6 +7,10 @@ package org.kylepitcock.legacyconnector.loader;
  * {@code docs/wiki/Diagnostic-Switches.md} is generated from both.
  */
 public enum LoaderFlags {
+    /** Translated artifact a Beta provenance unit test inspects. */
+    BETA_COMBAT_ARTIFACT("legacyconnector.beta.combatArtifact", Type.PATH, "unset", Category.TEST, "Translated artifact a Beta provenance unit test inspects."),
+    /** Compiled shim index a Beta provenance unit test needs. */
+    BETA_COMBAT_SHIM_INDEX("legacyconnector.beta.combatShimIndex", Type.PATH, "unset", Category.TEST, "Compiled shim index a Beta provenance unit test needs."),
     /** Set by the loader: legacy libraries replaced by a modern mod (they count as loaded). */
     BRIDGED_MODS("legacyconnector.bridgedMods", Type.STRING, "", Category.INTERNAL, "Set by the loader: legacy libraries replaced by a modern mod (they count as loaded)."),
     /** Set by the loader: ids of the legacy mods and APIs present in the pack. */

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
@@ -186,9 +187,9 @@ class BetaCombatProvenanceTest implements Opcodes {
     /** Optional unchanged-artifact audit: class names are assertions, never production selectors. */
     @Test @EnabledIfSystemProperty(named="legacyconnector.beta.combatArtifact",matches=".+")
     void actualArtifactPrivateAimAndCaptureHaveClosedRoles()throws Exception{
-        var nodes=new LinkedHashMap<String,ClassNode>();try(var jar=new java.util.jar.JarFile(System.getProperty("legacyconnector.beta.combatArtifact"))){var entries=jar.entries();while(entries.hasMoreElements()){var entry=entries.nextElement();if(!entry.getName().endsWith(".class"))continue;var node=new ClassNode();try(var stream=jar.getInputStream(entry)){new ClassReader(stream.readAllBytes()).accept(node,0);}nodes.put(node.name,node);}}
+        var nodes=new LinkedHashMap<String,ClassNode>();try(var jar=new java.util.jar.JarFile(LoaderFlags.BETA_COMBAT_ARTIFACT.get())){var entries=jar.entries();while(entries.hasMoreElements()){var entry=entries.nextElement();if(!entry.getName().endsWith(".class"))continue;var node=new ClassNode();try(var stream=jar.getInputStream(entry)){new ClassReader(stream.readAllBytes()).accept(node,0);}nodes.put(node.name,node);}}
         // A translated artifact is supplied explicitly; it is never copied into the portable test fixtures.
-        String index=System.getProperty("legacyconnector.beta.combatShimIndex");assertNotNull(index,"Supply the compiled runtime shim-index.txt as combatShimIndex");Hierarchy hierarchy;try(var stream=java.nio.file.Files.newInputStream(java.nio.file.Path.of(index))){hierarchy=new Hierarchy(ShimIndex.read(stream),getClass().getClassLoader());}for(var node:nodes.values())hierarchy.addLocal(ClassInfo.of(node));var notes=new ArrayList<String>();BetaCombatProvenance.apply(nodes,hierarchy,LegacyVersion.VB1_7_3,notes);
+        String index=LoaderFlags.BETA_COMBAT_SHIM_INDEX.get();assertNotNull(index,"Supply the compiled runtime shim-index.txt as combatShimIndex");Hierarchy hierarchy;try(var stream=java.nio.file.Files.newInputStream(java.nio.file.Path.of(index))){hierarchy=new Hierarchy(ShimIndex.read(stream),getClass().getClassLoader());}for(var node:nodes.values())hierarchy.addLocal(ClassInfo.of(node));var notes=new ArrayList<String>();BetaCombatProvenance.apply(nodes,hierarchy,LegacyVersion.VB1_7_3,notes);
         for(String family:List.of("EntityZephyr","EntitySwet","EntityAechorPlant")){var node=nodes.values().stream().filter(n->n.name.endsWith("/"+family)).findFirst().orElseThrow();assertTrue(roles(node).stream().anyMatch(r->r.startsWith("F|")),family+" fields "+notes);assertTrue(roles(node).stream().anyMatch(r->r.startsWith("Q|")),family+" queries "+notes);if(family.equals("EntitySwet"))assertTrue(roles(node).stream().anyMatch(r->r.startsWith("C|")),notes.toString());}
     }
 

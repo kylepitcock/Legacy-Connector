@@ -53,7 +53,6 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     private static final Logger LOG = LoggerFactory.getLogger("Legacy Connector");
     /** Nested runtime (shim) mod inside the distributed loader jar. Absent in development. */
     static final String EMBEDDED_RUNTIME = "/META-INF/legacyconnector/legacyconnector-runtime.jar";
-    static final String SHIM_INDEX_PROPERTY = "legacyconnector.shimIndex";
 
     /**
      * 1.12 jars may carry libraries and coremods as nested jars named by the {@code ContainedDeps} manifest attribute (stored under
@@ -255,7 +254,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static boolean forge1201Enabled(Path modsDir) {
-        System.setProperty("legacyconnector.forge1201.softlink", Boolean.toString(LibraryBridges.forge1201SoftLinkOn(modsDir)));
+        LoaderFlags.FORGE1201_SOFTLINK.set(Boolean.toString(LibraryBridges.forge1201SoftLinkOn(modsDir)));
         return LibraryBridges.forge1201On(modsDir);
     }
 
@@ -436,17 +435,17 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 apiPackages.add(api[3]);
             }
             present.addAll(apis.keySet());
-            System.setProperty("legacyconnector.legacyApis", apis.entrySet().stream().map(e -> e.getKey() + "@" + e.getValue())
+            LoaderFlags.LEGACY_APIS.set(apis.entrySet().stream().map(e -> e.getKey() + "@" + e.getValue())
                     .collect(java.util.stream.Collectors.joining(",")));
-            System.setProperty("legacyconnector.legacyApiPackages", String.join(",", apiPackages));
+            LoaderFlags.LEGACY_API_PACKAGES.set(String.join(",", apiPackages));
             // Coremods decide what to strip while the jars are translated, before any mod is registered with the game.
-            System.setProperty("legacyconnector.presentLegacyMods", String.join(",", present));
+            LoaderFlags.PRESENT_LEGACY_MODS.set(String.join(",", present));
             // A render library that keeps its state in statics (CodeChickenLib's CCRenderState, also repackaged inside other mods): block, tile entity and item
             // renderers built on it must not run at once, which they do when chunks mesh on worker threads while the render thread draws items.
-            if (System.getProperty("legacyconnector.renderLock") == null) {
+            if (LoaderFlags.RENDER_LOCK.get() == null) {
                 for (LegacyJar j : legacy) {
                     if (skipReason(j) == null && j.version != LegacyVersion.V1_12_2 && j.version != LegacyVersion.V1_20_1 && sharesStaticRenderState(j.path)) {
-                        System.setProperty("legacyconnector.renderLock", "true");
+                        LoaderFlags.RENDER_LOCK.set("true");
                         LOG.info("Legacy Connector: {} has a render library with static state; legacy renderers on the render thread take the capture lock", j.path.getFileName());
                         break;
                     }
@@ -457,7 +456,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             String loaderSwitches = LoaderFlags.nonDefaultSummary();
             if (!loaderSwitches.isEmpty()) LOG.info("Legacy Connector: loader switches set to a non-default value: {}", loaderSwitches);
             // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.
-            System.setProperty("legacyconnector.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId)
+            LoaderFlags.BRIDGED_MODS.set(String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId)
                     .filter(java.util.Objects::nonNull).toList()));
             if (!bridges.isEmpty()) LOG.info("Legacy Connector: bridging {} to their modern replacements", bridges);
             // Mods whose required dependency is not installed do not run: FML would not have started them either.
@@ -485,7 +484,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         if (owner != null) owner.notes.add(p.message());
                     }
                 }
-                System.setProperty("legacyconnector.missingDependencies", lines.toString());
+                LoaderFlags.MISSING_DEPENDENCIES.set(lines.toString());
             }
             String side = side();
             LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader()).presentMods(present).side(side);
@@ -507,14 +506,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 nestedForge1201Mods.addAll(nestedIds);
             }
             forge1201Mods.addAll(nestedForge1201Mods);
-            System.setProperty("legacyconnector.forge1201.mods", String.join(",", forge1201Mods));
+            LoaderFlags.FORGE1201_MODS.set(String.join(",", forge1201Mods));
             if (!nestedForge1201Mods.isEmpty()) {
                 LOG.info("Legacy Connector: Forge 1.20.1 facade event routing includes nested mod IDs: {}", nestedForge1201Mods);
             }
             // The hooks legacy coremods put into Minecraft's own classes, one list per Minecraft version (CoremodHookScan; read by the run time's CoremodSites)
             Map<String, Path> coremodHooks = new LinkedHashMap<>();
             for (String mc : List.of("1.7.10", "1.6.4", "1.5.2", "1.4.7", "1.12.2")) coremodHooks.put(mc, cacheDir.resolve("coremod-hooks-" + mc + ".txt"));
-            System.setProperty("legacyconnector.coremodHooks", coremodHooks.values().stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator)));
+            LoaderFlags.COREMOD_HOOKS.set(coremodHooks.values().stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator)));
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2; 1.12.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {
@@ -664,8 +663,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                                     + " class(es) of the legacy API this mod was built for; install the legacy " + id + " jar for Minecraft " + jar.version.id() + " in mods/" + jar.version.id() + "/";
                             LOG.warn("Legacy Connector: {}", message);
                             MISSING_DEPENDENCIES.computeIfAbsent(jar, k -> new ArrayList<>()).add(message);
-                            String lines = System.getProperty("legacyconnector.missingDependencies", "");
-                            System.setProperty("legacyconnector.missingDependencies", lines + (jar.mods.isEmpty() ? "" : jar.mods.get(0).legacyId) + "\t" + message + "\n");
+                            String lines = LoaderFlags.MISSING_DEPENDENCIES.get("");
+                            LoaderFlags.MISSING_DEPENDENCIES.set(lines + (jar.mods.isEmpty() ? "" : jar.mods.get(0).legacyId) + "\t" + message + "\n");
                         }
                     }
                     outcomes.put(jar, sideBySideNotes.getOrDefault(jar, "") + (Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n"));
@@ -1331,7 +1330,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         MessageDigest md = SplitPackageResolver.sha256();
         md.update(fileDigest(jar.existing()));
         md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
-        if ("false".equals(System.getProperty("legacyconnector.forge1201.softlink"))) md.update("nosoftlink".getBytes(StandardCharsets.UTF_8));
+        if ("false".equals(LoaderFlags.FORGE1201_SOFTLINK.get())) md.update("nosoftlink".getBytes(StandardCharsets.UTF_8));
         md.update(LOADER_DIGEST);
         // Any change to the embedded runtime (shim code, bridges) re-translates: no cache can outlive the build that wrote it.
         if (runtimeDigest != null) md.update(runtimeDigest);
@@ -1371,7 +1370,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
 
     private static ShimIndex loadShimIndex(Path runtimeJar) throws IOException {
         byte[] data = null;
-        String override = System.getProperty(SHIM_INDEX_PROPERTY);
+        String override = LoaderFlags.SHIM_INDEX.get();
         if (override != null && Files.exists(Path.of(override))) {
             data = Files.readAllBytes(Path.of(override));
         } else if (runtimeJar != null) {
