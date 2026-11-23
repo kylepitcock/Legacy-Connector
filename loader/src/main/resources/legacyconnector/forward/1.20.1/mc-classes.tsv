@@ -148,3 +148,5 @@ net/minecraft/client/gui/screens/controls/KeyBindsList$Entry	net/minecraft/clien
 net/minecraft/client/gui/screens/controls/KeyBindsList$KeyEntry	net/minecraft/client/gui/screens/options/controls/KeyBindsList$KeyEntry
 net/minecraft/client/gui/screens/controls/KeyBindsList$CategoryEntry	net/minecraft/client/gui/screens/options/controls/KeyBindsList$CategoryEntry
 net/minecraft/world/item/SimpleFoiledItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySimpleFoiledItem
+# --- round 15 client: DefaultedVertexConsumer (abstract VertexConsumer with a default colour) stand-in
+com/mojang/blaze3d/vertex/DefaultedVertexConsumer	org/kylepitcock/legacyconnector/v1_20_1/migrate/Round15ClientDefaultedVertexConsumer

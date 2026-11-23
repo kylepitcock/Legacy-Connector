@@ -29,8 +29,13 @@ public final class FixedBuffersView extends AbstractMap<Object, Object> implemen
     /** The read of {@code RenderBuffers.fixedBuffers}. */
     @SuppressWarnings("unchecked")
     public static SortedMap<Object, Object> of(RenderBuffers buffers) {
+        return ofSource(buffers.bufferSource());
+    }
+
+    /** The read of {@code MultiBufferSource.BufferSource.fixedBuffers} (the same map, held by the buffer source itself). */
+    @SuppressWarnings("unchecked")
+    public static SortedMap<Object, Object> ofSource(MultiBufferSource.BufferSource source) {
         try {
-            MultiBufferSource.BufferSource source = buffers.bufferSource();
             if (fixedBuffers == null) {
                 Field f = MultiBufferSource.BufferSource.class.getDeclaredField("fixedBuffers");
                 f.setAccessible(true);

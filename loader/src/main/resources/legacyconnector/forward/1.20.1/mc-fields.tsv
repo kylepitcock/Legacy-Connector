@@ -472,3 +472,9 @@ net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_ARMOR_GLINT_SHADER	Lne
 net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_GLINT_DIRECT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_GLINT_SHADER	-	-
 net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	RENDERTYPE_ARMOR_GLINT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER	-	-
 net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	RENDERTYPE_GLINT_DIRECT_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_GLINT_SHADER	-	-
+# --- round 15 client
+net/minecraft/client/gui/components/AbstractWidget	ACCESSIBILITY_TEXTURE	Lnet/minecraft/resources/ResourceLocation;	-	none	Round15ClientCompat.accessibilityTexture
+net/minecraft/client/gui/screens/Screen	BACKGROUND_LOCATION	Lnet/minecraft/resources/ResourceLocation;	-	none	Round15ClientCompat.screenBackground
+net/minecraft/client/gui/screens/TitleScreen	PANORAMA_OVERLAY	Lnet/minecraft/resources/ResourceLocation;	-	none	Round15ClientCompat.panoramaOverlay
+net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_TRANSLUCENT_NO_CRUMBLING_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_TRANSLUCENT_SHADER	-	-
+net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	RENDERTYPE_TRANSLUCENT_NO_CRUMBLING_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_TRANSLUCENT_SHADER	-	-
