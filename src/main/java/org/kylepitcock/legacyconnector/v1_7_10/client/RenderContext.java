@@ -89,6 +89,10 @@ public final class RenderContext {
 
     /** Everything a legacy renderer can change, for one thread. */
     static final class State {
+        /** Whether the draw call in progress is in Iris's shadow pass: 0 not asked yet, 1 yes, 2 no (see line()). */
+        byte shadowCache;
+        VertexConsumer lineBuffer;
+        boolean lineBufferDepth;
         final Deque<Frame> frames = new ArrayDeque<>();
         Capture capture;
         final Deque<float[]> itemBrightness = new ArrayDeque<>();
@@ -1200,9 +1204,26 @@ public final class RenderContext {
         PoseStack p = pose(s);
         if (p == null || s.capture != null) return false;
         s.quadCount++;
-        if (gui(s) == null && IrisState.compatShadowPass()) return true; // lines are overlays: none in Iris's shadow map
-        s.drawBuffer = null; // another render type: the quads' buffer may be ended by this lookup
-        VertexConsumer buffer = buffers(s).getBuffer(LegacyRenderTypes.lines(s.depthTest));
+        if (gui(s) == null) {
+            // asked through a method handle: once per draw call (a wireframe display list is thousands of lines), not per line
+            boolean shadow;
+            if (s.inDraw) {
+                if (s.shadowCache == 0) s.shadowCache = IrisState.compatShadowPass() ? (byte) 1 : (byte) 2;
+                shadow = s.shadowCache == 1;
+            } else shadow = IrisState.compatShadowPass();
+            if (shadow) return true; // lines are overlays: none in Iris's shadow map
+        }
+        VertexConsumer buffer;
+        if (s.inDraw && s.lineBuffer != null && s.lineBufferDepth == s.depthTest) {
+            buffer = s.lineBuffer; // the lines of one draw call share their buffer (a lookup per line was the cost of a wireframe)
+        } else {
+            s.drawBuffer = null; // another render type: the quads' buffer may be ended by this lookup
+            buffer = buffers(s).getBuffer(LegacyRenderTypes.lines(s.depthTest));
+            if (s.inDraw) {
+                s.lineBuffer = buffer;
+                s.lineBufferDepth = s.depthTest;
+            }
+        }
         PoseStack.Pose last = p.last();
         float nx = (float) (b[0] - a[0]), ny = (float) (b[1] - a[1]), nz = (float) (b[2] - a[2]);
         float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);

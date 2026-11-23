@@ -1413,6 +1413,29 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         return ns + ":" + moved;
     }
 
+    /**
+     * The model written for one variant of a blockstate file that an item's mesh definition returns (see {@link #blockstateItemModel}), or null when
+     * the location has no variant or the mod has a model file of that name.
+     */
+    private static String variantItemModel(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mrl,
+            Map<String, Supplier<byte[]>> out) {
+        String variant = mrl.getVariant();
+        if (variant == null || variant.isEmpty() || variant.equals("inventory") || variant.equals("normal")) return null;
+        String ns = Ids.namespace(mrl.getNamespace());
+        String path = Ids.normalizePath(mrl.getPath());
+        JsonObject model;
+        try {
+            model = blockstateItemModel(mrl, null, out);
+        } catch (RuntimeException e) {
+            return null;
+        }
+        if (model == null) return null;
+        String file = "item/lc1122/mesh/" + path + "_" + Ids.normalizePath(variant.replace('=', '_').replace(',', '_'));
+        byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+        out.put("assets/" + ns + "/models/" + file + ".json", () -> bytes);
+        return ns + ":" + file;
+    }
+
     private static boolean meshModel(legacyconnector.v1_12_2.net.minecraft.item.Item item,
             legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation base, ResourceLocation id, Map<String, Supplier<byte[]>> out) {
         if (legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$mesh(item) == null) return false;
@@ -1422,7 +1445,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         String fallback = null;
         for (int i = 0; i < variants.size(); i++) {
             var v = variants.get(i);
-            String target = meshTarget(itemModelTarget(v.getNamespace(), v.getPath()), out);
+            // a variant of a blockstate file ("color0=0,mode=0_0,type=standard1" of Thermal Expansion's capacitor: one file, one model per
+            // variant, the mesh definition names the variant per stack) is its own model, not the model file of the item's name
+            String target = v instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mv ? variantItemModel(mv, out) : null;
+            if (target == null) target = meshTarget(itemModelTarget(v.getNamespace(), v.getPath()), out);
             int colon = target.indexOf(':');
             String ns = target.substring(0, colon);
             String path = target.substring(colon + 1);

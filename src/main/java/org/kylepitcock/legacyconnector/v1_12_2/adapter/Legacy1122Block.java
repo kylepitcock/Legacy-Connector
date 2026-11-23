@@ -228,6 +228,64 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         return StatesBridge1122.toLegacy(state);
     }
 
+    private Boolean tileHeldProperties;
+    private static final ThreadLocal<boolean[]> IN_ACTUAL = ThreadLocal.withInitial(() -> new boolean[1]);
+
+    /**
+     * Whether a state property outside the metadata is kept by the block's tile entity: the block has a tile entity, answers getActualState (which
+     * reads the property back from it) and has a property that changes nothing in getMetaFromState (Colored Redstone's colour). 1.12 stored such a
+     * property in the chunk's state; here only the metadata is stored.
+     */
+    private boolean tileHeldProperties() {
+        Boolean known = tileHeldProperties;
+        if (known != null) return known;
+        boolean result = false;
+        try {
+            var base = legacy.getDefaultState();
+            if (legacy.hasTileEntity(base) && overrides(legacy, "getActualState", IBlockState.class, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.class)) {
+                int meta = legacy.getMetaFromState(base);
+                for (var property : legacy.getBlockState().getProperties()) {
+                    boolean any = false;
+                    for (Object value : property.getAllowedValues()) {
+                        @SuppressWarnings({"unchecked", "rawtypes"})
+                        IBlockState changed = base.withProperty((legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty) property, (Comparable) value);
+                        if (legacy.getMetaFromState(changed) != meta) {
+                            any = true;
+                            break;
+                        }
+                    }
+                    if (!any && property.getAllowedValues().size() > 1) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            result = false;
+        }
+        tileHeldProperties = result;
+        return result;
+    }
+
+    /**
+     * The legacy state handed to a world callback. For a block whose tile entity holds a state property (see {@link #tileHeldProperties}) it carries
+     * that property: a repeater of Colored Redstone swapping to its powered block builds the new state from the one it is given, and a state
+     * without the colour made a red repeater (the tile entity of the new block was created with the default colour).
+     */
+    private IBlockState state(BlockState state, Level level, BlockPos pos) {
+        IBlockState legacyState = state(state);
+        if (legacyState == null || level == null || !tileHeldProperties() || IN_ACTUAL.get()[0]) return legacyState;
+        IN_ACTUAL.get()[0] = true;
+        try {
+            IBlockState actual = legacy.getActualState(legacyState, WorldBridge1122.access(level), pos(pos));
+            return actual != null ? actual : legacyState;
+        } catch (RuntimeException | LinkageError e) {
+            return legacyState;
+        } finally {
+            IN_ACTUAL.get()[0] = false;
+        }
+    }
+
     private static EntityPlayer player(Player p) {
         return p != null && EntityBridge1122.wrap(p) instanceof EntityPlayer e ? e : null;
     }
@@ -255,7 +313,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         Vec3 h = hit.getLocation();
         boolean done;
         try {
-            done = legacy.onBlockActivated(world(level), pos(pos), state(state), p, hand == InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND,
+            done = legacy.onBlockActivated(world(level), pos(pos), state(state, level, pos), p, hand == InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND,
                     EnumFacing.mcc$of(hit.getDirection()), (float) (h.x - pos.getX()), (float) (h.y - pos.getY()), (float) (h.z - pos.getZ()));
         } catch (RuntimeException | LinkageError e) {
             failure("onBlockActivated", e);
@@ -314,7 +372,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         if (!level.isClientSide && state.hasBlockEntity()) level.invalidateCapabilities(pos);
         if (!neighbor) return;
         try {
-            legacy.neighborChanged(state(state), world(level), pos(pos), StatesBridge1122.legacyBlock(neighborBlock.defaultBlockState()), pos(from));
+            legacy.neighborChanged(state(state, level, pos), world(level), pos(pos), StatesBridge1122.legacyBlock(neighborBlock.defaultBlockState()), pos(from));
         } catch (RuntimeException | LinkageError e) {
             failure("neighborChanged", e);
         }
@@ -325,7 +383,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         if (!updateTick) return;
         World w = world(level);
         try {
-            legacy.updateTick(w, pos(pos), state(state), w.rand);
+            legacy.updateTick(w, pos(pos), state(state, level, pos), w.rand);
         } catch (RuntimeException | LinkageError e) {
             failure("updateTick", e);
         }
@@ -340,7 +398,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         World w = world(level);
         try {
-            legacy.randomTick(w, pos(pos), state(state), w.rand);
+            legacy.randomTick(w, pos(pos), state(state, level, pos), w.rand);
         } catch (RuntimeException | LinkageError e) {
             failure("randomTick", e);
         }

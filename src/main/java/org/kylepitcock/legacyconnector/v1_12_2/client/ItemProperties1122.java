@@ -59,6 +59,13 @@ final class ItemProperties1122 {
      * An item with an {@code ItemMeshDefinition} that picks a model per stack: the generated model (Assets1122.meshModel) selects its variants
      * on this property, the 1-based position in the item's registered variants of the model the mesh definition returns for the stack.
      */
+    /** A model location as the mesh index knows it: namespace:path, and the variant of a blockstate-file location. */
+    private static String meshKey(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation v) {
+        String key = org.kylepitcock.legacyconnector.core.Ids.namespace(v.getNamespace()) + ":" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(v.getPath());
+        return v instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation m && m.getVariant() != null
+                && !m.getVariant().isEmpty() ? key + "#" + m.getVariant() : key;
+    }
+
     private static int registerMesh(legacyconnector.v1_12_2.net.minecraft.item.Item item) {
         var mesh = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$mesh(item);
         var variants = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$variantList(item);
@@ -66,7 +73,7 @@ final class ItemProperties1122 {
         java.util.Map<String, Integer> index = new java.util.HashMap<>();
         for (int i = 0; i < variants.size(); i++) {
             var v = variants.get(i);
-            index.putIfAbsent(org.kylepitcock.legacyconnector.core.Ids.namespace(v.getNamespace()) + ":" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(v.getPath()), i + 1);
+            index.putIfAbsent(meshKey(v), i + 1);
         }
         int count = 0;
         java.util.Set<net.minecraft.world.item.Item> done = new java.util.HashSet<>();
@@ -85,8 +92,7 @@ final class ItemProperties1122 {
                     try {
                         var location = mesh.getModelLocation(Stacks1122.fromModern(stack));
                         if (location == null) return 0.0F;
-                        Integer position = index.get(org.kylepitcock.legacyconnector.core.Ids.namespace(location.getNamespace()) + ":"
-                                + org.kylepitcock.legacyconnector.core.Ids.normalizePath(location.getPath()));
+                        Integer position = index.get(meshKey(location));
                         return position == null ? 0.0F : position;
                     } catch (RuntimeException | LinkageError e) {
                         RenderErrors1122.report("the item mesh definition of " + item.getClass().getName(), e);
