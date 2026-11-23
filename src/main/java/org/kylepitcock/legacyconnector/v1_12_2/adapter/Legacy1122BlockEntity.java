@@ -314,11 +314,50 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         }
     }
 
+    /**
+     * The chunk's tile entity tags on the client (and any update tag): 1.12 handed each to {@code TileEntity.handleUpdateTag}, which a mod overrides to
+     * take the data its own packet system carries (CoFH's {@code TileCore.getUpdateTag} adds the tile packet and its {@code handleUpdateTag} applies it,
+     * so Thermal Dynamics ducts showed no connections after a reload). Without an override the shim's default reads the tag, as before. The tag
+     * arrives before the chunk is stored, when the client world cannot find this block entity yet and a handler that looks its tile entity up by
+     * coordinates finds nothing: delivery waits until it can be found.
+     */
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        if (!tag.contains("legacy") || level == null) {
+            super.handleUpdateTag(tag, registries);
+            return;
+        }
+        if (legacy == null && pending == null) legacy();
+        if (legacy == null) {
+            super.handleUpdateTag(tag, registries);
+            return;
+        }
+        deliverUpdateTag(tag.getCompound("legacy").copy(), 0);
+    }
+
+    private void deliverUpdateTag(CompoundTag data, int tries) {
+        if (level == null || isRemoved()) return;
+        if (level.isClientSide && level.getBlockEntity(worldPosition) != this && tries < 400) {
+            net.minecraft.client.Minecraft.getInstance().tell(() -> deliverUpdateTag(data, tries + 1));
+            return;
+        }
+        TileEntity te = legacy();
+        if (te == null) return;
+        try {
+            te.handleUpdateTag(new NBTTagCompound(data));
+        } catch (RuntimeException | LinkageError e) {
+            if (DELIVERY_FAILURES.incrementAndGet() <= 10) LOG.warn("{} failed to handle its update tag", te.getClass().getName(), e);
+        }
+    }
+
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        if (tag.contains("legacy")) {
-            pending = tag.getCompound("legacy");
+        CompoundTag flat = tag.contains("legacy") ? null : flatLegacyTag(tag);
+        if (tag.contains("legacy") || flat != null) {
+            // a tag in the 1.12 shape (fields of the tile entity at the top level: /setblock ...{color:5}, /data merge, a structure template, an item's
+            // BlockEntityTag) is the legacy tile entity's own data; the layer's saves keep it under "legacy"
+            pending = flat != null ? flat : tag.getCompound("legacy");
             // Saved at another position (Create contraptions and Sable/Create Aeronautics sub-levels load a moved block's tag into a new
             // block entity, fixing only the modern x/y/z): readFromNBT must see where the tile entity is now.
             if (pending.contains("x") && (pending.getInt("x") != worldPosition.getX() || pending.getInt("y") != worldPosition.getY()
@@ -332,6 +371,17 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
             legacy = null;
             failed = false;
         }
+    }
+
+    /** The keys every modern block entity tag may carry; anything else at the top level is a 1.12 tile entity field. */
+    private static final java.util.Set<String> MODERN_KEYS = java.util.Set.of("x", "y", "z", "id", "components", "neoforge:attachments", "keepPacked");
+
+    /** The tag as the legacy tile entity's data when it holds fields of its own, else null. */
+    private static CompoundTag flatLegacyTag(CompoundTag tag) {
+        for (String key : tag.getAllKeys()) {
+            if (!MODERN_KEYS.contains(key)) return tag.copy();
+        }
+        return null;
     }
 
     /** The legacy NBT of the last successful save or load (see NbtSaveGuard). */

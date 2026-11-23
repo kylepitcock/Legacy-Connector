@@ -666,7 +666,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static final int STATE_MODEL_BUDGET = 16384;
     private static final java.util.concurrent.atomic.AtomicInteger STATE_MODELS_USED = new java.util.concurrent.atomic.AtomicInteger();
     /** Most states beyond the metadata of one block whose variants are resolved at all. */
-    private static final int MAX_STATE_MODEL_STATES = 1024;
+    private static final int MAX_STATE_MODEL_STATES = 32768;
+    /** Most states of all blocks together whose variants are resolved (a mod wire with colour x power x four connections has 20736). */
+    private static final int STATE_WORK_BUDGET = 300000;
+    private static final java.util.concurrent.atomic.AtomicInteger STATE_WORK_USED = new java.util.concurrent.atomic.AtomicInteger();
     private static final Map<String, ResourceLocation> STATE_MODELS_BUILDING = new java.util.concurrent.ConcurrentHashMap<>();
     private static volatile Map<String, ResourceLocation> stateModels = Map.of();
 
@@ -703,6 +706,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         // many states may share a few models (a block with a 16-value color property and a render property: EnderIO's fused quartz has 352 states
         // beyond its metadata but about 20 distinct variants), so the cap is on the distinct models below, and this one only bounds the work
         if (held == 0 || extra.isEmpty() || extra.size() > MAX_STATE_MODEL_STATES) return;
+        if (extra.size() > 1024 && STATE_WORK_USED.addAndGet(extra.size()) > STATE_WORK_BUDGET) return;
         var locations = mapped != null ? mapped
                 : new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.DefaultStateMapper().putStateModelLocations(block);
         if (locations == null || locations.isEmpty()) return;
@@ -1265,6 +1269,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     /** The render type the legacy block asks for in this state ({@code minecraft:cutout}, ...), or null for the solid layer without transparent texels. */
     private static String renderTypeOf(Block block, IBlockState state, Res res, Map<String, Supplier<byte[]>> out) {
         if (state == null) return null;
+        if (block instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire) return "minecraft:cutout";
         boolean solid = false;
         boolean cutout = false;
         boolean mipped = false;
@@ -1626,7 +1631,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
             return copy;
         }
-        if (chain.blocked || colon < 0 || model.startsWith("minecraft:") || model.contains("builtin/")) return copy;
+        // vanilla's own models keep the render type the game gives its own blocks, except the redstone dust ones: a wire of a mod is a block of its own
+        // and the mostly transparent dust textures drew black on the solid layer
+        boolean vanillaDust = model.startsWith("minecraft:block/redstone_dust");
+        if (chain.blocked || colon < 0 || (model.startsWith("minecraft:") && !vanillaDust) || model.contains("builtin/")) return copy;
         String path = "block/lc1122/rt/" + model.substring(0, colon) + "_" + Ids.normalizePath(model.substring(colon + 1)).replace('/', '_') + "_" + renderType.substring(10);
         String file = "assets/" + blockId.getNamespace() + "/models/" + path + ".json";
         if (!out.containsKey(file)) {
@@ -1898,8 +1906,15 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         // its own: the flat dust, which the block's colour handler tints
         if (hint == null && BuiltInRegistries.BLOCK.get(id) instanceof Legacy1122Block wire
                 && wire.legacy() instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire) {
+            // cut out: the dot texture is mostly transparent, and on the solid layer the transparent texels drew black (vanilla's wire is cutout by block)
+            JsonObject wrapper = new JsonObject();
+            wrapper.addProperty("parent", "minecraft:block/redstone_dust_dot");
+            wrapper.addProperty("render_type", "minecraft:cutout");
+            String dotPath = "block/lc1122/" + id.getPath() + "_dust";
+            byte[] dotBytes = GSON.toJson(wrapper).getBytes(StandardCharsets.UTF_8);
+            out.put("assets/" + id.getNamespace() + "/models/" + dotPath + ".json", () -> dotBytes);
             JsonObject dust = new JsonObject();
-            dust.addProperty("model", "minecraft:block/redstone_dust_dot");
+            dust.addProperty("model", id.getNamespace() + ":" + dotPath);
             return dust;
         }
         String texture = pickTexture(id, hint);
