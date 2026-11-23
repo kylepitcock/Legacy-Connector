@@ -671,7 +671,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static final int STATE_MODEL_BUDGET = 16384;
     private static final java.util.concurrent.atomic.AtomicInteger STATE_MODELS_USED = new java.util.concurrent.atomic.AtomicInteger();
     /** Most states beyond the metadata of one block whose variants are resolved at all. */
-    private static final int MAX_STATE_MODEL_STATES = 1024;
+    private static final int MAX_STATE_MODEL_STATES = 32768;
+    /** Most states of all blocks together whose variants are resolved (a mod wire with colour x power x four connections has 20736). */
+    private static final int STATE_WORK_BUDGET = 300000;
+    private static final java.util.concurrent.atomic.AtomicInteger STATE_WORK_USED = new java.util.concurrent.atomic.AtomicInteger();
     private static final Map<String, ResourceLocation> STATE_MODELS_BUILDING = new java.util.concurrent.ConcurrentHashMap<>();
     private static volatile Map<String, ResourceLocation> stateModels = Map.of();
 
@@ -713,6 +716,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     extra.size() + " states beyond the metadata exceed the cap of " + MAX_STATE_MODEL_STATES + "; the metadata models draw them");
             return;
         }
+        if (extra.size() > 1024 && STATE_WORK_USED.addAndGet(extra.size()) > STATE_WORK_BUDGET) return;
         var locations = mapped != null ? mapped
                 : new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.DefaultStateMapper().putStateModelLocations(block);
         if (locations == null || locations.isEmpty()) return;
@@ -1279,6 +1283,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     /** The render type the legacy block asks for in this state ({@code minecraft:cutout}, ...), or null for the solid layer without transparent texels. */
     private static String renderTypeOf(Block block, IBlockState state, Res res, Map<String, Supplier<byte[]>> out) {
         if (state == null) return null;
+        if (block instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire) return "minecraft:cutout";
         boolean solid = false;
         boolean cutout = false;
         boolean mipped = false;
@@ -1422,6 +1427,29 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         return ns + ":" + moved;
     }
 
+    /**
+     * The model written for one variant of a blockstate file that an item's mesh definition returns (see {@link #blockstateItemModel}), or null when
+     * the location has no variant or the mod has a model file of that name.
+     */
+    private static String variantItemModel(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mrl,
+            Map<String, Supplier<byte[]>> out) {
+        String variant = mrl.getVariant();
+        if (variant == null || variant.isEmpty() || variant.equals("inventory") || variant.equals("normal")) return null;
+        String ns = Ids.namespace(mrl.getNamespace());
+        String path = Ids.normalizePath(mrl.getPath());
+        JsonObject model;
+        try {
+            model = blockstateItemModel(mrl, null, out);
+        } catch (RuntimeException e) {
+            return null;
+        }
+        if (model == null) return null;
+        String file = "item/lc1122/mesh/" + path + "_" + Ids.normalizePath(variant.replace('=', '_').replace(',', '_'));
+        byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+        out.put("assets/" + ns + "/models/" + file + ".json", () -> bytes);
+        return ns + ":" + file;
+    }
+
     private static boolean meshModel(legacyconnector.v1_12_2.net.minecraft.item.Item item,
             legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation base, ResourceLocation id, Map<String, Supplier<byte[]>> out) {
         if (legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$mesh(item) == null) return false;
@@ -1431,7 +1459,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         String fallback = null;
         for (int i = 0; i < variants.size(); i++) {
             var v = variants.get(i);
-            String target = meshTarget(itemModelTarget(v.getNamespace(), v.getPath()), out);
+            // a variant of a blockstate file ("color0=0,mode=0_0,type=standard1" of Thermal Expansion's capacitor: one file, one model per
+            // variant, the mesh definition names the variant per stack) is its own model, not the model file of the item's name
+            String target = v instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mv ? variantItemModel(mv, out) : null;
+            if (target == null) target = meshTarget(itemModelTarget(v.getNamespace(), v.getPath()), out);
             int colon = target.indexOf(':');
             String ns = target.substring(0, colon);
             String path = target.substring(colon + 1);
@@ -1640,7 +1671,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
             return copy;
         }
-        if (chain.blocked || colon < 0 || model.startsWith("minecraft:") || model.contains("builtin/")) return copy;
+        // vanilla's own models keep the render type the game gives its own blocks, except the redstone dust ones: a wire of a mod is a block of its own
+        // and the mostly transparent dust textures drew black on the solid layer
+        boolean vanillaDust = model.startsWith("minecraft:block/redstone_dust");
+        if (chain.blocked || colon < 0 || (model.startsWith("minecraft:") && !vanillaDust) || model.contains("builtin/")) return copy;
         String path = "block/lc1122/rt/" + model.substring(0, colon) + "_" + Ids.normalizePath(model.substring(colon + 1)).replace('/', '_') + "_" + renderType.substring(10);
         String file = "assets/" + blockId.getNamespace() + "/models/" + path + ".json";
         if (!out.containsKey(file)) {
@@ -1912,8 +1946,15 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         // its own: the flat dust, which the block's colour handler tints
         if (hint == null && BuiltInRegistries.BLOCK.get(id) instanceof Legacy1122Block wire
                 && wire.legacy() instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire) {
+            // cut out: the dot texture is mostly transparent, and on the solid layer the transparent texels drew black (vanilla's wire is cutout by block)
+            JsonObject wrapper = new JsonObject();
+            wrapper.addProperty("parent", "minecraft:block/redstone_dust_dot");
+            wrapper.addProperty("render_type", "minecraft:cutout");
+            String dotPath = "block/lc1122/" + id.getPath() + "_dust";
+            byte[] dotBytes = GSON.toJson(wrapper).getBytes(StandardCharsets.UTF_8);
+            out.put("assets/" + id.getNamespace() + "/models/" + dotPath + ".json", () -> dotBytes);
             JsonObject dust = new JsonObject();
-            dust.addProperty("model", "minecraft:block/redstone_dust_dot");
+            dust.addProperty("model", id.getNamespace() + ":" + dotPath);
             return dust;
         }
         String texture = pickTexture(id, hint);

@@ -84,6 +84,12 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean relativeHardness;
     /** The block traces rays over its collision boxes and has no bounding box of its own (1.12 stairs): those boxes are its outline. */
     private final boolean tracedBoxes;
+    /**
+     * The block is selected by its own collisionRayTrace, which does not trace its collision boxes (Thermal Dynamics ducts: the arms, servos and
+     * filters are cuboids their tile entity hands to the ray tracer, while the bounding box is the centre): 1.12 picked what the ray tracer answers,
+     * so the outline and the hit test are that, sampled, instead of the block's static bounds.
+     */
+    private final boolean rayTraced;
     // hooks taking an IBlockAccess
     private final boolean bounds;
     private final boolean collisionBox;
@@ -145,6 +151,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.collisionBox = overrides(legacy, "getCollisionBoundingBox", S, A, P);
         Class<?> V = legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d.class;
         this.tracedBoxes = collisionList && !bounds && overrides(legacy, "collisionRayTrace", S, W, P, V, V);
+        this.rayTraced = !tracedBoxes && overrides(legacy, "collisionRayTrace", S, W, P, V, V);
         this.replaceable = overrides(legacy, "isReplaceable", A, P);
         this.lightValue = overrides(legacy, "getLightValue", S, A, P);
         this.renderType = overrides(legacy, "getRenderType", S);
@@ -185,6 +192,16 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         return false;
     }
 
+    private static final java.util.Map<Class<?>, Boolean> OWN_RAYS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Whether the block's class answers {@code collisionRayTrace} itself (the hit then carries what the mod's ray tracer found: sub-hit indices, cuboids). */
+    public static boolean mcc$tracesOwnRays(Block block) {
+        if (block == null) return false;
+        return OWN_RAYS.computeIfAbsent(block.getClass(), c -> overrides(block, "collisionRayTrace", IBlockState.class, World.class,
+                legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.class, legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d.class,
+                legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d.class));
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
         builder.add(META);
@@ -211,6 +228,64 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
 
     private static IBlockState state(BlockState state) {
         return StatesBridge1122.toLegacy(state);
+    }
+
+    private Boolean tileHeldProperties;
+    private static final ThreadLocal<boolean[]> IN_ACTUAL = ThreadLocal.withInitial(() -> new boolean[1]);
+
+    /**
+     * Whether a state property outside the metadata is kept by the block's tile entity: the block has a tile entity, answers getActualState (which
+     * reads the property back from it) and has a property that changes nothing in getMetaFromState (Colored Redstone's colour). 1.12 stored such a
+     * property in the chunk's state; here only the metadata is stored.
+     */
+    private boolean tileHeldProperties() {
+        Boolean known = tileHeldProperties;
+        if (known != null) return known;
+        boolean result = false;
+        try {
+            var base = legacy.getDefaultState();
+            if (legacy.hasTileEntity(base) && overrides(legacy, "getActualState", IBlockState.class, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.class)) {
+                int meta = legacy.getMetaFromState(base);
+                for (var property : legacy.getBlockState().getProperties()) {
+                    boolean any = false;
+                    for (Object value : property.getAllowedValues()) {
+                        @SuppressWarnings({"unchecked", "rawtypes"})
+                        IBlockState changed = base.withProperty((legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty) property, (Comparable) value);
+                        if (legacy.getMetaFromState(changed) != meta) {
+                            any = true;
+                            break;
+                        }
+                    }
+                    if (!any && property.getAllowedValues().size() > 1) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            result = false;
+        }
+        tileHeldProperties = result;
+        return result;
+    }
+
+    /**
+     * The legacy state handed to a world callback. For a block whose tile entity holds a state property (see {@link #tileHeldProperties}) it carries
+     * that property: a repeater of Colored Redstone swapping to its powered block builds the new state from the one it is given, and a state
+     * without the colour made a red repeater (the tile entity of the new block was created with the default colour).
+     */
+    private IBlockState state(BlockState state, Level level, BlockPos pos) {
+        IBlockState legacyState = state(state);
+        if (legacyState == null || level == null || !tileHeldProperties() || IN_ACTUAL.get()[0]) return legacyState;
+        IN_ACTUAL.get()[0] = true;
+        try {
+            IBlockState actual = legacy.getActualState(legacyState, WorldBridge1122.access(level), pos(pos));
+            return actual != null ? actual : legacyState;
+        } catch (RuntimeException | LinkageError e) {
+            return legacyState;
+        } finally {
+            IN_ACTUAL.get()[0] = false;
+        }
     }
 
     private static EntityPlayer player(Player p) {
@@ -240,7 +315,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         Vec3 h = hit.getLocation();
         boolean done;
         try {
-            done = legacy.onBlockActivated(world(level), pos(pos), state(state), p, hand == InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND,
+            done = legacy.onBlockActivated(world(level), pos(pos), state(state, level, pos), p, hand == InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND,
                     EnumFacing.mcc$of(hit.getDirection()), (float) (h.x - pos.getX()), (float) (h.y - pos.getY()), (float) (h.z - pos.getZ()));
         } catch (RuntimeException | LinkageError e) {
             LegacyCall.failed("useItemOn", legacy, e, null);
@@ -303,7 +378,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         if (!level.isClientSide && state.hasBlockEntity()) level.invalidateCapabilities(pos);
         if (!neighbor) return;
         try {
-            legacy.neighborChanged(state(state), world(level), pos(pos), StatesBridge1122.legacyBlock(neighborBlock.defaultBlockState()), pos(from));
+            legacy.neighborChanged(state(state, level, pos), world(level), pos(pos), StatesBridge1122.legacyBlock(neighborBlock.defaultBlockState()), pos(from));
         } catch (RuntimeException | LinkageError e) {
             LegacyCall.failed("neighborChanged", legacy, e, null);
             failure("neighborChanged", e);
@@ -315,7 +390,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         if (!updateTick) return;
         World w = world(level);
         try {
-            legacy.updateTick(w, pos(pos), state(state), w.rand);
+            legacy.updateTick(w, pos(pos), state(state, level, pos), w.rand);
         } catch (RuntimeException | LinkageError e) {
             LegacyCall.failed("tick", legacy, e, null);
             failure("updateTick", e);
@@ -331,7 +406,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         World w = world(level);
         try {
-            legacy.randomTick(w, pos(pos), state(state), w.rand);
+            legacy.randomTick(w, pos(pos), state(state, level, pos), w.rand);
         } catch (RuntimeException | LinkageError e) {
             LegacyCall.failed("randomTick", legacy, e, null);
             failure("randomTick", e);
@@ -652,6 +727,10 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var b = collisionBoxes(state, level, pos, null);
             if (b != null && !b.isEmpty()) return b;
         }
+        if (rayTraced && level != null && !IN_LEGACY_SHAPE.get()[0] && level.getBlockState(pos).is(this)) {
+            var b = sampledShape(state, level, pos);
+            if (b != null && !b.isEmpty()) return b;
+        }
         if (bounds && !IN_LEGACY_SHAPE.get()[0]) {
             var b = legacyBox(state, getter, pos, false);
             if (b != null) return b;
@@ -668,6 +747,105 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         if (getter instanceof Level level) return level;
         if (getter instanceof net.minecraft.world.level.chunk.LevelChunk chunk) return chunk.getLevel();
         return null;
+    }
+
+    private static final int SAMPLES = 16;
+    /** Sampled shapes by position for the client and the server world (a few ticks old at most: attachments change rarely, the outline is asked every frame). */
+    private final java.util.concurrent.ConcurrentHashMap<Long, Sampled> sampledClient = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.concurrent.ConcurrentHashMap<Long, Sampled> sampledServer = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private record Sampled(long tick, BlockState state, net.minecraft.world.phys.shapes.VoxelShape shape) {}
+
+    /**
+     * The shape a block that is selected by its own collisionRayTrace has: rays along the three axes from both sides, a 16 x 16 grid each, give the
+     * voxels it hits between the entry and the exit of each line. The shape is kept for ten ticks. Null when the block never answers.
+     */
+    private net.minecraft.world.phys.shapes.VoxelShape sampledShape(BlockState state, Level level, BlockPos pos) {
+        var cache = level.isClientSide ? sampledClient : sampledServer;
+        long now = level.getGameTime();
+        Long key = pos.asLong();
+        Sampled old = cache.get(key);
+        if (old != null && old.state == state && now - old.tick < 10 && now >= old.tick) return old.shape;
+        boolean[] guard = IN_LEGACY_SHAPE.get();
+        guard[0] = true;
+        net.minecraft.world.phys.shapes.VoxelShape shape = null;
+        try {
+            int n = SAMPLES;
+            boolean[][][] grid = new boolean[n][n][n];
+            boolean any = false;
+            var w = world(level);
+            var lp = pos(pos);
+            var ls = state(state);
+            for (int axis = 0; axis < 3; axis++) {
+                int a1 = (axis + 1) % 3, a2 = (axis + 2) % 3;
+                for (int u = 0; u < n; u++) {
+                    for (int v = 0; v < n; v++) {
+                        double[] hit = new double[2];
+                        boolean[] got = new boolean[2];
+                        for (int dir = 0; dir < 2; dir++) {
+                            double[] s0 = new double[3], e0 = new double[3];
+                            s0[a1] = e0[a1] = (u + 0.5) / n;
+                            s0[a2] = e0[a2] = (v + 0.5) / n;
+                            s0[axis] = dir == 0 ? -0.25 : 1.25;
+                            e0[axis] = dir == 0 ? 1.25 : -0.25;
+                            var r = legacy.collisionRayTrace(ls, w, lp,
+                                    new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(pos.getX() + s0[0], pos.getY() + s0[1], pos.getZ() + s0[2]),
+                                    new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(pos.getX() + e0[0], pos.getY() + e0[1], pos.getZ() + e0[2]));
+                            if (r == null || r.hitVec == null) continue;
+                            double[] h = {r.hitVec.x - pos.getX(), r.hitVec.y - pos.getY(), r.hitVec.z - pos.getZ()};
+                            hit[dir] = h[axis];
+                            got[dir] = true;
+                        }
+                        if (!got[0] && !got[1]) continue;
+                        // the line from the entry to the exit; one hit alone marks the voxel it is in
+                        double lo = got[0] ? hit[0] : hit[1], hi = got[1] ? hit[1] : hit[0];
+                        if (hi < lo) {
+                            double t = lo;
+                            lo = hi;
+                            hi = t;
+                        }
+                        int i0 = Math.max(0, Math.min(n - 1, (int) Math.floor((lo + 0.0005) * n))), i1 = Math.max(0, Math.min(n - 1, (int) Math.floor((hi - 0.0005) * n)));
+                        if (i1 < i0) i1 = i0;
+                        for (int i = i0; i <= i1; i++) {
+                            int[] c = new int[3];
+                            c[axis] = i;
+                            c[a1] = u;
+                            c[a2] = v;
+                            grid[c[0]][c[1]][c[2]] = true;
+                            any = true;
+                        }
+                    }
+                }
+            }
+            if (any) {
+                List<net.minecraft.world.phys.shapes.VoxelShape> boxes = new ArrayList<>();
+                double d = 1.0D / n;
+                for (int y = 0; y < n; y++) {
+                    for (int z = 0; z < n; z++) {
+                        int x = 0;
+                        while (x < n) {
+                            if (!grid[x][y][z]) {
+                                x++;
+                                continue;
+                            }
+                            int start = x;
+                            while (x < n && grid[x][y][z]) x++;
+                            boxes.add(net.minecraft.world.phys.shapes.Shapes.box(start * d, y * d, z * d, x * d, (y + 1) * d, (z + 1) * d));
+                        }
+                    }
+                }
+                shape = net.minecraft.world.phys.shapes.Shapes.empty();
+                shape = net.minecraft.world.phys.shapes.Shapes.or(shape, boxes.toArray(new net.minecraft.world.phys.shapes.VoxelShape[0])).optimize();
+            }
+        } catch (RuntimeException | LinkageError e) {
+            failure("collisionRayTrace", e);
+            shape = null;
+        } finally {
+            guard[0] = false;
+        }
+        if (cache.size() > 512) cache.clear();
+        if (shape != null) cache.put(key, new Sampled(now, state, shape));
+        return shape;
     }
 
     /** A legacy block-relative box (getBoundingBox or getCollisionBoundingBox at the position) as a shape; null when it cannot be had. */

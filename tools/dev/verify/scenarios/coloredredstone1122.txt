@@ -1,0 +1,62 @@
+# Colored Redstone 1.12.2 (issue 284): every item type placed by a real player (use verb = useItemOn) keeps its colour in the tile entity; a colour set through block entity NBT takes
+# (there is no colour-0 dust/repeater/comparator item: red is vanilla's; unsuffixed names are the lowest metadata)
+mods: 1.12.2 Colored Redstone-1.3.2
+cmd /fill -10 148 -10 40 148 10 minecraft:stone
+cmd /fill -10 149 -10 40 160 10 minecraft:air
+cmd /tp @s 0.5 150 0.5
+wait 60
+cmd /gamemode survival
+cmd /clear @s
+cmd /give @s coloredredstone:colored_redstone_dust_3
+slot 0
+cmd /tp @s 2.5 149 2.5
+wait 5
+look 180 55
+wait 3
+use
+wait 8
+expect ^color 3$ :: (function(){var BP=Java.type('net.minecraft.core.BlockPos');var l=server.overworld();var p=new BP(2,149,1);var be=l.getChunk(p).getBlockEntity(p);return be==null?'no tile':'color '+be.legacy().writeToNBT(new (Java.type('legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound'))()).getInteger('color');})()
+cmd /clear @s
+cmd /give @s coloredredstone:colored_redstone_repeater_item_9
+slot 0
+cmd /tp @s 4.5 149 2.5
+wait 5
+look 180 55
+wait 3
+use
+wait 8
+expect ^color 9$ :: (function(){var BP=Java.type('net.minecraft.core.BlockPos');var l=server.overworld();var p=new BP(4,149,1);var be=l.getChunk(p).getBlockEntity(p);return be==null?'no tile':'color '+be.legacy().writeToNBT(new (Java.type('legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound'))()).getInteger('color');})()
+cmd /clear @s
+cmd /give @s coloredredstone:colored_redstone_comparator_item_9
+slot 0
+cmd /tp @s 6.5 149 2.5
+wait 5
+look 180 55
+wait 3
+use
+wait 8
+expect ^color 9$ :: (function(){var BP=Java.type('net.minecraft.core.BlockPos');var l=server.overworld();var p=new BP(6,149,1);var be=l.getChunk(p).getBlockEntity(p);return be==null?'no tile':'color '+be.legacy().writeToNBT(new (Java.type('legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound'))()).getInteger('color');})()
+cmd /clear @s
+cmd /give @s coloredredstone:colored_redstone_torch_item_9
+slot 0
+cmd /tp @s 8.5 149 2.5
+wait 5
+look 180 55
+wait 3
+use
+wait 8
+expect ^color 9$ :: (function(){var BP=Java.type('net.minecraft.core.BlockPos');var l=server.overworld();var p=new BP(8,149,1);var be=l.getChunk(p).getBlockEntity(p);return be==null?'no tile':'color '+be.legacy().writeToNBT(new (Java.type('legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound'))()).getInteger('color');})()
+cmd /clear @s
+cmd /give @s coloredredstone:colored_redstone_lamp_7
+slot 0
+cmd /tp @s 10.5 149 2.5
+wait 5
+look 180 55
+wait 3
+use
+wait 8
+expect ^color 7$ :: (function(){var BP=Java.type('net.minecraft.core.BlockPos');var l=server.overworld();var p=new BP(10,149,1);var be=l.getChunk(p).getBlockEntity(p);return be==null?'no tile':'color '+be.legacy().writeToNBT(new (Java.type('legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound'))()).getInteger('color');})()
+cmd /setblock 12 149 1 coloredredstone:colored_redstone_lamp{color:5}
+wait 5
+expect ^color 5$ :: (function(){var BP=Java.type('net.minecraft.core.BlockPos');var l=server.overworld();var p=new BP(12,149,1);var be=l.getChunk(p).getBlockEntity(p);return be==null?'no tile':'color '+be.legacy().writeToNBT(new (Java.type('legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound'))()).getInteger('color');})()
+logabsent StackOverflowError

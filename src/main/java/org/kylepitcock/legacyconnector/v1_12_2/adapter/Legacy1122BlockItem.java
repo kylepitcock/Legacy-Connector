@@ -42,9 +42,30 @@ public class Legacy1122BlockItem extends net.minecraft.world.item.BlockItem {
 
     private Boolean placementState;
 
+    /**
+     * The legacy state getStateForPlacement answered for the placement in progress. A modern state keeps only the block's meta, but a block with
+     * a state property outside its meta (Colored Redstone's lamp and torch colour) is told the full state through {@link Legacy1122BlockEntity#mcc$placing}
+     * when its tile entity is created, as {@code World.setBlockState} does for a mod's own placement code.
+     */
+    private static final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState> LEGACY_STATE = new ThreadLocal<>();
+
+    @Override
+    protected boolean placeBlock(net.minecraft.world.item.context.BlockPlaceContext context, net.minecraft.world.level.block.state.BlockState state) {
+        var legacyState = LEGACY_STATE.get();
+        LEGACY_STATE.remove();
+        if (legacyState == null) return super.placeBlock(context, state);
+        Legacy1122BlockEntity.mcc$placing(legacyState);
+        try {
+            return super.placeBlock(context, state);
+        } finally {
+            Legacy1122BlockEntity.mcc$placing(null);
+        }
+    }
+
     /** The block's legacy getStateForPlacement (facing, half, ...) from the clicked side, hit point, stack metadata and placer. */
     @Override
     protected net.minecraft.world.level.block.state.BlockState getPlacementState(net.minecraft.world.item.context.BlockPlaceContext context) {
+        LEGACY_STATE.remove();
         var modern = super.getPlacementState(context);
         if (modern == null || !(legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock ib) || ib.getBlock() == null) return modern;
         var block = ib.getBlock();
@@ -66,7 +87,11 @@ public class Legacy1122BlockItem extends net.minecraft.world.item.BlockItem {
                     legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.mcc$of(context.getClickedFace()), (float) (hit.x - pos.getX()), (float) (hit.y - pos.getY()),
                     (float) (hit.z - pos.getZ()), meta, placer, ItemCallbacks1122.hand(context.getHand()));
             var out = org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(state);
-            return out.getBlock() == modern.getBlock() && canPlace(context, out) ? out : modern;
+            if (out.getBlock() == modern.getBlock() && canPlace(context, out)) {
+                LEGACY_STATE.set(state);
+                return out;
+            }
+            return modern;
         } catch (RuntimeException | LinkageError e) {
             return modern;
         }

@@ -132,6 +132,26 @@ public final class ClientEvents1122 {
     }
 
     /** Posts and reports a failing handler once per kind of failure; returns whether the event was cancelled. */
+
+    /**
+     * A handler of a mod with a shifted deep-layer generator draws what that pass computed (legacy y, the floor at 0): moved down by the
+     * dimension's floor so it lines up with the blocks the pass placed (CustomOreGen's wireframes were 64 blocks above their veins).
+     * Returns whether a matrix was pushed, to be undone by {@link #exitOwner}.
+     */
+    public static boolean enterOwner(Object container) {
+        if (!RenderShift1122.worldLast || !(container instanceof org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122 c)) return false;
+        var level = Minecraft.getInstance().level;
+        if (level == null || level.getMinBuildHeight() >= 0
+                || !org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.hasShiftedGenerator(c.getModId())) return false;
+        RenderContext.push();
+        RenderContext.translate(0, level.getMinBuildHeight(), 0);
+        return true;
+    }
+
+    public static void exitOwner(boolean pushed) {
+        if (pushed) RenderContext.pop();
+    }
+
     private static boolean post(Event event, String what) {
         try {
             return MinecraftForge.EVENT_BUS.post(event);
@@ -358,8 +378,10 @@ public final class ClientEvents1122 {
         pose.translate(origin.x - cam.x, origin.y - cam.y, origin.z - cam.z);
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
+            RenderShift1122.worldLast = true;
             post(new RenderWorldLastEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()), partial), "RenderWorldLastEvent");
         } finally {
+            RenderShift1122.worldLast = false;
             RenderContext.end();
             buffers.endBatch();
             setCamera(cam);
@@ -376,11 +398,22 @@ public final class ClientEvents1122 {
         var legacy = new DrawBlockHighlightEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()), player,
                 legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.mcc$of(e.getTarget()), 0, e.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         setCamera(e.getCamera().getPosition());
-        RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        // the pose is at the camera; 1.12 handlers draw relative to the player's feet (player.lastTickPosY + ..., drawSelectionBox's own offset) in a
+        // frame whose camera sits an eye height above that origin, so the pose moves to the feet (the outline floated one eye height too high)
+        double[] feet = relative(mc.player, e.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        var cam = e.getCamera().getPosition();
+        var pose = e.getPoseStack();
+        pose.pushPose();
+        pose.translate(feet[0], feet[1], feet[2]);
+        // a handler that reads the render position (staticPlayerX/Y/Z, viewerPos) is in that frame too
+        setCamera(new net.minecraft.world.phys.Vec3(cam.x + feet[0], cam.y + feet[1], cam.z + feet[2]));
+        RenderContext.beginWorld(pose, e.getMultiBufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
             if (post(legacy, "block highlight")) e.setCanceled(true);
         } finally {
             RenderContext.end();
+            pose.popPose();
+            setCamera(cam);
         }
     }
 

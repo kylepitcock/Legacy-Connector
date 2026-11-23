@@ -39,14 +39,22 @@ public class EventBus {
         public Object enter(Object ownerToken) {
             var previous = org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.active();
             org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.setActive((org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122) ownerToken);
-            return previous;
+            return org.kylepitcock.legacyconnector.v1_12_2.client.RenderShift1122.worldLast && org.kylepitcock.legacyconnector.v1_12_2.client.ClientEvents1122.enterOwner(ownerToken)
+                    ? new Shifted(previous) : previous;
         }
 
         @Override
-        public void exit(Object previous) {
-            org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.setActive((org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122) previous);
+        public void exit(Object saved) {
+            if (saved instanceof Shifted shifted) {
+                org.kylepitcock.legacyconnector.v1_12_2.client.ClientEvents1122.exitOwner(true);
+                saved = shifted.previous();
+            }
+            org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.setActive((org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122) saved);
         }
     };
+
+    /** The previous owner of a handler run whose drawing was moved (see ClientEvents1122.enterOwner). */
+    private record Shifted(Object previous) {}
 
     private final ReflectiveEventBus delegate;
 

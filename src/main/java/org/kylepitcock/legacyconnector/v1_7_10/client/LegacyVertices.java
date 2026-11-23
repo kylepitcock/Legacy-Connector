@@ -284,12 +284,16 @@ public final class LegacyVertices {
         st.drawColor = RenderContext.argb(st) & 0xFFFFFFFFL;
         st.drawColorSet = true;
         st.inDraw = true;
+        st.shadowCache = 0;
+        st.lineBuffer = null;
         try {
             // compiled from the second emit on: a snapshot drawn once (1.12.2's buffer uploads) is not worth it
             if (s.kept && !st.lineMode && filled(s.mode) && (s.compiled != null || s.emits++ > 0)) emitCompiled(st, s);
             else emitPrimitives(st, s);
         } finally {
             st.inDraw = false;
+            st.shadowCache = 0;
+            st.lineBuffer = null;
             st.drawBuffer = null;
             st.drawColorSet = false;
         }
