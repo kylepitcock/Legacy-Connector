@@ -97,7 +97,7 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             InsnList trace = new InsnList();
             trace.add(new VarInsnNode(ALOAD, 2)); // resolved PlayerModelPart
             trace.add(new VarInsnNode(ALOAD, 3)); // pending/tuned AnimData (may be null)
-            trace.add(new VarInsnNode(ALOAD, 1)); // rendered ModelPart after application
+            trace.add(new VarInsnNode(ALOAD, 0)); // rendered ModelPart method argument
             trace.add(new MethodInsnNode(INVOKESTATIC, HELPER, "traceFirstPersonArmApply",
                     "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V", false));
             method.instructions.insertBefore(instruction, trace);
