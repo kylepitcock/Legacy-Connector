@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core.worldgen;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,7 +16,7 @@ import org.apache.logging.log4j.Logger;
  */
 public final class RealLevelGuard {
     private static final Logger LOG = LogManager.getLogger("LegacyConnector/RealLevelGuard");
-    private static final boolean ON = Boolean.getBoolean("legacyconnector.realLevelGuard") || Boolean.getBoolean("legacytest.autostop");
+    private static final boolean ON = Flags.REAL_LEVEL_GUARD.on() || Flags.LEGACYTEST_AUTOSTOP.on();
     private static final ConcurrentHashMap<String, Boolean> SEEN = new ConcurrentHashMap<>();
     private static final AtomicInteger SITES = new AtomicInteger();
 

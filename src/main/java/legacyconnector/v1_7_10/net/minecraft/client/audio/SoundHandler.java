@@ -1,5 +1,6 @@
 package legacyconnector.v1_7_10.net.minecraft.client.audio;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -84,7 +85,7 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
             "minecart.base", "entity.minecart.riding", "minecart.inside", "entity.minecart.inside");
 
     /** {@code -Dlegacyconnector.soundDebug=true}: logs every legacy sound handed to the engine (name, legacy class, looping, tickable) and when a tickable one ends. */
-    private static final boolean mcc$DEBUG = Boolean.getBoolean("legacyconnector.soundDebug");
+    private static final boolean mcc$DEBUG = Flags.SOUND_DEBUG.on();
 
     private static void mcc$debug(String what, ISound sound, String name) {
         org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sounds").info("{} {} ({}) loop={} tickable={} vol={} pitch={}", what, name,

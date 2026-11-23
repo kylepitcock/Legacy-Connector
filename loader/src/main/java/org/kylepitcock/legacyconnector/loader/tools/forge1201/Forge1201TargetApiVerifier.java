@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -625,7 +626,7 @@ public final class Forge1201TargetApiVerifier {
             throw new IllegalArgumentException(
                     "Usage: Forge1201TargetApiVerifier <path-to-original-forge-1.20.1-jar>");
         }
-        String targetVersion = System.getProperty("legacyconnector.targetNeoForgeVersion", "unknown");
+        String targetVersion = LoaderFlags.TARGET_NEO_FORGE_VERSION.get("unknown");
         Result result = verify(Path.of(args[0]), ClassLoader.getSystemClassLoader());
         print(result, targetVersion);
     }

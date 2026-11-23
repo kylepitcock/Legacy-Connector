@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_20_1;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +38,7 @@ public final class Forge1201Runtime {
     }
 
     public static void init(IEventBus modBus) {
-        modIds = new HashSet<>(Arrays.asList(System.getProperty("legacyconnector.forge1201.mods", "").split(",")));
+        modIds = new HashSet<>(Arrays.asList(Flags.FORGE1201_MODS.get("").split(",")));
         modIds.remove("");
         LOG.info("Forge 1.20.1 facades active for {} mod(s): {}", modIds.size(), modIds);
         modBus.addListener(Forge1201Runtime::onRegisterCapabilities);

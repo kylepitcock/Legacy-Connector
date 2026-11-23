@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  */
 class Mc125CorpusDetectionTest {
     private static Path root() {
-        return Path.of(System.getProperty("mc.corpus", "Y:/Programming/Minecraft/Retrofit/test-mods-mcarchive"));
+        return Path.of(LoaderFlags.MC_CORPUS.get("Y:/Programming/Minecraft/Retrofit/test-mods-mcarchive"));
     }
 
     private static List<Path> jars(String folder) throws IOException {

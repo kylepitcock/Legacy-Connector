@@ -11,6 +11,7 @@
 - [Create and Sable](Create-and-Sable.md)
 - [Recipes](Recipes.md)
 - [Configuration](Configuration.md)
+- [Diagnostic switches](Diagnostic-Switches.md)
 - [Performance](Performance.md)
 - [Troubleshooting](Troubleshooting.md)
 - [Compatibility and status](Compatibility-and-Status.md)

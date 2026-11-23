@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -165,8 +166,8 @@ public final class RenderContext {
      * did on 1.7.10's single chunk thread. Reentrant for nested frames on one thread.
      */
     /** {@code -Dlegacyconnector.itemLock=false} turns off the lock {@link #beginItem} forces (measurement A/B for #293). */
-    private static final boolean ITEM_LOCK = !"false".equals(System.getProperty("legacyconnector.itemLock"));
-    private static final boolean RENDER_LOCK =Boolean.getBoolean("legacyconnector.renderLock");
+    private static final boolean ITEM_LOCK = !"false".equals(Flags.ITEM_LOCK.get());
+    private static final boolean RENDER_LOCK =Flags.RENDER_LOCK.on();
     /** Fair when the render thread takes it too: chunk threads re-taking it back to back must not starve the frame. */
     private static final java.util.concurrent.locks.ReentrantLock CAPTURE_LOCK = new java.util.concurrent.locks.ReentrantLock(true);
     /**

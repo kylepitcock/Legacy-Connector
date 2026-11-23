@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -104,7 +105,7 @@ public final class CompatBufferBuilder implements VertexConsumer {
         this.real = started;
     }
 
-    private static final boolean DIAG = Boolean.getBoolean("legacyconnector.bufferDiag");
+    private static final boolean DIAG = Flags.BUFFER_DIAG.on();
     private Throwable beganAt;
 
     /** {@code BufferBuilder.format} (a public-in-practice field of 1.20.1 that renderers read): the format of the last {@code begin}. */

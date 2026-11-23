@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 
 /**
  * Finds the original Minecraft client jar of a legacy version, which {@link CoremodHookScan} shows to legacy coremods. Legacy Connector does not ship
@@ -49,7 +50,7 @@ public final class VanillaJar {
         final String URL = "https://piston-data.mojang.com/v1/objects/" + SHA1 + "/client.jar";
         Path own = gameDir.resolve(".legacyconnector").resolve("vanilla").resolve("client-" + mc + ".jar");
         List<Path> candidates = new ArrayList<>();
-        String configured = System.getProperty("legacyconnector.vanilla" + mc.replace(".", ""), config.getProperty("coremods.vanillaJar", "")).trim();
+        String configured = LoaderFlags.VANILLA_JAR.getFor(mc.replace(".", ""), config.getProperty("coremods.vanillaJar", "")).trim();
         if (!configured.isEmpty()) {
             Path given = Path.of(configured);
             candidates.add(given);

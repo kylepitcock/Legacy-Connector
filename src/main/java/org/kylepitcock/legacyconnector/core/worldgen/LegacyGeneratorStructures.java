@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core.worldgen;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +59,8 @@ public final class LegacyGeneratorStructures {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Structures");
     static final int BUILD_MIN_DEFAULT = 24;
     static final int MADE_MIN_DEFAULT = 8;
-    private static final int BUILD_MIN = Integer.getInteger("legacyconnector.locatable.buildMin", BUILD_MIN_DEFAULT);
-    private static final int MADE_MIN = Integer.getInteger("legacyconnector.locatable.madeMin", MADE_MIN_DEFAULT);
+    private static final int BUILD_MIN = Flags.LOCATABLE_BUILD_MIN.getInt(BUILD_MIN_DEFAULT);
+    private static final int MADE_MIN = Flags.LOCATABLE_MADE_MIN.getInt(MADE_MIN_DEFAULT);
     /** Runs before a generator's build share is judged, and the share above which it is no structure generator. */
     private static final int SHARE_MIN_CALLS = 256;
     private static final double SHARE_MAX = 0.25;

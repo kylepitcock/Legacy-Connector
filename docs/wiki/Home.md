@@ -20,6 +20,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Create and Sable](Create-and-Sable.md) | Legacy blocks on Create contraptions and Aeronautics/Sable ships |
 | [Recipes](Recipes.md) | Changing legacy recipes with data packs, KubeJS and MineTweaker |
 | [Configuration](Configuration.md) | `config/legacyconnector.properties` |
+| [Diagnostic switches](Diagnostic-Switches.md) | Every `-Dlegacyconnector.*` system property: type, default, what it does (generated from the code) |
 | [Performance](Performance.md) | Measured memory, frame rate and startup cost |
 | [Troubleshooting](Troubleshooting.md) | Start-up failures (Mixin modules, file names, missing dependencies), join failures such as "length wider than 21-bit", measuring join payload sizes |
 | [Compatibility and status](Compatibility-and-Status.md) | Status per legacy version, known issues, reading the report |

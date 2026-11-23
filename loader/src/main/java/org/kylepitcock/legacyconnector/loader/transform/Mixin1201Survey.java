@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -48,7 +49,7 @@ public final class Mixin1201Survey {
         StringBuilder out = new StringBuilder();
         Mixin1201.Stats total = new Mixin1201.Stats();
         int jarsWithMixins = 0;
-        int sampleSize = Integer.getInteger("survey.sample", 30);
+        int sampleSize = LoaderFlags.SURVEY_SAMPLE.getInt(30);
         Mixin1201.Stats sample = new Mixin1201.Stats();
         for (Path jar : jars) {
             Mixin1201.Stats st = new Mixin1201.Stats();

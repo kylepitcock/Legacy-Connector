@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.*;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.Entity;
@@ -12,7 +13,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class MoCreaturesAquaticSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173AquaticTest");
     private MoCreaturesAquaticSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 MOC AQUATIC TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 MOC AQUATIC TEST failed",error);}});}
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}
     private static Field field(Object object,String name)throws ReflectiveOperationException {for(Class<?> type=object.getClass();type!=null;type=type.getSuperclass())try{var f=type.getDeclaredField(name);f.setAccessible(true);return f;}catch(NoSuchFieldException ignored){}throw new NoSuchFieldException(name);}
     private static void put(Object o,String name,Object value)throws ReflectiveOperationException {field(o,name).set(o,value);}

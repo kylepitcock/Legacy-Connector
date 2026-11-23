@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -131,13 +132,15 @@ public final class LegacyConnector {
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
         BETA_ENTITIES.register(modBus);
-        if (!System.getProperty("legacyconnector.forge1201.mods", "").isEmpty()) {
+        if (!Flags.FORGE1201_MODS.get("").isEmpty()) {
             org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.init(modBus);
             // translated 1.20.1 jars are plain NeoForge mods: the problems collector knows them by id
             for (String id : org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.modIds()) org.kylepitcock.legacyconnector.core.problems.LegacyProblems.markLegacyNamespace(id);
         }
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
+        String switches = org.kylepitcock.legacyconnector.core.flags.Flags.nonDefaultSummary();
+        if (!switches.isEmpty()) org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector switches set to a non-default value: {}", switches);
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
         org.kylepitcock.legacyconnector.core.LegacyLogFilter.install();
         org.kylepitcock.legacyconnector.core.EntityCensus.register();
@@ -268,7 +271,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.core.ServerTickScript.register(game);
         org.kylepitcock.legacyconnector.core.ServerDevScript.register();
         org.kylepitcock.legacyconnector.core.TickProfile.register(game);
-        int stopTicks = Integer.getInteger("legacyconnector.autostopTicks", 0);
+        int stopTicks = Flags.AUTOSTOP_TICKS.getInt(0);
         if (stopTicks > 0) {
             int[] ticks = {0};
             game.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {

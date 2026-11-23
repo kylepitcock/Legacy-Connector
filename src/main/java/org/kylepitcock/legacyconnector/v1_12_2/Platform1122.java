@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -567,7 +568,7 @@ public final class Platform1122 implements LegacyPlatform {
         StringBuilder sb = new StringBuilder();
         perMod.forEach((k, v) -> sb.append(' ').append(k).append('=').append(v[0]).append('/').append(v[1]));
         LOG.info("1.12.2 items/blocks per mod:{}", sb);
-        String dbg = System.getProperty("legacyconnector.debugItems");
+        String dbg = Flags.DEBUG_ITEMS.get();
         if (dbg != null) {
             StringBuilder ids = new StringBuilder();
             for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {

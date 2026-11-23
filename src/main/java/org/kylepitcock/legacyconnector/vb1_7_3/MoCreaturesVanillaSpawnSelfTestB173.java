@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import legacyconnector.vb1_7_3.net.minecraft.src.SettingInt;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class MoCreaturesVanillaSpawnSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173VanillaSpawnTest");
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(ReflectiveOperationException|RuntimeException|LinkageError error){LOG.error("B1.7.3 VANILLA SPAWN TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(ReflectiveOperationException|RuntimeException|LinkageError error){LOG.error("B1.7.3 VANILLA SPAWN TEST failed",error);}});}
     public static void run(net.minecraft.server.level.ServerLevel level)throws ReflectiveOperationException {
         var registration=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(registration.isEmpty())return;
         var mod=registration.get().mod().instance;int frequency=((Number)((SettingInt)mod.getClass().getField("squidfreq").get(null)).get()).intValue();

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,8 +28,8 @@ public final class EntityCensus {
     }
 
     public static void register() {
-        if (!Boolean.getBoolean("legacyconnector.memoryLog") && System.getProperty("legacyconnector.shotScenario") == null
-                && !Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.MEMORY_LOG.on() && Flags.SHOT_SCENARIO.get() == null
+                && !Flags.ENTITY_SELF_TEST.on()) return;
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> {
             if (++ticks % 600 != 0) return;
             int levels = 0, allEntities = 0, allChunks = 0;

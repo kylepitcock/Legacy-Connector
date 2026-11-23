@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import org.kylepitcock.legacyconnector.compat.CompatFlags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,14 +17,15 @@ import org.slf4j.LoggerFactory;
  * or changes the pending registry map.</p>
  */
 public final class PalladiumRendererRegistryDebugCompat {
-    private static final String DEBUG_PROPERTY = "legacyconnector.debug.palladiumRendererRegistry";
+    private static final CompatFlags DEBUG = CompatFlags.PALLADIUM_RENDERER_REGISTRY_DEBUG;
+    private static final String DEBUG_PROPERTY = DEBUG.property(); // kept: the shim member snapshot lists it
     private static final Logger LOGGER = LoggerFactory.getLogger("LegacyConnector/PalladiumRendererRegistry");
 
     private PalladiumRendererRegistryDebugCompat() {
     }
 
     public static void logRegistryMap(String stage, Map<?, ?> renderers) {
-        if (!Boolean.getBoolean(DEBUG_PROPERTY)) {
+        if (!DEBUG.on()) {
             return;
         }
         if (renderers == null) {

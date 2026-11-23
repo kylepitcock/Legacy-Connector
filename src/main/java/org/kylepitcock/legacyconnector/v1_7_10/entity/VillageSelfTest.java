@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.entity;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.Map;
 import java.util.TreeMap;
 import net.minecraft.core.BlockPos;
@@ -19,7 +20,7 @@ public final class VillageSelfTest {
     private VillageSelfTest() {}
 
     public static void register() {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> run(e.getServer()));
     }
 

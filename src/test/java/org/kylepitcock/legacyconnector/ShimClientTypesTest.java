@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -183,7 +184,7 @@ class ShimClientTypesTest {
         added.removeAll(baseline);
         Set<String> gone = new TreeSet<>(baseline);
         gone.removeAll(found);
-        String update = System.getProperty("shim.client.update"); // "true": only when nothing is new; "force": also adds (first run)
+        String update = Flags.SHIM_CLIENT_UPDATE.get(); // "true": only when nothing is new; "force": also adds (first run)
         if (update != null && (added.isEmpty() || update.equals("force"))) {
             List<String> out = new ArrayList<>();
             out.add("# Shim classes whose bytecode verification needs a client-only class (see ShimClientTypesTest): class<TAB>client type. Only ever shrinks.");

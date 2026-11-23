@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
@@ -14,7 +15,7 @@ public final class MoCreaturesRosterSelfTestB173 {
     private static List<String> lastFailures=List.of();
     static List<String> failures(){return lastFailures;}
     private MoCreaturesRosterSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 MOC ROSTER TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 MOC ROSTER TEST failed",error);}});}
     private static void require(boolean condition,String detail){if(!condition)throw new IllegalStateException(detail);}
     private static void finite(org.joml.Matrix4f matrix){for(float value:matrix.get(new float[16]))require(Float.isFinite(value),"nonfinite original renderer extra transform");}
     private static java.lang.reflect.Method method(Object value,String name,Class<?>... parameters)throws ReflectiveOperationException {for(Class<?> type=value.getClass();type!=null;type=type.getSuperclass())try{var method=type.getDeclaredMethod(name,parameters);method.setAccessible(true);return method;}catch(NoSuchMethodException ignored){}throw new NoSuchMethodException(name);}

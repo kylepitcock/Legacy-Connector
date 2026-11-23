@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.entity;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,7 +27,7 @@ final class TileRoundTrip {
     private TileRoundTrip() {}
 
     static String mode() {
-        return System.getProperty("legacyconnector.tileRoundTrip", "");
+        return Flags.TILE_ROUND_TRIP.get("");
     }
 
     /** Puts a stack into the first slot of a tile entity that has an inventory and remembers it. */

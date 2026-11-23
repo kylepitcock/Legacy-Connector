@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.List;
 import legacyconnector.vb1_7_3.net.minecraft.client.model.ModelPart;
@@ -11,7 +12,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class ModelSelfTestB173 {
     private ModelSelfTestB173() {}
     public static void register(IEventBus game){
-        if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent event)->run());
+        if(Flags.ENTITY_SELF_TEST.on())game.addListener((ServerStartedEvent event)->run());
     }
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException("B1.7.3 MODEL TEST: "+detail);}
     private static void run(){

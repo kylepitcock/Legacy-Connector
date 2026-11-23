@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 class Mc125PlacementTest {
     private static Path root() {
         // the RedPower 2.0pr5b2 zips live in test-mods-issues/312 (not in the MCArchive corpus: the Beta suite's "RedPowerCore" fragment would pick them)
-        return Path.of(System.getProperty("mc.issue312", "Y:/Programming/Minecraft/Retrofit/test-mods-issues/312/mods"));
+        return Path.of(LoaderFlags.MC_ISSUE312.get("Y:/Programming/Minecraft/Retrofit/test-mods-issues/312/mods"));
     }
 
     @Test

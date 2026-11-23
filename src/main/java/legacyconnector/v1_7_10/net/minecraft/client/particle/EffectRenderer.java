@@ -1,5 +1,6 @@
 package legacyconnector.v1_7_10.net.minecraft.client.particle;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -55,7 +56,7 @@ public class EffectRenderer {
     }
 
     /** {@code -Dlegacyconnector.particleDebug=true}: logs which legacy particle classes spawn within 8 blocks of the camera (class, layer, icon, count). */
-    private static final boolean mcc$DEBUG = Boolean.getBoolean("legacyconnector.particleDebug");
+    private static final boolean mcc$DEBUG = Flags.PARTICLE_DEBUG.on();
     private static final java.util.Map<String, int[]> mcc$debugCounts = new java.util.HashMap<>();
     private static long mcc$debugFlush;
 

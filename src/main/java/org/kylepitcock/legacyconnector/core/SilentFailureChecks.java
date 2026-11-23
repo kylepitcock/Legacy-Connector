@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,7 +39,7 @@ public final class SilentFailureChecks {
     private SilentFailureChecks() {}
 
     public static void register() {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> {
             try {
                 new SilentFailureChecks().runAll();
@@ -60,7 +61,7 @@ public final class SilentFailureChecks {
         check("oredict: an ore name registered for (id, damage) tags only that subtype", this::oreTagsPerSubtype);
         LOG.info("SILENT FAILURE CHECKS: {} passed, {} failed", passed, failures.size());
         for (String f : failures) LOG.error("SILENT FAILURE CHECK FAILED: {}", f);
-        if (Boolean.getBoolean("legacyconnector.selfTestFailFast") && !failures.isEmpty()) {
+        if (Flags.SELF_TEST_FAIL_FAST.on() && !failures.isEmpty()) {
             LOG.error("SILENT FAILURE CHECKS: legacyconnector.selfTestFailFast is set, halting the server");
             Runtime.getRuntime().halt(3);
         }

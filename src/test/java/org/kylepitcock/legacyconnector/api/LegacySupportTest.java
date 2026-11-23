@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.api;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -58,7 +59,7 @@ class LegacySupportTest {
         assertTrue(begin >= 0 && end > begin, "docs/wiki/Addon-API.md has the support-matrix markers");
         String expected = BEGIN + "\n\n" + LegacySupport.markdownTable() + "\n" + END;
         String actual = text.substring(begin, end + END.length());
-        if ((Boolean.getBoolean("api.docs.update") || System.getenv("API_DOCS_UPDATE") != null) && !expected.equals(actual)) {
+        if ((Flags.API_DOCS_UPDATE.on() || System.getenv("API_DOCS_UPDATE") != null) && !expected.equals(actual)) {
             Files.writeString(doc, text.substring(0, begin) + expected + text.substring(end + END.length()), StandardCharsets.UTF_8);
             return;
         }

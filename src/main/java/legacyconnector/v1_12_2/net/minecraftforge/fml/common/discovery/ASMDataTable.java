@@ -1,5 +1,6 @@
 package legacyconnector.v1_12_2.net.minecraftforge.fml.common.discovery;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,7 @@ public class ASMDataTable {
                 if (nested.contains(a.clazz().getClassName() + "|" + a.memberName() + "|" + a.annotationData())) continue;
                 String annotation = a.annotationType().getClassName();
                 String className = a.clazz().getClassName();
-                if (System.getProperty("legacyconnector.debugAsm") != null && className.contains(System.getProperty("legacyconnector.debugAsm"))) {
+                if (Flags.DEBUG_ASM.get() != null && className.contains(Flags.DEBUG_ASM.get())) {
                     org.slf4j.LoggerFactory.getLogger("LegacyConnector/Asm").info("{} on {} member {}: {}", annotation, className, a.memberName(), a.annotationData());
                 }
                 // the same class can be in two scan results (a translated jar and its split companion): one entry per class and member

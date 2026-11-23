@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2.bridge;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +29,7 @@ public final class WorldGenBridge1122 {
     private static boolean hooked;
 
     /** -Dlegacyconnector.genTiming=true: logs the time each legacy generator takes per chunk (a line every 20 s while chunks generate). */
-    private static final boolean TIMING = Boolean.getBoolean("legacyconnector.genTiming");
+    private static final boolean TIMING = Flags.GEN_TIMING.on();
     private static final java.util.Map<String, long[]> TIMES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final java.util.concurrent.atomic.AtomicLong LAST_LOG = new java.util.concurrent.atomic.AtomicLong(System.nanoTime());
 

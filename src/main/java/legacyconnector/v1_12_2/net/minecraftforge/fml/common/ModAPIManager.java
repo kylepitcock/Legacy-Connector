@@ -1,5 +1,7 @@
 package legacyconnector.v1_12_2.net.minecraftforge.fml.common;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
+
 /**
  * Which {@code @API} packages (named "Owner|part" or "OwnerAPI") are available. Mods ask before enabling an integration; an API
  * is present when the mod that owns it is loaded (or a modern mod bridged in its place).
@@ -25,7 +27,7 @@ public class ModAPIManager {
         if (mcc$apis == null) {
             java.util.Map<String, ModContainer> byId = new java.util.LinkedHashMap<>();
             ClassLoader loader = Loader.mcc$apiLoader != null ? Loader.mcc$apiLoader : ModAPIManager.class.getClassLoader();
-            for (String pkg : System.getProperty("legacyconnector.legacyApiPackages", "").split(",")) {
+            for (String pkg : Flags.LEGACY_API_PACKAGES.get("").split(",")) {
                 if (pkg.isEmpty()) continue;
                 API api;
                 try {

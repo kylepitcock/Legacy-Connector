@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.entity;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.mojang.authlib.GameProfile;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,7 +48,7 @@ public final class BlockSelfTest {
     private BlockSelfTest() {}
 
     public static void register() {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> start(e.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> tick(e.getServer()));
         // Other dev fixtures stop the server early (the fixture mod after its own test): report what there is.

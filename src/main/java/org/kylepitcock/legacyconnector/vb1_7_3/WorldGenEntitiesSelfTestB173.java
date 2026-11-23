@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.GenerationChunkHolder;
@@ -19,7 +20,7 @@ public final class WorldGenEntitiesSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173WorldGenEntitiesTest");
     private WorldGenEntitiesSelfTestB173(){}
     public static void register(IEventBus bus){
-        if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{
+        if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{
             // Without a Beta mod the platform never starts (vanilla item/entity tables empty): the original item API cannot spawn, by design (#291).
             if(org.kylepitcock.legacyconnector.core.LegacyMods.ordered().stream().noneMatch(mod->PlatformB173.VERSION.equals(mod.version))){
                 LOG.info("B1.7.3 WORLDGEN ENTITY TEST skipped: no Beta 1.7.3 mod is loaded");return;

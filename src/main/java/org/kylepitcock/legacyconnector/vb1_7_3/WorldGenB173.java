@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ public final class WorldGenB173 {
     // PopulateChunk passed one Random through the mod list. Native features share its
     // stream for their generation region/chunk; values never retain the weak region key.
     private static final Map<Object,Map<Long,Random>> RANDOMS=new WeakHashMap<>();
-    private static final boolean DIAGNOSTICS=Boolean.getBoolean("legacyconnector.worldGenSelfTest");
+    private static final boolean DIAGNOSTICS=Flags.WORLD_GEN_SELF_TEST.on();
     private static final Map<String,java.util.concurrent.atomic.AtomicLong> CALLBACKS=new java.util.concurrent.ConcurrentHashMap<>();
     private static boolean hooked;
     private static Map<String,Integer> dependencyConfiguration=Map.of();

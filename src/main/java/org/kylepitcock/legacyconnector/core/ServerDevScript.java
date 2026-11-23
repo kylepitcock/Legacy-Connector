@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -15,7 +16,7 @@ public final class ServerDevScript {
     private ServerDevScript() {}
 
     public static void register() {
-        String dir = System.getProperty("legacyconnector.serverDevScript");
+        String dir = Flags.SERVER_DEV_SCRIPT.get();
         if (dir == null || dir.isEmpty()) return;
         Path root = Path.of(dir);
         int[] tick = {0};

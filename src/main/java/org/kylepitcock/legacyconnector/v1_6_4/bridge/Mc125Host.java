@@ -1,12 +1,15 @@
 package org.kylepitcock.legacyconnector.v1_6_4.bridge;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
+
 /**
  * Whether Minecraft 1.2.5 hosting is on in this session: the loader sets the system property when it accepts a 1.2.5 jar (toggle
  * {@code versions.minecraft125}, see {@code Mc125Jars.enabled()} in the loader, the one place that decides). Run-time code that only
  * 1.2.5 mods need but that sits on a path every version uses asks this, so with the toggle off it stays inert.
  */
 public final class Mc125Host {
-    public static final String PROPERTY = "legacyconnector.mc125.active";
+    /** The property name (tests set it); the switch is {@link Flags#MC125_ACTIVE}. */
+    public static final String PROPERTY = Flags.MC125_ACTIVE.property();
 
     private Mc125Host() {}
 
@@ -19,7 +22,7 @@ public final class Mc125Host {
 
     /** Whether this legacy object's class is from a 1.2.5 mod (its callbacks run only on the logical server, not again on the client world). */
     public static boolean singleWorld(Object legacy) {
-        if (Boolean.getBoolean("legacyconnector.mc125.clientCallbacks")) return false; // dev switch for A/B checks (read live, settable from a script)
+        if (Flags.MC125_CLIENT_CALLBACKS.on()) return false; // dev switch for A/B checks (read live, settable from a script)
         return !SINGLE_WORLD.isEmpty() && legacy != null && SINGLE_WORLD.contains(legacy.getClass().getClassLoader());
     }
 
@@ -40,6 +43,6 @@ public final class Mc125Host {
     }
 
     public static boolean active() {
-        return Boolean.getBoolean(PROPERTY);
+        return Flags.MC125_ACTIVE.on();
     }
 }

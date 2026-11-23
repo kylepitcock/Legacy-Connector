@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2.dimension;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.google.gson.JsonObject;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -133,7 +134,7 @@ public final class Dimensions1122 {
 
     /** Development check ({@code -Dlegacyconnector.entitySelfTest=true}): generates an area of every mod dimension and counts blocks. */
     public static void registerSelfTest() {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) -> selfTest(e.getServer()));
     }
 
@@ -149,7 +150,7 @@ public final class Dimensions1122 {
             Map<String, Integer> byNamespace = new java.util.TreeMap<>();
             try {
                 var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
-                int rad = Integer.getInteger("legacyconnector.dimTestRadius", 2);
+                int rad = Flags.DIM_TEST_RADIUS.getInt(2);
                 for (int cx = -rad; cx <= rad; cx++) {
                     for (int cz = -rad; cz <= rad; cz++) {
                         var chunk = level.getChunk(cx, cz);

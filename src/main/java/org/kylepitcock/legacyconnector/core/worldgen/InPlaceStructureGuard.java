@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core.worldgen;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,9 +50,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class InPlaceStructureGuard {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Structures");
-    static final int BUILD_MIN = Integer.getInteger("legacyconnector.inPlaceGuard.buildMin", 24);
-    static final int REFUSED_MIN = Integer.getInteger("legacyconnector.inPlaceGuard.refusedMin", 4);
-    private static final boolean ENABLED = !"false".equalsIgnoreCase(System.getProperty("legacyconnector.inPlaceGuard", "true"));
+    static final int BUILD_MIN = Flags.IN_PLACE_GUARD_BUILD_MIN.getInt(24);
+    static final int REFUSED_MIN = Flags.IN_PLACE_GUARD_REFUSED_MIN.getInt(4);
+    private static final boolean ENABLED = !"false".equalsIgnoreCase(Flags.IN_PLACE_GUARD.get("true"));
     private static final AtomicInteger UNDONE = new AtomicInteger();
 
     private InPlaceStructureGuard() {}

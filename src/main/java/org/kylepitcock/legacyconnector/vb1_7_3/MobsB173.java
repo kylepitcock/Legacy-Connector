@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.*;
 import java.nio.file.*;
 import java.util.*;
@@ -44,7 +45,7 @@ public final class MobsB173 {
             }
         });
         MobSelfTestB173.register(game);
-        if(Boolean.getBoolean("legacyconnector.plasticCraftBlocksSelfTest"))game.addListener(
+        if(Flags.PLASTIC_CRAFT_BLOCKS_SELF_TEST.on())game.addListener(
                 (net.neoforged.neoforge.event.server.ServerStartedEvent event)->PlasticCraftBlocksSelfTestB173.run(event.getServer().overworld()));
     }
     private static boolean api(Class<?> type){String name=type.getName();return name.startsWith("legacyconnector.")||name.startsWith("legacyconnector_synth.");}

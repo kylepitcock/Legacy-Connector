@@ -50,7 +50,6 @@ final class BundledLibraries {
     static final String RESOURCE_DIR = "/META-INF/legacyconnector/libs/";
     static final String INDEX = RESOURCE_DIR + "index.txt";
     /** Development / testing: a folder with the same layout (index.txt + jars) instead of the embedded resources. */
-    static final String DIR_PROPERTY = "legacyconnector.libsDir";
 
     /** A set of library jars that belong together. */
     private record Group(String id, String description, List<String> filePrefixes, List<String> usage, boolean always, boolean compatibleWithOthers) {}
@@ -77,7 +76,7 @@ final class BundledLibraries {
     private BundledLibraries() {}
 
     private static List<String> index() throws IOException {
-        String dir = System.getProperty(DIR_PROPERTY);
+        String dir = LoaderFlags.LIBS_DIR.get();
         byte[] data;
         if (dir != null) {
             Path p = Path.of(dir).resolve("index.txt");
@@ -95,7 +94,7 @@ final class BundledLibraries {
     }
 
     private static byte[] read(String file) throws IOException {
-        String dir = System.getProperty(DIR_PROPERTY);
+        String dir = LoaderFlags.LIBS_DIR.get();
         if (dir != null) return Files.readAllBytes(Path.of(dir).resolve(file));
         try (InputStream in = BundledLibraries.class.getResourceAsStream(RESOURCE_DIR + file)) {
             if (in == null) throw new IOException("missing embedded library " + file);

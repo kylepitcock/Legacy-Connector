@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -15,7 +16,7 @@ public final class NaturalSpawningTickSelfTestB173 {
     private static Session active;
     private NaturalSpawningTickSelfTestB173(){}
     public static void register(IEventBus bus){
-        if(!Boolean.getBoolean("legacyconnector.naturalSpawnTickSelfTest"))return;
+        if(!Flags.NATURAL_SPAWN_TICK_SELF_TEST.on())return;
         bus.addListener((ServerStartedEvent e)->{if(AnimalsB173.all().isEmpty())return;try{active=new Session(e.getServer().overworld());}catch(RuntimeException error){LOG.error("B1.7.3 NATURAL SPAWN TICK TEST initialization failed",error);}});
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e)->{if(active!=null)active.tick();});
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck e)->{if(active!=null&&e.getSpawnType()==MobSpawnType.NATURAL&&e.getEntity().level()==active.level)active.positions.merge(key(e.getEntity()),1,Integer::sum);});
@@ -39,7 +40,7 @@ public final class NaturalSpawningTickSelfTestB173 {
         final ServerLevel level;final net.minecraft.server.level.ServerPlayer player;final Set<UUID> baseline=new HashSet<>(),finalized=new HashSet<>(),observed=new HashSet<>();
         final Map<String,Integer> positions=new TreeMap<>(),finalizations=new TreeMap<>(),insertions=new TreeMap<>();final Set<String> expected=new TreeSet<>(),expectedCreatures=new TreeSet<>(),admitted=new TreeSet<>(),admittedCreatures=new TreeSet<>();
         final long startTime;final int limit;final BlockPos habitat;int ticks,cycles,eligibleChunks,maxEligibleChunks;Map<String,Integer> caps=new TreeMap<>();
-        Session(ServerLevel level){this.level=level;for(var entity:level.getAllEntities())baseline.add(entity.getUUID());for(var info:AnimalsB173.all()){expected.add(info.registration().type().getPackageName());if(info.type().getCategory()==MobCategory.CREATURE)expectedCreatures.add(info.registration().type().getPackageName());}startTime=level.getGameTime();limit=Math.max(800,Integer.getInteger("legacyconnector.naturalSpawnTickTestTicks",2400));habitat=habitat(level);player=actor(level);player.setPos(habitat.getX()+.5,habitat.getY(),habitat.getZ()+.5);player.setInvulnerable(true);level.addNewPlayer(player);
+        Session(ServerLevel level){this.level=level;for(var entity:level.getAllEntities())baseline.add(entity.getUUID());for(var info:AnimalsB173.all()){expected.add(info.registration().type().getPackageName());if(info.type().getCategory()==MobCategory.CREATURE)expectedCreatures.add(info.registration().type().getPackageName());}startTime=level.getGameTime();limit=Math.max(800,Flags.NATURAL_SPAWN_TICK_TEST_TICKS.getInt(2400));habitat=habitat(level);player=actor(level);player.setPos(habitat.getX()+.5,habitat.getY(),habitat.getZ()+.5);player.setInvulnerable(true);level.addNewPlayer(player);
             if(!level.players().contains(player)||player.isSpectator())throw new IllegalStateException("normal real player was not admitted to native player/chunk tracking");
             LOG.info("B1.7.3 NATURAL SPAWN TICK TEST started: habitat={} biome={} expected={} duration={} ticks; gamerule={} difficulty={} dayTime={}; actual generated blocks/weights/caps/predicates unchanged",habitat,level.getBiome(habitat).unwrapKey(),expected,limit,level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING),level.getDifficulty(),level.getDayTime());
         }

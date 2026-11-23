@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import static org.junit.jupiter.api.Assertions.*;
 import legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.BoatEntityModel;
 import legacyconnector.vb1_7_3.net.minecraft.entity.Entity;
@@ -24,7 +25,7 @@ class BoatApisB173Test {
         assertEquals((byte)150,copy.fuse,"original Beta intentionally stores fuse as a signed byte");
     }
     @Tag("actual-mod") @Test void hullGeometryAndTransformsMatchOriginalBetaJar()throws Exception{
-        var jar=java.nio.file.Path.of(System.getProperty("legacyconnector.b173.vanillaJar","build/devtools/b1.7.3/client.jar"));
+        var jar=java.nio.file.Path.of(Flags.B173_VANILLA_JAR.get("build/devtools/b1.7.3/client.jar"));
         org.junit.jupiter.api.Assumptions.assumeTrue(java.nio.file.Files.isRegularFile(jar),"original Beta fixture unavailable");
         try(var loader=new java.net.URLClassLoader(new java.net.URL[]{jar.toUri().toURL()},null)){
             Object original=loader.loadClass("ez").getConstructor().newInstance();

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,7 +27,7 @@ public final class ServerScript {
     private ServerScript() {}
 
     public static void register() {
-        String dir = System.getProperty("legacyconnector.serverScript");
+        String dir = Flags.SERVER_SCRIPT.get();
         if (dir == null || dir.isEmpty()) return;
         Path path = Path.of(dir);
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> poll(e.getServer(), path));
@@ -64,7 +65,7 @@ public final class ServerScript {
             try {
                 if (engine == null) {
                     ClassLoader loader = ServerScript.class.getClassLoader();
-                    String modId = System.getProperty("legacyconnector.serverScriptMod");
+                    String modId = Flags.SERVER_SCRIPT_MOD.get();
                     LegacyModRecord rec = modId == null ? null : LegacyMods.byLegacyId(modId);
                     if (rec != null && rec.mainClass != null) loader = rec.mainClass.getClassLoader();
                     engine = new org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory().getScriptEngine(new String[] {"--language=es6"}, loader);

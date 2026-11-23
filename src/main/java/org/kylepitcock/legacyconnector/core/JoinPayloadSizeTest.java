@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public final class JoinPayloadSizeTest {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> {
-            if (!Boolean.getBoolean("legacyconnector.joinSizeTest") && !Boolean.getBoolean("legacyconnector.entitySelfTest")) {
+            if (!Flags.JOIN_SIZE_TEST.on() && !Flags.ENTITY_SELF_TEST.on()) {
                 warnIfOversized(e.getServer());
                 return;
             }

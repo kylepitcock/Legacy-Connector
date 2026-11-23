@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -71,7 +72,7 @@ public final class BridgeB173 {
                 LOG.warn("Could not register b1.7.3 item {} of {}: {}", item, mod.legacyId, e.toString());
             }
         }
-        if (Boolean.getBoolean("legacyconnector.entitySelfTest")) ItemUseSelfTestB173.register();
+        if (Flags.ENTITY_SELF_TEST.on()) ItemUseSelfTestB173.register();
         TileEntitiesB173.registerType();
         SpawnRulesB173.prepareCustomBiomes();
         MobsB173.registerAll();

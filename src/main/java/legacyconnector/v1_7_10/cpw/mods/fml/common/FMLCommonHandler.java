@@ -1,5 +1,6 @@
 package legacyconnector.v1_7_10.cpw.mods.fml.common;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.EventBus;
 import legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side;
 import legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer;
@@ -29,7 +30,7 @@ public class FMLCommonHandler {
 
     public Side getSide() {
         // No game side yet in the offline coremod probe: the side the coremod phase was started for
-        if (FMLEnvironment.dist == null) return "SERVER".equals(System.getProperty("legacyconnector.side")) ? Side.SERVER : Side.CLIENT;
+        if (FMLEnvironment.dist == null) return "SERVER".equals(Flags.SIDE.get()) ? Side.SERVER : Side.CLIENT;
         return FMLEnvironment.dist.isClient() ? Side.CLIENT : Side.SERVER;
     }
 

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -70,7 +71,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
 
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
-        String selfTest = System.getProperty("legacyconnector.assetsSelfTest");
+        String selfTest = Flags.ASSETS_SELF_TEST.get();
         if (type == PackType.SERVER_DATA && selfTest != null) {
             // a dedicated server never loads client assets: the self test runs the translation anyway and can write the result to a directory
             Map<String, Supplier<byte[]>> files = new TreeMap<>();
@@ -200,7 +201,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * {@code registerItemRenders} and {@code registerModels} of the named client proxy classes.
      */
     private static void clientProxies() {
-        String names = System.getProperty("legacyconnector.assetsClientProxies");
+        String names = Flags.ASSETS_CLIENT_PROXIES.get();
         if (names == null || names.isEmpty()) return;
         // the client posts ModelRegistryEvent (mods' @EventBusSubscriber handlers register state mappers and item models there)
         try {
@@ -427,7 +428,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     }
 
     private static void translate(Block block, ResourceLocation id, Map<String, Supplier<byte[]>> out, Stats stats) {
-        boolean debug = System.getProperty("legacyconnector.debugAssets") != null && id.getPath().equals(System.getProperty("legacyconnector.debugAssets"));
+        boolean debug = Flags.DEBUG_ASSETS.get() != null && id.getPath().equals(Flags.DEBUG_ASSETS.get());
         // a block that replaces a vanilla block is registered under an id of the layer's own (BlockBridge1122) but its mod's blockstate file is
         // named for the 1.12 registry name ("minecraft:redstone_wire")
         JsonObject original = readOriginal(legacyFileId(block, id));

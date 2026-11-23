@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.Random;
 import legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
@@ -13,7 +14,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 public final class MoreCreepsGenerationEdgeSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173GenerationEdgeTest");
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException(detail);}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(ReflectiveOperationException|RuntimeException|LinkageError error){LOG.error("B1.7.3 GENERATION EDGE TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent event)->{try{run(event.getServer().overworld());}catch(ReflectiveOperationException|RuntimeException|LinkageError error){LOG.error("B1.7.3 GENERATION EDGE TEST failed",error);}});}
     public static void run(ServerLevel level)throws ReflectiveOperationException {
         var registration=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.morecreepsandweirdos")&&r.type().getSimpleName().equals("CREEPSEntityFloobShip")).findFirst();if(registration.isEmpty())return;
         var original=(LivingEntity)registration.get().type().getConstructor(World.class).newInstance(World.mcc$wrap(level));

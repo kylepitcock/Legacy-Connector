@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -99,7 +100,7 @@ public final class CheckJar {
         try (InputStream in = Files.newInputStream(Path.of(args[0]))) {
             index = ShimIndex.read(in);
         }
-        String jsonPath = System.getProperty("legacyconnector.check.json");
+        String jsonPath = LoaderFlags.CHECK_JSON.get();
         JsonArray records = new JsonArray();
         Path out = Files.createTempDirectory("legacyconnector-check");
         LegacyJarTransformer transformer = new LegacyJarTransformer(index, CheckJar.class.getClassLoader());
@@ -162,7 +163,7 @@ public final class CheckJar {
         org.kylepitcock.legacyconnector.loader.transform.Notch125To147.registerSet(jars);
         // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
         // (-Pbridges=false checks the legacy jars as plain mods instead).
-        if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges"))) {
+        if (!"false".equalsIgnoreCase(LoaderFlags.CHECK_BRIDGES.get())) {
             boolean realCcl = jars.stream().anyMatch(j -> j.fileName().toLowerCase(java.util.Locale.ROOT).startsWith("codechickenlib"));
             List<LibraryBridges.Bridge> bridges = LibraryBridges.KNOWN.stream().filter(b -> !(realCcl && "codechicken/lib/".equals(b.apiRoot()))).toList();
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
@@ -177,7 +178,7 @@ public final class CheckJar {
         // required dependencies that are not in the set (a jar that FML would not have started)
         Map<LegacyJar, List<String>> missingDeps = new java.util.LinkedHashMap<>();
         {
-            List<LibraryBridges.Bridge> inUse = "false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges")) ? List.of()
+            List<LibraryBridges.Bridge> inUse = "false".equalsIgnoreCase(LoaderFlags.CHECK_BRIDGES.get()) ? List.of()
                     : LibraryBridges.KNOWN.stream().filter(b -> !(jars.stream().anyMatch(j -> j.fileName().toLowerCase(java.util.Locale.ROOT).startsWith("codechickenlib"))
                             && "codechicken/lib/".equals(b.apiRoot()))).toList();
             List<String> apiIds = jars.stream().flatMap(j -> j.apis.stream()).map(a -> a[0]).toList();
@@ -224,7 +225,7 @@ public final class CheckJar {
             records.add(rec);
             recordsByOutJar.put(outJar, rec);
             // -Dlegacyconnector.check.keep=<dir>: keep the translated jars (for ./gradlew textureReport)
-            String keep = System.getProperty("legacyconnector.check.keep");
+            String keep = LoaderFlags.CHECK_KEEP.get();
             if (keep != null && !keep.isBlank() && Files.isRegularFile(outJar)) {
                 Files.createDirectories(Path.of(keep));
                 Files.copy(outJar, Path.of(keep).resolve(jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_") + ".translated.jar"),
@@ -238,10 +239,10 @@ public final class CheckJar {
                     + result.links.stubbedMembers.size() + " synthesized members");
             if (jar.coreModClass != null) System.out.println("  coremod: " + jar.coreModClass + " (not executed)");
             for (String note : result.notes) System.out.println("  note: " + note);
-            if (!"-q".equals(System.getProperty("legacyconnector.check.quiet", ""))) System.out.print(result.links.render());
+            if (!"-q".equals(LoaderFlags.CHECK_QUIET.get(""))) System.out.print(result.links.render());
         }
         checkAssets(recordsByOutJar, originals);
-        if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify"))) {
+        if (!"false".equalsIgnoreCase(LoaderFlags.CHECK_VERIFY.get())) {
             System.out.println("verify: " + VERIFY_TOTALS[0] + " classes, " + VERIFY_TOTALS[1] + " methods, " + VERIFY_TOTALS[2] + " findings in " + VERIFY_TOTALS[3] + " groups (all jars)");
             if (!GLOBAL_UNKNOWN.isEmpty()) {
                 // by package prefix (first three segments): mostly optional integrations with mods that are not in the set
@@ -269,7 +270,7 @@ public final class CheckJar {
             verify(classes);
         }
         // -Dlegacyconnector.check.verify.fail=true: a non-zero exit code when the bytecode verification found anything (CI use)
-        if ("true".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify.fail")) && VERIFY_TOTALS[2].get() > 0) System.exit(1);
+        if ("true".equalsIgnoreCase(LoaderFlags.CHECK_VERIFY_FAIL.get()) && VERIFY_TOTALS[2].get() > 0) System.exit(1);
     }
 
     /**
@@ -278,7 +279,7 @@ public final class CheckJar {
      * without it the check is skipped. {@code -Dlegacyconnector.check.assets=false} switches it off.
      */
     private static void checkAssets(Map<Path, JsonObject> records, List<Path> originals) {
-        if ("false".equalsIgnoreCase(System.getProperty("legacyconnector.check.assets")) || records.isEmpty()) return;
+        if ("false".equalsIgnoreCase(LoaderFlags.CHECK_ASSETS.get()) || records.isEmpty()) return;
         Path vanilla = vanillaJar();
         if (vanilla == null) {
             System.out.println("Asset check skipped: the vanilla 1.21.1 client jar was not found (set -Dlegacyconnector.check.vanillaJar)");
@@ -305,7 +306,7 @@ public final class CheckJar {
     }
 
     private static Path vanillaJar() {
-        String configured = System.getProperty("legacyconnector.check.vanillaJar");
+        String configured = LoaderFlags.CHECK_VANILLA_JAR.get();
         if (configured != null && !configured.isBlank()) return Files.isRegularFile(Path.of(configured)) ? Path.of(configured) : null;
         Path cached = Path.of(System.getProperty("user.home"), ".gradle", "caches", "neoformruntime", "artifacts", "minecraft_1.21.1_client.jar");
         if (Files.isRegularFile(cached)) return cached;
@@ -440,7 +441,7 @@ public final class CheckJar {
      * (Gradle {@code -Pverify=false}) skips it. Failures are listed in the record as {@code verifyErrors} and grouped in {@code verify}.
      */
     private static void verifyBytecode(ShimIndex index, LegacyJar jar, Path outJar, Map<String, ClassInfo> peers, JsonObject rec) {
-        if ("false".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify"))) return;
+        if ("false".equalsIgnoreCase(LoaderFlags.CHECK_VERIFY.get())) return;
         try {
             Map<String, ClassInfo> known = new java.util.HashMap<>(MODERN_LIBS);
             if (peers != null) known.putAll(peers);

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import legacyconnector.vb1_7_3.net.minecraft.entity.Entity;
@@ -11,7 +12,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 /** Original archived renderer callbacks; these names never select production behavior. */
 public final class RendererSelfTestB173 {
     private RendererSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));}
+    public static void register(IEventBus bus){if(Flags.ENTITY_SELF_TEST.on())bus.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));}
     private static void require(boolean value,String detail){if(!value)throw new IllegalStateException("B1.7.3 RENDERER TEST: "+detail);}
     private static Object invoke(Object object,String name,Class<?>[] types,Object... args)throws ReflectiveOperationException {
         for(Class<?> c=object.getClass();c!=null;c=c.getSuperclass())try{var method=c.getDeclaredMethod(name,types);method.setAccessible(true);return method.invoke(object,args);}catch(NoSuchMethodException ignored){}

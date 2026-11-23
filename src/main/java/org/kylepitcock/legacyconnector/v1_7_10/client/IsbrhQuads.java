@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -11,7 +12,7 @@ import net.minecraft.util.Mth;
 final class IsbrhQuads {
     private IsbrhQuads() {}
 
-    private static final boolean DUMP = Boolean.getBoolean("legacyconnector.dumpQuads");
+    private static final boolean DUMP = Flags.DUMP_QUADS.on();
 
     private static final java.util.Set<String> UNMAPPED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
