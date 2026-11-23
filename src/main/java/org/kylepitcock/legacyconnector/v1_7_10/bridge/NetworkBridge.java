@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.bridge;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.Map;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public final class NetworkBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Network");
     /** {@code -Dlegacyconnector.traceMessages=true}: log (the first 400) legacy messages as they arrive, to tell "never sent" from "handler did nothing". */
-    public static volatile boolean TRACE = Boolean.getBoolean("legacyconnector.traceMessages");
+    public static volatile boolean TRACE = Flags.TRACE_MESSAGES.on();
     private static int traced;
     private static final String VERSION = "1.7.10";
     private static final Map<String, Channel> CHANNELS = new ConcurrentHashMap<>();

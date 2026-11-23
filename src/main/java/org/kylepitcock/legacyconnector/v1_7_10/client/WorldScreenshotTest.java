@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.io.File;
 import java.util.ArrayDeque;
@@ -57,7 +58,7 @@ public final class WorldScreenshotTest {
     private WorldScreenshotTest() {}
 
     public static void register() {
-        if (System.getProperty("legacyconnector.screenshotTest") == null) return;
+        if (Flags.SCREENSHOT_TEST.get() == null) return;
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
             // A fresh game directory opens the narrator/accessibility onboarding first and waits for a click: skip it.
             // So do the loading warnings (a legacy mod's missing dependency): the test goes on to the title screen.
@@ -73,9 +74,9 @@ public final class WorldScreenshotTest {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> onTick());
     }
 
-    private static int intProp(String key, int def) {
+    private static int intProp(Flags key, int def) {
         try {
-            return Integer.parseInt(System.getProperty(key, String.valueOf(def)));
+            return Integer.parseInt(key.get(String.valueOf(def)));
         } catch (NumberFormatException ex) {
             return def;
         }
@@ -83,17 +84,17 @@ public final class WorldScreenshotTest {
 
     private static void begin() {
         Minecraft mc = Minecraft.getInstance();
-        dir = new File(System.getProperty("legacyconnector.screenshotDir", new File(mc.gameDirectory, "shots").getPath()));
+        dir = new File(Flags.SCREENSHOT_DIR.get(new File(mc.gameDirectory, "shots").getPath()));
         dir.mkdirs();
         // The window may not be focused (the harness runs unattended): never pause, never show the tutorial toast.
         mc.options.pauseOnLostFocus = false;
         mc.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
         mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
-        mc.options.renderDistance().set(intProp("legacyconnector.shotRenderDistance", 16));
-        if (System.getProperty("legacyconnector.shotScenario", "").startsWith("title")) {
+        mc.options.renderDistance().set(intProp(Flags.SHOT_RENDER_DISTANCE, 16));
+        if (Flags.SHOT_SCENARIO.get("").startsWith("title")) {
             // stays on the title screen (whatever a mod's menu made of it), shoots it and quits
             int[] quiet = {0};
-            if (System.getProperty("legacyconnector.shotScenario").equals("titlecontrol")) {
+            if (Flags.SHOT_SCENARIO.get().equals("titlecontrol")) {
                 var control = new RemoteControl(new File(dir.getParentFile(), "control"));
                 add(m -> (quiet[0] = m.getOverlay() == null ? quiet[0] + 1 : 0) > 100, m -> {
                     control.tick(m);
@@ -116,7 +117,7 @@ public final class WorldScreenshotTest {
             }));
             return;
         }
-        String remote = System.getProperty("legacyconnector.shotServer", "");
+        String remote = Flags.SHOT_SERVER.get("");
         if (!remote.isEmpty()) {
             LOG.info("Connecting the screenshot client to '{}', shots go to {}", remote, dir);
             var data = new net.minecraft.client.multiplayer.ServerData("Compatibility test", remote,
@@ -126,9 +127,9 @@ public final class WorldScreenshotTest {
             queueScript();
             return;
         }
-        String type = System.getProperty("legacyconnector.shotWorldType", "");
-        long seed = Long.parseLong(System.getProperty("legacyconnector.shotSeed", "20241022"));
-        String existing = System.getProperty("legacyconnector.shotLoadWorld", "");
+        String type = Flags.SHOT_WORLD_TYPE.get("");
+        long seed = Long.parseLong(Flags.SHOT_SEED.get("20241022"));
+        String existing = Flags.SHOT_LOAD_WORLD.get("");
         if (!existing.isEmpty()) {
             // a copy of a real save (big packs whose create-world flow a script cannot drive): opened like the world list does
             LOG.info("Opening the existing world '{}', shots go to {}", existing, dir);
@@ -265,10 +266,10 @@ public final class WorldScreenshotTest {
     }
 
     private static void queueScript() {
-        int tour = intProp("legacyconnector.shotTour", 6);
-        int perModBlocks = intProp("legacyconnector.shotBlocksPerMod", 24);
-        int perModItems = intProp("legacyconnector.shotItemsPerMod", 36);
-        if ("controlkeep".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        int tour = intProp(Flags.SHOT_TOUR, 6);
+        int perModBlocks = intProp(Flags.SHOT_BLOCKS_PER_MOD, 24);
+        int perModItems = intProp(Flags.SHOT_ITEMS_PER_MOD, 36);
+        if ("controlkeep".equals(Flags.SHOT_SCENARIO.get())) {
             // reload checks: the world is opened as saved (no game mode, time or position change), then RemoteControl takes over
             var control = new RemoteControl(new File(dir.getParentFile(), "control"));
             add(waitForWorld(), wait(60));
@@ -282,11 +283,11 @@ public final class WorldScreenshotTest {
                 command("gamemode spectator"), command("time set noon"), command("weather clear"),
                 command("gamerule doDaylightCycle false"), command("gamerule doMobSpawning false"), command("gamerule doWeatherCycle false"),
                 command("tp @s 0 180 0"), waitForTerrain(200));
-        if ("portal".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("portal".equals(Flags.SHOT_SCENARIO.get())) {
             queuePortalScenario();
             return;
         }
-        if ("control".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("control".equals(Flags.SHOT_SCENARIO.get())) {
             // an interactive session: RemoteControl executes command files until it is told to quit
             var control = new RemoteControl(new File(dir.getParentFile(), "control"));
             add(command("gamemode creative"), command("time set noon"), command("weather clear"), command("gamerule doDaylightCycle false"),
@@ -297,10 +298,10 @@ public final class WorldScreenshotTest {
             });
             return;
         }
-        if ("commands".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("commands".equals(Flags.SHOT_SCENARIO.get())) {
             // runs the commands of -Dlegacyconnector.shotCommands (separated by ';') and logs the chat
             add(waitForWorld(), wait(40), command("gamemode creative"), command("tp @s 0 150 0"), waitForTerrain(60));
-            for (String c0 : System.getProperty("legacyconnector.shotCommands", "legacyconnector mods").split(";")) {
+            for (String c0 : Flags.SHOT_COMMANDS.get("legacyconnector mods").split(";")) {
                 final String c = c0.trim();
                 final String camName = c.startsWith("cam:") ? c.substring(4) : "";
                 // "shot:<name>" takes a screenshot (after the world around has had time to render), "wait:<ticks>" waits
@@ -318,7 +319,7 @@ public final class WorldScreenshotTest {
             }));
             return;
         }
-        if ("tabs".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("tabs".equals(Flags.SHOT_SCENARIO.get())) {
             add(waitForWorld(), wait(60), run(mc -> {
                 net.minecraft.world.item.CreativeModeTabs.tryRebuildTabContents(mc.player.connection.enabledFeatures(), true, mc.level.registryAccess());
                 for (var tab : net.minecraft.world.item.CreativeModeTabs.allTabs()) {
@@ -333,7 +334,7 @@ public final class WorldScreenshotTest {
                 for (var e : BuiltInRegistries.ITEM.entrySet()) if (!e.getKey().location().getNamespace().equals("minecraft") && !listed.contains(e.getValue())) missing.merge(e.getKey().location().getNamespace(), 1, Integer::sum);
                 LOG.info("TAB TEST: items in no creative tab: {}", missing);
             }), command("gamemode creative"), wait(10));
-            String wanted = System.getProperty("legacyconnector.shotMods", "appliedenergistics2");
+            String wanted = Flags.SHOT_MODS.get("appliedenergistics2");
             int page = 0;
             for (String modWanted : wanted.split(",")) {
                 add(run(mc -> {
@@ -361,19 +362,19 @@ public final class WorldScreenshotTest {
             }));
             return;
         }
-        if ("gallery".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("gallery".equals(Flags.SHOT_SCENARIO.get())) {
             queueGalleryScenario();
             return;
         }
-        if ("entities".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("entities".equals(Flags.SHOT_SCENARIO.get())) {
             queueEntityScenario();
             return;
         }
-        if ("village".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("village".equals(Flags.SHOT_SCENARIO.get())) {
             queueVillageScenario();
             return;
         }
-        if ("gui".equals(System.getProperty("legacyconnector.shotScenario"))) {
+        if ("gui".equals(Flags.SHOT_SCENARIO.get())) {
             queueGuiScenario();
             return;
         }
@@ -394,8 +395,8 @@ public final class WorldScreenshotTest {
             add(command("tp @s " + x + " 300 " + z), wait(60), waitForTerrain(40), look(0f, 90f), wait(8), shot("terrain_" + idx + "_overview"));
         }
         // block showcases
-        String modsProp = System.getProperty("legacyconnector.shotMods", "");
-        List<String> onlyBlocks = java.util.Arrays.asList(System.getProperty("legacyconnector.shotBlocks", "").split(","));
+        String modsProp = Flags.SHOT_MODS.get("");
+        List<String> onlyBlocks = java.util.Arrays.asList(Flags.SHOT_BLOCKS.get("").split(","));
         if (onlyBlocks.size() == 1 && onlyBlocks.get(0).isEmpty()) onlyBlocks = List.of();
         List<String> mods = new ArrayList<>();
         Map<String, List<ResourceLocation>> blocks = new LinkedHashMap<>();
@@ -500,9 +501,9 @@ public final class WorldScreenshotTest {
     }
 
     /** Ids from a property; "namespace:all" stands for up to {@code perMod} of that mod's entries spread over its registry. */
-    private static <T> List<ResourceLocation> expand(String property, net.minecraft.core.Registry<T> registry, int perMod, boolean legacyBlocksOnly) {
+    private static <T> List<ResourceLocation> expand(Flags property, net.minecraft.core.Registry<T> registry, int perMod, boolean legacyBlocksOnly) {
         List<ResourceLocation> out = new ArrayList<>();
-        for (String part : System.getProperty(property, "").split(",")) {
+        for (String part : property.get("").split(",")) {
             if (part.isEmpty()) continue;
             if (part.endsWith(":all")) {
                 String ns = part.substring(0, part.length() - 4);
@@ -523,9 +524,9 @@ public final class WorldScreenshotTest {
         return out;
     }
 
-    private static List<ResourceLocation> idList(String property) {
+    private static List<ResourceLocation> idList(Flags property) {
         List<ResourceLocation> out = new ArrayList<>();
-        for (String part : System.getProperty(property, "").split(",")) {
+        for (String part : property.get("").split(",")) {
             if (part.isEmpty()) continue;
             ResourceLocation id = ResourceLocation.tryParse(part);
             if (id != null) out.add(id);
@@ -538,9 +539,9 @@ public final class WorldScreenshotTest {
      * legacy items in the inventory beside JEI, and legacy entities beside vanilla ones. SHOW / SHOWITEMS / SHOWENT give the ids.
      */
     private static void queueGalleryScenario() {
-        List<ResourceLocation> blocks = expand("legacyconnector.shotBlocks", BuiltInRegistries.BLOCK, 4, true);
-        List<ResourceLocation> items = expand("legacyconnector.shotItems", BuiltInRegistries.ITEM, 6, false);
-        List<ResourceLocation> entities = expand("legacyconnector.shotEntities", BuiltInRegistries.ENTITY_TYPE, 8, false);
+        List<ResourceLocation> blocks = expand(Flags.SHOT_BLOCKS, BuiltInRegistries.BLOCK, 4, true);
+        List<ResourceLocation> items = expand(Flags.SHOT_ITEMS, BuiltInRegistries.ITEM, 6, false);
+        List<ResourceLocation> entities = expand(Flags.SHOT_ENTITIES, BuiltInRegistries.ENTITY_TYPE, 8, false);
         String[] modern = {"minecraft:diamond_block", "minecraft:crafting_table", "minecraft:furnace", "minecraft:enchanting_table", "minecraft:bookshelf",
                 "minecraft:beacon", "minecraft:lantern", "minecraft:oak_log", "minecraft:copper_block", "minecraft:amethyst_block", "minecraft:target", "minecraft:honey_block"};
         int y = 150;
@@ -603,8 +604,8 @@ public final class WorldScreenshotTest {
             if (!key.getNamespace().equals("minecraft")) LOG.info("Entity left the level: {} reason {} health {}", key, e.getEntity().getRemovalReason(),
                     e.getEntity() instanceof net.minecraft.world.entity.LivingEntity l ? l.getHealth() : -1);
         });
-        String modsProp = System.getProperty("legacyconnector.shotMods", "");
-        int cap = intProp("legacyconnector.shotBlocksPerMod", 24);
+        String modsProp = Flags.SHOT_MODS.get("");
+        int cap = intProp(Flags.SHOT_BLOCKS_PER_MOD, 24);
         Map<String, List<ResourceLocation>> byMod = new LinkedHashMap<>();
         for (var e : BuiltInRegistries.ENTITY_TYPE.entrySet()) {
             ResourceLocation id = e.getKey().location();
@@ -702,9 +703,9 @@ public final class WorldScreenshotTest {
 
     /** Right-clicks each legacy block of the selected mods and records which screen opens (custom GUIs). */
     private static void queueGuiScenario() {
-        String modsProp = System.getProperty("legacyconnector.shotMods", "");
-        String metasProp = System.getProperty("legacyconnector.shotMetas", "0");
-        int cap = intProp("legacyconnector.shotBlocksPerMod", 24);
+        String modsProp = Flags.SHOT_MODS.get("");
+        String metasProp = Flags.SHOT_METAS.get("0");
+        int cap = intProp(Flags.SHOT_BLOCKS_PER_MOD, 24);
         Map<String, Integer> perMod = new LinkedHashMap<>();
         // (block, metadata) pairs: metadata from the property, or "variants" = the block item's registered subtypes
         List<Object[]> targets = new ArrayList<>();
@@ -712,7 +713,7 @@ public final class WorldScreenshotTest {
             if (!(e.getValue() instanceof LegacyBlockAdapter adapter) || adapter.isFlattenedMember()) continue;
             ResourceLocation id = e.getKey().location();
             if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
-            var only = idList("legacyconnector.shotBlocks");
+            var only = idList(Flags.SHOT_BLOCKS);
             if (!only.isEmpty() && !only.contains(id)) continue;
             if (perMod.merge(id.getNamespace(), 1, Integer::sum) > cap) continue;
             java.util.TreeSet<Integer> metas = new java.util.TreeSet<>();
@@ -894,7 +895,7 @@ public final class WorldScreenshotTest {
             mc.stop();
             return;
         }
-        if (++ticks > WATCHDOG_TICKS && !System.getProperty("legacyconnector.shotScenario", "").startsWith("control")) {
+        if (++ticks > WATCHDOG_TICKS && !Flags.SHOT_SCENARIO.get("").startsWith("control")) {
             LOG.error("Screenshot test timed out");
             mc.stop();
             return;

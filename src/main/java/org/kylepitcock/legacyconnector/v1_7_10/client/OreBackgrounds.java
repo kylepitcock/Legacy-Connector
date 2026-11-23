@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,7 +35,7 @@ public final class OreBackgrounds {
     private OreBackgrounds() {}
 
     public static void contribute(TextureMap blocks, Map<String, Supplier<byte[]>> out) {
-        if (Boolean.getBoolean("legacyconnector.keepLegacyOreBackgrounds") || !LegacyConfig.oreBackgroundsEnabled()) return;
+        if (Flags.KEEP_LEGACY_ORE_BACKGROUNDS.on() || !LegacyConfig.oreBackgroundsEnabled()) return;
         BufferedImage[] hosts = new BufferedImage[HOST_KEYS.length];
         for (int i = 0; i < hosts.length; i++) {
             String configured = LegacyConfig.oreBackground(HOST_KEYS[i], HOST_DEFAULTS[i]);

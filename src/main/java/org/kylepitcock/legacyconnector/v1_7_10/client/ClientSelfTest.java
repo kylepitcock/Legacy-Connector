@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -33,7 +34,7 @@ public final class ClientSelfTest {
     private ClientSelfTest() {}
 
     public static void register() {
-        if (System.getProperty("legacyconnector.clientSelfTest") == null) return;
+        if (Flags.CLIENT_SELF_TEST.get() == null) return;
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
             if (done || !(e.getNewScreen() instanceof TitleScreen)) return;
             done = true;

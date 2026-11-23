@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.bridge;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -1357,7 +1358,7 @@ public final class CoremodSites {
         }
         LOG.info("Legacy coremods put {} hook(s) into their Minecraft's classes; {} hook method(s) are replayed at {} place(s) of the modern game, {} place(s) have no "
                 + "equivalent yet (features of those mods that depend on them do nothing)", total, replayed.size(), sites, missing.size());
-        if ("full".equals(System.getProperty("legacyconnector.coremodHooks.report"))) {
+        if ("full".equals(Flags.COREMOD_HOOKS_REPORT.get())) {
             missing.forEach((site, n) -> LOG.info("  no place yet: {} ({} hook(s): {})", site, n, LISTED.get(site).stream().map(l -> l.owner + "." + l.name).distinct().toList()));
         } else {
             missing.forEach((site, n) -> LOG.debug("  no place yet: {} ({} hook(s))", site, n));
@@ -1490,7 +1491,7 @@ public final class CoremodSites {
 
     private static Map<String, List<Listed>> load() {
         Map<String, List<Listed>> out = new HashMap<>();
-        String files = System.getProperty("legacyconnector.coremodHooks");
+        String files = Flags.COREMOD_HOOKS.get();
         if (files == null) return out;
         // one list per legacy Minecraft version
         for (String file : files.split(java.util.regex.Pattern.quote(java.io.File.pathSeparator))) try {

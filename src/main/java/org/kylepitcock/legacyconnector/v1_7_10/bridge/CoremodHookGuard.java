@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.bridge;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -50,7 +51,7 @@ public final class CoremodHookGuard {
 
     /** The guard of {@code method}'s parameter number {@code param}, or null (no guard found, the class is not readable, the hook is no boolean one). */
     public static CoremodHookGuard of(Class<?> owner, Method method, int param) {
-        if (method.getReturnType() != boolean.class || "false".equals(System.getProperty("legacyconnector.coremodGuards"))) return null; // the property switches the guards off for timing
+        if (method.getReturnType() != boolean.class || "false".equals(Flags.COREMOD_GUARDS.get())) return null; // the property switches the guards off for timing
         Class<?>[] types = method.getParameterTypes();
         int slot = 0;
         for (int i = 0; i < param; i++) slot += types[i] == long.class || types[i] == double.class ? 2 : 1;

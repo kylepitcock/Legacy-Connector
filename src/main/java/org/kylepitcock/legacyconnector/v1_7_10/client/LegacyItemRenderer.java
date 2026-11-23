@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks;
@@ -194,7 +195,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     private static final java.util.Set<String> LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     /** {@code -Dlegacyconnector.debugItemBounds=true} or {@code LC_DEBUG}: logs the inventory bounds of each block handler once. */
-    private static final boolean DEBUG_BOUNDS = Boolean.getBoolean("legacyconnector.debugItemBounds") || System.getenv("LC_DEBUG") != null;
+    private static final boolean DEBUG_BOUNDS = Flags.DEBUG_ITEM_BOUNDS.on() || System.getenv("LC_DEBUG") != null;
 
     private static void logOnce(String renderer, Throwable e) {
         if (LOGGED.add(renderer)) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy item renderer {} failed (logged once)", renderer, e);

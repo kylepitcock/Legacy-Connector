@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.entity;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public final class EntitySelfTest {
     private EntitySelfTest() {}
 
     public static void register() {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> start(e.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> tick());
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {

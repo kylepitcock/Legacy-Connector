@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.nio.charset.StandardCharsets;
@@ -520,7 +521,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static String iconName(Block b, int side, int meta) {
         try {
             IIcon icon = b.getIcon(side, meta);
-            if (System.getProperty("legacyconnector.debugIcons") != null && b.getClass().getName().contains(System.getProperty("legacyconnector.debugIcons")) && meta < 3) {
+            if (Flags.DEBUG_ICONS.get() != null && b.getClass().getName().contains(Flags.DEBUG_ICONS.get()) && meta < 3) {
                 LOG.info("icon debug {} side {} meta {} -> {} ({})", b.getClass().getName(), side, meta, icon == null ? null : icon.getIconName(), icon == null ? null : icon.getClass().getName());
             }
             if (icon != null) {
