@@ -213,6 +213,14 @@ public final class MiddleClientCompat {
                 x - mouseX, centerY - mouseY, entity);
     }
 
+    /** {@code InventoryScreen.renderEntityInInventoryFollowsAngle(g, x, y, scale, angleX, angleY, entity)}: same box as the mouse variant, the angles are passed as they are. */
+    public static void renderEntityInInventoryFollowsAngle(GuiGraphics g, int x, int y, int scale, float angleX, float angleY,
+            net.minecraft.world.entity.LivingEntity entity) {
+        int centerY = y - Math.round(entity.getBbHeight() * scale / 2.0F);
+        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsAngle(g, x - 1, centerY - 1, x + 1, centerY + 1, scale, 0.0625F,
+                angleX, angleY, entity);
+    }
+
     public static ResourceLocation getDefaultSkin() {
         return net.minecraft.client.resources.DefaultPlayerSkin.getDefaultTexture();
     }

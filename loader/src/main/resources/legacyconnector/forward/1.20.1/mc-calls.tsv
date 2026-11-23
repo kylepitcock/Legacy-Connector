@@ -1103,3 +1103,38 @@ net/minecraft/world/level/block/entity/BeaconBlockEntity$BeaconBeamSection	getCo
 net/minecraft/commands/arguments/item/ItemInput	<init>	(Lnet/minecraft/core/Holder;Lnet/minecraft/nbt/CompoundTag;)V	Round13Compat	newItemInput	(Lnet/minecraft/core/Holder;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/commands/arguments/item/ItemInput;
 net/minecraft/client/renderer/PostChain	<init>	(Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/server/packs/resources/ResourceManager;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lnet/minecraft/resources/ResourceLocation;)V	=	-	(Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/server/packs/resources/ResourceProvider;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lnet/minecraft/resources/ResourceLocation;)V
 net/minecraft/client/renderer/PostChain	addPass	(Ljava/lang/String;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lcom/mojang/blaze3d/pipeline/RenderTarget;)Lnet/minecraft/client/renderer/PostPass;	=args	0,1,2,false	(Ljava/lang/String;Lcom/mojang/blaze3d/pipeline/RenderTarget;Lcom/mojang/blaze3d/pipeline/RenderTarget;Z)Lnet/minecraft/client/renderer/PostPass;
+# --- round 14: connection/world-open calls, ingredient classes, particle sprite
+net/minecraft/client/Minecraft	clearLevel	()V	ConnectionCompat	clearLevel	-
+net/minecraft/client/Minecraft	clearLevel	(Lnet/minecraft/client/gui/screens/Screen;)V	=	clearClientLevel
+net/minecraft/client/Minecraft	is64Bit	()Z	ConnectionCompat	is64Bit	-
+net/minecraft/client/Minecraft	setConnectedToRealms	(Z)V	ConnectionCompat	setConnectedToRealms	-
+net/minecraft/client/User	getUuid	()Ljava/lang/String;	ConnectionCompat	getUuid	-
+net/minecraft/client/renderer/LevelRenderer	getChunkStatistics	()Ljava/lang/String;	=	getSectionStatistics
+net/minecraft/client/multiplayer/ServerData	<init>	(Ljava/lang/String;Ljava/lang/String;Z)V	ConnectionCompat	newServerData	(Ljava/lang/String;Ljava/lang/String;Z)Lnet/minecraft/client/multiplayer/ServerData;
+net/minecraft/client/gui/screens/ConnectScreen	startConnecting	(Lnet/minecraft/client/gui/screens/Screen;Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/multiplayer/resolver/ServerAddress;Lnet/minecraft/client/multiplayer/ServerData;Z)V	ConnectionCompat	startConnecting	-
+net/minecraft/client/gui/screens/worldselection/WorldOpenFlows	loadLevel	(Lnet/minecraft/client/gui/screens/Screen;Ljava/lang/String;)V	ConnectionCompat	loadLevel	-
+net/minecraft/client/gui/screens/inventory/InventoryScreen	renderEntityInInventoryFollowsAngle	(Lnet/minecraft/client/gui/GuiGraphics;IIIFFLnet/minecraft/world/entity/LivingEntity;)V	MiddleClientCompat	renderEntityInInventoryFollowsAngle	-
+net/minecraft/client/particle/TerrainParticle	updateSprite	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/client/particle/Particle;	=	-	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/client/particle/TerrainParticle;
+net/neoforged/neoforge/common/crafting/DifferenceIngredient	of	(Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;)Lnet/neoforged/neoforge/common/crafting/DifferenceIngredient;	=	-	(Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;)Lnet/minecraft/world/item/crafting/Ingredient;
+net/neoforged/neoforge/common/crafting/CompoundIngredient	getChildren	()Ljava/util/Collection;	=	children	()Ljava/util/List;
+net/neoforged/neoforge/common/extensions/IItemStackExtension	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	ApiCompat	serializeNBT	-
+net/minecraft/client/gui/Gui	<init>	(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/entity/ItemRenderer;)V	=args	0	(Lnet/minecraft/client/Minecraft;)V
+net/minecraft/Util	safeReplaceFile	(Ljava/io/File;Ljava/io/File;Ljava/io/File;)V	StorageCompat	safeReplaceFile	-
+net/minecraft/world/level/storage/PlayerDataStorage	load	(Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/nbt/CompoundTag;	StorageCompat	loadPlayer	-
+net/minecraft/server/players/GameProfileCache	getAsync	(Ljava/lang/String;Ljava/util/function/Consumer;)V	StorageCompat	getAsync	-
+net/minecraft/world/item/MapItem	makeKey	(I)Ljava/lang/String;	StorageCompat	mapKey	-
+net/minecraft/util/GsonHelper	getAsItem	(Lcom/google/gson/JsonObject;Ljava/lang/String;Lnet/minecraft/world/item/Item;)Lnet/minecraft/world/item/Item;	StorageCompat	getAsItem	-
+net/minecraft/world/level/saveddata/maps/MapDecoration	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMapDecorationType;BBBLnet/minecraft/network/chat/Component;)V	=args	LegacyMapDecorationType.holder@0,1,2,3,StorageCompat.optionalName@4	(Lnet/minecraft/core/Holder;BBBLjava/util/Optional;)V
+net/minecraft/world/entity/Entity	lerpTo	(DDDFFIZ)V	=pop	-	(DDDFFI)V
+net/minecraft/world/entity/animal/Cat	setVariant	(Lnet/minecraft/world/entity/animal/CatVariant;)V	GameObjectCompat	setCatVariant	-
+net/minecraft/world/entity/projectile/WitherSkull	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;DDD)V	GameObjectCompat	newWitherSkull	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;DDD)Lnet/minecraft/world/entity/projectile/WitherSkull;
+net/minecraft/world/level/block/FlowerBlock	getSuspiciousEffect	()Lnet/minecraft/world/effect/MobEffect;	GameObjectCompat	flowerEffect	-
+net/minecraft/world/level/block/FlowerBlock	getEffectDuration	()I	GameObjectCompat	flowerEffectDuration	-
+net/minecraft/world/level/block/FungusBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/Block;)V	=args	1,2,0	(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/Container	stillValidBlockEntity	(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/player/Player;I)Z	GameObjectCompat	stillValidBlockEntity	-
+net/minecraft/world/entity/monster/Shulker	getProgressAabb	(Lnet/minecraft/core/Direction;F)Lnet/minecraft/world/phys/AABB;	GameObjectCompat	shulkerProgressAabb	-
+net/minecraft/world/entity/monster/Shulker	getProgressDeltaAabb	(Lnet/minecraft/core/Direction;FF)Lnet/minecraft/world/phys/AABB;	GameObjectCompat	shulkerProgressDeltaAabb	-
+net/minecraft/world/level/block/Block	isBed	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Z	GameObjectCompat	isBed	-
+net/minecraft/world/level/block/DoublePlantBlock	preventCreativeDropFromBottomPart	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/player/Player;)V	=	preventDropFromBottomPart
+net/minecraft/world/level/gameevent/GameEvent	builtInRegistryHolder	()Lnet/minecraft/core/Holder$Reference;	GameObjectCompat	gameEventHolder	-
+net/minecraft/server/packs/metadata/pack/PackMetadataSection	getDescription	()Lnet/minecraft/network/chat/Component;	=	description

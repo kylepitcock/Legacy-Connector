@@ -20,6 +20,7 @@ import net.neoforged.neoforge.client.event.RegisterNamedRenderTypesEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
@@ -43,6 +44,49 @@ public final class ForgeApiTailClient1201 {
     }
 
     public static com.mojang.blaze3d.platform.Window guiWindow(RenderGuiEvent event) {
+        return Minecraft.getInstance().getWindow();
+    }
+
+
+    // ---- RenderGuiOverlayEvent members on the native RenderGuiLayerEvent (the class the curated alias maps to)
+
+    /** Forge's {@code getOverlay()}: the {@code NamedGuiOverlay} of the vanilla overlay drawn by the layer (a layer of another mod gets a no-op wrapper carrying its id). */
+    public static legacyconnector.v1_20_1.net.minecraftforge.client.gui.overlay.NamedGuiOverlay layerOverlay(RenderGuiLayerEvent event) {
+        var overlay = legacyconnector.v1_20_1.net.minecraftforge.client.gui.overlay.VanillaGuiOverlay.byLayer(event.getName());
+        return overlay != null ? overlay.type()
+                : new legacyconnector.v1_20_1.net.minecraftforge.client.gui.overlay.NamedGuiOverlay(event.getName(), (gui, graphics, partialTick, width, height) -> {
+                });
+    }
+
+    public static legacyconnector.v1_20_1.net.minecraftforge.client.gui.overlay.NamedGuiOverlay layerOverlay(RenderGuiLayerEvent.Pre event) {
+        return layerOverlay((RenderGuiLayerEvent) event);
+    }
+
+    public static legacyconnector.v1_20_1.net.minecraftforge.client.gui.overlay.NamedGuiOverlay layerOverlay(RenderGuiLayerEvent.Post event) {
+        return layerOverlay((RenderGuiLayerEvent) event);
+    }
+
+    public static float layerPartialTick(RenderGuiLayerEvent event) {
+        return partial(event.getPartialTick());
+    }
+
+    public static float layerPartialTick(RenderGuiLayerEvent.Pre event) {
+        return partial(event.getPartialTick());
+    }
+
+    public static float layerPartialTick(RenderGuiLayerEvent.Post event) {
+        return partial(event.getPartialTick());
+    }
+
+    public static com.mojang.blaze3d.platform.Window layerWindow(RenderGuiLayerEvent event) {
+        return Minecraft.getInstance().getWindow();
+    }
+
+    public static com.mojang.blaze3d.platform.Window layerWindow(RenderGuiLayerEvent.Pre event) {
+        return Minecraft.getInstance().getWindow();
+    }
+
+    public static com.mojang.blaze3d.platform.Window layerWindow(RenderGuiLayerEvent.Post event) {
         return Minecraft.getInstance().getWindow();
     }
 
