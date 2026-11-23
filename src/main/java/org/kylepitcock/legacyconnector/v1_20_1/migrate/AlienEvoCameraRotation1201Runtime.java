@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.HumanoidArm;
 import org.joml.Matrix3f;
 
 /**
@@ -15,5 +16,20 @@ public final class AlienEvoCameraRotation1201Runtime {
 
     public static Matrix3f getInverseViewRotationMatrix() {
         return new Matrix3f().rotation(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
+    }
+
+    /**
+     * AlienEvo stores first-person named-bone matrices under {@code boneName + arm.name()}.
+     * This mirrors its arm-key naming convention for the ability-side lookup.
+     */
+    public static String firstPersonArmBoneKey(String boneName) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) return boneName;
+        return firstPersonArmBoneKey(boneName, minecraft.player.getMainArm());
+    }
+
+    static String firstPersonArmBoneKey(String boneName, HumanoidArm arm) {
+        if (boneName == null || arm == null) return boneName;
+        return boneName + arm.name();
     }
 }

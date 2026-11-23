@@ -28,6 +28,14 @@ final class AlienEvoBoneAnchors1201 implements Opcodes {
     static final String LEGACY_NAME = "getInverseViewRotationMatrix";
     static final String HELPER_NAME = "getInverseViewRotationMatrix";
 
+    static final String GECKO_MODEL_STORAGE = "net/habb/alienevo/client/GeckoModelStorage";
+    static final String GET_NAMED_BONE_POSE_FP = "getNamedBonePoseFP";
+    static final String GET_NAMED_BONE_POSE_FP_DESC =
+            "(ILjava/lang/String;)Lorg/joml/Matrix4f;";
+    static final String FIRST_PERSON_BONE_KEY_HELPER = "firstPersonArmBoneKey";
+    static final String FIRST_PERSON_BONE_KEY_DESC =
+            "(Ljava/lang/String;)Ljava/lang/String;";
+
     static final String BONE_WORLD = "boneWorld";
     static final String BONE_WORLD_DESC =
             "(ILjava/lang/String;ZFLorg/joml/Matrix3f;Lnet/minecraft/world/phys/Vec3;)"
@@ -89,6 +97,10 @@ final class AlienEvoBoneAnchors1201 implements Opcodes {
         int legacyCalls = 0;
         int helperCalls = 0;
         MethodInsnNode legacy = null;
+        int firstPersonPoseCalls = 0;
+        int firstPersonKeyCalls = 0;
+        MethodInsnNode firstPersonPoseCall = null;
+        MethodInsnNode firstPersonKeyCall = null;
         for (MethodNode method : node.methods) {
             if (method.instructions == null) continue;
             for (AbstractInsnNode instruction : method.instructions.toArray()) {
@@ -105,30 +117,135 @@ final class AlienEvoBoneAnchors1201 implements Opcodes {
                         throw new IllegalStateException("AlienEvo BoneAnchors camera bridge call has an unknown bytecode shape");
                     }
                 }
+
+                if (method == boneWorld
+                        && call.owner.equals(GECKO_MODEL_STORAGE)
+                        && call.name.equals(GET_NAMED_BONE_POSE_FP)) {
+                    firstPersonPoseCalls++;
+                    if (firstPersonPoseCall == null) firstPersonPoseCall = call;
+                    if (call.getOpcode() != INVOKESTATIC
+                            || !call.desc.equals(GET_NAMED_BONE_POSE_FP_DESC)
+                            || call.itf) {
+                        throw new IllegalStateException("AlienEvo BoneAnchors first-person named-bone lookup has an unknown bytecode shape");
+                    }
+                } else if (method == boneWorld
+                        && call.owner.equals(HELPER)
+                        && call.name.equals(FIRST_PERSON_BONE_KEY_HELPER)) {
+                    firstPersonKeyCalls++;
+                    firstPersonKeyCall = call;
+                    if (call.getOpcode() != INVOKESTATIC
+                            || !call.desc.equals(FIRST_PERSON_BONE_KEY_DESC)
+                            || call.itf) {
+                        throw new IllegalStateException("AlienEvo BoneAnchors first-person arm-key helper has an unknown bytecode shape");
+                    }
+                }
             }
         }
 
-        boolean originalState = legacyCalls == 1 && helperCalls == 0 && !thirdPersonGuardPresent;
-        boolean adaptedState = legacyCalls == 0 && helperCalls == 1 && thirdPersonGuardPresent;
-        if (!originalState && !adaptedState) {
-            throw new IllegalStateException("AlienEvo BoneAnchors expected the original or fully adapted shape; found "
+        boolean cameraOriginal = legacyCalls == 1 && helperCalls == 0 && !thirdPersonGuardPresent;
+        boolean cameraAdapted = legacyCalls == 0 && helperCalls == 1 && thirdPersonGuardPresent;
+        if (!cameraOriginal && !cameraAdapted) {
+            throw new IllegalStateException("AlienEvo BoneAnchors expected the original or adapted camera shape; found "
                     + legacyCalls + " legacy calls, " + helperCalls + " bridge calls, and third-person guard="
                     + thirdPersonGuardPresent);
         }
 
-        if (adaptedState) return 0;
+        boolean firstPersonLookupOriginal = firstPersonPoseCalls == 1 && firstPersonKeyCalls == 0;
+        boolean firstPersonLookupAdapted = firstPersonPoseCalls == 2 && firstPersonKeyCalls == 1
+                && hasFirstPersonArmKeyFallback(boneWorld, firstPersonPoseCall, firstPersonKeyCall);
+        if (!firstPersonLookupOriginal && !firstPersonLookupAdapted) {
+            throw new IllegalStateException("AlienEvo BoneAnchors expected the original or arm-qualified first-person lookup; found "
+                    + firstPersonPoseCalls + " getNamedBonePoseFP calls and "
+                    + firstPersonKeyCalls + " arm-key helper calls");
+        }
 
-        LabelNode skipThirdPersonRotation = new LabelNode();
-        InsnList guard = new InsnList();
-        guard.add(new VarInsnNode(ILOAD, 2));
-        guard.add(new JumpInsnNode(IFEQ, skipThirdPersonRotation));
-        boneWorld.instructions.insertBefore(matrixLoad, guard);
-        boneWorld.instructions.insert(afterTransform, skipThirdPersonRotation);
+        if (cameraAdapted && firstPersonLookupAdapted) return 0;
+        if (cameraOriginal && firstPersonLookupAdapted) {
+            throw new IllegalStateException("AlienEvo BoneAnchors has a first-person arm-key fallback without the expected camera adapter");
+        }
 
-        legacy.owner = HELPER;
-        legacy.name = HELPER_NAME;
-        legacy.itf = false;
-        return 1;
+        int changed = 0;
+        if (firstPersonLookupOriginal) {
+            AbstractInsnNode boneNameLoad = previousMeaningful(firstPersonPoseCall);
+            AbstractInsnNode playerIdLoad = previousMeaningful(boneNameLoad);
+            AbstractInsnNode branch = previousMeaningful(playerIdLoad);
+            AbstractInsnNode firstPersonFlag = previousMeaningful(branch);
+            AbstractInsnNode afterFirstPersonLookup = nextMeaningful(firstPersonPoseCall);
+            if (!(boneNameLoad instanceof VarInsnNode boneLoad
+                    && boneLoad.getOpcode() == ALOAD && boneLoad.var == 1)
+                    || !(playerIdLoad instanceof VarInsnNode idLoad
+                    && idLoad.getOpcode() == ILOAD && idLoad.var == 0)
+                    || !(branch instanceof JumpInsnNode firstPersonJump && firstPersonJump.getOpcode() == IFEQ)
+                    || !(firstPersonFlag instanceof VarInsnNode flagLoad
+                    && flagLoad.getOpcode() == ILOAD && flagLoad.var == 2)
+                    || !(afterFirstPersonLookup instanceof JumpInsnNode jump
+                    && jump.getOpcode() == GOTO)) {
+                throw new IllegalStateException("AlienEvo BoneAnchors first-person named-bone lookup prelude changed");
+            }
+
+            LabelNode useArmQualifiedBone = new LabelNode();
+            InsnList fallback = new InsnList();
+            fallback.add(new InsnNode(DUP));
+            fallback.add(new JumpInsnNode(IFNONNULL, useArmQualifiedBone));
+            fallback.add(new InsnNode(POP));
+            fallback.add(new VarInsnNode(ILOAD, 0));
+            fallback.add(new VarInsnNode(ALOAD, 1));
+            fallback.add(new MethodInsnNode(INVOKESTATIC, HELPER,
+                    FIRST_PERSON_BONE_KEY_HELPER, FIRST_PERSON_BONE_KEY_DESC, false));
+            fallback.add(new MethodInsnNode(INVOKESTATIC, GECKO_MODEL_STORAGE,
+                    GET_NAMED_BONE_POSE_FP, GET_NAMED_BONE_POSE_FP_DESC, false));
+            fallback.add(useArmQualifiedBone);
+            boneWorld.instructions.insert(firstPersonPoseCall, fallback);
+            changed++;
+        }
+
+        if (cameraOriginal) {
+            LabelNode skipThirdPersonRotation = new LabelNode();
+            InsnList guard = new InsnList();
+            guard.add(new VarInsnNode(ILOAD, 2));
+            guard.add(new JumpInsnNode(IFEQ, skipThirdPersonRotation));
+            boneWorld.instructions.insertBefore(matrixLoad, guard);
+            boneWorld.instructions.insert(afterTransform, skipThirdPersonRotation);
+
+            legacy.owner = HELPER;
+            legacy.name = HELPER_NAME;
+            legacy.itf = false;
+            changed++;
+        }
+        return changed;
+    }
+
+    private static boolean hasFirstPersonArmKeyFallback(
+            MethodNode method, MethodInsnNode firstPoseCall, MethodInsnNode firstKeyCall) {
+        AbstractInsnNode duplicate = nextMeaningful(firstPoseCall);
+        AbstractInsnNode nonNullBranch = nextMeaningful(duplicate);
+        AbstractInsnNode discardMissing = nextMeaningful(nonNullBranch);
+        AbstractInsnNode playerIdLoad = nextMeaningful(discardMissing);
+        AbstractInsnNode boneNameLoad = nextMeaningful(playerIdLoad);
+        AbstractInsnNode keyHelper = nextMeaningful(boneNameLoad);
+        AbstractInsnNode secondPoseCall = nextMeaningful(keyHelper);
+        if (!(duplicate instanceof InsnNode dup && dup.getOpcode() == DUP)
+                || !(nonNullBranch instanceof JumpInsnNode branch && branch.getOpcode() == IFNONNULL)
+                || !(discardMissing instanceof InsnNode pop && pop.getOpcode() == POP)
+                || !(playerIdLoad instanceof VarInsnNode idLoad
+                && idLoad.getOpcode() == ILOAD && idLoad.var == 0)
+                || !(boneNameLoad instanceof VarInsnNode boneLoad
+                && boneLoad.getOpcode() == ALOAD && boneLoad.var == 1)
+                || !(keyHelper instanceof MethodInsnNode helper && helper == firstKeyCall
+                && helper.getOpcode() == INVOKESTATIC
+                && helper.owner.equals(HELPER)
+                && helper.name.equals(FIRST_PERSON_BONE_KEY_HELPER)
+                && helper.desc.equals(FIRST_PERSON_BONE_KEY_DESC))
+                || !(secondPoseCall instanceof MethodInsnNode second
+                && second.getOpcode() == INVOKESTATIC
+                && second.owner.equals(GECKO_MODEL_STORAGE)
+                && second.name.equals(GET_NAMED_BONE_POSE_FP)
+                && second.desc.equals(GET_NAMED_BONE_POSE_FP_DESC)
+                && !second.itf)
+                || !isAfter(branch.label, secondPoseCall)) {
+            return false;
+        }
+        return method.instructions.indexOf(firstPoseCall) < method.instructions.indexOf(secondPoseCall);
     }
 
     private static MethodNode findUniqueMethod(ClassNode node, String name, String descriptor) {

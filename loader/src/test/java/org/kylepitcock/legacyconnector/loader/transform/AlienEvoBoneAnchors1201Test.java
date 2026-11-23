@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -40,6 +41,28 @@ class AlienEvoBoneAnchors1201Test implements Opcodes {
                 AlienEvoBoneAnchors1201.BONE_WORLD_DESC,
                 null,
                 null);
+        LabelNode thirdPersonPose = new LabelNode();
+        LabelNode afterBoneLookup = new LabelNode();
+        boneWorld.instructions.add(new VarInsnNode(ILOAD, 2));
+        boneWorld.instructions.add(new JumpInsnNode(IFEQ, thirdPersonPose));
+        boneWorld.instructions.add(new VarInsnNode(ILOAD, 0));
+        boneWorld.instructions.add(new VarInsnNode(ALOAD, 1));
+        boneWorld.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                AlienEvoBoneAnchors1201.GECKO_MODEL_STORAGE,
+                AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP,
+                AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP_DESC,
+                false));
+        boneWorld.instructions.add(new JumpInsnNode(GOTO, afterBoneLookup));
+        boneWorld.instructions.add(thirdPersonPose);
+        boneWorld.instructions.add(new VarInsnNode(ILOAD, 0));
+        boneWorld.instructions.add(new VarInsnNode(ALOAD, 1));
+        boneWorld.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                AlienEvoBoneAnchors1201.GECKO_MODEL_STORAGE,
+                "getNamedBonePose",
+                AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP_DESC,
+                false));
+        boneWorld.instructions.add(afterBoneLookup);
+        boneWorld.instructions.add(new VarInsnNode(ASTORE, 6));
         boneWorld.instructions.add(new VarInsnNode(ALOAD, 7));
         boneWorld.instructions.add(new InsnNode(DUP));
         boneWorld.instructions.add(new FieldInsnNode(GETFIELD,
@@ -109,6 +132,24 @@ class AlienEvoBoneAnchors1201Test implements Opcodes {
         assertEquals(POP, pop.getOpcode());
         assertEquals(pop.getNext(), skipThirdPerson.label);
 
+        var firstPersonLookups = findCalls(boneWorld,
+                AlienEvoBoneAnchors1201.GECKO_MODEL_STORAGE,
+                AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP);
+        assertEquals(2, firstPersonLookups.size());
+        assertEquals(AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP_DESC,
+                firstPersonLookups.get(0).desc);
+        assertEquals(AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP_DESC,
+                firstPersonLookups.get(1).desc);
+        assertEquals(1, findCalls(boneWorld,
+                AlienEvoBoneAnchors1201.HELPER,
+                AlienEvoBoneAnchors1201.FIRST_PERSON_BONE_KEY_HELPER).size());
+        AbstractInsnNode duplicate = nextMeaningful(firstPersonLookups.get(0));
+        AbstractInsnNode nullCheck = nextMeaningful(duplicate);
+        AbstractInsnNode discardNull = nextMeaningful(nullCheck);
+        assertEquals(DUP, duplicate.getOpcode());
+        assertEquals(IFNONNULL, nullCheck.getOpcode());
+        assertEquals(POP, discardNull.getOpcode());
+
         assertEquals(0, AlienEvoBoneAnchors1201.apply(node));
     }
 
@@ -140,6 +181,36 @@ class AlienEvoBoneAnchors1201Test implements Opcodes {
     }
 
     @Test
+    void failsClosedWhenFirstPersonNamedBoneLookupIsMissing() {
+        ClassNode node = boneAnchors();
+        MethodNode boneWorld = findMethod(node, AlienEvoBoneAnchors1201.BONE_WORLD,
+                AlienEvoBoneAnchors1201.BONE_WORLD_DESC);
+        for (AbstractInsnNode instruction : boneWorld.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP.equals(call.name)) {
+                boneWorld.instructions.remove(call);
+                break;
+            }
+        }
+        assertThrows(IllegalStateException.class, () -> AlienEvoBoneAnchors1201.apply(node));
+    }
+
+    @Test
+    void failsClosedWhenFirstPersonNamedBoneLookupDescriptorChanges() {
+        ClassNode node = boneAnchors();
+        MethodNode boneWorld = findMethod(node, AlienEvoBoneAnchors1201.BONE_WORLD,
+                AlienEvoBoneAnchors1201.BONE_WORLD_DESC);
+        for (AbstractInsnNode instruction : boneWorld.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && AlienEvoBoneAnchors1201.GET_NAMED_BONE_POSE_FP.equals(call.name)) {
+                call.desc = "()Ljava/lang/Object;";
+                break;
+            }
+        }
+        assertThrows(IllegalStateException.class, () -> AlienEvoBoneAnchors1201.apply(node));
+    }
+
+    @Test
     void leavesOtherClassesUntouched() {
         ClassNode node = boneAnchors();
         node.name = "example/OtherClass";
@@ -152,6 +223,18 @@ class AlienEvoBoneAnchors1201Test implements Opcodes {
             if (name.equals(method.name) && descriptor.equals(method.desc)) return method;
         }
         throw new AssertionError("Method not found: " + name + descriptor);
+    }
+
+    private static java.util.List<MethodInsnNode> findCalls(
+            MethodNode method, String owner, String name) {
+        java.util.List<MethodInsnNode> calls = new java.util.ArrayList<>();
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && owner.equals(call.owner) && name.equals(call.name)) {
+                calls.add(call);
+            }
+        }
+        return calls;
     }
 
     private static MethodInsnNode findCall(MethodNode method) {

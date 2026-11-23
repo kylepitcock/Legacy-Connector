@@ -36,6 +36,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :loader:test \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBufferingGlowConsumer1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBoneAnchors1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoRenderLayerModel1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoSlimeDecalMesh1201Test' \
             --no-daemon --stacktrace
@@ -47,6 +48,7 @@ jobs:
         run: |
           ./gradlew :test \
             --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoBufferRefresh1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoCameraRotation1201RuntimeTest' \
             --no-daemon --stacktrace
 
       - name: Run dimensions probe package regression test
