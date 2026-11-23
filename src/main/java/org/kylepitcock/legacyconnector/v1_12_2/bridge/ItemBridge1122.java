@@ -52,6 +52,12 @@ public final class ItemBridge1122 {
     }
 
     /** The modern item of a legacy item and metadata (the base variant when that subtype was never listed). */
+    /** Whether this metadata is one of the item's registered subtypes. */
+    public static synchronized boolean hasVariant(Item item, int meta) {
+        Map<Integer, net.minecraft.world.item.Item> v = VARIANTS.get(item);
+        return v != null && v.containsKey(meta);
+    }
+
     /** The modern items of an item, by subtype (metadata). */
     public static synchronized Map<Integer, net.minecraft.world.item.Item> variants(Item item) {
         Map<Integer, net.minecraft.world.item.Item> v = VARIANTS.get(item);
