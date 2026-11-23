@@ -445,7 +445,8 @@ public final class Forge1201SrgIntermediaryHierarchyAudit {
         }
 
         AuditStatus status = methodMapping.status()
-                == Forge1201TargetOfficialMappingIndex.Status.MAPPED_WITH_EXTERNAL_TYPES
+                        == Forge1201TargetOfficialMappingIndex.Status.MAPPED_WITH_EXTERNAL_TYPES
+                || mappingCandidate.externalDescriptorTypeCount() > 0
                 ? AuditStatus.TARGET_VERIFIED_WITH_EXTERNAL_TYPES : AuditStatus.TARGET_VERIFIED;
         return targetFailure(status, targetInvocationOwner, targetMappingOwner,
                 targetMethod.officialName(), targetMethod.officialDescriptor(), hierarchy.visited(),
