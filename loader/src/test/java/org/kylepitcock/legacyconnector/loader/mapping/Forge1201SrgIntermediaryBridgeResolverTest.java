@@ -346,7 +346,7 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
                 java.util.List.of(new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
                         "net/minecraft/src/C_EntityAccess_",
-                        "net/minecraft/world/level/entity/EntityBase",
+                        "net/minecraft/world/level/entity/EntityAccess",
                         Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.SUPERCLASS, 1)));
 
         var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
