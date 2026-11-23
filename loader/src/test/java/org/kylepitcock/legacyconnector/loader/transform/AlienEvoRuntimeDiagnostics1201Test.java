@@ -23,7 +23,7 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoRuntimeDiagnostics1201Runtime";
 
     @Test
-    void tracesEveryKineceleranRunAnimationExitAndIsIdempotent() {
+    void tracesEveryKineceleranRunAnimationExitAndIsIdempotent() throws AnalyzerException {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/client/model/animation/aliens/kineceleran/KineceleranRunAnimation";
         MethodNode animate = new MethodNode(ACC_PUBLIC, "animate",
@@ -40,6 +40,7 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
 
         assertEquals(3, AlienEvoRuntimeDiagnostics1201.apply(node));
         assertEquals(3, countCalls(animate, "traceKineceleranRun"));
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, animate);
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
     }
 
@@ -77,7 +78,7 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
     }
 
     @Test
-    void recordsRawAndSuppressedVanillaSwingProgressWithoutChangingTheReturnValue() {
+    void recordsRawAndSuppressedVanillaSwingProgressWithoutChangingTheReturnValue() throws AnalyzerException {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/mixin/client/CancelFirstPersonSwingMixin";
         MethodNode swing = new MethodNode(ACC_PRIVATE, "alienevo$cancelSwingProgress",
@@ -94,6 +95,7 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         assertTrue(trace.getPrevious() instanceof VarInsnNode);
         assertEquals(FLOAD, trace.getPrevious().getOpcode());
         assertEquals(DUP, trace.getPrevious().getPrevious().getOpcode());
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, swing);
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
     }
 
