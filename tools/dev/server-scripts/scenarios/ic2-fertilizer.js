@@ -25,7 +25,8 @@ if (tick == 0) {
   L.say("fert: " + itemNamed("fert").join(" "));
 }
 if (tick == 20) {
-  var cs = itemNamed("crop")[0];
+  L.lvl().setBlock(new L.BP(X0, Y0 - 1, Z0), L.Blocks.FARMLAND.defaultBlockState(), 2);
+  var cs = "ic2:crop";
   var it = L.R.ITEM.get(L.RL.parse(cs)), p = L.fp();
   p.setGameMode(GM.CREATIVE);
   var st = new L.IS(it, 1);
@@ -40,8 +41,13 @@ if (tick == 20) {
 if (tick == 30 && G.t) {
   var f = itemNamed("fertilizer")[0];
   var st = new L.IS(L.R.ITEM.get(L.RL.parse(f)), 4);
+  L.say("id before " + L.fs(G.t, "id") + " size " + L.fs(G.t, "size"));
   L.say("fert use -> " + use(st, X0, Z0) + " stack now " + st.getCount());
   L.say("nutrientStorage " + L.fs(G.t, "nutrientStorage"));
+  L.setf(G.t, "id", new java.lang.Short(1)); L.setf(G.t, "nutrientStorage", 0);
+  L.say("planted id " + L.fs(G.t, "id"));
+  var st2 = new L.IS(L.R.ITEM.get(L.RL.parse(f)), 4);
+  L.say("fert use on planted -> " + use(st2, X0, Z0) + " stack now " + st2.getCount() + " nutrientStorage " + L.fs(G.t, "nutrientStorage"));
   var bm = new L.IS(L.R.ITEM.get(L.RL.parse("minecraft:bone_meal")), 4);
   L.say("bonemeal use -> " + use(bm, X0, Z0) + " stack now " + bm.getCount());
   L.say("nutrientStorage " + L.fs(G.t, "nutrientStorage"));
