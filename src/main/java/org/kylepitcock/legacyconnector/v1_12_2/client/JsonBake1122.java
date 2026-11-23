@@ -29,6 +29,42 @@ public final class JsonBake1122 {
     }
 
     /**
+     * A json model with texture variables set and a rotation, as Forge's retextured vanilla model baked ({@code IModel.retexture(...).bake(rotation)}):
+     * a model of its own whose parent is the json. Null when the json does not resolve.
+     */
+    public static IBakedModel bake(ResourceLocation location, Map<String, String> textures, int x, int y, boolean uvlock,
+            Function<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, TextureAtlasSprite> getter) {
+        try {
+            Map<ResourceLocation, BlockModel> cache = new HashMap<>();
+            if (load(location, cache) == null) return null;
+            com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+            json.addProperty("parent", location.toString());
+            if (textures != null && !textures.isEmpty()) {
+                com.google.gson.JsonObject t = new com.google.gson.JsonObject();
+                textures.forEach(t::addProperty);
+                json.add("textures", t);
+            }
+            BlockModel model = BlockModel.fromStream(new java.io.StringReader(json.toString()));
+            var rotation = BlockModelRotation.by(Math.floorMod(x, 360), Math.floorMod(y, 360));
+            net.minecraft.client.resources.model.ModelState state = !uvlock ? rotation : new net.minecraft.client.resources.model.ModelState() {
+                @Override
+                public com.mojang.math.Transformation getRotation() {
+                    return rotation.getRotation();
+                }
+
+                @Override
+                public boolean isUvLocked() {
+                    return true;
+                }
+            };
+            return bake(location, model, cache, getter, state);
+        } catch (RuntimeException | LinkageError e) {
+            RenderErrors1122.report("baking the retextured json model " + location, e);
+            return null;
+        }
+    }
+
+    /**
      * A model written in code ({@code {"parent": ..., "textures": {...}}}, a blockstate variant that names a model and overrides its textures)
      * baked with the game's sprites and the variant's rotation; null when its parent chain does not resolve.
      */
@@ -45,7 +81,7 @@ public final class JsonBake1122 {
     }
 
     private static IBakedModel bake(ResourceLocation location, BlockModel model, Map<ResourceLocation, BlockModel> cache,
-            Function<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, TextureAtlasSprite> getter, BlockModelRotation rotation) {
+            Function<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, TextureAtlasSprite> getter, net.minecraft.client.resources.model.ModelState rotation) {
         try {
             if (model == null) return null;
             model.resolveParents(id -> {
@@ -100,6 +136,9 @@ public final class JsonBake1122 {
                         .replaceAll("^block/wooden_trapdoor_(bottom|top|open)$", "block/oak_trapdoor_$1")
                         .replaceAll("^block/iron_door_(bottom|top)_rh(.*)$", "block/iron_door_$1_right$2")
                         .replaceAll("^block/iron_door_(bottom|top)(_open)?$", "block/iron_door_$1_left$2");
+                // and the models 1.13 renamed (block/half_slab is block/slab), the table the blockstate translation uses
+                String renamed = org.kylepitcock.legacyconnector.v1_12_2.Assets1122.renamedVanillaModel(path);
+                if (renamed != null) path = renamed;
                 if (!path.equals(id.getPath())) resource = Minecraft.getInstance().getResourceManager().getResource(ResourceLocation.withDefaultNamespace(path).withPrefix("models/").withSuffix(".json"));
             }
             if (resource.isEmpty()) return null;

@@ -66,6 +66,9 @@ public class PlayerChunkMapEntry {
 
     public void sendPacket(legacyconnector.v1_12_2.net.minecraft.network.Packet<?> packetIn) {
         var modern = packetIn == null ? null : packetIn.mcc$modern();
+        if (modern == null && packetIn instanceof legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketUpdateTileEntity te) {
+            modern = te.mcc$modern(playerChunkMap.mcc$level());
+        }
         if (modern == null) return;
         for (var sp : playerChunkMap.mcc$watchers(pos.x, pos.z)) sp.connection.send(modern);
     }

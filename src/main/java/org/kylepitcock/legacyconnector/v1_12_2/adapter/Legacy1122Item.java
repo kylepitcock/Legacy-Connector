@@ -239,6 +239,12 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
         return cb().swing && cb().entitySwing(stack, entity);
     }
 
+    /** Forge's Item.shouldCauseReequipAnimation: whether a changed stack in hand lowers and raises the held item. */
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return cb().reequip ? cb().reequip(oldStack, newStack, slotChanged) : super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
+    }
+
     @Override
     public boolean mineBlock(ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.level.block.state.BlockState state,
             net.minecraft.core.BlockPos pos, net.minecraft.world.entity.LivingEntity entity) {

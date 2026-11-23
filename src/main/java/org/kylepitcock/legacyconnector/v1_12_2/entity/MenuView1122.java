@@ -21,7 +21,7 @@ public final class MenuView1122 {
 
     /** The modern menu behind a legacy container (its hosting menu or the menu it views), or null. */
     public static AbstractContainerMenu modern(Container container) {
-        if (container instanceof ModernContainer1122 view) return view.mcc$modern();
+        if (container instanceof org.kylepitcock.legacyconnector.v1_12_2.gui.ModernMenuView1122 view) return view.mcc$modern();
         return container != null && container.mcc$menu instanceof AbstractContainerMenu m ? m : null;
     }
 }

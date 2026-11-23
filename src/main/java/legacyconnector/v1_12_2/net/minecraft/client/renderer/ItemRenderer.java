@@ -72,6 +72,54 @@ public class ItemRenderer {
     public static void mcc$set$itemStackOffHand(ItemRenderer r, ItemStack value) {
     }
 
+    /** Phantom: how far the hand is raised (0 lowered, 1 up), the modern hand renderer's mainHandHeight. */
+    @Deprecated
+    public float equippedProgressMainHand;
+
+    public static float mcc$get$equippedProgressMainHand(ItemRenderer r) {
+        return net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.mainHandHeight;
+    }
+
+    public static void mcc$set$equippedProgressMainHand(ItemRenderer r, float value) {
+        net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.mainHandHeight = value;
+    }
+
+    /** Phantom: how far the hand is raised (0 lowered, 1 up), the modern hand renderer's oMainHandHeight. */
+    @Deprecated
+    public float prevEquippedProgressMainHand;
+
+    public static float mcc$get$prevEquippedProgressMainHand(ItemRenderer r) {
+        return net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.oMainHandHeight;
+    }
+
+    public static void mcc$set$prevEquippedProgressMainHand(ItemRenderer r, float value) {
+        net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.oMainHandHeight = value;
+    }
+
+    /** Phantom: how far the hand is raised (0 lowered, 1 up), the modern hand renderer's offHandHeight. */
+    @Deprecated
+    public float equippedProgressOffHand;
+
+    public static float mcc$get$equippedProgressOffHand(ItemRenderer r) {
+        return net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.offHandHeight;
+    }
+
+    public static void mcc$set$equippedProgressOffHand(ItemRenderer r, float value) {
+        net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.offHandHeight = value;
+    }
+
+    /** Phantom: how far the hand is raised (0 lowered, 1 up), the modern hand renderer's oOffHandHeight. */
+    @Deprecated
+    public float prevEquippedProgressOffHand;
+
+    public static float mcc$get$prevEquippedProgressOffHand(ItemRenderer r) {
+        return net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.oOffHandHeight;
+    }
+
+    public static void mcc$set$prevEquippedProgressOffHand(ItemRenderer r, float value) {
+        net.minecraft.client.Minecraft.getInstance().gameRenderer.itemInHandRenderer.oOffHandHeight = value;
+    }
+
     /** How far a held map is tilted towards the viewer for a pitch (looking down raises it into view). */
     public float getMapAngleFromPitch(float pitch) {
         float f = 1.0F - pitch / 45.0F + 0.1F;

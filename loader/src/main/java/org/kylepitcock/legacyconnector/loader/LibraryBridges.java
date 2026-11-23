@@ -41,6 +41,10 @@ public final class LibraryBridges {
             new Bridge("Waila", "mcp/mobius/waila/", "jade", "waila"),
             // NEI recipe handlers and hidden items are shown through JEI.
             new Bridge("NotEnoughItems", "codechicken/nei/", "jei", "nei"),
+            // JEI 4 (1.12.2) plugins run on the modern JEI: their categories, recipes, catalysts and click areas become modern ones (the 1.12.2 shim's
+            // mezz.jei.api, runtime compat/jei/Jei1122Bridge). JEI's API packages share names with the modern JEI's, so the legacy ones are relocated.
+            // A JEI 1.12.2 jar itself (mod id "jei") is not loaded.
+            new Bridge("jei", "mezz/jei/", "jei", "jei1122"),
             // Patchouli's API (1.12.2: books, multiblocks, custom components) runs on the modern Patchouli; books legacy mods ship as
             // resources are converted into its data/<mod>/patchouli_books format by the runtime.
             new Bridge("patchouli", "vazkii/patchouli/api/", "patchouli", "patchouli"),

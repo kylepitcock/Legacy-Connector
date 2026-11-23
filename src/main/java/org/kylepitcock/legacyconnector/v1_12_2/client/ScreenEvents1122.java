@@ -45,7 +45,124 @@ public final class ScreenEvents1122 {
         NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onRenderPre);
         NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onRenderPost);
         NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onBackground);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onMousePressed);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onMousePressedPost);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onMouseReleased);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onMouseReleasedPost);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onMouseScrolled);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onKeyPressed);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onKeyPressedPost);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onKeyReleased);
+        NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onCharTyped);
         InputEvents1122.register();
+    }
+
+    // ------------------------------------------------------------------ input on the game's own screens
+
+    /*
+     * Forge 1.12 posted GuiScreenEvent.MouseInputEvent / KeyboardInputEvent around every GuiScreen's handleMouseInput / handleKeyboardInput, the
+     * game's screens included: mods add clickable things to the creative inventory or the furnace that way (Techguns' creative-inventory tab cancels
+     * the Pre event of a click on its button). Legacy screens post them themselves (GuiScreen.mcc$dispatchMouse); for the modern screens they come
+     * from the modern screen input events, with the click as LWJGL 2 state (Mouse.getEventButton(), getEventX()).
+     */
+
+    private static boolean mouseInput(Screen screen, double mouseX, double mouseY, int button, boolean pressed, int wheel, boolean pre) {
+        Class<? extends Event> type = pre ? GuiScreenEvent.MouseInputEvent.Pre.class : GuiScreenEvent.MouseInputEvent.Post.class;
+        if (screen == null || legacyHost(screen) || !wants(type)) return false;
+        GuiScreen view = legacyOf(screen);
+        if (view == null) return false;
+        boolean outer = org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.mouseDispatching;
+        int ob = InputEvent1122.eventButton, ow = InputEvent1122.eventDWheel, ox = InputEvent1122.guiX, oy = InputEvent1122.guiY;
+        int opx = InputEvent1122.eventX, opy = InputEvent1122.eventY;
+        boolean os = InputEvent1122.eventButtonState;
+        InputEvent1122.mouseDispatching = true;
+        InputEvent1122.eventButton = button;
+        InputEvent1122.eventButtonState = pressed;
+        InputEvent1122.eventDWheel = wheel;
+        InputEvent1122.guiX = (int) mouseX;
+        InputEvent1122.guiY = (int) mouseY;
+        try {
+            var window = net.minecraft.client.Minecraft.getInstance().getWindow();
+            double scale = window.getGuiScale();
+            InputEvent1122.eventX = (int) (mouseX * scale);
+            InputEvent1122.eventY = window.getHeight() - (int) (mouseY * scale) - 1;
+        } catch (RuntimeException e) {
+            InputEvent1122.eventX = (int) mouseX;
+            InputEvent1122.eventY = (int) mouseY;
+        }
+        try {
+            return post(pre ? new GuiScreenEvent.MouseInputEvent.Pre(view) : new GuiScreenEvent.MouseInputEvent.Post(view));
+        } finally {
+            InputEvent1122.mouseDispatching = outer;
+            InputEvent1122.eventButton = ob;
+            InputEvent1122.eventButtonState = os;
+            InputEvent1122.eventDWheel = ow;
+            InputEvent1122.guiX = ox;
+            InputEvent1122.guiY = oy;
+            InputEvent1122.eventX = opx;
+            InputEvent1122.eventY = opy;
+        }
+    }
+
+    private static boolean keyInput(Screen screen, int glfwKey, char c, boolean pressed, boolean pre) {
+        Class<? extends Event> type = pre ? GuiScreenEvent.KeyboardInputEvent.Pre.class : GuiScreenEvent.KeyboardInputEvent.Post.class;
+        if (screen == null || legacyHost(screen) || !wants(type)) return false;
+        GuiScreen view = legacyOf(screen);
+        if (view == null) return false;
+        boolean outer = InputEvent1122.keyDispatching;
+        int ok = InputEvent1122.eventKey;
+        char oc = InputEvent1122.eventCharacter;
+        boolean os = InputEvent1122.eventKeyState;
+        InputEvent1122.keyDispatching = true;
+        InputEvent1122.eventKey = glfwKey < 0 ? 0 : org.kylepitcock.legacyconnector.v1_7_10.client.LegacyKeys.toLegacy(glfwKey);
+        InputEvent1122.eventCharacter = c;
+        InputEvent1122.eventKeyState = pressed;
+        try {
+            return post(pre ? new GuiScreenEvent.KeyboardInputEvent.Pre(view) : new GuiScreenEvent.KeyboardInputEvent.Post(view));
+        } finally {
+            InputEvent1122.keyDispatching = outer;
+            InputEvent1122.eventKey = ok;
+            InputEvent1122.eventCharacter = oc;
+            InputEvent1122.eventKeyState = os;
+        }
+    }
+
+    private static void onMousePressed(ScreenEvent.MouseButtonPressed.Pre e) {
+        if (mouseInput(e.getScreen(), e.getMouseX(), e.getMouseY(), e.getButton(), true, 0, true)) e.setCanceled(true);
+    }
+
+    private static void onMousePressedPost(ScreenEvent.MouseButtonPressed.Post e) {
+        mouseInput(e.getScreen(), e.getMouseX(), e.getMouseY(), e.getButton(), true, 0, false);
+    }
+
+    private static void onMouseReleased(ScreenEvent.MouseButtonReleased.Pre e) {
+        if (mouseInput(e.getScreen(), e.getMouseX(), e.getMouseY(), e.getButton(), false, 0, true)) e.setCanceled(true);
+    }
+
+    private static void onMouseReleasedPost(ScreenEvent.MouseButtonReleased.Post e) {
+        mouseInput(e.getScreen(), e.getMouseX(), e.getMouseY(), e.getButton(), false, 0, false);
+    }
+
+    private static void onMouseScrolled(ScreenEvent.MouseScrolled.Pre e) {
+        int wheel = (int) Math.round(e.getScrollDeltaY() * 120.0D);
+        if (wheel != 0 && mouseInput(e.getScreen(), e.getMouseX(), e.getMouseY(), -1, false, wheel, true)) e.setCanceled(true);
+    }
+
+    private static void onKeyPressed(ScreenEvent.KeyPressed.Pre e) {
+        if (keyInput(e.getScreen(), e.getKeyCode(), '\0', true, true)) e.setCanceled(true);
+    }
+
+    private static void onKeyPressedPost(ScreenEvent.KeyPressed.Post e) {
+        keyInput(e.getScreen(), e.getKeyCode(), '\0', true, false);
+    }
+
+    private static void onKeyReleased(ScreenEvent.KeyReleased.Pre e) {
+        if (keyInput(e.getScreen(), e.getKeyCode(), '\0', false, true)) e.setCanceled(true);
+    }
+
+    /** LWJGL 2 delivered the typed character with the key; GLFW sends it separately (as a key event without a key code). */
+    private static void onCharTyped(ScreenEvent.CharacterTyped.Pre e) {
+        if (Character.charCount(e.getCodePoint()) == 1 && keyInput(e.getScreen(), -1, (char) e.getCodePoint(), true, true)) e.setCanceled(true);
     }
 
     static boolean wants(Class<? extends Event> type) {

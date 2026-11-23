@@ -36,4 +36,32 @@ public class Mouse extends legacyconnector.v1_7_10.org.lwjgl.input.Mouse {
     /** The cursor is the modern window's. */
     public static void updateCursor() {
     }
+
+    // The event being handled: while a 1.12.2 mouse event is dispatched (a legacy screen's handleMouseInput, Forge's GuiScreenEvent.MouseInputEvent
+    // and InputEvent.MouseInputEvent) its LWJGL 2 state is in InputEvent1122; otherwise the 1.7.10 shim's (the event being played).
+
+    public static int getEventButton() {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.mouseDispatching
+                ? org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.eventButton : legacyconnector.v1_7_10.org.lwjgl.input.Mouse.getEventButton();
+    }
+
+    public static boolean getEventButtonState() {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.mouseDispatching
+                ? org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.eventButtonState : legacyconnector.v1_7_10.org.lwjgl.input.Mouse.getEventButtonState();
+    }
+
+    public static int getEventX() {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.mouseDispatching
+                ? org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.eventX : legacyconnector.v1_7_10.org.lwjgl.input.Mouse.getEventX();
+    }
+
+    public static int getEventY() {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.mouseDispatching
+                ? org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.eventY : legacyconnector.v1_7_10.org.lwjgl.input.Mouse.getEventY();
+    }
+
+    public static int getEventDWheel() {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.mouseDispatching
+                ? org.kylepitcock.legacyconnector.v1_12_2.client.InputEvent1122.eventDWheel : legacyconnector.v1_7_10.org.lwjgl.input.Mouse.getEventDWheel();
+    }
 }

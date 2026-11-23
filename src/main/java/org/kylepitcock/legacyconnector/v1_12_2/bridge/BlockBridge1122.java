@@ -54,6 +54,19 @@ public final class BlockBridge1122 {
         }
         if (!opaque) p.noOcclusion();
         if (m != null && !m.blocksMovement()) p.noCollission();
+        // suffocation and the client's push out of blocks: 1.12 asked causesSuffocation (a full cube of a solid material); the modern rule (a full
+        // collision box) is cached from the block's empty-world bounds, a full cube for stairs, so players standing on Techguns' stairs were
+        // pushed off them
+        net.minecraft.world.level.block.state.BlockBehaviour.StatePredicate suffocates = (state, getter, pos) -> {
+            if (!state.blocksMotion() || !state.isCollisionShapeFullBlock(getter, pos)) return false;
+            try {
+                var ls = StatesBridge1122.toLegacy(state);
+                return ls == null || block.causesSuffocation(ls);
+            } catch (RuntimeException | LinkageError e) {
+                return true;
+            }
+        };
+        p.isSuffocating(suffocates).isViewBlocking(suffocates);
         // 1.12: rock, iron and the like drop nothing without the right tool (Forge's canHarvestBlock; the tags of ToolTags1122 say which tool)
         if (m != null && !m.isToolNotRequired()) p.requiresCorrectToolForDrops();
         if (m != null) {

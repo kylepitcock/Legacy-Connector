@@ -204,9 +204,21 @@ public final class EventBridge1122 {
                 return;
             }
             if (hurt) {
-                var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, source, e.getAmount());
-                if (post(event)) e.setCanceled(true);
-                else e.setAmount(event.getAmount());
+                // 1.12 posted LivingHurtEvent in damageEntity: after the hurt cooldown, before armour; canceling it dealt no damage but the hit still
+                // counted (hurt animation, knockback, cooldown). Posted here (before the cooldown) a cancel refused the whole attack: Techguns
+                // cancels it for its NPCs and applies the damage with its own armour system, so melee never hurt them. The modern armour step
+                // (inside actuallyHurt, after the cooldown) runs this reduction function first, which is where the legacy event is posted.
+                e.addReductionModifier(net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction.ARMOR, (container, reduction) -> {
+                    float before = container.getNewDamage();
+                    var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, source, before);
+                    if (post(event)) return before; // no damage left (armour takes all of it)
+                    float after = event.getAmount();
+                    if (after == before) return reduction;
+                    if (after <= 0.0F) return before;
+                    // a changed amount: the armour's share scales with it
+                    container.setNewDamage(after);
+                    return before > 0.0F ? reduction * (after / before) : 0.0F;
+                });
             }
         });
         bus.addListener((net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre e) -> {

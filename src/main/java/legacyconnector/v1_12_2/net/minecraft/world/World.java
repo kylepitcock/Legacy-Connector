@@ -379,11 +379,36 @@ public class World implements IBlockAccess {
     }
 
     public static List<TileEntity> mcc$get$tickableTileEntities(World w) {
-        List<TileEntity> out = new ArrayList<>();
+        List<TileEntity> out = new TickableList();
         for (TileEntity te : mcc$get$loadedTileEntityList(w)) {
-            if (te instanceof legacyconnector.v1_12_2.net.minecraft.util.ITickable) out.add(te);
+            if (te instanceof legacyconnector.v1_12_2.net.minecraft.util.ITickable && !te.mcc$untickable) out.add(te);
         }
         return out;
+    }
+
+    /**
+     * The ticked tile entities as a list: the hosts tick them, so taking one out (or putting it back) is what stops (or restarts) its
+     * ticking. A client world's list is empty, and a removal there still counts.
+     */
+    private static final class TickableList extends ArrayList<TileEntity> {
+        @Override
+        public boolean add(TileEntity te) {
+            if (te != null) te.mcc$untickable = false;
+            return super.add(te);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            if (o instanceof TileEntity te) te.mcc$untickable = true;
+            super.remove(o);
+            return o instanceof TileEntity;
+        }
+
+        @Override
+        public boolean removeAll(java.util.Collection<?> c) {
+            if (c != null) for (Object o : c) if (o instanceof TileEntity te) te.mcc$untickable = true;
+            return super.removeAll(c);
+        }
     }
 
     public static legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo mcc$get$worldInfo(World w) {
@@ -500,6 +525,7 @@ public class World implements IBlockAccess {
         BlockState modernState = StatesBridge1122.toModern(state);
         if (refusedByOrePartition(p, modernState)) return false;
         modernState = deepslateVariant(p, modernState);
+        modernState = joinChest(p, modernState, flags);
         if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             boolean placed = region.setBlock(p, modernState, flags & ~1);
             if (placed) {
@@ -514,6 +540,39 @@ public class World implements IBlockAccess {
         } finally {
             org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity.mcc$placing(null);
         }
+    }
+
+    /**
+     * 1.12 joined two chests standing side by side on its own (BlockChest checked its neighbours); a modern chest stores the pairing in its
+     * state (type left/right), so a lone chest set next to another lone one of the same block is paired with it here, the neighbour turned
+     * to the same facing as 1.12 did. Structures that place double chests block by block get one double chest, not two single ones.
+     */
+    private BlockState joinChest(net.minecraft.core.BlockPos p, BlockState state, int flags) {
+        if (state == null || !(state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock)
+                || !state.hasProperty(net.minecraft.world.level.block.ChestBlock.TYPE)
+                || state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != net.minecraft.world.level.block.state.properties.ChestType.SINGLE) {
+            return state;
+        }
+        var facing = state.getValue(net.minecraft.world.level.block.ChestBlock.FACING);
+        for (var side : new net.minecraft.core.Direction[] {facing.getClockWise(), facing.getCounterClockWise()}) {
+            var np = p.relative(side);
+            if (outsideRegion(np)) continue;
+            BlockState n = acc().getBlockState(np);
+            if (n.getBlock() != state.getBlock() || !n.hasProperty(net.minecraft.world.level.block.ChestBlock.TYPE)
+                    || n.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != net.minecraft.world.level.block.state.properties.ChestType.SINGLE
+                    || n.getValue(net.minecraft.world.level.block.ChestBlock.FACING).getAxis() == side.getAxis()) {
+                continue;
+            }
+            // LEFT: the partner is at facing's clockwise side (ChestBlock.getConnectedDirection)
+            var mine = side == facing.getClockWise() ? net.minecraft.world.level.block.state.properties.ChestType.LEFT
+                    : net.minecraft.world.level.block.state.properties.ChestType.RIGHT;
+            BlockState partner = n.setValue(net.minecraft.world.level.block.ChestBlock.FACING, facing)
+                    .setValue(net.minecraft.world.level.block.ChestBlock.TYPE, mine.getOpposite());
+            if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) region.setBlock(np, partner, 2);
+            else acc().setBlock(np, partner, flags & ~1);
+            return state.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, mine);
+        }
+        return state;
     }
 
     /**
@@ -679,11 +738,12 @@ public class World implements IBlockAccess {
             if (!region.hasChunk(x >> 4, z >> 4)) return region.getSeaLevel();
             net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos();
             boolean noLeaves = type == Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
+            boolean noFluid = type == Heightmap.Types.OCEAN_FLOOR || type == Heightmap.Types.OCEAN_FLOOR_WG;
             for (int y = region.getMaxBuildHeight() - 1; y >= region.getMinBuildHeight(); y--) {
                 var state = region.getBlockState(p.set(x, y, z));
                 if (state.isAir()) continue;
                 if (noLeaves && state.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock) continue;
-                if (type == Heightmap.Types.WORLD_SURFACE || state.blocksMotion() || !state.getFluidState().isEmpty()) return y + 1;
+                if (type == Heightmap.Types.WORLD_SURFACE || state.blocksMotion() || !noFluid && !state.getFluidState().isEmpty()) return y + 1;
             }
             return region.getMinBuildHeight();
         }
@@ -708,7 +768,22 @@ public class World implements IBlockAccess {
     public BlockPos getTopSolidOrLiquidBlock(BlockPos pos) {
         // 1.12 loaded (or generated) the chunk it asked: a teleporter placing a player in another dimension reads the surface of a chunk nobody has loaded yet
         if (REGIONS.get() == 0 && access instanceof ServerLevel sl && sl.getServer().isSameThread()) sl.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
-        return new BlockPos(pos.getX(), surface(pos.getX(), pos.getZ(), Heightmap.Types.MOTION_BLOCKING_NO_LEAVES), pos.getZ());
+        // 1.12 went down to the first block that blocks movement and is no leaves: through water and lava, so under the sea the answer is
+        // the water just above the floor (mods test that for liquid to keep structures off the sea, Techguns among them)
+        int x = pos.getX(), z = pos.getZ();
+        int y = surfaceModern(x, z, Heightmap.Types.OCEAN_FLOOR);
+        boolean readable = acc() instanceof net.minecraft.server.level.WorldGenRegion region ? region.hasChunk(x >> 4, z >> 4)
+                : acc() != null && !unloaded(new net.minecraft.core.BlockPos(x, 0, z));
+        if (readable) {
+            int min = acc().getMinBuildHeight();
+            net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos();
+            while (y > min) {
+                var below = acc().getBlockState(p.set(x, y - 1, z));
+                if (below.blocksMotion() && !(below.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock)) break;
+                y--;
+            }
+        }
+        return new BlockPos(x, y - SHIFT.get()[0], z);
     }
 
     public BlockPos getPrecipitationHeight(BlockPos pos) {
@@ -1184,7 +1259,10 @@ public class World implements IBlockAccess {
             return be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l ? l.legacy() : null;
         }
         var be = acc().getBlockEntity(p);
-        if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l) return l.legacy();
+        if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l) {
+            // in a generation region the block entity has no level yet: the generator's world makes the tile entity it fills
+            return acc() instanceof net.minecraft.server.level.WorldGenRegion ? l.mcc$legacyForGeneration(this) : l.legacy();
+        }
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122.view(this, be); // the game's own block entities
     }
 
@@ -1320,6 +1398,9 @@ public class World implements IBlockAccess {
         }
         if (legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(entity) == null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$world(entity, this);
         mcc$entityListKey = Long.MIN_VALUE;
+        // a client level refuses addFreshEntity (the server sends entities), but 1.12's WorldClient.spawnEntity added client-side entities
+        // (Techguns' flying gibs of its gore death effect)
+        if (acc() instanceof Level l && l.isClientSide()) return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldClient1122.spawnClientEntity(l, modern);
         boolean added = acc().addFreshEntity(modern);
         if (added && acc() instanceof net.minecraft.server.level.WorldGenRegion) rememberGenerated(modern);
         return added;
@@ -1392,7 +1473,21 @@ public class World implements IBlockAccess {
     public void setEntityState(Entity entity, byte state) {
         Level live = mcc$liveLevel();
         var modern = modernOf(entity);
-        if (live != null && modern != null) live.broadcastEntityEvent(modern, state);
+        if (live == null || modern == null) return;
+        // 1.12's hurt bytes (2 hurt, 33 thorns, 36 drowned, 37 burnt) made the client flash the entity red (hurtTime) and swing its limbs; 1.19.4
+        // replaced them with the damage event packet, so a modern entity ignores them. Mods that deal damage their own way (Techguns' damage system
+        // after cancelling LivingAttackEvent) send the byte themselves: it goes out as the damage event, unless a hosted legacy entity handles the
+        // byte in its own handleStatusUpdate (it then reaches EntityLivingBase.handleStatusUpdate through super).
+        if (modern instanceof net.minecraft.world.entity.LivingEntity living && legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.mcc$hurtSource(living, state) != null && !mcc$ownStatusHandler(modern)) {
+            live.broadcastDamageEvent(modern, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.mcc$hurtSource(living, state));
+            return;
+        }
+        live.broadcastEntityEvent(modern, state);
+    }
+
+    private static boolean mcc$ownStatusHandler(net.minecraft.world.entity.Entity modern) {
+        return modern instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.Host1122 h && h.mcc$legacy() != null
+                && org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.overrides(h.mcc$legacy().getClass(), "handleStatusUpdate", byte.class);
     }
 
     public Entity getEntityByID(int id) {

@@ -112,7 +112,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block IRON_BLOCK = Vanilla1122.block("IRON_BLOCK");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockDoor IRON_DOOR = VanillaBlocks1122.block("IRON_DOOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockDoor(legacyconnector.v1_12_2.net.minecraft.block.material.Material.IRON) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block IRON_ORE = Vanilla1122.block("IRON_ORE");
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block IRON_TRAPDOOR = Vanilla1122.block("IRON_TRAPDOOR");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block IRON_TRAPDOOR = VanillaBlocks1122.block("IRON_TRAPDOOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockTrapDoor(legacyconnector.v1_12_2.net.minecraft.block.material.Material.IRON) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block JUKEBOX = VanillaBlocks1122.block("JUKEBOX", new legacyconnector.v1_12_2.net.minecraft.block.BlockJukebox() {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockDoor JUNGLE_DOOR = VanillaBlocks1122.block("JUNGLE_DOOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockDoor(legacyconnector.v1_12_2.net.minecraft.block.material.Material.WOOD) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block JUNGLE_FENCE = Vanilla1122.block("JUNGLE_FENCE");
@@ -236,7 +236,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockTallGrass TALLGRASS = VanillaBlocks1122.block("TALLGRASS", new legacyconnector.v1_12_2.net.minecraft.block.BlockTallGrass() {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block TNT = Vanilla1122.block("TNT");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block TORCH = Vanilla1122.block("TORCH");
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block TRAPDOOR = Vanilla1122.block("TRAPDOOR");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block TRAPDOOR = VanillaBlocks1122.block("TRAPDOOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockTrapDoor(legacyconnector.v1_12_2.net.minecraft.block.material.Material.WOOD) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block TRAPPED_CHEST = VanillaBlocks1122.block("TRAPPED_CHEST", new legacyconnector.v1_12_2.net.minecraft.block.BlockChest(legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.TRAP) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block TRIPWIRE = Vanilla1122.block("TRIPWIRE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockTripWireHook TRIPWIRE_HOOK = VanillaBlocks1122.block("TRIPWIRE_HOOK", new legacyconnector.v1_12_2.net.minecraft.block.BlockTripWireHook());

@@ -271,9 +271,10 @@ public final class RecipeBridge1122 {
 
     private static List<String> variants(ItemStack stack) {
         List<String> out = new ArrayList<>();
-        for (int meta = 1; meta < 16; meta++) {
+        var base = ItemBridge1122.modern(stack.getItem(), 0);
+        for (int meta : ItemBridge1122.subtypeMetas(stack.getItem())) {
+            if (meta == 0) continue;
             var m = ItemBridge1122.modern(stack.getItem(), meta);
-            var base = ItemBridge1122.modern(stack.getItem(), 0);
             if (m != null && m != base) out.add(BuiltInRegistries.ITEM.getKey(m).toString());
         }
         return out;

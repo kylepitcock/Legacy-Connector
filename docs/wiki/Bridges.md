@@ -11,6 +11,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 |---|---|---|
 | Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
 | NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category drawn by the handler itself ([details](#nei--jei-recipe-categories)); NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
+| JEI 4 (`mezz.jei.api`, 1.12.2 only) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | A JEI 1.12.2 jar is skipped; `@JEIPlugin` plugins run on the modern JEI and each legacy category becomes a modern one drawn by the category itself ([details](#jei-112--jei-recipe-categories)). |
 | Waila / HWYLA (`mcp.mobius.waila`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy head/body/tail/stack providers show their lines in Jade and NBT providers sync server data to the client ([per version](#waila-and-nei-per-legacy-version)). |
 | Patchouli 1.12 (`vazkii.patchouli.api`, 1.12.2 only) | [Patchouli](https://modrinth.com/mod/patchouli) | The legacy Patchouli is skipped; legacy mods' books are shown by the modern one ([details](#patchouli-books)). |
 | CoFH RF API (`cofh.api.energy` 1.6.4/1.7.10, shaded by most tech mods; Redstone Flux `cofh.redstoneflux` 1.12.2, a separate mod) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. The API is re-implemented in the shim of each version, so the Redstone Flux library jar is not loaded either (`bridges.cofhEnergy.enabled=false` loads it). See [Energy per version](#energy-per-version). |
@@ -71,6 +72,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 |---|---|---|
 | Baubles → Curios | `baubles.api` | Curios slots |
 | NEI → JEI | `codechicken.nei` | JEI categories and hidden items |
+| JEI 1.12 → JEI | `mezz.jei.api` (1.12.2) | JEI categories, catalysts, click areas, hidden items |
 | Waila → Jade | `mcp.mobius.waila.api` | Jade tooltips |
 | Patchouli 1.12 → Patchouli | `vazkii.patchouli.api` | books, multiblocks, custom components ([details](#patchouli-books)) |
 | CoFH RF → NeoForge Energy | `cofh.api.energy` | `IEnergyStorage` (1 RF = 1 FE) |
@@ -360,3 +362,31 @@ the capability are also visible to legacy code (1.7.10: `ModernCapabilityTile` i
 | Forge Energy `CapabilityEnergy.ENERGY` on tiles and items | 1.12.2 | `BuiltinAdapters.energy1122`, `ItemCapabilities1122` (entities are not bridged) | 1:1 |
 | IC2 EU `IEnergySink` / `IEnergySource` tiles, `IElectricItem` items | 1.7.10 only | `ForeignEnergy1710` (reflection) | `energy.fePerEu` = 4 |
 | BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10 only | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |
+
+## JEI 1.12 → JEI recipe categories
+
+1.12.2 mods integrated with JEI 4 directly (`mezz.jei.api`). Those packages share their names with the modern JEI's but not their
+shapes, so references to `mezz.jei` in legacy jars are relocated into the 1.12.2 shim (bridge `jei1122`,
+`bridges.jei1122.enabled=false` switches it off); a JEI 1.12.2 jar itself is not loaded. The runtime (`compat/jei/Jei1122Bridge`, a
+modern `@JeiPlugin`) finds the legacy plugins by their `@JEIPlugin` annotation and calls them in JEI 4's order: `registerItemSubtypes`,
+`registerIngredients`, `registerCategories`, then `register(IModRegistry)` (already while the modern JEI registers its categories,
+because it asks for catalysts before recipes), and `onRuntimeAvailable`.
+
+- Each legacy `IRecipeCategory` becomes a modern category `<getModName()>:<uid>` of its background's size. Drawing runs as legacy
+  GUI drawing: the background at the recipe origin, the category's `drawExtras`, the wrapper's `drawInfo`, as JEI 4 did. Tooltips
+  come from the category's and the wrapper's `getTooltipStrings`.
+- Recipes come from `addRecipes`; objects that are not wrappers go through the factory registered with `handleRecipes`.
+- `setRecipe` lays out its slots on a stand-in `IRecipeLayout`: item slots (an 18-pixel frame, the item one pixel in), fluid slots
+  (size, capacity, overlay), `set(IIngredients)` (inputs into the input slots and outputs into the output slots, in slot order),
+  slot backgrounds, tooltip callbacks and `setShapeless`. They become modern slots. `ICustomCraftingRecipeWrapper` lays out its own slots.
+- `IGuiHelper` is JEI 4's: texture drawables with padding and masks, animated drawables, tick timers, the crafting grid helper,
+  item icons. `IStackHelper`, `IIngredientRegistry` (all items, fuels) and `IIngredientBlacklist` (hidden at runtime) are backed by
+  the game's registries.
+- `addRecipeCatalyst` becomes a modern catalyst (also for the vanilla categories), `addRecipeClickArea` a clickable area of the
+  mod's GUI, `IAdvancedGuiHandler.getGuiExtraAreas` an extra area JEI's overlay avoids, and `addIngredientInfo` an information page.
+- Not bridged: recipes a legacy plugin adds to the vanilla categories (the layer converts the mods' crafting recipes itself),
+  recipe transfer (`IRecipeTransferRegistry` accepts and ignores), mods' own ingredient types, and the subtype registry (the layer
+  gives every legacy item its own subtype interpreter).
+
+Example: Techguns registers 11 categories (ammo press, metal press, chemistry lab, fabricator, camo bench, charging station,
+reaction chamber, ore drill, blast furnace, grinder, upgrade bench), each with its machine as catalyst and its GUI's click areas.

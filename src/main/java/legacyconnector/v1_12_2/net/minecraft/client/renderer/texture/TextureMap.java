@@ -135,8 +135,15 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
     public TextureAtlasSprite getTextureExtry(String name) {
         synchronized (this) {
             TextureAtlasSprite sprite = mapRegisteredSprites.get(name);
-            return sprite != null ? sprite : mapUploadedSprites.get(name);
+            if (sprite == null) sprite = mapUploadedSprites.get(name);
+            if (sprite != null) return sprite;
         }
+        // a sprite the atlas has without a mod registering it: 1.12's atlas held the textures of every model and Forge stitched every fluid's
+        // still and flowing texture, so mods find them by name (Techguns' tank gauges look up getFluid().getStill(): null, they drew nothing)
+        if (name == null || name.isEmpty()) return null;
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.client.Sprites1122.sprite(name);
+        if (modern == null || modern.contents().name().equals(net.minecraft.client.renderer.texture.MissingTextureAtlasSprite.getLocation())) return null;
+        return getAtlasSprite(name);
     }
 
     /** Adds a sprite object of the mod's own class (custom loaders): it is synchronized with the modern sprite of its name. */

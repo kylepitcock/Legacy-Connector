@@ -154,7 +154,7 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
     /** The variant names an item's models were registered under (each subtype's model location). */
     public java.util.List<String> getVariantNames(Item item) {
         java.util.List<String> names = new java.util.ArrayList<>();
-        for (int meta = 0; meta < 16; meta++) {
+        for (int meta : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.subtypeMetas(item)) {
             ModelResourceLocation m = mcc$model(item, meta);
             if (m != null && !names.contains(m.toString())) names.add(m.toString());
         }

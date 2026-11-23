@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var REPO = "kylepitcock/Legacy-Connector";
-  var LABEL = { perfect: "Fully playable", playable: "Mostly playable", works: "Basics work", partial: "Partly working", loads: "Starts, untested", fails: "Does not start", crashes: "Crashes the game", untested: "Not tested" };
+  var LABEL = { perfect: "Fully playable", playable: "Mostly playable", works: "Basics work", partial: "Partly working", loads: "Starts and loads", fails: "Does not start", crashes: "Crashes the game", untested: "Not tested" };
   var TIER = ["community", "maintainer", "client", "corpus", "probe"];
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
@@ -327,7 +327,7 @@
      ["playable", "Played in survival and most of it works. Some mechanics or abilities are known to be broken or were not tried."],
      ["works", "The basics work: its blocks, items and mobs showed up and behaved in a test (by hand, or by the in-game test that found problems in under 10% of them). Deeper mechanics were not checked."],
      ["partial", "It loads and you can use part of it, but some features are known to be broken."],
-     ["loads", "It starts without errors and passes the startup check, but nobody has played it yet."],
+     ["loads", "It starts without errors and its content passes the startup check. It has not been play-tested yet, so no problems are known."],
      ["fails", "The game starts but the mod is disabled because it failed while loading."],
      ["crashes", "Using it takes the whole game down."]].forEach(function (t) {
       var row = el("div", "tier");
@@ -365,8 +365,9 @@
   // ---------- search view (the landing page) ----------
   var VERSION_STAGE = { "1.7.10": "Beta", "1.12.2": "Beta", "1.6.4": "Beta", "1.5.2": "Alpha", "1.4.7": "Alpha", "1.2.5": "Alpha", "b1.7.3": "Alpha", "1.20.1": "Alpha" };
   var WHO = { community: "Player report", maintainer: "Maintainer", client: "In-game test", corpus: "Startup test", probe: "Automated check" };
-  var STATUS_HINT = { perfect: "survival-ready", playable: "most gameplay works", works: "basics work, not tested deeply", partial: "some features broken", loads: "starts, nobody played it", fails: "disabled at startup", crashes: "takes the game down" };
+  var STATUS_HINT = { perfect: "survival-ready", playable: "most gameplay works", works: "basics work, not tested deeply", partial: "some features broken", loads: "starts cleanly, play test pending", fails: "disabled at startup", crashes: "takes the game down" };
   function isGood(s) { return s === "perfect" || s === "playable" || s === "works"; }
+  function runs(s) { return isGood(s) || s === "partial" || s === "loads"; }
 
   var SORTS = {
     relevance: null, // with no query: best rating first, then name
@@ -462,10 +463,11 @@
     var box = $("vcards");
     box.textContent = "";
     var hasQ = !!state.q.trim() || state.status !== "all";
-    var byMc = {}, totalByMc = {}, goodByMc = {}, statByMc = {};
+    var byMc = {}, totalByMc = {}, goodByMc = {}, runByMc = {}, statByMc = {};
     state.all.forEach(function (m) {
       totalByMc[m.mc] = (totalByMc[m.mc] || 0) + 1;
       if (isGood(m.status)) goodByMc[m.mc] = (goodByMc[m.mc] || 0) + 1;
+      if (runs(m.status)) runByMc[m.mc] = (runByMc[m.mc] || 0) + 1;
       (statByMc[m.mc] = statByMc[m.mc] || {})[m.status] = ((statByMc[m.mc] || {})[m.status] || 0) + 1;
     });
     facet.forEach(function (x) { byMc[x.m.mc] = (byMc[x.m.mc] || 0) + 1; });
@@ -497,7 +499,7 @@
     var allBtn = card("", "All versions", "", allCount, "", statBar(all));
     box.appendChild(allBtn);
     versions.forEach(function (v) {
-      box.appendChild(card(v, "MC " + v, VERSION_STAGE[v] || "", byMc[v] || 0, (goodByMc[v] || 0) + " of " + totalByMc[v] + " work or better", statBar(statByMc[v] || {})));
+      box.appendChild(card(v, "MC " + v, VERSION_STAGE[v] || "", byMc[v] || 0, Math.round(100 * (runByMc[v] || 0) / totalByMc[v]) + "% start and run" + (goodByMc[v] ? " · " + goodByMc[v] + " confirmed working" : ""), statBar(statByMc[v] || {})));
     });
   }
 

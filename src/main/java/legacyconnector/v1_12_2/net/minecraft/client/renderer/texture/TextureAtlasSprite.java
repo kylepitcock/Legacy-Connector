@@ -52,6 +52,16 @@ public class TextureAtlasSprite {
         maxU = (float) (originInX + width) / (float) inX - f;
         minV = (float) originInY / (float) inY + f1;
         maxV = (float) (originInY + height) / (float) inY - f1;
+        // a sprite placed alone at the origin of a sheet its own size: a mod's private sprite for a texture it binds itself (Techguns bakes
+        // its OBJ guns with one per gun texture), not a tile of the block atlas
+        mcc$ownSheet = mcc$modern == null && originInX == 0 && originInY == 0 && width > 0 && height > 0 && inX == width && inY == height;
+    }
+
+    /** Whether this sprite spans a whole texture of its own (see {@link #initSprite}): quads with it draw with the bound texture, uvs as baked. */
+    private boolean mcc$ownSheet;
+
+    public boolean mcc$ownSheet() {
+        return mcc$ownSheet;
     }
 
     public void copyFrom(TextureAtlasSprite atlasSpirit) {
@@ -108,7 +118,8 @@ public class TextureAtlasSprite {
 
     /** The modern sprite this one shows (stitched lazily if legacy code asks before the atlas reload told it). */
     public net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modern() {
-        if (mcc$modern == null) mcc$sync(Sprites1122.sprite(getIconName()));
+        // a private sprite keeps its own uv range (the atlas has no sprite of its name: syncing gave it the missing sprite's)
+        if (mcc$modern == null && !mcc$ownSheet) mcc$sync(Sprites1122.sprite(getIconName()));
         return mcc$modern;
     }
 

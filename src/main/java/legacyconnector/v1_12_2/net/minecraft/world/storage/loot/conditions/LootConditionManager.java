@@ -10,6 +10,7 @@ public class LootConditionManager {
     private static final Map<Class<?>, LootCondition.Serializer<?>> CLASS_TO_SERIALIZER_MAP = new HashMap<>();
 
     public static synchronized <T extends LootCondition> void registerCondition(LootCondition.Serializer<? extends T> serializer) {
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.ensure(); // the vanilla types first, as 1.12's static block registered them
         ResourceLocation name = serializer.getLootTableLocation();
         Class<?> clazz = serializer.getConditionClass();
         if (NAME_TO_SERIALIZER_MAP.containsKey(name)) throw new IllegalArgumentException("Can't re-register item condition name " + name);
@@ -19,6 +20,7 @@ public class LootConditionManager {
     }
 
     public static synchronized LootCondition.Serializer<?> getSerializerForName(ResourceLocation location) {
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.ensure();
         LootCondition.Serializer<?> serializer = NAME_TO_SERIALIZER_MAP.get(location);
         if (serializer == null) throw new IllegalArgumentException("Unknown loot item condition '" + location + "'");
         return serializer;
@@ -50,7 +52,13 @@ public class LootConditionManager {
         public LootCondition deserialize(com.google.gson.JsonElement element, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
             var json = element.getAsJsonObject();
             var name = new ResourceLocation(json.get("condition").getAsString());
-            return getSerializerForName(name).deserialize(json, context);
+            LootCondition.Serializer<?> serializer;
+            synchronized (LootConditionManager.class) {
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.ensure();
+                serializer = NAME_TO_SERIALIZER_MAP.get(name);
+            }
+            if (serializer == null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.LootSerializers1122.unknownCondition(name);
+            return serializer.deserialize(json, context);
         }
 
         @Override

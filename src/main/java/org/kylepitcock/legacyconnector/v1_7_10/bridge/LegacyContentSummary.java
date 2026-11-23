@@ -30,6 +30,7 @@ public final class LegacyContentSummary {
         for (LegacyHosts.Info i : LegacyHosts.all()) byMod.computeIfAbsent(i.id().getNamespace(), k -> new int[4])[2]++;
         for (var i : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.all()) byMod.computeIfAbsent(i.id().getNamespace(), k -> new int[4])[2]++;
         for (var id : org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs.ids()) byMod.computeIfAbsent(id.getNamespace(), k -> new int[4])[3]++;
+        for (var id : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.spawnEggIds()) byMod.computeIfAbsent(id.getNamespace(), k -> new int[4])[3]++;
         StringBuilder sb = new StringBuilder();
         int items = 0, blocks = 0, entities = 0;
         for (var e : byMod.entrySet()) {

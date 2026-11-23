@@ -41,11 +41,15 @@ public abstract class LootEntry {
             int weight = json.has("weight") ? json.get("weight").getAsInt() : 1;
             int quality = json.has("quality") ? json.get("quality").getAsInt() : 0;
             String name = json.has("entryName") ? json.get("entryName").getAsString() : json.has("name") ? json.get("name").getAsString() : kind;
-            LootCondition[] conditions = new LootCondition[0];
+            // the entry's conditions and (for items) functions: without them every entry dropped every time as the plain item
+            LootCondition[] conditions = json.has("conditions") ? context.deserialize(json.get("conditions"), LootCondition[].class) : new LootCondition[0];
             switch (kind) {
                 case "item": {
                     var item = legacyconnector.v1_12_2.net.minecraft.item.Item.getByNameOrId(json.get("name").getAsString());
-                    return new LootEntryItem(item, weight, quality, new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.functions.LootFunction[0], conditions, name);
+                    legacyconnector.v1_12_2.net.minecraft.world.storage.loot.functions.LootFunction[] functions = json.has("functions")
+                            ? context.deserialize(json.get("functions"), legacyconnector.v1_12_2.net.minecraft.world.storage.loot.functions.LootFunction[].class)
+                            : new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.functions.LootFunction[0];
+                    return new LootEntryItem(item, weight, quality, functions, conditions, name);
                 }
                 case "loot_table":
                     return new LootEntryTable(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(json.get("name").getAsString()), weight, quality, conditions,

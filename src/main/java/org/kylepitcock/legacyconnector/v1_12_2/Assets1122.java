@@ -139,6 +139,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         clientProxies();
         vanillaModelAliases(out);
         itemModels(out);
+        orphanObjVariants(out);
         long itemsMs = (System.nanoTime() - t0) / 1_000_000;
         Stats stats = new Stats();
         for (Block block : Registries1122.BLOCKS.getValues()) {
@@ -352,6 +353,48 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         return model;
     }
 
+    private static volatile Map<String, ResourceLocation> orphanModels = Map.of();
+
+    /**
+     * The standalone model generated for a blockstate variant whose file no block or item owns and whose model is an OBJ file, or null. Mods
+     * load such variants as parts of the models they draw themselves: Techguns' grenade launcher asks for {@code techguns:grenadelauncher_1#inventory},
+     * the drum with the grenades, which its gun renderer turns while firing. 1.12 baked every blockstate file; the variant's model is written
+     * (NeoForge's OBJ loader, the variant's textures and flip-v) and baked as a standalone model. JSON variants of such files are baked from the
+     * file when asked for (OrphanVariants1122).
+     */
+    public static ResourceLocation orphanModel(String legacyLocation) {
+        return legacyLocation == null ? null : orphanModels.get(legacyLocation);
+    }
+
+    /** All models of {@link #orphanModel}, to be baked as standalone models. */
+    public static java.util.Collection<ResourceLocation> orphanModelIds() {
+        return orphanModels.values();
+    }
+
+    private static void orphanObjVariants(Map<String, Supplier<byte[]>> out) {
+        Map<String, ResourceLocation> found = new java.util.LinkedHashMap<>();
+        for (var mrl : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoaderRegistry.mcc$requestedVariants()) {
+            try {
+                String ns = Ids.namespace(mrl.getNamespace());
+                String path = Ids.normalizePath(mrl.getPath());
+                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(ns, path);
+                // a registered block's or item's variants are translated with it
+                if (BuiltInRegistries.BLOCK.containsKey(id) || BuiltInRegistries.ITEM.containsKey(id)) continue;
+                JsonObject model = blockstateItemModel(mrl, null, out);
+                if (model == null || !model.has("parent") || !model.get("parent").getAsString().contains(":lc1122/obj/")) continue;
+                String variant = mrl.getVariant() == null || mrl.getVariant().isEmpty() ? "normal" : mrl.getVariant();
+                String file = "item/lc1122/orphan/" + path + "_" + Ids.normalizePath(variant.replace('=', '_').replace(',', '_'));
+                byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+                out.put("assets/" + ns + "/models/" + file + ".json", () -> bytes);
+                found.put(mrl.toString(), ResourceLocation.fromNamespaceAndPath(ns, file));
+            } catch (RuntimeException e) {
+                LOG.debug("Could not write the model of the blockstate variant {}: {}", mrl, e.toString());
+            }
+        }
+        orphanModels = Map.copyOf(found);
+        if (!found.isEmpty()) LOG.info("1.12.2 blockstate variants of files no block or item owns: {} OBJ model(s) written", found.size());
+    }
+
     /**
      * An item whose blockstate variant names an OBJ model (AbyssalCraft's staff, dread katana, cudgel: {@code "model": "mod:staff.obj"} with the file in
      * models/item): Forge looked the file up under models/, models/item/ and models/block/. The Forge hand/gui transforms of the variant become display.
@@ -372,6 +415,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         String objModel = ObjAssets1122.model(mNs, found, textures, ObjAssets1122.custom(alt), "item_" + itemPath, out);
         JsonObject model = new JsonObject();
         model.addProperty("parent", objModel);
+        if (!alt.has("transform") && alt.has(ITEM_TRANSFORM)) {
+            alt = alt.deepCopy();
+            alt.add("transform", alt.get(ITEM_TRANSFORM));
+        }
         if (alt.has("transform") && alt.get("transform").isJsonObject()) {
             JsonObject display = new JsonObject();
             for (var e : alt.getAsJsonObject("transform").entrySet()) {
@@ -405,8 +452,34 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 display.add(e.getKey(), d);
             }
             if (display.size() > 0) model.add("display", display);
+        } else if (alt.has("transform") && alt.get("transform").isJsonPrimitive()) {
+            // a Forge transform preset by name (Techguns' charging station: "forge:default-block"), the display of the vanilla model it copies
+            JsonObject preset = forgeTransformPreset(alt.get("transform").getAsString());
+            if (preset != null) model.add("display", preset);
         }
         return model;
+    }
+
+    /** Forge 1.12's named item transforms (ForgeBlockStateV1): the display sections of vanilla's block, generated-item and handheld models. */
+    private static JsonObject forgeTransformPreset(String name) {
+        String json = switch (name) {
+            case "forge:default-block" -> "{\"gui\":{\"rotation\":[30,225,0],\"scale\":[0.625,0.625,0.625]},"
+                    + "\"ground\":{\"translation\":[0,3,0],\"scale\":[0.25,0.25,0.25]},\"fixed\":{\"scale\":[0.5,0.5,0.5]},"
+                    + "\"thirdperson_righthand\":{\"rotation\":[75,45,0],\"translation\":[0,2.5,0],\"scale\":[0.375,0.375,0.375]},"
+                    + "\"firstperson_righthand\":{\"rotation\":[0,45,0],\"scale\":[0.4,0.4,0.4]},"
+                    + "\"firstperson_lefthand\":{\"rotation\":[0,225,0],\"scale\":[0.4,0.4,0.4]}}";
+            case "forge:default-item" -> "{\"ground\":{\"translation\":[0,2,0],\"scale\":[0.5,0.5,0.5]},"
+                    + "\"head\":{\"rotation\":[0,180,0],\"translation\":[0,13,7]},"
+                    + "\"thirdperson_righthand\":{\"translation\":[0,3,1],\"scale\":[0.55,0.55,0.55]},"
+                    + "\"firstperson_righthand\":{\"rotation\":[0,-90,25],\"translation\":[1.13,3.2,1.13],\"scale\":[0.68,0.68,0.68]},"
+                    + "\"fixed\":{\"rotation\":[0,180,0]}}";
+            case "forge:default-tool" -> "{\"thirdperson_righthand\":{\"rotation\":[0,-90,55],\"translation\":[0,4,0.5],\"scale\":[0.85,0.85,0.85]},"
+                    + "\"thirdperson_lefthand\":{\"rotation\":[0,90,-55],\"translation\":[0,4,0.5],\"scale\":[0.85,0.85,0.85]},"
+                    + "\"firstperson_righthand\":{\"rotation\":[0,-90,25],\"translation\":[1.13,3.2,1.13],\"scale\":[0.68,0.68,0.68]},"
+                    + "\"firstperson_lefthand\":{\"rotation\":[0,90,-25],\"translation\":[1.13,3.2,1.13],\"scale\":[0.68,0.68,0.68]}}";
+            default -> null;
+        };
+        return json == null ? null : com.google.gson.JsonParser.parseString(json).getAsJsonObject();
     }
 
     // ------------------------------------------------------------------------------------------------------------------------------
@@ -1054,11 +1127,16 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     only.add("transform", v);
                     copyRotation(rot, only);
                     for (var r : rot.entrySet()) addAngle(into, r.getKey(), r.getValue().getAsInt());
+                    // kept for the item model made from the variant (its display transforms, or a preset such as "forge:default-block")
+                    into.add(ITEM_TRANSFORM, v.deepCopy());
                 }
                 default -> into.add(k, v.deepCopy());
             }
         }
     }
+
+    /** The Forge transform of a merged variant, for its item model only (no block variant key). */
+    private static final String ITEM_TRANSFORM = "mcc$transform";
 
     private static void addAngle(JsonObject into, String axis, int angle) {
         int sum = (into.has(axis) ? into.get(axis).getAsInt() : 0) + angle;
@@ -1537,6 +1615,31 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         Chain chain = new Chain();
         chainOf(model, out, chain, 0);
         int colon = model.indexOf(':');
+        if (chain.blocked && colon > 0) {
+            // a model of a custom loader the layer wrote itself (a Forge OBJ model as NeoForge's OBJ loader reads it): the loader json takes the
+            // render type too, so a copy of it gets one (Techguns' formed reaction chamber is an OBJ in the cutout layer; drawn solid, its
+            // glass's transparent texels were an opaque white box)
+            String file = "assets/" + model.substring(0, colon) + "/models/" + Ids.normalizePath(model.substring(colon + 1)) + ".json";
+            Supplier<byte[]> generated = out.get(file);
+            if (generated != null) {
+                try {
+                    JsonObject json = com.google.gson.JsonParser.parseString(new String(generated.get(), StandardCharsets.UTF_8)).getAsJsonObject();
+                    if (json.has("loader") && !json.has("render_type")) {
+                        String path = Ids.normalizePath(model.substring(colon + 1)) + "_" + renderType.substring(10);
+                        String copyFile = "assets/" + model.substring(0, colon) + "/models/" + path + ".json";
+                        if (!out.containsKey(copyFile)) {
+                            json.addProperty("render_type", renderType);
+                            byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
+                            out.put(copyFile, () -> bytes);
+                        }
+                        copy.addProperty("model", model.substring(0, colon) + ":" + path);
+                    }
+                } catch (RuntimeException e) {
+                    // not a json object: left as it is
+                }
+            }
+            return copy;
+        }
         if (chain.blocked || colon < 0 || model.startsWith("minecraft:") || model.contains("builtin/")) return copy;
         String path = "block/lc1122/rt/" + model.substring(0, colon) + "_" + Ids.normalizePath(model.substring(colon + 1)).replace('/', '_') + "_" + renderType.substring(10);
         String file = "assets/" + blockId.getNamespace() + "/models/" + path + ".json";
@@ -1617,6 +1720,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             Map.entry("block/iron_door_bottom_rh", "block/iron_door_bottom_right"), Map.entry("block/iron_door_top_rh", "block/iron_door_top_right"),
             Map.entry("block/normal_rail_flat", "block/rail_flat"), Map.entry("block/normal_rail_curved", "block/rail_curved"),
             Map.entry("block/normal_rail_raised_ne", "block/template_rail_raised_ne"), Map.entry("block/normal_rail_raised_sw", "block/template_rail_raised_sw"));
+
+    /** The 1.13+ name of a vanilla model path 1.12 had under another name ("block/half_slab" is "block/slab"), or null. */
+    public static String renamedVanillaModel(String path) {
+        return VANILLA_MODEL_RENAMES.get(path);
+    }
 
     private static final java.util.regex.Pattern VINE_MODEL = java.util.regex.Pattern.compile("vine_([1-4])?(u)?(_opposite)?");
 

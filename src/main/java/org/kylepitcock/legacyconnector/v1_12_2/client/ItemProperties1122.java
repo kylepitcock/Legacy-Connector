@@ -30,7 +30,7 @@ final class ItemProperties1122 {
             }
             if (props == null || props.isEmpty()) continue;
             java.util.Set<net.minecraft.world.item.Item> done = new java.util.HashSet<>();
-            for (int meta = 0; meta < 16; meta++) {
+            for (int meta : ItemBridge1122.subtypeMetas(item)) {
                 var modern = ItemBridge1122.modern(item, meta);
                 if (modern == null || !done.add(modern)) continue;
                 for (var entry : props.entrySet()) {
