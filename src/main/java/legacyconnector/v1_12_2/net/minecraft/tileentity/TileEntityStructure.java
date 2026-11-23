@@ -22,6 +22,33 @@ public class TileEntityStructure extends TileEntity {
         return mcc$structure;
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos position = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(0, 1, 0);
+    private legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos size = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(0, 0, 0);
+
+    /** The structure's corner, relative to the block (default 0, 1, 0). */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos getPosition() {
+        if (mcc$structure == null) return position;
+        var p = mcc$structure.getStructurePos();
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(p.getX(), p.getY(), p.getZ());
+    }
+
+    public void setPosition(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos posIn) {
+        position = posIn;
+        if (mcc$structure != null && posIn != null) mcc$structure.setStructurePos(new net.minecraft.core.BlockPos(posIn.getX(), posIn.getY(), posIn.getZ()));
+    }
+
+    /** The structure's extent in blocks. */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos getStructureSize() {
+        if (mcc$structure == null) return size;
+        var s = mcc$structure.getStructureSize();
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(s.getX(), s.getY(), s.getZ());
+    }
+
+    public void setSize(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos sizeIn) {
+        size = sizeIn;
+        if (mcc$structure != null && sizeIn != null) mcc$structure.setStructureSize(new net.minecraft.core.Vec3i(sizeIn.getX(), sizeIn.getY(), sizeIn.getZ()));
+    }
+
     public String getName() {
         return mcc$structure != null ? mcc$structure.getStructureName() : name;
     }

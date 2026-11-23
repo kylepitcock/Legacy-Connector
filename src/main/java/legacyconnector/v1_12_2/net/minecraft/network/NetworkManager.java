@@ -95,6 +95,36 @@ public class NetworkManager {
         if (ch != null) ch.attr(PROTOCOL_ATTRIBUTE_KEY).set(state);
     }
 
+    // ---- netty handler surface (1.12's manager is a SimpleChannelInboundHandler; the modern connection owns the pipeline)
+
+    public void channelActive(io.netty.channel.ChannelHandlerContext context) {
+    }
+
+    public void channelInactive(io.netty.channel.ChannelHandlerContext context) {
+    }
+
+    public void exceptionCaught(io.netty.channel.ChannelHandlerContext context, Throwable throwable) {
+    }
+
+    /** Sets the compression threshold of the connection (-1 turns compression off). */
+    public void setCompressionThreshold(int threshold) {
+        if (connection.channel() != null && connection.isConnected()) connection.setupCompression(threshold, false);
+    }
+
+    /** Encryption is negotiated by the modern login; a mod enabling it by hand has nothing left to do. */
+    public void enableEncryption(javax.crypto.SecretKey key) {
+    }
+
+    /** Handles a lost connection: the modern connection closes itself and tells its listener. */
+    public void handleDisconnection() {
+        connection.handleDisconnection();
+    }
+
+    /** The reason the connection ended, a generic one when the modern connection recorded none. */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getExitMessage() {
+        return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("multiplayer.disconnect.generic");
+    }
+
     // ---- gap batch (kept together at the end)
 
     /** Phantom: the netty channel (redirected to {@link #mcc$get$channel}). */

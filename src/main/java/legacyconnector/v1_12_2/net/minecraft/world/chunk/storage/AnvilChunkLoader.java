@@ -13,9 +13,12 @@ import legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk;
  */
 public class AnvilChunkLoader implements IChunkLoader {
     public final File chunkSaveLocation;
+    /** The data fixer the loader was made with (the game's own loader upgrades chunk data). */
+    private final legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer fixer;
 
     public AnvilChunkLoader(File chunkSaveLocationIn, legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer dataFixerIn) {
         this.chunkSaveLocation = chunkSaveLocationIn;
+        this.fixer = dataFixerIn;
     }
 
     @Override
@@ -77,6 +80,13 @@ public class AnvilChunkLoader implements IChunkLoader {
     public static Entity readWorldEntity(NBTTagCompound compound, World worldIn, boolean spawn) {
         Entity entity = createEntityFromNBT(compound, worldIn);
         if (entity != null && spawn) spawnEntity(entity, worldIn);
+        return entity;
+    }
+
+    /** An entity of a chunk's saved entity list: created from its NBT and, with a chunk, added to the world. */
+    public static Entity readChunkEntity(NBTTagCompound compound, World worldIn, Chunk chunkIn) {
+        Entity entity = createEntityFromNBT(compound, worldIn);
+        if (entity != null && chunkIn != null) spawnEntity(entity, worldIn);
         return entity;
     }
 

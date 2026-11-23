@@ -37,6 +37,10 @@ public class EntityElderGuardian extends EntityGuardian {
         getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(8.0D);
     }
 
+    /** 1.12's curse hook (the elder guardian's ghost form in the mod-added ghost variants): nothing to change on the game's guardian. */
+    public void setGhost() {
+    }
+
     @Override
     public int getAttackDuration() {
         return 60;

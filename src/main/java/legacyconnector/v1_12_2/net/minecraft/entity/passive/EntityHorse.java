@@ -56,6 +56,23 @@ public class EntityHorse extends AbstractHorse {
         return v == null ? 0 : v;
     }
 
+    private static final String[] HORSE_BASE_TEXTURES = {"textures/entity/horse/horse_white.png", "textures/entity/horse/horse_creamy.png",
+            "textures/entity/horse/horse_chestnut.png", "textures/entity/horse/horse_brown.png", "textures/entity/horse/horse_black.png",
+            "textures/entity/horse/horse_gray.png", "textures/entity/horse/horse_darkbrown.png"};
+    private static final String[] HORSE_MARKING_TEXTURES = {null, "textures/entity/horse/horse_markings_white.png", "textures/entity/horse/horse_markings_whitefield.png",
+            "textures/entity/horse/horse_markings_whitedots.png", "textures/entity/horse/horse_markings_blackdots.png"};
+
+    /** The texture layers of the horse's coat: base, markings (null for none) and armor (null for none), as resource paths. */
+    public String[] getVariantTexturePaths() {
+        int v = getHorseVariant();
+        String[] paths = new String[3];
+        paths[0] = HORSE_BASE_TEXTURES[(v & 255) % HORSE_BASE_TEXTURES.length];
+        paths[1] = HORSE_MARKING_TEXTURES[((v & 65280) >> 8) % HORSE_MARKING_TEXTURES.length];
+        var armor = HorseArmorType.getByItemStack(getItemStackFromSlot(legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.CHEST));
+        paths[2] = armor == null || armor == HorseArmorType.NONE ? null : armor.getTextureName();
+        return paths;
+    }
+
     @Override
     public boolean wearsArmor() {
         return true;

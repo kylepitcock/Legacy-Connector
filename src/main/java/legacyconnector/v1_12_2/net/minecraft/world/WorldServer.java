@@ -13,7 +13,27 @@ import net.minecraft.world.level.LevelAccessor;
 public class WorldServer extends World implements legacyconnector.v1_12_2.net.minecraft.util.IThreadListener {
     /** Forge: teleporters mods add for this world. */
     public final List<Teleporter> customTeleporters = new ArrayList<>();
+    /** 1.12's pending scheduled ticks (the game keeps its own tick queues, so these stay empty for a mod that reads them). */
+    private final java.util.Set<legacyconnector.v1_12_2.net.minecraft.world.NextTickListEntry> pendingTickListEntriesHashSet = new java.util.HashSet<>();
+    private final java.util.TreeSet<legacyconnector.v1_12_2.net.minecraft.world.NextTickListEntry> pendingTickListEntriesTreeSet = new java.util.TreeSet<>();
     private final Teleporter worldTeleporter;
+
+    /**
+     * 1.12's lightning aiming: a living entity near the column that can see the sky draws the strike (its position is returned);
+     * with none, the highest position of the column (two blocks up when that is the void floor).
+     */
+    protected legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos adjustPosToNearbyEntity(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos top = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(pos.getX(), getHeight(), pos.getZ());
+        legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB box = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(top,
+                new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(pos.getX(), 0, pos.getZ())).grow(3.0D);
+        java.util.List<?> found = getEntitiesWithinAABB(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.class, box);
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase> list = new ArrayList<>();
+        for (Object o : found) {
+            if (o instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase l && l.isEntityAlive() && canSeeSky(l.getPosition())) list.add(l);
+        }
+        if (!list.isEmpty()) return list.get(rand.nextInt(list.size())).getPosition();
+        return top.getY() == -1 ? top.up(2) : top;
+    }
     /** 1.12 field the server world holds: the loot table manager (one for all worlds, answering from the server's data packs). */
     public final legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager lootTable = newLootTable();
 

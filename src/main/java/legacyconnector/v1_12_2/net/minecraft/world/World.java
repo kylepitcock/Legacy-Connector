@@ -62,6 +62,8 @@ public class World implements IBlockAccess {
     /** Phantom: redirected to {@link #mcc$get$loadedEntityList}. */
     @Deprecated
     public List<Entity> loadedEntityList;
+    /** 1.12's queue of tile entities added during a tick; the game adds them at once, so it stays empty. */
+    protected final List<TileEntity> addedTileEntityList = new ArrayList<>();
     /** Phantom: redirected to {@link #mcc$get$loadedTileEntityList}. */
     @Deprecated
     public List<TileEntity> loadedTileEntityList;

@@ -25,6 +25,16 @@ public class EntityGuardian extends EntityMob {
         super(modern);
     }
 
+    /** The random stroll goal a guardian registers (a mod's subclass nudges it with {@code makeUpdate()}); null on a view of a game guardian. */
+    protected legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAIWander wander;
+
+    @Override
+    protected void initEntityAI() {
+        super.initEntityAI();
+        this.wander = new legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAIWander(this, 1.0D, 80);
+        tasks.addTask(7, this.wander);
+    }
+
     protected net.minecraft.world.entity.monster.Guardian mcc$self() {
         return mcc$entity instanceof net.minecraft.world.entity.monster.Guardian m ? m : null;
     }

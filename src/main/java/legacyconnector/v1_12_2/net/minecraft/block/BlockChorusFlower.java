@@ -43,6 +43,14 @@ public class BlockChorusFlower extends Block {
         }
     }
 
+    /** Whether a flower can stay at the position (on end stone or a chorus plant, or hanging on exactly one plant): the game's own rule. */
+    public boolean canSurvive(World worldIn, BlockPos pos) {
+        var access = worldIn == null ? null : worldIn.mcc$access();
+        if (access == null || pos == null) return false;
+        return net.minecraft.world.level.block.Blocks.CHORUS_FLOWER.defaultBlockState()
+                .canSurvive(access, org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
+    }
+
     @Override
     public boolean isFullCube(IBlockState state) {
         return false;

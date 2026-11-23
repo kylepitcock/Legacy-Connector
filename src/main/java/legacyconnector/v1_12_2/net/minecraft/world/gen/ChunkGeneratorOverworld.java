@@ -50,6 +50,8 @@ public class ChunkGeneratorOverworld implements IChunkGenerator {
     private legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenMineshaft mineshaftGenerator = new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenMineshaft();
     private legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenScatteredFeature scatteredFeatureGenerator =
             new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenScatteredFeature();
+    private legacyconnector.v1_12_2.net.minecraft.world.gen.structure.WoodlandMansion woodlandMansionGenerator =
+            new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.WoodlandMansion(this);
     private MapGenBase ravineGenerator = new MapGenRavine();
     private legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureOceanMonument oceanMonumentGenerator =
             new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureOceanMonument();
