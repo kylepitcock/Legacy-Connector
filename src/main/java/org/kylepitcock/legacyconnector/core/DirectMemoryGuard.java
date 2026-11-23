@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class DirectMemoryGuard {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Memory");
-    private static final long THRESHOLD = Long.getLong("legacyconnector.directMemoryGcMb", 1024) * 1024 * 1024;
+    private static final long THRESHOLD = Flags.DIRECT_MEMORY_GC_MB.getLong(1024) * 1024 * 1024;
     private static boolean started;
 
     private DirectMemoryGuard() {}
@@ -31,7 +32,7 @@ public final class DirectMemoryGuard {
     }
 
     /** Every 10 s, heap and direct memory in the log (-Dlegacyconnector.memoryLog=true, and during the screenshot test). */
-    private static final boolean MEMORY_LOG = Boolean.getBoolean("legacyconnector.memoryLog") || System.getProperty("legacyconnector.shotScenario") != null;
+    private static final boolean MEMORY_LOG = Flags.MEMORY_LOG.on() || Flags.SHOT_SCENARIO.get() != null;
 
     private static void watch(BufferPoolMXBean direct) {
         int reported = 0;

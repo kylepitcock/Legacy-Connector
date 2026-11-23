@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.Arrays;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -16,7 +17,7 @@ public final class TickProfile {
     private TickProfile() {}
 
     public static void register(IEventBus game) {
-        int window = Integer.getInteger("legacyconnector.msptLog", 0);
+        int window = Flags.MSPT_LOG.getInt(0);
         if (window <= 0) return;
         long[] times = new long[window];
         int[] n = {0};

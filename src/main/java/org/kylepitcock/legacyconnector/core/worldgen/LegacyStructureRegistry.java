@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core.worldgen;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.lang.ref.WeakReference;
@@ -61,7 +62,7 @@ public final class LegacyStructureRegistry {
 
     /** Whether legacy structure generators become modern structures ({@code -Dlegacyconnector.modernStructures=false} keeps 1.7.10 placement). */
     public static boolean enabled() {
-        return !"false".equalsIgnoreCase(System.getProperty("legacyconnector.modernStructures", "true"));
+        return !"false".equalsIgnoreCase(Flags.MODERN_STRUCTURES.get("true"));
     }
 
     /**
@@ -196,7 +197,7 @@ public final class LegacyStructureRegistry {
      * would become rarer than in 1.7.10; actual overlaps are handled by {@link InPlaceStructureGuard} instead.
      */
     private static int villageDistance() {
-        return Math.max(0, Math.min(16, Integer.getInteger("legacyconnector.structureVillageDistance", 0)));
+        return Math.max(0, Math.min(16, Flags.STRUCTURE_VILLAGE_DISTANCE.getInt(0)));
     }
 
     private static JsonObject optional(String id) {

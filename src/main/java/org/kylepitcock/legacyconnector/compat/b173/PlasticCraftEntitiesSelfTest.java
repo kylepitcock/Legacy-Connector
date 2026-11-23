@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.compat.b173;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.entity.Entity;
 import legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity;
@@ -12,7 +13,7 @@ import org.kylepitcock.legacyconnector.vb1_7_3.*;
 public final class PlasticCraftEntitiesSelfTest {
     private PlasticCraftEntitiesSelfTest(){}
     public static void run(){
-        if(!Boolean.getBoolean("legacyconnector.b173.actualPlasticCraftEntities"))return;
+        if(!Flags.B173_ACTUAL_PLASTIC_CRAFT_ENTITIES.on())return;
         try{
             var mod=ContentB173.loadedMods().stream().filter(m->m.getClass().getSimpleName().equals("mod_PlasticCraft")).findFirst().orElseThrow();
             String prefix=mod.getClass().getPackageName()+".";

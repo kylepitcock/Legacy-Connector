@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -115,7 +116,7 @@ public final class LegacyLifecycle {
      * when none. The mod still loads; if it fails, {@link LegacyModException} starts its message with these.
      */
     public static List<String> missingDependencies(String legacyId) {
-        String lines = System.getProperty("legacyconnector.missingDependencies", "");
+        String lines = Flags.MISSING_DEPENDENCIES.get("");
         List<String> out = new ArrayList<>();
         if (lines.isBlank() || legacyId == null) return out;
         for (String line : lines.split("\n")) {
@@ -230,7 +231,7 @@ public final class LegacyLifecycle {
                     continue;
                 }
                 LegacyModException wrapped = new LegacyModException(mod, name, t);
-                if (Boolean.getBoolean("legacyconnector.failFast")) throw wrapped;
+                if (Flags.FAIL_FAST.on()) throw wrapped;
                 if (touchedClientOnServer(t)) {
                     // A mod that needs the game client on a dedicated server (no side annotation to tell us beforehand): FML would have dropped it there.
                     LOG.info("Skipping the client-only legacy mod {} on a dedicated server (it touched client classes during {}: {})", mod.legacyId, name,

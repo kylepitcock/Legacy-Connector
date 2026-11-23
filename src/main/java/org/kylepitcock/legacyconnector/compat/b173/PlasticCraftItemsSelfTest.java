@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.compat.b173;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import legacyconnector.vb1_7_3.net.minecraft.item.*;
 import legacyconnector.vb1_7_3.net.minecraft.achievement.Achievement;
@@ -10,7 +11,7 @@ import org.kylepitcock.legacyconnector.vb1_7_3.*;
 public final class PlasticCraftItemsSelfTest {
     private PlasticCraftItemsSelfTest(){}
     public static String run(ServerPlayer player)throws ReflectiveOperationException {
-        if(!Boolean.getBoolean("legacyconnector.plasticcraftItemsSelfTest"))return "disabled";
+        if(!Flags.PLASTICCRAFT_ITEMS_SELF_TEST.on())return "disabled";
         var mod=ContentB173.loadedMods().stream().filter(m->m.getClass().getSimpleName().equals("mod_PlasticCraft")).findFirst().orElseThrow();
         Class<?> type=mod.getClass();int checks=0;
         var inventory=new ArrayList<net.minecraft.world.item.ItemStack>();

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core.event;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -173,7 +174,7 @@ public final class ReflectiveEventBus {
     }
 
     /** {@code -Dlegacyconnector.traceHandlers=<part of a handler's name>}: log (the first 60) runs of matching legacy event handlers. */
-    private static final String TRACE_HANDLERS = System.getProperty("legacyconnector.traceHandlers");
+    private static final String TRACE_HANDLERS = Flags.TRACE_HANDLERS.get();
     private static int traceCount;
 
     /** @return true if the event was canceled */

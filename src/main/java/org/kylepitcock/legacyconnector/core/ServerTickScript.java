@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.core;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -23,9 +24,9 @@ public final class ServerTickScript {
     private ServerTickScript() {}
 
     public static void register(IEventBus game) {
-        String file = System.getProperty("legacyconnector.serverTickScript");
+        String file = Flags.SERVER_TICK_SCRIPT.get();
         if (file == null || file.isBlank()) return;
-        int from = Integer.getInteger("legacyconnector.serverTickScriptFrom", 200);
+        int from = Flags.SERVER_TICK_SCRIPT_FROM.getInt(200);
         game.addListener((ServerTickEvent.Post e) -> {
             if (++ticks < from || failed) return;
             try {

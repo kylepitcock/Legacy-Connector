@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.compat.b173;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,7 @@ public final class PlasticCraftStunSelfTest {
     private static final Map<UUID,Probe> PROBES=new HashMap<>();
     private PlasticCraftStunSelfTest(){}
     public static UUID begin(ServerLevel level,BlockPos pos)throws ReflectiveOperationException{
-        require(Boolean.getBoolean("legacyconnector.b173.actualPlasticCraftEntities"),"actual entity fixture property required");
+        require(Flags.B173_ACTUAL_PLASTIC_CRAFT_ENTITIES.on(),"actual entity fixture property required");
         var mod=ContentB173.loadedMods().stream().filter(m->m.getClass().getSimpleName().equals("mod_PlasticCraft")).findFirst().orElseThrow();
         var goo=(legacyconnector.vb1_7_3.net.minecraft.block.Block)mod.getClass().getField("blockGOOPLASTIC").get(null);
         var cow=net.minecraft.world.entity.EntityType.COW.create(level);require(cow!=null,"native cow created");
