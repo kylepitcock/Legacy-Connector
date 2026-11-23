@@ -44,7 +44,7 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
     }
 
     @Test
-    void tracesTheAppliedFirstPersonArmPoseAfterTheModelPartIsUpdated() {
+    void tracesTheAppliedFirstPersonArmPoseAfterTheModelPartIsUpdated() throws AnalyzerException {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/client/model/animation/FirstPersonArmAnimator";
         MethodNode apply = new MethodNode(ACC_PUBLIC | ACC_STATIC, "apply",
@@ -60,6 +60,19 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         assertEquals(1, AlienEvoRuntimeDiagnostics1201.apply(node));
         MethodInsnNode trace = findCall(apply, "traceFirstPersonArmApply");
         assertEquals("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V", trace.desc);
+        // apply(ModelPart, boolean) is static: local 0 is the ModelPart,
+        // local 1 is the boolean flag, and locals 2/3 hold the animation data.
+        assertEquals(ALOAD, trace.getPrevious().getOpcode());
+        assertEquals(0, ((VarInsnNode) trace.getPrevious()).var);
+        assertEquals(ALOAD, trace.getPrevious().getPrevious().getOpcode());
+        assertEquals(3, ((VarInsnNode) trace.getPrevious().getPrevious()).var);
+        assertEquals(ALOAD, trace.getPrevious().getPrevious().getPrevious().getOpcode());
+        assertEquals(2, ((VarInsnNode) trace.getPrevious().getPrevious().getPrevious()).var);
+
+        // Verify the transformed descriptor/local types. This catches an ALOAD
+        // of local 1 (the boolean argument), which caused the runtime VerifyError.
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, apply);
+
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
     }
 
