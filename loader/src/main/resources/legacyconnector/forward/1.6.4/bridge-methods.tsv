@@ -60,3 +60,5 @@ net/minecraft/block/ITileEntityProvider	createNewTileEntity	(Lnet/minecraft/worl
 net/minecraft/item/ItemFood	getHealAmount	()I	getHealAmount	(Lnet/minecraft/item/ItemStack;)I
 net/minecraft/item/ItemFood	getSaturationModifier	()F	getSaturationModifier	(Lnet/minecraft/item/ItemStack;)F
 net/minecraft/block/Block	idPicked	(Lnet/minecraft/world/World;III)I	getItem	(Lnet/minecraft/world/World;III)Lnet/minecraft/item/Item;
+net/minecraft/block/Block	canCreatureSpawn	(Lnet/minecraft/entity/EnumCreatureType;Lnet/minecraft/world/World;III)Z	canCreatureSpawn	(Lnet/minecraft/entity/EnumCreatureType;Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	isBlockFoliage	(Lnet/minecraft/world/World;III)Z	isFoliage	(Lnet/minecraft/world/IBlockAccess;III)Z

@@ -13,6 +13,11 @@ public class SoundManager {
     /** 1.7.10's type of {@link #sndSystem} (a SoundSystem that queues commands on its own thread); mods name it when they read the field. */
     public static class SoundSystemStarterThread extends legacyconnector.v1_7_10.paulscode.sound.SoundSystem {
     }
+    /** The sound library as the {@code paulscode.sound.SoundSystem} older versions typed the {@code sndSystem} field (1.7.10 declares its starter-thread subclass); read by the 1.6.4 facade. */
+    public legacyconnector.v1_7_10.paulscode.sound.SoundSystem mcc$sndSystem() {
+        return sndSystem;
+    }
+
     /** Whether the engine is up (mods wait for it by reflection before using {@link #sndSystem}); kept by {@link #mcc$engineLoaded}. */
     private boolean loaded;
 

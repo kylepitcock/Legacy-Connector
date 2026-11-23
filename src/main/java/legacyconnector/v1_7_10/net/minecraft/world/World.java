@@ -1674,6 +1674,11 @@ public class World implements IBlockAccess {
                 entity.mcc$entity != null ? entity.mcc$entity.getSoundSource() : net.minecraft.sounds.SoundSource.NEUTRAL);
     }
 
+    /** Forge 1.6 hook: the client world returns the updater that plays a minecart's rolling sound, a server world null; the modern game plays that sound itself. */
+    public legacyconnector.v1_7_10.net.minecraft.server.gui.IUpdatePlayerListBox getMinecartSoundUpdater(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart minecart) {
+        return null;
+    }
+
     public void playSoundToNearExcept(EntityPlayer player, String name, float volume, float pitch) {
         Level level = mcc$liveLevel();
         if (level != null) SoundBridge.play(level, player.mcc$player(), player.mcc$x(), player.mcc$y(), player.mcc$z(), name, volume, pitch);

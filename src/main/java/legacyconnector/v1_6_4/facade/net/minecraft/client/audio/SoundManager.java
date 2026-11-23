@@ -6,6 +6,11 @@ import legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool;
 public final class SoundManager {
     private SoundManager() {}
 
+    /** SoundManager.sndSystem: older versions typed the field as the paulscode SoundSystem itself (1.7.10 declares its starter-thread subclass, so the field does not link as it is). */
+    public static legacyconnector.v1_7_10.paulscode.sound.SoundSystem mcc$get$sndSystem(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self) {
+        return self.mcc$sndSystem();
+    }
+
     /** SoundManager.soundPoolSounds */
     public static SoundPool mcc$get$soundPoolSounds(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager self) {
         return SoundPool.SOUNDS;

@@ -96,6 +96,11 @@ public class FoodStats {
         tag.setFloat("foodExhaustionLevel", saved.getFloat("foodExhaustionLevel"));
     }
 
+    /** Runs one tick of hunger for {@code player}: exhaustion drains food and saturation, a full bar heals, an empty one starves. */
+    public void onUpdate(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (player != null) mcc$food.tick(player.mcc$player());
+    }
+
     public void addStats(int food, float saturation) {
         mcc$food.eat(food, saturation);
     }

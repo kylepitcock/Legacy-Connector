@@ -320,6 +320,10 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
      * Finishes using the held item now (eats the food, drinks the potion): the item's result replaces it in the hand,
      * after the use-finish event (which the bridge also posts as the legacy {@code PlayerUseItemEvent.Finish}).
      */
+    protected void updateItemUse(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, int particles) {
+        // 1.6: the eating and drinking sound and item particles of a held use; the modern game plays them on its own while the item is in use
+    }
+
     protected void onItemUseFinish() {
         var p = mcc$player();
         if (!p.isUsingItem()) return;
