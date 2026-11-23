@@ -118,6 +118,14 @@ public class PlacementSettings {
         return replacedBlock;
     }
 
+    /** Limits the placement to the chunk set with {@code setChunk} (all heights). */
+    public void setBoundingBoxFromChunk() {
+        if (chunk == null) return;
+        int x = chunk.x * 16;
+        int z = chunk.z * 16;
+        boundingBox = new StructureBoundingBox(x, 0, z, x + 15, 255, z + 15);
+    }
+
     public StructureBoundingBox getBoundingBox() {
         if (boundingBox == null && chunk != null) {
             int x = chunk.x * 16;

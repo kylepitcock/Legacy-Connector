@@ -18,6 +18,14 @@ public class LootTableManager {
 
     private static volatile LootTableManager instance;
     private final java.io.File baseFolder;
+    /** 1.12's cache of loaded tables; the game keeps its tables itself, so this stays a cache a mod may read (empty). */
+    private final com.google.common.cache.LoadingCache<ResourceLocation, LootTable> registeredLootTables = com.google.common.cache.CacheBuilder.newBuilder()
+            .build(new com.google.common.cache.CacheLoader<ResourceLocation, LootTable>() {
+                @Override
+                public LootTable load(ResourceLocation key) {
+                    return getLootTableFromLocation(key);
+                }
+            });
 
     public LootTableManager(java.io.File folder) {
         this.baseFolder = folder;

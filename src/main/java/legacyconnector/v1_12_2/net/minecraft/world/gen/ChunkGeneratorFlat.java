@@ -23,6 +23,8 @@ public class ChunkGeneratorFlat implements IChunkGenerator {
     private boolean hasDecoration;
     private boolean hasLake;
     private boolean hasLavaLake;
+    /** The structure generators the preset names (1.12 keyed them by the preset's feature name); the game's structures generate natively. */
+    private final java.util.Map<String, legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenStructure> structureGenerators = new java.util.HashMap<>();
 
     public ChunkGeneratorFlat(World worldIn, long seed, boolean generateStructures, String flatGeneratorSettings) {
         this.world = worldIn;

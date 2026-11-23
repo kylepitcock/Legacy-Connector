@@ -2323,6 +2323,16 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         mcc$outsideBorder = outside;
     }
 
+    /** 1.12's elytra-style flying sound: whether this entity makes one (none by default). */
+    protected boolean makeFlySound() {
+        return false;
+    }
+
+    /** 1.12's flying sound hook: the fly-sound volume for the last one (none by default). */
+    protected float playFlySound(float p_191954_1_) {
+        return 0.0F;
+    }
+
     /** Plays the step sound of the block walked on (snow layers on top count as snow). */
     protected void playStepSound(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.Block block) {
         var m = mcc$entity;

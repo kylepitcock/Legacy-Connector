@@ -30,6 +30,10 @@ public class IntegratedServer extends legacyconnector.v1_12_2.net.minecraft.serv
         return f != null && f.isFile();
     }
 
+    /** 1.12 opens the world folder here; the game loads its worlds itself before a mod can ask, so there is nothing to load. */
+    public void loadAllWorlds(String saveName, String worldNameIn, long seed, legacyconnector.v1_12_2.net.minecraft.world.WorldType type, String generatorOptions) {
+    }
+
     /** Whether the world is open to LAN. */
     public boolean getPublic() {
         var m = mcc$server();

@@ -53,6 +53,12 @@ public class ShapedRecipes extends IForgeRegistryEntry.Impl<IRecipe> implements 
         return false;
     }
 
+    /** 1.12's JSON ingredient reader (an item object or an array of them). */
+    public static Ingredient deserializeIngredient(com.google.gson.JsonElement element) {
+        return legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CraftingHelper.getIngredient(element,
+                new legacyconnector.v1_12_2.net.minecraftforge.common.crafting.JsonContext("minecraft"));
+    }
+
     /** Whether the pattern placed at (x, y) of the grid (mirrored or not) matches. */
     protected boolean checkMatch(InventoryCrafting craftingInventory, int startX, int startY, boolean mirror) {
         int width = mcc$width();

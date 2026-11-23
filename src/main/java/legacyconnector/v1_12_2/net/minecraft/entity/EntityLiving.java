@@ -57,6 +57,9 @@ public abstract class EntityLiving extends EntityLivingBase {
     public final EntityAITasks tasks;
     public final EntityAITasks targetTasks;
     protected EntitySenses senses;
+    /** Phantom: the worn armor, feet first (redirected to {@link #mcc$get$inventoryArmor}); a snapshot, change armor through setItemStackToSlot. */
+    @Deprecated
+    protected legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> inventoryArmor;
     protected float[] inventoryHandsDropChances = new float[2];
     protected float[] inventoryArmorDropChances = new float[4];
     protected ResourceLocation deathLootTable;
@@ -112,6 +115,13 @@ public abstract class EntityLiving extends EntityLivingBase {
     }
 
     protected void initEntityAI() {
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> mcc$get$inventoryArmor(EntityLiving e) {
+        legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> list = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.withSize(4, ItemStack.EMPTY);
+        EntityEquipmentSlot[] slots = {EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.HEAD};
+        for (int i = 0; i < 4; i++) list.set(i, e.getItemStackFromSlot(slots[i]));
+        return list;
     }
 
     @Override

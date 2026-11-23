@@ -15,6 +15,8 @@ public class ChunkCache implements IBlockAccess {
     protected int chunkX;
     protected int chunkZ;
     protected boolean empty;
+    /** The chunks the cache spans, indexed from {@link #chunkX}/{@link #chunkZ}; an unloaded chunk is null. */
+    protected legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk[][] chunkArray = new legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk[0][0];
     protected World world;
 
     public ChunkCache(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn) {
@@ -24,11 +26,13 @@ public class ChunkCache implements IBlockAccess {
         int maxX = posToIn.getX() + subIn >> 4;
         int maxZ = posToIn.getZ() + subIn >> 4;
         this.empty = true;
-        for (int x = chunkX; x <= maxX && empty; x++) {
-            for (int z = chunkZ; z <= maxZ && empty; z++) {
-                if (worldIn != null && worldIn.isBlockLoaded(new BlockPos(x << 4, 64, z << 4))
-                        && !worldIn.getChunk(x, z).isEmptyBetween(posFromIn.getY(), posToIn.getY())) {
-                    this.empty = false;
+        this.chunkArray = new legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk[Math.max(0, maxX - chunkX + 1)][Math.max(0, maxZ - chunkZ + 1)];
+        for (int x = chunkX; x <= maxX; x++) {
+            for (int z = chunkZ; z <= maxZ; z++) {
+                if (worldIn != null && worldIn.isBlockLoaded(new BlockPos(x << 4, 64, z << 4))) {
+                    var chunk = worldIn.getChunk(x, z);
+                    chunkArray[x - chunkX][z - chunkZ] = chunk;
+                    if (empty && !chunk.isEmptyBetween(posFromIn.getY(), posToIn.getY())) this.empty = false;
                 }
             }
         }

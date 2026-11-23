@@ -7,6 +7,14 @@ import legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent;
 public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecraft.network.play.INetHandlerPlayServer {
     public EntityPlayerMP player;
 
+    /** Phantom: the server the connection belongs to (redirected to {@link #mcc$get$server}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server;
+
+    public static legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer mcc$get$server(NetHandlerPlayServer h) {
+        return legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
+    }
+
     /** Phantom fields: accesses are redirected to the accessors below. */
     @Deprecated
     public NetworkManager netManager;

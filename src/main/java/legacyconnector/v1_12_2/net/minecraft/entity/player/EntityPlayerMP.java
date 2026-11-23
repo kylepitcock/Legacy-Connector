@@ -51,6 +51,14 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         return p == null ? 0L : p.getLastActionTime();
     }
 
+    /** 1.12 tells the client an entity started being tracked; the game's own tracker does that, so there is nothing to do. */
+    public void addEntity(legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn) {
+    }
+
+    /** 1.12 tells the client an entity stopped being tracked; the game's own tracker does that. */
+    public void removeEntity(legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn) {
+    }
+
     /** Ends the invulnerability a dimension change gives. */
     public void clearInvulnerableDimensionChange() {
         mcc$set$invulnerableDimensionChange(this, false);

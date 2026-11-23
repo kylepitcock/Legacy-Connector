@@ -39,6 +39,11 @@ public class ConstructBeaconTrigger implements ICriterionTrigger<ConstructBeacon
         if (sp != null) net.minecraft.advancements.CriteriaTriggers.CONSTRUCT_BEACON.trigger(sp, levels);
     }
 
+    /** 1.12's trigger call: fires for the pyramid levels the beacon has. */
+    public void trigger(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP player, legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityBeacon beacon) {
+        if (beacon != null) mcc$trigger(player, beacon.getLevels());
+    }
+
     public static class Instance extends AbstractCriterionInstance {
         public Instance() {
             super(ID);

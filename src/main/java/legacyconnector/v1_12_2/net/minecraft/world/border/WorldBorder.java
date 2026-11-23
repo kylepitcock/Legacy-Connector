@@ -46,6 +46,14 @@ public class WorldBorder {
         return modern.getDistanceToBorder(x, z);
     }
 
+    public EnumBorderStatus getStatus() {
+        return switch (modern.getStatus()) {
+            case GROWING -> EnumBorderStatus.GROWING;
+            case SHRINKING -> EnumBorderStatus.SHRINKING;
+            default -> EnumBorderStatus.STATIONARY;
+        };
+    }
+
     public double minX() {
         return modern.getMinX();
     }
