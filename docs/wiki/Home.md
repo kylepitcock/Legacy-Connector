@@ -30,6 +30,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |
 | [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md) | Effort, approach options and risks for supporting 1.20.1 Forge (and Sinytra) mods |
 | [Legacy 1.20.1 ATM 9 run](Legacy-1.20.1-ATM9-Run.md) | Offline link probe of the 506-jar All the Mods 9 pack (2026-11-07): counts, top blockers, abandoned versus native |
+| [Legacy 1.20.1 failure classes](Legacy-1.20.1-Failure-Classes.md) | Why the 231 failing ATM 9 jars fail: native builds, soft links, dependency APIs, a fairer rating, next tasks |
 | [Legacy 1.20.1 preflight analyzer](Legacy-1.20.1-Preflight-Analyzer.md) | Offline preflight analyzer for Forge 1.20.1 jars: report schema, slices, validation checkpoints |
 | [Legacy 1.20.1 client events](Legacy-1.20.1-Client-Events.md) | Every Forge 47 client event against NeoForge 1.21.1: mapping, member changes, open items |
 | [Legacy 1.20.1 fork porting notes](Legacy-1.20.1-Fork-Porting-Notes.md) | A contributor's (kentvillamor08) independent 1.20.1 pipeline notes: scoped adapters, verifiers, pilot results |
