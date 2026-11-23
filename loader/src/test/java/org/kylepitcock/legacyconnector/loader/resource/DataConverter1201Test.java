@@ -41,6 +41,14 @@ class DataConverter1201Test {
     }
 
     @Test
+    void modelNamingTheRenamedVanillaGrassTextureIsRepointed() {
+        same("{\"parent\":\"minecraft:block/cross\",\"textures\":{\"cross\":\"minecraft:block/short_grass\",\"p\":\"block/short_grass\",\"own\":\"m:block/grass\",\"r\":\"#cross\"}}",
+                one("assets/m/models/block/x.json",
+                        "{\"parent\":\"minecraft:block/cross\",\"textures\":{\"cross\":\"minecraft:block/grass\",\"p\":\"block/grass\",\"own\":\"m:block/grass\",\"r\":\"#cross\"}}",
+                        "assets/m/models/block/x.json"));
+    }
+
+    @Test
     void forgeFoldersMoveToNeoForge() {
         assertEquals("data/m/neoforge/biome_modifier/x.json", DataConverter1201.mapPath("data/m/forge/biome_modifier/x.json"));
         assertEquals("data/neoforge/loot_modifiers/global_loot_modifiers.json", DataConverter1201.mapPath("data/forge/loot_modifiers/global_loot_modifiers.json"));
