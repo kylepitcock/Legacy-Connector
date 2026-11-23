@@ -313,4 +313,24 @@ class Mixin1201RepairTest implements Opcodes {
         assertEquals("(" + CONTEXT + PLAYER + CIR + ")V", h.desc);
         assertEquals(1, st.repair.repaired);
     }
+
+    @Test
+    void reorderedVanillaTargetGetsAWrapperHandler() {
+        String old6 = "(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;"
+                + "Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V";
+        ClassNode n = mixin("m/EngineMixin", "net/minecraft/client/particle/ParticleEngine");
+        MethodNode h = handler(n, "onRender", "(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;"
+                + "Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;" + CI + ")V");
+        AnnotationNode a = injector(h, INJECT, "render" + old6, "RETURN", null);
+        Mixin1201.Stats st = run(n);
+        MethodNode w = find(n, "onRender$mcc1201");
+        assertNotNull(w, "a wrapper with the 1.21.1 parameters");
+        assertEquals("(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;"
+                + "Ljava/util/function/Predicate;" + CI + ")V", w.desc);
+        assertTrue(w.invisibleAnnotations.contains(a), "the injector moved to the wrapper");
+        assertTrue(h.invisibleAnnotations == null || !h.invisibleAnnotations.contains(a));
+        assertEquals("render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V",
+                methods(a).get(0));
+        assertEquals(1, st.repair.repaired);
+    }
 }

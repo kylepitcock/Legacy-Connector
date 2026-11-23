@@ -1113,7 +1113,7 @@ class Mc1201MigrationTest implements Opcodes {
         assertNotNull(bridge);
         assertNotNull(find(bridge, builder, "of"));
         assertNotNull(find(bridge, "test/GlowType", "begin"));
-        assertNotNull(find(bridge, builder, "handOver"));
+        assertNotNull(find(bridge, MIGRATE + "Round10ClientCompat", "particleHandOver"));
         verify(c);
     }
 

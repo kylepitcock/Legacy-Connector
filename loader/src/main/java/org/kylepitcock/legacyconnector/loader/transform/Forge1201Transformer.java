@@ -986,7 +986,7 @@ public final class Forge1201Transformer {
             String name = e.getKey();
             if (LegacyJarTransformer.isSignatureFile(name)) continue;
             // the config's refmap entry is removed (Mojang names); the file would be found by name for the native copy's config (same name) and break it
-            if (ownUnit && name.indexOf('/') < 0 && name.endsWith(".refmap.json")) continue;
+            if (ownUnit && name.indexOf('/') < 0 && name.endsWith("refmap.json")) continue;
             // multi-loader jars: Sinytra Connector would load the same jar a second time as a Fabric mod
             if (name.equals("fabric.mod.json") || name.equals("quilt.mod.json")) continue;
             byte[] data = e.getValue();

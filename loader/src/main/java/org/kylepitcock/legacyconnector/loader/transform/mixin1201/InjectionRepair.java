@@ -73,9 +73,17 @@ public final class InjectionRepair {
         }
     }
 
-    private enum Kind { EXACT, REPAIR, DEAD, KEEP }
+    private enum Kind { EXACT, REPAIR, DEAD, KEEP, REMAP }
 
-    private record Outcome(Kind kind, String selector, List<ParamAlignment.Insert> inserts, String reason) {
+    private record Outcome(Kind kind, String selector, List<ParamAlignment.Insert> inserts, String reason, TargetRemap.Entry entry) {
+        Outcome(Kind kind, String selector, List<ParamAlignment.Insert> inserts, String reason) {
+            this(kind, selector, inserts, reason, null);
+        }
+
+        static Outcome remap(String selector, TargetRemap.Entry entry) {
+            return new Outcome(Kind.REMAP, selector, List.of(), null, entry);
+        }
+
         static final Outcome EXACT = new Outcome(Kind.EXACT, null, List.of(), null);
         static final Outcome KEEP = new Outcome(Kind.KEEP, null, List.of(), null);
 
@@ -168,6 +176,7 @@ public final class InjectionRepair {
         }
         boolean changed = false;
         List<AnnotationNode> dead = new ArrayList<>();
+        Map<AnnotationNode, TargetRemap.Entry> remaps = new IdentityHashMap<>();
         for (Item it : items) {
             List<Object> kept = new ArrayList<>();
             for (int i = 0; i < it.methods.size(); i++) {
@@ -191,6 +200,13 @@ public final class InjectionRepair {
                         kept.add(eff.selector);
                         changed = true;
                     }
+                    case REMAP -> {
+                        counts.repaired++;
+                        counts.notes.add("Mixin " + id + ": injection into " + sel + " moved to " + eff.selector + " through a wrapper handler (parameters of 1.21.1 rebuilt for the old handler)");
+                        kept.add(eff.selector);
+                        remaps.put(it.a, eff.entry);
+                        changed = true;
+                    }
                     case DEAD -> {
                         counts.dropped++;
                         counts.notes.add("Mixin " + id + ": injection into " + sel + " dropped: " + eff.reason);
@@ -206,6 +222,8 @@ public final class InjectionRepair {
             // the injection points
             if (atProof(it.a, handler, id, idx, counts, hosts)) changed = true;
             if (isDeadByAt(it.a)) dead.add(it.a);
+            TargetRemap.Entry re = remaps.get(it.a);
+            if (re != null && !dead.contains(it.a) && (it.methods.size() != 1 || !TargetRemap.wrap(node, handler, it.a, re))) dead.add(it.a);
         }
         if (resign && changed && HandlerResigner.resign(handler, handlerInserts)) counts.handlersChanged++;
         for (AnnotationNode d : dead) {
@@ -286,6 +304,14 @@ public final class InjectionRepair {
         List<Type> captured = new ArrayList<>(Arrays.asList(ha).subList(0, cb));
         boolean voidCb = ha[cb].getInternalName().endsWith("CallbackInfo");
         String old = desc != null ? desc : hint;
+        if (old != null) {
+            // a vanilla method whose parameters 1.21.1 reordered or removed: the table gives the new descriptor and the sources of the old arguments
+            TargetRemap.Entry re = TargetRemap.method(owner, name, old);
+            if (re != null && lk.declared().contains(re.newDesc()) && isPrefix(captured, Arrays.asList(Type.getArgumentTypes(old)))
+                    && callbackFits(voidCb, re.newDesc()) && captured.size() <= re.argMap().size()) {
+                return Outcome.remap(prefix + name + re.newDesc(), re);
+            }
+        }
         if (old == null) {
             if (captured.isEmpty()) return Outcome.EXACT;
             for (String d : decl) if (callbackFits(voidCb, d) && captured.equals(Arrays.asList(Type.getArgumentTypes(d)))) return Outcome.EXACT; // Mixin takes all target parameters or none: a prefix is no valid handler
@@ -458,6 +484,8 @@ public final class InjectionRepair {
             return Boolean.FALSE.equals(has) ? Outcome.dead("field " + name + " does not exist in " + owner.replace('/', '.') + " (1.21.1)") : Outcome.EXACT;
         }
         if (rest == null || !rest.startsWith("(")) return Outcome.KEEP;
+        String moved = TargetRemap.at(owner, name, rest);
+        if (moved != null && AT_SELECTOR_ONLY.contains(injector)) return Outcome.repair("L" + owner + ";" + moved, List.of());
         HostIndex.Lookup lk = idx.methods(owner, name);
         if (lk == null) return Outcome.KEEP;
         if (lk.gone()) return Outcome.dead("method " + name + " does not exist in " + owner.replace('/', '.') + " (1.21.1)");

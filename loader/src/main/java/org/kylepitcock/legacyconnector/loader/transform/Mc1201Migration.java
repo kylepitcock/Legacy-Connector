@@ -1123,17 +1123,30 @@ public final class Mc1201Migration {
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
             String spec = b.ret().substring(5);
             int at = spec.indexOf('@');
-            int i = Integer.parseInt(spec.substring(at + 1));
+            String which = spec.substring(at + 1);
+            // "this+N": the helper also takes the bridge receiver (as Object) before the new parameter N (ParticleRenderType.begin needs the type to run its end)
+            boolean withThis = which.startsWith("this+");
+            int i = Integer.parseInt(withThis ? which.substring(5) : which);
             String helper = spec.substring(0, at);
             int dot = helper.lastIndexOf('.');
             String cls = helper.substring(0, dot);
             if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            if (withThis) il.add(new VarInsnNode(Opcodes.ALOAD, 0));
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
-            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), "(" + newArgs[i].getDescriptor() + ")" + newRet.getDescriptor(), false));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1),
+                    "(" + (withThis ? "Ljava/lang/Object;" : "") + newArgs[i].getDescriptor() + ")" + newRet.getDescriptor(), false));
         } else if (b.ret() != null && (b.ret().equals("const:true") || b.ret().equals("const:false"))) {
             // the 1.21.1 method returns a boolean the old (void or other) method had no answer for: the constant, after the old result is dropped
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
             il.add(new InsnNode(b.ret().equals("const:true") ? Opcodes.ICONST_1 : Opcodes.ICONST_0));
+        } else if (b.ret() != null && b.ret().startsWith("this:")) {
+            // a static helper taking the old result and the bridge receiver (as Object): Particle.shouldCull() answered false -> an unbounded render box
+            String h = b.ret().substring(5);
+            int dot = h.lastIndexOf('.');
+            String cls = h.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, h.substring(dot + 1), "(" + oldRet.getDescriptor() + "Ljava/lang/Object;)" + newRet.getDescriptor(), false));
         } else if (b.ret() != null) {
             int dot = b.ret().lastIndexOf('.');
             String cls = b.ret().substring(0, dot);

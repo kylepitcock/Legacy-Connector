@@ -22,8 +22,92 @@ public final class Round10ClientCompat {
      */
     public static void particleBegin(ParticleRenderType type, CompatBufferBuilder builder, TextureManager textures) {
         Tesselator tesselator = builder.tesselator() != null ? builder.tesselator() : Tesselator.getInstance();
-        BufferBuilder started = type.begin(tesselator, textures);
+        BufferBuilder started;
+        MOD_BEGIN.set(Boolean.TRUE);
+        try {
+            started = type.begin(tesselator, textures);
+        } finally {
+            MOD_BEGIN.remove();
+        }
         if (started != null) builder.adopt(started);
+    }
+
+    /** Set while a mod itself calls {@code begin} (its own code then calls {@code end} too: no end hook is installed for that call). */
+    private static final ThreadLocal<Boolean> MOD_BEGIN = new ThreadLocal<>();
+
+    /**
+     * The result of a mod's {@code ParticleRenderType.begin} bridge (1.21.1 shape). When the mod's 1.20.1 begin started a builder, that one is handed to the
+     * engine, which builds and draws it. A type that starts none (Photon's queue type: its particles collect themselves and its {@code end} renders them
+     * with its own shaders) would be skipped by 1.21.1 (a null builder skips the particles of the type and never calls {@code end}), so the engine gets an
+     * empty builder whose {@code build()}, called after the type's particles were rendered, runs the mod's own {@code end(Tesselator)} first.
+     */
+    public static BufferBuilder particleHandOver(Object type, Tesselator tesselator) {
+        BufferBuilder started = CompatBufferBuilder.handOver(tesselator);
+        if (started != null || MOD_BEGIN.get() != null) return started;
+        java.lang.reflect.Method end = endMethod(type.getClass());
+        if (end == null) return null;
+        return new EndHookBuilder(type, end, tesselator);
+    }
+
+    private static final java.util.Map<Class<?>, java.util.Optional<java.lang.reflect.Method>> END_METHODS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The mod type's own 1.20.1 {@code end(Tesselator)}, or null when its class chain declares none (a type that only overrides begin). */
+    private static java.lang.reflect.Method endMethod(Class<?> type) {
+        return END_METHODS.computeIfAbsent(type, t -> {
+            for (Class<?> c = t; c != null && c != Object.class; c = c.getSuperclass()) {
+                try {
+                    java.lang.reflect.Method e = c.getDeclaredMethod("end", Tesselator.class);
+                    if (e.getReturnType() != void.class || java.lang.reflect.Modifier.isStatic(e.getModifiers())) continue;
+                    e.setAccessible(true);
+                    return java.util.Optional.of(e);
+                } catch (NoSuchMethodException | RuntimeException ignored) {
+                    // keep looking in the superclass
+                }
+            }
+            return java.util.Optional.empty();
+        }).orElse(null);
+    }
+
+    private static final class EndHookBuilder extends BufferBuilder {
+        private static volatile boolean warned;
+        private static volatile boolean announced;
+        private final Object type;
+        private final java.lang.reflect.Method end;
+        private final Tesselator tesselator;
+        private final com.mojang.blaze3d.vertex.ByteBufferBuilder buffer;
+
+        EndHookBuilder(Object type, java.lang.reflect.Method end, Tesselator tesselator) {
+            this(type, end, tesselator, new com.mojang.blaze3d.vertex.ByteBufferBuilder(64));
+        }
+
+        private EndHookBuilder(Object type, java.lang.reflect.Method end, Tesselator tesselator, com.mojang.blaze3d.vertex.ByteBufferBuilder buffer) {
+            super(buffer, VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP);
+            this.type = type;
+            this.end = end;
+            this.tesselator = tesselator;
+            this.buffer = buffer;
+        }
+
+        @Override
+        public com.mojang.blaze3d.vertex.MeshData build() {
+            try {
+                if (!announced) {
+                    announced = true;
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/Particles").info("Running the 1.20.1 end(Tesselator) of particle render type {} after its particles (first frame)", type.getClass().getName());
+                }
+                end.invoke(type, tesselator);
+            } catch (Throwable e) {
+                if (!warned) {
+                    warned = true;
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/Particles").warn("end(Tesselator) of particle render type {} failed (logged once)", type.getClass().getName(), e);
+                }
+            }
+            try {
+                return super.build();
+            } finally {
+                buffer.close();
+            }
+        }
     }
 
     /**

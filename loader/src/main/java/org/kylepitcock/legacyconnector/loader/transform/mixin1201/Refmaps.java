@@ -20,7 +20,7 @@ public final class Refmaps {
     public static Map<String, Map<String, String>> parse(Map<String, byte[]> resources) {
         Map<String, Map<String, String>> out = new HashMap<>();
         for (var e : resources.entrySet()) {
-            if (!e.getKey().endsWith(".refmap.json")) continue;
+            if (!e.getKey().endsWith("refmap.json")) continue;
             try {
                 JsonObject root = JsonParser.parseString(new String(e.getValue(), StandardCharsets.UTF_8)).getAsJsonObject();
                 JsonObject mappings = root.has("mappings") && root.get("mappings").isJsonObject() ? root.getAsJsonObject("mappings") : null;
