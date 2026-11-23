@@ -84,6 +84,13 @@ public class SoundSystem {
         backgroundMusic(sourcename, mcc$resource(filename), filename, toLoop);
     }
 
+    /**
+     * paulscode's {@code fadeOut(source, url, identifier, milliseconds)}: stops the source; the fade itself and the follow-up track are not modelled.
+     */
+    public void fadeOut(String sourcename, URL url, String identifier, long milliseconds) {
+        stop(sourcename);
+    }
+
     /** Drops the temporary sources that finished playing. */
     public void removeTemporarySources() {
         sources.entrySet().removeIf(e -> e.getValue().temporaryDone());
