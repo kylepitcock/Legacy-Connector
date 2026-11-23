@@ -1,5 +1,6 @@
 package legacyconnector.v1_12_2.net.minecraftforge.fml.common;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -65,7 +66,7 @@ public class Loader {
         if (mcc$apiPackagesLoaded) return;
         mcc$apiPackagesLoaded = true;
         mcc$apiLoader = loader;
-        for (String pkg : System.getProperty("legacyconnector.legacyApiPackages", "").split(",")) {
+        for (String pkg : Flags.LEGACY_API_PACKAGES.get("").split(",")) {
             if (pkg.isEmpty()) continue;
             try {
                 Class.forName(pkg + ".package-info", false, loader);
@@ -83,11 +84,11 @@ public class Loader {
         // a mod of the same name for another legacy version is not this one (its integration would crash on it)
         if (LegacyMods.onlyOtherVersions(modname, "1.12.2")) return false;
         if (LegacyMods.byLegacyId(modname) != null) return true;
-        for (String present : System.getProperty("legacyconnector.presentLegacyMods", "").split(",")) {
+        for (String present : Flags.PRESENT_LEGACY_MODS.get("").split(",")) {
             if (!present.isEmpty() && present.equalsIgnoreCase(modname)) return true;
         }
         // Legacy libraries replaced by a modern mod (LibraryBridges in the loader) count as loaded.
-        for (String bridged : System.getProperty("legacyconnector.bridgedMods", "").split(",")) {
+        for (String bridged : Flags.BRIDGED_MODS.get("").split(",")) {
             if (!bridged.isEmpty() && bridged.equalsIgnoreCase(modname)) return true;
         }
         // A modern mod of the same id is not the legacy one: legacy integrations call the legacy API (ChromatiCraft registered its
@@ -161,11 +162,11 @@ public class Loader {
         for (ModContainer c : MCC$CORE_CONTAINERS) out.putIfAbsent(c.getModId(), c);
         // Forge itself and the libraries bridged to modern mods are "mods" too (mods read their versions).
         for (String id : new String[] {"Forge", "FML", "mcp", "Minecraft"}) out.computeIfAbsent(id, Loader::pseudo);
-        for (String bridged : System.getProperty("legacyconnector.bridgedMods", "").split(",")) {
+        for (String bridged : Flags.BRIDGED_MODS.get("").split(",")) {
             if (!bridged.isEmpty()) out.computeIfAbsent(bridged, Loader::pseudo);
         }
         // mods the pack declares present (isModLoaded says yes, so the indexed list must hold them too)
-        for (String present : System.getProperty("legacyconnector.presentLegacyMods", "").split(",")) {
+        for (String present : Flags.PRESENT_LEGACY_MODS.get("").split(",")) {
             if (!present.isEmpty() && out.get(present) == null) out.put(present, pseudo(present));
         }
         return out;

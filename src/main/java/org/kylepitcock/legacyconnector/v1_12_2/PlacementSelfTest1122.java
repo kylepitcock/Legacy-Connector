@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -35,7 +36,7 @@ public final class PlacementSelfTest1122 {
     private PlacementSelfTest1122() {}
 
     public static void register() {
-        if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
+        if (!Flags.ENTITY_SELF_TEST.on()) return;
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> ticks = 0);
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> {
             if (ticks < 0 || ticks > 30) return;
@@ -66,7 +67,7 @@ public final class PlacementSelfTest1122 {
                 return ": getPlacementState was null (canPlace: collision or the player's own box)";
             }
             return ": placed state " + state + " but the item refused (its own onItemUse/placeBlockAt)"
-                    + (System.getProperty("legacyconnector.placementDiag") != null ? legacyChecks(item, level, player, stack, ctx.getClickedPos()) : "");
+                    + (Flags.PLACEMENT_DIAG.get() != null ? legacyChecks(item, level, player, stack, ctx.getClickedPos()) : "");
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             return ": diagnosis threw " + e;
         }
