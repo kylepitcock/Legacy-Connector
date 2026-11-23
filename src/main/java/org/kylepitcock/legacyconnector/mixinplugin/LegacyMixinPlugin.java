@@ -34,6 +34,7 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
     private static final String LEGACY_PREFIX = "legacyconnector.legacy.";
     private static final String ADDITIONS_SUFFIX = ".coremod-additions.json";
     private static final String PROVENANCE = "META-INF/legacyconnector/provenance.json";
+    private static final String MIXIN_DROPPED = "META-INF/legacyconnector/mixin-dropped.txt";
     private static final String NEOFORGE_MODS = "META-INF/neoforge.mods.toml";
     private static final Pattern PROVENANCE_MODS = Pattern.compile("\"mods\"\\s*:\\s*\\[(.*?)]", Pattern.DOTALL);
     private static final Pattern PROVENANCE_MOD_ID = Pattern.compile("\"id\"\\s*:\\s*\"([^\"]+)\"");
@@ -311,6 +312,27 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
             return false;
         }
 
+        /** A 1.20.1 mod whose mixin injections the translator dropped (target gone or reshaped in 1.21.1): one line per mod in the degraded-behaviour summary. */
+        private void noteDroppedInjections(ClassLoader cl) {
+            try {
+                Enumeration<URL> dropped = cl.getResources(MIXIN_DROPPED);
+                while (dropped.hasMoreElements()) {
+                    URL url = dropped.nextElement();
+                    String value = url.toString();
+                    if (!value.endsWith(MIXIN_DROPPED)) continue;
+                    Set<String> ids = modIdsByRoot.get(root(value, MIXIN_DROPPED));
+                    String owner = ids == null || ids.isEmpty() ? value : new java.util.TreeSet<>(ids).first();
+                    String text = read(url);
+                    int nl = text.indexOf('
+');
+                    org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.MIXIN, owner,
+                            "mixin injections dropped at translation", nl < 0 ? text : text.substring(0, nl));
+                }
+            } catch (IOException | RuntimeException | LinkageError ignored) {
+                // diagnostics only
+            }
+        }
+
         private synchronized void scan(ClassLoader cl) throws Exception {
             if (rootsScanned) return;
             Enumeration<URL> provenance = cl.getResources(PROVENANCE);
@@ -327,6 +349,8 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
                     // A missing provenance payload still marks the jar as legacy; it simply cannot authorize cross-mod mixins.
                 }
             }
+
+            noteDroppedInjections(cl);
 
             Enumeration<URL> metadata = cl.getResources(NEOFORGE_MODS);
             while (metadata.hasMoreElements()) {

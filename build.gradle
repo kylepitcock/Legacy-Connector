@@ -400,6 +400,16 @@ registerGap('gap1201', '1.20.1', ':loader:genSrgMojang1201', 'generated/srg-moja
 // [-Pgap.srgOverlay=<1.20.1 srg-mojang.tsv>]; the 1.20.1 -> 1.21.1 tables are applied as they are. No translation (-Pgap.translate is for 1.20.1 jars).
 if (project.findProperty('experimental.mc1192')) registerGap('gap1192', '1.19.2', ':loader:genSrgMojang1192', 'generated/srg-mojang-1192/legacyconnector/mappings/1.19.2/srg-mojang.tsv')
 
+// Offline mixin target census of Forge 1.20.1 jars (no game): ./gradlew mixinSurvey1201 -PsurveyJars=dir1,dir2 [-PsurveyReport=file]; ranked by tools/dev/mixin_census_1201.py
+tasks.register('mixinSurvey1201', JavaExec) {
+    dependsOn ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
+    mainClass = 'org.kylepitcock.legacyconnector.loader.transform.Mixin1201Survey'
+    maxHeapSize = '2g'
+    argumentProviders.add({
+        [(project.findProperty('surveyReport') ?: layout.buildDirectory.file('reports/mixinSurvey1201.txt').get().asFile.absolutePath).toString()] + project.findProperty('surveyJars').toString().split(',').toList()
+    } as CommandLineArgumentProvider)
+}
 // Event tables of the 1.20.1 pipeline from the real jars (abstract NeoForge events, Forge events without a counterpart):
 // ./gradlew eventTables1201 -PeventJars=<neoforge merged>,<bus>,<fml loader> -PforgeJar=<forge-1.20.1-universal.jar> [-PeventOut=loader/src/main/resources/legacyconnector/forward/1.20.1/neoforge-abstract-events.tsv]
 tasks.register('eventTables1201', JavaExec) {

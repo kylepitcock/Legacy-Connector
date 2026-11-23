@@ -57,6 +57,31 @@ final class Mixin1201 {
         /** old descriptors from the jar's refmaps (mixin class to annotation string to descriptor), set by the transformer before the classes are processed */
         Map<String, Map<String, String>> refmaps = Map.of();
 
+        /**
+         * What the proof dropped, for the run-time degraded summary: line 1 the one-line summary (counts and the first targets), then one line per dropped
+         * injection / injection point / mixin class. Null when nothing was dropped.
+         */
+        String droppedSummary() {
+            int n = repair.dropped + repair.atDropped + dropped.size();
+            if (n == 0) return null;
+            List<String> first = new ArrayList<>();
+            for (String d : repair.droppedTargets) {
+                String t = d.split("	", -1)[1];
+                if (!first.contains(t) && first.size() < 3) first.add(t);
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(repair.dropped).append(" mixin injection(s), ").append(repair.atDropped).append(" injection point(s) and ").append(dropped.size())
+                    .append(" mixin class(es) were dropped at translation (their 1.20.1 target no longer exists or changed shape in 1.21.1); that part of the mod does nothing");
+            if (!first.isEmpty()) sb.append(", e.g. ").append(String.join(", ", first));
+            sb.append('
+');
+            for (String d : repair.droppedTargets) sb.append(d.replace('	', ' ')).append('
+');
+            for (String d : dropped) sb.append("class ").append(d).append('
+');
+            return sb.toString();
+        }
+
         String summary() {
             return mixinClasses + " mixin class(es), " + stringsMoved + " annotation name(s) moved to 1.21.1, " + requireRemoved + " injector requirement(s) relaxed, " + localsRelaxed + " local capture(s) set to FAILSOFT (a vanilla method whose locals changed skips that injection with a Mixin warning naming the mod's mixin), " + dropped.size()
                     + " mixin(s) dropped (target missing in 1.21.1); target proof: " + repair.summary() + ", " + membersRenamed + " member name(s) renamed, " + shadowsRetargeted + " inherited @Shadow field(s) retargeted to the declaring superclass";
