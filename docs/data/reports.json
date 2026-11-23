@@ -1247,6 +1247,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/management-wanted",
    "date": "2026-11-23",
    "open": true
+  },
+  {
+   "issue": 336,
+   "mod": "Galacticraft-1.12.2-4.0.6",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- All Blocks with Exception of 2 are Missing From Galacticcraft Blocks Creative Tab <img width=\"365\" height=\"378\" alt=\"image\" src=\"https://github.com/user-attachments/assets/f2302a72-ad7a-46ac-9a36-a03607b35575\" /> - All Rockets are Missing Item texture and block model, additionally tooltip states gui.rocket_type instead of the Rockets Data <img width=\"433\" height=\"363\" alt=\"image\" src=\"https://g…",
+   "lc": "legacyconnector-0.5.1-nightly.144.b8672…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/galacticraft-legacy",
+   "date": "2026-11-23",
+   "open": true
   }
  ]
 }
