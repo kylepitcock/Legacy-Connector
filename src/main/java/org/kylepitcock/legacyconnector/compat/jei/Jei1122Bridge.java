@@ -53,6 +53,12 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
     private boolean loaded;
     private final List<Category> categories = new ArrayList<>();
     private final Registry registry = new Registry();
+    /** The bridge JEI created, for the legacy runtime's recipe lookups. */
+    static volatile Jei1122Bridge current;
+
+    public Jei1122Bridge() {
+        current = this;
+    }
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -165,6 +171,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                 if (FAILED.add(o.getClass())) LOG.warn("1.12.2 JEI recipe {} of {} has no wrapper: {}", o.getClass().getName(), c.uid, e.toString());
             }
             if (w != null) out.add(new Recipe(w, c));
+            else if (o != null && FAILED.add(o.getClass())) LOG.warn("1.12.2 JEI recipe {} of {} is no recipe wrapper and no handler takes it; dropped", o.getClass().getName(), c.uid);
         }
         return out;
     }
@@ -965,6 +972,43 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                     public <V> legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus<V> createFocus(legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus.Mode mode, V ingredient) {
                         return new Focus<>(ingredient, mode);
                     }
+
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public <T extends IRecipeWrapper> List<T> getRecipeWrappers(IRecipeCategory<T> category) {
+                        List<T> out = new ArrayList<>();
+                        Category c = category == null ? null : categoryOf(category.getUid());
+                        if (c != null) for (Recipe r : c.recipes) out.add((T) r.wrapper());
+                        return out;
+                    }
+
+                    @Override
+                    public void addRecipe(IRecipeWrapper wrapper, String uid) {
+                        Category c = categoryOf(uid);
+                        if (c == null || wrapper == null) return;
+                        Recipe r = new Recipe(wrapper, c);
+                        c.recipes.add(r);
+                        try {
+                            if (runtime != null) runtime.getRecipeManager().addRecipes(c.type, List.of(r));
+                        } catch (RuntimeException e) {
+                            LOG.debug("JEI refused a 1.12.2 recipe added at runtime to {}: {}", uid, e.toString());
+                        }
+                    }
+
+                    @Override
+                    public void removeRecipe(IRecipeWrapper wrapper, String uid) {
+                        Category c = categoryOf(uid);
+                        if (c == null || wrapper == null) return;
+                        List<Recipe> gone = new ArrayList<>();
+                        for (Recipe r : c.recipes) if (r.wrapper() == wrapper) gone.add(r);
+                        if (gone.isEmpty()) return;
+                        c.recipes.removeAll(gone);
+                        try {
+                            if (runtime != null) runtime.getRecipeManager().hideRecipes(c.type, gone);
+                        } catch (RuntimeException e) {
+                            LOG.debug("JEI refused to hide a 1.12.2 recipe of {}: {}", uid, e.toString());
+                        }
+                    }
                 };
             }
 
@@ -1006,6 +1050,14 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                 };
             }
         };
+
+        /** The bridged category of a legacy uid. */
+        static Category categoryOf(String uid) {
+            var bridge = current;
+            if (bridge == null || uid == null) return null;
+            for (Category c : bridge.categories) if (c.uid.equals(uid)) return c;
+            return null;
+        }
 
         record Focus<V>(V value, legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus.Mode mode) implements legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus<V> {
             @Override public V getValue() { return value; }

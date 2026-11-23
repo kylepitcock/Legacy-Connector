@@ -379,11 +379,36 @@ public class World implements IBlockAccess {
     }
 
     public static List<TileEntity> mcc$get$tickableTileEntities(World w) {
-        List<TileEntity> out = new ArrayList<>();
+        List<TileEntity> out = new TickableList();
         for (TileEntity te : mcc$get$loadedTileEntityList(w)) {
-            if (te instanceof legacyconnector.v1_12_2.net.minecraft.util.ITickable) out.add(te);
+            if (te instanceof legacyconnector.v1_12_2.net.minecraft.util.ITickable && !te.mcc$untickable) out.add(te);
         }
         return out;
+    }
+
+    /**
+     * The ticked tile entities as a list: the hosts tick them, so taking one out (or putting it back) is what stops (or restarts) its
+     * ticking. A client world's list is empty, and a removal there still counts.
+     */
+    private static final class TickableList extends ArrayList<TileEntity> {
+        @Override
+        public boolean add(TileEntity te) {
+            if (te != null) te.mcc$untickable = false;
+            return super.add(te);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            if (o instanceof TileEntity te) te.mcc$untickable = true;
+            super.remove(o);
+            return o instanceof TileEntity;
+        }
+
+        @Override
+        public boolean removeAll(java.util.Collection<?> c) {
+            if (c != null) for (Object o : c) if (o instanceof TileEntity te) te.mcc$untickable = true;
+            return super.removeAll(c);
+        }
     }
 
     public static legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo mcc$get$worldInfo(World w) {

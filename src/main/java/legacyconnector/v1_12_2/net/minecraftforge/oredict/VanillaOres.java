@@ -118,6 +118,37 @@ final class VanillaOres {
             b("blockGlass" + dyes[meta], V.block("STAINED_GLASS"), 15 - meta);
         }
         i("dye", Items.DYE, ANY);
+        // the game's own blocks and items 1.12 did not have, under the names Forge gave their kind (the modern c: tags put them there too):
+        // a 1.12 machine that takes "oreIron" takes the deepslate ore the player mines now
+        String[] ores = {"Coal", "Iron", "Gold", "Lapis", "Diamond", "Redstone", "Emerald", "Copper"};
+        for (String ore : ores) m("ore" + ore, "minecraft:deepslate_" + ore.toLowerCase(java.util.Locale.ROOT) + "_ore");
+        m("oreCopper", "minecraft:copper_ore");
+        m("oreGold", "minecraft:nether_gold_ore");
+        // raw ores are what a modern ore block drops: legacy machines (crushers, ore-doubling furnaces) process them as the ore, unless the pack
+        // turns that off (Fortune already multiplies them, so the yield per block is higher than 1.12's)
+        if (org.kylepitcock.legacyconnector.core.LegacyConfig.rawOresAsOres()) {
+            m("oreIron", "minecraft:raw_iron");
+            m("oreGold", "minecraft:raw_gold");
+            m("oreCopper", "minecraft:raw_copper");
+        }
+        m("ingotCopper", "minecraft:copper_ingot");
+        m("blockCopper", "minecraft:copper_block");
+        m("ingotNetherite", "minecraft:netherite_ingot");
+        m("blockNetherite", "minecraft:netherite_block");
+        m("gemAmethyst", "minecraft:amethyst_shard");
+        m("blockAmethyst", "minecraft:amethyst_block");
+    }
+
+    /** A modern vanilla item (no 1.12 field names it). */
+    private static void m(String name, String modernId) {
+        try {
+            var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse(modernId));
+            if (item == net.minecraft.world.item.Items.AIR) return;
+            ItemStack legacy = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(new net.minecraft.world.item.ItemStack(item));
+            if (legacy != null && !legacy.isEmpty()) OreDictionary.registerOre(name, legacy);
+        } catch (RuntimeException | LinkageError e) {
+            // an entry the host cannot resolve is left out
+        }
     }
 
     private static void b(String name, Block block, int meta) {

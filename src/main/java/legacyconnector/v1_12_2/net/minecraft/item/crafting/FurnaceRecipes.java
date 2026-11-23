@@ -101,6 +101,75 @@ public class FurnaceRecipes {
                 // an entry the host cannot resolve is left out
             }
         }
+        seedModern();
+    }
+
+    /**
+     * The game's own smelting recipes for what 1.12 did not have (deepslate and copper ores, raw ores, ancient debris...), read from the
+     * vanilla data pack: a mod's powered furnace copies this list once, while mods load, so these would otherwise never smelt in it. Recipes
+     * whose ingredient is a tag are left out (tags are not bound yet; the 1.12 entries above cover logs and the like).
+     */
+    private void seedModern() {
+        try {
+            var pack = net.minecraft.server.packs.repository.ServerPacksSource.createVanillaPackSource();
+            java.util.List<com.google.gson.JsonObject> recipes = new java.util.ArrayList<>();
+            pack.listResources(net.minecraft.server.packs.PackType.SERVER_DATA, "minecraft", "recipe", (id, supplier) -> {
+                try (var in = new java.io.InputStreamReader(supplier.get(), java.nio.charset.StandardCharsets.UTF_8)) {
+                    var json = com.google.gson.JsonParser.parseReader(in);
+                    if (json.isJsonObject() && "minecraft:smelting".equals(string(json.getAsJsonObject(), "type"))) recipes.add(json.getAsJsonObject());
+                } catch (java.io.IOException | RuntimeException e) {
+                    // an unreadable recipe is left out
+                }
+            });
+            for (var recipe : recipes) {
+                var result = recipe.get("result");
+                String outId = result == null ? null : result.isJsonPrimitive() ? result.getAsString()
+                        : result.isJsonObject() ? string(result.getAsJsonObject(), "id") : null;
+                ItemStack out = modern(outId);
+                if (out.isEmpty()) continue;
+                if (result.isJsonObject() && result.getAsJsonObject().has("count")) out.setCount(result.getAsJsonObject().get("count").getAsInt());
+                float xp = recipe.has("experience") ? recipe.get("experience").getAsFloat() : 0.0F;
+                var ingredient = recipe.get("ingredient");
+                java.util.List<com.google.gson.JsonElement> options = new java.util.ArrayList<>();
+                if (ingredient != null && ingredient.isJsonArray()) ingredient.getAsJsonArray().forEach(options::add);
+                else if (ingredient != null) options.add(ingredient);
+                for (var option : options) {
+                    if (!option.isJsonObject()) continue;
+                    ItemStack in = modern(string(option.getAsJsonObject(), "item"));
+                    if (in.isEmpty() || listed(in)) continue;
+                    smeltingList.put(in, out);
+                    experienceList.put(out, xp);
+                    vanilla.add(in);
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // without the vanilla pack the 1.12 entries stay
+        }
+    }
+
+    private static String string(com.google.gson.JsonObject o, String key) {
+        var e = o.get(key);
+        return e != null && e.isJsonPrimitive() ? e.getAsString() : null;
+    }
+
+    /** The legacy stack of a modern item id (empty for none). */
+    private static ItemStack modern(String id) {
+        if (id == null) return ItemStack.EMPTY;
+        var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+        if (rl == null) return ItemStack.EMPTY;
+        var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(rl);
+        if (item == net.minecraft.world.item.Items.AIR) return ItemStack.EMPTY;
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(new net.minecraft.world.item.ItemStack(item));
+    }
+
+    /** Whether an input of the list already takes this stack. */
+    private boolean listed(ItemStack stack) {
+        synchronized (smeltingList) {
+            for (ItemStack in : smeltingList.keySet()) {
+                if (in.getItem() == stack.getItem() && (in.getMetadata() == 32767 || in.getMetadata() == stack.getMetadata())) return true;
+            }
+        }
+        return false;
     }
 
     private static ItemStack stack(String kind, String field, int meta) throws ReflectiveOperationException {

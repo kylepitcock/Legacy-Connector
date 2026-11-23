@@ -227,7 +227,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
             }
             return;
         }
-        if (te instanceof ITickable t && !te.isInvalid() && !(perf && te == tickFailed)) {
+        if (te instanceof ITickable t && !te.isInvalid() && !te.mcc$untickable && !(perf && te == tickFailed)) {
             try {
                 t.update();
             } catch (RuntimeException | LinkageError e) {

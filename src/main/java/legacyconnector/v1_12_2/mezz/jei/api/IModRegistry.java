@@ -14,6 +14,15 @@ public interface IModRegistry {
     <T> void addIngredientInfo(java.util.List<T> ingredients, Class<? extends T> ingredientClass, String... descriptionKeys);
     void addAdvancedGuiHandlers(legacyconnector.v1_12_2.mezz.jei.api.gui.IAdvancedGuiHandler<?>... advancedGuiHandlers);
     legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferRegistry getRecipeTransferRegistry();
+    /** JEI 3 name of ingredient info. */
+    @Deprecated
+    default void addDescription(legacyconnector.v1_12_2.net.minecraft.item.ItemStack itemStack, String... descriptionKeys) {
+        addIngredientInfo(itemStack, legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class, descriptionKeys);
+    }
+    @Deprecated
+    default void addDescription(java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> itemStacks, String... descriptionKeys) {
+        addIngredientInfo(itemStacks, legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class, descriptionKeys);
+    }
     /** JEI 3 name of a catalyst. */
     default void addRecipeCategoryCraftingItem(legacyconnector.v1_12_2.net.minecraft.item.ItemStack craftingItem, String... recipeCategoryUids) {
         addRecipeCatalyst(craftingItem, recipeCategoryUids);

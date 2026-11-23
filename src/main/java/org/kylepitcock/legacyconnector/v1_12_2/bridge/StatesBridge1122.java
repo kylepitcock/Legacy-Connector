@@ -95,7 +95,8 @@ public final class StatesBridge1122 {
         state = canonical(state);
         try {
             Block block = state.getBlock();
-            return state.equals(block.getStateFromMeta(block.getMetaFromState(state)));
+            // an ExtendedBlockState's getStateFromMeta answers with its extended wrapper of the plain state (CoFH's machines): compared plain
+            return state.equals(canonical(block.getStateFromMeta(block.getMetaFromState(state))));
         } catch (RuntimeException | LinkageError e) {
             return true;
         }
@@ -107,6 +108,9 @@ public final class StatesBridge1122 {
      */
     public static IBlockState canonical(IBlockState state) {
         if (state == null || state instanceof legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.StateImplementation) return state;
+        // the unlisted properties of an extended state are render data, not part of the state's identity
+        if (state instanceof legacyconnector.v1_12_2.net.minecraftforge.common.property.IExtendedBlockState extended && extended.getClean() != null
+                && extended.getClean() != state) return canonical(extended.getClean());
         try {
             IBlockState out = state.getBlock().getDefaultState();
             for (var e : state.getProperties().entrySet()) out = withValue(out, e.getKey(), e.getValue());
