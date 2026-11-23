@@ -35,6 +35,14 @@ public final class OrphanVariants1122 {
     }
 
     private static IBakedModel bakeNow(ModelResourceLocation location) {
+        // an OBJ variant: written with the generated assets and baked by the game as a standalone model (Assets1122.orphanModel)
+        var generated = org.kylepitcock.legacyconnector.v1_12_2.Assets1122.orphanModel(location.toString());
+        if (generated != null) {
+            var key = net.minecraft.client.resources.model.ModelResourceLocation.standalone(generated);
+            var baking = CustomModels1122.baking();
+            var modern = baking != null ? baking.get(key) : Minecraft.getInstance().getModelManager().getModel(key);
+            if (modern != null && modern != Models1122.missingModern()) return Models1122.legacy(modern);
+        }
         try {
             String ns = location.getNamespace();
             String path = location.getPath();
@@ -72,6 +80,58 @@ public final class OrphanVariants1122 {
             return JsonBake1122.bakeVariant(json.toString(), x, y);
         } catch (RuntimeException e) {
             RenderErrors1122.report("baking the blockstate variant " + location, e);
+            return null;
+        }
+    }
+
+    /**
+     * A variant whose model is a Forge OBJ file, baked by the shim's OBJ loader with the caller's texture getter, as 1.12's variant loader did:
+     * the defaults' and the variant's textures and custom data (flip-v) applied. For variants a mod asks for only while the models are baked
+     * (Techguns loads its 40mm grenade's {@code techguns:grenade40mm#inventory} in ModelBakeEvent, after the generated assets were written, so no
+     * standalone model of it exists: it drew the missing model, whose quads all have a side, and its entity renderer drew nothing). Null when the
+     * variant does not name an OBJ file.
+     */
+    public static IBakedModel bakeObj(ModelResourceLocation location,
+            legacyconnector.v1_12_2.net.minecraftforge.common.model.IModelState state,
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.vertex.VertexFormat format,
+            java.util.function.Function<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation,
+                    legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite> getter) {
+        try {
+            String ns = location.getNamespace();
+            JsonObject file = read("assets/" + ns + "/blockstates/" + location.getPath() + ".json");
+            if (file == null || !file.has("variants") || !file.get("variants").isJsonObject()) return null;
+            JsonElement found = file.getAsJsonObject("variants").get(location.getVariant());
+            if (found == null && "normal".equals(location.getVariant())) found = file.getAsJsonObject("variants").get("");
+            while (found != null && found.isJsonArray()) found = found.getAsJsonArray().isEmpty() ? null : found.getAsJsonArray().get(0);
+            if (found == null || !found.isJsonObject()) return null;
+            JsonObject variant = found.getAsJsonObject();
+            JsonObject defaults = file.has("defaults") && file.get("defaults").isJsonObject() ? file.getAsJsonObject("defaults") : new JsonObject();
+            String model = string(variant, "model");
+            if (model == null) model = string(defaults, "model");
+            if (model == null || !org.kylepitcock.legacyconnector.v1_12_2.ObjAssets1122.isObj(model)) return null;
+            int colon = model.indexOf(':');
+            String modelNs = colon < 0 ? ns : model.substring(0, colon);
+            String name = colon < 0 ? model : model.substring(colon + 1);
+            // the variant loader's folder is models/block/ (the OBJ loader also looks in models/item/)
+            String path = name.startsWith("block/") || name.startsWith("item/") ? name : "block/" + name;
+            legacyconnector.v1_12_2.net.minecraftforge.client.model.IModel obj = legacyconnector.v1_12_2.net.minecraftforge.client.model.obj.OBJLoader.INSTANCE
+                    .loadModel(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(modelNs, "models/" + path));
+            var textures = new java.util.LinkedHashMap<String, String>();
+            var custom = new java.util.LinkedHashMap<String, String>();
+            for (var source : new JsonObject[] {defaults, variant}) {
+                if (source.has("textures") && source.get("textures").isJsonObject()) {
+                    for (var t : source.getAsJsonObject("textures").entrySet()) if (t.getValue().isJsonPrimitive()) textures.put(t.getKey(), t.getValue().getAsString());
+                }
+                if (source.has("custom") && source.get("custom").isJsonObject()) {
+                    for (var c : source.getAsJsonObject("custom").entrySet()) custom.put(c.getKey(), c.getValue().toString());
+                }
+            }
+            if (!textures.isEmpty()) obj = obj.retexture(com.google.common.collect.ImmutableMap.copyOf(textures));
+            if (!custom.isEmpty()) obj = obj.process(com.google.common.collect.ImmutableMap.copyOf(custom));
+            var bakeGetter = getter != null ? getter : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.defaultTextureGetter();
+            return obj.bake(state != null ? state : obj.getDefaultState(), format, bakeGetter);
+        } catch (Exception | LinkageError e) {
+            RenderErrors1122.report("baking the OBJ model of the blockstate variant " + location, e);
             return null;
         }
     }

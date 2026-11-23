@@ -130,13 +130,12 @@ public final class CreativeTabBridge1122 {
                 }
             }
         }
-        // the spawn eggs of mod entities (1.12's one spawn egg item listed every egg with colours in the misc tab; the modern equivalent is the spawn eggs tab)
+        // the spawn eggs of mod entities registered with egg colours (1.12 listed them in its misc tab under the one spawn egg item;
+        // modern spawn egg items are not in any tab by themselves: Techguns' NPCs could only be summoned by command)
         if (event.getTabKey().equals(CreativeModeTabs.SPAWN_EGGS)) {
-            for (ResourceLocation eggId : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.spawnEggIds()) {
-                var egg = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(eggId).orElse(null);
-                if (egg == null) continue;
-                var stack = new net.minecraft.world.item.ItemStack(egg);
-                if (event.getParentEntries().contains(stack) || event.getSearchEntries().contains(stack)) continue;
+            for (var id : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.spawnEggIds()) {
+                var stack = new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id));
+                if (stack.isEmpty() || event.getParentEntries().contains(stack)) continue;
                 try {
                     event.accept(stack);
                 } catch (IllegalArgumentException | IllegalStateException duplicate) {

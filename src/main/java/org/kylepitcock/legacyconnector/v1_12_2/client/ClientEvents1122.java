@@ -16,6 +16,7 @@ import legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderLivingEvent
 import legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderPlayerEvent;
 import legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderSpecificHandEvent;
 import legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderTooltipEvent;
+import legacyconnector.v1_12_2.net.minecraft.client.particle.Particle;
 import legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderWorldLastEvent;
 import legacyconnector.v1_12_2.net.minecraftforge.client.event.ScreenshotEvent;
 import legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge;
@@ -238,7 +239,9 @@ public final class ClientEvents1122 {
         if (gameMode == null) return true;
         return switch (type) {
             case HEALTH, ARMOR, FOOD, AIR -> gameMode.canHurtPlayer();
-            case EXPERIENCE -> gameMode.hasExperience();
+            // posted in every game mode (only the bar itself was survival-only), unless the jump bar of a ridden horse took its place: mods draw
+            // their own HUD on it (Techguns' ammo and armor display listens for EXPERIENCE and showed nothing in creative)
+            case EXPERIENCE -> Minecraft.getInstance().player == null || Minecraft.getInstance().player.jumpableVehicle() == null;
             default -> true;
         };
     }
@@ -325,19 +328,44 @@ public final class ClientEvents1122 {
         }
         if (e.getStage() != net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_LEVEL || !wants(RenderWorldLastEvent.class)) return;
         Minecraft mc = Minecraft.getInstance();
-        setCamera(e.getCamera().getPosition());
+        float partial = e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        var cam = e.getCamera().getPosition();
+        // 1.12 drew this event relative to the view entity's interpolated feet (the camera transform held the eye height and the third-person
+        // distance), and handlers subtract that position themselves (Techguns' particles take lastTickPos + (pos - lastTickPos) * partial):
+        // relative to the eye, everything they drew was an eye height too high
+        var origin = cam;
+        var viewer = e.getCamera().getEntity();
+        if (viewer != null) {
+            origin = new net.minecraft.world.phys.Vec3(net.minecraft.util.Mth.lerp(partial, viewer.xOld, viewer.getX()),
+                    net.minecraft.util.Mth.lerp(partial, viewer.yOld, viewer.getY()), net.minecraft.util.Mth.lerp(partial, viewer.zOld, viewer.getZ()));
+        }
+        setCamera(origin);
+        var manager = legacyMc().getRenderManager();
+        double[] saved = {Particle.interpPosX, Particle.interpPosY, Particle.interpPosZ};
+        Particle.interpPosX = origin.x;
+        Particle.interpPosY = origin.y;
+        Particle.interpPosZ = origin.z;
+        if (manager != null) {
+            manager.viewerPosX = origin.x;
+            manager.viewerPosY = origin.y;
+            manager.viewerPosZ = origin.z;
+        }
         var buffers = mc.renderBuffers().bufferSource();
-        // camera-relative and turned to the camera (only the event's model-view holds the camera rotation at this stage)
+        // turned to the camera (only the event's model-view holds the camera rotation at this stage), from the legacy origin
         var pose = new com.mojang.blaze3d.vertex.PoseStack();
         pose.last().pose().set(e.getModelViewMatrix());
         pose.last().normal().set(new org.joml.Matrix3f(e.getModelViewMatrix()));
+        pose.translate(origin.x - cam.x, origin.y - cam.y, origin.z - cam.z);
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
-            post(new RenderWorldLastEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()),
-                    e.getPartialTick().getGameTimeDeltaPartialTick(false)), "RenderWorldLastEvent");
+            post(new RenderWorldLastEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()), partial), "RenderWorldLastEvent");
         } finally {
             RenderContext.end();
             buffers.endBatch();
+            setCamera(cam);
+            Particle.interpPosX = saved[0];
+            Particle.interpPosY = saved[1];
+            Particle.interpPosZ = saved[2];
         }
     }
 
@@ -377,16 +405,80 @@ public final class ClientEvents1122 {
         if (!(EntityBridge1122.wrap(e.getEntity()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living)) return;
         float partial = e.getPartialTick();
         double[] at = relative(e.getEntity(), partial);
+        var renderer = livingRenderer(e.getEntity(), living);
+        // 1.12 posted this after RenderPlayer.setModelVisibilities had set the arm poses for the held items, and drew the model with what handlers
+        // left there (Techguns raises both arms for its two-handed guns); the modern model draws the same poses
+        var biped = renderer != null && renderer.getMainModel() instanceof legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped b ? b : null;
+        var humanoid = e.getRenderer().getModel() instanceof net.minecraft.client.model.HumanoidModel<?> h ? h : null;
+        if (biped != null && humanoid != null) {
+            biped.leftArmPose = legacyPose(humanoid.leftArmPose);
+            biped.rightArmPose = legacyPose(humanoid.rightArmPose);
+        }
         RenderContext.beginWorld(atCamera(e.getPoseStack(), at), e.getMultiBufferSource(), e.getPackedLight(), OverlayTexture.NO_OVERLAY);
         try {
-            if (post(new RenderLivingEvent.Pre<>(living, null, partial, at[0], at[1], at[2]), "living render")) {
+            if (post(new RenderLivingEvent.Pre<>(living, renderer, partial, at[0], at[1], at[2]), "living render")) {
                 e.setCanceled(true);
                 return;
             }
-            if (wants(RenderLivingEvent.Specials.Pre.class)) post(new RenderLivingEvent.Specials.Pre<>(living, null, at[0], at[1], at[2]), "living specials");
+            if (wants(RenderLivingEvent.Specials.Pre.class)) post(new RenderLivingEvent.Specials.Pre<>(living, renderer, at[0], at[1], at[2]), "living specials");
         } finally {
             RenderContext.end();
         }
+        if (biped != null && humanoid != null) {
+            if (biped.leftArmPose != legacyPose(humanoid.leftArmPose)) humanoid.leftArmPose = modernPose(biped.leftArmPose);
+            if (biped.rightArmPose != legacyPose(humanoid.rightArmPose)) humanoid.rightArmPose = modernPose(biped.rightArmPose);
+        }
+    }
+
+    /**
+     * The legacy renderer handed to RenderLivingEvent: a player's skin renderer, a legacy entity's own renderer, or null for a modern entity
+     * the legacy side has no renderer of (handlers read {@code event.getRenderer().getMainModel()}; null made Techguns' handler throw).
+     */
+    private static legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderLivingBase<legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase> livingRenderer(
+            net.minecraft.world.entity.LivingEntity entity, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living) {
+        Object found;
+        if (entity instanceof net.minecraft.world.entity.player.Player player) {
+            found = playerRenderer(player);
+        } else {
+            var manager = legacyMc().getRenderManager();
+            if (manager == null) return null;
+            try {
+                found = manager.getEntityRenderObject(living);
+                // a vanilla mob (drawn by its modern renderer): the shim's vanilla legacy renderer, as 1.12 handed it (Techguns' bio and laser
+                // deaths cancel the event and draw the mob's main model themselves; without a renderer the dying mob vanished)
+                if (!(found instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderLivingBase<?>)) {
+                    Object vanilla = manager.getEntityClassRenderObject(living.getClass());
+                    if (vanilla instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderLivingBase<?>) found = vanilla;
+                }
+            } catch (RuntimeException | LinkageError ex) {
+                return null;
+            }
+        }
+        @SuppressWarnings("unchecked")
+        var r = found instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderLivingBase<?> l
+                ? (legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderLivingBase<legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase>) l : null;
+        return r;
+    }
+
+    /** A modern arm pose as 1.12 knew it (the poses 1.12 did not have hold an item). */
+    static legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose legacyPose(net.minecraft.client.model.HumanoidModel.ArmPose pose) {
+        if (pose == null) return legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose.EMPTY;
+        return switch (pose.name()) {
+            case "EMPTY" -> legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose.EMPTY;
+            case "BLOCK" -> legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose.BLOCK;
+            case "BOW_AND_ARROW" -> legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose.BOW_AND_ARROW;
+            default -> legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose.ITEM;
+        };
+    }
+
+    static net.minecraft.client.model.HumanoidModel.ArmPose modernPose(legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.ArmPose pose) {
+        if (pose == null) return net.minecraft.client.model.HumanoidModel.ArmPose.EMPTY;
+        return switch (pose) {
+            case EMPTY -> net.minecraft.client.model.HumanoidModel.ArmPose.EMPTY;
+            case ITEM -> net.minecraft.client.model.HumanoidModel.ArmPose.ITEM;
+            case BLOCK -> net.minecraft.client.model.HumanoidModel.ArmPose.BLOCK;
+            case BOW_AND_ARROW -> net.minecraft.client.model.HumanoidModel.ArmPose.BOW_AND_ARROW;
+        };
     }
 
     private static void onLivingPost(net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) {
@@ -396,8 +488,9 @@ public final class ClientEvents1122 {
         double[] at = relative(e.getEntity(), partial);
         RenderContext.beginWorld(atCamera(e.getPoseStack(), at), e.getMultiBufferSource(), e.getPackedLight(), OverlayTexture.NO_OVERLAY);
         try {
-            if (wants(RenderLivingEvent.Specials.Post.class)) post(new RenderLivingEvent.Specials.Post<>(living, null, at[0], at[1], at[2]), "living specials");
-            post(new RenderLivingEvent.Post<>(living, null, partial, at[0], at[1], at[2]), "living render");
+            var renderer = livingRenderer(e.getEntity(), living);
+            if (wants(RenderLivingEvent.Specials.Post.class)) post(new RenderLivingEvent.Specials.Post<>(living, renderer, at[0], at[1], at[2]), "living specials");
+            post(new RenderLivingEvent.Post<>(living, renderer, partial, at[0], at[1], at[2]), "living render");
         } finally {
             RenderContext.end();
         }

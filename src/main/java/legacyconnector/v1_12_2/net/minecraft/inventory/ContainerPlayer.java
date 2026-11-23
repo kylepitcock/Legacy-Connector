@@ -18,6 +18,12 @@ public class ContainerPlayer extends Container {
     public boolean isLocalWorld;
     private final EntityPlayer player;
 
+    /** A container with no slots of its own (the layer's view of the player's modern inventory menu adds views of the menu's slots). */
+    protected ContainerPlayer(EntityPlayer playerIn, boolean localWorld) {
+        this.isLocalWorld = localWorld;
+        this.player = playerIn;
+    }
+
     public ContainerPlayer(InventoryPlayer playerInventory, boolean localWorld, EntityPlayer playerIn) {
         this.isLocalWorld = localWorld;
         this.player = playerIn;

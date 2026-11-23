@@ -9,6 +9,10 @@ public class LootTableManager {
             .registerTypeAdapter(LootPool.class, new LootPool.Serializer())
             .registerTypeAdapter(LootTable.class, new LootTable.Serializer())
             .registerTypeHierarchyAdapter(LootEntry.class, new LootEntry.Serializer())
+            .registerTypeHierarchyAdapter(legacyconnector.v1_12_2.net.minecraft.world.storage.loot.functions.LootFunction.class,
+                    new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.functions.LootFunctionManager.Serializer())
+            .registerTypeHierarchyAdapter(legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition.class,
+                    new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootConditionManager.Serializer())
             .registerTypeAdapter(LootContext.EntityTarget.class, new LootContext.EntityTarget.Serializer())
             .create();
 

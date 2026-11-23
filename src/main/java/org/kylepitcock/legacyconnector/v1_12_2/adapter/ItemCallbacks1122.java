@@ -41,6 +41,7 @@ final class ItemCallbacks1122 {
     final boolean useAction;
     final boolean hit;
     final boolean swing;
+    final boolean reequip;
     final boolean destroyed;
     final boolean destroySpeed;
     final boolean interact;
@@ -74,6 +75,7 @@ final class ItemCallbacks1122 {
         useAction = o("getItemUseAction", S);
         hit = o("hitEntity", S, L, L);
         swing = o("onEntitySwing", L, S);
+        reequip = o("shouldCauseReequipAnimation", S, S, boolean.class);
         destroyed = o("onBlockDestroyed", S, W, IBlockState.class, B, L);
         destroySpeed = o("getDestroySpeed", S, IBlockState.class);
         interact = o("itemInteractionForEntity", S, P, L, H);
@@ -325,6 +327,16 @@ final class ItemCallbacks1122 {
             return false;
         } finally {
             Stacks1122.flushViews();
+        }
+    }
+
+    /** Forge's {@code Item.shouldCauseReequipAnimation(old, new, slotChanged)}: guns keeping their ammo in NBT answer false, so firing does not bob the hand. */
+    boolean reequip(net.minecraft.world.item.ItemStack oldStack, net.minecraft.world.item.ItemStack newStack, boolean slotChanged) {
+        try {
+            return legacy.shouldCauseReequipAnimation(Stacks1122.fromModern(oldStack), Stacks1122.fromModern(newStack), slotChanged);
+        } catch (RuntimeException | LinkageError e) {
+            failure("shouldCauseReequipAnimation", e);
+            return slotChanged || !net.minecraft.world.item.ItemStack.matches(oldStack, newStack);
         }
     }
 

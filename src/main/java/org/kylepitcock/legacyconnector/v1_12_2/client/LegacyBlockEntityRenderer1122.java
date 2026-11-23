@@ -31,8 +31,26 @@ public final class LegacyBlockEntityRenderer1122 implements BlockEntityRenderer<
         try {
             Tessellator.mcc$reset();
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light & 0xFFFF, light >>> 16);
-            dispatcher.render(te, 0.0D, 0.0D, 0.0D, partialTick, -1, 1.0F);
+            // 1.12 drew tile entities in two passes, the solid one (0) and, for those that asked with shouldRenderInPass(1), the translucent
+            // one, and renderers ask MinecraftForgeClient.getRenderPass() which one it is (Techguns' reaction chamber draws its item in pass 0
+            // and its fluid and beam in pass 1; with no pass set it drew neither)
+            for (int pass = 0; pass < 2; pass++) {
+                boolean drawn;
+                try {
+                    drawn = te.shouldRenderInPass(pass);
+                } catch (RuntimeException | LinkageError e) {
+                    drawn = pass == 0;
+                }
+                if (!drawn) continue;
+                legacyconnector.v1_12_2.net.minecraftforge.client.ForgeHooksClient.setRenderPass(pass);
+                if (pass > 0) {
+                    Tessellator.mcc$reset();
+                    OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light & 0xFFFF, light >>> 16);
+                }
+                dispatcher.render(te, 0.0D, 0.0D, 0.0D, partialTick, -1, 1.0F);
+            }
         } finally {
+            legacyconnector.v1_12_2.net.minecraftforge.client.ForgeHooksClient.setRenderPass(-1);
             Tessellator.mcc$reset();
             RenderContext.end();
         }

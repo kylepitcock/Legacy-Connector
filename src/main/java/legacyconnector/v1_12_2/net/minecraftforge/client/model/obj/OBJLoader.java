@@ -52,13 +52,29 @@ public enum OBJLoader implements ICustomModelLoader {
         if (previous != null) throw previous;
         IResourceManager manager = Minecraft.getMinecraft().getResourceManager();
         String path = file.getPath().startsWith("models/") ? file.getPath() : "models/" + file.getPath();
-        try (IResource resource = manager.getResource(new ResourceLocation(file.getNamespace(), path))) {
+        try (IResource resource = open(manager, file.getNamespace(), path)) {
             OBJModel model = new OBJModel.Parser(resource, manager).parse();
             cache.put(file, model);
             return model;
         } catch (Exception e) {
             errors.put(file, e);
             throw new ModelLoaderRegistry.LoaderException("Could not load the OBJ model " + modelLocation, e);
+        }
+    }
+
+    /**
+     * The OBJ file, as Forge's loader found it: a blockstate variant names its model under models/block, so a file under models/item stands
+     * in (and the other way round). Techguns' guns name {@code techguns:grenadelauncher.obj} in their blockstates and ship it in models/item.
+     */
+    private static IResource open(IResourceManager manager, String namespace, String path) throws java.io.IOException {
+        try {
+            return manager.getResource(new ResourceLocation(namespace, path));
+        } catch (java.io.FileNotFoundException e) {
+            String other;
+            if (path.startsWith("models/block/")) other = "models/item/" + path.substring("models/block/".length());
+            else if (path.startsWith("models/item/")) other = "models/block/" + path.substring("models/item/".length());
+            else throw e;
+            return manager.getResource(new ResourceLocation(namespace, other));
         }
     }
 }

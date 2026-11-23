@@ -86,6 +86,11 @@ public class LegacyPlayerLayer1122 extends RenderLayer<AbstractClientPlayer, Pla
         legacy.isChild = modern.young;
         legacy.isRiding = modern.riding;
         legacy.swingProgress = modern.attackTime;
+        // the arm poses of the held items (and of RenderLivingEvent handlers, see ClientEvents1122.onLivingPre): an armour model takes them
+        // with setModelAttributes and poses its own arms from them, which stayed EMPTY (or a pose a handler left there frames ago) while
+        // the body held a gun up
+        legacy.leftArmPose = ClientEvents1122.legacyPose(modern.leftArmPose);
+        legacy.rightArmPose = ClientEvents1122.legacyPose(modern.rightArmPose);
     }
 
     private static void copy(ModelPart from, ModelRenderer to) {

@@ -170,7 +170,8 @@ public class LootPool {
             LootEntry[] entries = json.has("entries") ? context.deserialize(json.get("entries"), LootEntry[].class) : new LootEntry[0];
             RandomValueRange rolls = json.has("rolls") ? context.deserialize(json.get("rolls"), RandomValueRange.class) : new RandomValueRange(1);
             RandomValueRange bonus = json.has("bonus_rolls") ? context.deserialize(json.get("bonus_rolls"), RandomValueRange.class) : new RandomValueRange(0);
-            return new LootPool(entries, new LootCondition[0], rolls, bonus, name);
+            LootCondition[] conditions = json.has("conditions") ? context.deserialize(json.get("conditions"), LootCondition[].class) : new LootCondition[0];
+            return new LootPool(entries, conditions, rolls, bonus, name);
         }
 
         @Override

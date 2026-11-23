@@ -167,6 +167,7 @@ Per version, some items differ; the notes in brackets say where.
 | --- | --- | --- |
 | Baubles | **Curios** | Bauble items go into Curios slots |
 | NotEnoughItems | **JEI** | Legacy recipe handlers become JEI categories and answer recipe/usage lookups; NEI is never loaded when JEI is present |
+| JEI (1.12.2) | **JEI** | Legacy JEI plugins run: their categories, catalysts and click areas show in the modern JEI |
 | Waila | **Jade** | Legacy tooltip providers show in Jade |
 | Patchouli (1.12.2) | **Patchouli** | Legacy mods' guide books (including the ones they ship as resources) open in the modern Patchouli |
 | CoFH RF API (1.7.10 and Redstone Flux 1.12.2) | **NeoForge Energy** | Always on. 1 RF = 1 FE, so modern cables connect |

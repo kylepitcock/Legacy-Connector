@@ -61,6 +61,11 @@ public final class LegacyConfig {
             # (the subtype blocks stay registered, and their blocks in saved worlds turn back into the base block on chunk load).
             blocks.flattenSubtypes = true
 
+            # The game's raw ores (raw iron, gold, copper) count as ores in the 1.12.2 ore dictionary (oreIron, ...), so legacy machines take them
+            # like the ore block: a pulverizer makes 2 dust of each raw ore, on top of the extra raw ores Fortune drops. false: raw ores only
+            # smelt 1:1 in legacy furnaces (deepslate and copper ores count as ores either way).
+            oreDictionary.rawOresAsOres = true
+
             # Library bridges replace an outdated legacy library by its modern equivalent when that mod is installed.
             # Set one to false to load the legacy library itself instead (read by the loader at startup).
             bridges.baubles.enabled = true
@@ -374,6 +379,11 @@ public final class LegacyConfig {
         java.util.Set<String> out = new java.util.HashSet<>();
         for (String s : string("events.skip", "").split(",")) if (!s.isBlank()) out.add(s.trim());
         return out;
+    }
+
+    /** {@code oreDictionary.rawOresAsOres} (on): raw iron, gold and copper are in the 1.12.2 ore dictionary as oreIron, oreGold, oreCopper (VanillaOres). */
+    public static boolean rawOresAsOres() {
+        return bool("oreDictionary.rawOresAsOres", true);
     }
 
     /** Whether legacy block subtypes are flattened into blocks of their own (see BlockFlattening1710). */

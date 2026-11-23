@@ -63,8 +63,22 @@ public class Fluid {
         return getUnlocalizedName();
     }
 
+    /**
+     * The name in the current language, as Forge's {@code I18n.translateToLocal(getUnlocalizedName(stack))}: mods' lang files name their
+     * fluids; a key no language has (vanilla water and lava were "fluid.tile.water" in Forge's own lang file) takes the bridged modern fluid's
+     * name, and the key itself only when there is none (Techguns' tank tooltips showed "fluid.water").
+     */
     public String getLocalizedName(FluidStack stack) {
-        return getUnlocalizedName();
+        String key = getUnlocalizedName(stack);
+        var language = net.minecraft.locale.Language.getInstance();
+        if (key != null && language.has(key)) return language.getOrDefault(key);
+        try {
+            var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.modernOf(this);
+            if (modern != null && modern != net.minecraft.world.level.material.Fluids.EMPTY) return modern.getFluidType().getDescription().getString();
+        } catch (RuntimeException | LinkageError e) {
+            // no modern fluid: the key
+        }
+        return key;
     }
 
     public Fluid setBlock(Block block) {

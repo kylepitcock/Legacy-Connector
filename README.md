@@ -45,7 +45,7 @@ It is meant for the mods that **only exist on these old versions** and never got
 - **Outdated libraries are bridged** to their modern equivalents instead of being loaded:
   - Baubles to Curios
   - Waila to Jade
-  - NEI to JEI
+  - NEI and JEI 1.12 to JEI
   - Patchouli books to Patchouli
   - CoFH RF / Redstone Flux to NeoForge energy
 

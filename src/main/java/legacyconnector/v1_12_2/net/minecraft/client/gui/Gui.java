@@ -57,7 +57,18 @@ public class Gui {
     /** Blits a region of the bound texture, taken as 256x256 (the classic behaviour). */
     public void drawTexturedModalRect(int x, int y, int textureX, int textureY, int width, int height) {
         var gui = RenderContext.gui();
-        if (gui != null) gui.blit(RenderContext.texture(), x, y, textureX, textureY, width, height);
+        if (gui == null) return;
+        if (zLevel == 0.0F) {
+            gui.blit(RenderContext.texture(), x, y, textureX, textureY, width, height);
+            return;
+        }
+        // drawn at the gui's zLevel, as 1.12's quad was (Techguns lays a half transparent slot over the items its fabricator expects at
+        // zLevel 300, to fade them; at depth 0 the overlay was under the items and they showed at full strength)
+        var pose = gui.pose();
+        pose.pushPose();
+        pose.translate(0.0F, 0.0F, zLevel);
+        gui.blit(RenderContext.texture(), x, y, textureX, textureY, width, height);
+        pose.popPose();
     }
 
     public void drawTexturedModalRect(float xCoord, float yCoord, int minU, int minV, int maxU, int maxV) {
@@ -65,7 +76,7 @@ public class Gui {
         if (gui == null) return;
         var pose = gui.pose();
         pose.pushPose();
-        pose.translate(xCoord - (int) xCoord, yCoord - (int) yCoord, 0.0F);
+        pose.translate(xCoord - (int) xCoord, yCoord - (int) yCoord, zLevel);
         gui.blit(RenderContext.texture(), (int) xCoord, (int) yCoord, minU, minV, maxU, maxV);
         pose.popPose();
     }

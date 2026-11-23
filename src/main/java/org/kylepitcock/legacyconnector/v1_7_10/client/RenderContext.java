@@ -514,6 +514,13 @@ public final class RenderContext {
     public static void bindTexture(ResourceLocation rl) {
         // the resources being reloaded are not visible yet while the pack is built (mods bind textures in TextureStitchEvent.Pre)
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
+        // the vanilla sheets 1.20.2 split into sprites, composed the first time they are bound by any path (1.12's GuiUtils binds the button
+        // sheet here directly: Techguns' redstone and security buttons drew the missing texture as their frame)
+        if (rl != null && "minecraft".equals(rl.getNamespace())) {
+            if (rl.equals(LegacyWidgets.LOCATION)) LegacyWidgets.ensure();
+            else if (rl.equals(LegacyCreativeTabs.LOCATION)) LegacyCreativeTabs.ensure();
+            else if (rl.equals(LegacyIcons.LOCATION)) LegacyIcons.ensure();
+        }
         checkExists(rl);
         State st = STATE.get();
         st.texture = rl;

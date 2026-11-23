@@ -738,8 +738,31 @@ public final class Vanilla1122 {
 
     /** A vanilla block as a legacy object. */
     public static final class VanillaBlock extends Block {
+        /**
+         * The block's 1.12 metadata (facing, open, colour, age...), kept as is: this stand-in has none of the vanilla class's properties, so
+         * without it getStateFromMeta answered the default state and a generator's open trapdoor, wall torch or east-facing ladder came out
+         * as the block's default. The modern state is the 1.13 flattening of the block and this metadata.
+         */
+        public static final legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger META =
+                legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger.create("meta", 0, 15);
+
         VanillaBlock(Material material) {
             super(material);
+        }
+
+        @Override
+        protected legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer createBlockState() {
+            return new legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer(this, META);
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateFromMeta(int meta) {
+            return getDefaultState().withProperty(META, meta & 15);
+        }
+
+        @Override
+        public int getMetaFromState(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+            return state.getPropertyKeys().contains(META) ? state.getValue(META) : 0;
         }
 
         /** The default state of the modern block this one stands for (vanilla states map to it), or null. */

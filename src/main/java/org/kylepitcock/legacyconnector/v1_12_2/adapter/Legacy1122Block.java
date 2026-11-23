@@ -546,7 +546,16 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
 
     @Override
     public boolean isLadder(BlockState state, LevelReader level, BlockPos pos, LivingEntity entity) {
-        return legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLadder || super.isLadder(state, level, pos, entity);
+        if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLadder) return true;
+        // Forge's Block.isLadder(state, world, pos, entity): mods override it on any block (ladders that are not BlockLadder)
+        try {
+            var living = entity == null ? null
+                    : entity(entity) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase l ? l : null;
+            if (legacy.isLadder(state(state), WorldBridge1122.access(level), pos(pos), living)) return true;
+        } catch (RuntimeException | LinkageError e) {
+            failure("isLadder", e);
+        }
+        return super.isLadder(state, level, pos, entity);
     }
 
     /** IGrowable blocks (crops, saplings): bone meal asks and grows them through the legacy code. */
@@ -612,7 +621,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     @Override
     protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos,
             net.minecraft.world.phys.shapes.CollisionContext context) {
-        if (tracedBoxes && getter instanceof Level level && !IN_LEGACY_SHAPE.get()[0] && level.getBlockState(pos).is(this)) {
+        Level level = levelOf(getter);
+        if (tracedBoxes && level != null && !IN_LEGACY_SHAPE.get()[0] && level.getBlockState(pos).is(this)) {
             // the block is selected through its collision boxes (1.12 stairs: collisionRayTrace over each box), so they are its outline
             var b = collisionBoxes(state, level, pos, null);
             if (b != null && !b.isEmpty()) return b;
@@ -623,6 +633,16 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         }
         var s = staticShape(state);
         return s != null ? s : super.getShape(state, getter, pos, context);
+    }
+
+    /**
+     * The level behind a shape query: the level itself, or the chunk entity movement asks (BlockCollisions passes the chunk as the getter: the
+     * mod's collision boxes were never asked while walking, and the empty-world bounds, a full cube for stairs, were walked against).
+     */
+    private static Level levelOf(net.minecraft.world.level.BlockGetter getter) {
+        if (getter instanceof Level level) return level;
+        if (getter instanceof net.minecraft.world.level.chunk.LevelChunk chunk) return chunk.getLevel();
+        return null;
     }
 
     /** A legacy block-relative box (getBoundingBox or getCollisionBoundingBox at the position) as a shape; null when it cannot be had. */
@@ -654,7 +674,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var b = legacyBox(state, getter, pos, true);
             if (b != null) return b;
         }
-        if (!collisionList || !(getter instanceof Level level) || IN_LEGACY_SHAPE.get()[0]) return super.getCollisionShape(state, getter, pos, context);
+        Level level = levelOf(getter);
+        if (!collisionList || level == null || IN_LEGACY_SHAPE.get()[0]) return super.getCollisionShape(state, getter, pos, context);
         if (!level.getBlockState(pos).is(this)) {
             // a candidate state asked about before it is in the world (BlockItem.canPlace): 1.12 asked getCollisionBoundingBox then, never
             // addCollisionBoxToList, and the mod's tile entity does not exist yet (RFTools' shield blocks read it there)
