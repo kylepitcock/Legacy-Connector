@@ -354,4 +354,14 @@ public class FontRenderer implements legacyconnector.v1_12_2.net.minecraft.clien
         int i = "0123456789abcdef".indexOf(Character.toLowerCase(character));
         return i >= 0 && i < 16 ? colorCode[i] : -1;
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the texture manager the font sheets load through (redirected to {@link #mcc$get$renderEngine}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager renderEngine;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager mcc$get$renderEngine(FontRenderer f) {
+        return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getTextureManager();
+    }
 }

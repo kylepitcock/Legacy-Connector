@@ -241,4 +241,40 @@ public class PlayerControllerMP {
         m.handleInventoryMouseClick(windowId, slotId, mouseButton, type.mcc$modern(), mc.player);
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.view(mc.player.containerMenu.getCarried());
     }
+
+    // ---- gap batch: the controller's private state (kept together at the end)
+
+    /** Phantom: ticks until the next block can be broken in creative (the modern game mode's own delay). */
+    @Deprecated
+    public int blockHitDelay;
+    /** Phantom: the client the controller belongs to. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.Minecraft mc;
+    /** Phantom: the connection the controller sends its packets on. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient connection;
+
+    public static int mcc$get$blockHitDelay(PlayerControllerMP c) {
+        return field("destroyDelay", 0);
+    }
+
+    public static void mcc$set$blockHitDelay(PlayerControllerMP c, int v) {
+        var m = mode();
+        if (m == null) return;
+        try {
+            var f = net.minecraft.client.multiplayer.MultiPlayerGameMode.class.getDeclaredField("destroyDelay");
+            f.setAccessible(true);
+            f.setInt(m, v);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // the field is the modern game's own; a failed write leaves the delay as it was
+        }
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.Minecraft mcc$get$mc(PlayerControllerMP c) {
+        return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient mcc$get$connection(PlayerControllerMP c) {
+        return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getConnection();
+    }
 }

@@ -45,4 +45,24 @@ public class ChunkProviderClient implements legacyconnector.v1_12_2.net.minecraf
     public boolean isChunkGeneratedAt(int x, int z) {
         return getLoadedChunk(x, z) != null;
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the chunks by packed position (redirected to {@link #mcc$get$loadedChunks}); a view that answers lookups from the game's client chunk cache. */
+    @Deprecated
+    public it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> loadedChunks;
+
+    public static it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> mcc$get$loadedChunks(ChunkProviderClient p) {
+        return new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<Chunk>() {
+            @Override
+            public Chunk get(long key) {
+                return p.getLoadedChunk((int) key, (int) (key >>> 32));
+            }
+
+            @Override
+            public boolean containsKey(long key) {
+                return get(key) != null;
+            }
+        };
+    }
 }

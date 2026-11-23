@@ -322,4 +322,25 @@ public class RenderGlobal implements legacyconnector.v1_12_2.net.minecraft.clien
             return null;
         }
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the world being drawn (redirected to {@link #mcc$get$world}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient world;
+    /** Phantom: whether the entity display lists need rebuilding (the modern renderer has none; always false). */
+    @Deprecated
+    public boolean displayListEntitiesDirty;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient mcc$get$world(RenderGlobal r) {
+        return Minecraft.mcc$get$world(r.mc);
+    }
+
+    public static boolean mcc$get$displayListEntitiesDirty(RenderGlobal r) {
+        return false;
+    }
+
+    public static void mcc$set$displayListEntitiesDirty(RenderGlobal r, boolean v) {
+        if (v) r.setDisplayListEntitiesDirty();
+    }
 }

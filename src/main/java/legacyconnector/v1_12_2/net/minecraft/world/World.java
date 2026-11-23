@@ -2354,4 +2354,42 @@ public class World implements IBlockAccess {
 
     /** Scheduled block updates run at once instead of after their delay (world generation sets it). */
     public boolean scheduledUpdatesAreImmediate;
+
+    // ---- gap batch: members mods reach that only linked to a placeholder (kept together at the end)
+
+    /** 1.12 rolled the first weather of a new world here; the modern level keeps its stored weather, so this only runs the mod hook. */
+    public void calculateInitialWeather() {
+        calculateInitialWeatherBody();
+    }
+
+    /** Phantom: redirected to {@link #mcc$get$tileEntitiesToBeRemoved}: tile entities a mod adds are removed from the world. */
+    @Deprecated
+    public List<TileEntity> tileEntitiesToBeRemoved;
+    private List<TileEntity> mcc$removals;
+
+    public static List<TileEntity> mcc$get$tileEntitiesToBeRemoved(World w) {
+        if (w.mcc$removals == null) w.mcc$removals = new RemovalQueue(w);
+        return w.mcc$removals;
+    }
+
+    /** 1.12's list of tile entities to remove after the tick: adding one removes it from the world at once (the modern game has no deferred list). */
+    private static final class RemovalQueue extends ArrayList<TileEntity> {
+        private final World world;
+
+        RemovalQueue(World world) {
+            this.world = world;
+        }
+
+        @Override
+        public boolean add(TileEntity tile) {
+            if (tile != null) world.markTileEntityForRemoval(tile);
+            return tile != null;
+        }
+
+        @Override
+        public boolean addAll(java.util.Collection<? extends TileEntity> tiles) {
+            for (TileEntity t : tiles) add(t);
+            return !tiles.isEmpty();
+        }
+    }
 }

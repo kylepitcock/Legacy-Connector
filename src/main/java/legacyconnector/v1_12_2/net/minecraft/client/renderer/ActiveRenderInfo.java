@@ -80,4 +80,18 @@ public class ActiveRenderInfo {
     public static void updateRenderInfo(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer entityplayerIn, boolean p_74583_1_) {
         if (net.minecraft.client.Minecraft.getInstance().gameRenderer != null) getCameraPosition();
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** The viewport of the last frame (x, y, width, height), what {@code GLU.gluUnProject} wants; {@link #viewport()} refreshes it from the window. */
+    public static final java.nio.IntBuffer VIEWPORT = java.nio.ByteBuffer.allocateDirect(64).order(java.nio.ByteOrder.nativeOrder()).asIntBuffer();
+
+    /** Fills {@link #VIEWPORT} from the game window (the framebuffer size). */
+    public static java.nio.IntBuffer viewport() {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc != null && mc.getWindow() != null) {
+            VIEWPORT.put(0, 0).put(1, 0).put(2, mc.getWindow().getWidth()).put(3, mc.getWindow().getHeight());
+        }
+        return VIEWPORT;
+    }
 }

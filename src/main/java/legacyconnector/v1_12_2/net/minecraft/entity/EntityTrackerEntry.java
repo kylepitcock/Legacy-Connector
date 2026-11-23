@@ -11,6 +11,7 @@ public class EntityTrackerEntry {
 
     public EntityTrackerEntry(Entity entity, int range, int maxRange, int updateFrequency, boolean sendVelocityUpdates) {
         this.trackedEntity = entity;
+        mcc$init(range, maxRange);
     }
 
     public EntityTrackerEntry(Entity entity, int range, int updateFrequency, boolean sendVelocityUpdates) {
@@ -54,6 +55,7 @@ public class EntityTrackerEntry {
     /** The modern game decides who sees an entity; the range is only recorded. */
     public void setMaxRange(int maxRange) {
         this.mcc$maxRange = maxRange;
+        this.maxRange = maxRange;
     }
 
     public Entity getTrackedEntity() {
@@ -78,5 +80,26 @@ public class EntityTrackerEntry {
     @Override
     public int hashCode() {
         return trackedEntity == null ? 0 : trackedEntity.getEntityId();
+    }
+
+    // ---- gap batch: 1.12's tracking state (the modern tracker decides who sees an entity; these are what mods read)
+
+    /** How far (in blocks) players see the entity, as the entry was made. */
+    public int range;
+    /** The largest range the entry may grow to. */
+    public int maxRange;
+    /** The position last sent to the clients, in 1/4096 blocks ({@code EntityTracker.getPositionLong} units). */
+    public long encodedPosX;
+    public long encodedPosY;
+    public long encodedPosZ;
+
+    private void mcc$init(int range, int maxRange) {
+        this.range = range;
+        this.maxRange = maxRange;
+        if (trackedEntity != null) {
+            encodedPosX = (long) Math.floor(Entity.mcc$get$posX(trackedEntity) * 4096.0D);
+            encodedPosY = (long) Math.floor(Entity.mcc$get$posY(trackedEntity) * 4096.0D);
+            encodedPosZ = (long) Math.floor(Entity.mcc$get$posZ(trackedEntity) * 4096.0D);
+        }
     }
 }

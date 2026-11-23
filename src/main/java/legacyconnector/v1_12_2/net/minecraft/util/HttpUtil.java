@@ -14,4 +14,44 @@ public class HttpUtil {
             return 25564;
         }
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /**
+     * Downloads a resource pack to {@code saveFile} on the downloader pool (1.12's server resource pack download). Fails the future when the
+     * response is larger than {@code maxSize} bytes or the request fails; the progress callback shows the loading string and the percentage.
+     */
+    public static com.google.common.util.concurrent.ListenableFuture<Object> downloadResourcePack(java.io.File saveFile, String packUrl,
+            java.util.Map<String, String> requestProperties, int maxSize, IProgressUpdate progress, java.net.Proxy proxy) {
+        return DOWNLOADER_EXECUTOR.submit(() -> {
+            java.net.HttpURLConnection connection = null;
+            try {
+                if (progress != null) {
+                    progress.resetProgressAndMessage("Downloading Resource Pack");
+                    progress.displayLoadingString("Making request...");
+                }
+                connection = (java.net.HttpURLConnection) (proxy == null ? new java.net.URL(packUrl).openConnection() : new java.net.URL(packUrl).openConnection(proxy));
+                if (requestProperties != null) requestProperties.forEach(connection::setRequestProperty);
+                long length = connection.getContentLengthLong();
+                if (maxSize > 0 && length > maxSize) throw new java.io.IOException("Filesize is bigger than maximum allowed (file is " + length + ", limit is " + maxSize + ")");
+                if (connection.getResponseCode() >= 400) throw new java.io.IOException("Server returned HTTP " + connection.getResponseCode());
+                if (saveFile.getParentFile() != null) saveFile.getParentFile().mkdirs();
+                long total = 0;
+                try (var in = connection.getInputStream(); var out = new java.io.FileOutputStream(saveFile)) {
+                    byte[] buf = new byte[4096];
+                    int n;
+                    while ((n = in.read(buf)) != -1) {
+                        total += n;
+                        if (maxSize > 0 && total > maxSize) throw new java.io.IOException("Filesize was bigger than maximum allowed (got >= " + total + ", limit was " + maxSize + ")");
+                        out.write(buf, 0, n);
+                        if (progress != null && length > 0) progress.setLoadingProgress((int) (total * 100L / length));
+                    }
+                }
+                if (progress != null) progress.setDoneWorking();
+                return null;
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+        });
+    }
 }
