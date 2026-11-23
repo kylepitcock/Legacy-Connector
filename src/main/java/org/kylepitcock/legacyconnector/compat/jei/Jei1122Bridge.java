@@ -706,7 +706,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                 var s = e.getValue();
                 IRecipeSlotBuilder slot = builder.addSlot(s.input ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT, s.x + 1, s.y + 1);
                 List<net.minecraft.world.item.ItemStack> stacks = new ArrayList<>();
-                for (var st : s.stacks) if (st != null && !st.isEmpty()) stacks.add(Stacks1122.toModern(st));
+                // a slot of an ingredient type of the mod's own (Mekanism's gases) holds objects of that type: left out, not bridged
+                for (Object o : s.stacks) if (o instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemStack st && !st.isEmpty()) stacks.add(Stacks1122.toModern(st));
                 slot.addItemStacks(stacks);
                 if (s.background != null) slot.setBackground(modern(s.background), -1, -1);
                 if (!items.tooltips.isEmpty()) {
@@ -730,8 +731,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                 var s = e.getValue();
                 IRecipeSlotBuilder slot = builder.addSlot(s.input ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT, s.x, s.y);
                 List<net.neoforged.neoforge.fluids.FluidStack> stacks = new ArrayList<>();
-                for (var st : s.stacks) {
-                    var m = st == null ? null : FluidBridge1122.toModern(st);
+                for (Object o : s.stacks) {
+                    var m = o instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack st ? FluidBridge1122.toModern(st) : null;
                     if (m != null && !m.isEmpty()) stacks.add(m);
                 }
                 slot.setFluidRenderer(s.capacity, s.showCapacity, s.w, s.h);

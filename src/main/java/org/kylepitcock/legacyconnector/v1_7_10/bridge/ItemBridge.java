@@ -490,7 +490,12 @@ public final class ItemBridge {
             return false;
         }
         for (Class<?> c = item.getClass(); c != null && c != Object.class && !c.getName().startsWith("legacyconnector."); c = c.getSuperclass()) {
-            for (java.lang.reflect.Method m : c.getDeclaredMethods()) if (m.getName().equals("addCreativeItems")) return true;
+            try {
+                for (java.lang.reflect.Method m : c.getDeclaredMethods()) if (m.getName().equals("addCreativeItems")) return true;
+            } catch (LinkageError e) {
+                // a method signature names a class of an optional API that is not installed (Applied Energistics 1.5.2: Universal Electricity)
+                return false;
+            }
         }
         return false;
     }
