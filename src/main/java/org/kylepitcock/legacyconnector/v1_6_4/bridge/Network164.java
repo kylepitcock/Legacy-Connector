@@ -135,6 +135,29 @@ public final class Network164 {
         }
     }
 
+    /**
+     * A tiny packet that arrived as a packet object (a tile entity's description packet a mod built itself, carried over the wire format and rebuilt on the client):
+     * 1.4.7's FML routed Packet131MapData to the {@code ITinyPacketHandler} of the mod whose network id the packet's item id names.
+     */
+    public static void dispatchTiny(Packet131MapData packet, Object netHandler) {
+        String modId = packet.mcc$modId;
+        ITinyPacketHandler handler = modId == null ? null : TINY.get(modId);
+        if (handler == null) {
+            for (Map.Entry<String, ITinyPacketHandler> e : TINY.entrySet()) {
+                if (networkId(e.getKey()) == (packet.itemID & 0x7FFF)) {
+                    handler = e.getValue();
+                    break;
+                }
+            }
+        }
+        if (handler == null) return;
+        try {
+            handler.handle(netHandler instanceof INetHandler h ? h : null, packet);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.error("A tiny packet failed to arrive", e);
+        }
+    }
+
     // ------------------------------------------------------------------ sending
 
     /** A tiny packet for the mod (its instance or legacy id). */

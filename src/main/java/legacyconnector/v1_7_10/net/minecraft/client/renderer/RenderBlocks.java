@@ -502,6 +502,17 @@ public class RenderBlocks {
                 }
             }
             if (sheet != null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, tile, true);
+        } else if (block != null && org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet() == null) {
+            // capturing a block's geometry with no sheet bound by name: Forge 1.4.7 had bound the block's own texture file before the block was rendered, so the tile
+            // index is a position in it (Xycraft's coloured overlay faces draw tile 255 of the block's sheet with nothing bound). IsbrhQuads maps the quads onto the cut tile.
+            try {
+                String own = block.getTextureFile();
+                if (own != null && org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.isCutSheet(own)) {
+                    org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setSheet(own);
+                }
+            } catch (RuntimeException | LinkageError e) {
+                // a block without a texture file
+            }
         }
         final float u0 = ((tile & 15) << 4) / 256.0F, v0 = (tile & 240) / 256.0F, size = 16.0F / 256.0F;
         return new IIcon() {

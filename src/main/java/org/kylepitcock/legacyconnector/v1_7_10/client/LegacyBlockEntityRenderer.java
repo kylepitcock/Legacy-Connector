@@ -96,6 +96,13 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         te.getBlockType();
         te.getBlockMetadata();
         try {
+            // renderers that draw a whole block with the world renderer's RenderBlocks (RenderGlobal.renderBlocksRg) read the world through it
+            var global = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().renderGlobal;
+            if (global != null && global.renderBlocksRg != null) global.renderBlocksRg.blockAccess = te.getWorldObj();
+        } catch (RuntimeException | LinkageError ignored) {
+            // the renderer then draws against whatever the block renderer has
+        }
+        try {
             for (int pass = 0; pass < 2; pass++) {
                 if (!te.shouldRenderInPass(pass)) continue;
                 legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.renderPass = pass;
