@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -86,6 +87,10 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
     }
 
     private static ClassNode clientEventsFixture() {
+        return clientEventsFixture(AlienEvoForgeEvents1201.EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS);
+    }
+
+    private static ClassNode clientEventsFixture(int renderLevelPoseStackCalls) {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/forge/client/ForgeClientEvents";
         MethodNode frame = addPhaseGuardedMethod(
@@ -153,6 +158,21 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
         }
         post.instructions.add(new InsnNode(RETURN));
         node.methods.add(post);
+
+        MethodNode renderLevel = new MethodNode(ACC_PUBLIC | ACC_STATIC, "onRenderLevel",
+                "(L" + AlienEvoForgeEvents1201.RENDER_LEVEL_STAGE_EVENT + ";)V", null, null);
+        for (int i = 0; i < renderLevelPoseStackCalls; i++) {
+            renderLevel.instructions.add(new VarInsnNode(ALOAD, 0));
+            renderLevel.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                    AlienEvoForgeEvents1201.RENDER_LEVEL_STAGE_EVENT,
+                    "getPoseStack", AlienEvoForgeEvents1201.RENDER_STAGE_GET_POSE_STACK_DESC, false));
+            renderLevel.instructions.add(new InsnNode(POP));
+        }
+        renderLevel.instructions.add(new InsnNode(RETURN));
+        renderLevel.maxStack = 1;
+        renderLevel.maxLocals = 1;
+        node.methods.add(renderLevel);
+
         node.innerClasses.add(new InnerClassNode(PHASE, "net/neoforged/neoforge/event/TickEvent",
                 "Phase", ACC_PUBLIC | ACC_STATIC | ACC_ENUM));
         return node;
@@ -262,11 +282,33 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
             }
         }
         assertEquals(5, cancellationHelpers);
+
+        MethodNode renderLevel = method(node, "onRenderLevel");
+        assertEquals(AlienEvoForgeEvents1201.EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS,
+                countCalls(renderLevel, AlienEvoForgeEvents1201.RENDER_STAGE_POSE_HELPER,
+                        AlienEvoForgeEvents1201.RENDER_STAGE_POSE_HELPER_NAME,
+                        AlienEvoForgeEvents1201.RENDER_STAGE_POSE_HELPER_DESC));
+        assertEquals(0, countCalls(renderLevel, AlienEvoForgeEvents1201.RENDER_LEVEL_STAGE_EVENT,
+                "getPoseStack", AlienEvoForgeEvents1201.RENDER_STAGE_GET_POSE_STACK_DESC));
+        for (AbstractInsnNode instruction : renderLevel.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.name.equals(AlienEvoForgeEvents1201.RENDER_STAGE_POSE_HELPER_NAME)) {
+                assertEquals(INVOKESTATIC, call.getOpcode());
+                assertEquals(AlienEvoForgeEvents1201.RENDER_STAGE_POSE_HELPER, call.owner);
+                assertEquals(AlienEvoForgeEvents1201.RENDER_STAGE_POSE_HELPER_DESC, call.desc);
+            }
+        }
         assertEquals(0, AlienEvoForgeEvents1201.apply(node));
     }
 
     @Test
-    void ignoresUnrelatedClasses() {
+    void ignoresUnrelatedClasses() {    @Test
+    void failsClosedWhenRenderLevelPoseStackCallCountChanges() {
+        ClassNode node = clientEventsFixture(AlienEvoForgeEvents1201.EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS - 1);
+        assertThrows(IllegalStateException.class, () -> AlienEvoForgeEvents1201.apply(node));
+    }
+
+
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/forge/Unrelated";
         assertEquals(0, AlienEvoForgeEvents1201.apply(node));

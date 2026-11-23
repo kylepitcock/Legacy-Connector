@@ -44,6 +44,14 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
             "net/neoforged/neoforge/event/entity/player/PlayerEvent";
     static final String CANCELLABLE_EVENT = "net/neoforged/bus/api/ICancellableEvent";
     static final String RESOURCE_LOCATION = "Lnet/minecraft/resources/ResourceLocation;";
+    static final String RENDER_LEVEL_STAGE_EVENT = "net/neoforged/neoforge/client/event/RenderLevelStageEvent";
+    static final String POSE_STACK = "com/mojang/blaze3d/vertex/PoseStack";
+    static final String RENDER_STAGE_POSE_HELPER =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoRenderStagePose1201Runtime";
+    static final String RENDER_STAGE_POSE_HELPER_DESC = "(L" + RENDER_LEVEL_STAGE_EVENT + ";)L" + POSE_STACK + ";";
+    static final String RENDER_STAGE_GET_POSE_STACK_DESC = "()L" + POSE_STACK + ";";
+    static final String RENDER_STAGE_POSE_HELPER_NAME = "fromRenderStageEvent";
+    static final int EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS = 11;
     static final String PLAYER_DESC = "Lnet/minecraft/world/entity/player/Player;";
     static final String MINECRAFT_SERVER_DESC = "Lnet/minecraft/server/MinecraftServer;";
 
@@ -137,8 +145,82 @@ final class AlienEvoForgeEvents1201 implements Opcodes {
         int changed = rewriteRenderFramePre(node);
         changed += rewriteOverlayPre(node);
         changed += rewriteOverlayPost(node);
+        changed += rewriteRenderLevelPoseStack(node);
         removeStaleTickEventInnerClasses(node);
         return changed;
+    }
+
+    /**
+     * Forge 1.20.1 supplied RenderLevelStageEvent with the combined camera/model-view
+     * PoseStack. NeoForge 1.21.1 splits that into getModelViewMatrix() and a stage-local
+     * PoseStack (or an identity fallback when the stage is dispatched without one).
+     * AlienEvo's prepass and deferred effect buffers still expect the old combined stack,
+     * so adapt every inspected getPoseStack() read at the event boundary.
+     */
+    private static int rewriteRenderLevelPoseStack(ClassNode node) {
+        MethodNode method = requireMethod(
+                node,
+                "onRenderLevel",
+                "(L" + RENDER_LEVEL_STAGE_EVENT + ";)V");
+
+        List<MethodInsnNode> legacyCalls = new ArrayList<>();
+        int helperCalls = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (!(instruction instanceof MethodInsnNode call)) continue;
+            if (call.owner.equals(RENDER_LEVEL_STAGE_EVENT)
+                    && call.name.equals("getPoseStack")) {
+                if (call.getOpcode() != INVOKEVIRTUAL
+                        || !call.desc.equals(RENDER_STAGE_GET_POSE_STACK_DESC)
+                        || call.itf) {
+                    throw new IllegalStateException(
+                            "AlienEvo ForgeClientEvents.onRenderLevel has an unexpected RenderLevelStageEvent.getPoseStack call");
+                }
+                AbstractInsnNode receiver = previousMeaningful(instruction);
+                if (!(receiver instanceof VarInsnNode load)
+                        || load.getOpcode() != ALOAD || load.var != 0) {
+                    throw new IllegalStateException(
+                            "AlienEvo ForgeClientEvents.onRenderLevel getPoseStack receiver is not the inspected event parameter");
+                }
+                legacyCalls.add(call);
+            } else if (call.owner.equals(RENDER_STAGE_POSE_HELPER)
+                    && call.name.equals(RENDER_STAGE_POSE_HELPER_NAME)) {
+                if (call.getOpcode() != INVOKESTATIC
+                        || !call.desc.equals(RENDER_STAGE_POSE_HELPER_DESC)
+                        || call.itf) {
+                    throw new IllegalStateException(
+                            "AlienEvo ForgeClientEvents.onRenderLevel has an unexpected render-stage pose helper call");
+                }
+                helperCalls++;
+            }
+        }
+
+        if (legacyCalls.isEmpty()
+                && helperCalls == EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS) {
+            return 0;
+        }
+        if (legacyCalls.size() != EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS || helperCalls != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo ForgeClientEvents.onRenderLevel expected exactly "
+                            + EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS
+                            + " legacy RenderLevelStageEvent.getPoseStack calls; found "
+                            + legacyCalls.size() + " legacy and " + helperCalls + " adapted");
+        }
+
+        for (MethodInsnNode legacy : legacyCalls) {
+            method.instructions.set(legacy, new MethodInsnNode(
+                    INVOKESTATIC,
+                    RENDER_STAGE_POSE_HELPER,
+                    RENDER_STAGE_POSE_HELPER_NAME,
+                    RENDER_STAGE_POSE_HELPER_DESC,
+                    false));
+        }
+        return legacyCalls.size();
+    }
+
+    private static AbstractInsnNode previousMeaningful(AbstractInsnNode instruction) {
+        AbstractInsnNode value = instruction == null ? null : instruction.getPrevious();
+        while (value != null && value.getOpcode() < 0) value = value.getPrevious();
+        return value;
     }
 
     private static int rewriteRenderFramePre(ClassNode node) {
