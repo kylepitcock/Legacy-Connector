@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.FloatBuffer;
 import org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists;
+import org.kylepitcock.legacyconnector.v1_7_10.client.GlNotes;
 import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 import org.slf4j.LoggerFactory;
 
@@ -80,20 +81,38 @@ public class GL11 extends GL11Guard {
         } else if (pname == GL_CURRENT_COLOR) {
             RenderContext.currentColor(params);
         } else if (!legacyOnly(pname)) {
+            GlNotes.realQuery("glGetFloat", pname);
             GL11Guard.glGetFloatv(pname, params);
+        } else {
+            GlNotes.zeroQuery("glGetFloat", pname);
         }
     }
 
     public static void glGetInteger(int pname, java.nio.IntBuffer params) {
-        if (!legacyOnly(pname)) GL11Guard.glGetIntegerv(pname, params);
+        if (!legacyOnly(pname)) {
+            GlNotes.realQuery("glGetInteger", pname);
+            GL11Guard.glGetIntegerv(pname, params);
+        } else {
+            GlNotes.zeroQuery("glGetInteger", pname);
+        }
     }
 
     public static void glGetBoolean(int pname, java.nio.ByteBuffer params) {
-        if (!legacyOnly(pname)) GL11Guard.glGetBooleanv(pname, params);
+        if (!legacyOnly(pname)) {
+            GlNotes.realQuery("glGetBoolean", pname);
+            GL11Guard.glGetBooleanv(pname, params);
+        } else {
+            GlNotes.zeroQuery("glGetBoolean", pname);
+        }
     }
 
     public static void glGetDouble(int pname, java.nio.DoubleBuffer params) {
-        if (!legacyOnly(pname)) GL11Guard.glGetDoublev(pname, params);
+        if (!legacyOnly(pname)) {
+            GlNotes.realQuery("glGetDouble", pname);
+            GL11Guard.glGetDoublev(pname, params);
+        } else {
+            GlNotes.zeroQuery("glGetDouble", pname);
+        }
     }
 
     /**
@@ -107,7 +126,12 @@ public class GL11 extends GL11Guard {
     }
 
     public static float glGetFloat(int pname) {
-        return legacyOnly(pname) ? 0F : GL11Guard.glGetFloat(pname);
+        if (legacyOnly(pname)) {
+            GlNotes.zeroQuery("glGetFloat", pname);
+            return 0F;
+        }
+        GlNotes.realQuery("glGetFloat", pname);
+        return GL11Guard.glGetFloat(pname);
     }
 
     public static int glGetInteger(int pname) {
@@ -117,11 +141,21 @@ public class GL11 extends GL11Guard {
             int id = RenderContext.currentTextureGlId();
             if (id != 0) return id;
         }
-        return legacyOnly(pname) ? 0 : GL11Guard.glGetInteger(pname);
+        if (legacyOnly(pname)) {
+            GlNotes.zeroQuery("glGetInteger", pname);
+            return 0;
+        }
+        GlNotes.realQuery("glGetInteger", pname);
+        return GL11Guard.glGetInteger(pname);
     }
 
     public static double glGetDouble(int pname) {
-        return legacyOnly(pname) ? 0D : GL11Guard.glGetDouble(pname);
+        if (legacyOnly(pname)) {
+            GlNotes.zeroQuery("glGetDouble", pname);
+            return 0D;
+        }
+        GlNotes.realQuery("glGetDouble", pname);
+        return GL11Guard.glGetDouble(pname);
     }
 
     public static boolean glGetBoolean(int pname) {
@@ -132,7 +166,12 @@ public class GL11 extends GL11Guard {
                 return glIsEnabled(pname);
             default:
                 if (pname >= 0x4000 && pname <= 0x4007) return false;
-                return !legacyOnly(pname) && GL11Guard.glGetBoolean(pname);
+                if (legacyOnly(pname)) {
+                    GlNotes.zeroQuery("glGetBoolean", pname);
+                    return false;
+                }
+                GlNotes.realQuery("glGetBoolean", pname);
+                return GL11Guard.glGetBoolean(pname);
         }
     }
 
@@ -144,6 +183,7 @@ public class GL11 extends GL11Guard {
                 return false;
             default:
                 if (cap >= 0x4000 && cap <= 0x4007) return false; // GL_LIGHT0..7
+                GlNotes.realQuery("glIsEnabled", cap);
                 return GL11Guard.glIsEnabled(cap);
         }
     }
@@ -163,18 +203,23 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glTexEnv(int target, int pname, FloatBuffer params) {
+        GlNotes.unemulated("glTexEnv");
     }
 
     public static void glTexEnv(int target, int pname, java.nio.IntBuffer params) {
+        GlNotes.unemulated("glTexEnv");
     }
 
     public static void glLight(int light, int pname, FloatBuffer params) {
+        GlNotes.unemulated("glLight");
     }
 
     public static void glMaterial(int face, int pname, FloatBuffer params) {
+        GlNotes.unemulated("glMaterial");
     }
 
     public static void glFog(int pname, FloatBuffer params) {
+        GlNotes.unemulated("glFog");
     }
 
     /** Fog start, end, density and mode: applied to the frame's fog when set by a legacy fog event handler (see LegacyFog). */
@@ -209,6 +254,7 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glClipPlane(int plane, java.nio.DoubleBuffer equation) {
+        GlNotes.unemulated("glClipPlane");
     }
 
     /** Copies the framebuffer into the texture the mod bound (bindings live in the render context, not in GL: see RenderContext.bindCurrentTextureToGl). */
@@ -480,9 +526,11 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glAlphaFunc(int func, float ref) {
+        GlNotes.unemulated("glAlphaFunc");
     }
 
     public static void glShadeModel(int mode) {
+        GlNotes.unemulated("glShadeModel");
     }
 
     public static void glNormal3f(float x, float y, float z) {
@@ -491,6 +539,7 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glLightModel(int pname, FloatBuffer params) {
+        GlNotes.unemulated("glLightModel");
     }
 
     /** Saves the emulated state (blending, depth, enables, colour) that the legacy code changes until glPopAttrib. */

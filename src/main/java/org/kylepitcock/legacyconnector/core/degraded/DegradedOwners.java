@@ -4,35 +4,43 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.kylepitcock.legacyconnector.core.LegacyModRecord;
 import org.kylepitcock.legacyconnector.core.LegacyMods;
 
-/** The owning mod of a legacy class, by the class loader the class came from (cached per loader). */
+/** The owning mod of a legacy class, by the module (jar) or class loader the class came from (cached). */
 public final class DegradedOwners {
-    private static final ConcurrentHashMap<ClassLoader, String> BY_LOADER = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Object, String> BY_LOADER = new ConcurrentHashMap<>();
 
     private DegradedOwners() {}
 
-    /** The legacy id of the mod whose class loader loaded {@code cls}; else the package root of the class name; never null. */
+    /** The legacy id of the mod whose jar (module) or class loader holds {@code cls}; else the package root of the class name; never null. */
     public static String of(Class<?> cls) {
         if (cls == null) return Degraded.OTHER;
+        String mod = ofMod(cls);
+        return mod != null ? mod : ofClassName(cls.getName());
+    }
+
+    /** The legacy id of the mod whose jar (module) or class loader holds {@code cls}, or null when no mod owns it (JDK, game, layer classes). */
+    public static String ofMod(Class<?> cls) {
+        if (cls == null) return null;
         try {
             ClassLoader loader = cls.getClassLoader();
-            if (loader != null && loader != DegradedOwners.class.getClassLoader()) {
-                String cached = BY_LOADER.get(loader);
-                if (cached == null) {
-                    for (LegacyModRecord m : LegacyMods.all()) {
-                        if (m.mainClass != null && m.mainClass.getClassLoader() == loader) {
-                            cached = m.legacyId;
-                            break;
-                        }
+            if (loader == null || cls.getModule() == DegradedOwners.class.getModule()) return null;
+            // FML puts every mod jar in one module layer with a shared class loader, so a jar is told apart by its module
+            Object key = cls.getModule().isNamed() ? cls.getModule() : loader;
+            if (key == loader && loader == DegradedOwners.class.getClassLoader()) return null; // unnamed module of the layer's own loader
+            String cached = BY_LOADER.get(key);
+            if (cached == null) {
+                for (LegacyModRecord m : LegacyMods.all()) {
+                    if (m.mainClass != null && (key instanceof Module ? m.mainClass.getModule() == key : m.mainClass.getClassLoader() == key)) {
+                        cached = m.legacyId;
+                        break;
                     }
-                    // a miss is not cached: mods are still being registered early on
-                    if (cached != null) BY_LOADER.put(loader, cached);
                 }
-                if (cached != null) return cached;
+                // a miss is not cached: mods are still being registered early on
+                if (cached != null) BY_LOADER.put(key, cached);
             }
+            return cached;
         } catch (RuntimeException | LinkageError ignored) {
-            // fall through to the class name
+            return null;
         }
-        return ofClassName(cls.getName());
     }
 
     /** The mod of an instance (its class). */
