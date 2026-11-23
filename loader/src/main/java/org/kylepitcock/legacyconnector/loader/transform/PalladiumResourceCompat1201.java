@@ -1,5 +1,9 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +29,8 @@ final class PalladiumResourceCompat1201 {
             "data/alienevo_aliens/palladium/powers/arburian_pelarota.json";
     static final String ALIEN_EVO_XLR8_POWER =
             "data/alienevo_aliens/palladium/powers/kineceleran.json";
+    static final String ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE =
+            "assets/alienevo/palladium/dynamic_textures/speed_level.json";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
     static final String ALIEN_EVO_BLOCK_PARTICLES =
@@ -259,6 +265,7 @@ final class PalladiumResourceCompat1201 {
 
         // These migrations target resource/data files, not KubeJS script files.
         rewriteDiamondShardTexture(resources);
+        rewriteAlienEvoXlr8SpeedLevelBounds(resources);
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
         removeDuplicateMalformedGeckoLibAnimation(resources);
@@ -526,6 +533,65 @@ final class PalladiumResourceCompat1201 {
         return rewrite(resources, path, new String[][] {{
                 "\"diamond/spike\"", "\"minecraft:diamond_spike/spike\"", "2"
         }});
+    }
+
+    /**
+     * Bound only AlienEvo's XLR8 HUD texture index. The speed scoreboard itself
+     * intentionally keeps its real progression values (including transient
+     * rollover values); Palladium clamps the texture variable to the frames the
+     * source JAR actually ships (0 through 5) before resolving the texture path.
+     *
+     * The target is identified by both its variable name and exact objective
+     * binding. Unknown, malformed, partially migrated, or unrelated resources
+     * are left untouched.
+     */
+    private static int rewriteAlienEvoXlr8SpeedLevelBounds(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE);
+        if (original == null) return 0;
+
+        JsonElement parsed;
+        try {
+            parsed = JsonParser.parseString(new String(original, StandardCharsets.UTF_8));
+        } catch (RuntimeException malformedJson) {
+            return 0;
+        }
+        if (parsed == null || !parsed.isJsonObject()) return 0;
+
+        JsonObject root = parsed.getAsJsonObject();
+        JsonElement variablesElement = root.get("variables");
+        if (variablesElement == null || !variablesElement.isJsonObject()) return 0;
+
+        JsonElement scoreElement = variablesElement.getAsJsonObject().get("X");
+        if (scoreElement == null || !scoreElement.isJsonObject()) return 0;
+
+        JsonObject scoreVariable = scoreElement.getAsJsonObject();
+        if (!isJsonString(scoreVariable.get("type"), "palladium:objective_score")
+                || !isJsonString(scoreVariable.get("objective"), "AlienEvo.SpeedLevel")) {
+            return 0;
+        }
+
+        // A complete prior migration is already safe. Any partial or conflicting
+        // bounds are treated as an unknown shape and are not overwritten.
+        if (scoreVariable.has("min") || scoreVariable.has("max")) return 0;
+
+        scoreVariable.addProperty("min", 0);
+        scoreVariable.addProperty("max", 5);
+
+        String migrated = new GsonBuilder()
+                .setPrettyPrinting()
+                .disableHtmlEscaping()
+                .create()
+                .toJson(root) + "\n";
+        resources.put(ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE,
+                migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private static boolean isJsonString(JsonElement value, String expected) {
+        return value != null
+                && value.isJsonPrimitive()
+                && value.getAsJsonPrimitive().isString()
+                && expected.equals(value.getAsString());
     }
 
     /**

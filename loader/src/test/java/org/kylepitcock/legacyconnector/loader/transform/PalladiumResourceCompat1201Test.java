@@ -1464,6 +1464,85 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void clampsOnlyXlr8SpeedLevelDynamicTextureIndexAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE, """
+                {
+                  "transformers": [
+                    {
+                      "type": "alienevo:compound_alien_color",
+                      "alien": "kineceleran",
+                      "palette_filter": "palette_1_icons",
+                      "color_type": "skincolor",
+                      "suffix": "_icons",
+                      "trigger_variable": "COLOR_TRIGGER",
+                      "ignore_blank": true
+                    }
+                  ],
+                  "variables": {
+                    "X": {
+                      "type": "palladium:objective_score",
+                      "objective": "AlienEvo.SpeedLevel"
+                    },
+                    "UNIFORM": {
+                      "type": "alienevo:uniform_type"
+                    },
+                    "COLOR_TRIGGER": {
+                      "type": "alienevo:dynamic_color_trigger"
+                    }
+                  },
+                  "base": "alienevo:textures/hud/kineceleran/speed_#X_#UNIFORM.png"
+                }
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE);
+        assertTrue(migrated.contains("\"min\": 0"));
+        assertTrue(migrated.contains("\"max\": 5"));
+        assertTrue(migrated.contains("\"type\": \"palladium:objective_score\""));
+        assertTrue(migrated.contains("\"objective\": \"AlienEvo.SpeedLevel\""));
+        assertTrue(migrated.contains("\"palette_filter\": \"palette_1_icons\""));
+        assertTrue(migrated.contains("\"UNIFORM\""));
+        assertTrue(migrated.contains("\"COLOR_TRIGGER\""));
+        assertTrue(migrated.contains(
+                "\"base\": \"alienevo:textures/hud/kineceleran/speed_#X_#UNIFORM.png\""));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void leavesMissingMalformedAndUnexpectedXlr8SpeedLevelResourcesUntouched() {
+        assertEquals(0, PalladiumResourceCompat1201.apply(new HashMap<>()));
+
+        Map<String, byte[]> malformed = new HashMap<>();
+        String malformedJson =
+                "{\"variables\":{\"X\":{\"type\":\"palladium:objective_score\","
+                        + "\"objective\":\"AlienEvo.SpeedLevel\"}";
+        put(malformed, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE, malformedJson);
+        assertEquals(0, PalladiumResourceCompat1201.apply(malformed));
+        assertEquals(malformedJson,
+                get(malformed, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE));
+
+        Map<String, byte[]> unexpected = new HashMap<>();
+        String unexpectedJson = """
+                {
+                  "variables": {
+                    "X": {
+                      "type": "palladium:objective_score",
+                      "objective": "AlienEvo.OtherScore"
+                    }
+                  },
+                  "base": "example:leave_this_unchanged.png"
+                }
+                """;
+        put(unexpected, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE, unexpectedJson);
+        assertEquals(0, PalladiumResourceCompat1201.apply(unexpected));
+        assertEquals(unexpectedJson,
+                get(unexpected, PalladiumResourceCompat1201.ALIEN_EVO_XLR8_SPEED_LEVEL_TEXTURE));
+    }
+
+    @Test
     void repairsAlienEvoGeckoLibAnimationFileNamesAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         byte[] humongousaurAnimation = "{\"animations\":{\"animation.humungousaur.tail\":{}}}"
