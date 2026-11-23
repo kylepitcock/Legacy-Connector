@@ -24,6 +24,28 @@ public final class Configuration {
         return b;
     }
 
+    /**
+     * Ids handed out by any config file so far, per table (block, item): mods read their ids in preInit but construct the blocks later, so
+     * the registry alone does not show that another mod's config already took an id (two 1.4.7 mods with the default 220 each found it free).
+     * Forge's own markers were per file and the clash was a crash; here the later default moves to a free id.
+     */
+    private static final Map<String, BitSet> HANDED_OUT = new HashMap<>();
+    private static final Map<String, String> HANDED_BY = new HashMap<>();
+
+    private static BitSet handedOut(int size, boolean block) {
+        return HANDED_OUT.computeIfAbsent(block ? "block" : "item", k -> new BitSet(size));
+    }
+
+    private static void noteSharedId(String what, legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String category, String key, int id,
+            String message) {
+        try {
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ID_CONFLICT,
+                    self.toString(), what + " " + id + " " + category + "." + key, message);
+        } catch (RuntimeException | LinkageError e) {
+            // no runtime collector (unit tests)
+        }
+    }
+
     /** {@code getBlock(key, defaultId, comment)}. */
     public static Property getBlock(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId, String comment) {
         return getBlock(self, "block", key, defaultId, comment);
@@ -95,23 +117,44 @@ public final class Configuration {
             String comment, int size, int searchFrom, int shift, IntPredicate free) {
         Property prop = self.get(category, key, -1, comment);
         BitSet used = markers(self, category, size);
+        boolean block = size == Ids.blockTableSize();
+        String what = block ? "block" : "item";
+        String me = self + "|" + category + "." + key;
         int stored = prop.getInt();
-        if (stored != -1) {
-            synchronized (Configuration.class) {
-                if (stored + shift >= 0) used.set(stored + shift);
-            }
-            return prop;
-        }
         synchronized (Configuration.class) {
-            if (defaultId > 0 && defaultId < size && free.test(defaultId) && !used.get(defaultId)) {
+            BitSet all = handedOut(size, block);
+            if (stored != -1) {
+                if (stored + shift >= 0) {
+                    used.set(stored + shift);
+                    String by = HANDED_BY.get(what + (stored + shift));
+                    if (by != null && !by.equals(me)) {
+                        noteSharedId(what, self, category, key, stored + shift, "the " + what + " id " + (stored + shift) + " of " + self + " (" + category + "." + key
+                                + ") is also in " + by.replace('|', ' ') + ": change one of the two ids in the config files, else a mod that checks its own id"
+                                + " finds the other's block or item and fails to load");
+                    }
+                    all.set(stored + shift);
+                    HANDED_BY.putIfAbsent(what + (stored + shift), me);
+                }
+                return prop;
+            }
+            if (defaultId > 0 && defaultId < size && free.test(defaultId) && !used.get(defaultId) && !all.get(defaultId)) {
                 prop.setValue(defaultId - shift);
                 used.set(defaultId);
+                all.set(defaultId);
+                HANDED_BY.putIfAbsent(what + defaultId, me);
                 return prop;
             }
             for (int j = Math.max(searchFrom, 1); j < size; j++) {
-                if (free.test(j) && !used.get(j)) {
+                if (free.test(j) && !used.get(j) && !all.get(j)) {
+                    if (defaultId > 0 && defaultId < size && all.get(defaultId) && free.test(defaultId)) {
+                        noteSharedId(what, self, category, key, defaultId, "the default " + what + " id " + defaultId + " of " + self + " (" + category + "." + key
+                                + ") was already handed to " + String.valueOf(HANDED_BY.get(what + defaultId)).replace('|', ' ') + "; moved to " + j
+                                + " and written to the config file");
+                    }
                     prop.setValue(j - shift);
                     used.set(j);
+                    all.set(j);
+                    HANDED_BY.putIfAbsent(what + j, me);
                     return prop;
                 }
             }

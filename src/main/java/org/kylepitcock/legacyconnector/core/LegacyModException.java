@@ -51,6 +51,12 @@ public final class LegacyModException extends RuntimeException {
         if (t instanceof ClassNotFoundException && m.startsWith("mod_")) {
             return "does not start: patched-game jar mod (it replaces vanilla classes of minecraft.jar, which the layer cannot express)";
         }
+        String lower = m.toLowerCase(java.util.Locale.ROOT);
+        if ((lower.contains("conflict") || lower.contains("occupied") || lower.contains("already in use") || lower.contains("already used") || lower.contains("already taken"))
+                && (lower.contains(" id") || lower.contains("slot") || lower.contains("id "))) {
+            return "its numeric block or item id is already used by another legacy mod (default ids of old mods collide; as in the original game, change the id"
+                    + " in the config file of one of the two mods, config/<mod>.cfg, and restart; the mod says: " + m + ")";
+        }
         return null;
     }
 }
