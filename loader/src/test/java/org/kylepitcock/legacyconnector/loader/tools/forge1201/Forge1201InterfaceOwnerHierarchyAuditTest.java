@@ -97,7 +97,7 @@ final class Forge1201InterfaceOwnerHierarchyAuditTest {
                                 "(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"}
                 });
         addInterface(classes, "net/minecraft/world/level/BlockAndTintGetter",
-                new String[] {"net/minecraft/world/level/BlockGetter"}, new String[0]);
+                new String[] {"net/minecraft/world/level/BlockGetter"}, new String[0][]);
         String[] readerParents;
         if (leaveOneInterfaceMissing) {
             readerParents = new String[] {"sample/UnresolvedLevelInterface"};
@@ -106,24 +106,24 @@ final class Forge1201InterfaceOwnerHierarchyAuditTest {
         } else {
             readerParents = new String[] {"net/minecraft/world/level/CollisionGetter"};
         }
-        addInterface(classes, "net/minecraft/world/level/LevelReader", readerParents, new String[0]);
-        addInterface(classes, "net/minecraft/world/level/EntityGetter", new String[0], new String[0]);
-        addInterface(classes, "net/minecraft/world/level/LevelSimulatedRW", new String[0], new String[0]);
-        addInterface(classes, "net/minecraft/world/level/LevelTimeAccess", new String[0], new String[0]);
-        addInterface(classes, "net/minecraft/world/level/CollisionGetter", new String[0], new String[0]);
-        addInterface(classes, "net/minecraft/world/level/SignalGetter", new String[0], new String[0]);
-        addInterface(classes, "net/minecraft/world/level/BiomeManager$NoiseBiomeSource", new String[0], new String[0]);
+        addInterface(classes, "net/minecraft/world/level/LevelReader", readerParents, new String[0][]);
+        addInterface(classes, "net/minecraft/world/level/EntityGetter", new String[0], new String[0][]);
+        addInterface(classes, "net/minecraft/world/level/LevelSimulatedRW", new String[0], new String[0][]);
+        addInterface(classes, "net/minecraft/world/level/LevelTimeAccess", new String[0], new String[0][]);
+        addInterface(classes, "net/minecraft/world/level/CollisionGetter", new String[0], new String[0][]);
+        addInterface(classes, "net/minecraft/world/level/SignalGetter", new String[0], new String[0][]);
+        addInterface(classes, "net/minecraft/world/level/BiomeManager$NoiseBiomeSource", new String[0], new String[0][]);
         addInterface(classes, "net/minecraft/world/level/CommonLevelAccessor",
                 new String[] {
                         "net/minecraft/world/level/EntityGetter",
                         "net/minecraft/world/level/LevelReader",
                         "net/minecraft/world/level/LevelSimulatedRW"
-                }, new String[0]);
+                }, new String[0][]);
         addInterface(classes, "net/minecraft/world/level/LevelAccessor",
                 new String[] {
                         "net/minecraft/world/level/CommonLevelAccessor",
                         "net/minecraft/world/level/LevelTimeAccess"
-                }, new String[0]);
+                }, new String[0][]);
         addClass(classes, "net/minecraft/world/level/Level",
                 new String[] {"net/minecraft/world/level/LevelAccessor"},
                 new String[][] {
@@ -131,14 +131,14 @@ final class Forge1201InterfaceOwnerHierarchyAuditTest {
                                 "(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"}
                 });
 
-        addClass(classes, "net/minecraft/client/renderer/chunk/RenderChunkRegion", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/server/level/WorldGenRegion", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/world/level/chunk/EmptyLevelChunk", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/world/level/chunk/ImposterProtoChunk", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/world/level/chunk/LevelChunk", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/world/level/chunk/ProtoChunk", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/world/level/EmptyBlockGetter", new String[0], new String[0]);
-        addClass(classes, "net/minecraft/world/level/PathNavigationRegion", new String[0], new String[0]);
+        addClass(classes, "net/minecraft/client/renderer/chunk/RenderChunkRegion", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/server/level/WorldGenRegion", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/world/level/chunk/EmptyLevelChunk", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/world/level/chunk/ImposterProtoChunk", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/world/level/chunk/LevelChunk", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/world/level/chunk/ProtoChunk", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/world/level/EmptyBlockGetter", new String[0], new String[0][]);
+        addClass(classes, "net/minecraft/world/level/PathNavigationRegion", new String[0], new String[0][]);
 
         return Forge1201SourceRuntimeMemberVerifier.createIndex(internalName -> {
             byte[] bytes = classes.get(internalName);
