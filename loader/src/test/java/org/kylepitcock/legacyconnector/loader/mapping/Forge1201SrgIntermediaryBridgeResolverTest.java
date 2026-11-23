@@ -314,6 +314,51 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 notEligible.directStatus());
     }
 
+
+    @Test
+    void refusesAnUnresolvedHierarchyOwnerEvenWhenAnotherOwnerMaps() throws Exception {
+        var index = readHierarchyFixture(false, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(
+                        new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                                "net/minecraft/src/C_EntityAccess_",
+                                "net/minecraft/world/level/entity/EntityAccess",
+                                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1),
+                        new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                                "net/minecraft/src/C_AlternateInterface_",
+                                "net/minecraft/world/level/entity/AlternateAccess",
+                                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 2)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.UNRESOLVED_HIERARCHY_CANDIDATE,
+                result.status());
+        assertEquals(1, result.candidates().size());
+        assertEquals("net/minecraft/src/C_EntityAccess_", result.candidates().getFirst().mappingSrgOwner());
+    }
+
+    @Test
+    void supportsAUniqueVerifiedSuperclassOwnerFallback() throws Exception {
+        var index = readHierarchyFixture(false, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                        "net/minecraft/src/C_EntityAccess_",
+                        "net/minecraft/world/level/entity/EntityBase",
+                        Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.SUPERCLASS, 1)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_VIA_SUPERCLASS_OWNER,
+                result.status());
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.SUPERCLASS,
+                result.candidates().getFirst().mappingOwnerKind());
+    }
+
     private Forge1201SrgIntermediaryBridgeResolver.Index readHierarchyFixture(
             boolean includeSecondInterface,
             boolean mapInvocationOwnerDirectly,
