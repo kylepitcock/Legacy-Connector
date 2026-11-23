@@ -336,9 +336,11 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 CLASS\tc\tnet/minecraft/class_3
                 CLASS\tz\tnet/minecraft/class_4
                 METHOD\tb\t(I)V\tx\tmethod_10
-                METHOD\tc\t(I)V\tq\tmethod_20
                 METHOD\tz\t(I)V\tr\tmethod_99
                 """;
+        if (includeSecondInterface) {
+            sourceTiny += "\nMETHOD\tc\t(I)V\tq\tmethod_20\n";
+        }
         if (mapInvocationOwnerDirectly) {
             sourceTiny += "\nMETHOD\ta\t(I)V\tm\tmethod_30\n";
         }
@@ -349,9 +351,11 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 CLASS\tf\tnet/minecraft/class_3
                 CLASS\tg\tnet/minecraft/class_4
                 METHOD\te\t(I)V\ty\tmethod_10
-                METHOD\tf\t(I)V\tp\tmethod_20
                 METHOD\tg\t(I)V\tt\tmethod_99
                 """;
+        if (includeSecondInterface) {
+            targetTiny += "\nMETHOD\tf\t(I)V\tp\tmethod_20\n";
+        }
         if (mapAlternateTarget) {
             targetTiny += "\nMETHOD\td\t(I)V\tn\tmethod_30\n";
         }
