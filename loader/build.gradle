@@ -923,6 +923,7 @@ tasks.register('auditSrgIntermediaryHierarchyOwner1201To1211', JavaExec) {
     description = 'Builds source hierarchy mapping candidates from pinned Forge classfiles and verifies mapped methods against target NeoForge classfiles.'
     dependsOn tasks.named('classes'),
             fetchMojang1201,
+            recordSrgMojangProvenance1201,
             extractMcpConfigJoinedTsrg1201,
             extractFabricIntermediary1201,
             extractFabricIntermediary1211,
@@ -936,6 +937,11 @@ tasks.register('auditSrgIntermediaryHierarchyOwner1201To1211', JavaExec) {
     inputs.property('targetOfficialTsrg1211Sha256', targetOfficialTsrg1211Sha256)
     inputs.file(forge1201SourceClasspath)
     inputs.file(forge1201SourceManifest)
+    inputs.files(providers.provider {
+        def manifest = new groovy.json.JsonSlurper().parse(forge1201SourceManifest)
+        (manifest.classpathEntries ?: []).collect { new File(it.path.toString()) }
+    })
+    inputs.files(targetCompileClasspath)
     inputs.file(targetApiClasspathFile)
     inputs.property('sourceMinecraftVersion', '1.20.1')
     inputs.property('sourceForgeVersion', '47.3.0')
@@ -971,6 +977,50 @@ tasks.register('auditSrgIntermediaryHierarchyOwner1201To1211', JavaExec) {
         }
         if (listedSourceEntries.isEmpty() || listedSourceEntries != manifestEntries) {
             throw new GradleException('Source runtime classpath list differs from the exported manifest.')
+        }
+        if (sourceManifest.classpathFile == null
+                || new File(sourceManifest.classpathFile.toString()).absoluteFile.toPath().normalize()
+                        != forge1201SourceClasspath.absoluteFile.toPath().normalize()) {
+            throw new GradleException('Source runtime manifest does not identify the supplied classpath list.')
+        }
+
+        sourceManifest.classpathEntries.eachWithIndex { record, index ->
+            def entry = new File(record.path.toString())
+            if (!entry.exists()) {
+                throw new GradleException('Source runtime classpath entry is missing: ' + entry)
+            }
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            if (entry.isDirectory()) {
+                def files = fileTree(entry).files.sort { left, right ->
+                    entry.toPath().relativize(left.toPath()).toString()
+                            <=> entry.toPath().relativize(right.toPath()).toString()
+                }
+                files.each { child ->
+                    def relative = entry.toPath().relativize(child.toPath()).toString()
+                            .replace(File.separatorChar, '/' as char)
+                    digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                    digest.update((byte) 0)
+                    child.withInputStream { input ->
+                        byte[] buffer = new byte[64 * 1024]
+                        int count
+                        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                    }
+                    digest.update((byte) 0xff)
+                }
+            } else if (entry.isFile()) {
+                entry.withInputStream { input ->
+                    byte[] buffer = new byte[64 * 1024]
+                    int count
+                    while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                }
+            } else {
+                throw new GradleException('Unsupported source runtime classpath entry: ' + entry)
+            }
+            def actualSha256 = digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+            if (!record.sha256?.toString()?.equalsIgnoreCase(actualSha256)) {
+                throw new GradleException('Source runtime classpath entry SHA-256 mismatch at index '
+                        + index + ': ' + entry)
+            }
         }
 
         def targetEntries = targetApiClasspathFile.get().asFile.readLines('UTF-8')
