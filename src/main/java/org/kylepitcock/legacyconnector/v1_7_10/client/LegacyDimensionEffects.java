@@ -218,7 +218,7 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
         return holds ? new Matrix4f() : modelView;
     }
 
-    private static final boolean DEBUG = Boolean.getBoolean("legacyconnector.skyDiag");
+    private static final boolean DEBUG = org.kylepitcock.legacyconnector.core.flags.Flags.SKY_DIAG.on();
     private static final Set<String> DEBUG_SEEN = ConcurrentHashMap.newKeySet();
 
     private static boolean isIdentityRotation(Matrix4f m) {

@@ -13,9 +13,9 @@ How they behave:
 
 <!-- switches:begin (generated from Flags, CompatFlags and LoaderFlags; run SwitchRegistryTest with SWITCH_DOCS_UPDATE=1 to rewrite) -->
 
-128 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
+129 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
 
-### Debug (24)
+### Debug (25)
 
 | Switch | Type | Default | Read by | What it does |
 |---|---|---|---|---|
@@ -40,6 +40,7 @@ How they behave:
 | `legacyconnector.particleDebug` | flag | `false` | runtime | Logs which legacy particle classes spawn near the camera. |
 | `legacyconnector.placementDiag` | string | `unset` | runtime | Any value: the 1.12.2 placement self test adds the legacy checks to every failure line. |
 | `legacyconnector.realLevelGuard` | flag | `false` | runtime | Guards against legacy code reaching the real ServerLevel from generation threads (also on with legacytest.autostop). |
+| `legacyconnector.skyDiag` | flag | `false` | runtime | 1.7.10 client: logs which legacy sky, cloud and weather renderers a dimension uses and the camera they get. |
 | `legacyconnector.soundDebug` | flag | `false` | runtime | Logs every legacy sound handed to the sound engine. |
 | `legacyconnector.traceHandlers` | string | `unset` | runtime | Part of a legacy event handler name: logs the first 60 runs of matching handlers. |
 | `legacyconnector.traceMessages` | flag | `false` | runtime | Logs the first 400 legacy network messages as they arrive. |

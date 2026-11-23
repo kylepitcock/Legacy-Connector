@@ -111,6 +111,7 @@ public enum Flags implements Switch {
     SHOT_WORLD_TYPE("legacyconnector.shotWorldType", Type.STRING, "", Category.TEST, "World type of the screenshot test world (empty = default)."),
     /** 1.20.1: diagnostics in the compat buffer builder. */
     BUFFER_DIAG("legacyconnector.bufferDiag", Type.FLAG, "false", Category.DEBUG, "1.20.1: diagnostics in the compat buffer builder."),
+    SKY_DIAG("legacyconnector.skyDiag", Type.FLAG, "false", Category.DEBUG, "1.7.10 client: logs which legacy sky, cloud and weather renderers a dimension uses and the camera they get."),
     /** 1.12.2: logs the annotations found on classes whose name contains this text. */
     DEBUG_ASM("legacyconnector.debugAsm", Type.STRING, "unset", Category.DEBUG, "1.12.2: logs the annotations found on classes whose name contains this text."),
     /** 1.12.2: dumps the asset translation of the item or block with this path. */
