@@ -6,8 +6,8 @@ import net.minecraft.world.item.Item;
 
 /**
  * Stands in for {@code net.minecraft.world.item.RecordItem} (1.20.1): music discs are a data component ({@code jukebox_playable}) of a plain item in 1.21.1, with
- * the song in a data pack registry. The item registers and stacks like a disc; it carries its sound and length for the mod's own code and does not play in a vanilla
- * jukebox (that needs a {@code jukebox_song} entry in a data pack, which a legacy mod cannot have).
+ * the song in a data pack registry. The item registers and stacks like a disc and carries its sound and length for the mod's own code; {@link LegacyJukeboxSongs}
+ * writes the {@code jukebox_song} entry (generated data pack) and the default {@code jukebox_playable} component, so vanilla's jukebox plays it.
  */
 public class LegacyRecordItem extends Item {
     private final int analogOutput;
@@ -43,6 +43,9 @@ public class LegacyRecordItem extends Item {
     }
 
     public static LegacyRecordItem getBySound(SoundEvent sound) {
+        for (Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (item instanceof LegacyRecordItem disc && disc.getSound() == sound) return disc;
+        }
         return null;
     }
 }
