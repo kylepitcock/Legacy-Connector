@@ -39,7 +39,7 @@ public class EventBus {
         public Object enter(Object ownerToken) {
             var previous = org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.active();
             org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.setActive((org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122) ownerToken);
-            return org.kylepitcock.legacyconnector.v1_12_2.client.ClientEvents1122.worldLast && org.kylepitcock.legacyconnector.v1_12_2.client.ClientEvents1122.enterOwner(ownerToken)
+            return org.kylepitcock.legacyconnector.v1_12_2.client.RenderShift1122.worldLast && org.kylepitcock.legacyconnector.v1_12_2.client.ClientEvents1122.enterOwner(ownerToken)
                     ? new Shifted(previous) : previous;
         }
 

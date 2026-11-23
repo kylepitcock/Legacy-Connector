@@ -132,8 +132,6 @@ public final class ClientEvents1122 {
     }
 
     /** Posts and reports a failing handler once per kind of failure; returns whether the event was cancelled. */
-    /** True on the render thread while RenderWorldLastEvent is posted. */
-    public static volatile boolean worldLast;
 
     /**
      * A handler of a mod with a shifted deep-layer generator draws what that pass computed (legacy y, the floor at 0): moved down by the
@@ -141,7 +139,7 @@ public final class ClientEvents1122 {
      * Returns whether a matrix was pushed, to be undone by {@link #exitOwner}.
      */
     public static boolean enterOwner(Object container) {
-        if (!worldLast || !(container instanceof org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122 c)) return false;
+        if (!RenderShift1122.worldLast || !(container instanceof org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122 c)) return false;
         var level = Minecraft.getInstance().level;
         if (level == null || level.getMinBuildHeight() >= 0
                 || !org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.hasShiftedGenerator(c.getModId())) return false;
@@ -380,10 +378,10 @@ public final class ClientEvents1122 {
         pose.translate(origin.x - cam.x, origin.y - cam.y, origin.z - cam.z);
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
-            worldLast = true;
+            RenderShift1122.worldLast = true;
             post(new RenderWorldLastEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()), partial), "RenderWorldLastEvent");
         } finally {
-            worldLast = false;
+            RenderShift1122.worldLast = false;
             RenderContext.end();
             buffers.endBatch();
             setCamera(cam);
