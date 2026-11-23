@@ -115,8 +115,11 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         if (legacy != null && !failed) {
             boolean[] onButton = {false};
             failed = !ScreenGuard.run(this, () -> {
+                // a plain hit test, never mousePressed: the legacy mouseClicked below calls that itself, and buttons may act in it
+                // (asked twice per click, a toggle that sends a packet there toggled back at once)
                 for (Object o : legacy.mcc$buttons()) {
-                    if (((GuiButton) o).mousePressed(Minecraft.getMinecraft(), (int) x, (int) y)) onButton[0] = true;
+                    GuiButton b = (GuiButton) o;
+                    if (b.enabled && b.visible && x >= b.xPosition && y >= b.yPosition && x < b.xPosition + b.width && y < b.yPosition + b.height) onButton[0] = true;
                 }
                 legacy.mcc$mouseClicked((int) x, (int) y, button);
             });

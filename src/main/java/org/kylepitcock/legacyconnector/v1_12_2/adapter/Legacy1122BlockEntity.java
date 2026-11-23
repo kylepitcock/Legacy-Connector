@@ -54,10 +54,31 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
 
     /** The legacy tile entity, created on first use (its creation may need the world). */
     public TileEntity legacy() {
-        if (legacy == null && !failed && level != null) {
+        if (legacy == null && !failed && level != null) create(WorldBridge1122.wrap(level));
+        return legacy;
+    }
+
+    /**
+     * The tile entity of a block a legacy generator has just placed in a chunk still being generated (no level yet), made with the
+     * generator's world: generators fill it right away (Techguns' structure spawners get their mobs and limits, dungeon chests their loot),
+     * as 1.12 made it on the spot. It moves to the real level when the chunk is finished ({@link #setLevel}).
+     */
+    public TileEntity mcc$legacyForGeneration(legacyconnector.v1_12_2.net.minecraft.world.World world) {
+        if (level != null) return legacy();
+        if (legacy == null && !failed && world != null) create(world);
+        return legacy;
+    }
+
+    @Override
+    public void setLevel(net.minecraft.world.level.Level level) {
+        super.setLevel(level);
+        if (legacy != null) legacy.setWorld(WorldBridge1122.wrap(level));
+    }
+
+    private void create(legacyconnector.v1_12_2.net.minecraft.world.World world) {
+        {
             try {
                 var block = StatesBridge1122.legacyBlock(getBlockState());
-                var world = WorldBridge1122.wrap(level);
                 var state = StatesBridge1122.toLegacy(getBlockState());
                 if (pending != null) {
                     legacy = TileEntityBridge1122.createAndLoad(block, world, state, new NBTTagCompound(pending));
@@ -66,7 +87,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
                     legacy = block.createTileEntity(world, placedState != null ? placedState : state);
                 }
                 placedState = null;
-                if (legacy != null) bind(legacy);
+                if (legacy != null) bind(legacy, world);
             } catch (RuntimeException | LinkageError e) {
                 failed = true;
                 if (e instanceof NoClassDefFoundError missing) {
@@ -80,7 +101,6 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
                 }
             }
         }
-        return legacy;
     }
 
     /** {@code World.setTileEntity}: this block entity now hosts the given tile entity. */
@@ -96,7 +116,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         legacy = te;
         failed = false;
         pending = null;
-        bind(te);
+        bind(te, level == null ? null : WorldBridge1122.wrap(level));
         setChanged();
         tickerMayChange();
     }
@@ -114,9 +134,9 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         tickerMayChange();
     }
 
-    private void bind(TileEntity te) {
+    private void bind(TileEntity te, legacyconnector.v1_12_2.net.minecraft.world.World world) {
         te.mcc$host = this;
-        te.setWorld(WorldBridge1122.wrap(level));
+        if (world != null) te.setWorld(world);
         te.setPos(new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
         te.validate();
     }
@@ -207,7 +227,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
             }
             return;
         }
-        if (te instanceof ITickable t && !te.isInvalid() && !(perf && te == tickFailed)) {
+        if (te instanceof ITickable t && !te.isInvalid() && !te.mcc$untickable && !(perf && te == tickFailed)) {
             try {
                 t.update();
             } catch (RuntimeException | LinkageError e) {

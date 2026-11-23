@@ -75,7 +75,10 @@ public class EntityItem extends Entity {
         return i != null ? i.bobOffs : 0.0F;
     }
 
+    /** The bob offset the item's spin and bobbing start from (a random one per item entity; mods set 0 for items they show standing still). */
     public static void mcc$set$hoverStart(EntityItem e, float v) {
+        var i = e.mcc$item();
+        if (i != null) i.bobOffs = v;
     }
 
     public static int mcc$get$age(EntityItem e) {

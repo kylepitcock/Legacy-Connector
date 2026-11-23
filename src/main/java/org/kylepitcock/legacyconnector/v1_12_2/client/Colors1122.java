@@ -140,7 +140,7 @@ public final class Colors1122 {
 
     private static net.minecraft.world.level.ItemLike[] modernItems(Item item) {
         java.util.LinkedHashSet<net.minecraft.world.item.Item> set = new java.util.LinkedHashSet<>();
-        for (int meta = 0; meta < 16; meta++) {
+        for (int meta : ItemBridge1122.subtypeMetas(item)) {
             var m = ItemBridge1122.modern(item, meta);
             if (m != null) set.add(m);
         }

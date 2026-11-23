@@ -30,15 +30,19 @@ public class RenderManager {
     public final Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap = new RenderMap();
 
     /**
-     * The renderer map mods read: a vanilla class without a registered renderer answers the layer's port of the vanilla renderer, as 1.12's
-     * map held every vanilla renderer ({@code entityRenderMap.get(EntityWolf.class).addLayer(...)}: Wolf Armor and Storage). Those answers are
-     * not stored, and views of vanilla entities are still drawn by the modern renderer ({@link #getEntityRenderObject}).
+     * The renderer map mods read: a vanilla class without a registered renderer answers the layer's port of the vanilla renderer of that class
+     * or its closest vanilla superclass, as 1.12's map held every vanilla renderer ({@code entityRenderMap.get(EntityWolf.class).addLayer(...)}:
+     * Wolf Armor and Storage; {@code entityRenderMap.get(deadMob.getClass())}: Techguns' gore binds the mob's texture and copies its model).
+     * Those answers are not stored, and views of vanilla entities are still drawn by the modern renderer ({@link #getEntityRenderObject}).
      */
     private final class RenderMap extends HashMap<Class<? extends Entity>, Render<? extends Entity>> {
         @Override
         public Render<? extends Entity> get(Object key) {
             Render<? extends Entity> r = super.get(key);
-            if (r == null && key instanceof Class<?> c && !containsKey(c)) r = mcc$vanillaExact(c);
+            if (r == null && key instanceof Class<?> c && !containsKey(c)) {
+                r = mcc$vanillaExact(c);
+                if (r == null && c.getName().startsWith("legacyconnector.v1_12_2.net.minecraft.")) r = mcc$vanilla(c);
+            }
             return r;
         }
 

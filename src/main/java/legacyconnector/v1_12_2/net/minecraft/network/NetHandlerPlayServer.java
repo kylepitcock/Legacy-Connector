@@ -103,6 +103,9 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
     public void sendPacket(Packet<?> packetIn) {
         var m = modern();
         var packet = packetIn == null ? null : packetIn.mcc$modern();
+        if (packet == null && m != null && packetIn instanceof legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketUpdateTileEntity te) {
+            packet = te.mcc$modern(m.player.level());
+        }
         if (m != null && packet != null) m.send(packet);
     }
 

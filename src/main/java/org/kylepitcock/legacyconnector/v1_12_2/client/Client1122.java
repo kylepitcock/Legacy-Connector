@@ -152,6 +152,10 @@ public final class Client1122 {
             for (var model : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.stateModelIds()) {
                 e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model));
             }
+            // OBJ variants of blockstate files no block or item owns, which mods load as parts of models they draw (Techguns' grenade launcher drum)
+            for (var model : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.orphanModelIds()) {
+                e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model));
+            }
         });
         // screens, particles, key bindings, resource reloads
         modBus.addListener(ClientGui1122::onRegisterScreens);
@@ -201,7 +205,7 @@ public final class Client1122 {
         CustomModels1122.setBaking(null);
         Sprites1122.setBaking(null);
         try {
-            ActualStateModels1122.wrap(event.getModels());
+            ActualStateModels1122.wrap(event.getModels(), registry.stateModels);
         } catch (RuntimeException | LinkageError e) {
             RenderErrors1122.report("choosing models by actual state", e);
         }

@@ -15,6 +15,11 @@ public abstract class TileEntity implements ICapabilityProvider {
     protected boolean tileEntityInvalid;
     /** The modern block entity hosting this tile entity. */
     public net.minecraft.world.level.block.entity.BlockEntity mcc$host;
+    /**
+     * Taken out of {@code World.tickableTileEntities}: 1.12 ticked only the tile entities in that list, and mods remove theirs to stop ticking
+     * on one side (CoFH's TileCore.onLoad on the client, whose machines would otherwise run their recipes there too).
+     */
+    public volatile boolean mcc$untickable;
 
     public TileEntity() {
     }

@@ -62,11 +62,20 @@ public final class GuiBridge1122 {
         if (mod == null) return null;
         IGuiHandler h = HANDLERS.get(mod);
         if (h != null) return h;
-        for (var e : HANDLERS.entrySet()) if (e.getKey().getClass() == mod.getClass()) return e.getValue();
+        // another object of the mod's class (not another mod's id: every id is a String)
+        if (!(mod instanceof String)) for (var e : HANDLERS.entrySet()) if (e.getKey().getClass() == mod.getClass()) return e.getValue();
         if (mod instanceof String id) {
             LegacyModRecord r = LegacyMods.byLegacyId(id);
-            if (r != null && r.instance != null) return handler(r.instance);
+            if (r != null && r.instance != null && r.instance != mod) {
+                h = HANDLERS.get(r.instance);
+                if (h != null) return h;
+                for (var e : HANDLERS.entrySet()) if (e.getKey().getClass() == r.instance.getClass()) return e.getValue();
+            }
+            return null;
         }
+        // registered under the mod id (FML took either: Techguns registers with its id and opens with its instance, and no machine opened)
+        LegacyModRecord r = recordOf(mod);
+        if (r != null && r.legacyId != null) return HANDLERS.get(r.legacyId);
         return null;
     }
 

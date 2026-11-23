@@ -151,6 +151,11 @@ public abstract class EntityPlayer extends EntityLivingBase {
         m.openItemGui(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModernLive(stack), h);
     }
 
+    @Override
+    protected void damageArmor(float damage) {
+        mcc$get$inventory(this).damageArmor(damage);
+    }
+
     public static InventoryPlayer mcc$get$inventory(EntityPlayer p) {
         if (p.mcc$inventory == null) p.mcc$inventory = new InventoryPlayer(p);
         return p.mcc$inventory;

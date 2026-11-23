@@ -125,6 +125,73 @@ public class TileEntityBanner extends TileEntity implements org.kylepitcock.lega
         colorList = null;
         patternResourceLocation = null;
         patternDataSet = true;
+        // a view's state is the game banner's: 1.12 structure code writes Base and Patterns this way (Techguns' structure banners)
+        if (mcc$banner != null) mcc$flush();
+    }
+
+    @Override
+    public void markDirty() {
+        if (mcc$banner != null) mcc$flush();
+        else super.markDirty();
+    }
+
+    /**
+     * Writes a view's base colour, patterns and name into the game banner. The base colour is the block since 1.13, so a different one
+     * replaces the block by the banner of that colour (standing or wall, same rotation or facing) and fills the new block entity.
+     */
+    private void mcc$flush() {
+        try {
+            net.minecraft.world.level.block.entity.BannerBlockEntity target = mcc$banner;
+            var level = target.getLevel();
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            net.minecraft.core.HolderLookup.Provider lookup = level != null ? level.registryAccess() : server != null ? server.registryAccess() : null;
+            if (lookup == null) return;
+            var registry = lookup.lookupOrThrow(net.minecraft.core.registries.Registries.BANNER_PATTERN);
+            var builder = new net.minecraft.world.level.block.entity.BannerPatternLayers.Builder();
+            if (patterns != null) {
+                for (int i = 0; i < patterns.tagCount(); ++i) {
+                    NBTTagCompound c = patterns.getCompoundTagAt(i);
+                    BannerPattern p = BannerPattern.byHash(c.getString("Pattern"));
+                    if (p == null) continue;
+                    var color = net.minecraft.world.item.DyeColor.byId(EnumDyeColor.byDyeDamage(c.getInteger("Color")).getMetadata());
+                    registry.get(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BANNER_PATTERN,
+                            net.minecraft.resources.ResourceLocation.withDefaultNamespace(p.getFileName()))).ifPresent(h -> builder.add(h, color));
+                }
+            }
+            var base = net.minecraft.world.item.DyeColor.byId(baseColor.getMetadata());
+            if (target.getBaseColor() != base) target = mcc$recolor(target, base);
+            if (target == null) return;
+            var carrier = new net.minecraft.world.item.ItemStack(net.minecraft.world.level.block.BannerBlock.byColor(base).asItem());
+            carrier.set(net.minecraft.core.component.DataComponents.BANNER_PATTERNS, builder.build());
+            if (hasCustomName()) carrier.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal(name));
+            target.applyComponentsFromItemStack(carrier);
+            target.setChanged();
+            var l = target.getLevel();
+            if (l != null) l.sendBlockUpdated(target.getBlockPos(), target.getBlockState(), target.getBlockState(), 3);
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Banner").debug("Writing a legacy banner back failed: {}", e.toString());
+        }
+    }
+
+    /** Replaces a banner by the banner of another colour (same kind and orientation); the new block entity, or null. */
+    private net.minecraft.world.level.block.entity.BannerBlockEntity mcc$recolor(net.minecraft.world.level.block.entity.BannerBlockEntity banner,
+            net.minecraft.world.item.DyeColor color) {
+        net.minecraft.world.level.LevelAccessor access = getWorld() != null ? getWorld().mcc$access() : banner.getLevel();
+        if (access == null) return null;
+        var pos = banner.getBlockPos();
+        var old = banner.getBlockState();
+        boolean wall = old.getBlock() instanceof net.minecraft.world.level.block.WallBannerBlock;
+        var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(
+                net.minecraft.resources.ResourceLocation.withDefaultNamespace(color.getName() + (wall ? "_wall_banner" : "_banner")));
+        var state = block.defaultBlockState();
+        for (var property : old.getProperties()) state = copy(state, old, property);
+        access.setBlock(pos, state, 2);
+        return access.getBlockEntity(pos) instanceof net.minecraft.world.level.block.entity.BannerBlockEntity b ? b : null;
+    }
+
+    private static <T extends Comparable<T>> net.minecraft.world.level.block.state.BlockState copy(net.minecraft.world.level.block.state.BlockState to,
+            net.minecraft.world.level.block.state.BlockState from, net.minecraft.world.level.block.state.properties.Property<T> property) {
+        return to.hasProperty(property) ? to.setValue(property, from.getValue(property)) : to;
     }
 
     @Override

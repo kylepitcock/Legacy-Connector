@@ -95,6 +95,19 @@ public final class LiveStacks1122 {
                 flush(e);
                 var now = e.slot.get();
                 if (now == e.modern && net.minecraft.world.item.ItemStack.matches(now, e.modernSnapshot)) return e.legacy;
+                if (now == e.modern && !now.isEmpty()) {
+                    // the same modern stack changed in place: the stack handed out before takes its new count, damage and tag, so it stays the
+                    // slot's stack (Techguns tells the offhand gun from the main hand one by getHeldItemOffhand() == stack: a fresh object each
+                    // time the gun's tag changed moved its ammo display from one side of the screen to the other)
+                    ItemStack fresh = Stacks1122.fromModern(now);
+                    if (!fresh.isEmpty() && fresh.getItem() == e.legacy.getItem()) {
+                        e.legacy.setCount(fresh.getCount());
+                        e.legacy.setItemDamage(fresh.getItemDamage());
+                        e.legacy.setTagCompound(fresh.getTagCompound());
+                        e.snapshot(now);
+                        return e.legacy;
+                    }
+                }
             }
             var current = slot.get();
             // the same modern stack reached through another key (the main hand is also inventory slot N, the off hand slot 40, armor 36-39) is the

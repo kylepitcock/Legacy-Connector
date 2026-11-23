@@ -53,7 +53,23 @@ public class SPacketUpdateTileEntity implements Packet<INetHandlerPlayClient> {
 
     @Override
     public net.minecraft.network.protocol.Packet<?> mcc$modern() {
-        // sent through the hosting block entity's own update packet, which knows the level
+        // the packet alone does not know its level: the senders that do (a chunk's watchers, a player's connection) use mcc$modern(level)
         return null;
+    }
+
+    /**
+     * The modern block entity packet of this one, for the block entity at its position in the level: its type and data reach the tile
+     * entity's {@code onDataPacket} on the client (see Legacy1122BlockEntity). Mods send it themselves, through
+     * {@code PlayerChunkMapEntry.sendPacket} (Techguns' machines, after every change of their operation) or a player's connection; dropped,
+     * the client never heard of a machine's operation, its progress or its settings. Null when there is no hosted tile entity there.
+     */
+    public net.minecraft.network.protocol.Packet<?> mcc$modern(net.minecraft.world.level.Level level) {
+        if (level == null || blockPos == null) return null;
+        var be = level.getBlockEntity(new net.minecraft.core.BlockPos(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+        if (!(be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity)) return null;
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        tag.putInt("mcc$type", tileEntityType);
+        if (nbt != null) tag.put("mcc$packet", nbt.mcc$modern().copy());
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(be, (b, registries) -> tag);
     }
 }

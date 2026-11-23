@@ -58,8 +58,9 @@ public class CreativeTabs {
         return tabLabel;
     }
 
+    /** The older name of {@link #getTranslationKey} (the same method, func_78024_c): an override of either one is the title key. */
     public String getTranslatedTabLabel() {
-        return "itemGroup." + getTabLabel();
+        return getTranslationKey();
     }
 
     /** Icon item: mods override one of these. */
@@ -129,8 +130,12 @@ public class CreativeTabs {
         return getTabIndex();
     }
 
+    /**
+     * The title's translation key (func_78024_c in the later mappings, {@code "itemGroup." + label}): mods override it (Techguns prefixes
+     * its mod id, {@code techguns.itemGroup.techguns}) and the creative screen showed {@code I18n.format} of it.
+     */
     public String getTranslationKey() {
-        return getTabLabel();
+        return "itemGroup." + getTabLabel();
     }
 
     public ItemStack getIcon() {

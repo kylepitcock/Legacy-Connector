@@ -78,6 +78,8 @@ public final class TextureLocations {
                 if (colon > 0) return ResourceLocation.fromNamespaceAndPath(modern.substring(0, colon), "textures/" + modern.substring(colon + 1) + ".png");
             }
         }
+        // 1.7.10's zombie pigman skin (64x32 biped), composed from the zombified piglin's (1.12 asks for its 64x64 sheet before this)
+        if (ns.equals("minecraft") && p.equals("textures/entity/zombie_pigman.png")) return LegacyEntityTextures.pigman(32);
         if (ns.equals("minecraft") && p.equals("textures/gui/icons.png")) LegacyIcons.ensure();
         if (ns.equals("minecraft") && p.equals("textures/gui/widgets.png")) LegacyWidgets.ensure();
         if (ns.equals("minecraft") && p.equals("textures/gui/container/creative_inventory/tabs.png")) LegacyCreativeTabs.ensure();

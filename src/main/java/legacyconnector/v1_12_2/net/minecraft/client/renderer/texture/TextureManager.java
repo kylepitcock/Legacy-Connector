@@ -46,6 +46,10 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
     public static net.minecraft.resources.ResourceLocation mcc$modern(ResourceLocation location) {
         String path = location.getPath();
         if (path.equals("textures/atlas/blocks.png") || ATLAS_ALIASES.contains(location)) return net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
+        // 1.12's zombie pigman skin (64x64 biped) is gone; composed from the zombified piglin's (Techguns' pigman soldier drew the missing texture)
+        if (path.equals("textures/entity/zombie_pigman.png") && "minecraft".equals(location.getNamespace())) {
+            return org.kylepitcock.legacyconnector.v1_7_10.client.LegacyEntityTextures.pigman(64);
+        }
         return TextureLocations.modern(location.getNamespace(), path);
     }
 
@@ -63,6 +67,9 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         // 1.12's HUD sheet (hearts, armor, food) is gone since 1.20.2: composed from the modern sprites the first time it is bound
         // (Tinkers' Mantle cancels the vanilla hearts and draws its own from it; nothing showed)
         if (modern.equals(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyIcons.LOCATION)) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyIcons.ensure();
+        // and the button and creative tab sheets (legacy buttons and mods' own inventory tabs blit from them)
+        if (modern.equals(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyWidgets.LOCATION)) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyWidgets.ensure();
+        if (modern.equals(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyCreativeTabs.LOCATION)) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyCreativeTabs.ensure();
         RenderContext.bindTexture(modern);
     }
 
