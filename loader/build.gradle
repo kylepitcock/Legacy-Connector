@@ -927,8 +927,7 @@ tasks.register('auditSrgIntermediaryHierarchyOwner1201To1211', JavaExec) {
             extractMcpConfigJoinedTsrg1201,
             extractFabricIntermediary1201,
             extractFabricIntermediary1211,
-            rootProject.tasks.named('inventoryTargetApi1211'),
-            tasks.named('auditForge1201InterfaceOwnerHierarchy1201To1211')
+            rootProject.tasks.named('inventoryTargetApi1211')
     inputs.file(joinedTsrg1201)
     inputs.file(fabricIntermediary1201Tiny)
     inputs.file(fabricIntermediary1211Tiny)
