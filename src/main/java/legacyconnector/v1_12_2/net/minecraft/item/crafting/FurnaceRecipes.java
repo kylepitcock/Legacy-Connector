@@ -105,51 +105,24 @@ public class FurnaceRecipes {
     }
 
     /**
-     * The game's own smelting recipes for what 1.12 did not have (deepslate and copper ores, raw ores, ancient debris...), read from the
-     * vanilla data pack: a mod's powered furnace copies this list once, while mods load, so these would otherwise never smelt in it. Recipes
-     * whose ingredient is a tag are left out (tags are not bound yet; the 1.12 entries above cover logs and the like).
+     * The game's own smelting recipes for what 1.12 did not have (deepslate and copper ores, raw ores, wood, ancient debris...), from the
+     * shared vanilla-pack reader (tag ingredients expanded): a mod's powered furnace copies this list once, while mods load.
      */
     private void seedModern() {
         try {
-            var pack = net.minecraft.server.packs.repository.ServerPacksSource.createVanillaPackSource();
-            java.util.List<com.google.gson.JsonObject> recipes = new java.util.ArrayList<>();
-            pack.listResources(net.minecraft.server.packs.PackType.SERVER_DATA, "minecraft", "recipe", (id, supplier) -> {
-                try (var in = new java.io.InputStreamReader(supplier.get(), java.nio.charset.StandardCharsets.UTF_8)) {
-                    var json = com.google.gson.JsonParser.parseReader(in);
-                    if (json.isJsonObject() && "minecraft:smelting".equals(string(json.getAsJsonObject(), "type"))) recipes.add(json.getAsJsonObject());
-                } catch (java.io.IOException | RuntimeException e) {
-                    // an unreadable recipe is left out
-                }
-            });
-            for (var recipe : recipes) {
-                var result = recipe.get("result");
-                String outId = result == null ? null : result.isJsonPrimitive() ? result.getAsString()
-                        : result.isJsonObject() ? string(result.getAsJsonObject(), "id") : null;
-                ItemStack out = modern(outId);
+            for (var e : org.kylepitcock.legacyconnector.core.ModernSmelting.entries()) {
+                ItemStack in = modern(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(e.input()).toString());
+                if (in.isEmpty() || listed(in)) continue;
+                ItemStack out = modern(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(e.result().getItem()).toString());
                 if (out.isEmpty()) continue;
-                if (result.isJsonObject() && result.getAsJsonObject().has("count")) out.setCount(result.getAsJsonObject().get("count").getAsInt());
-                float xp = recipe.has("experience") ? recipe.get("experience").getAsFloat() : 0.0F;
-                var ingredient = recipe.get("ingredient");
-                java.util.List<com.google.gson.JsonElement> options = new java.util.ArrayList<>();
-                if (ingredient != null && ingredient.isJsonArray()) ingredient.getAsJsonArray().forEach(options::add);
-                else if (ingredient != null) options.add(ingredient);
-                for (var option : options) {
-                    if (!option.isJsonObject()) continue;
-                    ItemStack in = modern(string(option.getAsJsonObject(), "item"));
-                    if (in.isEmpty() || listed(in)) continue;
-                    smeltingList.put(in, out);
-                    experienceList.put(out, xp);
-                    vanilla.add(in);
-                }
+                out.setCount(e.result().getCount());
+                smeltingList.put(in, out);
+                experienceList.put(out, e.experience());
+                vanilla.add(in);
             }
         } catch (RuntimeException | LinkageError e) {
             // without the vanilla pack the 1.12 entries stay
         }
-    }
-
-    private static String string(com.google.gson.JsonObject o, String key) {
-        var e = o.get(key);
-        return e != null && e.isJsonPrimitive() ? e.getAsString() : null;
     }
 
     /** The legacy stack of a modern item id (empty for none). */

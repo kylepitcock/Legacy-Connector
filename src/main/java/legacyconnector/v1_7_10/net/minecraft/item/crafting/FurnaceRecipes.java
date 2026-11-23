@@ -129,8 +129,39 @@ public class FurnaceRecipes {
                     // an entry the host cannot resolve is left out
                 }
             }
+            mcc$seedModern();
         }
         return smeltingList;
+    }
+
+    /**
+     * What the game smelts that 1.7.10 did not (raw ores, wood and stripped logs, glazed terracotta, ancient debris...): a mod machine that
+     * copies the list at load would never smelt it. Read from the vanilla pack, tags expanded; inputs an entry already takes are skipped.
+     */
+    @SuppressWarnings("unchecked")
+    private void mcc$seedModern() {
+        try {
+            for (var e : org.kylepitcock.legacyconnector.core.ModernSmelting.entries()) {
+                ItemStack in = ItemStack.mcc$wrap(new net.minecraft.world.item.ItemStack(e.input()));
+                if (in == null || in.getItem() == null) continue;
+                if (!in.getItem().getHasSubtypes()) in = new ItemStack(in.getItem(), 1, 32767);
+                boolean listed = false;
+                for (Object k : smeltingList.keySet()) {
+                    if (func_151397_a(in, (ItemStack) k)) {
+                        listed = true;
+                        break;
+                    }
+                }
+                if (listed) continue;
+                ItemStack out = ItemStack.mcc$wrap(e.result().copy());
+                if (out == null) continue;
+                smeltingList.put(in, out);
+                experienceList.put(out, e.experience());
+                vanilla.add(in);
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // without the vanilla pack the 1.7.10 entries stay
+        }
     }
 
     private static ItemStack mcc$stack(String kind, String field, int damage) throws ReflectiveOperationException {

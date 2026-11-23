@@ -100,6 +100,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean lightOpacity;
     private final boolean slipperiness;
     private final boolean dropsList;
+    /** The mod overrides dropBlockAsItemWithChance (a crop's rare extra seed is spawned there, not in getDrops). */
+    private final boolean dropWithChance;
     private final boolean pickBlock;
     private final boolean explosionResistance;
     private final boolean powerSource;
@@ -157,6 +159,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.renderType = overrides(legacy, "getRenderType", S);
         this.lightOpacity = overrides(legacy, "getLightOpacity", S, A, P);
         this.slipperiness = overrides(legacy, "getSlipperiness", S, A, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
+        this.dropWithChance = overrides(legacy, "dropBlockAsItemWithChance", W, P, S, float.class, int.class);
         this.dropsList = overrides(legacy, "getDrops", legacyconnector.v1_12_2.net.minecraft.util.NonNullList.class, A, P, S, int.class)
                 || overrides(legacy, "getDrops", A, P, S, int.class);
         this.pickBlock = overrides(legacy, "getPickBlock", S, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.class, W, P, EntityPlayer.class);
@@ -1010,6 +1013,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             fortune = EnchantmentHelper.getItemEnchantmentLevel(enchants.getOrThrow(Enchantments.FORTUNE), tool);
             silk = EnchantmentHelper.getItemEnchantmentLevel(enchants.getOrThrow(Enchantments.SILK_TOUCH), tool) > 0;
         }
+        final int fortuneLevel = fortune;
         World w = world(level);
         IBlockState legacyState = state(state);
         Entity breaker = params.getOptionalParameter(LootContextParams.THIS_ENTITY);
@@ -1019,7 +1023,9 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 drops = new ArrayList<>();
                 drops.add(legacy.mcc$silkTouchDrop(legacyState));
             } else {
-                drops = legacyDrops(w, pos(pos), legacyState, fortune);
+                drops = dropWithChance
+                        ? legacyconnector.v1_12_2.net.minecraft.block.Block.mcc$captureSpawns(() -> legacy.dropBlockAsItemWithChance(w, pos(pos), legacyState, 1.0F, fortuneLevel))
+                        : legacyDrops(w, pos(pos), legacyState, fortune);
             }
         } catch (RuntimeException | LinkageError e) {
             LegacyCall.failed("getDrops", legacy, e, null);
