@@ -115,6 +115,10 @@ public class PathNavigate {
     public void onUpdateNavigation() {
     }
 
+    /** Moves the entity along the path: the host's navigator does that every tick, so mods overriding or calling it add nothing. */
+    protected void pathFollow() {
+    }
+
     public boolean noPath() {
         PathNavigation n = nav();
         return n == null || n.isDone();

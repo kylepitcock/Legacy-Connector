@@ -28,6 +28,11 @@ public final class SpawnerAnimals {
         return !here.isNormalCube() && !here.getMaterial().isLiquid() && !world.getBlock(x, y + 1, z).isNormalCube();
     }
 
+    /** Vanilla's per-tick spawn pass: the host does it natively for every entity, so a mod calling it spawns nothing extra and sees 0 spawns. */
+    public static int findChunksForSpawning(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world, boolean hostile, boolean peaceful, boolean animals) {
+        return 0;
+    }
+
     public static void performWorldGenSpawning(World world, BiomeGenBase biome, int x, int z, int width, int height, Random random) {
     }
 }

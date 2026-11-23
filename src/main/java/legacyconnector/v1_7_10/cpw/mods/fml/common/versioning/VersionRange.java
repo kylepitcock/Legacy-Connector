@@ -18,6 +18,13 @@ public class VersionRange {
         return recommendedVersion;
     }
 
+    /** The lower bound of the first restriction as a string ("" when it has none). */
+    public String getLowerBoundString() {
+        if (restrictions.isEmpty()) return "";
+        ArtifactVersion lower = restrictions.get(0).getLowerBound();
+        return lower == null ? "" : lower.getVersionString();
+    }
+
     public List<Restriction> getRestrictions() {
         return restrictions;
     }

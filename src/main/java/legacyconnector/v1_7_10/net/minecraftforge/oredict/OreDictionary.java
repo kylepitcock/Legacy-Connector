@@ -110,6 +110,10 @@ public class OreDictionary {
         return new UnmodifiableArrayList<>(new ArrayList<>(modern));
     }
 
+    /** Forge registered the vanilla ores here; the layer registers them from the modern tags on first lookup. */
+    public static void initVanillaEntries() {
+    }
+
     public static void rebakeMap() {
     }
 

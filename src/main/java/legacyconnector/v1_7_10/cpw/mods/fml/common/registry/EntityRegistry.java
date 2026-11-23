@@ -91,6 +91,11 @@ public class EntityRegistry {
             return updateFrequency;
         }
 
+        /** True when the entity is tracked by the vanilla rules (a mod without its own spawn packet): every layer entity is. */
+        public boolean usesVanillaSpawning() {
+            return true;
+        }
+
         public boolean sendsVelocityUpdates() {
             return sendsVelocityUpdates;
         }
@@ -130,6 +135,23 @@ public class EntityRegistry {
         List<BiomeGenBase> list = new ArrayList<>();
         for (BiomeGenBase b : biomes) if (b != null) list.add(b);
         SPAWNS.add(new Spawn(entityClass, weightedProb, min, max, typeOfCreature, list));
+    }
+
+    /** {@code addSpawn} by the entity's registered name. */
+    public static void addSpawn(String entityName, int weightedProb, int min, int max, EnumCreatureType typeOfCreature, BiomeGenBase... biomes) {
+        Class<?> cls = legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(entityName);
+        if (cls != null) addSpawn(cls, weightedProb, min, max, typeOfCreature, biomes);
+    }
+
+    public static void removeSpawn(String entityName, EnumCreatureType typeOfCreature, BiomeGenBase... biomes) {
+        Class<?> cls = legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(entityName);
+        if (cls != null) removeSpawn(cls, typeOfCreature, biomes);
+    }
+
+    /** FML's hook that lets the tracker decide for a mod entity: the modern tracker handles every entity, so mods never get to take over. */
+    public static boolean tryTrackingEntity(legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker tracker,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        return false;
     }
 
     public static void removeSpawn(Class<?> entityClass, EnumCreatureType typeOfCreature, BiomeGenBase... biomes) {

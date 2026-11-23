@@ -71,6 +71,11 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return commandManager;
     }
 
+    /** The server's listening endpoints (the host owns the sockets; see {@link legacyconnector.v1_7_10.net.minecraft.network.NetworkSystem}). */
+    public legacyconnector.v1_7_10.net.minecraft.network.NetworkSystem getNetworkSystem() {
+        return legacyconnector.v1_7_10.net.minecraft.network.NetworkSystem.INSTANCE;
+    }
+
     public ServerConfigurationManager getConfigurationManager() {
         return configurationManager;
     }

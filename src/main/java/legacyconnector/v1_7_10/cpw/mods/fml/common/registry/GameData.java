@@ -21,6 +21,30 @@ public class GameData {
         return (FMLControlledNamespacedRegistry<Item>) Item.itemRegistry;
     }
 
+    private static final GameData MAIN = new GameData();
+
+    /** The main (active) registry set. */
+    public static GameData getMain() {
+        return MAIN;
+    }
+
+    /** Registers an item under a name at a wanted id; ids are not numbered in the layer, so the wanted id is returned. */
+    public int registerItem(Item item, String name, int idHint) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerItem(item, name);
+        return idHint;
+    }
+
+    /** FML froze the registries after loading and reverted to the frozen copy on a failed world join; the host owns that cycle here. */
+    public static void freezeData() {
+    }
+
+    public static void revertToFrozen() {
+    }
+
+    /** Writes the registry contents to a file (a debugging aid of FML's): there is no id table to dump. */
+    public static void dumpRegistry(java.io.File minecraftDir) {
+    }
+
     /** Owner of a "modid:name" registry name. */
     public static ModContainer findModOwner(String name) {
         int colon = name.indexOf(':');

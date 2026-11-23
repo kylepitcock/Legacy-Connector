@@ -24,6 +24,8 @@ public class ContextCapabilities {
             GL_EXT_texture_env_combine = true, GL_EXT_secondary_color = true, GL_EXT_fog_coord = true,
             GL_EXT_gpu_shader4 = false, GL_EXT_texture_lod_bias = true, GL_EXT_framebuffer_blit = true,
             GL_EXT_framebuffer_multisample = true, GL_EXT_bgra = true, GL_EXT_abgr = false, GL_EXT_compiled_vertex_array = false;
+    /** Vendor memory queries (Xaero's maps ask): the core profile exposes neither, so mods fall back to not reading video memory. */
+    public final boolean GL_EXT_pixel_buffer_object = true, GL_ATI_meminfo = false, GL_NVX_gpu_memory_info = false;
     public final boolean GL_NV_fog_distance = false, GL_NV_texture_rectangle = false, GL_ATI_texture_float = false,
             GL_KHR_debug = true, GL_AMD_debug_output = false, GL_ARB_debug_output = true;
 }

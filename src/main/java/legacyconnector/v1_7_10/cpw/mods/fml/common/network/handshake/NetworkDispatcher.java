@@ -64,6 +64,12 @@ public class NetworkDispatcher extends SimpleChannelInboundHandler<Packet> imple
         return side;
     }
 
+    /** Refuses the connection with a reason: the player is disconnected with it. */
+    public void rejectHandshake(String result) {
+        var player = manager == null ? null : manager.mcc$player();
+        if (player != null && player.connection != null) player.connection.disconnect(net.minecraft.network.chat.Component.literal(result));
+    }
+
     public void clientListenForServerHandshake() {
     }
 

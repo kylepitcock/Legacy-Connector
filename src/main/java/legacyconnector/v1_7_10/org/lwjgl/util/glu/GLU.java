@@ -43,6 +43,28 @@ public class GLU {
         return legacyconnector.v1_7_10.org.lwjgl.util.glu.tessellation.GLUtessellatorImpl.gluNewTess();
     }
 
+    /** Multiplies the matrix by a view looking from the eye at the centre ({@code up} fixes the roll), as LWJGL 2's GLU did. */
+    public static void gluLookAt(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz) {
+        float fx = centerx - eyex, fy = centery - eyey, fz = centerz - eyez;
+        float fl = (float) Math.sqrt(fx * fx + fy * fy + fz * fz);
+        if (fl == 0) return;
+        fx /= fl;
+        fy /= fl;
+        fz /= fl;
+        float sx = fy * upz - fz * upy, sy = fz * upx - fx * upz, sz = fx * upy - fy * upx;
+        float sl = (float) Math.sqrt(sx * sx + sy * sy + sz * sz);
+        if (sl == 0) return;
+        sx /= sl;
+        sy /= sl;
+        sz /= sl;
+        float ux = sy * fz - sz * fy, uy = sz * fx - sx * fz, uz = sx * fy - sy * fx;
+        java.nio.FloatBuffer m = java.nio.ByteBuffer.allocateDirect(64).order(java.nio.ByteOrder.nativeOrder()).asFloatBuffer();
+        m.put(new float[] {sx, ux, -fx, 0, sy, uy, -fy, 0, sz, uz, -fz, 0, 0, 0, 0, 1});
+        m.flip();
+        GL11.glMultMatrix(m);
+        GL11.glTranslatef(-eyex, -eyey, -eyez);
+    }
+
     public static void gluPerspective(float fovy, float aspect, float zNear, float zFar) {
         Project.gluPerspective(fovy, aspect, zNear, zFar);
     }
