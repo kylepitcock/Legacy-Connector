@@ -93,6 +93,10 @@ public final class Forge1201ArchiveGraph {
     public enum DependencyStatus {
         HOST_BRIDGE,
         HOST_VERSION_MISMATCH,
+        TARGET_NATIVE_PROVIDER_CANDIDATE,
+        TARGET_NATIVE_PROVIDER_RANGE_MISMATCH,
+        TARGET_NATIVE_PROVIDER_RANGE_UNVERIFIED,
+        TARGET_NATIVE_PROVIDER_AMBIGUOUS,
         PROVIDER_PRESENT,
         PROVIDER_VERSION_MISMATCH,
         PROVIDER_AMBIGUOUS,
@@ -1162,6 +1166,63 @@ public final class Forge1201ArchiveGraph {
                     continue;
                 }
 
+                // Prefer one installed NeoForge provider over bundled/installed Forge copies,
+                // but only as a version-range candidate. This is static evidence, not an API proof
+                // and not an instruction to remove or suppress any source archive.
+                List<ProviderFinding> targetNativeCandidates = candidates.stream()
+                        .filter(Forge1201ArchiveGraph::isTargetNativeProvider)
+                        .toList();
+                if (!targetNativeCandidates.isEmpty()) {
+                    VersionRangeStatus nativeRangeStatus =
+                            aggregateProviderRangeStatus(targetNativeCandidates, dependency.versionRange());
+                    DependencyStatus nativeStatus;
+                    if (targetNativeCandidates.size() > 1) {
+                        nativeStatus = DependencyStatus.TARGET_NATIVE_PROVIDER_AMBIGUOUS;
+                    } else {
+                        nativeStatus = switch (nativeRangeStatus) {
+                            case MATCH -> DependencyStatus.TARGET_NATIVE_PROVIDER_CANDIDATE;
+                            case OUTSIDE_RANGE -> DependencyStatus.TARGET_NATIVE_PROVIDER_RANGE_MISMATCH;
+                            case UNPARSEABLE, NOT_EVALUATED ->
+                                    DependencyStatus.TARGET_NATIVE_PROVIDER_RANGE_UNVERIFIED;
+                        };
+                    }
+
+                    List<ProviderFinding> nonNativeCandidates = candidates.stream()
+                            .filter(candidate -> !isTargetNativeProvider(candidate))
+                            .toList();
+                    if (!nonNativeCandidates.isEmpty()) {
+                        String alternatives = nonNativeCandidates.stream()
+                                .map(candidate -> candidate.archivePath() + " [" + candidate.providerKind() + "]")
+                                .distinct().sorted().toList().toString();
+                        String reason = switch (nativeStatus) {
+                            case TARGET_NATIVE_PROVIDER_CANDIDATE ->
+                                    "is preferred as the unique target-native version-range candidate";
+                            case TARGET_NATIVE_PROVIDER_RANGE_MISMATCH ->
+                                    "does not satisfy the declared version range; no source-provider fallback is selected automatically";
+                            case TARGET_NATIVE_PROVIDER_RANGE_UNVERIFIED ->
+                                    "has an unverified version range; no source-provider fallback is selected automatically";
+                            case TARGET_NATIVE_PROVIDER_AMBIGUOUS ->
+                                    "is ambiguous because multiple installed target-native providers declare this mod ID";
+                            default -> "has an unresolved target-native provider state";
+                        };
+                        budget.warnings.add(declaring.archivePath() + ": dependency " + id + " " + reason
+                                + "; other provider candidates remain inventoried but are not selected for this edge: "
+                                + alternatives + ". No archive is removed or suppressed, and provider ID/version "
+                                + "evidence does not prove API or behavioral compatibility.");
+                    } else if (nativeStatus == DependencyStatus.TARGET_NATIVE_PROVIDER_CANDIDATE) {
+                        budget.warnings.add(declaring.archivePath() + ": dependency " + id
+                                + " has a unique target-native provider whose version satisfies the declared range; "
+                                + "this is only a preflight candidate. API and behavioral compatibility remain unverified.");
+                    }
+
+                    result.add(new DependencyEdge(declaring.archivePath(), declaring.mod().modId(), id,
+                            dependency.versionRange(), dependency.mandatory(), dependency.type(),
+                            dependency.ordering(), dependency.side(), nativeStatus, nativeRangeStatus,
+                            targetNativeCandidates.stream().map(ProviderFinding::archivePath).distinct().sorted().toList(),
+                            targetNativeCandidates.stream().map(ProviderFinding::version).distinct().sorted().toList()));
+                    continue;
+                }
+
                 List<ProviderFinding> matches = new ArrayList<>();
                 List<ProviderFinding> unknown = new ArrayList<>();
                 for (ProviderFinding candidate : candidates) {
@@ -1201,6 +1262,11 @@ public final class Forge1201ArchiveGraph {
             }
         }
         return result;
+    }
+
+    private static boolean isTargetNativeProvider(ProviderFinding provider) {
+        return provider.providerKind() == ProviderKind.INSTALLED_TOP_LEVEL_NEOFORGE
+                || provider.providerKind() == ProviderKind.INSTALLED_NESTED_NEOFORGE;
     }
 
     private static VersionRangeStatus aggregateProviderRangeStatus(
