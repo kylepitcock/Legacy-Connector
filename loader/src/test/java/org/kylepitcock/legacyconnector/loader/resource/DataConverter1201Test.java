@@ -720,4 +720,12 @@ class DataConverter1201Test {
         assertTrue(out.keySet().stream().noneMatch(k -> k.startsWith("o-")), out.keySet().toString());
         assertTrue(!new String(out.get("pack.mcmeta"), StandardCharsets.UTF_8).contains("overlays"));
     }
+
+    @Test
+    void additionsToVanillaTagsAreOptionalSoOneMissingObjectKeepsTheVanillaEntries() {
+        JsonElement out = one("data/minecraft/tags/blocks/doors.json", "{\"replace\":false,\"values\":[\"m:door\",\"#m:more\"]}", "data/minecraft/tags/block/doors.json");
+        same("{\"replace\":false,\"values\":[{\"id\":\"m:door\",\"required\":false},{\"id\":\"#m:more\",\"required\":false}]}", out);
+        // a mod's own tag keeps plain entries
+        same("{\"replace\":false,\"values\":[\"m:door\"]}", one("data/m/tags/blocks/mine.json", "{\"replace\":false,\"values\":[\"m:door\"]}", "data/m/tags/block/mine.json"));
+    }
 }
