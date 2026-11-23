@@ -224,6 +224,11 @@ public final class DataConverter1201 {
         String np = mapPath(path);
         boolean dataJson = path.startsWith("data/") && path.endsWith(".json");
         boolean model = path.startsWith("assets/") && path.endsWith(".json") && path.contains("/models/");
+        if (path.startsWith("assets/") && path.endsWith(".json") && path.contains("/animations/")) {
+            byte[] fixed = GeckoAnimations1201.fix(data);
+            if (fixed != null) stats.add("geckolib_easing_vector");
+            return List.of(new Out(np, fixed != null ? fixed : data));
+        }
         if (!dataJson && !model) {
             if (!np.equals(path)) stats.add(pathCategory(path));
             if (path.startsWith("data/") && path.endsWith(".nbt") && np.contains("/structure/")) {
