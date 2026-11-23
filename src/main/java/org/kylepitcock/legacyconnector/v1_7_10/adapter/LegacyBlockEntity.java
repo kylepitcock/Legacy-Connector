@@ -404,7 +404,13 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             // a throwing writeToNBT (or a tag the chunk writer rejects) must neither fail the chunk save nor wipe the tile's data: save the last good copy
             CompoundTag fresh = org.kylepitcock.legacyconnector.core.NbtSaveGuard.attempt(() -> {
                 NBTTagCompound out = new NBTTagCompound();
-                te.writeToNBT(out);
+                // the tile reads its own block (BuildCraft's engine saves its kind from the metadata) although the saving chunk is not "loaded"
+                Object[] previous = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$enterOwnState(getBlockPos(), getBlockState());
+                try {
+                    te.writeToNBT(out);
+                } finally {
+                    legacyconnector.v1_7_10.net.minecraft.world.World.mcc$leaveOwnState(previous);
+                }
                 return out.mcc$modern();
             }, te, net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(getType()), getBlockPos().toShortString());
             if (fresh != null) lastGood = fresh;
