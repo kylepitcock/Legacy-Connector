@@ -250,6 +250,10 @@ final class Forge1201PreflightAnalyzerTest {
         assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("TARGET_NATIVE_PROVIDER_CANDIDATE"));
         assertTrue(result.limitations().stream().anyMatch(value ->
                 value.contains("does not remove or suppress source-bundled archives")));
+        assertTrue(result.limitations().stream().anyMatch(value ->
+                value.contains("ID-presence summary only")));
+        assertTrue(Forge1201PreflightAnalyzer.toText(result)
+                .contains("ID-presence summary; range-aware provider selection is below"));
     }
 
     @Test
