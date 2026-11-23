@@ -341,7 +341,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 }
             }
             boolean stairs = b.getRenderType() == 10;
-            JsonObject model = stairs ? stairsModel(faces) : b.getRenderType() == 20 ? vineModel(b, faces[0], meta) : model(b, faces);
+            boolean torch = b.getRenderType() == 2;
+            JsonObject model = stairs ? stairsModel(faces) : torch ? torchModel(faces[0], (meta & 7) >= 1 && (meta & 7) <= 4)
+                    : b.getRenderType() == 20 ? vineModel(b, faces[0], meta) : model(b, faces);
             String path = "block/" + id.getPath() + "_m" + meta;
             String same = written == null ? null : written.putIfAbsent(model.toString(), path);
             if (same != null) {
@@ -361,6 +363,11 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 if (y != 0) v.addProperty("y", y);
                 if ((meta & 4) != 0) v.addProperty("x", 180);
                 v.addProperty("uvlock", true);
+            }
+            if (torch && (meta & 7) >= 1 && (meta & 7) <= 4) {
+                // the wall torch model faces east; the metadata names the wall (west, east, north, south neighbour)
+                int y = new int[] {0, 180, 90, 270}[(meta & 7) - 1];
+                if (y != 0) v.addProperty("y", y);
             }
             variants.add("meta=" + meta, v);
         }
@@ -432,6 +439,21 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
         el.add("faces", faces);
         return el;
+    }
+
+    /**
+     * Render type 2, torches (RenderBlocks.renderBlockTorch): vanilla's torch or wall torch model with the block's own sprite. A plain
+     * box of the torch's bounds drew the torch sprite on every face (several torches inside one block).
+     */
+    private static JsonObject torchModel(String texture, boolean wall) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", wall ? "minecraft:block/template_torch_wall" : "minecraft:block/template_torch");
+        model.addProperty("render_type", "minecraft:cutout");
+        JsonObject tex = new JsonObject();
+        tex.addProperty("torch", texture);
+        tex.addProperty("particle", texture);
+        model.add("textures", tex);
+        return model;
     }
 
     private static JsonObject stairsModel(String[] faces) {
