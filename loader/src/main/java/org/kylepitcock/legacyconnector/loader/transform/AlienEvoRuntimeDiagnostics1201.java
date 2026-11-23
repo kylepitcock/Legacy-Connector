@@ -145,18 +145,46 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has an unexpected method shape");
         }
 
-        int returns = countOpcode(method, ARETURN);
+        AbstractInsnNode[] returnSites = java.util.Arrays.stream(method.instructions.toArray())
+                .filter(instruction -> instruction.getOpcode() == ARETURN)
+                .toArray(AbstractInsnNode[]::new);
+        int returns = returnSites.length;
         int originTraces = countCalls(method, "traceBeamAnchor");
         int missingTraces = countCalls(method, "traceMissingBeamAnchor");
-        if (returns == 0) throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has no ARETURN site to trace");
-        if (originTraces == returns && missingTraces == returns) return 0;
+        if (returns < 2) {
+            throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld expected early missing-pose return(s) and a final origin return");
+        }
+        if (originTraces == 1 && missingTraces == returns) return 0;
         if (originTraces != 0 || missingTraces != 0) {
             throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has a partial runtime trace");
         }
-        int changed = 0;
-        for (AbstractInsnNode instruction : method.instructions.toArray()) {
-            if (instruction.getOpcode() != ARETURN) continue;
 
+        int changed = 0;
+        for (int index = 0; index < returnSites.length; index++) {
+            AbstractInsnNode instruction = returnSites[index];
+
+            if (index < returnSites.length - 1) {
+                // AlienEvo returns null before allocating local 7 when no named-bone
+                // pose exists. Only inspect the method parameters at these early exits;
+                // touching locals 6/7 here makes the JVM reject the transformed class.
+                AbstractInsnNode returnedValue = previousMeaningful(instruction);
+                if (returnedValue == null || returnedValue.getOpcode() != ACONST_NULL) {
+                    throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld early return is no longer a null missing-pose exit");
+                }
+
+                InsnList trace = new InsnList();
+                trace.add(new VarInsnNode(ILOAD, 0));
+                trace.add(new VarInsnNode(ALOAD, 1));
+                trace.add(new VarInsnNode(ILOAD, 2));
+                trace.add(new MethodInsnNode(INVOKESTATIC, HELPER, "traceMissingBeamAnchor",
+                        "(ILjava/lang/String;Z)V", false));
+                method.instructions.insertBefore(instruction, trace);
+                changed++;
+                continue;
+            }
+
+            // The final ARETURN is reached only after the named-bone pose and
+            // transformed local translation have been initialized in locals 6/7.
             LabelNode missing = new LabelNode();
             LabelNode done = new LabelNode();
             InsnList trace = new InsnList();
@@ -190,12 +218,15 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             method.instructions.insertBefore(instruction, trace);
             changed++;
         }
-        if (returns == 0) {
-            throw new IllegalStateException("AlienEvo BoneAnchors.boneWorld has no ARETURN site to trace");
-        }
         method.maxLocals = Math.max(method.maxLocals, 9);
         method.maxStack = Math.max(method.maxStack, 9);
         return changed;
+    }
+
+    private static AbstractInsnNode previousMeaningful(AbstractInsnNode instruction) {
+        AbstractInsnNode value = instruction == null ? null : instruction.getPrevious();
+        while (value != null && value.getOpcode() < 0) value = value.getPrevious();
+        return value;
     }
 
     private static int countOpcode(MethodNode method, int opcode) {

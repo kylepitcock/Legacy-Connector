@@ -12,6 +12,9 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.BasicVerifier;
 
 /** Tests that opt-in AlienEvo traces are attached to the intended runtime boundaries. */
 class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
@@ -75,13 +78,8 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         MethodInsnNode trace = findCall(swing, "traceVanillaSwing");
         assertEquals("(FF)V", trace.desc);
         assertTrue(trace.getPrevious() instanceof VarInsnNode);
-        assertEquals(FLOAD, trace.getPrevious().getOpcode());
-        assertEquals(DUP, trace.getPrevious().getPrevious().getOpcode());
-        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
-    }
-
-    @Test
-    void tracesBothValidAndMissingBoneAnchorReturnsAndIsIdempotent() {
+        assertEquals(FLOAD, trace.getPrevious().get    @Test
+    void tracesEarlyMissingAnchorWithoutReadingUninitializedLocalsAndIsIdempotent() throws AnalyzerException {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/client/BoneAnchors";
         MethodNode boneWorld = new MethodNode(ACC_PUBLIC | ACC_STATIC, "boneWorld",
@@ -91,10 +89,11 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         boneWorld.instructions.add(new InsnNode(ICONST_0));
         boneWorld.instructions.add(new JumpInsnNode(IFEQ, nonNullOrigin));
         boneWorld.instructions.add(new InsnNode(ACONST_NULL));
-        boneWorld.instructions.add(new InsnNode(ARETURN));
+        AbstractInsnNode earlyReturn = new InsnNode(ARETURN);
+        boneWorld.instructions.add(earlyReturn);
         boneWorld.instructions.add(nonNullOrigin);
         boneWorld.instructions.add(new InsnNode(ACONST_NULL));
-        boneWorld.instructions.add(new VarInsnNode(ASTORE, 6)); // captured pose
+        boneWorld.instructions.add(new VarInsnNode(ASTORE, 6)); // captured pose is initialized only after early return
         boneWorld.instructions.add(new InsnNode(ACONST_NULL));
         boneWorld.instructions.add(new VarInsnNode(ASTORE, 7)); // transformed local translation
         boneWorld.instructions.add(new VarInsnNode(ALOAD, 5)); // returned camera-relative origin
@@ -104,9 +103,35 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         node.methods.add(boneWorld);
 
         assertEquals(2, AlienEvoRuntimeDiagnostics1201.apply(node));
-        assertEquals(2, countCalls(boneWorld, "traceBeamAnchor"));
+        assertEquals(1, countCalls(boneWorld, "traceBeamAnchor"));
         assertEquals(2, countCalls(boneWorld, "traceMissingBeamAnchor"));
+
+        MethodInsnNode earlyMissingTrace = null;
+        for (var instruction : boneWorld.instructions) {
+            if (instruction == earlyReturn) break;
+            if (instruction instanceof MethodInsnNode call
+                    && HELPER.equals(call.owner)
+                    && "traceMissingBeamAnchor".equals(call.name)) {
+                earlyMissingTrace = call;
+            }
+        }
+        assertTrue(earlyMissingTrace != null, "early null exit must get a missing-anchor trace");
+        assertEquals(ILOAD, earlyMissingTrace.getPrevious().getOpcode());
+        assertEquals(2, ((VarInsnNode) earlyMissingTrace.getPrevious()).var);
+        assertEquals(ALOAD, earlyMissingTrace.getPrevious().getPrevious().getOpcode());
+        assertEquals(1, ((VarInsnNode) earlyMissingTrace.getPrevious().getPrevious()).var);
+        assertEquals(ILOAD, earlyMissingTrace.getPrevious().getPrevious().getPrevious().getOpcode());
+        assertEquals(0, ((VarInsnNode) earlyMissingTrace.getPrevious().getPrevious().getPrevious()).var);
+
+        // This verifies the exact condition that crashed the live client: local 7
+        // is TOP on the early-null branch and must never be loaded there.
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, boneWorld);
+
         assertEquals(9, boneWorld.maxLocals);
+        assertTrue(boneWorld.maxStack >= 9);
+        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
+    }
+   assertEquals(9, boneWorld.maxLocals);
         assertTrue(boneWorld.maxStack >= 9);
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
     }
