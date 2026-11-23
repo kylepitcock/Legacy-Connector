@@ -27,6 +27,11 @@ public class WorldProvider {
     }
 
     /** Whether it is day here (dimensions without a day cycle override it). */
+    /** Whether the void shows particles below the world: only overworld-like dimensions with a sky and a normal world type. */
+    public boolean getWorldHasVoidParticles() {
+        return !hasNoSky;
+    }
+
     /** The world's spawn point. */
     public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getSpawnPoint() {
         return worldObj == null ? new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(0, 64, 0) : worldObj.getSpawnPoint();

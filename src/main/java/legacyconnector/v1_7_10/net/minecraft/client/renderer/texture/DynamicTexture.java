@@ -36,6 +36,14 @@ public class DynamicTexture implements ITextureObject {
         return modern;
     }
 
+    /** Frees the texture's GL object (it is created again by the next use). */
+    public synchronized void deleteGlTexture() {
+        if (modern == null) return;
+        var old = modern;
+        modern = null;
+        net.minecraft.client.Minecraft.getInstance().execute(old::close);
+    }
+
     public void updateDynamicTexture() {
         NativeImage image = mcc$modern().getPixels();
         if (image == null) return;

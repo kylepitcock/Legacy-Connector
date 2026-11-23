@@ -55,6 +55,11 @@ public class Tessellator {
         vertices.cancel();
     }
 
+    /** Drops what was recorded since the last draw (GTNH's and later Forge's {@code reset()}); an unfinished draw is abandoned. */
+    public void reset() {
+        mcc$reset();
+    }
+
     public void startDrawingQuads() {
         startDrawing(LegacyVertices.GL_QUADS);
     }

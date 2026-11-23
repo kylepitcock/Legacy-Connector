@@ -29,7 +29,7 @@ public class GameData {
     }
 
     /** Registers an item under a name at a wanted id; ids are not numbered in the layer, so the wanted id is returned. */
-    public static int registerItem(Item item, String name, int idHint) {
+    public int registerItem(Item item, String name, int idHint) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerItem(item, name);
         return idHint;
     }

@@ -350,7 +350,7 @@ public final class SoundBridge {
         else level.addParticle(p, x, y, z, vx, vy, vz);
     }
 
-    static ParticleOptions particle(String name, double vx, double vy, double vz) {
+    public static ParticleOptions particle(String name, double vx, double vy, double vz) {
         if (name == null) return null; // a mod's particle name getter may answer null: no particle, as an unknown name
         if (name.startsWith("iconcrack_") || name.startsWith("blockcrack_") || name.startsWith("blockdust_")) {
             String[] parts = name.split("_");

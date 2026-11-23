@@ -80,6 +80,28 @@ public class NetHandlerPlayServer implements legacyconnector.v1_7_10.net.minecra
      * Handles a right-click as if the client had sent it: with the held item in the air (direction 255), or on a block
      * within reach (activating it or using the item on it), then tells the client the blocks' real state.
      */
+    /**
+     * Handles a dig or drop packet as if the client had sent it (status 0 start, 1 abort, 2 finish, 3 drop the stack, 4 drop one item,
+     * 5 release the used item): the modern player listener does the work.
+     */
+    public void processPlayerDigging(legacyconnector.v1_7_10.net.minecraft.network.play.client.C07PacketPlayerDigging packet) {
+        var sp = playerEntity.mcc$serverPlayer();
+        var action = switch (packet.status) {
+            case 0 -> net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK;
+            case 1 -> net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK;
+            case 2 -> net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK;
+            case 3 -> net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS;
+            case 4 -> net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.DROP_ITEM;
+            case 5 -> net.minecraft.network.protocol.game.ServerboundPlayerActionPacket.Action.RELEASE_USE_ITEM;
+            default -> null;
+        };
+        if (action == null) return;
+        net.minecraft.core.Direction face = packet.diggingBlockFace >= 0 && packet.diggingBlockFace < 6
+                ? net.minecraft.core.Direction.from3DDataValue(packet.diggingBlockFace) : net.minecraft.core.Direction.DOWN;
+        sp.connection.handlePlayerAction(new net.minecraft.network.protocol.game.ServerboundPlayerActionPacket(action,
+                new net.minecraft.core.BlockPos(packet.diggedBlockX, packet.diggedBlockY, packet.diggedBlockZ), face));
+    }
+
     public void processPlayerBlockPlacement(legacyconnector.v1_7_10.net.minecraft.network.play.client.C08PacketPlayerBlockPlacement packet) {
         var sp = playerEntity.mcc$serverPlayer();
         var manager = EntityPlayerMP.mcc$get$theItemInWorldManager(playerEntity);
