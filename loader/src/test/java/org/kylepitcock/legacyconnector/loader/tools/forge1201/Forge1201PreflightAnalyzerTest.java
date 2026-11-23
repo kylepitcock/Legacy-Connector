@@ -119,8 +119,8 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.14", first.schemaVersion());
-        assertEquals("1.14.0", first.analyzerVersion());
+        assertEquals("1.15", first.schemaVersion());
+        assertEquals("1.15.0", first.analyzerVersion());
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
                 first.accessTransformers().status());
         assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
@@ -229,6 +229,27 @@ final class Forge1201PreflightAnalyzerTest {
         assertTrue(first.limitations().stream().anyMatch(value ->
                 value.contains("outer source JAR") && value.contains("source-nested Forge/library archives")));
         assertTrue(first.limitations().stream().anyMatch(value -> value.contains("API compatibility are not verified")));
+    }
+
+    @Test
+    void exposesTargetNativeDependencyCandidateInUnifiedPreflightGraphAndText() throws IOException {
+        Path modsDirectory = Files.createDirectories(tempDir.resolve("native-candidate-mods"));
+        createNativeMod(modsDirectory.resolve("geckolib.jar"), "geckolib", "4.9.3");
+        Path sourceJar = createForgeModJar("native-candidate-report.jar", false);
+
+        var result = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of(modsDirectory));
+        var edge = result.archiveGraph().dependencyEdges().stream()
+                .filter(value -> value.declaringModId().equals("alpha")
+                        && value.dependencyModId().equals("geckolib"))
+                .findFirst().orElseThrow();
+
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_CANDIDATE, edge.status());
+        assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.MATCH, edge.providerRangeStatus());
+        assertEquals(List.of("4.9.3"), edge.providerVersions());
+        assertTrue(Forge1201PreflightAnalyzer.toText(result).contains("TARGET_NATIVE_PROVIDER_CANDIDATE"));
+        assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("TARGET_NATIVE_PROVIDER_CANDIDATE"));
+        assertTrue(result.limitations().stream().anyMatch(value ->
+                value.contains("does not remove or suppress source-bundled archives")));
     }
 
     @Test
@@ -879,13 +900,17 @@ final class Forge1201PreflightAnalyzerTest {
     }
 
     private static void createNativeMod(Path jar, String modId) throws IOException {
+        createNativeMod(jar, modId, "99.0.0");
+    }
+
+    private static void createNativeMod(Path jar, String modId, String version) throws IOException {
         String metadata = """
                 modLoader="javafml"
                 loaderVersion="[4,)"
                 [[mods]]
                 modId="%s"
-                version="99.0.0"
-                """.formatted(modId);
+                version="%s"
+                """.formatted(modId, version);
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jar))) {
             put(zip, "META-INF/neoforge.mods.toml", metadata.getBytes(StandardCharsets.UTF_8));
         }
