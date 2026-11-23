@@ -192,6 +192,176 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                         .collect(java.util.stream.Collectors.toSet()));
     }
 
+
+    @Test
+    void resolvesMissingDirectOwnerThroughOneVerifiedInterfaceOwnerAndPreservesBothOwners() throws Exception {
+        var index = readHierarchyFixture(false, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                        "net/minecraft/src/C_EntityAccess_",
+                        "net/minecraft/world/level/entity/EntityAccess",
+                        Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_VIA_INTERFACE_OWNER,
+                result.status());
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.SymbolStatus.INTERMEDIARY_SOURCE_MISSING,
+                result.directStatus());
+        assertEquals(1, result.candidates().size());
+        var candidate = result.candidates().getFirst();
+        assertEquals("net/minecraft/src/C_Entity_", candidate.invocationSrgOwner());
+        assertEquals("net/minecraft/world/entity/Entity", candidate.invocationOfficialOwner());
+        assertEquals("net/minecraft/src/C_EntityAccess_", candidate.mappingSrgOwner());
+        assertEquals("net/minecraft/world/level/entity/EntityAccess", candidate.mappingOfficialOwner());
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE,
+                candidate.mappingOwnerKind());
+        assertEquals("net/minecraft/class_2", candidate.mappingCandidate().sourceIntermediaryOwner());
+        assertEquals("method_10", candidate.mappingCandidate().sourceIntermediaryId());
+        assertEquals("net/minecraft/class_2", candidate.mappingCandidate().targetIntermediaryOwner());
+    }
+
+    @Test
+    void doesNotUseAnUnrelatedGlobalOwnerThatIsNotInTheVerifiedHierarchy() throws Exception {
+        var index = readHierarchyFixture(false, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                        "net/minecraft/src/C_EntityAccess_",
+                        "net/minecraft/world/level/entity/EntityAccess",
+                        Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_VIA_INTERFACE_OWNER,
+                result.status());
+        assertEquals(1, result.candidates().size());
+        assertEquals("net/minecraft/src/C_EntityAccess_", result.candidates().getFirst().mappingSrgOwner());
+    }
+
+    @Test
+    void refusesMultipleMappedOwnersInsideTheVerifiedHierarchy() throws Exception {
+        var index = readHierarchyFixture(true, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(
+                        new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                                "net/minecraft/src/C_EntityAccess_",
+                                "net/minecraft/world/level/entity/EntityAccess",
+                                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1),
+                        new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                                "net/minecraft/src/C_AlternateInterface_",
+                                "net/minecraft/world/level/entity/AlternateAccess",
+                                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 2)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.AMBIGUOUS_HIERARCHY_OWNERS,
+                result.status());
+        assertEquals(2, result.candidates().size());
+    }
+
+    @Test
+    void refusesFallbackWhenTheSourceHierarchyIsIncomplete() throws Exception {
+        var index = readHierarchyFixture(false, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", false,
+                java.util.List.of(new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                        "net/minecraft/src/C_EntityAccess_",
+                        "net/minecraft/world/level/entity/EntityAccess",
+                        Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.SOURCE_HIERARCHY_INCOMPLETE,
+                result.status());
+        assertEquals(0, result.candidates().size());
+    }
+
+    @Test
+    void directOwnerMappingAlwaysWinsAndOtherDirectFailuresDoNotFallBack() throws Exception {
+        var directIndex = readHierarchyFixture(false, true, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                        "net/minecraft/src/C_EntityAccess_",
+                        "net/minecraft/world/level/entity/EntityAccess",
+                        Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1)));
+
+        var direct = directIndex.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_EXACT,
+                direct.status());
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.DIRECT,
+                direct.candidates().getFirst().mappingOwnerKind());
+        assertEquals("net/minecraft/src/C_Entity_", direct.candidates().getFirst().mappingSrgOwner());
+
+        var missingTargetIndex = readHierarchyFixture(false, true, false);
+        var notEligible = missingTargetIndex.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.DIRECT_STATUS_NOT_ELIGIBLE,
+                notEligible.status());
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.SymbolStatus.INTERMEDIARY_TARGET_ID_MISSING,
+                notEligible.directStatus());
+    }
+
+    private Forge1201SrgIntermediaryBridgeResolver.Index readHierarchyFixture(
+            boolean includeSecondInterface,
+            boolean mapInvocationOwnerDirectly,
+            boolean mapAlternateTarget) throws Exception {
+        String tsrg = """
+                tsrg2 obf srg id
+                a net/minecraft/src/C_Entity_ 1
+                \tm (I)V m_10_ 2
+                b net/minecraft/src/C_EntityAccess_ 3
+                \tx (I)V m_10_ 4
+                c net/minecraft/src/C_AlternateInterface_ 5
+                \tq (I)V m_10_ 6
+                z net/minecraft/src/C_Unrelated_ 7
+                \tr (I)V m_10_ 8
+                """;
+        String sourceTiny = """
+                v1\tofficial\tintermediary
+                CLASS\ta\tnet/minecraft/class_1
+                CLASS\tb\tnet/minecraft/class_2
+                CLASS\tc\tnet/minecraft/class_3
+                CLASS\tz\tnet/minecraft/class_4
+                METHOD\tb\t(I)V\tx\tmethod_10
+                METHOD\tc\t(I)V\tq\tmethod_20
+                METHOD\tz\t(I)V\tr\tmethod_99
+                """;
+        if (mapInvocationOwnerDirectly) {
+            sourceTiny += "\nMETHOD\ta\t(I)V\tm\tmethod_30\n";
+        }
+        String targetTiny = """
+                v1\tofficial\tintermediary
+                CLASS\td\tnet/minecraft/class_1
+                CLASS\te\tnet/minecraft/class_2
+                CLASS\tf\tnet/minecraft/class_3
+                CLASS\tg\tnet/minecraft/class_4
+                METHOD\te\t(I)V\ty\tmethod_10
+                METHOD\tf\t(I)V\tp\tmethod_20
+                METHOD\tg\t(I)V\tt\tmethod_99
+                """;
+        if (mapAlternateTarget) {
+            targetTiny += "\nMETHOD\td\t(I)V\tn\tmethod_30\n";
+        }
+
+        Path tsrgPath = write("hierarchy-" + System.nanoTime() + ".tsrg", tsrg);
+        Path sourcePath = write("hierarchy-source-" + System.nanoTime() + ".tiny", sourceTiny);
+        Path targetPath = write("hierarchy-target-" + System.nanoTime() + ".tiny", targetTiny);
+        return Forge1201SrgIntermediaryBridgeResolver.readIndex(tsrgPath, sourcePath, targetPath);
+    }
+
     private Path write(String name, String contents) throws Exception {
         Path file = tempDir.resolve(name);
         Files.writeString(file, contents, StandardCharsets.UTF_8);
