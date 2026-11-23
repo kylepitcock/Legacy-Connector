@@ -48,6 +48,22 @@ public abstract class Round15ClientDefaultedVertexConsumer implements VertexCons
 
     // ---- the 1.21.1 members the game calls ----------------------------------------------------------------------------------------
 
+    // ---- 1.20.1 default methods a mod reaches with super.xxx(...) -----------------------------------------------------------------
+
+    /** {@code VertexConsumer.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz)}. */
+    public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {
+        VertexCompat.vertex(this, x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz);
+    }
+
+    public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, int light, int overlay) {
+        putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
+    }
+
+    public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float[] brightness, float r, float g, float b,
+                            int[] lights, int overlay, boolean readAlpha) {
+        putBulkData(pose, quad, brightness, r, g, b, 1.0F, lights, overlay, readAlpha);
+    }
+
     @Override
     public VertexConsumer addVertex(float x, float y, float z) {
         legacyEndVertex();

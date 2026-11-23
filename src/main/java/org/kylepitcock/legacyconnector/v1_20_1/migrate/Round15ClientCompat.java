@@ -249,4 +249,45 @@ public final class Round15ClientCompat {
         Camera camera = Minecraft.getInstance().gameRenderer == null ? null : Minecraft.getInstance().gameRenderer.getMainCamera();
         return camera == null ? new Matrix3f() : new Matrix3f().rotation(camera.rotation());
     }
+
+    // ---- batch 2: widgets, layouts, shaders --------------------------------------------------------------------------------------
+
+    /** {@code StateSwitchingButton.initTextureValues(x, y, xDiff, yDiff, texture)}: sheet regions became sprites; the vanilla recipe-book filter sprites stand in. */
+    public static void initTextureValues(net.minecraft.client.gui.components.StateSwitchingButton button, int xTex, int yTex, int xDiff, int yDiff, ResourceLocation texture) {
+        button.initTextureValues(new net.minecraft.client.gui.components.WidgetSprites(
+                ResourceLocation.withDefaultNamespace("recipe_book/filter_enabled"), ResourceLocation.withDefaultNamespace("recipe_book/filter_disabled"),
+                ResourceLocation.withDefaultNamespace("recipe_book/filter_enabled_highlighted"), ResourceLocation.withDefaultNamespace("recipe_book/filter_disabled_highlighted")));
+    }
+
+    /** {@code MultiLineEditBox.tick()} is gone (the cursor blink is computed when it renders). */
+    public static void editBoxTick(net.minecraft.client.gui.components.MultiLineEditBox box) {}
+
+    public static ResourceLocation furnaceLitSprite(ResourceLocation texture) {
+        return ResourceLocation.withDefaultNamespace("container/furnace/lit_progress");
+    }
+
+    public static ResourceLocation furnaceBurnSprite(ResourceLocation texture) {
+        return ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
+    }
+
+    /** {@code new LinearLayout(x, y, width, height, orientation)}: 1.21.1 takes the size and a position is set afterwards. */
+    public static net.minecraft.client.gui.layouts.LinearLayout newLinearLayout(int x, int y, int width, int height, net.minecraft.client.gui.layouts.LinearLayout.Orientation orientation) {
+        net.minecraft.client.gui.layouts.LinearLayout layout = new net.minecraft.client.gui.layouts.LinearLayout(width, height, orientation);
+        layout.setPosition(x, y);
+        return layout;
+    }
+
+    public static boolean elementIsPosition(VertexFormatElement element) {
+        return element.usage() == VertexFormatElement.Usage.POSITION;
+    }
+
+    /** {@code new Sound(String name, ...)}: the name is a location now. */
+    public static ResourceLocation soundLocation(String name) {
+        return ResourceLocation.parse(name);
+    }
+
+    public static boolean onDrawHighlight(LevelRenderer renderer, Camera camera, net.minecraft.world.phys.HitResult hit, float partialTick,
+                                          com.mojang.blaze3d.vertex.PoseStack stack, MultiBufferSource buffers) {
+        return net.neoforged.neoforge.client.ClientHooks.onDrawHighlight(renderer, camera, hit, Minecraft.getInstance().getTimer(), stack, buffers);
+    }
 }
