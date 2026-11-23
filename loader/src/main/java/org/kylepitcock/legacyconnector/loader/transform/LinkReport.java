@@ -50,6 +50,16 @@ public final class LinkReport {
         stubbedMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
     }
 
+    /** Drops the synthesized-member records that only classes of {@code classes} (dotted names, e.g. mixins that are not applied) caused. */
+    void forgetReferencesFrom(java.util.Set<String> classes) {
+        if (classes.isEmpty()) return;
+        for (var it = stubbedMembers.values().iterator(); it.hasNext(); ) {
+            TreeSet<String> from = it.next();
+            from.removeIf(f -> classes.contains(f.replace('/', '.')));
+            if (from.isEmpty()) it.remove();
+        }
+    }
+
     void adapted(String owner, String member, String from) {
         adaptedMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
     }

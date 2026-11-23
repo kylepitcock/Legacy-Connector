@@ -634,7 +634,10 @@ public final class LegacyJarTransformer {
         outResources.putAll(resources.finish());
         if (version == LegacyVersion.V1_12_2 && jar.hasMods()) {
             jar.mixinConfigResources.clear();
-            result.notes.addAll(LegacyMixinConfigs.apply(jar, outResources, nodes, hierarchy));
+            java.util.Set<String> droppedMixins = new java.util.HashSet<>();
+            result.notes.addAll(LegacyMixinConfigs.apply(jar, outResources, nodes, hierarchy, droppedMixins));
+            // a mixin that is not applied is never loaded: what it references of the legacy API is not a placeholder in use
+            result.links.forgetReferencesFrom(droppedMixins);
         }
         byte[] additions = CoremodAdditionMixins.config(jar, nodes.keySet());
         if (additions != null) {

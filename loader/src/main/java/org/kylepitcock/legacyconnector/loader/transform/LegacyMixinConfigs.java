@@ -35,6 +35,11 @@ final class LegacyMixinConfigs {
      * the rewritten configs are added to {@code jar.mixinConfigResources}.
      */
     static List<String> apply(LegacyJar jar, Map<String, byte[]> other, Map<String, ClassNode> nodes, Hierarchy hierarchy) {
+        return apply(jar, other, nodes, hierarchy, null);
+    }
+
+    /** As {@link #apply(LegacyJar, Map, Map, Hierarchy)}; every mixin class that is not applied is added to {@code droppedOut} (dotted names), when given. */
+    static List<String> apply(LegacyJar jar, Map<String, byte[]> other, Map<String, ClassNode> nodes, Hierarchy hierarchy, java.util.Set<String> droppedOut) {
         List<String> notes = new ArrayList<>();
         List<String> candidates = new ArrayList<>();
         for (var e : other.entrySet()) {
@@ -89,6 +94,7 @@ final class LegacyMixinConfigs {
                             kept++;
                         } else {
                             dropped.add(m.getAsString());
+                            if (droppedOut != null) droppedOut.add((pkg + m.getAsString().replace('.', '/')).replace('/', '.'));
                         }
                     }
                     cfg.add(section, out);
