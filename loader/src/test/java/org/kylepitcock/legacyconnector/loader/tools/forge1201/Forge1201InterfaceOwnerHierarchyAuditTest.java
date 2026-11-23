@@ -25,6 +25,8 @@ final class Forge1201InterfaceOwnerHierarchyAuditTest {
             assertTrue(caseReport.contains("HIERARCHY_COMPLETE=true"), caseReport);
             assertTrue(caseReport.contains("MAPPING_OWNER_IN_HIERARCHY=true"), caseReport);
             assertTrue(caseReport.contains("MAPPING_OWNER_DECLARES_EXACT=true"), caseReport);
+            assertTrue(caseReport.contains("INVOCATION_METHOD_PUBLIC_INSTANCE=true"), caseReport);
+            assertTrue(caseReport.contains("MAPPING_OWNER_METHOD_PUBLIC_INSTANCE=true"), caseReport);
             assertTrue(caseReport.contains("FALSE_ALTERNATES_IN_HIERARCHY=[]"), caseReport);
         }
 
@@ -69,7 +71,7 @@ final class Forge1201InterfaceOwnerHierarchyAuditTest {
                 .orElseThrow();
         assertTrue(level.contains("SOURCE_STATUS=HIERARCHY_INCOMPLETE"), level);
         assertTrue(level.contains("CASE_STATUS=SOURCE_HIERARCHY_INCOMPLETE"), level);
-        assertTrue(level.contains("MISSING_SAMPLE/UnresolvedLevelInterface"), level);
+        assertTrue(level.contains("sample/UnresolvedLevelInterface"), level);
     }
 
     private static Forge1201SourceRuntimeMemberVerifier.Index index(
