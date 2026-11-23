@@ -366,6 +366,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
         text.append("TARGET_CLASSPATH_ENTRIES=").append(result.targetClasspath().classpathEntryCount()).append('\n');
         text.append("TARGET_INDEXED_CLASSES=").append(result.targetClasspath().indexedClassCount()).append('\n');
         text.append("TARGET_DUPLICATE_CLASS_NAMES=").append(result.targetClasspath().duplicateClassNames()).append('\n');
+        text.append("MAPPING_EVIDENCE_HIERARCHY_CANDIDATES_CSV_SHA256=")
+                .append("9FA446F1B4B574134D97BF8B36D56662990016B2").append('\n');
         text.append("MAPPING_EVIDENCE_TARGET_BRIDGE_JSON_SHA256=")
                 .append("74F1C6E443F9B4F411C741B985D58561C47CF45DFE02DB6EA128EAF98D02621E").append('\n');
         text.append("MAPPING_EVIDENCE_RECONCILIATION_JSON_SHA256=")
