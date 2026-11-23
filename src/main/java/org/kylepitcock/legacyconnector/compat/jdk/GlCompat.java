@@ -53,6 +53,11 @@ public final class GlCompat {
         return "";
     }
 
+    /** The LWJGL 2 form that returns size and type in one buffer: the virtual program has no uniforms, the buffer keeps what the caller put in it. */
+    public static String glGetActiveUniform(int program, int index, int maxLength, java.nio.IntBuffer sizeAndType) {
+        return "";
+    }
+
     public static String glGetShaderInfoLog(int shader, int maxLength) {
         return "";
     }

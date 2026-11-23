@@ -39,6 +39,11 @@ public final class GuavaCompat {
         return com.google.common.util.concurrent.Futures.immediateFuture(value);
     }
 
+    /** Guava 26 removed {@code Futures.immediateFailedCheckedFuture}; the result is the failed future (what callers use it as). */
+    public static <V> com.google.common.util.concurrent.ListenableFuture<V> immediateFailedCheckedFuture(Exception failure) {
+        return com.google.common.util.concurrent.Futures.immediateFailedFuture(failure);
+    }
+
     /** Guava 26 dropped the executor-less transform; the old one ran the function on the completing thread. */
     public static <I, O> com.google.common.util.concurrent.ListenableFuture<O> transform(com.google.common.util.concurrent.ListenableFuture<I> future,
             com.google.common.base.Function<? super I, ? extends O> function) {

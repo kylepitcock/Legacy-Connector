@@ -135,6 +135,14 @@ public final class JavaCompatRedirects {
                     new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GuavaCompat", "fileTreeTraverser" + v[1],
                             "()Llegacyconnector/" + v[0] + "/com/google/common/collect/TreeTraverser;", false));
         }
+        // Guava 26 removed immediateFailedCheckedFuture too (GTNHLib's future helpers): a failed ListenableFuture.
+        INVOKES.put("com/google/common/util/concurrent/Futures.immediateFailedCheckedFuture(Ljava/lang/Exception;)Lcom/google/common/util/concurrent/CheckedFuture;",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GuavaCompat", "immediateFailedCheckedFuture",
+                        "(Ljava/lang/Exception;)Lcom/google/common/util/concurrent/ListenableFuture;", false));
+        // log4j 2.0-beta9 -> 2.x: ThreadContext.clear() is clearAll(), LogEvent.getMillis() is getTimeMillis()
+        staticToStatic("org/apache/logging/log4j/ThreadContext", "clear", "()V", "org/apache/logging/log4j/ThreadContext", "clearAll");
+        INVOKES.put("org/apache/logging/log4j/core/LogEvent.getMillis()J",
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, "org/apache/logging/log4j/core/LogEvent", "getTimeMillis", "()J", true));
         // Guava 26: Futures.transform needs an executor; sameThreadExecutor became newDirectExecutorService.
         staticToStatic("com/google/common/util/concurrent/Futures", "transform",
                 "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/base/Function;)Lcom/google/common/util/concurrent/ListenableFuture;", COMPAT + "GuavaCompat", "transform");
@@ -174,6 +182,7 @@ public final class JavaCompatRedirects {
         staticToStatic(gl20, "glGetShader", "(II)I", gl, "glGetShader");
         staticToStatic(gl20, "glGetShaderInfoLog", "(II)Ljava/lang/String;", gl, "glGetShaderInfoLog");
         staticToStatic(gl20, "glGetActiveUniform", "(III)Ljava/lang/String;", gl, "glGetActiveUniform");
+        staticToStatic(gl20, "glGetActiveUniform", "(IIILjava/nio/IntBuffer;)Ljava/lang/String;", gl, "glGetActiveUniform");
         staticToStatic(gl20, "glCreateProgram", "()I", gl, "glCreateProgram");
         staticToStatic(gl20, "glAttachShader", "(II)V", gl, "glAttachShader");
         staticToStatic(gl20, "glLinkProgram", "(I)V", gl, "glLinkProgram");

@@ -91,6 +91,7 @@ public enum LegacyVersion {
             "org/lwjgl/openal/OpenALException",
             // LWJGL 2's device/context objects and the calls over them (LWJGL 3 uses long handles) and EFX10 (LWJGL 3: EXTEfx)
             "org/lwjgl/openal/ALC10",
+            "org/lwjgl/openal/ALC11",
             "org/lwjgl/openal/ALCdevice",
             "org/lwjgl/openal/ALCcontext",
             "org/lwjgl/openal/EFX10",
