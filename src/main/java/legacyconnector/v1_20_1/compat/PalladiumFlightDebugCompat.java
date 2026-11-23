@@ -3,6 +3,7 @@ package legacyconnector.v1_20_1.compat;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.kylepitcock.legacyconnector.compat.CompatFlags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * FlightHandler is loaded on both logical sides.
  */
 public final class PalladiumFlightDebugCompat {
-    private static final String DEBUG_PROPERTY = "legacyconnector.debug.palladiumFlight";
+    private static final CompatFlags DEBUG = CompatFlags.PALLADIUM_FLIGHT_DEBUG;
     private static final Logger LOGGER = LoggerFactory.getLogger("LegacyConnector/PalladiumFlight");
     private static final AtomicInteger MOVEMENT_SAMPLES = new AtomicInteger();
 
@@ -23,7 +24,7 @@ public final class PalladiumFlightDebugCompat {
 
     /** Opt-in trace of the network messages of a channel (the SimpleChannel shim calls this for every registration and dispatch). */
     public static void traceNetwork(String stage, net.minecraft.resources.ResourceLocation channel, Object message, String direction) {
-        if (!Boolean.getBoolean(DEBUG_PROPERTY) || message == null) return;
+        if (!DEBUG.on() || message == null) return;
         String messageName = message instanceof Class<?> type ? type.getName() : message.getClass().getName();
         String lower = messageName.toLowerCase(java.util.Locale.ROOT);
         boolean palladiumCoreChannel = "palladiumcore".equals(channel.getNamespace());
@@ -36,13 +37,13 @@ public final class PalladiumFlightDebugCompat {
     }
 
     public static boolean isEnabled() {
-        return Boolean.getBoolean(DEBUG_PROPERTY);
+        return DEBUG.on();
     }
 
     /** Always logs once during client bootstrap so a missing JVM argument is visible. */
     public static void logClientBootstrap(boolean globalKeyObserverRegistered) {
         LOGGER.info("[PalladiumFlightTrace] client bootstrap diagnosticsEnabled={} globalKeyObserverRegistered={} property={} rawValue={}",
-                isEnabled(), globalKeyObserverRegistered, DEBUG_PROPERTY, System.getProperty(DEBUG_PROPERTY, "<unset>"));
+                isEnabled(), globalKeyObserverRegistered, DEBUG.property(), DEBUG.get("<unset>"));
     }
 
     /** Called from PalladiumCore's transformed class initializer, proving its callback instrumentation loaded. */

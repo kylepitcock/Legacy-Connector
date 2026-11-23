@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
+import org.kylepitcock.legacyconnector.core.flags.Flags;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,7 +26,7 @@ public final class LegacyEntityData {
         RESERVED.add(new Reserved(owner, accessor));
     }
 
-    private static final boolean DIAG = Boolean.getBoolean("legacyconnector.entityDataDiag");
+    private static final boolean DIAG = Flags.ENTITY_DATA_DIAG.on();
     private static final List<Reserved> RESERVED = new CopyOnWriteArrayList<>();
 
     private LegacyEntityData() {}
@@ -33,7 +34,7 @@ public final class LegacyEntityData {
     /** {@code SynchedEntityData.defineId}: the real call, recorded when the class is a Minecraft one. */
     public static <T> EntityDataAccessor<T> defineId(Class<? extends net.minecraft.network.syncher.SyncedDataHolder> owner, EntityDataSerializer<T> serializer) {
         EntityDataAccessor<T> accessor = SynchedEntityData.defineId(owner, serializer);   // the mixin below records it too
-        if (Boolean.getBoolean("legacyconnector.entityDataDiag")) {
+        if (Flags.ENTITY_DATA_DIAG.on()) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/EntityData").info("defineId {} -> id {} by {}", owner.getSimpleName(), accessor.id(),
                     java.util.Arrays.stream(new Throwable().getStackTrace()).skip(1).limit(2).map(StackTraceElement::toString).toList());
         }

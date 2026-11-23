@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 class PalladiumFlightDebugCompatTest {
-    private static final String PROPERTY = "legacyconnector.debug.palladiumFlight";
+    private static final String PROPERTY = org.kylepitcock.legacyconnector.compat.CompatFlags.PALLADIUM_FLIGHT_DEBUG.property();
 
     @Test
     void diagnosticEnablementReadsTheJvmSystemProperty() {
