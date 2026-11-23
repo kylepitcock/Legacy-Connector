@@ -47,6 +47,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                     "ENTITY_UUID",
                     "net/minecraft/world/entity/Entity",
                     "net/minecraft/world/level/entity/EntityAccess",
+                    "net/minecraft/src/C_507_",
+                    "net/minecraft/src/C_141279_",
                     "m_20148_",
                     "getUUID",
                     UUID_DESCRIPTOR,
@@ -59,6 +61,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                     "ENTITY_BOUNDING_BOX",
                     "net/minecraft/world/entity/Entity",
                     "net/minecraft/world/level/entity/EntityAccess",
+                    "net/minecraft/src/C_507_",
+                    "net/minecraft/src/C_141279_",
                     "m_20191_",
                     "getBoundingBox",
                     AABB_DESCRIPTOR,
@@ -71,6 +75,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
                     "LEVEL_BLOCK_STATE",
                     "net/minecraft/world/level/Level",
                     "net/minecraft/world/level/BlockGetter",
+                    "net/minecraft/src/C_1596_",
+                    "net/minecraft/src/C_1559_",
                     "m_8055_",
                     "getBlockState",
                     BLOCK_STATE_DESCRIPTOR,
@@ -86,6 +92,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
             String id,
             String invocationOwner,
             String mappingInterfaceOwner,
+            String invocationOwnerSrg,
+            String mappingInterfaceSrg,
             String srgName,
             String officialName,
             String officialDescriptor,
@@ -300,13 +308,17 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
             CaseSpec spec, SideResult source, SideResult target, String status) {
         StringBuilder text = new StringBuilder(2048);
         text.append("CASE=").append(spec.id()).append('\n');
-        text.append("  SOURCE_SRG_NAME=").append(spec.srgName()).append('\n');
+        text.append("  SOURCE_SRG_DECLARATION_OWNER=").append(spec.invocationOwnerSrg()).append('\n');
+        text.append("  ALTERNATE_DECLARATION_OWNER_SRG=").append(spec.mappingInterfaceSrg()).append('\n');
+        text.append("  SOURCE_SRG_MEMBER=").append(spec.srgName()).append('\n');
         text.append("  SOURCE_INVOCATION_OWNER=").append(spec.invocationOwner()).append('\n');
         text.append("  SOURCE_MAPPING_INTERFACE_OWNER=").append(spec.mappingInterfaceOwner()).append('\n');
         text.append("  SOURCE_INTERMEDIARY_INVOCATION_OWNER=").append(spec.invocationIntermediaryOwner()).append('\n');
         text.append("  SOURCE_INTERMEDIARY_MAPPING_OWNER=").append(spec.mappingIntermediaryOwner()).append('\n');
         text.append("  SOURCE_INTERMEDIARY_METHOD_ID=").append(spec.intermediaryMethodId()).append('\n');
+        text.append("  TARGET_INTERMEDIARY_METHOD_ID=").append(spec.intermediaryMethodId()).append('\n');
         text.append("  SOURCE_INTERMEDIARY_DESCRIPTOR=").append(spec.intermediaryDescriptor()).append('\n');
+        text.append("  TARGET_INTERMEDIARY_DESCRIPTOR=").append(spec.intermediaryDescriptor()).append('\n');
         text.append("  MOJMAP_MEMBER=").append(spec.officialName()).append(spec.officialDescriptor()).append('\n');
         text.append("  SOURCE_STATUS=").append(source.status()).append('\n');
         appendSide(text, "SOURCE", source);
