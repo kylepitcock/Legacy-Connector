@@ -81,6 +81,26 @@ public final class WorldGenBridge1122 {
         return out;
     }
 
+    private static volatile java.util.Set<String> shiftedMods;
+
+    /**
+     * Whether a mod has a generator that runs the shifted pass (its legacy y=0 sits at the dimension's floor). What such a mod computes about where
+     * its ores are (CustomOreGen's debug wireframes) is in legacy y, so a client that draws it moves it down by the floor.
+     */
+    public static boolean hasShiftedGenerator(String modId) {
+        var set = shiftedMods;
+        if (set == null) {
+            set = new java.util.HashSet<>();
+            for (IWorldGenerator g : legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$worldGenerators()) {
+                String id = modIdOf(g);
+                if (id != null && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerMode(id, g.getClass().getName())
+                        == org.kylepitcock.legacyconnector.core.LegacyConfig.DeepMode.SHIFTED) set.add(id);
+            }
+            shiftedMods = set;
+        }
+        return set.contains(modId);
+    }
+
     /** The legacy mod whose jar (module) a generator's class is in, or null. */
     private static String modIdOf(IWorldGenerator generator) {
         try {

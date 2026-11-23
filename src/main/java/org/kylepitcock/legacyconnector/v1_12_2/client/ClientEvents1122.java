@@ -132,6 +132,28 @@ public final class ClientEvents1122 {
     }
 
     /** Posts and reports a failing handler once per kind of failure; returns whether the event was cancelled. */
+    /** True on the render thread while RenderWorldLastEvent is posted. */
+    public static volatile boolean worldLast;
+
+    /**
+     * A handler of a mod with a shifted deep-layer generator draws what that pass computed (legacy y, the floor at 0): moved down by the
+     * dimension's floor so it lines up with the blocks the pass placed (CustomOreGen's wireframes were 64 blocks above their veins).
+     * Returns whether a matrix was pushed, to be undone by {@link #exitOwner}.
+     */
+    public static boolean enterOwner(Object container) {
+        if (!worldLast || !(container instanceof org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122 c)) return false;
+        var level = Minecraft.getInstance().level;
+        if (level == null || level.getMinBuildHeight() >= 0
+                || !org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.hasShiftedGenerator(c.getModId())) return false;
+        RenderContext.push();
+        RenderContext.translate(0, level.getMinBuildHeight(), 0);
+        return true;
+    }
+
+    public static void exitOwner(boolean pushed) {
+        if (pushed) RenderContext.pop();
+    }
+
     private static boolean post(Event event, String what) {
         try {
             return MinecraftForge.EVENT_BUS.post(event);
@@ -358,8 +380,10 @@ public final class ClientEvents1122 {
         pose.translate(origin.x - cam.x, origin.y - cam.y, origin.z - cam.z);
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
+            worldLast = true;
             post(new RenderWorldLastEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()), partial), "RenderWorldLastEvent");
         } finally {
+            worldLast = false;
             RenderContext.end();
             buffers.endBatch();
             setCamera(cam);

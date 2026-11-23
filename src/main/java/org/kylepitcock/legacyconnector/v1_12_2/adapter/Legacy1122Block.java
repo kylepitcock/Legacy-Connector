@@ -644,7 +644,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var b = collisionBoxes(state, level, pos, null);
             if (b != null && !b.isEmpty()) return b;
         }
-        if (rayTraced && getter instanceof Level level && !IN_LEGACY_SHAPE.get()[0] && level.getBlockState(pos).is(this)) {
+        if (rayTraced && level != null && !IN_LEGACY_SHAPE.get()[0] && level.getBlockState(pos).is(this)) {
             var b = sampledShape(state, level, pos);
             if (b != null && !b.isEmpty()) return b;
         }
