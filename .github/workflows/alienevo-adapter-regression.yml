@@ -37,6 +37,7 @@ jobs:
           ./gradlew :loader:test \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBufferingGlowConsumer1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBoneAnchors1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoRuntimeDiagnostics1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoRenderLayerModel1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoSlimeDecalMesh1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.PalladiumResourceCompat1201Test' \
