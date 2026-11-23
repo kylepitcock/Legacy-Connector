@@ -38,7 +38,7 @@ public final class BiomePlacement {
     /** A legacy biome, the vanilla biome whose climate points it shares, and its legacy generation weight (> 0). */
     public record Entry(ResourceKey<Biome> biome, ResourceKey<Biome> analog, int weight) {}
 
-    private static volatile Supplier<List<Entry>> entries = List::of;
+    private static final java.util.List<Supplier<List<Entry>>> suppliers = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static boolean terraBlenderRegistered;
     private static volatile MultiNoiseBiomeSource nativeSource;
     private static volatile Climate.ParameterList<Holder<Biome>> nativeParameters;
@@ -47,14 +47,18 @@ public final class BiomePlacement {
 
     /** Installed by a legacy family once its biomes and their weights are known (after postInit). */
     public static synchronized void setEntries(Supplier<List<Entry>> supplier) {
-        entries = supplier;
+        if (!suppliers.contains(supplier)) suppliers.add(supplier); // each legacy version adds its own source; entries() concatenates them
     }
 
     /** The legacy biomes to place in the overworld (empty when there are none or they cannot be read). */
     public static List<Entry> entries() {
         try {
-            List<Entry> list = entries.get();
-            return list == null ? List.of() : list;
+            List<Entry> all = new java.util.ArrayList<>();
+            for (Supplier<List<Entry>> supplier : suppliers) {
+                List<Entry> list = supplier.get();
+                if (list != null) all.addAll(list);
+            }
+            return all;
         } catch (RuntimeException | LinkageError e) {
             LOG.warn("Legacy biome placement data could not be read: {}", e.toString());
             return List.of();

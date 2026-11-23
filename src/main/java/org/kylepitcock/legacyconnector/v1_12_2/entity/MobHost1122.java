@@ -694,6 +694,10 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
                     return false;
                 }
             }
+            // 1.12's chunk-generation spawning (WorldEntitySpawner.performWorldGenSpawning) only checked the placement type and isNotColliding,
+            // never getCanSpawnHere: animals spawn on any solid ground there, not only on their spawnable block (Candy World's gummy bears
+            // on gummy blocks, which natural spawning refuses)
+            if (reason == net.minecraft.world.entity.MobSpawnType.CHUNK_GENERATION) return true;
             return l.getCanSpawnHere();
         } catch (RuntimeException | LinkageError e) {
             return false;

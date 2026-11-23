@@ -103,6 +103,8 @@ public final class FluidBridge1122 {
                     LegacyFluidType type = new LegacyFluidType(name, legacy);
                     LegacyRegistrar.register(net.neoforged.neoforge.registries.NeoForgeRegistries.FLUID_TYPES, id, type);
                     TYPES.put(type, name);
+                    if (isWaterLike(legacy)) WATER_LIKE.add(type);
+                    else if (isLavaLike(legacy)) LAVA_LIKE.add(type);
                     var modernBlock = block == null ? null : BlockBridge1122.modern(block);
                     if (modernBlock instanceof Legacy1122FluidBlock fluidBlock && fluidBlock.mcc$fluid() == null) {
                         Binding binding = new Binding(fluidBlock);
@@ -167,6 +169,68 @@ public final class FluidBridge1122 {
         json.add("values", values);
         byte[] bytes = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         out.put("data/minecraft/tags/fluid/lava.json", () -> bytes);
+    }
+
+    /** Whether the legacy fluid is water in 1.12 terms: its block's material is {@code Material.WATER} (what splashes and sounds like water to a swimmer). */
+    static boolean isWaterLike(legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid legacy) {
+        try {
+            var block = legacy.getBlock();
+            return block != null && block.getMaterialLegacy() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    /** Fluid types of fluids with the water material (not vanilla water). */
+    private static final java.util.List<FluidType> WATER_LIKE = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** Fluid types of fluids with the lava material (not vanilla lava). */
+    private static final java.util.List<FluidType> LAVA_LIKE = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final Map<net.minecraft.world.entity.Entity, Boolean> SWIMMERS = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    public static void register(net.neoforged.bus.api.IEventBus game) {
+        game.addListener(FluidBridge1122::onEntityTick);
+    }
+
+    /**
+     * The modern game plays the splash and swimming sounds only for water itself ({@code isInWater} is the water fluid type): a 1.12 fluid with the
+     * water material (Candy World's liquid chocolate, oil) splashed and sounded like water there, so the sounds are played for it here.
+     */
+    private static void onEntityTick(net.neoforged.neoforge.event.tick.EntityTickEvent.Post event) {
+        if (WATER_LIKE.isEmpty() && LAVA_LIKE.isEmpty()) return;
+        var entity = event.getEntity();
+        if (entity.level().isClientSide()) return;
+        // the modern game burns only in vanilla lava (isInLava is the lava fluid type): 1.12 burned in every fluid whose block had the lava material
+        for (FluidType type : LAVA_LIKE) {
+            if (entity.getFluidTypeHeight(type) > 0.0D && !entity.isRemoved()) {
+                entity.lavaHurt();
+                entity.fallDistance *= 0.5F;
+                break;
+            }
+        }
+        if (WATER_LIKE.isEmpty() || !(entity instanceof net.minecraft.world.entity.LivingEntity)) return;
+        boolean in = false;
+        for (FluidType type : WATER_LIKE) {
+            if (entity.getFluidTypeHeight(type) > 0.0D) {
+                in = true;
+                break;
+            }
+        }
+        boolean was = SWIMMERS.getOrDefault(entity, Boolean.FALSE);
+        if (in != was) {
+            if (in) SWIMMERS.put(entity, Boolean.TRUE);
+            else SWIMMERS.remove(entity);
+        }
+        if (!in || entity.isSpectator()) return;
+        var motion = entity.getDeltaMovement();
+        var random = entity.getRandom();
+        if (!was && entity.tickCount > 1) {
+            float volume = Math.min(1.0F, (float) Math.sqrt(motion.x * motion.x * 0.2D + motion.y * motion.y + motion.z * motion.z * 0.2D) * 0.2F);
+            entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), net.minecraft.sounds.SoundEvents.GENERIC_SPLASH,
+                    entity.getSoundSource(), Math.max(0.2F, volume), 1.0F + (random.nextFloat() - random.nextFloat()) * 0.4F);
+        } else if (entity.tickCount % 12 == 0 && motion.horizontalDistanceSqr() > 0.0004D) {
+            entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), net.minecraft.sounds.SoundEvents.GENERIC_SWIM,
+                    entity.getSoundSource(), 0.4F, 1.0F + (random.nextFloat() - random.nextFloat()) * 0.4F);
+        }
     }
 
     private static boolean registerBucket(String name, legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid legacy, Fluid modern, ResourceLocation fluidId) {
