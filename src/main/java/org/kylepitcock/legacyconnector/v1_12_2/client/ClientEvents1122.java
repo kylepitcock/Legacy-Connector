@@ -376,11 +376,22 @@ public final class ClientEvents1122 {
         var legacy = new DrawBlockHighlightEvent(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$renderGlobal(legacyMc()), player,
                 legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.mcc$of(e.getTarget()), 0, e.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         setCamera(e.getCamera().getPosition());
-        RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        // the pose is at the camera; 1.12 handlers draw relative to the player's feet (player.lastTickPosY + ..., drawSelectionBox's own offset) in a
+        // frame whose camera sits an eye height above that origin, so the pose moves to the feet (the outline floated one eye height too high)
+        double[] feet = relative(mc.player, e.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        var cam = e.getCamera().getPosition();
+        var pose = e.getPoseStack();
+        pose.pushPose();
+        pose.translate(feet[0], feet[1], feet[2]);
+        // a handler that reads the render position (staticPlayerX/Y/Z, viewerPos) is in that frame too
+        setCamera(new net.minecraft.world.phys.Vec3(cam.x + feet[0], cam.y + feet[1], cam.z + feet[2]));
+        RenderContext.beginWorld(pose, e.getMultiBufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
             if (post(legacy, "block highlight")) e.setCanceled(true);
         } finally {
             RenderContext.end();
+            pose.popPose();
+            setCamera(cam);
         }
     }
 

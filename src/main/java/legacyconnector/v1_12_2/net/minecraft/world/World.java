@@ -2351,8 +2351,28 @@ public class World implements IBlockAccess {
                     ? new legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult(legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.Type.MISS, at, side, pos)
                     : null;
         }
+        // 1.12 asked each block's collisionRayTrace: a block with a ray tracer of its own (Thermal Dynamics' ducts pick their arms, servos and covers
+        // through it) hands back its own hit with the sub-hit index its code reads afterwards
+        if (!OWN_RAY_TRACE.get()) {
+            try {
+                IBlockState hitState = StatesBridge1122.toLegacy(mcc$state(hit.getBlockPos()));
+                if (hitState != null && org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.mcc$tracesOwnRays(hitState.getBlock())) {
+                    OWN_RAY_TRACE.set(Boolean.TRUE);
+                    try {
+                        var own = hitState.getBlock().collisionRayTrace(hitState, this, pos, start, end);
+                        if (own != null) return own;
+                    } finally {
+                        OWN_RAY_TRACE.set(Boolean.FALSE);
+                    }
+                }
+            } catch (RuntimeException | LinkageError e) {
+                // the modern hit stands
+            }
+        }
         return new legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult(at, side, pos);
     }
+
+    private static final ThreadLocal<Boolean> OWN_RAY_TRACE = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     /** The server's loot tables (one manager for all worlds, as in 1.12); null on a client or detached world. */
     public legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager getLootTableManager() {
