@@ -230,3 +230,6 @@ M	net/minecraft/tileentity/TileEntityRecordPlayer	func_96098_a	(Lnet/minecraft/i
 F	net/minecraft/block/BlockFlowing	numAdjacentSources	field_149815_a
 F	net/minecraft/block/BlockFlowing	isOptimalFlowDirection	field_149814_b
 F	net/minecraft/block/BlockFlowing	flowCost	field_149816_M
+# stub round 2026-11-22 (probe of the pre-1.7 archives): ChatLine kept a plain string; the crash report hook of a tile entity (1.5.2 had the same SRG id)
+R	net/minecraft/client/gui/ChatLine	getChatLineString	()Ljava/lang/String;	chain	=	getChatComponent	()Lnet/minecraft/util/IChatComponent;	net/minecraft/util/IChatComponent	getFormattedText	()Ljava/lang/String;
+M	net/minecraft/tileentity/TileEntity	func_85027_a	(Lnet/minecraft/crash/CrashReportCategory;)V	addInfoToCrashReport
