@@ -126,7 +126,14 @@ public final class Mc1201Hierarchy {
             Map.entry(MIG + "LegacyDyeableArmorItem", "net/minecraft/world/item/ArmorItem"),
             Map.entry(MIG + "LegacyHorseArmorItem", "net/minecraft/world/item/AnimalArmorItem"),
             Map.entry(MIG + "LegacyDyeableHorseArmorItem", MIG + "LegacyHorseArmorItem"),
-            Map.entry(MIG + "LegacyStemGrownBlock", "net/minecraft/world/level/block/Block"));
+            Map.entry(MIG + "LegacyStemGrownBlock", "net/minecraft/world/level/block/Block"),
+            Map.entry(MIG + "LegacyMelonBlock", "net/minecraft/world/level/block/Block"),
+            Map.entry(MIG + "LegacySimpleFoiledItem", "net/minecraft/world/item/Item"),
+            Map.entry(MIG + "LegacyProjectileDispenseBehavior", "net/minecraft/core/dispenser/DefaultDispenseItemBehavior"),
+            // widget stand-ins: a mod subclass overriding render(...) (final in 1.21.1 AbstractWidget) must still be recognised as a widget (#335)
+            Map.entry(MIG + "LegacyImageButton", "net/minecraft/client/gui/components/ImageButton"),
+            Map.entry(MIG + "LegacyTextAndImageButton", "net/minecraft/client/gui/components/Button"),
+            Map.entry(MIG + "LegacyCheckbox", "net/minecraft/client/gui/components/AbstractButton"));
 
     /** True for a class of the jar being translated, of another translated jar of the set, or of Minecraft/NeoForge. */
     public boolean knows(String name) {
@@ -148,7 +155,7 @@ public final class Mc1201Hierarchy {
         if (name == null || !seen.add(name)) return 0;
         if (name.equals(ancestor)) return 1;
         if (name.equals("java/lang/Object")) return 0;
-        if (!mod.containsKey(name) && !mc().containsKey(name) && !peers.containsKey(name)) return name.startsWith("java/") ? 0 : 2;
+        if (!mod.containsKey(name) && !mc().containsKey(name) && !peers.containsKey(name) && !STAND_IN_SUPERS.containsKey(name)) return name.startsWith("java/") ? 0 : 2;
         int unknown = 0;
         for (String s : supers(name)) {
             int r = walk(s, ancestor, seen);
