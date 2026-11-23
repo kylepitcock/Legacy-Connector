@@ -140,6 +140,7 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
             Forge1201SourceRuntimeMemberVerifier.ClasspathSummary sourceClasspath,
             Forge1201SourceRuntimeMemberVerifier.ClasspathSummary targetClasspath,
             List<String> cases,
+            boolean allCasesVerified,
             boolean selectorTransformationPerformed,
             boolean runtimeMappingTableProduced) {
         public Result {
@@ -153,10 +154,6 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
         if (source == null || target == null) {
             throw new IllegalArgumentException("Both ordered source and target runtime indexes are required");
         }
-        if (source.classpathSummary() == null || target.classpathSummary() == null) {
-            throw new IllegalArgumentException("Both runtime indexes must come from readClasspath()");
-        }
-
         List<String> caseReports = new ArrayList<>();
         for (CaseSpec spec : CASES) {
             SideResult sourceResult = inspectSide(source, spec);
@@ -170,10 +167,13 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
             caseReports.add(formatCase(spec, sourceResult, targetResult, status));
         }
 
+        boolean allCasesVerified = caseReports.stream()
+                .allMatch(item -> item.contains("CASE_STATUS=VERIFIED"));
         return new Result(
                 source.classpathSummary(),
                 target.classpathSummary(),
                 caseReports,
+                allCasesVerified,
                 false,
                 false);
     }
@@ -359,6 +359,7 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
         text.append("MAPPING_EVIDENCE_RECONCILIATION_JSON_SHA256=")
                 .append("09E61501B9DA3B0C6B3CBCA272BA2593DFCA0A6164D5F679F64E335E1DA4A1B7").append('\n');
         text.append("CASES=").append(result.cases().size()).append('\n');
+        text.append("ALL_CASES_VERIFIED=").append(result.allCasesVerified()).append('\n');
         text.append("SELECTOR_TRANSFORMATION_PERFORMED=").append(result.selectorTransformationPerformed()).append('\n');
         text.append("RUNTIME_MAPPING_TABLE_PRODUCED=").append(result.runtimeMappingTableProduced()).append("\n\n");
         result.cases().forEach(text::append);
@@ -397,6 +398,10 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
             System.out.println("  " + caseStatus);
         }
         System.out.println("REPORT=" + output);
-        System.out.println("INTERFACE_OWNER_HIERARCHY_AUDIT=COMPLETE");
+        System.out.println("INTERFACE_OWNER_HIERARCHY_AUDIT="
+                + (result.allCasesVerified() ? "COMPLETE" : "INCOMPLETE"));
+        if (!result.allCasesVerified()) {
+            throw new IOException("One or more interface-owner hierarchy cases failed; inspect " + output);
+        }
     }
 }
