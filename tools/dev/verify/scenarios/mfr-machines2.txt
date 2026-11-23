@@ -18,4 +18,8 @@ expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.t
 cmd /setblock -8 150 0 minecraft:redstone_block
 wait 300
 expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710");var L=server.overworld();r=["-8 149 0 craftdiag field:recipe field:_lastRedstoneState field:_resourcesChangedSinceLastFailedCraft field:outputs","-4 149 0 field:_temp field:_totalBurningTime","0 149 0","4 149 0","8 149 0"].map(function(s){return T.run(L,s);}).join("\n");r+="\nwater blocks around fountain: "+[-1,0,1].map(function(d){return String(L.getBlockState(new (Java.type("net.minecraft.core.BlockPos"))(d,150,0)).getBlock());}).join(",");});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr2-c.txt"),r);return "ok";})()
+# Portaspawner: pick up a vanilla spawner and place it again (the probe clears the item's cooldown tag)
+cmd /setblock 2 149 6 minecraft:spawner{SpawnData:{entity:{id:"minecraft:zombie"}}}
+wait 20
+expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710");var P=Java.type("net.minecraft.core.BlockPos");r=T.useItemTwice(server.overworld(),server.getPlayerList().getPlayers().get(0),"portaspawner",new P(2,149,6),new P(-2,148,6));});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr2-porta.txt"),r);return "ok";})()
 shot mfr-machines2

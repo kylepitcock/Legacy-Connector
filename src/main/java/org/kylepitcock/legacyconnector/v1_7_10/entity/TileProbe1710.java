@@ -189,6 +189,34 @@ public final class TileProbe1710 {
         return r.toString();
     }
 
+    /**
+     * Uses a legacy item the way a player right-click does: first on {@code first} (picks up a spawner with a portable spawner), then, after the
+     * item's own cooldown tag is cleared, on the top of {@code second}. Reports each step's answer, the stack's NBT and what stands at the result.
+     */
+    public static String useItemTwice(Level level, net.minecraft.server.level.ServerPlayer player, String itemName, BlockPos first, BlockPos second) {
+        StringBuilder r = new StringBuilder();
+        try {
+            legacyconnector.v1_7_10.net.minecraft.item.Item item = null;
+            for (var it : org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.modItems()) if (it.getUnlocalizedName().toLowerCase().contains(itemName.toLowerCase())) item = it;
+            if (item == null) return "unknown item " + itemName;
+            var w = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+            var p = (legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(player);
+            var stack = new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0);
+            boolean a = item.onItemUse(stack, p, w, first.getX(), first.getY(), first.getZ(), 1, 0.5F, 1.0F, 0.5F);
+            r.append("use1=").append(a).append(" nbt=").append(stack.getTagCompound()).append(" blockAfter=").append(level.getBlockState(first).getBlock());
+            if (stack.getTagCompound() != null) stack.getTagCompound().setInteger("placeDelay", 0);
+            boolean b = item.onItemUse(stack, p, w, second.getX(), second.getY(), second.getZ(), 1, 0.5F, 1.0F, 0.5F);
+            BlockPos at = second.above();
+            r.append(" use2=").append(b).append(" placed=").append(level.getBlockState(at).getBlock()).append(" stackSize=").append(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$get$stackSize(stack));
+            var be = level.getBlockEntity(at);
+            r.append(" be=").append(be == null ? "null" : be.getClass().getSimpleName());
+            if (be != null) r.append(' ').append(be.saveWithoutMetadata(level.registryAccess()));
+        } catch (Throwable e) {
+            r.append(" ERR ").append(e);
+        }
+        return r.toString();
+    }
+
     /** One scenario line: {@code "x y z step step..."} (see {@link #drive}); answers the tile's state and inventory, then the drive results. */
     public static String run(Level level, String spec) {
         String[] w = spec.trim().split("\\s+");
