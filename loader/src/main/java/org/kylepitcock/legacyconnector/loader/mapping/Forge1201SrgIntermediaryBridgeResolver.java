@@ -58,9 +58,9 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
     }
 
     /**
-     * One SRG-mapped owner from a complete source classfile hierarchy. The official owner is
-     * the Mojang-named source runtime classfile name; srgOwner is its unique Forge SRG class name.
-     * The invocation owner itself must not appear in ancestors.
+     * One directly-declaring ancestor candidate from a complete source classfile hierarchy.
+     * The official owner is the Mojang-named source runtime classfile name; srgOwner is its
+     * unique Forge SRG class name. The invocation owner itself must not appear in ancestors.
      */
     public record SourceHierarchyOwner(
             String srgOwner, String officialOwner, HierarchyOwnerKind kind, int distance) {
@@ -76,8 +76,10 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
 
     /**
      * Caller-supplied source hierarchy evidence. Construct this only from a complete, pinned
-     * source classfile hierarchy walk and unique source official -> SRG class mapping joins.
-     * This value is an audit input, not a runtime remapping configuration.
+     * source classfile walk. The ancestor list contains only superclass/interface nodes that
+     * directly declare the requested public instance method; each owner and its complete SRG
+     * method identity must map uniquely. If any matching declaration cannot be mapped uniquely,
+     * set complete=false so the resolver fails closed. This value is audit input, not runtime config.
      */
     public record VerifiedSourceHierarchy(
             String invocationSrgOwner, String invocationOfficialOwner,
@@ -229,9 +231,6 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
                 if (!seenOwners.add(ownerKey)) continue;
 
                 SymbolResolution inherited = resolveMethod(ancestor.srgOwner(), srgName, srgDescriptor);
-                if (inherited.status() == SymbolStatus.SRG_SYMBOL_MISSING) {
-                    continue;
-                }
                 if (inherited.status() != SymbolStatus.MAPPED_EXACT
                         && inherited.status() != SymbolStatus.MAPPED_WITH_EXTERNAL_TYPES) {
                     unresolvedCandidate = true;
