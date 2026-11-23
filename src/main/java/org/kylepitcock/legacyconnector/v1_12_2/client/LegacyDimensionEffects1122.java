@@ -177,7 +177,7 @@ public final class LegacyDimensionEffects1122 extends DimensionSpecialEffects {
     private static boolean draw(WorldProvider p, String what, IRenderHandler handler, ClientLevel level, float partialTick, Matrix4f modelView, int kind) {
         Minecraft mc = Minecraft.getInstance();
         PoseStack pose = new PoseStack();
-        pose.last().pose().set(modelView);
+        pose.last().pose().set(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyDimensionEffects.handlerMatrix(what, modelView));
         var buffers = mc.renderBuffers().bufferSource();
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, kind);
         try {
