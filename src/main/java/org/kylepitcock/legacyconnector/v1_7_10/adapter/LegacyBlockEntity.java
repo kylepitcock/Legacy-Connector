@@ -434,6 +434,10 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             if (s35 instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet132TileEntityData) tag.putBoolean("mcc$164", true);
             return tag;
         }
+        // an FML "tiny packet" (Packet131MapData with a mod): it travels on the layer's tiny channel like a custom payload, so the mod's ITinyPacketHandler gets it
+        if (p instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet131MapData tiny && tiny.mcc$modId != null) {
+            p = org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(tiny);
+        }
         if (p instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload payload164) {
             // 1.6.4 tiles answer with a custom payload packet: carried like a 1.7.10 custom-channel one
             CompoundTag tag = new CompoundTag();
@@ -498,6 +502,21 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         net.minecraft.client.Minecraft.getInstance().tell(() -> deliverWhenFindable(tag, tries + 1));
     }
 
+    private long lastRemesh = Long.MIN_VALUE;
+
+    /**
+     * 1.4.7 handlers of a description packet ended with {@code markBlockForRenderUpdate}, so the block is drawn again with what the packet changed (a copy block that now
+     * shows the block it stands for). The packet here is handled by the mod's own code, so the chunk section is rebuilt for it (at most every 20 ticks per tile).
+     */
+    private void remeshAfterDescription() {
+        if (level == null || !level.isClientSide) return;
+        long now = level.getGameTime();
+        if (now - lastRemesh < 20 && now >= lastRemesh) return;
+        lastRemesh = now;
+        BlockState state = getBlockState();
+        level.sendBlockUpdated(worldPosition, state, state, 0);
+    }
+
     private void deliver(CompoundTag tag) {
         deliver(tag, false);
     }
@@ -522,6 +541,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
                 var packet = legacyconnector.v1_6_4.forward.Packets164.readPacket(null, new java.io.DataInputStream(new java.io.ByteArrayInputStream(tag.getByteArray("mcc$wire"))),
                         false, null);
                 if (packet != null) packet.processPacket(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
+                remeshAfterDescription();
             } catch (java.io.IOException | RuntimeException | LinkageError e) {
                 if (DELIVERY_FAILURES.incrementAndGet() <= 10) {
                     org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").warn("{} failed to handle its description packet", getClass().getName(), e);
