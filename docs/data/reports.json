@@ -1259,6 +1259,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/galacticraft-legacy",
    "date": "2026-11-23",
    "open": true
+  },
+  {
+   "issue": 337,
+   "mod": "Aliens versus Predators 1.12.2",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "Tested on a version Legacy Connector 0.5.2. doesnt load all blocks, tools and mobs",
+   "lc": "0.5.2",
+   "neoforge": "21.1.267",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/aliensvspredator",
+   "date": "2026-11-23",
+   "open": true
   }
  ]
 }
