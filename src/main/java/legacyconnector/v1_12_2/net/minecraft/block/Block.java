@@ -448,6 +448,22 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return out;
     }
 
+    /** Runs a block's own drop code and returns the stacks it spawned (dropBlockAsItemWithChance overrides: the modern drop pipeline asks for a list). */
+    public static java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> mcc$captureSpawns(Runnable drop) {
+        boolean was = captureDrops.get();
+        var before = new java.util.ArrayList<>(capturedDrops.get());
+        captureDrops.set(true);
+        capturedDrops.get().clear();
+        try {
+            drop.run();
+            return new java.util.ArrayList<>(capturedDrops.get());
+        } finally {
+            captureDrops.set(was);
+            capturedDrops.get().clear();
+            capturedDrops.get().addAll(before);
+        }
+    }
+
     /** Forge: the colour a beacon beam takes through this block (null: unchanged). */
     public float[] getBeaconColorMultiplier(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos beaconPos) {
         return null;
