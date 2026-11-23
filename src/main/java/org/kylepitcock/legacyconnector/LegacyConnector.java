@@ -138,6 +138,8 @@ public final class LegacyConnector {
         }
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
+        String switches = org.kylepitcock.legacyconnector.core.flags.Flags.nonDefaultSummary();
+        if (!switches.isEmpty()) org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector switches set to a non-default value: {}", switches);
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
         org.kylepitcock.legacyconnector.core.LegacyLogFilter.install();
         org.kylepitcock.legacyconnector.core.EntityCensus.register();

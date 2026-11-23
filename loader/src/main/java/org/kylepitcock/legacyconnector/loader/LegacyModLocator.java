@@ -454,6 +454,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
             // tools/dev/client-once.sh finds the game to stop by this line (the game's command line is not readable on Windows)
             LOG.info("Legacy Connector: process id {} game directory {}", ProcessHandle.current().pid(), System.getProperty("user.dir"));
+            String loaderSwitches = LoaderFlags.nonDefaultSummary();
+            if (!loaderSwitches.isEmpty()) LOG.info("Legacy Connector: loader switches set to a non-default value: {}", loaderSwitches);
             // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.
             System.setProperty("legacyconnector.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId)
                     .filter(java.util.Objects::nonNull).toList()));
