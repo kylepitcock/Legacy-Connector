@@ -146,6 +146,29 @@ class Mixin1201TargetRemapTest implements Opcodes {
     }
 
     @Test
+    void droppedAndLeadingParameters_dropCustomDeathLootAndFinalizeSpawn() {
+        ClassNode n = mixin("m/SkeletonMixin", "net/minecraft/world/entity/monster/Skeleton");
+        handler(n, "onLoot", "(Lnet/minecraft/world/damagesource/DamageSource;IZ" + CI + ")V", "dropCustomDeathLoot(Lnet/minecraft/world/damagesource/DamageSource;IZ)V");
+        Mixin1201.Stats st = run(n);
+        MethodNode w = find(n, "onLoot$mcc1201");
+        assertNotNull(w);
+        assertEquals("(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z" + CI + ")V", w.desc);
+        assertEquals(1, calls(w, "zeroInt"), "the removed looting level is zero");
+        assertEquals(1, st.repair.repaired);
+
+        ClassNode m = mixin("m/MobMixin", "net/minecraft/world/entity/Mob");
+        String spawnData = "Lnet/minecraft/world/entity/SpawnGroupData;";
+        handler(m, "onSpawn", "(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;" + spawnData
+                + "Lnet/minecraft/nbt/CompoundTag;" + CIR + ")V", "finalizeSpawn");
+        run(m);
+        // a name-only selector without a refmap: the table's one old signature that starts with the handler's parameters is used
+        MethodNode ws = find(m, "onSpawn$mcc1201");
+        assertNotNull(ws);
+        assertEquals("(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;" + spawnData + CIR + ")V", ws.desc);
+        assertEquals(1, calls(ws, "nullTag"));
+    }
+
+    @Test
     void handlerThatDoesNotMatchTheOldShapeIsNotWrapped() {
         ClassNode n = mixin("m/BadMixin", "net/minecraft/client/renderer/GameRenderer");
         // captures (long) where the old target has (float): not a prefix of the old signature

@@ -76,6 +76,28 @@ public final class TargetRemap {
         return METHODS.get(owner + "." + name + oldDesc);
     }
 
+    /**
+     * The old descriptor of the one table row of {@code owner.name} whose old parameters start with {@code captured} (a name-only selector without a refmap
+     * names no descriptor), or null when no row or more than one fits.
+     */
+    public static synchronized String uniqueOldDescriptor(String owner, String name, List<Type> captured) {
+        load();
+        String prefix = owner + "." + name + "(";
+        String found = null;
+        for (String key : METHODS.keySet()) {
+            if (!key.startsWith(prefix)) continue;
+            String old = key.substring(owner.length() + 1 + name.length());
+            Type[] args = Type.getArgumentTypes(old);
+            if (captured.size() > args.length) continue;
+            boolean ok = true;
+            for (int i = 0; i < captured.size() && ok; i++) ok = captured.get(i).equals(args[i]);
+            if (!ok) continue;
+            if (found != null) return null;
+            found = old;
+        }
+        return found;
+    }
+
     /** The new "name+descriptor" of a called method an {@code @At(target)} names, or null. */
     public static synchronized String at(String owner, String name, String oldDesc) {
         load();

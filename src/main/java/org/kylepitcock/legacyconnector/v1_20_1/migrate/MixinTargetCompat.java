@@ -48,6 +48,16 @@ public final class MixinTargetCompat {
         return 0;
     }
 
+    /** The {@code CompoundTag} parameter 1.21.1 removed from {@code Mob.finalizeSpawn} (spawn-time entity data): none. */
+    public static net.minecraft.nbt.CompoundTag nullTag() {
+        return null;
+    }
+
+    /** {@code appendHoverText(ItemStack, Level, ...)} became {@code (ItemStack, Item.TooltipContext, ...)}: the context's level (null on the main menu, like before). */
+    public static net.minecraft.world.level.Level levelOf(net.minecraft.world.item.Item.TooltipContext context) {
+        return context.level();
+    }
+
     /** A {@code boolean} parameter 1.21.1 dropped: false. */
     public static boolean noFlag() {
         return false;

@@ -36,10 +36,14 @@ def main():
     head = text.split("\n\n", 1)[0]
     by = {"method": collections.defaultdict(set), "at": collections.defaultdict(set), "class": collections.defaultdict(set)}
     reasons = {}
+    by_inj = collections.defaultdict(set)
+    inj_count = collections.Counter()
     for line in text.splitlines():
         if line.startswith("@DROP\t"):
-            _, jar, kind, target, reason = (line.split("\t") + [""])[:5]
+            _, jar, kind, target, reason, inj = (line.split("\t") + ["", ""])[:6]
             by[kind][target].add(jar)
+            by_inj[(kind, inj.strip() or "?")].add((jar, target))
+            inj_count[(kind, inj.strip() or "?")] += 1
             reasons.setdefault((kind, target), reason)
         elif line.startswith("@CLASS\t"):
             _, jar, what = line.split("\t", 2)
@@ -56,6 +60,10 @@ def main():
             r = reasons.get((kind, t), "")
             out.append(f"| {len(jars)} | `{t}` | {r.replace('|', '/')[:150]} |")
         out.append("")
+    out += ["## Dropped injections by injector kind", "", "| kind | injector | injections | distinct targets | mods |", "|---|---|---|---|---|"]
+    for (kind, inj), n in sorted(inj_count.items(), key=lambda kv: -kv[1]):
+        out.append(f"| {kind} | {inj} | {n} | {len({t for _, t in by_inj[(kind, inj)]})} | {len({j for j, _ in by_inj[(kind, inj)]})} |")
+    out.append("")
     pathlib.Path(a.report).write_text("\n".join(out), encoding="utf-8")
     print("\n".join(out[:12]))
     print(f"written {a.report}")

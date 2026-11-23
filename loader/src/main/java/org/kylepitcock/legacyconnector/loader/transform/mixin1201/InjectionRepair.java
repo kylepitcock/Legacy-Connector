@@ -217,7 +217,7 @@ public final class InjectionRepair {
                     case DEAD -> {
                         counts.dropped++;
                         counts.notes.add("Mixin " + id + ": injection into " + sel + " dropped: " + eff.reason);
-                        counts.droppedTargets.add("method	" + (eff.target != null ? eff.target : String.valueOf(sel)) + "	" + eff.reason);
+                        counts.droppedTargets.add("method	" + (eff.target != null ? eff.target : String.valueOf(sel)) + "	" + eff.reason + "	" + it.a.desc.substring(it.a.desc.lastIndexOf('/') + 1));
                         changed = true;
                     }
                 }
@@ -317,6 +317,8 @@ public final class InjectionRepair {
         List<Type> captured = new ArrayList<>(Arrays.asList(ha).subList(0, cb));
         boolean voidCb = ha[cb].getInternalName().endsWith("CallbackInfo");
         String old = desc != null ? desc : hint;
+        // a name-only selector without a refmap: the table may know the one old signature the handler's parameters belong to
+        if (old == null && !captured.isEmpty() && !lk.declared().isEmpty() && !hasLocalsCapture(a) && lk.declared().stream().noneMatch(d -> captured.equals(Arrays.asList(Type.getArgumentTypes(d))))) old = TargetRemap.uniqueOldDescriptor(owner, name, captured);
         if (old != null) {
             // a vanilla method whose parameters 1.21.1 reordered or removed: the table gives the new descriptor and the sources of the old arguments
             TargetRemap.Entry re = TargetRemap.method(owner, name, old);
@@ -437,7 +439,7 @@ public final class InjectionRepair {
                     case DEAD -> {
                         counts.atDropped++;
                         counts.notes.add("Mixin " + id + ": injection point dropped: " + o.reason);
-                        counts.droppedTargets.add("at	" + (o.target != null ? o.target : string(at, "target")) + "	" + o.reason);
+                        counts.droppedTargets.add("at	" + (o.target != null ? o.target : string(at, "target")) + "	" + o.reason + "	" + injector.desc.substring(injector.desc.lastIndexOf('/') + 1));
                         it.remove();
                         changed = true;
                     }
