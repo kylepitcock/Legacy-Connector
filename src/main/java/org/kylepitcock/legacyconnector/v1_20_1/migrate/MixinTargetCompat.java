@@ -26,6 +26,56 @@ public final class MixinTargetCompat {
         return tracker.getGameTimeDeltaPartialTick(false);
     }
 
+    /** The old {@code float} colour channels of a packed ARGB {@code int} (1.21.1 passes one packed colour where 1.20.1 took four floats). */
+    public static float colorRed(int argb) {
+        return (argb >> 16 & 255) / 255.0F;
+    }
+
+    public static float colorGreen(int argb) {
+        return (argb >> 8 & 255) / 255.0F;
+    }
+
+    public static float colorBlue(int argb) {
+        return (argb & 255) / 255.0F;
+    }
+
+    public static float colorAlpha(int argb) {
+        return (argb >>> 24) / 255.0F;
+    }
+
+    /** An {@code int} parameter 1.21.1 dropped (a tick count such as {@code ChatComponent.addMessage}'s): zero. */
+    public static int zeroInt() {
+        return 0;
+    }
+
+    /** A {@code boolean} parameter 1.21.1 dropped: false. */
+    public static boolean noFlag() {
+        return false;
+    }
+
+    /** 1.20.1's {@code onDisconnect(Component reason)}: the reason of 1.21.1's {@code DisconnectionDetails}. */
+    public static net.minecraft.network.chat.Component disconnectReason(net.minecraft.network.DisconnectionDetails details) {
+        return details.reason();
+    }
+
+    /** 1.20.1 passed a {@code MobEffect}, 1.21.1 passes its holder. */
+    public static net.minecraft.world.effect.MobEffect effectOf(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        return effect.value();
+    }
+
+    /**
+     * A target that returned a value in 1.20.1 and returns void now: the old handler takes a {@code CallbackInfoReturnable}, made from the new target's
+     * {@code CallbackInfo} (same id and cancellability, no value).
+     */
+    public static org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Object> returnableOf(org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        return new org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<>(ci.getId(), ci.isCancellable(), null);
+    }
+
+    /** After the old handler ran: a cancelled returnable cancels the info (the return value of a void target is dropped). */
+    public static void propagate(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Object> cir, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (cir.isCancelled() && ci.isCancellable()) ci.cancel();
+    }
+
     /** {@code renderLevel}'s {@code long finishNanoTime} (a frame limiter budget): gone in 1.21.1, no deadline. */
     public static long noTime() {
         return 0L;

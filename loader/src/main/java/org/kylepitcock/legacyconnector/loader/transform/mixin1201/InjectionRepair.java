@@ -321,7 +321,8 @@ public final class InjectionRepair {
             // a vanilla method whose parameters 1.21.1 reordered or removed: the table gives the new descriptor and the sources of the old arguments
             TargetRemap.Entry re = TargetRemap.method(owner, name, old);
             if (re != null && lk.declared().contains(re.newDesc()) && isPrefix(captured, Arrays.asList(Type.getArgumentTypes(old)))
-                    && callbackFits(voidCb, re.newDesc()) && captured.size() <= re.argMap().size()) {
+                    && (re.returnConverted() ? !voidCb && Type.getReturnType(re.newDesc()).getSort() == Type.VOID : callbackFits(voidCb, re.newDesc()))
+                    && captured.size() <= re.argMap().size()) {
                 return Outcome.remap(prefix + name + re.newDesc(), re);
             }
         }

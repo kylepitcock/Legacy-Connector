@@ -323,8 +323,7 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
                     Set<String> ids = modIdsByRoot.get(root(value, MIXIN_DROPPED));
                     String owner = ids == null || ids.isEmpty() ? value : new java.util.TreeSet<>(ids).first();
                     String text = read(url);
-                    int nl = text.indexOf('
-');
+                    int nl = text.indexOf((char) 10);
                     org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.MIXIN, owner,
                             "mixin injections dropped at translation", nl < 0 ? text : text.substring(0, nl));
                 }

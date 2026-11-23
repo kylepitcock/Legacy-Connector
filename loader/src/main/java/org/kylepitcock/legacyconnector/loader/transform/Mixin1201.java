@@ -73,12 +73,9 @@ final class Mixin1201 {
             sb.append(repair.dropped).append(" mixin injection(s), ").append(repair.atDropped).append(" injection point(s) and ").append(dropped.size())
                     .append(" mixin class(es) were dropped at translation (their 1.20.1 target no longer exists or changed shape in 1.21.1); that part of the mod does nothing");
             if (!first.isEmpty()) sb.append(", e.g. ").append(String.join(", ", first));
-            sb.append('
-');
-            for (String d : repair.droppedTargets) sb.append(d.replace('	', ' ')).append('
-');
-            for (String d : dropped) sb.append("class ").append(d).append('
-');
+            sb.append((char) 10);
+            for (String d : repair.droppedTargets) sb.append(d.replace((char) 9, (char) 32)).append((char) 10);
+            for (String d : dropped) sb.append("class ").append(d).append((char) 10);
             return sb.toString();
         }
 
