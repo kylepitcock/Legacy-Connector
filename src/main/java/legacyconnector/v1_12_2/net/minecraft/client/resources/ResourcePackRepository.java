@@ -238,4 +238,14 @@ public class ResourcePackRepository {
             }
         }
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: every pack the player can choose (redirected to {@link #mcc$get$repositoryEntriesAll}). */
+    @Deprecated
+    public List<Entry> repositoryEntriesAll;
+
+    public static List<Entry> mcc$get$repositoryEntriesAll(ResourcePackRepository r) {
+        return r.getRepositoryEntriesAll();
+    }
 }

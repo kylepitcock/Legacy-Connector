@@ -74,4 +74,14 @@ public class WorldClient extends World {
     public boolean invalidateRegionAndSetBlock(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
         return setBlockState(pos, state, 3);
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the client this world belongs to. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.Minecraft mc;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.Minecraft mcc$get$mc(WorldClient w) {
+        return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
+    }
 }

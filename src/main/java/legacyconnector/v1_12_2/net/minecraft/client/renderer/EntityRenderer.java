@@ -243,4 +243,38 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
             mcc$inHand = false;
         }
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the entity under the crosshair (redirected to {@link #mcc$get$pointedEntity}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.Entity pointedEntity;
+    /** Phantom: the colour of the fog of the last frame (redirected to {@link #mcc$get$fogColorRed} and the two others). */
+    @Deprecated
+    public float fogColorRed;
+    @Deprecated
+    public float fogColorGreen;
+    @Deprecated
+    public float fogColorBlue;
+
+    public static legacyconnector.v1_12_2.net.minecraft.entity.Entity mcc$get$pointedEntity(EntityRenderer r) {
+        return Minecraft.mcc$get$pointedEntity(r.mc);
+    }
+
+    private static float fogChannel(int i) {
+        float[] c = com.mojang.blaze3d.systems.RenderSystem.getShaderFogColor();
+        return c == null || c.length <= i ? 0.0F : c[i];
+    }
+
+    public static float mcc$get$fogColorRed(EntityRenderer r) {
+        return fogChannel(0);
+    }
+
+    public static float mcc$get$fogColorGreen(EntityRenderer r) {
+        return fogChannel(1);
+    }
+
+    public static float mcc$get$fogColorBlue(EntityRenderer r) {
+        return fogChannel(2);
+    }
 }

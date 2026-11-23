@@ -94,4 +94,14 @@ public class NetworkManager {
         var ch = channel();
         if (ch != null) ch.attr(PROTOCOL_ATTRIBUTE_KEY).set(state);
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the netty channel (redirected to {@link #mcc$get$channel}). */
+    @Deprecated
+    public io.netty.channel.Channel channel;
+
+    public static io.netty.channel.Channel mcc$get$channel(NetworkManager m) {
+        return m.channel();
+    }
 }

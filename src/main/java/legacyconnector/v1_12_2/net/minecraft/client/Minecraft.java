@@ -780,4 +780,32 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
             // unchanged
         }
     }
+
+    // ---- gap batch: private fields mods read by reflection (kept together at the end)
+
+    /** Phantom: redirected to {@link #mcc$get$currentServerData}. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.ServerData currentServerData;
+    /** Phantom: the time the frame started, in milliseconds ({@link #getSystemTime}). */
+    @Deprecated
+    public long systemTime;
+    /** Phantom: whether an F3 combination was used while F3 was held (the debug overlay then stays closed on release). */
+    @Deprecated
+    public boolean actionKeyF3;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.multiplayer.ServerData mcc$get$currentServerData(Minecraft m) {
+        return m.getCurrentServerData();
+    }
+
+    public static long mcc$get$systemTime(Minecraft m) {
+        return getSystemTime();
+    }
+
+    public static boolean mcc$get$actionKeyF3(Minecraft m) {
+        return false;
+    }
+
+    public static void mcc$set$actionKeyF3(Minecraft m, boolean v) {
+        // the game's keyboard handler tracks F3 combinations itself
+    }
 }

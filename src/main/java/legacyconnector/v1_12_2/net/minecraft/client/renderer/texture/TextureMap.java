@@ -212,4 +212,17 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
         }
         initMissingImage();
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the locations of the sprites loaded into the atlas (redirected to {@link #mcc$get$loadedSprites}). */
+    @Deprecated
+    public java.util.Set<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation> loadedSprites;
+
+    public static java.util.Set<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation> mcc$get$loadedSprites(TextureMap t) {
+        java.util.Set<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation> out = new java.util.LinkedHashSet<>();
+        for (String name : t.mapUploadedSprites.keySet()) out.add(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name));
+        for (String name : t.mapRegisteredSprites.keySet()) out.add(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name));
+        return out;
+    }
 }

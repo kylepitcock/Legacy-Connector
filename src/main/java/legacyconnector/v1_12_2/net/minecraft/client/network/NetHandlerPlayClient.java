@@ -161,4 +161,25 @@ public class NetHandlerPlayClient implements legacyconnector.v1_12_2.net.minecra
             connection.getConnection().disconnect(reason == null ? net.minecraft.network.chat.Component.empty() : reason.mcc$modern());
         }
     }
+
+    // ---- gap batch (kept together at the end)
+
+    /** Phantom: the client this handler belongs to. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.Minecraft client;
+    /** Phantom: the tab list entries by player id (a snapshot of the game's). */
+    @Deprecated
+    public java.util.Map<UUID, NetworkPlayerInfo> playerInfoMap;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.Minecraft mcc$get$client(NetHandlerPlayClient h) {
+        return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    public static java.util.Map<UUID, NetworkPlayerInfo> mcc$get$playerInfoMap(NetHandlerPlayClient h) {
+        java.util.Map<UUID, NetworkPlayerInfo> out = new java.util.LinkedHashMap<>();
+        for (NetworkPlayerInfo info : h.getPlayerInfoMap()) {
+            if (info != null && info.getGameProfile() != null) out.put(info.getGameProfile().getId(), info);
+        }
+        return out;
+    }
 }
