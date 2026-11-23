@@ -35,12 +35,19 @@ final class ProblemsClient {
     /** Blockstates probed per block for a model (blocks with more states than this are sampled from the first ones). */
     private static final int STATES_PER_BLOCK = 64;
     private static boolean renderersCounted;
+    private static boolean titleSummaryDone;
 
     private ProblemsClient() {}
 
     static void register(IEventBus modBus) {
         modBus.addListener(ProblemsClient::onBaked);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn e) -> onJoin());
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ScreenEvent.Opening e) -> {
+            if (!titleSummaryDone && e.getNewScreen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
+                titleSummaryDone = true;
+                org.kylepitcock.legacyconnector.core.degraded.Degraded.finish("title screen");
+            }
+        });
     }
 
     private static void onBaked(ModelEvent.BakingCompleted event) {
@@ -215,6 +222,7 @@ final class ProblemsClient {
             LOG.debug("renderer census failed: {}", t.toString());
         }
         LegacyProblems.finish("joined a world");
+        org.kylepitcock.legacyconnector.core.degraded.Degraded.finish("joined a world");
     }
 
     private static void countRenderers(String key, String totalKey, Map<String, long[]> perMod) {

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2.adapter;
 
+import org.kylepitcock.legacyconnector.core.degraded.LegacyCall;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -177,6 +178,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 return true;
             } catch (NoSuchMethodException ignored) {
             } catch (LinkageError e) {
+                LegacyCall.expectedFailure("overrides", obj, e, null);
                 // a declared method names a class that does not exist: look further up
             }
         }
@@ -241,6 +243,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             done = legacy.onBlockActivated(world(level), pos(pos), state(state), p, hand == InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND,
                     EnumFacing.mcc$of(hit.getDirection()), (float) (h.x - pos.getX()), (float) (h.y - pos.getY()), (float) (h.z - pos.getZ()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("useItemOn", legacy, e, null);
             failure("onBlockActivated", e);
             done = false;
         } finally {
@@ -255,6 +258,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onBlockClicked(world(level), pos(pos), player(player));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("attack", legacy, e, null);
             failure("onBlockClicked", e);
         } finally {
             Stacks1122.flushViews();
@@ -270,6 +274,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onBlockAdded(world(level), pos(pos), state(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("onPlace", legacy, e, null);
             failure("onBlockAdded", e);
         }
     }
@@ -283,6 +288,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             try {
                 legacy.breakBlock(world(level), pos(pos), state(state));
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("onRemove", legacy, e, null);
                 failure("breakBlock", e);
             }
         }
@@ -299,6 +305,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.neighborChanged(state(state), world(level), pos(pos), StatesBridge1122.legacyBlock(neighborBlock.defaultBlockState()), pos(from));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("neighborChanged", legacy, e, null);
             failure("neighborChanged", e);
         }
     }
@@ -310,6 +317,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.updateTick(w, pos(pos), state(state), w.rand);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("tick", legacy, e, null);
             failure("updateTick", e);
         }
     }
@@ -325,6 +333,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.randomTick(w, pos(pos), state(state), w.rand);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("randomTick", legacy, e, null);
             failure("randomTick", e);
         }
     }
@@ -335,6 +344,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.randomDisplayTick(state(state), world(level), pos(pos), new Random(random.nextLong()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("animateTick", legacy, e, null);
             failure("randomDisplayTick", e);
         }
     }
@@ -347,6 +357,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var p = placer == null ? null : entity(placer);
             legacy.onBlockPlacedBy(world(level), pos(pos), state(state), p instanceof EntityLivingBase l ? l : null, Stacks1122.view(stack));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("setPlacedBy", legacy, e, null);
             failure("onBlockPlacedBy", e);
         } finally {
             Stacks1122.flushViews();
@@ -359,6 +370,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             try {
                 legacy.onBlockHarvested(world(level), pos(pos), state(state), player(player));
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("playerWillDestroy", legacy, e, null);
                 failure("onBlockHarvested", e);
             }
         }
@@ -373,6 +385,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.removedByPlayer(state(state), world(level), pos(pos), player(player), willHarvest);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("onDestroyedByPlayer", legacy, e, null);
             failure("removedByPlayer", e);
             return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
         }
@@ -385,6 +398,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onPlayerDestroy(world(l), pos(pos), state(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("destroy", legacy, e, null);
             failure("onPlayerDestroy", e);
         }
     }
@@ -403,6 +417,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.eventReceived(state(state), world(level), pos(pos), id, param) || handled;
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("triggerEvent", legacy, e, null);
             failure("eventReceived", e);
             return handled;
         }
@@ -416,6 +431,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onEntityCollision(world(level), pos(pos), state(state), entity(entity));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("entityInside", legacy, e, null);
             failure("onEntityCollision", e);
         }
     }
@@ -429,6 +445,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onEntityWalk(world(level), pos(pos), entity(entity));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("stepOn", legacy, e, null);
             failure("onEntityWalk", e);
         }
     }
@@ -442,6 +459,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onFallenUpon(world(level), pos(pos), entity(entity), distance);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("fallOn", legacy, e, null);
             failure("onFallenUpon", e);
             super.fallOn(level, state, pos, entity, distance);
         }
@@ -465,6 +483,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var legacySound = legacy.getSoundType(state(state), world(l), pos(pos), entity == null ? null : entity(entity));
             if (legacySound != null) return legacySound.mcc$toModern();
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getSoundType", legacy, e, null);
             failure("getSoundType", e);
         }
         return super.getSoundType(state, level, pos, entity);
@@ -480,6 +499,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.onLanded(world(entity.level()), entity(entity));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("updateEntityAfterFallOn", legacy, e, null);
             failure("onLanded", e);
             super.updateEntityAfterFallOn(getter, entity);
         }
@@ -509,6 +529,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             return legacy.shouldSideBeRendered(state(state), org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.access(getter), pos(BlockPos.ZERO),
                     EnumFacing.byIndex(direction.get3DDataValue()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("shouldSideBeRendered", legacy, e, null);
             failure("shouldSideBeRendered", e);
             return true;
         }
@@ -556,6 +577,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return g.canGrow(world(l), pos(pos), state(state), l.isClientSide);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("isValidBonemealTarget", legacy, e, null);
             failure("canGrow", e);
             return false;
         }
@@ -568,6 +590,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             World w = world(level);
             return g.canUseBonemeal(w, w.rand, pos(pos), state(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("isBonemealSuccess", legacy, e, null);
             failure("canUseBonemeal", e);
             return false;
         }
@@ -580,6 +603,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             World w = world(level);
             g.grow(w, w.rand, pos(pos), state(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("performBonemeal", legacy, e, null);
             failure("grow", e);
         }
     }
@@ -602,6 +626,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                                 Math.min(1, b.maxY), Math.min(1, b.maxZ));
             }
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("staticShape", legacy, e, null);
             shape = null;
         }
         staticShapes[m] = shape;
@@ -639,6 +664,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             }
             return net.minecraft.world.phys.shapes.Shapes.create(b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("legacyBox", legacy, e, null);
             failure(collision ? "getCollisionBoundingBox" : "getBoundingBox", e);
             return null;
         } finally {
@@ -684,6 +710,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             legacy.addCollisionBoxToList(state(state), world(level), pos(pos), mask, boxes, entity, false);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("collisionBoxes", legacy, e, null);
             failure("addCollisionBoxToList", e);
             return null;
         } finally {
@@ -705,6 +732,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var r = legacy.getPushReaction(state(state));
             return r == null ? super.getPistonPushReaction(state) : r.mcc$modern();
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getPistonPushReaction", legacy, e, null);
             return super.getPistonPushReaction(state);
         }
     }
@@ -717,6 +745,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             try {
                 return legacy.getPlayerRelativeBlockHardness(state(state), player(player), world(level), pos(pos));
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("getDestroyProgress", legacy, e, null);
                 failure("getPlayerRelativeBlockHardness", e);
             } finally {
                 guard[0] = false;
@@ -733,6 +762,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.hasComparatorInputOverride(state(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("hasAnalogOutputSignal", legacy, e, null);
             return false;
         }
     }
@@ -742,6 +772,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.getComparatorInputOverride(state(state), world(level), pos(pos));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getAnalogOutputSignal", legacy, e, null);
             failure("getComparatorInputOverride", e);
             return 0;
         }
@@ -760,6 +791,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             }
             return legacy.mcc$defaultDrops(state, fortune);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("legacyDrops", legacy, e, null);
             failure("getDrops", e);
             return List.of();
         }
@@ -791,6 +823,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 drops = legacyDrops(w, pos(pos), legacyState, fortune);
             }
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getDrops", legacy, e, null);
             failure("getDrops", e);
             return List.of();
         }
@@ -810,6 +843,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             var te = blockEntity instanceof Legacy1122BlockEntity host ? host.legacy() : null;
             legacy.harvestBlock(world(level), player(player), pos(pos), state(state), te, Stacks1122.view(tool));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("playerDestroy", legacy, e, null);
             failure("harvestBlock", e);
         } finally {
             Stacks1122.flushViews();
@@ -839,6 +873,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 var s = legacy.getPickBlock(state(state), hit, world(l), pos(pos), null);
                 if (s != null && !s.isEmpty()) return Stacks1122.toModern(s);
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("getPickBlock", legacy, e, null);
                 failure("getPickBlock", e);
             }
         }
@@ -847,6 +882,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 var s = legacy.getItem(world(l), pos(pos), state(state));
                 if (s != null && !s.isEmpty()) return Stacks1122.toModern(s);
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("getPickBlock", legacy, e, null);
                 failure("getItem", e);
             }
         }
@@ -861,6 +897,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.isReplaceable(world(context.getLevel()), pos(context.getClickedPos()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("canBeReplaced", legacy, e, null);
             failure("isReplaceable", e);
             return super.canBeReplaced(state, context);
         }
@@ -883,6 +920,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 return net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED;
             }
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getRenderShape", legacy, e, null);
             failure("getRenderType", e);
         }
         return super.getRenderShape(state);
@@ -894,6 +932,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return Math.max(0, Math.min(15, legacy.getLightValue(state(state), WorldBridge1122.access(level), pos(pos))));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getLightEmission", legacy, e, null);
             failure("getLightValue", e);
             return super.getLightEmission(state, level, pos);
         }
@@ -905,6 +944,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return Math.max(0, Math.min(15, legacy.getLightOpacity(state(state), WorldBridge1122.access(level), pos(pos))));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getLightBlock", legacy, e, null);
             failure("getLightOpacity", e);
             return super.getLightBlock(state, level, pos);
         }
@@ -916,6 +956,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.getSlipperiness(state(state), WorldBridge1122.access(level), pos(pos), entity == null ? null : entity(entity));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getFriction", legacy, e, null);
             failure("getSlipperiness", e);
             return super.getFriction(state, level, pos, entity);
         }
@@ -929,6 +970,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             // the explosion math is the same in both versions: (resistance + 0.3) * 0.3 per step
             return legacy.getExplosionResistance(world(l), pos(pos), source == null ? null : entity(source), null);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getExplosionResistance", legacy, e, null);
             failure("getExplosionResistance", e);
             return super.getExplosionResistance(state, level, pos, explosion);
         }
@@ -942,6 +984,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return legacy.canProvidePower(state(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("isSignalSource", legacy, e, null);
             return false;
         }
     }
@@ -952,6 +995,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return Math.max(0, Math.min(15, legacy.getWeakPower(state(state), WorldBridge1122.access(level), pos(pos), EnumFacing.mcc$of(direction))));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getSignal", legacy, e, null);
             failure("getWeakPower", e);
             return 0;
         }
@@ -963,6 +1007,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         try {
             return Math.max(0, Math.min(15, legacy.getStrongPower(state(state), WorldBridge1122.access(level), pos(pos), EnumFacing.mcc$of(direction))));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getDirectSignal", legacy, e, null);
             failure("getStrongPower", e);
             return 0;
         }
@@ -980,6 +1025,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             }
             return Math.max(0, legacy.getExpDrop(state(state), WorldBridge1122.access(level), pos(pos), fortune));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getExpDrop", legacy, e, null);
             failure("getExpDrop", e);
             return 0;
         }

@@ -107,13 +107,17 @@ public final class LegacyProblems {
     public static void register(IEventBus modBus) {
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> {
             registryCensus();
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.finish("server started");
             if (FMLEnvironment.dist.isDedicatedServer()) finish("server started");
         });
         ProblemsCommand.register();
         synchronized (LegacyProblems.class) {
             if (!hookInstalled) {
                 hookInstalled = true;
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> writeReport(), "LegacyConnector-problems"));
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    writeReport();
+                    org.kylepitcock.legacyconnector.core.degraded.Degraded.writeFile("exit");
+                }, "LegacyConnector-problems"));
             }
         }
         if (FMLEnvironment.dist.isClient()) ProblemsClient.register(modBus);

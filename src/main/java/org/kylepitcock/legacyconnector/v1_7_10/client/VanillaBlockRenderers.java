@@ -8,6 +8,8 @@ import legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator;
 import legacyconnector.v1_7_10.net.minecraft.util.IIcon;
 import legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess;
 import legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection;
+import org.kylepitcock.legacyconnector.core.degraded.Degraded;
+import org.kylepitcock.legacyconnector.core.degraded.DegradedOwners;
 
 /**
  * 1.7.10's own renderers for vanilla render types that mod blocks use but no static model can show, as built-in block
@@ -17,9 +19,37 @@ import legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection;
 public final class VanillaBlockRenderers {
     private VanillaBlockRenderers() {}
 
-    /** The built-in handler of a vanilla render type, or null. */
+    /** The built-in handler of a vanilla render type, or null (see {@link #HANDLERS}). */
     public static ISimpleBlockRenderingHandler forRenderType(int renderType) {
-        return renderType == 18 || renderType == 41 ? PANE : renderType == 7 ? DOOR : null;
+        return HANDLERS.get(renderType);
+    }
+
+    /** The vanilla render types that have a built-in handler. */
+    public static java.util.Set<Integer> handledTypes() {
+        return HANDLERS.keySet();
+    }
+
+    /**
+     * Vanilla render types drawn by the static model generated for the block (see Assets1710.model): standard cube (0), plants (1, 40), crops (6),
+     * chest (22), dragon egg (27) and the invisible -1. Every other vanilla type (1.7.10 had ids up to 41) with no built-in handler draws as a
+     * cube of the block's bounds.
+     */
+    private static final java.util.Set<Integer> MODEL_TYPES = java.util.Set.of(-1, 0, 1, 6, 22, 27, 40);
+
+    /** True for a vanilla render type (1 to 41) that is neither drawn by a generated model nor by a built-in handler: the block draws as a cube. */
+    public static boolean isUnhandledVanillaType(int renderType) {
+        return renderType >= 1 && renderType <= 41 && !MODEL_TYPES.contains(renderType) && !HANDLERS.containsKey(renderType);
+    }
+
+    /**
+     * Notes once per block class (through {@link Degraded}) that a legacy block has a vanilla render type nobody draws and no mod
+     * handler claims, so it shows as a plain cube. Pass the registered mod handler's presence as {@code modHandler}.
+     */
+    public static void noteIfUnhandled(Block block, int renderType, boolean modHandler) {
+        if (modHandler || !isUnhandledVanillaType(renderType)) return;
+        Class<?> cls = block.getClass();
+        Degraded.note(Degraded.Category.RENDER_TYPE, DegradedOwners.of(cls), "render type " + renderType + " " + cls.getName(),
+                () -> "vanilla render type " + renderType + " has no handler and no mod renderer: drawn as a cube");
     }
 
     /** The built-in handler for a block: its render type's, or the standard renderer for cubes whose icons depend on the world. */
@@ -199,4 +229,7 @@ public final class VanillaBlockRenderers {
             t.addVertexWithUV(bx, y, bz, u2, v2);
         }
     }
+
+    /** Render type to built-in handler: doors (7), panes and stained glass panes (18, 41). Port a new type by adding it here. */
+    private static final java.util.Map<Integer, ISimpleBlockRenderingHandler> HANDLERS = java.util.Map.of(7, DOOR, 18, PANE, 41, PANE);
 }

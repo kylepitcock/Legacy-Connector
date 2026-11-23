@@ -219,11 +219,28 @@ public final class MixinSelfCheck {
         try {
             Result r = evaluate(readMixins(), RECORDS, client);
             LOG.info("{} ({})", r.summary(), phase);
-            for (String w : r.warnings) if (WARNED.add(w)) LOG.warn("Legacy Connector {}", w);
+            for (String w : r.warnings) {
+                if (WARNED.add(w)) LOG.warn("Legacy Connector {}", w);
+                degraded(w);
+            }
             return r;
         } catch (Throwable t) {
             LOG.warn("Legacy Connector mixin self check failed: {}", t.toString());
             return null;
+        }
+    }
+
+    /** Feeds a not-applied warning into the shared degraded-behaviour channel (summary at server start / title screen); the channel counts repeats. */
+    private static void degraded(String warning) {
+        try {
+            String prefix = "mixin injector not applied: ";
+            if (!warning.startsWith(prefix)) return;
+            int end = warning.indexOf(" (@");
+            String key = end > 0 ? warning.substring(prefix.length(), end) : warning.substring(prefix.length());
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.MIXIN,
+                    "(layer mixins)", key, warning);
+        } catch (Throwable t) {
+            // diagnostics only
         }
     }
 

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_7_10.adapter;
 
+import org.kylepitcock.legacyconnector.core.degraded.LegacyCall;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,6 +176,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 return m != null;
             } catch (NoSuchMethodException ignored) {
             } catch (LinkageError e) {
+                LegacyCall.expectedFailure("overrides", obj, e, null);
                 // A declared method mentions a class that does not exist (an API the modset never provided): look in the superclass.
             }
         }
@@ -255,6 +257,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 // world access has deadlocked before (a face-culling answer only reads blocks)
                 return !drawn.legacy.shouldSideBeRendered(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(), dir.getOpposite().get3DDataValue());
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("hidesNeighborFace", drawn.legacy, e, null);
                 return false;
             }
         }
@@ -427,6 +430,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 String name = legacy.getLocalizedName();
                 if (name != null && !name.isEmpty()) return net.minecraft.network.chat.Component.literal(name);
             } catch (RuntimeException | LinkageError ignored) {
+                LegacyCall.failed("getName", legacy, ignored, null);
                 // a broken name falls back to the key
             }
         }
@@ -460,6 +464,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 if (n != null && !n.isEmpty()) candidates.add(n + ".name");
             }
         } catch (RuntimeException | LinkageError ignored) {
+            LegacyCall.failed("subtypeNameKey", legacy, ignored, null);
             // falls through to the metadata key
         }
         candidates.add(legacy.getUnlocalizedName() + ".0.name");
@@ -570,6 +575,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.hasTileEntity(meta(state));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("movesTileEntity", legacy, e, null);
             return false;
         }
     }
@@ -607,6 +613,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     /** Legacy block code throwing in a world callback must not crash the server; log it, a few times per block. */
     private void legacyFailure(String callback, Throwable e) {
+        LegacyCall.failed(callback, legacy, e, null);
         if (failures++ < 3) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").error("{} of {} threw; the call is skipped{}", callback, legacy,
                     failures == 3 ? " (further failures of this block are not logged)" : "", e);
@@ -722,6 +729,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(type) == null;
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("drawnByNobody", LegacyBlockAdapter.class, e, null);
             return false;
         }
     }
@@ -737,6 +745,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return Math.min(15, Math.max(0, legacy.getLightOpacity()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getLightBlock", legacy, e, null);
             return super.getLightBlock(state, level, pos);
         }
     }
@@ -759,6 +768,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return Math.min(15, Math.max(0, legacy.getLightValue(BlockAccessView.of(view), pos.getX(), pos.getY(), pos.getZ())));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getLightEmission", legacy, e, null);
             return super.getLightEmission(state, level, pos);
         }
     }
@@ -779,6 +789,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.getLightOpacity() == 0;
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("propagatesSkylightDown", legacy, e, null);
             return super.propagatesSkylightDown(state, level, pos);
         }
     }
@@ -788,6 +799,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.getAmbientOcclusionLightValue();
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getShadeBrightness", legacy, e, null);
             return super.getShadeBrightness(state, level, pos);
         }
     }
@@ -798,6 +810,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             type = legacy.getRenderType();
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getRenderShape", legacy, e, null);
             // Called by resource reloading and rendering; a throwing legacy block must not abort either.
             return RenderShape.MODEL;
         }
@@ -894,6 +907,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                         || box.minX - pos.getX() >= 1 || box.minY - pos.getY() >= 1 || box.minZ - pos.getZ() >= 1
                         || box.maxX <= box.minX || box.maxY <= box.minY || box.maxZ <= box.minZ);
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("hidesOutline", legacy, e, null);
                 return false;
             }
         }
@@ -902,6 +916,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private boolean reportedShapeFailure;
 
     private void shapeFailure(Throwable e) {
+        LegacyCall.expectedFailure("shape", legacy, e, null);
         if (reportedShapeFailure) return;
         reportedShapeFailure = true;
         org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").debug("Legacy bounds of {} failed outside a world context: {}", legacy, e.toString());
@@ -970,6 +985,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             return legacy.getFlammability(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(),
                     legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(direction.get3DDataValue()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getFlammability", legacy, e, null);
             return 0;
         }
     }
@@ -980,6 +996,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             return legacy.getFireSpreadSpeed(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(),
                     legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(direction.get3DDataValue()));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getFireSpreadSpeed", legacy, e, null);
             return 0;
         }
     }
@@ -995,6 +1012,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.isLadder(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(), (EntityLivingBase) EntityBridge.wrap(entity));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("isLadder", legacy, e, null);
             return false;
         }
     }
@@ -1006,6 +1024,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.removedByPlayer(World.mcc$wrap(level), (EntityPlayer) EntityBridge.wrap(player), pos.getX(), pos.getY(), pos.getZ(), willHarvest);
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("onDestroyedByPlayer", legacy, e, null);
             return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
         }
     }
@@ -1022,6 +1041,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                     legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(facing.get3DDataValue()), plantable);
             return ok ? net.neoforged.neoforge.common.util.TriState.TRUE : net.neoforged.neoforge.common.util.TriState.FALSE;
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("canSustainPlant", legacy, e, null);
             return net.neoforged.neoforge.common.util.TriState.DEFAULT;
         }
     }
@@ -1038,6 +1058,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             legacy.onBlockExploded(world, pos.getX(), pos.getY(), pos.getZ(),
                     new legacyconnector.v1_7_10.net.minecraft.world.Explosion(world, null, center.x, center.y, center.z, 4.0F));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("onBlockExploded", legacy, e, null);
             super.onBlockExploded(state, level, pos, explosion);
         }
     }
@@ -1048,6 +1069,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.getEnchantPowerBonus(world(acc), pos.getX(), pos.getY(), pos.getZ());
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("getEnchantPowerBonus", legacy, e, null);
             return 0.0F;
         }
     }
@@ -1060,6 +1082,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             try {
                 return legacy.canHarvestBlock(player(player), meta(state));
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("canHarvestBlock", legacy, e, null);
                 // fall through to the default tool check
             }
         }
@@ -1074,6 +1097,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 legacy.harvestBlock(World.mcc$wrap(level), (EntityPlayer) EntityBridge.wrap(player), pos.getX(), pos.getY(), pos.getZ(), meta(state));
                 return;
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("playerDestroy", legacy, e, null);
                 if (DROP_FAILURES.add(legacy.getClass())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").warn("harvestBlock of {} failed at {}; using the plain drops", legacy.getClass().getName(), pos, e);
             }
         }
@@ -1106,6 +1130,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             try {
                 legacyDrops = legacy.getDrops(w, pos.getX(), pos.getY(), pos.getZ(), meta, fortune);
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("getDrops", legacy, e, null);
                 // drops asked for a block whose position holds something else (a Create contraption putting a RotaryCraft engine
                 // back where another block now stands drops it there: its getDrops read the other block's tile entity and the
                 // server crashed): the block itself
@@ -1134,6 +1159,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 ItemStack picked = legacy.getPickBlock(mop, w, pos.getX(), pos.getY(), pos.getZ(), (EntityPlayer) EntityBridge.wrap(player));
                 return picked == null ? net.minecraft.world.item.ItemStack.EMPTY : picked.mcc$modern();
             } catch (RuntimeException | LinkageError e) {
+                LegacyCall.failed("getCloneItemStack", legacy, e, null);
                 // fall through to the plain clone stack
             }
         }
@@ -1146,6 +1172,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.isFireSource(world(acc), pos.getX(), pos.getY(), pos.getZ(), legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.mcc$of(side));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("isFireSource", legacy, e, null);
             return false;
         }
     }
@@ -1156,6 +1183,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         try {
             return legacy.canEntityDestroy(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(), EntityBridge.wrap(entity));
         } catch (RuntimeException | LinkageError e) {
+            LegacyCall.failed("canEntityDestroy", legacy, e, null);
             return true;
         }
     }
