@@ -461,8 +461,13 @@ public final class LegacyConfig {
 
     /** The deep layer mode of one generator (its mod id may be null): {@code deepLayer.mode} with the per-mod override lists applied. */
     public static DeepMode deepLayerMode(String modId, String generatorClass) {
+        return deepLayerMode(modId, generatorClass, false);
+    }
+
+    /** As above; {@code numericIdVersion}: a 1.4.7 to 1.6.4 generator, which defaults to split unless {@code deepLayer.shiftedMods} lists it. */
+    public static DeepMode deepLayerMode(String modId, String generatorClass, boolean numericIdVersion) {
         if (!deepLayerEnabled() || !deepLayerAllows(generatorClass)) return DeepMode.OFF;
-        boolean shifted = !"split".equalsIgnoreCase(string("deepLayer.mode", "shifted").trim());
+        boolean shifted = !numericIdVersion && !"split".equalsIgnoreCase(string("deepLayer.mode", "shifted").trim());
         if (listed("deepLayer.splitMods", modId, generatorClass)) shifted = false;
         else if (listed("deepLayer.shiftedMods", modId, generatorClass)) shifted = true;
         return shifted ? DeepMode.SHIFTED : DeepMode.SPLIT;

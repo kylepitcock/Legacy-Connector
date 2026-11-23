@@ -51,7 +51,13 @@ public final class DeepLayer1710 {
     private static final Map<String, Generator> BY_ID = new ConcurrentHashMap<>();
     /** Ids of generators whose deep feature is part of the generated data (so the catch-all leaves them out). */
     private static final Set<String> FEATURED = ConcurrentHashMap.newKeySet();
-    private static final Set<String> FAILED = ConcurrentHashMap.newKeySet();
+    /**
+     * Ids of generators of 1.4.7, 1.5.2 and 1.6.4 mods: they run the split deep layer by default. Those mods' ores sit at legacy y 0-63 (and a
+     * world that ended at y=0); the shifted pass puts that band at -64..-1, so nothing generated above y=0 (#327, #328). Split keeps the
+     * mod's ore count and spreads the band over -64..63. {@code deepLayer.shiftedMods} still selects the shifted pass for a mod.
+     */
+    private static final Set<String> NUMERIC_ID_GENERATORS = ConcurrentHashMap.newKeySet();
+    private static final Set<String> FAILED =ConcurrentHashMap.newKeySet();
     private static final Set<String> UNKNOWN = ConcurrentHashMap.newKeySet();
     private static boolean contributing;
 
@@ -63,6 +69,13 @@ public final class DeepLayer1710 {
         for (Generator known : GENERATORS) if (known.generator == generator) return known;
         String id = uniqueId(namespace() + ":legacy_worldgen_deep/" + path(generator.getClass().getName()));
         Generator g = new Generator(generator, weight, lock, id);
+        try {
+            var active = org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710.active();
+            String v = active == null ? null : active.record().version;
+            if ("1.4.7".equals(v) || "1.5.2".equals(v) || "1.6.4".equals(v)) NUMERIC_ID_GENERATORS.add(id);
+        } catch (RuntimeException | LinkageError ignored) {
+            // no active mod: not an old-version generator
+        }
         GENERATORS.add(g);
         BY_ID.put(id, g);
         if (!contributing) {
@@ -85,7 +98,7 @@ public final class DeepLayer1710 {
 
     /** The deep layer mode of a generator (config): its mod id is the namespace of its feature id. */
     public static LegacyConfig.DeepMode mode(Generator g) {
-        return LegacyConfig.deepLayerMode(g.id.substring(0, g.id.indexOf(':')), g.className());
+        return LegacyConfig.deepLayerMode(g.id.substring(0, g.id.indexOf(':')), g.className(), NUMERIC_ID_GENERATORS.contains(g.id));
     }
 
     /** The mode for a registered legacy generator (decided by class when unknown). */
