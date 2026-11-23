@@ -14,7 +14,7 @@ You are a worker on the Legacy Connector project (repo kylepitcock/Retrofit; run
   crash reports: grep the downloaded files for what the digest names (`grep -n -m5`, `sed -n 'a,bp'`).
 - JDK 21 is at `C:/Program Files/Java/jdk-21`: set JAVA_HOME to it for Gradle (the default JDK fails).
 - Fix generically (implement the legacy API behaviour, find the defect class, not just the mod in the title); no mod-specific code outside a `compat/` package.
-  If loader output changes, bump `TRANSFORMER_VERSION`.
+  Loader output changes need no version bump (the cache key holds the loader build's content hash).
 - Never start the game, a server or a client. Verify offline with `tools/dev/gate.sh` (compile, shim index, check; quiet output) before each commit; use Gradle directly only with `-q`.
 - Commit on the worktree branch, one commit per issue or defect, ending with the trailers
   `Co-Authored-By: Claude <noreply@anthropic.com>` and `Claude-Session: https://claude.ai/code/session_013WYWcaMHZ3xiptrnBVpgFk`. Do not push. Do not comment on GitHub. Never commit mod jars.

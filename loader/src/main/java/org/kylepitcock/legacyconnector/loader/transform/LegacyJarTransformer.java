@@ -37,7 +37,10 @@ import org.objectweb.asm.tree.ClassNode;
  * the result is cached by the locator and reused on later launches.
  */
 public final class LegacyJarTransformer {
-    /** Bump whenever the output of this class changes, to invalidate caches. */
+    /**
+     * Format number written into a translated jar's provenance file. It is NOT part of the cache key and needs no bump when the loader's
+     * output changes: the key holds a content hash of the loader build ({@code loader-build-id.txt}), which changes with every loader change.
+     */
     public static final int TRANSFORMER_VERSION = 262;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";

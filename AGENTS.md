@@ -38,7 +38,7 @@ Legacy Connector runs unmodified old Forge/ModLoader mods on NeoForge 1.21.1 by 
 
 Things that bite:
 - Use JDK 21.
-- The translation cache (`run-*/.legacyconnector/cache`) hides loader and shim changes: delete it, and bump `TRANSFORMER_VERSION` when loader output changes.
+- The translation cache (`run-*/.legacyconnector/cache`) hides loader and shim changes: delete it when in doubt. A loader change re-translates by itself (the cache key holds a content hash of the loader build); there is no version number to bump.
 - When several servers run on one machine give each its own ports (`VERIFY_PORT_BASE=<n>`); a clash looks like every metric being 0.
 - Never compile in a checkout while a game started from it is running.
 - A passing link check or server suite proves loading, not behavior. Client defects need a client.

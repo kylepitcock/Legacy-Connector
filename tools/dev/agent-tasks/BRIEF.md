@@ -9,7 +9,7 @@ hand-written shim of the old API plus bridges that turn legacy registrations int
 | Area | Where |
 |---|---|
 | Loader entry, cache key, report | `LDR/LegacyModLocator.java` (cache + `legacyconnector-report.txt`), `LegacyJar*.java` (version detection), `Provenance.java` |
-| Translation (renames, linking) | `LDR/transform/LegacyJarTransformer.java` (**TRANSFORMER_VERSION**), `LegacyRemapper`, `ShimLinker`, `mapping/McpMappings` (SRG/MCP names) |
+| Translation (renames, linking) | `LDR/transform/LegacyJarTransformer.java`, `LegacyRemapper`, `ShimLinker`, `mapping/McpMappings` (SRG/MCP names) |
 | Call rewrites, Java 8 to 21 | `transform/JavaCompatRedirects`, `BridgeMethods`, `OptionalStripper`, `SideOnlyStripper`, `BuildHeightRewriter`; runtime helpers `ORG/compat/jdk` |
 | Old-version forward layer 1.4.7-1.6.4 | `transform/ForwardRedirects`, `ForwardCalls`, `Living152ClassRemapper`, `mapping/Forward*`; runtime `ORG/v1_6_4/bridge` (`Redirects164`, `Redirects147`, `SpriteSheets147`, `Manager164`) |
 | Sheet cutting, resource conversion | `LDR/resource/SheetCutter`, `LegacyResourceConverter`, `VanillaTextureRenames`, `CtmBridge` |
@@ -59,7 +59,7 @@ hand-written shim of the old API plus bridges that turn legacy registrations int
 - Native extension points only (biome modifiers, loot tables, jigsaw pools, data packs, capabilities); no post-generation decorators or result-overriding mixins.
 - Fix generically in the shim/bridge/synth first. A mod name outside a `compat/` package fails `check_mod_specific.py`.
 - Never use `BlockTags` while mods load; chunk-generation code reads blocks through the generation region; name lookups O(1); per-tick/per-chunk logging throttled.
-- Changing loader output (transform, remap, rewrites, sheet cutting): bump `TRANSFORMER_VERSION` in `LegacyJarTransformer.java`; delete `run-*/.legacyconnector/cache` before any test.
+- Changing loader output (transform, remap, rewrites, sheet cutting): no version bump is needed (the cache key holds a content hash of the loader build, so a loader change re-translates by itself); deleting `run-*/.legacyconnector/cache` before a test is still the simple way to be sure.
 - `README.md` stays short: detail goes to the matching `docs/wiki` page; update `.github/description/description.md` with README changes.
 
 ## Verification (offline only; never start the game, a server or a client)
@@ -83,7 +83,7 @@ hand-written shim of the old API plus bridges that turn legacy registrations int
 4. Starting the game, a server or a client (the lead verifies in game).
 5. Broad greps over `src/` for names this map already gives; open the named class.
 6. Fixing the mod in the title instead of the defect class (see `docs/wiki/Work-Plan.md`): look for every mod the same defect hits.
-7. Forgetting `TRANSFORMER_VERSION` or the stale translation cache after a loader change.
+7. Bumping `TRANSFORMER_VERSION`: it is no longer part of the cache key; leave it alone (it only caused merge conflicts).
 8. Writing legacy defaults into native objects, or reading virtual fields directly in shim code.
 9. Naming a mod outside `compat/` (the gate fails late); skipping the unit test of a loader rewrite.
 10. Piping attachments into the repo: download outside it (the digest does).

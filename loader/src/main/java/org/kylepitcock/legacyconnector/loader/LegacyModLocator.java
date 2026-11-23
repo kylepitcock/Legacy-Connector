@@ -1060,7 +1060,6 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             demand.write(tmpDemand);
             MessageDigest md = SplitPackageResolver.sha256();
             md.update(Files.readAllBytes(tmpDemand));
-            md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
             md.update(LOADER_DIGEST);
             if (runtimeDigest != null) md.update(runtimeDigest);
             if (indexDigest != null) md.update(indexDigest);
@@ -1324,11 +1323,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return null;
     }
 
-    /** Content hash + transformer version + shim index + the other legacy jars of its version: any change re-translates. */
+    /**
+     * Content hash of the jar + the loader's own content hash + runtime and shim index digests + the other legacy jars of its version: any
+     * change re-translates. No hand-kept version number takes part (one existed until 0.5.2 and only duplicated {@link #LOADER_DIGEST}).
+     */
     private static String cacheName(LegacyJar jar, byte[] modSet) throws IOException {
         MessageDigest md = SplitPackageResolver.sha256();
         md.update(fileDigest(jar.existing()));
-        md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
         if ("false".equals(System.getProperty("legacyconnector.forge1201.softlink"))) md.update("nosoftlink".getBytes(StandardCharsets.UTF_8));
         md.update(LOADER_DIGEST);
         // Any change to the embedded runtime (shim code, bridges) re-translates: no cache can outlive the build that wrote it.

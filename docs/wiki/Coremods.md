@@ -84,7 +84,7 @@ The per-site reasons are in the state files, so a site found there is not worth 
 4. Add the handler to the list of `CoremodMixinCheck1710` or `CoremodMixinCheck1122` so a target that stops matching is reported.
 5. Check offline, then on a server (see [Development](Development.md#coremod-probes)): every mixin applies, no "A coremod hook failed", and the effect where a
    server can drive it. Write the result into the matching state file.
-6. If the list format or a key changes, bump `TRANSFORMER_VERSION` so cached lists are rewritten.
+6. A change of the list format or of a key needs no version bump: cached lists are keyed by the loader build's content hash and are rewritten after any loader change.
 
 Rules: the place implements a Minecraft behaviour for any hook listed there, never a mod's behaviour; a hook that needs a mod's own classes is called, not
 copied. Plugins are constructed at the first mod construct, before any vanilla `Items` exist, as FML did before Bootstrap.

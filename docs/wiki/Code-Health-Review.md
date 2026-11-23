@@ -68,7 +68,7 @@ view on the modern stack, as `World` and `Entity` already do. **2 to 3 days.**
 |---|---|---|
 | Run the gate (compile, shim index, `check` with the unit tests) on every pull request and push | No workflow runs a test today; the mod-specific check stayed unwired for weeks | 1 day |
 | A required suite set per release, baselines for the 25 suites without one, a full run before a stable release | A regression that froze world generation shipped because a subset was run | 2 days |
-| Remove `TRANSFORMER_VERSION` from the cache key | The key already has a content hash of the loader and digests of the runtime and shim index; the hand-bumped number collided between branches. Check first that development runs have those digests | 1 to 2 days |
+| Remove `TRANSFORMER_VERSION` from the cache key (done after 0.5.2) | The key already has a content hash of the loader and digests of the runtime and shim index; the hand-bumped number collided between branches. Check first that development runs have those digests | 1 to 2 days |
 | One reporting channel for "degraded" behaviour | Asset caps, block render types without a handler, GL calls that are no-ops or read real state, mixins that did not apply and swallowed exceptions each fail silently in their own way | 3 to 5 days |
 | A registry of the system-property switches (name, type, default, description), listed at start and in the wiki | About 148 switches parsed at their call sites, nearly all undocumented | 2 to 3 days |
 
