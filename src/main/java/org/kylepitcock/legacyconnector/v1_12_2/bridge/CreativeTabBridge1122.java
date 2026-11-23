@@ -130,6 +130,20 @@ public final class CreativeTabBridge1122 {
                 }
             }
         }
+        // the spawn eggs of mod entities (1.12's one spawn egg item listed every egg with colours in the misc tab; the modern equivalent is the spawn eggs tab)
+        if (event.getTabKey().equals(CreativeModeTabs.SPAWN_EGGS)) {
+            for (ResourceLocation eggId : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.spawnEggIds()) {
+                var egg = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(eggId).orElse(null);
+                if (egg == null) continue;
+                var stack = new net.minecraft.world.item.ItemStack(egg);
+                if (event.getParentEntries().contains(stack) || event.getSearchEntries().contains(stack)) continue;
+                try {
+                    event.accept(stack);
+                } catch (IllegalArgumentException | IllegalStateException duplicate) {
+                    // already in the tab
+                }
+            }
+        }
         for (Item item : ItemBridge1122.modItems()) {
             CreativeTabs tab;
             try {
