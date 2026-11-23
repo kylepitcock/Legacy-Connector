@@ -171,10 +171,10 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
                 CLASS\tz\tnet/minecraft/class_4
                 """;
         if (mapFirstInterfaceMethod) {
-            sourceTinyText += "METHOD\\tb\\t()V\\tx\\tmethod_10\\n";
+            sourceTinyText += "METHOD\tb\t()V\tx\tmethod_10\\n";
         }
         if (mapInvocationOwnerIntermediary) {
-            sourceTinyText += "METHOD\\ta\\t()V\\tm\\tmethod_30\\n";
+            sourceTinyText += "METHOD\ta\t()V\tm\tmethod_30\\n";
         }
         if (addSecondInterface) {
             sourceTinyText += "METHOD\tc\t()V\ty\tmethod_20\n";
@@ -192,10 +192,10 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
                 METHOD\tg\t()V\ts\tmethod_99
                 """;
         if (addSecondInterface) {
-            targetTinyText += "METHOD\\tf\\t()V\\tp\\tmethod_20\\n";
+            targetTinyText += "METHOD\tf\t()V\tp\tmethod_20\\n";
         }
         if (mapInvocationOwnerIntermediary) {
-            targetTinyText += "METHOD\\td\\t()V\\tw\\tmethod_30\\n";
+            targetTinyText += "METHOD\td\t()V\tw\tmethod_30\\n";
         }
         Path targetTiny = write("target-" + System.nanoTime() + ".tiny", targetTinyText);
 
