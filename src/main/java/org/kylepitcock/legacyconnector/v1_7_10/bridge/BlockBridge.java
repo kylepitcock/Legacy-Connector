@@ -403,6 +403,13 @@ public final class BlockBridge {
         }
     }
 
+    /** Id of the legacy mod that owns {@code cls} (its package, else the longest shared package prefix), or null. */
+    public static String modIdOf(Class<?> cls) {
+        org.kylepitcock.legacyconnector.core.LegacyModRecord m = ownerByPackage(cls);
+        if (m == null) m = ownerOf(cls);
+        return m == null ? null : m.legacyId;
+    }
+
     /** The legacy mod whose main class lives in the package of (or above) {@code cls}; null when no mod's own package contains it. */
     static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerByPackage(Class<?> cls) {
         String name = cls.getName();
@@ -449,6 +456,10 @@ public final class BlockBridge {
      */
     private static void registerDeepVariant(Block block, LegacyBlockAdapter adapter, ResourceLocation id) {
         if (!isOre(block, id.getPath()) || adapter instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyEntityBlockAdapter) return;
+        registerDeepVariantUnchecked(block, adapter, id);
+    }
+
+    private static void registerDeepVariantUnchecked(Block block, LegacyBlockAdapter adapter, ResourceLocation id) {
         try {
             LegacyBlockAdapter twin = LegacyBlockAdapter.create(block);
             LegacyRegistrar.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_deepslate"),
@@ -458,6 +469,21 @@ public final class BlockBridge {
         } catch (RuntimeException | LinkageError e) {
             LOG.warn("No deepslate variant for {}: {}", id, e.toString());
         }
+    }
+
+    /**
+     * A legacy {@code WorldGenMinable} that puts {@code ore} into stone: the block is an ore whatever its name, material or render type
+     * (Xycraft's ore block is not Material.rock and has its own render type), so it gets a deepslate twin too. Called when the generator is
+     * built (preInit/init/postInit, while the registries are open); a twin that cannot be registered any more is skipped.
+     */
+    public static synchronized void oreGeneratedInStone(Block ore, Block target) {
+        if (ore == null || target == null || target != legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone) return;
+        if (!(ore.mcc$modern instanceof LegacyBlockAdapter adapter) || adapter.deepVariant() != null || adapter.isDeepVariant()
+                || adapter instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyEntityBlockAdapter) return;
+        if (!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isRegistrationOpen()) return;
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(adapter);
+        if (id == null || BuiltInRegistries.BLOCK.containsKey(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_deepslate"))) return;
+        registerDeepVariantUnchecked(ore, adapter, id);
     }
 
     private static final List<Block> DEEP_VARIANTS = new ArrayList<>();

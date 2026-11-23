@@ -241,6 +241,16 @@ public final class IdRegistry {
 
     // ------------------------------------------------------------------ lookup
 
+    /** Who holds {@code id} ("object (owner)"), or null when nobody does. */
+    public synchronized String holderOf(Kind kind, int id) {
+        if (id < 0 || id >= kind.size) return null;
+        Table t = tables[kind.ordinal()];
+        Object o = t.slots[id];
+        if (o == null && kind == Kind.BLOCK) o = tables[Kind.ITEM.ordinal()].slots[id];
+        if (o == null && kind == Kind.ITEM && id < Kind.BLOCK.size) o = tables[Kind.BLOCK.ordinal()].slots[id];
+        return o == null ? null : describe(t, id);
+    }
+
     /** True when a request for {@code id} would be granted (not taken, and for ids below 4096 neither as a block nor as an item). */
     public synchronized boolean isFreeId(Kind kind, int id) {
         return id >= 0 && id < kind.size && isFree(tables[kind.ordinal()], id);

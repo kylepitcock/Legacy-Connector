@@ -194,7 +194,10 @@ public final class Ids {
         if (requested > 0 && requested < blocks.length && blocks[requested] == null && registry.release(IdRegistry.Kind.BLOCK, requested)) {
             items[requested] = null; // its ItemBlock leaves with it
         }
-        int id = registry.claimBlock(block, requested, ownerLabel());
+        String owner = ownerLabel(block);
+        String holder = requested > 0 ? registry.holderOf(IdRegistry.Kind.BLOCK, requested) : null;
+        int id = registry.claimBlock(block, requested, owner);
+        if (holder != null && id >= 0 && id != requested) noteConflict("block", requested, id, block, owner, holder);
         if (id >= 0) {
             blocks[id] = block;
             pendingItemBlocks.add(id);
@@ -250,7 +253,10 @@ public final class Ids {
 
     private static int claimItemInternal(Item item, int requested) {
         if (requested > 0 && requested < items.length && items[requested] == null) registry.release(IdRegistry.Kind.ITEM, requested);
-        int id = registry.claimItem(item, requested, ownerLabel());
+        String owner = ownerLabel(item);
+        String holder = requested > 0 ? registry.holderOf(IdRegistry.Kind.ITEM, requested) : null;
+        int id = registry.claimItem(item, requested, owner);
+        if (holder != null && id >= 0 && id != requested) noteConflict("item", requested, id, item, owner, holder);
         if (id >= 0) items[id] = item;
         return id;
     }
@@ -277,6 +283,34 @@ public final class Ids {
 
     private static String ownerLabel() {
         return "a 1.6.4 mod";
+    }
+
+    /** The mod that built {@code obj} ("mod xycraft"), for the id conflict messages. */
+    private static String ownerLabel(Object obj) {
+        try {
+            String mod = obj == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.modIdOf(obj.getClass());
+            return mod != null ? "mod " + mod : ownerLabel();
+        } catch (RuntimeException | LinkageError e) {
+            return ownerLabel();
+        }
+    }
+
+    /**
+     * A numeric id that two legacy mods asked for (default ids of old mods collide; players fixed them in the configs). Forge threw
+     * "Slot N is already occupied"; the layer moves the later one to a free id and says so in the log and the degraded report, naming both
+     * mods. A mod that reads its own id again (a config key it wrote, a hard-coded {@code blocksList[220]}) may still fail: raise the id in that
+     * mod's config file.
+     */
+    private static void noteConflict(String kind, int requested, int movedTo, Object obj, String owner, String holder) {
+        String message = "numeric " + kind + " id " + requested + " is wanted by " + owner + " (" + obj + ") and already held by " + holder
+                + ": moved to " + movedTo + ". Change the " + kind + " id in the config of one of the two mods (config/<mod>.cfg, the key named after the "
+                + kind + ") if the mod fails to load or misbehaves";
+        try {
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ID_CONFLICT,
+                    owner.startsWith("mod ") ? owner.substring(4) : owner, kind + " " + requested, message);
+        } catch (RuntimeException | LinkageError e) {
+            // no runtime collector (unit tests)
+        }
     }
 
     // ------------------------------------------------------------------ config ids
