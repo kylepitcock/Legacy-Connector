@@ -1,6 +1,5 @@
 3	net.minecraft.item.crafting.IRecipe.input:[Ljava.lang.Object;	Factorization-1.7.10-0.8.109.jar, UniDict-1.7.10-2.9.2.jar, immibis-core-59.1.4.jar
 3	net.minecraft.network.NetworkManager.provideLanClient(Ljava.net.InetAddress;I)Lnet.minecraft.network.NetworkManager;	ApolloClient-v1.3.1.b21-2026-11-06.jar, ServerUtilities-2.5.4.jar, tabfaces-1.0.16.jar
-3	net.minecraft.server.MinecraftServer.getNetworkSystem()Lnet.minecraft.network.NetworkSystem;	EasyLAN-v1.5-[1.7.10].jar, MiddleEarth-Tweaks-1.6.22.jar, mcheli-d4e3692.jar
 2	cpw.mods.fml.common.InjectedModContainer.<init>(Lcpw.mods.fml.common.ModContainer;Ljava.io.File;)V	jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
 2	cpw.mods.fml.common.LoadController.<init>(Lcpw.mods.fml.common.Loader;)V -> ()V	jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
 2	cpw.mods.fml.common.LoadController.distributeStateMessage(Lcpw.mods.fml.common.LoaderState;[Ljava.lang.Object;)V	jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
@@ -17,7 +16,6 @@
 2	cpw.mods.fml.common.network.internal.FMLMessage$EntitySpawnMessage.<init>(Lcpw.mods.fml.common.registry.EntityRegistry$EntityRegistration;Lnet.minecraft.entity.Entity;Lcpw.mods.fml.common.ModContainer;)V	CustomNPC-Plus-1.11.1.jar, Game of Thrones 24.08.29.jar
 2	cpw.mods.fml.common.patcher.ClassPatchManager.INSTANCE:Lcpw.mods.fml.common.patcher.ClassPatchManager;	BetterLineBreak-1.7.10(Forge)-1.0.1.jar, compatlib-1.7.10.jar
 2	cpw.mods.fml.common.patcher.ClassPatchManager.getPatchedResource(Ljava.lang.String;Ljava.lang.String;Lnet.minecraft.launchwrapper.LaunchClassLoader;)[B	BetterLineBreak-1.7.10(Forge)-1.0.1.jar, compatlib-1.7.10.jar
-2	cpw.mods.fml.common.registry.EntityRegistry$EntityRegistration.usesVanillaSpawning()Z	CustomNPC-Plus-1.11.1.jar, Game of Thrones 24.08.29.jar
 2	cpw.mods.fml.common.registry.EntityRegistry.tryTrackingEntity(Lnet.minecraft.entity.EntityTracker;Lnet.minecraft.entity.Entity;)Z	EntityRenderDistanceExtender-1.0c.jar, optimizationsandtweaks-V1.18.0.jar
 2	cpw.mods.fml.common.registry.GameData$GameDataSnapshot.idMap:Ljava.util.Map;	Additions to the Outer Rim-1.3.6-BETA (1).jar, schematica_plus-1.0.0-beta.4.jar
 2	cpw.mods.fml.common.registry.GameData.buildItemDataList()Lcpw.mods.fml.common.registry.GameData$GameDataSnapshot;	Additions to the Outer Rim-1.3.6-BETA (1).jar, schematica_plus-1.0.0-beta.4.jar
@@ -26,12 +24,6 @@
 2	net.minecraft.launchwrapper.IClassNameTransformer.remapClassName(Ljava.lang.String;)Ljava.lang.String;	forgeessentials-1.7.10-7.5.3-server.jar, optimizationsandtweaks-V1.18.0.jar
 2	net.minecraft.launchwrapper.IClassNameTransformer.unmapClassName(Ljava.lang.String;)Ljava.lang.String;	forgeessentials-1.7.10-7.5.3-server.jar, optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.DuplicateModsFoundException.<init>(Lcom.google.common.collect.SetMultimap;)V	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.FMLCommonHandler.computeBranding()V	BetterTitleScreen-1.7.10-1.1.jar
-1	cpw.mods.fml.common.FMLCommonHandler.handleWorldDataSave(Lnet.minecraft.world.storage.SaveHandler;Lnet.minecraft.world.storage.WorldInfo;Lnet.minecraft.nbt.NBTTagCompound;)V	forgeessentials-1.7.10-7.5.3-server.jar
-1	cpw.mods.fml.common.FMLCommonHandler.onPostClientTick()V	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.FMLCommonHandler.onPreClientTick()V	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.FMLCommonHandler.processWindowMessages()V	Cloudflared-7.10.3.jar
-1	cpw.mods.fml.common.FMLCommonHandler.stripSpecialChars(Ljava.lang.String;)Ljava.lang.String;	Cloudflared-7.10.3.jar
 1	cpw.mods.fml.common.FMLContainerHolder.getFMLContainer()Lcpw.mods.fml.common.ModContainer;	gtnhlib-0.12.4.jar
 1	cpw.mods.fml.common.IFMLSidedHandler.getSide()Lcpw.mods.fml.relauncher.Side;	CarbonConfig-1.7.10-2.0.2.1.jar
 1	cpw.mods.fml.common.IWorldGenerator.textureDomain:Ljava.lang.String;	ic2additions1.7.10-0.9.0.jar
@@ -84,31 +76,18 @@
 1	cpw.mods.fml.common.discovery.asm.ModAnnotation.getASMType()Lorg.objectweb.asm.Type;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.common.discovery.asm.ModAnnotation.getValues()Ljava.util.Map;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.common.discovery.asm.ModClassVisitor.<init>(Lcpw.mods.fml.common.discovery.asm.ASMModParser;)V	jarjar-0.4.0-beta.jar
-1	cpw.mods.fml.common.event.FMLInterModComms.sendRuntimeMessage(Ljava.lang.Object;Ljava.lang.String;Ljava.lang.String;Lnet.minecraft.item.ItemStack;)V	IvToolkit-1.2.1.jar
 1	cpw.mods.fml.common.event.FMLModIdMappingEvent.<init>(Ljava.util.Map;)V	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.functions.ArtifactVersionNameFunction.<init>()V	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.functions.GenericIterableFactory.newCastingIterable(Ljava.lang.Iterable;Ljava.lang.Class;)Ljava.lang.Iterable;	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.launcher.FMLTweaker.getJarLocation()Ljava.net.URI;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.common.launcher.FMLTweaker.injectCascadingTweak(Ljava.lang.String;)V	jarjar-0.4.0-beta.jar
-1	cpw.mods.fml.common.network.FMLNetworkEvent$CustomNetworkEvent.wrappedEvent:Ljava.lang.Object;	personalspace-1.1.0.jar
-1	cpw.mods.fml.common.network.FMLNetworkEvent$CustomPacketRegistrationEvent.operation:Ljava.lang.String;	vintagedamageindicators-0.9.4.jar
-1	cpw.mods.fml.common.network.FMLNetworkEvent$CustomPacketRegistrationEvent.registrations:Lcom.google.common.collect.ImmutableSet;	vintagedamageindicators-0.9.4.jar
 1	cpw.mods.fml.common.network.FMLNetworkEvent$CustomPacketRegistrationEvent.side:Lcpw.mods.fml.relauncher.Side;	vintagedamageindicators-0.9.4.jar
 1	cpw.mods.fml.common.network.handshake.FMLHandshakeMessage$ModList.modList()Ljava.util.Map;	Paradigm-forge-1.7.10-2.5.4.jar
-1	cpw.mods.fml.common.network.handshake.NetworkDispatcher.rejectHandshake(Ljava.lang.String;)V	MiddleEarth-Tweaks-1.6.22.jar
 1	cpw.mods.fml.common.network.internal.FMLNetworkHandler.getEntitySpawningPacket(Lnet.minecraft.entity.Entity;)Lnet.minecraft.network.Packet;	Factorization-1.7.10-0.8.109.jar
-1	cpw.mods.fml.common.network.internal.FMLProxyPacket.getOrigin()Lnet.minecraft.network.NetworkManager;	MiddleEarth-Tweaks-1.6.22.jar
 1	cpw.mods.fml.common.network.internal.FMLRuntimeCodec.<init>()V	Game of Thrones 24.08.29.jar
 1	cpw.mods.fml.common.network.internal.FMLRuntimeCodec.encodeInto(Lio.netty.channel.ChannelHandlerContext;Lcpw.mods.fml.common.network.internal.FMLMessage;Lio.netty.buffer.ByteBuf;)V	Game of Thrones 24.08.29.jar
-1	cpw.mods.fml.common.registry.EntityRegistry.addSpawn(Ljava.lang.String;IIILnet.minecraft.entity.EnumCreatureType;[Lnet.minecraft.world.biome.BiomeGenBase;)V	zHavenCoreCustomForms-Public-3.1.0 BETA.jar
-1	cpw.mods.fml.common.registry.GameData.dumpRegistry(Ljava.io.File;)V	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.registry.GameData.endlessIDsItemBlockCache:Lcom.falsepattern.endlessids.util.WeakIdentityHashMap;	endlessids-mc1.7.10-1.7.4.jar
-1	cpw.mods.fml.common.registry.GameData.freezeData()V	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.registry.GameData.getMain()Lcpw.mods.fml.common.registry.GameData;	1.7.10-ASJCore-1.7.0.3.jar
 1	cpw.mods.fml.common.registry.GameData.processIdRematches(Ljava.lang.Iterable;ZLcpw.mods.fml.common.registry.GameData;Ljava.util.Map;)Ljava.util.List;	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.registry.GameData.registerItem(Lnet.minecraft.item.Item;Ljava.lang.String;I)I	1.7.10-ASJCore-1.7.0.3.jar
-1	cpw.mods.fml.common.registry.GameData.revertToFrozen()V	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.registry.GameRegistry.addSubstitutionAlias(Ljava.lang.String;Lcpw.mods.fml.common.registry.GameRegistry$Type;Ljava.lang.Object;)V	Factorization-1.7.10-0.8.109.jar
 1	cpw.mods.fml.common.registry.ItemStackHolderInjector.INSTANCE:Lcpw.mods.fml.common.registry.ItemStackHolderInjector;	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.registry.ItemStackHolderInjector.findHolders(Lcpw.mods.fml.common.discovery.ASMDataTable;)V	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.registry.ItemStackHolderInjector.inject()V	optimizationsandtweaks-V1.18.0.jar
@@ -120,7 +99,6 @@
 1	cpw.mods.fml.common.toposort.ModSortingException$SortingExceptionData.getFirstBadNode()Ljava.lang.Object;	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.toposort.ModSortingException$SortingExceptionData.getVisitedNodes()Ljava.util.Set;	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.common.toposort.ModSortingException.getExceptionData()Lcpw.mods.fml.common.toposort.ModSortingException$SortingExceptionData;	optimizationsandtweaks-V1.18.0.jar
-1	cpw.mods.fml.common.versioning.VersionRange.getLowerBoundString()Ljava.lang.String;	optimizationsandtweaks-V1.18.0.jar
 1	cpw.mods.fml.relauncher.CoreModManager.COREMODCONTAINSFMLMOD:Ljava.util.jar.Attributes$Name;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.relauncher.CoreModManager.MODSIDE:Ljava.util.jar.Attributes$Name;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.relauncher.CoreModManager.MODTYPE:Ljava.util.jar.Attributes$Name;	jarjar-0.4.0-beta.jar
@@ -131,26 +109,18 @@
 1	cpw.mods.fml.relauncher.CoreModManager.tweakSorting:Ljava.util.Map;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.relauncher.CoreModManager.tweaker:Lcpw.mods.fml.common.launcher.FMLTweaker;	jarjar-0.4.0-beta.jar
 1	cpw.mods.fml.relauncher.FMLLaunchHandler.side:Lcpw.mods.fml.relauncher.Side;	jarjar-0.4.0-beta.jar
-1	cpw.mods.fml.server.FMLServerHandler.getCurrentLanguage()Ljava.lang.String;	1.7.10-ASJCore-1.7.0.3.jar
 1	net.minecraft.block.Block.isAir(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.BlockPos;)Z	XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
 1	net.minecraft.block.BlockButton.updateNeighbor(Lnet.minecraft.world.World;IIII)V	Alfheim-67.jar
 1	net.minecraft.block.BlockContainer.dropAvaritiaClusters(Lcom.jaquadro.minecraft.storagedrawers.block.tile.TileEntityDrawers;Lnet.minecraft.world.World;III)V	StorageDrawers-2.3.0-GTNH.jar
 1	net.minecraft.block.BlockFire.rebuildFireInfo()V	Improving Minecraft-1.7.10-v5.jar
 1	net.minecraft.block.state.IBlockState.getBlock()Lnet.minecraft.block.Block;	XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
-1	net.minecraft.command.CommandBase.setAdminCommander(Lnet.minecraft.command.IAdminCommand;)V	RecurrentComplex-0.9.7.1.2.jar
 1	net.minecraft.entity.Entity.getRot()Z	zHavenCoreCustomForms-Public-3.1.0 BETA.jar
 1	net.minecraft.entity.EntityFlying.getSyncDataCompound()Lnet.minecraft.nbt.NBTTagCompound;	vintagedamageindicators-0.9.4.jar
 1	net.minecraft.entity.EntityList.func_151514_a()V	1.7.10-ASJCore-1.7.0.3.jar
 1	net.minecraft.entity.EntityLivingBase.preparePlayerToSpawn()V	aquaacrobatics-0.0.6-1-7-10.44+6fc0f073fd-dirty.jar
-1	net.minecraft.entity.EntityTrackerEntry.sendLocationToAllClients(Ljava.util.List;)V	optimizationsandtweaks-V1.18.0.jar
 1	net.minecraft.entity.boss.EntityDragon.setNewTarget()V	LoTAS1.7.10-2.0.0.jar
-1	net.minecraft.entity.boss.EntityWither.onChangedPotionEffect(Lnet.minecraft.potion.PotionEffect;Z)V	manametalmod-8.0.9.jar
-1	net.minecraft.entity.boss.EntityWither.onNewPotionEffect(Lnet.minecraft.potion.PotionEffect;)V	manametalmod-8.0.9.jar
 1	net.minecraft.entity.item.EntityItem.deliverItemViaDrone(DDD)V	BloodMagic-1.7.10-1.3.3-17.jar
 1	net.minecraft.entity.monster.EntityBlaze.resetEntityId()V	inventorypets-1.7.10-1.5.2.jar
-1	net.minecraft.entity.monster.EntityMob.onNewPotionEffect(Lnet.minecraft.potion.PotionEffect;)V	manametalmod-8.0.9.jar
-1	net.minecraft.entity.monster.EntityMob.updatePotionEffects()V	manametalmod-8.0.9.jar
-1	net.minecraft.entity.passive.EntityTameable.damageArmor(F)V	Pokecube Legacy 1.3.3.jar
 1	net.minecraft.entity.passive.EntityTameable.getSwimSound()Ljava.lang.String;	Pokecube Legacy 1.3.3.jar
 1	net.minecraft.entity.passive.EntityTameable.shouldDismountInWater(Lnet.minecraft.entity.Entity;)Z	AntMan-Beta-1.7.10-1.5.4.jar
 1	net.minecraft.entity.player.EntityPlayerMP.handleFalling(DZ)V	MiddleEarth-Tweaks-1.6.22.jar
@@ -192,15 +162,8 @@
 1	net.minecraft.network.NetworkManager.attrKeyConnectionState:Lio.netty.util.AttributeKey;	MiddleEarth-Tweaks-1.6.22.jar
 1	net.minecraft.network.NetworkManager.provideLocalClient(Ljava.net.SocketAddress;)Lnet.minecraft.network.NetworkManager;	LoTAS1.7.10-2.0.0.jar
 1	net.minecraft.network.NetworkManager.setConnectionState(Lnet.minecraft.network.EnumConnectionState;)V	Factorization-1.7.10-0.8.109.jar
-1	net.minecraft.network.NetworkSystem.addLanEndpoint(Ljava.net.InetAddress;I)V	EasyLAN-v1.5-[1.7.10].jar
-1	net.minecraft.network.NetworkSystem.addLocalEndpoint()Ljava.net.SocketAddress;	LoTAS1.7.10-2.0.0.jar
-1	net.minecraft.network.NetworkSystem.networkTick()V	ServerUtilities-2.5.4.jar
 1	net.minecraft.pathfinding.PathFinder.createEntityPathTo(Lnet.minecraft.entity.Entity;DDDF)Lnet.minecraft.pathfinding.PathEntity;	etfuturum-2.6.2.jar
 1	net.minecraft.pathfinding.PathFinder.getVerticalOffset(Lnet.minecraft.entity.Entity;IIILnet.minecraft.pathfinding.PathPoint;)I	CustomNPC-Plus-1.11.1.jar
-1	net.minecraft.pathfinding.PathNavigate.getEntityPosition()Lnet.minecraft.util.Vec3;	etfuturum-2.6.2.jar
-1	net.minecraft.pathfinding.PathNavigate.isInLiquid()Z	etfuturum-2.6.2.jar
-1	net.minecraft.pathfinding.PathNavigate.isSafeToStandAt(IIIIIILnet.minecraft.util.Vec3;DD)Z	etfuturum-2.6.2.jar
-1	net.minecraft.pathfinding.PathNavigate.pathFollow()V	etfuturum-2.6.2.jar
 1	net.minecraft.potion.Potion.applyTo(Lnet.minecraft.entity.EntityLivingBase;II)V	ic2additions1.7.10-0.9.0.jar
 1	net.minecraft.profiler.PlayerUsageSnooper.<init>(Ljava.lang.String;Lnet.minecraft.profiler.IPlayerUsage;J)V	optimizationsandtweaks-V1.18.0.jar
 1	net.minecraft.profiler.PlayerUsageSnooper.addMemoryStatsToSnooper()V	optimizationsandtweaks-V1.18.0.jar
@@ -234,7 +197,6 @@
 1	net.minecraft.tileentity.TileEntity.tier:I	ic2additions1.7.10-0.9.0.jar
 1	net.minecraft.tileentity.TileEntity.updateEntityServer()V	ic2additions1.7.10-0.9.0.jar
 1	net.minecraft.tileentity.TileEntity.updateProjectRedBundled()V	buildcraft-compat-7.1.9.jar
-1	net.minecraft.util.ChatComponentStyle.createDeepCopyIterator(Ljava.lang.Iterable;)Ljava.util.Iterator;	tabbychat-1.12.2.jar
 1	net.minecraft.util.DamageSource.alfheim_synthetic_elementalFlag:I	Alfheim-67.jar
 1	net.minecraft.util.FoodStats.ASJCore_host:Lnet.minecraft.entity.player.EntityPlayer;	1.7.10-ASJCore-1.7.0.3.jar
 1	net.minecraft.util.HttpUtil.downloadResourcePack(Ljava.io.File;Ljava.lang.String;Lnet.minecraft.util.HttpUtil$DownloadListener;Ljava.util.Map;ILnet.minecraft.util.IProgressUpdate;Ljava.net.Proxy;)V	Pokecube Legacy 1.3.3.jar
@@ -242,8 +204,6 @@
 1	net.minecraft.util.MessageDeserializer2.<init>()V	steambridge-1.2-Forge-1.7.10.jar
 1	net.minecraft.util.MessageSerializer.<init>(Lnet.minecraft.network.NetworkStatistics;)V	steambridge-1.2-Forge-1.7.10.jar
 1	net.minecraft.util.MessageSerializer2.<init>()V	steambridge-1.2-Forge-1.7.10.jar
-1	net.minecraft.util.ScreenShotHelper.getTimestampedPNGFileForDirectory(Ljava.io.File;)Ljava.io.File;	swansong-mc1.7.10-1.3.7.jar
-1	net.minecraft.village.VillageSiege.tick()V	optimizationsandtweaks-V1.18.0.jar
 1	net.minecraft.world.IBlockAccess.getBiomeGenForCoords(Lnet.minecraft.util.BlockPos;)Lnet.minecraft.world.biome.BiomeGenBase;	XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
 1	net.minecraft.world.IBlockAccess.getBlockState(Lnet.minecraft.util.BlockPos;)Lnet.minecraft.block.state.IBlockState;	XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
 1	net.minecraft.world.IBlockAccess.getCombinedLight(Lnet.minecraft.util.BlockPos;I)I	XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
@@ -254,14 +214,11 @@
 1	net.minecraft.world.IBlockAccess.isSideSolid(Lnet.minecraft.util.BlockPos;Lnet.minecraft.util.EnumFacing;Z)Z	XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar
 1	net.minecraft.world.SpawnerAnimals.findChunksForSpawning(Lnet.minecraft.world.WorldServer;ZZZ)I	optimizationsandtweaks-V1.18.0.jar
 1	net.minecraft.world.World.func_147456_g()V	optimizationsandtweaks-V1.18.0.jar
-1	net.minecraft.world.World.villageSiegeObj:Lnet.minecraft.village.VillageSiege;	optimizationsandtweaks-V1.18.0.jar
 1	net.minecraft.world.WorldManager.<init>(Lnet.minecraft.server.MinecraftServer;Lnet.minecraft.world.WorldServer;)V	forgeessentials-1.7.10-7.5.3-server.jar
 1	net.minecraft.world.WorldServer.field_147490_S:[Lnet.minecraft.world.WorldServer$ServerBlockEventList;	zombieplague2.jar
 1	net.minecraft.world.WorldServer.pendingTickListEntriesThisTick:Ljava.util.List;	zombieplague2.jar
-1	net.minecraft.world.WorldServer.saveChunkData()V	ServerUtilities-2.5.4.jar
 1	net.minecraft.world.chunk.Chunk.WorldEngine_SubBiomeList:[Ljava.lang.String;	1.7.10-ASJCore-1.7.0.3.jar
 1	net.minecraft.world.chunk.storage.AnvilChunkLoader.loadEntities(Lnet.minecraft.world.World;Lnet.minecraft.nbt.NBTTagCompound;Lnet.minecraft.world.chunk.Chunk;)V	RX-RNTM-[3.3_X1000].jar
-1	net.minecraft.world.chunk.storage.ExtendedBlockStorage.createBlockMSBArray()Lnet.minecraft.world.chunk.NibbleArray;	chunkapi-mc1.7.10-0.8.4.jar
 1	net.minecraft.world.gen.structure.StructureNetherBridgePieces$Entrance.<init>()V	waystones-1.0.16.jar
 1	net.minecraft.world.gen.structure.StructureNetherBridgePieces$Entrance.<init>(ILjava.util.Random;Lnet.minecraft.world.gen.structure.StructureBoundingBox;I)V	waystones-1.0.16.jar
 1	net.minecraft.world.gen.structure.StructureNetherBridgePieces$Entrance.isAboveGround(Lnet.minecraft.world.gen.structure.StructureBoundingBox;)Z	waystones-1.0.16.jar
@@ -271,21 +228,13 @@
 1	net.minecraft.world.gen.structure.StructureStrongholdPieces$Stairs2.strongholdPortalRoom:Lnet.minecraft.world.gen.structure.StructureStrongholdPieces$PortalRoom;	manametalmod-8.0.9.jar
 1	net.minecraft.world.storage.ISaveHandler.getChunkLoader(Lnet.minecraft.world.WorldProvider;)Lnet.minecraft.world.chunk.storage.IChunkLoader;	Fastcraft+Ruins+Patch-1.1.jar
 1	net.minecraft.world.storage.ISaveHandler.loadWorldInfo()Lnet.minecraft.world.storage.WorldInfo;	LoTAS1.7.10-2.0.0.jar
-1	net.minecraftforge.common.DimensionManager.dimensions:Ljava.util.Hashtable;	IDConflictsViewer-1.3.jar
-1	net.minecraftforge.common.DimensionManager.loadDimensionDataMap(Lnet.minecraft.nbt.NBTTagCompound;)V	forgeessentials-1.7.10-7.5.3-server.jar
-1	net.minecraftforge.common.DimensionManager.setWorld(ILnet.minecraft.world.WorldServer;)V	optimizationsandtweaks-V1.18.0.jar
 1	net.minecraftforge.common.ForgeHooks.onPickBlock(Lnet.minecraft.util.MovingObjectPosition;Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.world.World;)Z	optimizationsandtweaks-V1.18.0.jar
-1	net.minecraftforge.common.ForgeHooks.onPlaceItemIntoWorld(Lnet.minecraft.item.ItemStack;Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.world.World;IIIIFFF)Z	enderutilities-1.7.10-0.5.3.jar
-1	net.minecraftforge.common.ForgeHooks.onServerChatEvent(Lnet.minecraft.network.NetHandlerPlayServer;Ljava.lang.String;Lnet.minecraft.util.ChatComponentTranslation;)Lnet.minecraft.util.ChatComponentTranslation;	Game of Thrones 24.08.29.jar
 1	net.minecraftforge.common.ForgeVersion.getTarget()Ljava.lang.String;	narutomod-0.5.2.jar
 1	net.minecraftforge.common.IExtendedEntityProperties.getContingencyEffect()Lnet.minecraft.item.ItemStack;	AM2PlayGround-Beta-0.12.1.jar
 1	net.minecraftforge.common.IExtendedEntityProperties.getContingencyType()Lam2.api.spell.enums.ContingencyTypes;	AM2PlayGround-Beta-0.12.1.jar
 1	net.minecraftforge.common.IExtendedEntityProperties.getPreferencesProperties()Lmcjty.rftools.playerprops.PreferencesProperties;	rftools-4.23.jar
 1	net.minecraftforge.common.IExtendedEntityProperties.procContingency()V	AM2PlayGround-Beta-0.12.1.jar
-1	net.minecraftforge.common.ISpecialArmor$ArmorProperties.StandardizeList([Lnet.minecraftforge.common.ISpecialArmor$ArmorProperties;D)V	deathlyhallows-1.1.8.jar
 1	net.minecraftforge.common.MinecraftForge.EVENT_BUS:Lnet.minecraftforge.fml.common.eventhandler.EventBus;	cpm-osc-retro-1.6.1.jar
-1	net.minecraftforge.event.ForgeEventFactory.onLivingHeal(Lnet.minecraft.entity.EntityLivingBase;F)F	The Titans MC 1.7.10 version 0.45.jar
-1	net.minecraftforge.fluids.FluidRegistry.masterFluidReference:Lcom.google.common.collect.BiMap;	okcore-26.11.17.0.jar
 1	net.minecraftforge.fml.common.event.FMLInitializationEvent.getSide()Lnet.minecraftforge.fml.relauncher.Side;	cpm-osc-retro-1.6.1.jar
 1	net.minecraftforge.fml.common.event.FMLInterModComms.sendMessage(Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;)Z	cpm-osc-retro-1.6.1.jar
 1	net.minecraftforge.fml.common.eventhandler.EventBus.register(Ljava.lang.Object;)V	cpm-osc-retro-1.6.1.jar
@@ -293,4 +242,3 @@
 1	net.minecraftforge.fml.common.gameevent.TickEvent$Phase.START:Lnet.minecraftforge.fml.common.gameevent.TickEvent$Phase;	cpm-osc-retro-1.6.1.jar
 1	net.minecraftforge.fml.relauncher.FMLInjectionData.data()[Ljava.lang.Object;	serializationisbad-1.5.2.jar
 1	net.minecraftforge.fml.relauncher.Side.CLIENT:Lnet.minecraftforge.fml.relauncher.Side;	cpm-osc-retro-1.6.1.jar
-1	net.minecraftforge.oredict.OreDictionary.initVanillaEntries()V	zombieplague2.jar
