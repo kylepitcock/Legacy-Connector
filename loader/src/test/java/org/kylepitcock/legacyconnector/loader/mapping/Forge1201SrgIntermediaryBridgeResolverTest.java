@@ -359,6 +359,29 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 result.candidates().getFirst().mappingOwnerKind());
     }
 
+
+    @Test
+    void refusesADeclaredHierarchyCandidateWithoutAnSrgMethodIdentity() throws Exception {
+        var index = readHierarchyFixture(false, false, true);
+        var hierarchy = new Forge1201SrgIntermediaryBridgeResolver.VerifiedSourceHierarchy(
+                "net/minecraft/src/C_Entity_", "net/minecraft/world/entity/Entity", true,
+                java.util.List.of(
+                        new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                                "net/minecraft/src/C_EntityAccess_",
+                                "net/minecraft/world/level/entity/EntityAccess",
+                                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 1),
+                        new Forge1201SrgIntermediaryBridgeResolver.SourceHierarchyOwner(
+                                "net/minecraft/src/C_UnmappedCandidate_",
+                                "net/minecraft/world/level/entity/UnmappedCandidate",
+                                Forge1201SrgIntermediaryBridgeResolver.HierarchyOwnerKind.INTERFACE, 2)));
+
+        var result = index.resolveMethodWithVerifiedHierarchy("m_10_", "(I)V", hierarchy);
+
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.UNRESOLVED_HIERARCHY_CANDIDATE,
+                result.status());
+    }
+
     private Forge1201SrgIntermediaryBridgeResolver.Index readHierarchyFixture(
             boolean includeSecondInterface,
             boolean mapInvocationOwnerDirectly,
@@ -373,6 +396,7 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 \tq (I)V m_10_ 6
                 z net/minecraft/src/C_Unrelated_ 7
                 \tr (I)V m_10_ 8
+                u net/minecraft/src/C_UnmappedCandidate_ 9
                 """;
         String sourceTiny = """
                 v1\tofficial\tintermediary
@@ -380,6 +404,7 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 CLASS\tb\tnet/minecraft/class_2
                 CLASS\tc\tnet/minecraft/class_3
                 CLASS\tz\tnet/minecraft/class_4
+                CLASS\tu\tnet/minecraft/class_5
                 METHOD\tb\t(I)V\tx\tmethod_10
                 METHOD\tz\t(I)V\tr\tmethod_99
                 """;
@@ -395,6 +420,7 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 CLASS\te\tnet/minecraft/class_2
                 CLASS\tf\tnet/minecraft/class_3
                 CLASS\tg\tnet/minecraft/class_4
+                CLASS\th\tnet/minecraft/class_5
                 METHOD\te\t(I)V\ty\tmethod_10
                 METHOD\tg\t(I)V\tt\tmethod_99
                 """;
