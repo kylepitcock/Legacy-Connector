@@ -176,6 +176,48 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
     public void setLevel(Level level) {
         super.setLevel(level);
         if (legacy != null) legacy.setWorldObj(World.mcc$wrap(level));
+        if (level instanceof net.minecraft.server.level.ServerLevel) {
+            LIVE.add(this);
+            listenForSaves();
+        }
+    }
+
+    // ------------------------------------------------------------------ saving
+
+    /** Server-side hosts of loaded chunks (removed when the host is removed or its chunk unloads). */
+    private static final java.util.Set<LegacyBlockEntity> LIVE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static boolean listening;
+
+    /**
+     * 1.4.7 to 1.7.10 saved a chunk whenever it was "modified" or held entities and a player was around (Chunk.needsSaving), and most tile entities never
+     * called markDirty when a field of theirs changed (an engine's heat, a conduit's liquid, a machine's progress): their state reached the disk with the
+     * regular chunk save. A modern chunk is written only when something set it unsaved, so those tile entities lost everything since their chunk was last
+     * dirtied. Before a level or a chunk is written, the chunks that hold a live legacy tile entity are therefore marked unsaved.
+     */
+    private static synchronized void listenForSaves() {
+        if (listening) return;
+        listening = true;
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Save e) -> {
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel sl) markChunksUnsaved(sl);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
+            if (e.getChunk() instanceof net.minecraft.world.level.chunk.LevelChunk chunk && !chunk.getLevel().isClientSide) {
+                for (BlockEntity be : chunk.getBlockEntities().values()) {
+                    if (be instanceof LegacyBlockEntity host && host.legacy != null) {
+                        chunk.setUnsaved(true);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    private static void markChunksUnsaved(net.minecraft.server.level.ServerLevel level) {
+        for (LegacyBlockEntity be : LIVE) {
+            if (be.level != level || be.isRemoved() || be.legacy == null) continue;
+            net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunkSource().getChunkNow(be.worldPosition.getX() >> 4, be.worldPosition.getZ() >> 4);
+            if (chunk != null) chunk.setUnsaved(true);
+        }
     }
 
     private static final java.util.Map<Class<?>, Boolean> UPDATES = new java.util.concurrent.ConcurrentHashMap<>();
@@ -294,12 +336,14 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         // Forge never invalidated a tile entity whose chunk unloaded (only onChunkUnload): BuildCraft's quarry releases its chunk loading ticket in invalidate()
         // and the ticket would be gone from the world's save.
         if (legacy != null && !chunkUnloading) invalidateLegacy(legacy);
+        LIVE.remove(this);
         super.setRemoved();
     }
 
     @Override
     public void onChunkUnloaded() {
         chunkUnloading = true;
+        LIVE.remove(this);
         if (legacy != null) legacy.onChunkUnload();
         super.onChunkUnloaded();
     }
@@ -390,6 +434,10 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             if (s35 instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet132TileEntityData) tag.putBoolean("mcc$164", true);
             return tag;
         }
+        // an FML "tiny packet" (Packet131MapData with a mod): it travels on the layer's tiny channel like a custom payload, so the mod's ITinyPacketHandler gets it
+        if (p instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet131MapData tiny && tiny.mcc$modId != null) {
+            p = org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(tiny);
+        }
         if (p instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload payload164) {
             // 1.6.4 tiles answer with a custom payload packet: carried like a 1.7.10 custom-channel one
             CompoundTag tag = new CompoundTag();
@@ -454,6 +502,21 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         net.minecraft.client.Minecraft.getInstance().tell(() -> deliverWhenFindable(tag, tries + 1));
     }
 
+    private long lastRemesh = Long.MIN_VALUE;
+
+    /**
+     * 1.4.7 handlers of a description packet ended with {@code markBlockForRenderUpdate}, so the block is drawn again with what the packet changed (a copy block that now
+     * shows the block it stands for). The packet here is handled by the mod's own code, so the chunk section is rebuilt for it (at most every 20 ticks per tile).
+     */
+    private void remeshAfterDescription() {
+        if (level == null || !level.isClientSide) return;
+        long now = level.getGameTime();
+        if (now - lastRemesh < 20 && now >= lastRemesh) return;
+        lastRemesh = now;
+        BlockState state = getBlockState();
+        level.sendBlockUpdated(worldPosition, state, state, 0);
+    }
+
     private void deliver(CompoundTag tag) {
         deliver(tag, false);
     }
@@ -478,6 +541,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
                 var packet = legacyconnector.v1_6_4.forward.Packets164.readPacket(null, new java.io.DataInputStream(new java.io.ByteArrayInputStream(tag.getByteArray("mcc$wire"))),
                         false, null);
                 if (packet != null) packet.processPacket(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
+                remeshAfterDescription();
             } catch (java.io.IOException | RuntimeException | LinkageError e) {
                 if (DELIVERY_FAILURES.incrementAndGet() <= 10) {
                     org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").warn("{} failed to handle its description packet", getClass().getName(), e);

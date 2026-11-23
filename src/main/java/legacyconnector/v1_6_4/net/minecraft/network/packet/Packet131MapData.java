@@ -45,6 +45,11 @@ public class Packet131MapData extends Packet {
     }
 
     @Override
+    public void processPacket(legacyconnector.v1_7_10.net.minecraft.network.INetHandler handler) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.dispatchTiny(this, handler);
+    }
+
+    @Override
     public void mcc$send(ServerPlayer player) {
         if (mcc$modId != null) org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(this).mcc$send(player);
     }

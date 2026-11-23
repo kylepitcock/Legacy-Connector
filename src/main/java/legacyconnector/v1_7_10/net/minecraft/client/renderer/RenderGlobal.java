@@ -20,6 +20,8 @@ public class RenderGlobal {
     private final java.util.Map damagedBlocks = new DamagedBlocks();
     /** Tile entities 1.7.10 rendered this frame (its chunk renderers filled it); the modern renderer keeps its own. */
     public java.util.List tileEntities = new java.util.ArrayList();
+    /** The block renderer of the world renderer (1.4.7 {@code globalRenderBlocks}): tile entity renderers draw whole blocks with it (Xycraft's iron plate); its world is the tile entity's. */
+    public RenderBlocks renderBlocksRg = new RenderBlocks();
     /** 1.7.10's chunk section renderers: the modern renderer has its own, so this is empty. */
     private WorldRenderer[] worldRenderers = new WorldRenderer[0];
     private java.util.List worldRenderersToUpdate = new java.util.ArrayList();

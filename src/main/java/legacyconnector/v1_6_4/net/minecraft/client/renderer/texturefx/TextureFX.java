@@ -21,8 +21,12 @@ public class TextureFX {
     public void onTick() {
     }
 
-    /** Binds the sheet the tile is on ({@code /terrain.png} by default). */
+    /**
+     * Binds the sheet the tile is on: {@code tileImage} 0 is {@code /terrain.png}, 1 {@code /gui/items.png}, anything else the texture id of a sheet of the mod's own
+     * (Forge's patched 1.4.7 TextureFX bound that id: Railcraft keeps {@code getTexture(path)} there).
+     */
     public void bindImage(TextureManager engine) {
-        engine.bindTexture("/terrain.png");
+        if (tileImage > 1) engine.bindTexture(tileImage);
+        else engine.bindTexture(tileImage == 1 ? "/gui/items.png" : "/terrain.png");
     }
 }
