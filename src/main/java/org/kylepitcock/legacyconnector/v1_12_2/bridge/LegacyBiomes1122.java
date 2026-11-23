@@ -209,22 +209,26 @@ public final class LegacyBiomes1122 {
     // ------------------------------------------------------------------ decoration in the default overworld
 
     private static final java.util.concurrent.atomic.AtomicInteger DECORATED = new java.util.concurrent.atomic.AtomicInteger();
-    private static volatile Map<ResourceLocation, Biome> byId = Map.of();
-    private static int byIdSize = -1;
+    private static volatile Map<ResourceLocation, Biome> byId;
 
     public static void registerDecoration() {
         org.kylepitcock.legacyconnector.core.worldgen.LegacyBiomeFeature.addHook(LegacyBiomes1122::decorate);
     }
 
-    private static synchronized Biome byModernId(ResourceLocation id) {
-        List<Biome> mods = modBiomes();
-        if (mods.size() != byIdSize) {
-            Map<ResourceLocation, Biome> m = new java.util.HashMap<>();
-            for (Biome b : mods) m.put(BiomeBridge1122.modernId(b), b);
-            byId = m;
-            byIdSize = mods.size();
+    /** O(1): chunk generation asks for this per column; the registries are final once the first chunk generates, so the map is built once. */
+    private static Biome byModernId(ResourceLocation id) {
+        Map<ResourceLocation, Biome> m = byId;
+        if (m == null) {
+            synchronized (LegacyBiomes1122.class) {
+                m = byId;
+                if (m == null) {
+                    Map<ResourceLocation, Biome> built = new java.util.HashMap<>();
+                    for (Biome b : modBiomes()) built.put(BiomeBridge1122.modernId(b), b);
+                    byId = m = built;
+                }
+            }
         }
-        return byId.get(id);
+        return m.get(id);
     }
 
     /** What GenLayer-placed mod biomes got in 1.12: the surface blocks of genTerrainBlocks, then the biome's decorator for the chunk. */
