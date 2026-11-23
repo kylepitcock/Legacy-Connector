@@ -491,6 +491,16 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         else super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 
+    /**
+     * Client: the server's velocity packet. 1.7.10 delivered it through setVelocity, which interpolating projectiles override
+     * (they keep the packet's velocity next to the interpolated position and restore it on every position update).
+     */
+    @Override
+    public void lerpMotion(double x, double y, double z) {
+        if (legacy != null && LegacyHosts.overrides(legacy.getClass(), "setVelocity", double.class, double.class, double.class)) legacy.setVelocity(x, y, z);
+        else super.lerpMotion(x, y, z);
+    }
+
     @Override
     public void mcc$superLerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
         super.lerpTo(x, y, z, yaw, pitch, steps);
