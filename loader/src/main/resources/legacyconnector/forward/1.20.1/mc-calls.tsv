@@ -1143,3 +1143,30 @@ net/minecraft/client/particle/ParticleEngine	render	(Lcom/mojang/blaze3d/vertex/
 # BufferUploader.drawWithShader/draw of a mesh the 1.20.1 builder's end() answered: 1.21.1's build() answers null for a builder that got no vertex (the 1.20.1 RenderedBuffer was empty and drawing it did nothing)
 com/mojang/blaze3d/vertex/BufferUploader	drawWithShader	(Lcom/mojang/blaze3d/vertex/MeshData;)V	MixinTargetCompat	uploadShader
 com/mojang/blaze3d/vertex/BufferUploader	draw	(Lcom/mojang/blaze3d/vertex/MeshData;)V	MixinTargetCompat	upload
+# --- round 15 client: gui/blaze3d members that changed shape (helpers in Round15ClientCompat)
+net/minecraft/client/gui/Gui$HeartType	getX	(ZZ)I	Round15ClientCompat	heartTypeX	-
+net/minecraft/client/renderer/MultiBufferSource$BufferSource	$get$fixedBuffers	()Ljava/util/Map;	Round15ClientCompat	bufferSourceFixed	-
+com/mojang/blaze3d/vertex/VertexFormat	getElementAttributeNames	()Lcom/google/common/collect/ImmutableList;	Round15ClientCompat	vertexFormatNames	-
+com/mojang/blaze3d/vertex/VertexFormat	$get$offsets	()Lit/unimi/dsi/fastutil/ints/IntList;	Round15ClientCompat	vertexFormatOffsets	-
+net/minecraft/client/renderer/Sheets	getBannerMaterial	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/client/resources/model/Material;	Round15ClientCompat	bannerMaterial	-
+net/minecraft/client/renderer/Sheets	getShieldMaterial	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/client/resources/model/Material;	Round15ClientCompat	shieldMaterial	-
+net/minecraft/client/renderer/block/model/BlockElementFace	<init>	(Lnet/minecraft/core/Direction;ILjava/lang/String;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;Lnet/neoforged/neoforge/client/model/ExtraFaceData;)V	Round15ClientCompat	newElementFace	-
+net/minecraft/client/renderer/texture/TextureAtlas	getTextureLocations	()Ljava/util/Set;	Round15ClientCompat	atlasLocations	-
+net/minecraft/client/gui/MapRenderer	update	(ILnet/minecraft/world/level/saveddata/maps/MapItemSavedData;)V	Round15ClientCompat	mapUpdate	-
+net/minecraft/client/gui/components/SubtitleOverlay	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;)V	Round15ClientCompat	subtitlePlaySound	-
+net/minecraft/client/sounds/SoundEventListener	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;)V	Round15ClientCompat	listenerPlaySound	-
+net/minecraft/client/Minecraft	$get$pausePartialTick	()F	Round15ClientCompat	pausePartialTick	-
+net/minecraft/client/resources/SkinManager	getInsecureSkinLocation	(Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/resources/ResourceLocation;	Round15ClientCompat	insecureSkinLocation	-
+net/minecraft/client/player/LocalPlayer	getServerBrand	()Ljava/lang/String;	Round15ClientCompat	serverBrand	-
+net/minecraft/client/server/IntegratedServer	getAverageTickTime	()F	Round15ClientCompat	averageTickTime	-
+net/minecraft/client/renderer/LevelRenderer	$get$chunkRenderDispatcher	()Lnet/minecraft/client/renderer/chunk/SectionRenderDispatcher;	Round15ClientCompat	sectionDispatcher	-
+net/minecraft/client/gui/screens/recipebook/GhostRecipe	getRecipe	()Lnet/minecraft/world/item/crafting/Recipe;	Round15ClientCompat	ghostRecipe	-
+net/minecraft/client/gui/screens/recipebook/RecipeButton	getRecipe	()Lnet/minecraft/world/item/crafting/Recipe;	Round15ClientCompat	buttonRecipe	-
+net/minecraft/client/multiplayer/MultiPlayerGameMode	handlePlaceRecipe	(ILnet/minecraft/world/item/crafting/Recipe;Z)V	Round15ClientCompat	handlePlaceRecipe	-
+com/mojang/blaze3d/systems/RenderSystem	assertInInitPhase	()V	Round15ClientCompat	assertInInitPhase	-
+com/mojang/blaze3d/systems/RenderSystem	setInverseViewRotationMatrix	(Lorg/joml/Matrix3f;)V	Round15ClientCompat	setInverseViewRotationMatrix	-
+com/mojang/blaze3d/systems/RenderSystem	getInverseViewRotationMatrix	()Lorg/joml/Matrix3f;	Round15ClientCompat	getInverseViewRotationMatrix	-
+net/minecraft/client/gui/screens/TitleScreen	$get$panorama	()Lnet/minecraft/client/renderer/PanoramaRenderer;	Round15ClientCompat	titlePanorama	-
+net/minecraft/client/renderer/block/model/BlockElementFace	getFaceData	()Lnet/neoforged/neoforge/client/model/ExtraFaceData;	=	faceData
+net/minecraft/client/renderer/LevelRenderer	countRenderedChunks	()I	=	countRenderedSections
+net/minecraft/client/renderer/LevelRenderer	getChunkRenderDispatcher	()Lnet/minecraft/client/renderer/chunk/SectionRenderDispatcher;	=	getSectionRenderDispatcher

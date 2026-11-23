@@ -99,3 +99,5 @@ net/minecraft/world/entity/Mob	getLootTable	()Lnet/minecraft/resources/ResourceL
 net/minecraft/world/entity/Mob	getDefaultLootTable	()Lnet/minecraft/resources/ResourceLocation;	getDefaultLootTable	()Lnet/minecraft/resources/ResourceKey;	-	Round4Compat.lootTableKey	-
 # Forge 1.20.1 Particle.shouldCull() (false: never frustum-cull this particle; Photon's emitters): 1.21.1's engine culls by getRenderBoundingBox(float) only
 net/minecraft/client/particle/Particle	shouldCull	()Z	getRenderBoundingBox	(F)Lnet/minecraft/world/phys/AABB;	-	this:MixinTargetCompat.renderBox	-
+# --- round 15 client: a mod's SoundEventListener (1.21.1 adds the range)
+net/minecraft/client/sounds/SoundEventListener	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;)V	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;F)V	0,1	-	-
