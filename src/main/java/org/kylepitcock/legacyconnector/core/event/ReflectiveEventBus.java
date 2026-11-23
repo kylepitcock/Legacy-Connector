@@ -93,10 +93,9 @@ public final class ReflectiveEventBus {
         boolean statics = target instanceof Class<?>;
         Class<?> type = statics ? (Class<?>) target : target.getClass();
         List<Listener> added = new ArrayList<>();
-        // a class registers its own static handlers only, as Forge's bus did (it looked them up on the class alone): a subscriber class that
-        // extends another one (Techguns' ClientProxy extends its CommonProxy, both @EventBusSubscriber) ran each inherited handler twice,
-        // registering every item twice and failing on a sound list the first call had cleared
-        for (Class<?> c = type; c != null && c != Object.class; c = statics ? null : c.getSuperclass()) {
+        // superclasses are walked for static subscribers too (Forge registered inherited public handlers); a handler two subscriber classes
+        // share (Techguns' ClientProxy extends its CommonProxy, both @EventBusSubscriber) is kept to one run by staticHandlers below
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Method m : c.getDeclaredMethods()) {
                 Annotation sub = m.getAnnotation(adapter.subscribeAnnotation());
                 if (sub == null) continue;
