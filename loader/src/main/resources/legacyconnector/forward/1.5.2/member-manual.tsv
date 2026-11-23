@@ -128,3 +128,5 @@ F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
 # FML 1.4.7/1.5.2: unique sprite indices were handed out by the rendering registry (ModLoader's getUniqueSpriteIndex is the same table)
 R	cpw/mods/fml/client/registry/RenderingRegistry	getUniqueTextureIndex	(Ljava/lang/String;)I	static	legacyconnector/v1_6_4/forward/Forward152	getUniqueTextureIndex	(Ljava/lang/Object;Ljava/lang/String;)I
 M	net/minecraft/tileentity/TileEntityHopper	isCoolingDown	()Z	isOnTransferCooldown
+M	net/minecraft/entity/Entity	func_82149_j	(Lnet/minecraft/entity/Entity;)V	copyLocationAndAnglesFrom
+G	net/minecraft/client/renderer/entity/RenderPlayer	armorFilenamePrefix	[Ljava/lang/String;	sfield	net/minecraft/client/renderer/entity/RenderBiped	bipedArmorFilenamePrefix
