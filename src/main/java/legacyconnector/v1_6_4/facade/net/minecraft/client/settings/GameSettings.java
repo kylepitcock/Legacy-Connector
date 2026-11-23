@@ -30,4 +30,13 @@ public final class GameSettings {
         key.setKeyCode(code);
         self.saveOptions();
     }
+
+    /** 1.6.4 {@code soundVolume}: the master sound volume option, 0 to 1. */
+    public static float mcc$get$soundVolume(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings self) {
+        return self.getOptionFloatValue(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings.Options.SOUND);
+    }
+
+    public static void mcc$set$soundVolume(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings self, float volume) {
+        self.setOptionFloatValue(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings.Options.SOUND, volume);
+    }
 }
