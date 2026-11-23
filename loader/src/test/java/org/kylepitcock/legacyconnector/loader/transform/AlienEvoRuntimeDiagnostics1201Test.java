@@ -78,7 +78,12 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         MethodInsnNode trace = findCall(swing, "traceVanillaSwing");
         assertEquals("(FF)V", trace.desc);
         assertTrue(trace.getPrevious() instanceof VarInsnNode);
-        assertEquals(FLOAD, trace.getPrevious().get    @Test
+        assertEquals(FLOAD, trace.getPrevious().getOpcode());
+        assertEquals(DUP, trace.getPrevious().getPrevious().getOpcode());
+        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
+    }
+
+    @Test
     void tracesEarlyMissingAnchorWithoutReadingUninitializedLocalsAndIsIdempotent() throws AnalyzerException {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/client/BoneAnchors";
@@ -123,15 +128,11 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         assertEquals(ILOAD, earlyMissingTrace.getPrevious().getPrevious().getPrevious().getOpcode());
         assertEquals(0, ((VarInsnNode) earlyMissingTrace.getPrevious().getPrevious().getPrevious()).var);
 
-        // This verifies the exact condition that crashed the live client: local 7
-        // is TOP on the early-null branch and must never be loaded there.
+        // Local 7 is TOP on the early-null branch: analyze the transformed
+        // method to ensure the diagnostic never reads that uninitialized slot.
         new Analyzer<>(new BasicVerifier()).analyze(node.name, boneWorld);
 
         assertEquals(9, boneWorld.maxLocals);
-        assertTrue(boneWorld.maxStack >= 9);
-        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
-    }
-   assertEquals(9, boneWorld.maxLocals);
         assertTrue(boneWorld.maxStack >= 9);
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
     }
