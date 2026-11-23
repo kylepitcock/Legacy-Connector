@@ -973,13 +973,35 @@ public class World implements IBlockAccess {
         }
     }
 
+    private static final class BiomeCells {
+        Object level;
+        final java.util.HashMap<Long, Biome> map = new java.util.HashMap<>();
+    }
+
+    private static final ThreadLocal<BiomeCells> GENERATOR_BIOMES = ThreadLocal.withInitial(BiomeCells::new);
+
     /** The biome the dimension's generator places at a position (any coordinate, no chunk needed), or null. */
     public Biome mcc$generatorBiome(int x, int y, int z) {
         try {
             if (level instanceof ServerLevel sl) {
+                // the generator's multi-noise sampler is costly and legacy generators ask per block or per vein point (CustomOreGen was a third
+                // of its generation time here): the answer is per 4x4x4 cell, kept per thread and level
+                var cells = GENERATOR_BIOMES.get();
+                if (cells.level != sl) {
+                    cells.level = sl;
+                    cells.map.clear();
+                }
+                long key = ((long) (x >> 2) & 0x3FFFFFFL) << 38 | ((long) (z >> 2) & 0x3FFFFFFL) << 12 | ((y >> 2) & 0xFFFL);
+                Biome known = cells.map.get(key);
+                if (known != null) return known;
                 var cache = sl.getChunkSource();
-                return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(
+                Biome biome = org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(
                         cache.getGenerator().getBiomeSource().getNoiseBiome(x >> 2, y >> 2, z >> 2, cache.randomState().sampler()));
+                if (biome != null) {
+                    if (cells.map.size() > 32768) cells.map.clear();
+                    cells.map.put(key, biome);
+                }
+                return biome;
             }
             if (level != null && level.hasChunk(x >> 4, z >> 4)) {
                 return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(level.getBiome(new net.minecraft.core.BlockPos(x, y, z)));
