@@ -56,3 +56,9 @@ jobs:
           ./gradlew :test \
             --tests 'org.kylepitcock.legacyconnector.diagnostics.alienevo.AlienEvoDimensionsProbePackageTest' \
             --no-daemon --stacktrace
+
+      - name: Run clean multi-project build and testmod assembly
+        run: |
+          ./gradlew :clean :loader:clean :testmods:clean \
+            :build :loader:build :testmods:assemble \
+            --no-daemon --console=plain --stacktrace
