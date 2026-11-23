@@ -108,6 +108,7 @@ public final class Packets164 {
         legacyconnector.v1_6_4.net.minecraft.network.packet.Packet131MapData.class,
         legacyconnector.v1_6_4.net.minecraft.network.packet.Packet132TileEntityData.class,
         legacyconnector.v1_6_4.net.minecraft.network.packet.Packet201PlayerInfo.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet202PlayerAbilities.class,
         legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload.class,
         legacyconnector.v1_6_4.net.minecraft.network.packet.Packet254ServerPing.class,
         legacyconnector.v1_6_4.net.minecraft.network.packet.Packet255KickDisconnect.class,
