@@ -478,3 +478,7 @@ net/minecraft/client/gui/screens/Screen	BACKGROUND_LOCATION	Lnet/minecraft/resou
 net/minecraft/client/gui/screens/TitleScreen	PANORAMA_OVERLAY	Lnet/minecraft/resources/ResourceLocation;	-	none	Round15ClientCompat.panoramaOverlay
 net/minecraft/client/renderer/RenderStateShard	RENDERTYPE_TRANSLUCENT_NO_CRUMBLING_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_TRANSLUCENT_SHADER	-	-
 net/minecraft/client/renderer/RenderStateShard$ShaderStateShard	RENDERTYPE_TRANSLUCENT_NO_CRUMBLING_SHADER	Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;	RENDERTYPE_TRANSLUCENT_SHADER	-	-
+# --- round 15 common: advancement predicates' ANY constants (Round15CommonCompat)
+net/minecraft/advancements/critereon/MobEffectsPredicate	ANY	Lnet/minecraft/advancements/critereon/MobEffectsPredicate;	-	none	Round15CommonCompat.mobEffectsAny
+net/minecraft/advancements/critereon/DamageSourcePredicate	ANY	Lnet/minecraft/advancements/critereon/DamageSourcePredicate;	-	none	Round15CommonCompat.damageSourceAny
+net/minecraft/advancements/critereon/EntityFlagsPredicate	ANY	Lnet/minecraft/advancements/critereon/EntityFlagsPredicate;	-	none	Round15CommonCompat.entityFlagsAny
