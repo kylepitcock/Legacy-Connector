@@ -54,8 +54,29 @@ public class ShapelessOreRecipe implements IRecipe {
         return output;
     }
 
+    /** Forge's matching (see {@link ShapedOreRecipe#matches}): every non-empty slot must use up one distinct ingredient, none may be left over. */
     @Override
     public boolean matches(InventoryCrafting inv, World world) {
-        return false;
+        java.util.ArrayList<Object> required = getInput();
+        for (int i = 0; i < inv.getSizeInventory(); i++) {
+            ItemStack slot = inv.getStackInSlot(i);
+            if (slot == null) continue;
+            boolean inRecipe = false;
+            for (java.util.Iterator<Object> it = required.iterator(); it.hasNext();) {
+                Object next = it.next();
+                boolean match = false;
+                if (next instanceof ItemStack want) match = OreDictionary.itemMatches(want, slot, false);
+                else if (next instanceof java.util.List<?> options) {
+                    for (Object o : options) match |= o instanceof ItemStack item && OreDictionary.itemMatches(item, slot, false);
+                }
+                if (match) {
+                    inRecipe = true;
+                    it.remove();
+                    break;
+                }
+            }
+            if (!inRecipe) return false;
+        }
+        return required.isEmpty();
     }
 }

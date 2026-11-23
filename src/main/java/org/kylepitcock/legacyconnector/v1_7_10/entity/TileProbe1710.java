@@ -92,4 +92,124 @@ public final class TileProbe1710 {
             return "ERR " + e;
         }
     }
+
+    /**
+     * Drives a legacy tile like a player or a pipe would: {@code fluid:name:amount} fills through its IFluidHandler (all sides, then UNKNOWN),
+     * {@code item:slot:registry name:count[:damage]} sets an inventory slot, {@code ore:name} lists what the ore dictionary holds for a name.
+     * Returns what each step answered so a scenario can show why a machine stays idle.
+     */
+    public static String drive(Level level, BlockPos pos, String... steps) {
+        StringBuilder r = new StringBuilder();
+        try {
+            if (!(level.getBlockEntity(pos) instanceof LegacyBlockEntity host)) return "NOBE " + level.getBlockState(pos);
+            Object t = host.legacy();
+            for (String step : steps) {
+                String[] p = step.split(":");
+                try {
+                    switch (p[0]) {
+                        case "fluid" -> {
+                            var fs = legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidRegistry.getFluidStack(p[1], Integer.parseInt(p[2]));
+                            int did = -1;
+                            if (t instanceof IFluidHandler h) {
+                                ForgeDirection used = null;
+                                for (ForgeDirection d : new ForgeDirection[] {ForgeDirection.UP, ForgeDirection.DOWN, ForgeDirection.NORTH, ForgeDirection.UNKNOWN}) {
+                                    if (h.canFill(d, fs.getFluid())) {
+                                        did = h.fill(d, fs, true);
+                                        used = d;
+                                        break;
+                                    }
+                                }
+                                r.append(" fluid ").append(p[1]).append(" via ").append(used).append(" filled=").append(did);
+                            } else r.append(" fluid: not an IFluidHandler");
+                        }
+                        case "item" -> {
+                            var item = (legacyconnector.v1_7_10.net.minecraft.item.Item) legacyconnector.v1_7_10.net.minecraft.item.Item.itemRegistry
+                                    .getObject(p[2]);
+                            if (item == null) r.append(" item ").append(p[2]).append(" unknown");
+                            else {
+                                int damage = p.length > 4 ? Integer.parseInt(p[4]) : 0;
+                                ((legacyconnector.v1_7_10.net.minecraft.inventory.IInventory) t).setInventorySlotContents(Integer.parseInt(p[1]),
+                                        new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, Integer.parseInt(p[3]), damage));
+                                r.append(" slot").append(p[1]).append('=').append(item.getUnlocalizedName());
+                            }
+                        }
+                        case "field" -> {
+                            Object v = null;
+                            for (Class<?> k = t.getClass(); k != null; k = k.getSuperclass()) {
+                                try {
+                                    var f = k.getDeclaredField(p[1]);
+                                    f.setAccessible(true);
+                                    v = f.get(t);
+                                    break;
+                                } catch (NoSuchFieldException e) {
+                                    // look in the superclass
+                                }
+                            }
+                            r.append(" ").append(p[1]).append('=').append(v);
+                        }
+                        case "craftdiag" -> {
+                            // the tile's own crafting grid against the legacy recipe list (a machine that matches recipes itself, e.g. a Liquicrafter)
+                            var f = t.getClass().getDeclaredField("craft");
+                            f.setAccessible(true);
+                            var grid = (legacyconnector.v1_7_10.net.minecraft.inventory.InventoryCrafting) f.get(t);
+                            var list = legacyconnector.v1_7_10.net.minecraft.item.crafting.CraftingManager.getInstance().getRecipeList();
+                            var w = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+                            int total = list.size(), matched = 0;
+                            StringBuilder cells = new StringBuilder();
+                            for (int i = 0; i < 9; i++) cells.append(grid.getStackInSlot(i)).append(',');
+                            for (Object o : list) {
+                                if (o instanceof legacyconnector.v1_7_10.net.minecraft.item.crafting.IRecipe rec && rec.matches(grid, w)) matched++;
+                            }
+                            // the recipe of whatever the machine's output slot holds: its class and how it sees the grid
+                            var out = ((legacyconnector.v1_7_10.net.minecraft.inventory.IInventory) t).getStackInSlot(9);
+                            for (Object o : list) {
+                                if (o instanceof legacyconnector.v1_7_10.net.minecraft.item.crafting.IRecipe rec && out != null && rec.getRecipeOutput() != null
+                                        && rec.getRecipeOutput().getItem() == out.getItem()) {
+                                    r.append(" [").append(rec.getClass().getSimpleName()).append(" size=").append(rec.getRecipeSize()).append(" matches=").append(rec.matches(grid, w));
+                                    if (rec instanceof legacyconnector.v1_7_10.net.minecraftforge.oredict.ShapedOreRecipe so) r.append(" input=").append(java.util.Arrays.toString(so.getInput()));
+                                    if (rec instanceof legacyconnector.v1_7_10.net.minecraft.item.crafting.ShapedRecipes sr) r.append(" items=").append(java.util.Arrays.toString(sr.recipeItems));
+                                    r.append(']');
+                                }
+                            }
+                            r.append(" recipes=").append(total).append(" matched=").append(matched).append(" grid=").append(cells);
+                        }
+                        case "ore" -> {
+                            var list = legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary.getOres(p[1]);
+                            r.append(" ore ").append(p[1]).append('=').append(list == null ? "null" : list.size());
+                        }
+                        default -> r.append(" ?").append(step);
+                    }
+                } catch (Throwable e) {
+                    r.append(" ERR(").append(step).append(") ").append(e);
+                }
+            }
+        } catch (Throwable e) {
+            r.append(" ERR ").append(e);
+        }
+        return r.toString();
+    }
+
+    /** One scenario line: {@code "x y z step step..."} (see {@link #drive}); answers the tile's state and inventory, then the drive results. */
+    public static String run(Level level, String spec) {
+        String[] w = spec.trim().split("\\s+");
+        BlockPos pos = new BlockPos(Integer.parseInt(w[0]), Integer.parseInt(w[1]), Integer.parseInt(w[2]));
+        String driven = w.length > 3 ? drive(level, pos, java.util.Arrays.copyOfRange(w, 3, w.length)) : "";
+        return pos + " " + describe(level, pos, spec.contains("feed")) + " items:" + contents(level, pos) + " |" + driven;
+    }
+
+    /** The items of a legacy inventory tile, "slot=item x count" for the non-empty ones. */
+    public static String contents(Level level, BlockPos pos) {
+        try {
+            if (!(level.getBlockEntity(pos) instanceof LegacyBlockEntity host)) return "NOBE";
+            var inv = (legacyconnector.v1_7_10.net.minecraft.inventory.IInventory) host.legacy();
+            StringBuilder r = new StringBuilder();
+            for (int i = 0; i < inv.getSizeInventory(); i++) {
+                var st = inv.getStackInSlot(i);
+                if (st != null) r.append(' ').append(i).append('=').append(st);
+            }
+            return r.length() == 0 ? "(empty)" : r.toString();
+        } catch (Throwable e) {
+            return "ERR " + e;
+        }
+    }
 }

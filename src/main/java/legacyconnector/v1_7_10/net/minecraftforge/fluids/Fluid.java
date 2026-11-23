@@ -89,11 +89,16 @@ public class Fluid {
     }
 
     public final Block getBlock() {
+        // Forge's water and lava carry their vanilla source block (a Fountain places getBlock(), Portable Tank code asks canBePlacedInWorld)
+        if (block == null) {
+            if (this == FluidRegistry.WATER) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.water;
+            if (this == FluidRegistry.LAVA) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.lava;
+        }
         return block;
     }
 
     public final boolean canBePlacedInWorld() {
-        return block != null;
+        return getBlock() != null;
     }
 
     public String getLocalizedName(FluidStack stack) {
