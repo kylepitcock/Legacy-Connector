@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.objectweb.asm.Opcodes;
 
 /**
  * Read-only classfile verification of three Forge 1.20.1 -> NeoForge 1.21.1
@@ -327,6 +328,8 @@ public final class Forge1201InterfaceOwnerHierarchyAudit {
         text.append("    MAPPING_OWNER_IN_HIERARCHY=").append(result.mappingOwnerInHierarchy()).append('\n');
         text.append("    INVOCATION_OWNER_DECLARES_EXACT=").append(result.invocationOwnerDeclaresExact()).append('\n');
         text.append("    MAPPING_OWNER_DECLARES_EXACT=").append(result.mappingOwnerDeclaresExact()).append('\n');
+        text.append("    INVOCATION_METHOD_PUBLIC_INSTANCE=").append(result.invocationMethodPublicInstance()).append('\n');
+        text.append("    MAPPING_OWNER_METHOD_PUBLIC_INSTANCE=").append(result.mappingOwnerMethodPublicInstance()).append('\n');
         text.append("    INVOCATION_LOOKUP=").append(result.invocationLookupStatus())
                 .append(" DECLARING_OWNER=").append(result.invocationDeclaringOwner()).append('\n');
         text.append("    MAPPING_OWNER_LOOKUP=").append(result.mappingOwnerLookupStatus())
