@@ -97,7 +97,7 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
 
     private static Object currentPlayer() {
         try {
-            return Minecraft.getInstance().player;
+            return readField(Minecraft.getInstance(), "player");
         } catch (LinkageError | RuntimeException error) {
             return null;
         }
