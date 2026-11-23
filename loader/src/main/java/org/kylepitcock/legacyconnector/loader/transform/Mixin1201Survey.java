@@ -61,7 +61,7 @@ public final class Mixin1201Survey {
                     for (var en = z.entries(); en.hasMoreElements(); ) {
                         ZipEntry e = en.nextElement();
                         if (e.isDirectory()) continue;
-                        if (e.getName().endsWith(".refmap.json")) {
+                        if (e.getName().endsWith("refmap.json")) {
                             try (InputStream in = z.getInputStream(e)) {
                                 resources.put(e.getName(), in.readAllBytes());
                             }

@@ -1138,3 +1138,8 @@ net/minecraft/world/level/block/Block	isBed	(Lnet/minecraft/world/level/block/st
 net/minecraft/world/level/block/DoublePlantBlock	preventCreativeDropFromBottomPart	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/player/Player;)V	=	preventDropFromBottomPart
 net/minecraft/world/level/gameevent/GameEvent	builtInRegistryHolder	()Lnet/minecraft/core/Holder$Reference;	GameObjectCompat	gameEventHolder	-
 net/minecraft/server/packs/metadata/pack/PackMetadataSection	getDescription	()Lnet/minecraft/network/chat/Component;	=	description
+# Forge's ParticleEngine.render(PoseStack, BufferSource, LightTexture, Camera, float, Frustum): the opaque particle types of the 1.21.1 engine (translucent ones follow in its own passes)
+net/minecraft/client/particle/ParticleEngine	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V	MixinTargetCompat	particleRenderOpaque
+# BufferUploader.drawWithShader/draw of a mesh the 1.20.1 builder's end() answered: 1.21.1's build() answers null for a builder that got no vertex (the 1.20.1 RenderedBuffer was empty and drawing it did nothing)
+com/mojang/blaze3d/vertex/BufferUploader	drawWithShader	(Lcom/mojang/blaze3d/vertex/MeshData;)V	MixinTargetCompat	uploadShader
+com/mojang/blaze3d/vertex/BufferUploader	draw	(Lcom/mojang/blaze3d/vertex/MeshData;)V	MixinTargetCompat	upload
