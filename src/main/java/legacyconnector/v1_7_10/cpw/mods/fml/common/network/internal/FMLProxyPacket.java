@@ -60,6 +60,11 @@ public class FMLProxyPacket extends Packet {
         return target;
     }
 
+    /** The connection this packet arrived on (null for packets being sent). */
+    public legacyconnector.v1_7_10.net.minecraft.network.NetworkManager getOrigin() {
+        return dispatcher == null ? null : dispatcher.manager;
+    }
+
     public NetworkDispatcher getDispatcher() {
         return dispatcher;
     }

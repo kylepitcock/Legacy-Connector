@@ -66,6 +66,10 @@ public class GameRegistry {
         }
     }
 
+    /** Lets a mod's saved ids of a renamed block or item resolve to the new one; the layer keys saved data by name, so there is nothing to remap. */
+    public static void addSubstitutionAlias(String modId, Type type, Object toReplace) {
+    }
+
     public static void registerFuelHandler(IFuelHandler handler) {
         FuelBridge.register(handler);
     }

@@ -79,6 +79,28 @@ public class FMLNetworkEvent<T extends INetHandler> extends Event {
         }
     }
 
+    /** A custom event of the network layer (the 1.7.10 event wrapping another event of the connection). */
+    public static class CustomNetworkEvent extends FMLNetworkEvent<INetHandler> {
+        public final Object wrappedEvent;
+
+        public CustomNetworkEvent(Object wrappedEvent) {
+            super(null);
+            this.wrappedEvent = wrappedEvent;
+        }
+    }
+
+    /** The other end registered or unregistered custom channels: {@link #operation} is "REGISTER" or "UNREGISTER". */
+    public static class CustomPacketRegistrationEvent<S extends INetHandler> extends FMLNetworkEvent<S> {
+        public final String operation;
+        public final com.google.common.collect.ImmutableSet<String> registrations;
+
+        public CustomPacketRegistrationEvent(String operation, java.util.Collection<String> registrations) {
+            super(null);
+            this.operation = operation;
+            this.registrations = com.google.common.collect.ImmutableSet.copyOf(registrations);
+        }
+    }
+
     public static class ServerCustomPacketEvent extends CustomPacketEvent<INetHandler> {
         public ServerCustomPacketEvent(Object manager, FMLProxyPacket packet, INetHandler handler) {
             super(handler, packet, Side.SERVER);

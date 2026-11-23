@@ -233,6 +233,17 @@ public abstract class CommandBase implements ICommand {
         return out;
     }
 
+    private static IAdminCommand theAdmin;
+
+    /** Installs the object that announces a command's use to the operators (vanilla: the server's configuration manager). */
+    public static void setAdminCommander(IAdminCommand admin) {
+        theAdmin = admin;
+    }
+
+    public static IAdminCommand mcc$adminCommander() {
+        return theAdmin;
+    }
+
     public static void func_152373_a(ICommandSender sender, ICommand command, String message, Object... args) {
         notifyOperators(sender, command, 0, message, args);
     }

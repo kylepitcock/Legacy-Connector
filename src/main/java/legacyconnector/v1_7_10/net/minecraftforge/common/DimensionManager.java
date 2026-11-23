@@ -162,6 +162,10 @@ public class DimensionManager {
         }
     }
 
+    /** Forge let mods swap the world of a dimension; the host owns its levels, so the call changes nothing. */
+    public static void setWorld(int id, WorldServer world) {
+    }
+
     public static WorldServer getWorld(int id) {
         for (WorldServer w : getWorlds()) if (World.mcc$get$provider(w).dimensionId == id) return w;
         return null;

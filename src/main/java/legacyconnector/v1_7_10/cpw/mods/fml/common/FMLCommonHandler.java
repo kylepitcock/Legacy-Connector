@@ -127,6 +127,31 @@ public class FMLCommonHandler {
         return "en_US";
     }
 
+    /** FML builds the title screen's branding lines in here: {@link #getBrandings} computes them on demand, so there is nothing to cache. */
+    public void computeBranding() {
+    }
+
+    /** Strips the section-sign colour codes from a string (FML used it for the server's message of the day). */
+    public String stripSpecialChars(String message) {
+        return message == null ? null : message.replaceAll("\u00a7.", "");
+    }
+
+    /** The client tick edges FML fired itself: ticks reach mods through the modern tick events. */
+    public void onPreClientTick() {
+    }
+
+    public void onPostClientTick() {
+    }
+
+    /** FML polled the dedicated server's console window here; the layer has no such window. */
+    public void processWindowMessages() {
+    }
+
+    /** FML 1.7.10 lets mods' world data handlers add to the level data being saved; the modern level data is saved by the host. */
+    public void handleWorldDataSave(legacyconnector.v1_7_10.net.minecraft.world.storage.SaveHandler handler,
+            legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo worldInfo, legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tagCompound) {
+    }
+
     public String getModName() {
         return "fml,forge,legacyconnector";
     }

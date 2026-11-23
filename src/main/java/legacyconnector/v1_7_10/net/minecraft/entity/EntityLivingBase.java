@@ -864,6 +864,22 @@ public abstract class EntityLivingBase extends Entity {
     public void mcc125$beforeRemove() {
     }
 
+    /** Called when an effect was newly applied (vanilla's protected hook; the modern game reports effects through its events). */
+    protected void onNewPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect effect) {
+    }
+
+    /** Called when an active effect was replaced by a stronger one. */
+    protected void onChangedPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect effect, boolean reapply) {
+    }
+
+    /** The per-tick effect update: the host ticks the effects itself. */
+    protected void updatePotionEffects() {
+    }
+
+    /** Damages the worn armor by the share of a hit (vanilla's hook on the base; players override it). */
+    protected void damageArmor(float damage) {
+    }
+
     public void onFinishedPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect effect) {
     }
 
