@@ -159,7 +159,9 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
     private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap mcc$playerChunkMap;
 
     public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap getPlayerChunkMap() {
-        if (mcc$playerChunkMap == null) mcc$playerChunkMap = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap(this);
+        // the level object only (it reads no blocks): a tile entity's markDirty during village generation reaches here from the generation thread
+        if (mcc$playerChunkMap == null) mcc$playerChunkMap = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap(
+                mcc$levelObject() instanceof net.minecraft.server.level.ServerLevel sl ? sl : null);
         return mcc$playerChunkMap;
     }
 
