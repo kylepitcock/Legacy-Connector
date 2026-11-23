@@ -178,6 +178,7 @@ public class World implements IBlockAccess {
         if (previous == null) {
             if (REGION.get() != null) REGIONS.decrementAndGet();
             REGION.remove();
+            OUTSIDE_WRITES.remove();
         } else {
             REGION.set(previous);
         }
@@ -477,8 +478,21 @@ public class World implements IBlockAccess {
         return chunk == null ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : chunk.getBlockState(p);
     }
 
+    /**
+     * Blocks a populator wrote past its generation region during this generation step (they are placed later, see {@link #deferOutsideRegion}),
+     * so it reads back what it wrote: a flood fill that stops at the blocks it placed (The Betweenlands' Fungus.generate pushes every replaceable
+     * neighbour and relies on its own shelf fungus no longer being replaceable) otherwise never ends. Per thread, dropped when the step is left.
+     */
+    private static final ThreadLocal<java.util.HashMap<Long, BlockState>> OUTSIDE_WRITES = new ThreadLocal<>();
+    private static final int OUTSIDE_WRITES_MAX = 1 << 18;
+
     /** The modern state at a position as legacy code may read it (air where it is not available). */
     public BlockState mcc$state(net.minecraft.core.BlockPos p) {
+        var outside = OUTSIDE_WRITES.get();
+        if (outside != null) {
+            BlockState written = outside.get(p.asLong());
+            if (written != null && acc() instanceof net.minecraft.server.level.WorldGenRegion) return written;
+        }
         if (acc() == null || unloaded(p)) return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         if (acc() instanceof net.minecraft.server.level.WorldGenRegion r && !r.hasChunk(p.getX() >> 4, p.getZ() >> 4)) {
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
@@ -586,6 +600,11 @@ public class World implements IBlockAccess {
         if (!(acc() instanceof net.minecraft.server.level.WorldGenRegion r) || state == null) return;
         if (org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(r.getLevel().dimension().location()) == null) return;
         BlockState modernState = StatesBridge1122.toModern(state);
+        if (modernState != null) {
+            var outside = OUTSIDE_WRITES.get();
+            if (outside == null) OUTSIDE_WRITES.set(outside = new java.util.HashMap<>());
+            if (outside.size() < OUTSIDE_WRITES_MAX) outside.put(p.asLong(), modernState);
+        }
         if (modernState != null && !modernState.isAir()) org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, modernState);
     }
 
