@@ -105,7 +105,7 @@ public class ItemBlock extends Item {
     @Override
     public legacyconnector.v1_12_2.net.minecraft.creativetab.CreativeTabs getCreativeTab() {
         var own = super.getCreativeTab();
-        return own != null ? own : block.getCreativeTabToDisplayOn();
+        return own != null ? own : block.getCreativeTab();
     }
 
     /** 1.12: a block item lists what its block lists (Block.getSubBlocks: one stack per subtype of a block like Candy World's gummy blocks). */

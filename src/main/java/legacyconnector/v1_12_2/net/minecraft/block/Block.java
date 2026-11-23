@@ -146,8 +146,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return this;
     }
 
+    /** The 1.7.10 name of {@link #getCreativeTab()}: 1.12 mods override the latter (func_149708_J), so this asks it. */
     public CreativeTabs getCreativeTabToDisplayOn() {
-        return displayOnCreativeTab;
+        return getCreativeTab();
     }
 
     /** Forge: whether the state has a tile entity (BlockContainer says yes). */
