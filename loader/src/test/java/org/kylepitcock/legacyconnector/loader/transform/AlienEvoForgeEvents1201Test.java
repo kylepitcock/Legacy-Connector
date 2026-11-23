@@ -302,13 +302,13 @@ class AlienEvoForgeEvents1201Test implements Opcodes {
     }
 
     @Test
-    void ignoresUnrelatedClasses() {    @Test
     void failsClosedWhenRenderLevelPoseStackCallCountChanges() {
         ClassNode node = clientEventsFixture(AlienEvoForgeEvents1201.EXPECTED_RENDER_LEVEL_POSE_STACK_CALLS - 1);
         assertThrows(IllegalStateException.class, () -> AlienEvoForgeEvents1201.apply(node));
     }
 
-
+    @Test
+    void ignoresUnrelatedClasses() {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/forge/Unrelated";
         assertEquals(0, AlienEvoForgeEvents1201.apply(node));
