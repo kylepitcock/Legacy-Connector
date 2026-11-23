@@ -44,6 +44,23 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
     }
 
     @Test
+    void directOwnerIntermediaryMappingWinsWithoutTraversingAnIncompleteAncestorGraph() throws Exception {
+        Fixture fixture = fixture(false, true, true, false, true);
+
+        var result = audit(fixture);
+
+        assertEquals(
+                Forge1201SrgIntermediaryHierarchyAudit.AuditStatus.TARGET_VERIFIED,
+                result.status(), result.detail());
+        assertEquals(
+                Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_EXACT,
+                result.ownerAwareResolution().status());
+        assertEquals("net/minecraft/src/C_Entity_", result.ownerAwareResolution()
+                .candidates().getFirst().mappingSrgOwner());
+        assertEquals(java.util.List.of("net/minecraft/Entity"), result.sourceHierarchyVisited());
+    }
+
+    @Test
     void refusesSourceFallbackWhenAnyHierarchyClassfileIsMissing() throws Exception {
         Fixture fixture = fixture(false, true, true, true);
 
@@ -124,6 +141,16 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
             boolean mapFirstInterfaceMethod,
             boolean addMissingSourceInterface,
             boolean connectTargetInterface) throws Exception {
+        return fixture(addSecondInterface, mapFirstInterfaceMethod, addMissingSourceInterface,
+                connectTargetInterface, false);
+    }
+
+    private Fixture fixture(
+            boolean addSecondInterface,
+            boolean mapFirstInterfaceMethod,
+            boolean addMissingSourceInterface,
+            boolean connectTargetInterface,
+            boolean mapInvocationOwnerIntermediary) throws Exception {
         Path joinedTsrg = write("joined-" + System.nanoTime() + ".tsrg", """
                 tsrg2 obf srg id
                 a net/minecraft/src/C_Entity_ 1
@@ -144,7 +171,10 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
                 CLASS\tz\tnet/minecraft/class_4
                 """;
         if (mapFirstInterfaceMethod) {
-            sourceTinyText += "METHOD\tb\t()V\tx\tmethod_10\n";
+            sourceTinyText += "METHOD\\tb\\t()V\\tx\\tmethod_10\\n";
+        }
+        if (mapInvocationOwnerIntermediary) {
+            sourceTinyText += "METHOD\\ta\\t()V\\tm\\tmethod_30\\n";
         }
         if (addSecondInterface) {
             sourceTinyText += "METHOD\tc\t()V\ty\tmethod_20\n";
@@ -162,7 +192,10 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
                 METHOD\tg\t()V\ts\tmethod_99
                 """;
         if (addSecondInterface) {
-            targetTinyText += "METHOD\tf\t()V\tp\tmethod_20\n";
+            targetTinyText += "METHOD\\tf\\t()V\\tp\\tmethod_20\\n";
+        }
+        if (mapInvocationOwnerIntermediary) {
+            targetTinyText += "METHOD\\td\\t()V\\tw\\tmethod_30\\n";
         }
         Path targetTiny = write("target-" + System.nanoTime() + ".tiny", targetTinyText);
 
@@ -181,6 +214,7 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
                 tsrg2 left right
                 d net/minecraft/world/entity/Entity
                 \ta ()V getThing
+                \tw ()V getThing
                 e net/minecraft/world/level/entity/EntityAccess
                 \tq ()V getThing
                 f net/minecraft/world/level/entity/AlternateAccess
