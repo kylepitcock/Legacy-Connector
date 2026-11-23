@@ -238,6 +238,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.compat.chromaticraft.ChromaDimensionBarriers.register(game);
         org.kylepitcock.legacyconnector.v1_12_2.entity.Entities1122.register(game);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.register(game);
         org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.register(game);
         org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.registerEvents(modBus,game);
         org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.registerEvents(modBus);
