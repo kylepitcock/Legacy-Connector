@@ -159,7 +159,12 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
     private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap mcc$playerChunkMap;
 
     public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap getPlayerChunkMap() {
-        if (mcc$playerChunkMap == null) mcc$playerChunkMap = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap(this);
+        // the chunk map only lists the watchers of chunks (no block access), so a mod asking while its chunk generates (Actually Additions' tiles
+        // calling sendUpdate from a village house) gets it without reaching the real level (RealLevelGuard)
+        if (mcc$playerChunkMap == null) {
+            net.minecraft.world.level.Level object = mcc$levelObject();
+            mcc$playerChunkMap = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap(object instanceof ServerLevel s ? s : null);
+        }
         return mcc$playerChunkMap;
     }
 
