@@ -205,6 +205,8 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
                             .thenComparing(SourceHierarchyOwner::srgOwner))
                     .toList();
             java.util.Set<String> seenOwners = new java.util.HashSet<>();
+            java.util.Map<String, String> officialOwnerBySrgOwner = new java.util.HashMap<>();
+            java.util.Map<String, String> srgOwnerByOfficialOwner = new java.util.HashMap<>();
             java.util.Map<String, OwnerAwareSymbolCandidate> mapped = new java.util.LinkedHashMap<>();
             boolean unresolvedCandidate = false;
 
@@ -213,6 +215,15 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
                         || ancestor.officialOwner().equals(hierarchy.invocationOfficialOwner())) {
                     throw new IllegalArgumentException(
                             "The invocation owner must not be repeated in the ancestor list.");
+                }
+                String priorOfficial = officialOwnerBySrgOwner.putIfAbsent(
+                        ancestor.srgOwner(), ancestor.officialOwner());
+                String priorSrg = srgOwnerByOfficialOwner.putIfAbsent(
+                        ancestor.officialOwner(), ancestor.srgOwner());
+                if ((priorOfficial != null && !priorOfficial.equals(ancestor.officialOwner()))
+                        || (priorSrg != null && !priorSrg.equals(ancestor.srgOwner()))) {
+                    unresolvedCandidate = true;
+                    continue;
                 }
                 String ownerKey = ancestor.srgOwner() + "|" + ancestor.officialOwner();
                 if (!seenOwners.add(ownerKey)) continue;
