@@ -629,6 +629,8 @@ public class World implements IBlockAccess {
 
     @Override
     public Block getBlock(int x, int y, int z) {
+        BlockState own = ownState(x, y, z);
+        if (own != null) return BlockBridge.legacyBlock(own);
         if (unloaded(x, z) || mcc$aboveLegacyTop(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
         if (mcc$aboveDeepLayer(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         BlockState offThread = mcc$offThreadState(x, y, z);
@@ -648,8 +650,35 @@ public class World implements IBlockAccess {
         return y == 0 && state.isAir() && lvl().getMinBuildHeight() < 0;
     }
 
+    /**
+     * The state of the block entity being saved, read by its own legacy tile entity: a chunk that is saving or unloading is no longer
+     * "loaded" for the level (or is saved from another thread), so reads of the tile's own block answered air and metadata 0 and
+     * BuildCraft's engines wrote kind 0 (every engine came back a wooden one after a reload, #329). Set around writeToNBT.
+     */
+    private static final ThreadLocal<Object[]> MCC_OWN_STATE = new ThreadLocal<>();
+
+    public static Object[] mcc$enterOwnState(BlockPos pos, BlockState state) {
+        Object[] previous = MCC_OWN_STATE.get();
+        MCC_OWN_STATE.set(new Object[] {pos.immutable(), state});
+        return previous;
+    }
+
+    public static void mcc$leaveOwnState(Object[] previous) {
+        if (previous == null) MCC_OWN_STATE.remove();
+        else MCC_OWN_STATE.set(previous);
+    }
+
+    private static BlockState ownState(int x, int y, int z) {
+        Object[] own = MCC_OWN_STATE.get();
+        if (own == null) return null;
+        BlockPos p = (BlockPos) own[0];
+        return p.getX() == x && p.getY() == y && p.getZ() == z ? (BlockState) own[1] : null;
+    }
+
     @Override
     public int getBlockMetadata(int x, int y, int z) {
+        BlockState own = ownState(x, y, z);
+        if (own != null) return BlockBridge.legacyMeta(own);
         if (unloaded(x, z) || mcc$aboveDeepLayer(y)) return 0;
         BlockState offThread = mcc$offThreadState(x, y, z);
         return BlockBridge.legacyMeta(offThread != null ? offThread : lvl().getBlockState(mcc$readPos(x, y, z)));

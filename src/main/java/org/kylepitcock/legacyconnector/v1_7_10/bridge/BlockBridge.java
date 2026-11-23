@@ -488,9 +488,15 @@ public final class BlockBridge {
         }
         for (String word : name.replaceAll("([a-z0-9])([A-Z])", "$1 $2").toLowerCase(java.util.Locale.ROOT).split("[^a-z0-9]+")) {
             if (word.equals("ore") || word.equals("ores")) return true;
+            // 1.4.7 to 1.6.4 names are one lowercase word ("copperore", "tinore"): a word ending in "ore" (as OreBackgrounds.isOreName)
+            if (word.length() > 4 && word.endsWith("ore") && !word.endsWith("store") && !NOT_ORE_WORDS.contains(word)) return true;
         }
         return false;
     }
+
+    /** Words that end in "ore" without being ores. */
+    private static final java.util.Set<String> NOT_ORE_WORDS = java.util.Set.of("core", "more", "store", "score", "before", "ignore", "restore",
+            "explore", "shore", "chore", "bore", "snore", "pore", "spore", "fore", "adore", "galore", "lore", "sore", "wore", "tore", "yore");
 
     private static ItemBlock instantiateItemBlock(Class<? extends ItemBlock> cls, Block block, Object[] args) {
         Object[] full = new Object[(args == null ? 0 : args.length) + 1];

@@ -13,6 +13,7 @@ import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 /**
@@ -33,7 +34,11 @@ final class IdConstructors {
     private IdConstructors() {}
 
     /** One target parameter: the argument it takes (-1 = default value) and the facade call that converts it. */
-    private record Param(int arg, MethodInsnNode convert) {}
+    private record Param(int arg, MethodInsnNode convert, String cast) {
+        Param(int arg, MethodInsnNode convert) {
+            this(arg, convert, null);
+        }
+    }
 
     /** @return the adapted call (the instruction that now stands for {@code m}), or null when this is not an id constructor. */
     static AbstractInsnNode adapt(MethodNode method, MethodInsnNode m, Type[] args, Hierarchy h, LinkReport report, String from) {
@@ -64,11 +69,26 @@ final class IdConstructors {
                 // the id becomes a Block/Item parameter: ItemStack(int, int, int) -> ItemStack(Item, int, int), ItemBlock(int) -> ItemBlock(Block)
                 for (String cls : new String[] {itemCls, blockCls}) {
                     String d = "(L" + cls + ";" + restDesc.substring(1);
-                    if (!owner.hasMethod("<init>", d)) continue;
+                    String cast = null;
+                    if (!owner.hasMethod("<init>", d)) {
+                        // a constructor of a narrower Block/Item type (ItemLeaves(BlockLeaves)): the converted object is cast to it
+                        d = null;
+                        for (Map.Entry<String, Integer> e : new TreeMap<>(owner.methods).entrySet()) {
+                            if (!e.getKey().startsWith("<init>(L") || (e.getValue() & Opcodes.ACC_PRIVATE) != 0) continue;
+                            String desc = e.getKey().substring("<init>".length());
+                            Type first = Type.getArgumentTypes(desc)[0];
+                            if (first.getSort() != Type.OBJECT || first.getInternalName().equals(cls) || !h.isSubclassOf(first.getInternalName(), cls)) continue;
+                            if (!desc.substring(desc.indexOf(';') + 1).equals(restDesc.substring(1))) continue;
+                            d = desc;
+                            cast = first.getInternalName();
+                            break;
+                        }
+                        if (d == null) continue;
+                    }
                     MethodInsnNode conv = converter(h, cls, cls.equals(blockCls) && isItem ? "mcc$fromItemCtorId" : "mcc$fromId");
                     if (conv == null) continue;
                     targetDesc = d;
-                    plan.add(new Param(0, conv));
+                    plan.add(new Param(0, conv, cast));
                     for (int i = 0; i < rest.length; i++) plan.add(new Param(i + 1, null));
                     break;
                 }
@@ -177,6 +197,7 @@ final class IdConstructors {
             } else {
                 pre.add(new VarInsnNode(args[p.arg()].getOpcode(Opcodes.ILOAD), slots[p.arg()]));
                 if (p.convert() != null) pre.add(new MethodInsnNode(Opcodes.INVOKESTATIC, p.convert().owner, p.convert().name, p.convert().desc, false));
+                if (p.cast() != null) pre.add(new TypeInsnNode(Opcodes.CHECKCAST, p.cast()));
             }
             pushed += target[j].getSize();
         }
