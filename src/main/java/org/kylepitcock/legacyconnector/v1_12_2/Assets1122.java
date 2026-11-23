@@ -149,6 +149,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 LOG.warn("Could not translate the blockstate of {}: {}", id, e.toString());
                 stats.fellBack++;
                 stats.fallbacks.add(id + " (" + e + ")");
+                org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ASSET_FALLBACK, id.getNamespace(), id.getPath() + " blockstate",
+                        "blockstate could not be translated, every metadata draws a plain cube: " + e);
                 try {
                     fallbackBlockstate(id, null, out);
                 } catch (RuntimeException ignored) {
@@ -560,6 +562,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         } else {
             stats.fellBack++;
             stats.fallbacks.add(id.toString() + " [" + reasons.get(0) + (reasons.size() > 1 ? " +" + (reasons.size() - 1) : "") + "]");
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ASSET_FALLBACK, id.getNamespace(), id.getPath() + " blockstate",
+                    () -> reasons.size() + " metadata value(s) fell back to a default model, first: " + reasons.get(0));
         }
     }
 
@@ -629,7 +633,12 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         // no state held at all: getStateFromMeta does not answer with the block's own states, so nothing tells the states apart
         // many states may share a few models (a block with a 16-value color property and a render property: EnderIO's fused quartz has 352 states
         // beyond its metadata but about 20 distinct variants), so the cap is on the distinct models below, and this one only bounds the work
-        if (held == 0 || extra.isEmpty() || extra.size() > MAX_STATE_MODEL_STATES) return;
+        if (held == 0 || extra.isEmpty()) return;
+        if (extra.size() > MAX_STATE_MODEL_STATES) {
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ASSET_CAP, id.getNamespace(), id.getPath() + " MAX_STATE_MODEL_STATES",
+                    extra.size() + " states beyond the metadata exceed the cap of " + MAX_STATE_MODEL_STATES + "; the metadata models draw them");
+            return;
+        }
         var locations = mapped != null ? mapped
                 : new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.DefaultStateMapper().putStateModelLocations(block);
         if (locations == null || locations.isEmpty()) return;
@@ -679,6 +688,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 if (byContent.size() >= MAX_STATE_MODELS) {
                     // connection states, not render parts: the models of their metadata draw them
                     LOG.info("1.12.2 state models: {} has more than {} distinct variants beyond its metadata; its metadata models draw them", id, MAX_STATE_MODELS);
+                    org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ASSET_CAP, id.getNamespace(), id.getPath() + " MAX_STATE_MODELS",
+                            "more than " + MAX_STATE_MODELS + " distinct variants beyond the metadata; the metadata models draw them");
                     return;
                 }
                 model = stateModelFile(id, key, all, out);
@@ -688,6 +699,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         }
         if (STATE_MODELS_USED.addAndGet(byContent.size()) > STATE_MODEL_BUDGET) {
             LOG.info("1.12.2 state models: the budget of {} models is used up; {} keeps the models of its metadata", STATE_MODEL_BUDGET, id);
+            org.kylepitcock.legacyconnector.core.degraded.Degraded.note(org.kylepitcock.legacyconnector.core.degraded.Degraded.Category.ASSET_CAP, id.getNamespace(), id.getPath() + " STATE_MODEL_BUDGET",
+                    "the budget of " + STATE_MODEL_BUDGET + " state models is used up; the metadata models draw its extra states");
             return;
         }
         STATE_MODELS_BUILDING.putAll(byName);
