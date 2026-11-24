@@ -357,7 +357,7 @@ tasks.register('preflight1201', JavaExec) {
     inputs.files(targetCompileClasspath)
     inputs.files(connectorRuntimeOutput)
     inputs.property('connectorRuntimeOutputOrder', providers.provider {
-        connectorRuntimeOutput.files.collect { it.absolutePath }.join('\\n')
+        connectorRuntimeOutput.files.collect { it.absolutePath }.join('\n')
     })
     def mappingProfileValue = project.findProperty('preflightMappingProfile')
     if (mappingProfileValue) inputs.file(file(mappingProfileValue.toString()))
