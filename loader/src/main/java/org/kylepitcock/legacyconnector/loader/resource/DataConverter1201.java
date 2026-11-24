@@ -224,6 +224,11 @@ public final class DataConverter1201 {
         String np = mapPath(path);
         boolean dataJson = path.startsWith("data/") && path.endsWith(".json");
         boolean model = path.startsWith("assets/") && path.endsWith(".json") && path.contains("/models/");
+        if (path.startsWith("assets/") && path.endsWith(".json") && path.contains("/animations/")) {
+            byte[] fixed = GeckoAnimations1201.fix(data);
+            if (fixed != null) stats.add("geckolib_easing_vector");
+            return List.of(new Out(np, fixed != null ? fixed : data));
+        }
         if (!dataJson && !model) {
             if (!np.equals(path)) stats.add(pathCategory(path));
             if (path.startsWith("data/") && path.endsWith(".nbt") && np.contains("/structure/")) {
@@ -289,13 +294,32 @@ public final class DataConverter1201 {
                 c.hit("forge_tags");
             }
             generic(root, c, false);
+            // a mod's additions to a vanilla tag: one entry that names a missing object (an optional block of another mod, a
+            // block the layer does not register) fails the tag's WHOLE merged list in 1.21.1, which takes the vanilla entries with it
+            if (root.isJsonObject() && np.startsWith("data/minecraft/tags/")) optionalTagEntries(root.getAsJsonObject(), c);
             outs.add(new Out(np, bytes(root)));
         }
         c.flush(stats);
         return outs;
     }
 
-    /** Converts a whole set of entries (a jar's resources); {@code pack.mcmeta} is brought to the 1.21.1 formats, using what the set contains. */
+    /** Turns the plain entries of a tag file's {@code values} into optional ones ({@code {"id": ..., "required": false}}). */
+    static void optionalTagEntries(JsonObject tag, Ctx c) {
+        if (!tag.has("values") || !tag.get("values").isJsonArray()) return;
+        JsonArray values = tag.getAsJsonArray("values");
+        for (int i = 0; i < values.size(); i++) {
+            JsonElement v = values.get(i);
+            if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isString()) {
+                JsonObject o = new JsonObject();
+                o.addProperty("id", v.getAsString());
+                o.addProperty("required", false);
+                values.set(i, o);
+                c.hit("tag_optional_entries");
+            }
+        }
+    }
+
+    /** Converts a whole set of entries (a jar's resources);{@code pack.mcmeta} is brought to the 1.21.1 formats, using what the set contains. */
     public static Map<String, byte[]> convertAll(Map<String, byte[]> entries, Stats stats) {
         entries = applyOverlays(entries, stats);
         boolean hasAssets = false;

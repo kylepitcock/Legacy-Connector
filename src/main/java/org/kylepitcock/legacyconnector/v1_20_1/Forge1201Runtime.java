@@ -64,6 +64,7 @@ public final class Forge1201Runtime {
         // music discs: a jukebox_song data pack entry per legacy RecordItem plus the item's default jukebox_playable component
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyJukeboxSongs::onModifyDefaultComponents);
         org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyJukeboxSongs::contribute);
+        org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addLateContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LenientData1201::contribute);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.simple.SimpleChannel::registerAll);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel::registerAll);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyLibChannel::registerAll);
