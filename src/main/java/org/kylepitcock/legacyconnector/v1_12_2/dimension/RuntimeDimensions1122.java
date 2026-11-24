@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class RuntimeDimensions1122 {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Dimensions");
-    private static final ResourceLocation TYPE_SKY = ResourceLocation.fromNamespaceAndPath("legacyconnector", "runtime_sky");
-    private static final ResourceLocation TYPE_NO_SKY = ResourceLocation.fromNamespaceAndPath("legacyconnector", "runtime_no_sky");
+    private static final ResourceLocation TYPE_SKY = ResourceLocation.fromNamespaceAndPath("legacyconnector", "runtime_sky_1122");
+    private static final ResourceLocation TYPE_NO_SKY = ResourceLocation.fromNamespaceAndPath("legacyconnector", "runtime_no_sky_1122");
     private static final Set<Integer> FAILED = ConcurrentHashMap.newKeySet();
 
     private static final ChunkProgressListener NO_PROGRESS = new ChunkProgressListener() {
@@ -61,6 +61,11 @@ public final class RuntimeDimensions1122 {
     };
 
     private RuntimeDimensions1122() {}
+
+    /** The generic dimension type runtime levels use (with the 1.12.2 effects: the 1.7.10 ones would ask a bare 1.7.10 provider). */
+    static ResourceLocation typeId(boolean sky) {
+        return sky ? TYPE_SKY : TYPE_NO_SKY;
+    }
 
     /** The level of mod dimension {@code id}: created when the dimension is registered but has none. Null for other ids, off the server thread or on failure. */
     public static ServerLevel getOrCreate(MinecraftServer server, int id) {
