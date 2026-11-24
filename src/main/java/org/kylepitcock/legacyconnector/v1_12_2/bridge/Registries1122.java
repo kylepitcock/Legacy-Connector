@@ -103,7 +103,11 @@ public final class Registries1122 {
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.util.SoundEvent> SOUND_EVENTS =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.class, s -> {});
 
-    private static final java.util.List<Reg<?>> CUSTOM = new java.util.ArrayList<>();
+    /** ForgeRegistries.DATA_SERIALIZERS: a serializer is numbered when its entry is made (DataSerializerEntry), registering only records it. */
+    public static final Reg<legacyconnector.v1_12_2.net.minecraftforge.registries.DataSerializerEntry> DATA_SERIALIZERS =
+            new Reg<>(legacyconnector.v1_12_2.net.minecraftforge.registries.DataSerializerEntry.class, e -> {});
+
+    private static final java.util.List<Reg<?>> CUSTOM =new java.util.ArrayList<>();
 
     /** A registry a mod made with RegistryBuilder. */
     @SuppressWarnings({"rawtypes", "unchecked"})

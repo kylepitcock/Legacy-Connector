@@ -133,10 +133,16 @@ public final class PatchouliApi1122 implements PatchouliAPI.IPatchouliAPI {
     private static final java.util.Map<net.minecraft.resources.ResourceLocation, IMultiblock> PENDING = new java.util.LinkedHashMap<>();
     private static boolean flushed;
 
+    /** A legacy mod whose id a modern mod also has (TFC 1.12.2 and 4.x) must not take the modern mod's multiblock names: Patchouli refuses a second registration. */
+    private static net.minecraft.resources.ResourceLocation own(net.minecraft.resources.ResourceLocation id) {
+        return org.kylepitcock.legacyconnector.core.LegacyMods.sharedWithModernMod(id.getNamespace())
+                ? net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(id.getNamespace() + "_legacy", id.getPath()) : id;
+    }
+
     @Override
     public synchronized IMultiblock registerMultiblock(ResourceLocation res, IMultiblock mb) {
         if (mb instanceof Multiblock1122 view) {
-            if (flushed) api().registerMultiblock(res.mcc$modern(), view.modern());
+            if (flushed) api().registerMultiblock(own(res.mcc$modern()), view.modern());
             else PENDING.put(res.mcc$modern(), mb);
         }
         return mb;
@@ -147,7 +153,7 @@ public final class PatchouliApi1122 implements PatchouliAPI.IPatchouliAPI {
         flushed = true;
         for (var e : PENDING.entrySet()) {
             try {
-                api().registerMultiblock(e.getKey(), ((Multiblock1122) e.getValue()).modern());
+                api().registerMultiblock(own(e.getKey()), ((Multiblock1122) e.getValue()).modern());
             } catch (RuntimeException | LinkageError ex) {
                 LOG.warn("Cannot register the multiblock {}: {}", e.getKey(), ex.toString());
             }

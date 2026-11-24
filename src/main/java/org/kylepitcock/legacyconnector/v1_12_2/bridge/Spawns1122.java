@@ -54,7 +54,7 @@ public final class Spawns1122 {
         if (name == null || !"minecraft".equals(name.getNamespace())) return;
         synchronized (BASELINE) {
             if (BASELINE.containsKey(biome)) return;
-            Map<EnumCreatureType, List<Entry>> baseline = new java.util.EnumMap<>(EnumCreatureType.class);
+            Map<EnumCreatureType, List<Entry>> baseline = new java.util.concurrent.ConcurrentHashMap<>();
             BASELINE.put(biome, baseline);
             FILLING.set(Boolean.TRUE);
             try {
@@ -205,6 +205,8 @@ public final class Spawns1122 {
             case CREATURE -> net.minecraft.world.entity.MobCategory.CREATURE;
             case AMBIENT -> net.minecraft.world.entity.MobCategory.AMBIENT;
             case WATER_CREATURE -> net.minecraft.world.entity.MobCategory.WATER_CREATURE;
+            // a type a mod added with EnumHelper.addCreatureType: a peaceful one spawns like an animal, any other like a monster
+            default -> type.getPeacefulCreature() ? net.minecraft.world.entity.MobCategory.CREATURE : net.minecraft.world.entity.MobCategory.MONSTER;
         };
     }
 

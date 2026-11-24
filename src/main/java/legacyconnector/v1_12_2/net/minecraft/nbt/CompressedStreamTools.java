@@ -47,6 +47,25 @@ public class CompressedStreamTools {
         return new NBTTagCompound(NbtIo.read(in, tracker == null ? NbtAccounter.unlimitedHeap() : tracker.mcc$accounter()));
     }
 
+    /** 1.12.2's {@code writeTag} (SRG func_150663_a): a tag of any type, id byte then (for non-end tags) an empty name and the payload. */
+    public static void writeTag(NBTBase tag, DataOutput out) throws IOException {
+        byte id = tag == null ? 0 : tag.getId();
+        out.writeByte(id);
+        if (id != 0) {
+            out.writeUTF("");
+            tag.mcc$modern().write(out);
+        }
+    }
+
+    /** 1.12.2's tag reader (SRG func_152455_a): an id byte, a name and the payload; the depth is not tracked. */
+    public static NBTBase read(DataInput in, int depth, NBTSizeTracker tracker) throws IOException {
+        byte id = in.readByte();
+        if (id == 0) return new NBTTagEnd();
+        in.readUTF();
+        net.minecraft.nbt.NbtAccounter accounter = tracker == null ? NbtAccounter.unlimitedHeap() : tracker.mcc$accounter();
+        return NBTBase.mcc$wrap(net.minecraft.nbt.TagTypes.getType(id).load(in, accounter), null);
+    }
+
     public static void write(NBTTagCompound tag, File file) throws IOException {
         try (java.io.DataOutputStream out = new java.io.DataOutputStream(new FileOutputStream(file))) {
             write(tag, out);
