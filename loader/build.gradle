@@ -33,6 +33,8 @@ configurations {
     mcp1122
     mcpconfig1201
     mcpconfig1192
+    mcpconfig1182
+    mcpconfig1165
     intermediary1201
     intermediary1211
     betaIntermediary
@@ -73,6 +75,9 @@ dependencies {
     mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
     // EXPERIMENTAL (scoping of 1.19.2, docs/wiki/Legacy-1.19.2-Estimate.md): only declared with -Pexperimental.mc1192=true
     if (project.findProperty('experimental.mc1192')) mcpconfig1192 "de.oceanlabs.mcp:mcp_config:1.19.2-20220805.130853@zip"
+    // EXPERIMENTAL (scoping of 1.18.2 and 1.16.5, docs/wiki/Legacy-1.18.2-Estimate.md, Legacy-1.16.5-Estimate.md): only declared with -Pexperimental.mc1182=true / -Pexperimental.mc1165=true
+    if (project.findProperty('experimental.mc1182')) mcpconfig1182 "de.oceanlabs.mcp:mcp_config:1.18.2-20220404.173914@zip"
+    if (project.findProperty('experimental.mc1165')) mcpconfig1165 "de.oceanlabs.mcp:mcp_config:1.16.5-20210115.111550@zip"
     // Versioned Fabric Intermediary maps provide stable candidate class/member IDs across Minecraft releases.
     // The bridge audit consumes only the Tiny mappings locally; it does not emit or package runtime mappings.
     intermediary1201("net.fabricmc:intermediary:1.20.1") { transitive = false }
@@ -441,7 +446,7 @@ def srgMojangTables = { String ver, String shortVer, org.gradle.api.artifacts.Co
             def sha1 = mappingFileSha(mojangFile.get().asFile, 'SHA-1')
             if (!sha1.equalsIgnoreCase(mojangSha1)) throw new GradleException("Mojang ${ver} client mappings SHA-1 mismatch: expected ${mojangSha1}, got ${sha1}")
             def header = joined.get().asFile.withReader('UTF-8') { it.readLine() }
-            if (header == null || !header.startsWith('tsrg2 ')) throw new GradleException('MCPConfig joined.tsrg does not have the expected TSRG2 header.')
+            if (header == null || !(header.startsWith('tsrg2 ') || (ver == '1.16.5' && header.split(' ').length == 2))) throw new GradleException('MCPConfig joined.tsrg does not have the expected TSRG2 header.')
             println "Mojang ${ver} client mapping SHA-1 verified: ${sha1}"
         }
     }
@@ -453,7 +458,8 @@ def srgMojangTables = { String ver, String shortVer, org.gradle.api.artifacts.Co
         outputs.file(coverage)
         classpath = sourceSets.main.output
         mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable'
-        argumentProviders.add({ [joined.get().asFile.absolutePath, mojangFile.get().asFile.absolutePath, tsv.get().asFile.absolutePath, coverage.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+        // 1.16.5 (tsrg1, MCP class names): the fifth argument also writes the MCP -> Mojang class rows (mc-classes.tsv next to the table)
+        argumentProviders.add({ [joined.get().asFile.absolutePath, mojangFile.get().asFile.absolutePath, tsv.get().asFile.absolutePath, coverage.get().asFile.absolutePath, outDir.get().file("legacyconnector/mappings/${ver}/mc-classes.tsv").asFile.absolutePath] } as CommandLineArgumentProvider)
         doLast {
             def manifest = [minecraftVersion: ver, mcpconfig: [file: mcpConfiguration.singleFile.name, sha256: mappingFileSha(mcpConfiguration.singleFile, 'SHA-256'), joinedTsrgSha256: mappingFileSha(joined.get().asFile, 'SHA-256')],
                             mojangClientTxt: [url: mojangUrl, sha1: mojangSha1, sha256: mappingFileSha(mojangFile.get().asFile, 'SHA-256')],
@@ -470,6 +476,17 @@ if (project.findProperty('experimental.mc1192')) {
     def gen1192 = srgMojangTables('1.19.2', '1192', configurations.mcpconfig1192,
             'https://piston-data.mojang.com/v1/objects/8e8c9be5dc27802caba47053d4fdea328f7f89bd/client.txt', '8e8c9be5dc27802caba47053d4fdea328f7f89bd')
     sourceSets.main.runtimeClasspath += files(layout.buildDirectory.dir('generated/srg-mojang-1192')).builtBy(gen1192)
+}
+// EXPERIMENTAL scoping tables of 1.18.2 (Forge 40) and 1.16.5 (Forge 36), same opt-in rule:
+// ./gradlew :loader:genSrgMojang1182 -Pexperimental.mc1182=true ; ./gradlew :loader:genSrgMojang1165 -Pexperimental.mc1165=true
+// 1.16.5 has a tsrg1 joined file, func_/field_ ids and MCP class names: the MCP -> Mojang class rows also land in mc-classes.tsv next to the table.
+if (project.findProperty('experimental.mc1182')) {
+    srgMojangTables('1.18.2', '1182', configurations.mcpconfig1182,
+            'https://piston-data.mojang.com/v1/objects/a661c6a55a0600bd391bdbbd6827654c05b2109c/client.txt', 'a661c6a55a0600bd391bdbbd6827654c05b2109c')
+}
+if (project.findProperty('experimental.mc1165')) {
+    srgMojangTables('1.16.5', '1165', configurations.mcpconfig1165,
+            'https://piston-data.mojang.com/v1/objects/374c6b789574afbdc901371207155661e0509e17/client.txt', '374c6b789574afbdc901371207155661e0509e17')
 }
 
 // Fabric Intermediary bridge audit for Minecraft 1.20.1 -> 1.21.1.

@@ -34,7 +34,7 @@ Released on 2026-11-17 (milestone: Minecraft 1.2.5 on by default). The condition
 | 1.12.2 beta | done 2026-11-07 (declared by the maintainer; rendering issues #169 to #172 are still open) |
 | 1.20.1 | corpus 1 day; first mod 1 to 2 days; broad coverage 1 to 2 weeks |
 | 1.19.2 | measured 2026-11-16 ([estimate](Legacy-1.19.2-Estimate.md)): tables only 1.5 to 2 days; link parity with 1.20.1 6 to 8 days with five agents; Alpha 10 to 14 days |
-| 1.18.2, 1.16.5 | 1 to 2 days each after the 1.20.1 pipeline (not measured; 1.18.2 expected 4 to 5 days after 1.19.2) |
+| 1.18.2, 1.16.5 | Measured 2026-11-24 ([1.18.2](Legacy-1.18.2-Estimate.md), [1.16.5](Legacy-1.16.5-Estimate.md)): 1.18.2 about 14 to 18 agent-days (4 to 5 days wall-clock) after 1.19.2; 1.16.5 about 35 to 50 agent-days (10 to 14 days wall-clock) after 1.18.2, 71 to 96 from nothing |
 | 1.2.5 | 2 to 3 days (a different layer; the original estimate, started 2026-11-16, see [Legacy 1.2.5](Legacy-1.2.5.md) for what is done) |
 | Fabric 1.20.1 via Sinytra Connector | 3 to 5 days after Forge 1.20.1 works, if the corpus justifies it |
 

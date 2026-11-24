@@ -36,6 +36,8 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.20.1 fork porting notes](Legacy-1.20.1-Fork-Porting-Notes.md) | A contributor's (kentvillamor08) independent 1.20.1 pipeline notes: scoped adapters, verifiers, pilot results |
 | [Legacy 1.20.1 corpus](Legacy-1.20.1-Corpus.md) | Measured gap report of 140 real Forge 1.20.1 jars (72 abandoned content mods): ranked unresolved symbols, mixins, cheap/medium/heavy, order of work |
 | [Legacy 1.19.2 estimate](Legacy-1.19.2-Estimate.md) | Scoping (2026-11-16): 451 Forge 1.19.2 jars through the 1.20.1 pipeline, what is rename and what is new API, staged plan and effort |
+| [Legacy 1.18.2 estimate](Legacy-1.18.2-Estimate.md) | Scoping (2026-11-24): 446 Forge 1.18.2 jars through the 1.20.1 pipeline, the 1.18.2 to 1.19.2 delta by symbol, the Forge 40 to 43 API break, staged plan and effort |
+| [Legacy 1.16.5 estimate](Legacy-1.16.5-Estimate.md) | Scoping (2026-11-24): 442 Forge 1.16.5 jars brought to Mojang names and walked along 1.16.5 to 1.20.1, Java 8 / old mixin / coremod issues, staged plan and effort |
 | [Version roadmap](Version-Roadmap.md) | Which versions come when, and why |
 | [Host 1.21.4 estimate](Host-1.21.4-Estimate.md) | Measured symbol diff of the runtime against NeoForge 21.4 / 21.5 / 21.8 / 21.11: counts per subsystem, worst symbols, effort |
 | [Host version upgrades](Host-Version-Upgrades.md) | Preparing for NeoForge/Minecraft 1.21.2+ hosts: where the layer touches the host, what changed, effort per area, isolation steps done |
