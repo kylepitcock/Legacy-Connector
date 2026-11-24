@@ -86,6 +86,6 @@ Read `BRIEF.md` and `issue-worker.md` first. Mark an outline `DONE <commit>` or 
 
 ## Host versions
 
-### H1. NeoForge 1.21.4+ readiness inventory (M) TAKEN
+### H1. NeoForge 1.21.4+ readiness inventory (M) DONE 34f1f5fc7
 - Why: the roadmap requires following newer hosts. Nobody knows how much of the runtime touches APIs that changed after 1.21.1.
 - Approach: list every Minecraft/NeoForge symbol the runtime (not the shims' legacy side) uses, diff against 1.21.4 mappings (renamed, removed, changed signature), group by subsystem, and estimate. Write `docs/wiki/Host-1.21.4-Estimate.md`. No code changes.
