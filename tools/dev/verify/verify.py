@@ -4,7 +4,12 @@
   verify.py parse <latest.log> [<crash-dir>]                  prints the metrics as JSON
   verify.py compare <baseline.json> <suite> <metrics.json>    prints {"status", "regressions"} as JSON
   verify.py report <baseline.json> <results.json> [--update]  prints the table, exit 1 when a suite failed
+  verify.py report [<baseline.json>] --run <id> [--dir D] [--update]   same, rebuilt from the per-suite result files of run <id>
+  verify.py result-write <dir> <suite> <run> <rev>            stdin: the suite's result object; writes <dir>/verify-<suite>-result.json
+  verify.py resume-check <dir> <suite> <run> <rev>            exit 0 when that suite already has a finished result of this run and revision
+  verify.py collect <dir> <run> [suite ...]                   prints the results of the run as a JSON array (the given order, else by finish time)
 """
+import time
 import json
 import os
 import re
@@ -133,6 +138,52 @@ def format_table(rows):
     return "\n".join(lines)
 
 
+def result_path(d, suite):
+    return os.path.join(d, "verify-%s-result.json" % suite)
+
+
+def write_result(d, suite, run, rev, entry):
+    """One file per suite, written as soon as the suite finishes (temp name + rename, so a killed run never leaves a half file)."""
+    os.makedirs(d, exist_ok=True)
+    doc = {"run": run, "rev": rev, "finished": time.time(), "result": entry}
+    path = result_path(d, suite)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(doc, f)
+    os.replace(tmp, path)
+
+
+def read_result(d, suite):
+    doc = load(result_path(d, suite), None)
+    return doc if isinstance(doc, dict) and "result" in doc else None
+
+
+def reusable(d, suite, run, rev):
+    """A finished suite of this run and revision that actually ran (not SETUP/skipped, not timed out)."""
+    doc = read_result(d, suite)
+    if not doc or doc.get("run") != run or doc.get("rev") != rev:
+        return False
+    r = doc["result"]
+    return bool(r.get("metrics")) and not r.get("note")
+
+
+def collect(d, run, suites=None):
+    docs = []
+    if suites:
+        for s in suites:
+            doc = read_result(d, s)
+            if doc and doc.get("run") == run:
+                docs.append(doc)
+    else:
+        for name in (os.listdir(d) if os.path.isdir(d) else []):
+            m = re.match(r"verify-(.+)-result\.json$", name)
+            doc = read_result(d, m.group(1)) if m else None
+            if doc and doc.get("run") == run:
+                docs.append(doc)
+        docs.sort(key=lambda x: x.get("finished", 0))
+    return [x["result"] for x in docs]
+
+
 def load(path, default):
     try:
         with open(path, encoding="utf-8") as f:
@@ -152,9 +203,45 @@ def main(argv):
         status, regs = compare(base, load(argv[4], {}))
         print(json.dumps({"status": status, "regressions": regs}))
         return 0
-    if len(argv) >= 4 and argv[1] == "report":
-        base = load(argv[2], {})
-        results = load(argv[3], [])
+    if len(argv) >= 6 and argv[1] == "result-write":
+        write_result(argv[2], argv[3], argv[4], argv[5], json.loads(sys.stdin.read()))
+        return 0
+    if len(argv) >= 6 and argv[1] == "resume-check":
+        return 0 if reusable(argv[2], argv[3], argv[4], argv[5]) else 1
+    if len(argv) >= 4 and argv[1] == "collect":
+        print(json.dumps(collect(argv[2], argv[3], argv[4:]), indent=1))
+        return 0
+    if len(argv) >= 3 and argv[1] == "report":
+        args = argv[2:]
+        run = rundir = None
+        pos = []
+        i = 0
+        while i < len(args):
+            if args[i] == "--run" and i + 1 < len(args):
+                run = args[i + 1]
+                i += 2
+            elif args[i] == "--dir" and i + 1 < len(args):
+                rundir = args[i + 1]
+                i += 2
+            else:
+                if not args[i].startswith("--"):
+                    pos.append(args[i])
+                i += 1
+        here = os.path.dirname(os.path.abspath(__file__))
+        if run is not None:
+            baseline_path = pos[0] if pos else os.path.join(here, "baseline.json")
+            base = load(baseline_path, {})
+            results = collect(rundir or os.path.join(here, "..", "..", "..", "build", "devtools"), run)
+            if not results:
+                sys.stderr.write("no results for run %s\n" % run)
+                return 2
+        else:
+            if len(pos) < 2:
+                sys.stderr.write(__doc__)
+                return 2
+            baseline_path = pos[0]
+            base = load(baseline_path, {})
+            results = load(pos[1], [])
         update = "--update" in argv
         rows = []
         for r in results:
@@ -174,7 +261,7 @@ def main(argv):
                 status = "FAIL"
             rows.append({"suite": r["suite"], "status": status, "metrics": r["metrics"], "regressions": regs})
         if update:
-            with open(argv[2], "w", encoding="utf-8") as f:
+            with open(baseline_path, "w", encoding="utf-8") as f:
                 json.dump(base, f, indent=1, sort_keys=True)
                 f.write("\n")
         print(format_table(rows))
