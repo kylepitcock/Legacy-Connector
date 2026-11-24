@@ -222,6 +222,8 @@ public final class EntityViewsB173 {
         }
         if(modern instanceof net.minecraft.world.entity.item.ItemEntity item)
             return new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,modern.getX(),modern.getY(),modern.getZ(),StacksB173.toLegacy(item.getItem()));
+        if(modern instanceof net.minecraft.world.entity.vehicle.AbstractMinecart cart)return VehiclesB173.view(world,cart);
+        if(modern instanceof net.minecraft.world.entity.vehicle.Boat boat)return VehiclesB173.view(world,boat);
         if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
         if(modern instanceof net.minecraft.world.entity.item.PrimedTnt)return new legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity(world);
         if(modern instanceof net.minecraft.world.entity.item.FallingBlockEntity)return new legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity(world);

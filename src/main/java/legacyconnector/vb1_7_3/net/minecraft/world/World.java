@@ -731,6 +731,8 @@ public class World implements BlockView {
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity lightning)return mcc$spawnLightning(lightning);
         if(mcc$level==null||entity==null)return false;
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity painting&&entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity.class)return org.kylepitcock.legacyconnector.vb1_7_3.PaintingsB173.spawn(painting);
+        if((entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.vehicle.MinecartEntity.class||entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.vehicle.BoatEntity.class)
+                &&org.kylepitcock.legacyconnector.vb1_7_3.VehiclesB173.spawn(entity))return true;
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item) {
             if(entity.getClass()!=legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity.class)
                 return org.kylepitcock.legacyconnector.vb1_7_3.NeutralEntitiesB173.spawn(mcc$level,entity);

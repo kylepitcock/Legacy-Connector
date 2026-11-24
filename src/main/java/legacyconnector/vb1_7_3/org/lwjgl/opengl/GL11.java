@@ -12,6 +12,7 @@ public final class GL11 {
     private GL11() {}
 
     public static void glColor4f(float r, float g, float b, float a) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.color(r, g, b, a);
         if(RendererContextB173.active())RendererContextB173.color(r,g,b,a);else GuiDrawB173.color(r, g, b, a);
     }
 
@@ -22,10 +23,12 @@ public final class GL11 {
     public static void glPolygonOffset(float factor, float units) {}
 
     public static void glColor3f(float r, float g, float b) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.color(r, g, b, 1.0F);
         if(RendererContextB173.active())RendererContextB173.color(r,g,b,1);else GuiDrawB173.color(r, g, b, 1.0F);
     }
 
     public static void glBindTexture(int target, int texture) {
+        if(org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.bind(texture))return;
         // A texture effect that binds its own sheet through GL (BuildCraft's oil) names the sheet it draws into.
         if(org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.bindId(texture))return;
         if(RendererContextB173.active())RendererContextB173.bind(texture);else GuiDrawB173.bind(texture);
@@ -134,11 +137,12 @@ public final class GL11 {
 
     public static void glTexParameteri(int target, int name, int value) {}
 
+    /** A name the mod fills with glTexImage2D; the layer keeps its pixels and draws with them when it is bound. */
     public static int glGenTextures() {
-        return 0;
+        return org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.genTexture();
     }
 
-    public static void glDeleteTextures(int texture) {}
+    public static void glDeleteTextures(int texture) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.deleteTexture(texture); }
 
     public static int glGetError() {
         return 0;
@@ -157,7 +161,6 @@ public final class GL11 {
     public static void glFog(int pname, java.nio.FloatBuffer values) {}
     public static void glPushClientAttrib(int mask) {}
     public static void glPopClientAttrib() {}
-    /** The texture names this layer hands out are all 0 (see {@link #glGenTextures()}). */
     public static void glGenTextures(java.nio.IntBuffer names) { while (names.hasRemaining()) names.put(glGenTextures()); }
     public static void glDeleteTextures(java.nio.IntBuffer names) { while (names.hasRemaining()) glDeleteTextures(names.get()); }
     /** The few integer limits a mod queries (maximum texture size); everything else reads 0. */
@@ -171,4 +174,37 @@ public final class GL11 {
             default -> null;
         };
     }
+
+    // ---- texture upload (the layer keeps the pixels; see RawGlB173)
+    public static void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, java.nio.ByteBuffer pixels) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.texImage(level, width, height, format, pixels, null);
+    }
+    public static void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, java.nio.IntBuffer pixels) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.texImage(level, width, height, format, null, pixels);
+    }
+    public static void glTexSubImage2D(int target, int level, int x, int y, int width, int height, int format, int type, java.nio.ByteBuffer pixels) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.texSubImage(level, x, y, width, height, format, pixels, null);
+    }
+    public static void glTexSubImage2D(int target, int level, int x, int y, int width, int height, int format, int type, java.nio.IntBuffer pixels) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.texSubImage(level, x, y, width, height, format, null, pixels);
+    }
+    public static int glGetTexLevelParameteri(int target, int level, int pname) {
+        return org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.levelParameter(level, pname);
+    }
+    public static void glGetTexLevelParameter(int target, int level, int pname, java.nio.IntBuffer out) {
+        out.put(out.position(), glGetTexLevelParameteri(target, level, pname));
+    }
+
+    // ---- immediate mode (replayed through the Tessellator)
+    public static void glBegin(int mode) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.begin(mode); }
+    public static void glEnd() { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.end(); }
+    public static void glVertex2f(float x, float y) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.vertex(x, y, 0); }
+    public static void glVertex2d(double x, double y) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.vertex(x, y, 0); }
+    public static void glVertex2i(int x, int y) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.vertex(x, y, 0); }
+    public static void glVertex3f(float x, float y, float z) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.vertex(x, y, z); }
+    public static void glVertex3d(double x, double y, double z) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.vertex(x, y, z); }
+    public static void glTexCoord2f(float u, float v) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.texCoord(u, v); }
+    public static void glTexCoord2d(double u, double v) { org.kylepitcock.legacyconnector.vb1_7_3.RawGlB173.texCoord(u, v); }
+    public static void glColor4ub(byte r, byte g, byte b, byte a) { glColor4f((r & 255) / 255.0F, (g & 255) / 255.0F, (b & 255) / 255.0F, (a & 255) / 255.0F); }
+    public static void glColor3ub(byte r, byte g, byte b) { glColor3f((r & 255) / 255.0F, (g & 255) / 255.0F, (b & 255) / 255.0F); }
 }

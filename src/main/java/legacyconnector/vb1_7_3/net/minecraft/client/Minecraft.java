@@ -133,6 +133,14 @@ public class Minecraft {
     public void setWorld(World world){if(world!=null)this.world=world;}
     public void setWorld(World world,String message){setWorld(world);}
 
+    /** Beta's {@code usePortal()}: the player goes through a portal, between the overworld and the Nether (the Nether's dimension id is -1). */
+    public void changeDimension(){
+        var player=mcc$get$player(this);
+        if(player!=null)org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.usePortal(player.dimensionId==-1?0:-1);
+    }
+    /** Beta's {@code setIngameFocus()}: closes any screen and gives the mouse back to the game. */
+    public void lockMouse(){setScreen(null);}
+
     public static Minecraft mcc$instance() {
         Minecraft scoped=SCOPED.get();return scoped==null?INSTANCE:scoped;
     }

@@ -25,6 +25,9 @@ public final class GuiDrawB173 {
 
         int load(BufferedImage image);
 
+        /** Replaces the pixels of a texture {@link #load} made (a mod's glTexImage2D / glTexSubImage2D after it was drawn once). */
+        default void update(int id, BufferedImage image) {}
+
         void bind(int id);
 
         void color(float r, float g, float b, float a);
@@ -104,6 +107,11 @@ public final class GuiDrawB173 {
     public static int load(BufferedImage image) {
         Sink s = sink();
         return s != null ? s.load(image) : 0;
+    }
+
+    public static void update(int id, BufferedImage image) {
+        Sink s = sink();
+        if (s != null) s.update(id, image);
     }
 
     public static void bind(int id) {

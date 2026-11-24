@@ -6,11 +6,27 @@ usage: make_stub_list.py <mc-version> <raw.json> [<raw.json> ...] > <list>.md
 "stubbed" entries are APIs the layer synthesized (they link but do nothing yet); "missing" entries could not be linked at all.
 Both are grouped by class, most used first, with the jars that use them, in the format of the other lists in this folder.
 """
-import collections, datetime, json, sys
+import collections, datetime, json, os, sys
+
+
+def served_statics(mc):
+    """b1.7.3: Block.X / Item.X constants VanillaB173.resolveStatic serves at run time (src/main/resources/.../vanilla-ids.tsv); the probe
+    sees them as synthesized fields, but they are real, so they are not work items."""
+    if mc != "b1.7.3":
+        return set()
+    path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "src", "main", "resources", "legacyconnector", "b1.7.3", "vanilla-ids.tsv")
+    out = set()
+    for line in open(path, encoding="utf-8"):
+        parts = line.rstrip(chr(10)).split(chr(9))
+        if len(parts) >= 3 and parts[0] in ("block", "item"):
+            cls = "block.Block" if parts[0] == "block" else "item.Item"
+            out.add(f"legacyconnector.vb1_7_3.net.minecraft.{cls}.{parts[1]}:")
+    return out
 
 
 def main():
     mc, files = sys.argv[1], sys.argv[2:]
+    served = served_statics(mc)
     use = {"missing": collections.defaultdict(set), "stubbed": collections.defaultdict(set)}
     jars, results = set(), collections.Counter()
     for f in files:
@@ -21,6 +37,8 @@ def main():
             results[r.get("result")] += 1
             for kind in use:
                 for m in r.get(kind) or []:
+                    if kind == "stubbed" and any(m.startswith(p) for p in served):
+                        continue
                     use[kind][m].add(r["jar"])
     print(f"# {mc}: legacy APIs without a real implementation")
     print()
