@@ -48,15 +48,46 @@ public final class Forge1201TargetApiVerifier {
             String targetOwner,
             String targetDescriptor,
             MemberStatus status,
+            List<String> hierarchyVisited,
             List<String> callSites) {
         public MemberIssue {
+            hierarchyVisited = List.copyOf(hierarchyVisited);
             callSites = List.copyOf(callSites);
+        }
+
+        /** Source-compatible constructor for callers that do not retain hierarchy details. */
+        public MemberIssue(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor, MemberStatus status, List<String> callSites) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor,
+                    status, List.of(), callSites);
         }
 
         public String display() {
             return sourceOwner.replace('/', '.') + "#" + name + sourceDescriptor
                     + " -> " + targetOwner.replace('/', '.') + "#" + name + targetDescriptor
                     + " [" + status + "]";
+        }
+    }
+
+    /** Exact target-side match, including the inheritance path used to resolve it. */
+    public record MemberMatch(
+            String sourceOwner,
+            String name,
+            String sourceDescriptor,
+            String targetOwner,
+            String targetDescriptor,
+            List<String> hierarchyVisited,
+            List<String> callSites) {
+        public MemberMatch {
+            hierarchyVisited = List.copyOf(hierarchyVisited);
+            callSites = List.copyOf(callSites);
+        }
+
+        public String display() {
+            return sourceOwner.replace('/', '.') + "#" + name + sourceDescriptor
+                    + " -> " + targetOwner.replace('/', '.') + "#" + name + targetDescriptor
+                    + " [FOUND; hierarchy=" + hierarchyVisited + "]";
         }
     }
 
@@ -69,11 +100,31 @@ public final class Forge1201TargetApiVerifier {
             List<MemberIssue> methodIssues,
             int uniqueFieldReferences,
             int verifiedFieldReferences,
-            List<MemberIssue> fieldIssues) {
+            List<MemberIssue> fieldIssues,
+            List<MemberMatch> verifiedMethods,
+            List<MemberMatch> verifiedFields) {
         public Result {
             missingTargetClasses = List.copyOf(missingTargetClasses);
             methodIssues = List.copyOf(methodIssues);
             fieldIssues = List.copyOf(fieldIssues);
+            verifiedMethods = List.copyOf(verifiedMethods);
+            verifiedFields = List.copyOf(verifiedFields);
+        }
+
+        /** Source-compatible constructor for earlier report consumers. */
+        public Result(
+                int candidateClassCount,
+                int verifiedClassCount,
+                List<String> missingTargetClasses,
+                int uniqueMethodReferences,
+                int verifiedMethodReferences,
+                List<MemberIssue> methodIssues,
+                int uniqueFieldReferences,
+                int verifiedFieldReferences,
+                List<MemberIssue> fieldIssues) {
+            this(candidateClassCount, verifiedClassCount, missingTargetClasses,
+                    uniqueMethodReferences, verifiedMethodReferences, methodIssues,
+                    uniqueFieldReferences, verifiedFieldReferences, fieldIssues, List.of(), List.of());
         }
     }
 
@@ -160,15 +211,27 @@ public final class Forge1201TargetApiVerifier {
         }
 
         public MemberLookup lookupMethod(String owner, String name, String descriptor) throws IOException {
+            if (verifier.readClass(owner) == null) {
+                return new MemberLookup(LookupStatus.MISSING, List.of(owner));
+            }
             Set<String> visited = new LinkedHashSet<>();
             Lookup lookup = verifier.findMethod(owner, new MemberKey(name, descriptor), visited);
             return toPublicLookup(lookup, visited);
         }
 
         public MemberLookup lookupField(String owner, String name, String descriptor) throws IOException {
+            if (verifier.readClass(owner) == null) {
+                return new MemberLookup(LookupStatus.MISSING, List.of(owner));
+            }
             Set<String> visited = new LinkedHashSet<>();
             Lookup lookup = verifier.findField(owner, new MemberKey(name, descriptor), visited);
             return toPublicLookup(lookup, visited);
+        }
+
+        /** Verify through this index's existing class-byte provider and metadata caches. */
+        public Result verify(Forge1201ApiUsageAnalyzer.Analysis analysis) throws IOException {
+            if (analysis == null) throw new IllegalArgumentException("API analysis is required");
+            return verifier.verify(analysis);
         }
 
         private static MemberLookup toPublicLookup(Lookup lookup, Set<String> visited) {
@@ -271,6 +334,7 @@ public final class Forge1201TargetApiVerifier {
                         .toList();
 
         List<MemberIssue> methodIssues = new ArrayList<>();
+        List<MemberMatch> verifiedMethodMatches = new ArrayList<>();
         int verifiedMethods = 0;
         for (var reference : candidateMethods) {
             String targetOwner = mapType(reference.owner());
@@ -279,22 +343,30 @@ public final class Forge1201TargetApiVerifier {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                        methodCallSites(analysis, reference)));
+                        List.of(), methodCallSites(analysis, reference)));
                 continue;
             }
-            Lookup lookup = findMethod(targetOwner, new MemberKey(reference.name(), targetDescriptor), new HashSet<>());
+            Set<String> hierarchyVisited = new LinkedHashSet<>();
+            Lookup lookup = readClass(targetOwner) == null
+                    ? new Lookup(false, true)
+                    : findMethod(targetOwner, new MemberKey(reference.name(), targetDescriptor), hierarchyVisited);
             if (lookup.found()) {
                 verifiedMethods++;
+                verifiedMethodMatches.add(new MemberMatch(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, new ArrayList<>(hierarchyVisited),
+                        methodCallSites(analysis, reference)));
             } else {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor,
                         lookup.complete() ? MemberStatus.MISSING : MemberStatus.INCOMPLETE_HIERARCHY,
-                        methodCallSites(analysis, reference)));
+                        new ArrayList<>(hierarchyVisited), methodCallSites(analysis, reference)));
             }
         }
 
         List<MemberIssue> fieldIssues = new ArrayList<>();
+        List<MemberMatch> verifiedFieldMatches = new ArrayList<>();
         int verifiedFields = 0;
         for (var reference : candidateFields) {
             String targetOwner = mapType(reference.owner());
@@ -303,23 +375,32 @@ public final class Forge1201TargetApiVerifier {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                        fieldCallSites(analysis, reference)));
+                        List.of(), fieldCallSites(analysis, reference)));
                 continue;
             }
-            Lookup lookup = findField(targetOwner, new MemberKey(reference.name(), targetDescriptor), new HashSet<>());
+            Set<String> hierarchyVisited = new LinkedHashSet<>();
+            Lookup lookup = readClass(targetOwner) == null
+                    ? new Lookup(false, true)
+                    : findField(targetOwner, new MemberKey(reference.name(), targetDescriptor), hierarchyVisited);
             if (lookup.found()) {
                 verifiedFields++;
+                verifiedFieldMatches.add(new MemberMatch(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, new ArrayList<>(hierarchyVisited),
+                        fieldCallSites(analysis, reference)));
             } else {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor,
                         lookup.complete() ? MemberStatus.MISSING : MemberStatus.INCOMPLETE_HIERARCHY,
-                        fieldCallSites(analysis, reference)));
+                        new ArrayList<>(hierarchyVisited), fieldCallSites(analysis, reference)));
             }
         }
 
         methodIssues.sort(java.util.Comparator.comparing(MemberIssue::display));
         fieldIssues.sort(java.util.Comparator.comparing(MemberIssue::display));
+        verifiedMethodMatches.sort(java.util.Comparator.comparing(MemberMatch::display));
+        verifiedFieldMatches.sort(java.util.Comparator.comparing(MemberMatch::display));
 
         return new Result(
                 candidates.size(),
@@ -330,7 +411,9 @@ public final class Forge1201TargetApiVerifier {
                 methodIssues,
                 candidateFields.size(),
                 verifiedFields,
-                fieldIssues);
+                fieldIssues,
+                verifiedMethodMatches,
+                verifiedFieldMatches);
     }
 
     private boolean isCandidate(String sourceInternalName) {
@@ -572,6 +655,7 @@ public final class Forge1201TargetApiVerifier {
                         && callSite.targetName().equals(reference.name())
                         && callSite.targetDescriptor().equals(reference.descriptor()))
                 .map(Forge1201ApiUsageAnalyzer.ApiMethodCallSite::display)
+                .sorted()
                 .toList();
     }
 
@@ -583,11 +667,15 @@ public final class Forge1201TargetApiVerifier {
                         && callSite.targetName().equals(reference.name())
                         && callSite.targetDescriptor().equals(reference.descriptor()))
                 .map(Forge1201ApiUsageAnalyzer.ApiFieldCallSite::display)
+                .sorted()
                 .toList();
     }
 
     static void printIssue(MemberIssue issue) {
         System.out.println("  " + issue.display());
+        if (!issue.hierarchyVisited().isEmpty()) {
+            System.out.println("    HIERARCHY: " + issue.hierarchyVisited());
+        }
         if (issue.callSites().isEmpty()) {
             System.out.println("    CALLSITE: none captured (the reference may come from a handle or metadata)");
             return;
