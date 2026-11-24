@@ -28,6 +28,13 @@ def load(path=TABLE):
 
 
 _index = {}
+_loaded = []
+
+
+def _table():
+    if not _loaded:
+        _loaded.append(load())
+    return _loaded[0]
 
 
 def _by(mc, rows):
@@ -38,6 +45,7 @@ def _by(mc, rows):
             if mc in r["versions"]:
                 ids[norm(r["id"])] = r
                 ids[r["id"]] = r
+                names[norm(r["id"])] = r
                 for n in r["names"]:
                     names[norm(n)] = r
         _index[key] = (ids, names)
@@ -47,7 +55,7 @@ def _by(mc, rows):
 def find(mc, mod_ids=(), mod_names=(), rows=None):
     """The table row for a mod of Minecraft version `mc`, matched by mod id (the loader's rule) or, for site data that only has display names, by a listed name; else None.
     A jar counts only when ALL its mods match (as LibraryBridges.obsoleteReason): the first mod's row is returned."""
-    rows = rows if rows is not None else load()
+    rows = rows if rows is not None else _table()
     ids, names = _by(mc, rows)
     hits = []
     for i in mod_ids:

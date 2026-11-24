@@ -1,0 +1,506 @@
+# Modrinth lookups: is there a NeoForge 1.21.1 build? key = jar sha1 or id:<mod id>; written by tools/compat/native_lookup.py (probe.py --refresh-native renews it)
+# key	project_id	slug	native	version	checked
+00c822d90dfe38359fd80b17c9cec0023c0ca160	qlc8dxM6	sgjourney	yes	0.6.55	2026-11-23
+01e3275d3eb586c953ac786b1afee6e473eef947	MI1LWe93	creeper-overhaul	yes	4.0.6	2026-11-23
+02ad842fb5b81e124db59bded01cf22952ddc10c	aecUorJQ	super-factory-manager	yes	4.34.0	2026-11-23
+037b801a55ca30952b98c427a77ac206cb1248c3	EuTS81Z3	modular-routers	yes	13.2.7	2026-11-23
+04f4c46e58317dca0e5665cee65a7fba730112ad	gKNwt7xu	tempad	yes	3.0.4	2026-11-23
+052a7a94e46dbad7955a316f496a187764ae46f0	cO40ZIg3	functional-storage	yes	1.21-1.5.7	2026-11-23
+05f569ba82d0707fb2e92ed06b63976e9e8d89a1	49ZofO4f	enderio	yes	v8.2.14-beta	2026-11-23
+06866f4005d3f6ba63ac01f715b352842d809bbd	jJfV67b1	citadel	yes	2.7.1	2026-11-23
+069396e689ae887d065c8d61b7945e685fbcc65b	qQyHxfxd	no-chat-reports	yes	NeoForge-1.21.1-v2.9.1	2026-11-23
+069634a9df2fb4c941f02040ec55b8a9d9a633f8	rxYaglEe	advancedae	yes	1.6.12-1.21.1	2026-11-23
+06b43ce0ad41b86ff904b6684cdb2331cec21123	w4an97C2	macaws-lights-and-lamps	yes	1.1.5	2026-11-23
+06fbad254100a7c9fcf829e1e33c5348d9799a87	JWGBpFUP	create-enchantment-industry	yes	2.5.4b	2026-11-23
+075d763daff4c8d0522e9bc673760daf9eb7abb4	UbFnAd4l	create-jetpack	yes	5.2.1	2026-11-23
+0866c840609d8872e84a4d52bbb2542699e88755	IJI3QuK8	ars-energistique	yes	2.1.1-beta	2026-11-23
+0aab43f4baba08f36a2705fd2d9fefda65474306	60kmgb0W	refined-wireless-upgrades	yes	1.21.1-2.1.3	2026-11-23
+0b3c8556983895fea980247bb4d437ca535e7259	z9Ve58Ih	yungs-better-jungle-temples	yes	1.21.1-NeoForge-3.1.2	2026-11-23
+0b536c6238a1708a6b98cbc84df0f01845036a36	U6BUTZ7K	botany-pots	yes	21.1.44	2026-11-23
+0b782d12b4ac3b03a94c28f32e9b2d5587d1dd50	fALzjamp	chunky	yes	1.4.23	2026-11-23
+0e8c0d7d311b9216b5f4a71c0fed13c50d883021	Z6clHfIZ	jumpy-boats	yes	1.21.0-1.0.5	2026-11-23
+117f78ad17ef779220b4bc028b130824034ec045	gu7yAYhd	cc-tweaked	yes	1.122.0	2026-11-23
+11ad483d1fd1f7ebd84b4940b1dc0926b3e9daa8	DSVgwcji	ai-improvements	yes	0.5.3	2026-11-23
+12f95fa85c62123140d1962702a97a3bb746bbf5	fnAffV0n	deeperdarker	yes	1.4.1-neoforge-1.21.1	2026-11-23
+1378ba5f84267c18f945c52d787ac86e40d6c241	iFDWVIFV	brandons-core	yes	3.2.1.309	2026-11-23
+14057b5970e04af3dfa07690b3fc85b628f2184d	oX7uP2kS	shetiphiancore	yes	1.21.1-1.1	2026-11-23
+16808f94a41d45d8e986b4e4ea6b02ba57fa058a	gedNE4y2	playeranimator	yes	2.0.4+1.21.1-forge	2026-11-23
+1973b5142aedca44aefa66d2406643e7d00205c7	5beJoehw	thermal-cultivation	no		2026-11-23
+1997e5fe2db3a0575ca79bfe4720019f01fd2b8c	nvQzSEkH	jade	yes	15.10.6+neoforge	2026-11-23
+1a322a85e7c7024b8a0715c12d27b5ed0930d729	5NYPwQRn	fastworkbench	yes	1.21.1-9.1.3	2026-11-23
+1b36e0dd14c852c76e8b719ecdf269f65dd5fc5d	3JruZJb0	project-red-integration	yes	4.23.0	2026-11-23
+1ba6b53ea2ef7f5c8f5b4b90219565ed67101ed4	E6867niZ	rechiseled-create	yes	1.1.1-neoforge-mc1.21	2026-11-23
+1c6742e3ac2662844c720a42728a10bb9648d13b	IiATswDj	applied-mekanistics	yes	1.6.3	2026-11-23
+1c7a54e1727f2ae4b1f18e1d7feb94a38e87d00f	5IIKsxiL	extreme_sound_muffler	yes	3.57-1.21.1	2026-11-23
+1dc0744d17f0861fe6b067798d39abce9d8e0e86	DGaH8Rh0	apothic-attributes	yes	1.21.1-2.11.0	2026-11-23
+1e49a2fca02e1059bf6c94f6292463ed6e4f6122	UxYNfnfx	more-red	no		2026-11-23
+1e54364d63245a51e66e414ca73efbac9e05f11d	gc8OEnCC	betterend	no		2026-11-23
+1e87aae038570b8f5864bcdd6ae6dabb30162f2d	MVARlG2f	zeta	yes	1.1-40	2026-11-23
+1fd8acfd75a2be2dc3cdcc7e816482b2e427d6e5	ordsPcFz	kotlin-for-forge	yes	5.13.0	2026-11-23
+2019d821bed9071daabed43979433a5473ceee49	J81TRJWm	konkrete	yes	1.9.9-1.21-neoforge	2026-11-23
+215d11414c4f9c425efd46b01c4dd1ff8698c217	g8NOG5OR	oh-the-trees-youll-grow	yes	1.21.1-5.3.6-NeoForge	2026-11-23
+22a9af9896b7a8d0ed0caef84ca2d4d6f5875ffa	uOVMgoil	theurgy	yes	1.21.1-neoforge-1.80.0	2026-11-23
+231fb325368c0660954f47bfb03493f5246fa4d1	l6YH9Als	spark	yes	1.10.124-neoforge	2026-11-23
+233106b2b15b2bbb27df6c78cc8369c0f89d4df7	F8BQNPWX	naturalist	yes	2.0.7+1.21.1-neoforge	2026-11-23
+24e6611df470afd957eafd16c43890b7214e3da9	E6BFl96N	merequester	yes	1.21.1-1.5.1+neoforge	2026-11-23
+253f16ac0ed2222be5fcd06703d57e890881fd4d	jH6iiqkd	productivebees	yes	1.21.1-13.13.0	2026-11-23
+259748978663388d087ae59ce017f57bb9c611db	XxWD5pD3	ae2	yes	19.2.20	2026-11-23
+25d84c486a817ba54362ea1f4b82b6d3802cc074	46KJle7n	l_enders-cataclysm	yes	3.33	2026-11-23
+25ee2a0846059d8f21d28b94b7e0229b60cb5499	BAscRYKm	chipped	yes	4.0.2	2026-11-23
+26a38721914bc23d3757e31892a9e16753b522c6	fzSKSXVK	simple-backups	yes	1.21-4.0.30	2026-11-23
+28154aba31d9165b801aa7800aa758263a23e48f	zr0QMQMo	scalable-cats-force	yes	3.7.1-build-11	2026-11-23
+285c22b2567b9fdf98ef9808eceb5557de9611d3	Aqlf1Shp	forgified-fabric-api	yes	0.116.15+2.3.6+1.21.1	2026-11-23
+2885041c28bc1cba74ad73d9846b53b26539232a	2xZPITh8	pig-pen-cipher	yes	21.1.5	2026-11-23
+2a587b1ad0d3799ce42cad1a165aa183815b06b3	dtHW7aaA	jellyfishing	no		2026-11-23
+2acee24454af859988a691f0506271a465f68f7b	b1ZV3DIJ	athena-ctm	yes	4.0.6	2026-11-23
+2afdc7f42b47384062012e54439c4aab90fb7063	b5GyyYkp	charm-of-undying	yes	9.1.0+1.21.1	2026-11-23
+2b02beb2bd177aa695dc6fc030fc3bb230ca96b1	B8jaH3P1	macaws-roofs	yes	2.3.2	2026-11-23
+2b5b4e5e366c38f961e931f12b66d328b560e66f	q6eiiQ07	voidtotem	yes	4.0.0	2026-11-23
+2f2e367688fe20a313535e6cbb5e384997be0168	Nw1znDUQ	fuelgoeshere	yes	1.21.1-1.2.0	2026-11-23
+2f65edcf4faed33979d5dec81597b472abf17325	DghO0R02	connected-glass	yes	1.1.14-neoforge-mc1.21	2026-11-23
+30b4520e4fab40a6bb6153a2c72e34bcb721f0a5	8DfbfASn	when-dungeons-arise	yes	2.1.68	2026-11-23
+31ae930cdbb34e8e05e1954cfb2fee3a3813e850	fPetb5Kh	natures-compass	yes	1.21.1-3.4.0-neoforge	2026-11-23
+31b386b2dbaa4933e0a10ccdfb25f56da16931a6	XNlO7sBv	yungs-better-desert-temples	yes	1.21.1-NeoForge-4.1.5	2026-11-23
+32af985453bde77bfa56d59cdfb11cab5662c8e1	DGiq4ZSW	oceans-delight	yes	1.0.4	2026-11-23
+34be724165bfe1207542f26551b10925d099eee1	BgNRHReB	bclib	no		2026-11-23
+3730238c56edca4bb5b2238e1314aec572ced385	kidLKymU	yungs-better-strongholds	yes	1.21.1-NeoForge-5.1.3	2026-11-23
+37366658f7e22f061f9adae8675f518512d15858	dSxaHfLO	rs-requestify	no		2026-11-23
+395a9f21a36dc8466d67c2af67a904e7013460d1	8BmcQJ2H	geckolib	yes	4.9.4	2026-11-23
+3b8cc4657cf9f0e321834b1726e358b58a1ea3c4	P4Xi5huA	runelic	yes	21.1.5	2026-11-23
+3c7a62527958c199fb30a08b37f1a634dfb6a715	zIlxygxr	project-red-core	yes	4.23.0	2026-11-23
+3cda3669d41388cd5cd84a5f8c5f722b7af462cd	codAaoxh	midnightlib	yes	1.10.0+1.21.1-neoforge	2026-11-23
+40372c87461962d36f637c5da7fe25e32442e528	6uw892ih	absent-by-design	yes	1.21.1-1.9.2	2026-11-23
+417fb6ce8f52abf40bd9d0390371790f9576f8ba	uXXizFIs	ferrite-core	yes	7.0.3-neoforge	2026-11-23
+41b0751ec3f1410f1bee668f4e68e4c5c43f8fac	P0Mu4wcQ	artifacts	yes	13.2.5	2026-11-23
+42f206a50434324695d23a574765dcb3c6f183df	ThvCqQMh	tiny-redstone	yes	1.21.1-6.1.6	2026-11-23
+452175b95ad3db6ff58bb8968f6bf7a9d1e0f480	vvuO3ImH	curios	yes	9.6.0+1.21.1	2026-11-23
+45bb2cd2be580c0a85d3da719d6d2b850fa1c6b3	GmwLse2I	macaws-fences-and-walls	yes	1.2.1	2026-11-23
+4617a4de40edda9a480ea0c33ba03e97d4a3ae1a	VS1a14jA	polymorphic-energistics	no		2026-11-23
+46687106ee5753ff3a92580ce514c6abc6216045	FTeXqI9v	create-new-age	yes	1.2.0+mc1.21.1	2026-11-23
+4672c64a8019e81a4a6c8239f20661d5edbd5da1	1Ro7m06l	titanium	yes	1.21-4.0.56	2026-11-23
+46c2762720a82045c3f412dfd231e32d4445f4a3	lFGQ4Hnk	dark-paintings	yes	21.1.7	2026-11-23
+47455c48ff84c0ba42936a95a1bb3709689e24cf	okE6QVAY	macaws-paintings	yes	1.1.0	2026-11-23
+497e922cadb9650a5edab4dc26694bedbd830bf2	v8jzRtAt	security-craft	yes	v1.10.2.1	2026-11-23
+4a37aab161d61aa8cd34d6058357b1e93c8d77ce	jhxX1zVW	additional-enchanted-miner	yes	21.1.170	2026-11-23
+4a65ac74a41617d99b16b84a3d841da8fcfe0ab3	rO6kKst6	railcraft-reborn	yes	1.2.18	2026-11-23
+4b08e5f8f2580842eacd5388458a0b52411a9fb2	ziOp6EO8	corgilib	yes	1.21.1-5.0.0.10-NeoForge	2026-11-23
+4b2e632353a95c16a080c2e64c426480a139fbd6	ZYgyPyfq	yungs-extras	yes	1.21.1-NeoForge-5.1.1	2026-11-23
+4bc991b861a981921d06b731368239ce6ea571d3	4QrnfueM	trash-cans	yes	1.1.2-neoforge-mc1.21	2026-11-23
+4c10eb7caf380ffaf7ab1317d9783bf4340ac964	Tsw8vbks	ars-ocultas	yes	1.21.1-2.6.2	2026-11-23
+4c327f26a44ab8d80d73961ff12700d120c4610c	RV1qfVQ8	explorers-compass	yes	1.21.1-3.4.0-neoforge	2026-11-23
+4d09435848635991f971b1fb62b32c2c87b04357	7zlUOZvb	azurelib	yes	3.2.8	2026-11-23
+4e4357c878d6675a49f73b0f2d5eefba70a6cbb2	8lnmIJH7	dimstorage	yes	9.1.1	2026-11-23
+4e7bf109981593061b8100bc8bf23e1c9bbcbb76	2BwBOmBQ	yungs-better-end-island	yes	1.21.1-NeoForge-3.1.2	2026-11-23
+51d8387240b7c2ebca45937126cdaa0c3d682e17	NwazYrVH	rebornstorage	no		2026-11-23
+51f3fcd4f8e340bb3ee773f8bb50f42a1d58f248	Tlo2tahX	extra-disks	yes	1.21.1-4.0.15	2026-11-23
+51fdf94686fc847515e6de8a6c9fd4dab3466ea5	esqWA0aQ	paragliders	yes	21.1.5	2026-11-23
+524ecf0f93f28be2f5db21d87dd81bdbc1a450e1	cl223EMc	cristel-lib	yes	neoforge-1.21.1-3.1.7	2026-11-23
+5256ac40da01a65cd9275bf65a48fdf219b7a4ec	bRfPwYyB	hyperbox	no		2026-11-23
+52d698d2b3d7e70927e1aa448528fd9d90725518	a1llHwl4	backport-copper-age	yes	1.21.1-0.1.5.1-pre	2026-11-23
+52da57f8704a2e6b3f761066748192d6f069d5f9	ZzjhlDgM	create-steam-n-rails	no		2026-11-23
+535c442625be4bd26ee637cdf7055c30b79a0b65	yHN0njMr	ends-delight	yes	2.6.1+neoforge.1.21.1	2026-11-23
+537ac3e358a97efd7b03648a9bfd7b11f1ae7ff7	3ufwT9JF	ad-astra	yes	1.16.26	2026-11-23
+5531e149477b9e540684a296fb196238bf1d85e8	Tg5fXO1x	crafting-on-a-stick	yes	1.21.0.6	2026-11-23
+58c4a332663ca10818d2b72af107062eeecdcc4b	9Qdvz1OV	minecells	no		2026-11-23
+597d40920dcc935f963842c817dcc4901862ab14	M1953qlQ	resourceful-config	yes	3.0.11	2026-11-23
+5a28ec56457cf1bf154e993cf73dba0428a7921b	DjLobEOy	towns-and-towers	yes	1.13.11	2026-11-23
+5ae2fd1e7b88bc38d81a6b180701153ada5a6aa1	A82glthi	pylons	yes	5.4.2	2026-11-23
+5bdda0781bf9dfb5f992a7aa2bee64d5d3fe0b84	QdG47OkI	modelfix	yes	1.21-1.10	2026-11-23
+5c6881416ff4fb116d05f4a48acf12b30f10af82	MNgLmnvM	thermal-innovation	no		2026-11-23
+5e74e87f61cf05c18457f09dfa1cb70332b6b777	xuDOzCLy	jade-addons-forge	yes	6.1.2+neoforge	2026-11-23
+5e88feef805d15ffbe3c0918f53d6ed213a7dc6a	HsdNFinx	valhelsia-core	yes	1.1.4	2026-11-23
+5f19b5765ca9ede4f0a5d9bf0218bd469d0b2b7b	C7I0BCni	macaws-windows	yes	2.4.2	2026-11-23
+636a2b20a5973fcb80016370865cb4251e029b6a	Lq6ojcWv	enderman-overhaul	yes	2.0.3	2026-11-23
+637e1d7ac69d89f17aea813e0b43f2ee806e3b14	pfjLUfGv	botania	no		2026-11-23
+67a9e1c2ff126ab54cea8e0709d178915243039e	o1C1Dkj5	yungs-better-dungeons	yes	1.21.1-NeoForge-5.1.4	2026-11-23
+67f423ba5164267e2c8033bddc17fec69f50e9f8	blEO0qto	generatorgalore	yes	1.21.1-1.3.4	2026-11-23
+68296d5aec31299bebfba7f8572409447b9a5fe7	kpMfA312	universal-grid	yes	1.21.1-0.3.3	2026-11-23
+687eb7776b582f7c388fe9ee69545f06d814fa4a	VepYPOdy	custom-portal-api-reforged	yes	1.2.2	2026-11-23
+68b8301c8124dd00ea70c216066b1fe207e25345	wbgfS34j	framedblocks	yes	10.6.3	2026-11-23
+690f2134241544b3f6c38ff895d8e5a2aa77aa4d	BFbX9xcm	mowzies-mobs	yes	1.8.2	2026-11-23
+69843dfb42bf9420ff94586cdb4cf4b488efd08f	o1qh5qIF	integrated-villages	yes	1.3.3+1.21.1-neoforge	2026-11-23
+6c23a97d771ea7ad43bee9bd71d2f2a1f2084170	TKB6INcv	ars-nouveau	yes	5.13.5	2026-11-23
+6d9fa1433d509be242d1d74282d02a0fbebde110	TObQ0HxZ	mcef	yes	2.1.6-1.21.1	2026-11-23
+6eb69343eb21d38f95d1b1d00e6bc777bdb336fa	lOOpEntO	attributefix	yes	21.1.3	2026-11-23
+6efbc3c950cb649b52bb7633996d36e5d0554404	MMMWYsjm	utilitix	yes	21.1.7	2026-11-23
+6efdaf5d213f779e51aa84631a5f06a306351e75	HaaH232J	yeetus-experimentus	yes	87.0.0	2026-11-23
+6f7c0056fece31bf393df450d79482810ed444af	OWSRM4vD	cofh-core	no		2026-11-23
+6fc590a7c56a720fec57e290cbb0a106efbb3ffa	G1hIVOrD	resourceful-lib	yes	3.0.12	2026-11-23
+704711f8abebf051945dca2ae2a1eba9c3405c57	RG50cUrX	twigs	yes	1.21.1-3.1.2	2026-11-23
+70a4d8acaedc4dfb066974726d21916b78edd7af	T0OUgf8P	get-it-together-drops	yes	v1.4	2026-11-23
+71fee574f920c6b05004f100ba07e9b8d5844169	t5FRdP87	yungs-better-witch-huts	yes	1.21.1-NeoForge-4.1.1	2026-11-23
+7247c4b3f319f828205fc9f195261c46a24280ec	MpzVLzy5	betternether	no		2026-11-23
+72939caf824d582106b6e06e12efb7bcf35bcd64	4fCwcdXD	mystical-agriculture-tiered-crystals	yes	1.7.1	2026-11-23
+731069f0a9c1377da0681415b6523e71439ae014	kNxa8z3e	macaws-doors	yes	1.1.5	2026-11-23
+74cc057cc01fdb0186504d71623b5811bbe705f9	rxIIYO6c	tinkers-construct	no		2026-11-23
+7529fbf938787ed13a251cbf40936f8c29ec4b6c	Es5v4eyq	sodium-options-api	yes	neoforge-1.21.1-1.0.10	2026-11-23
+75bbbac8e9d394a30f6751570ed3506a6dfbb846	7UsJsd1y	mowzies-cataclysm	yes	1.2.2	2026-11-23
+79c0b51a760a0b4d83aeb86438feea25cc08ca3e	gzevkJbM	photon-editor	yes	mc1.21.1-2.2.11.a-neoforge	2026-11-23
+79e1409b8db4ce86df9d6d6730f09c4bd8860a30	8oi3bsk5	terralith	yes	2.6.2	2026-11-23
+7a686d07aeab7d89c876a9e6f90f53514f43a107	H1x2EwLg	xnet-gases	yes	6.0.2	2026-11-23
+7a94bff9e9c2408c6c36e64d5c911e5759cddc10	GURcjz8O	macaws-bridges	yes	3.1.2	2026-11-23
+7a9b3691dfca81e52d3e34738c6bc0a98b58bf93	t8bmWGI2	thermal-dynamics	no		2026-11-23
+7aaab6216e7fc72e1606b1e35f1f56a18f01153f	OfKzpbRU	baguettelib	yes	2.0.7	2026-11-23
+7b46df9e34d81bb678e9547a662cca15a04855e5	rEuzehyH	findme	yes	1.21-3.3.5	2026-11-23
+7c1fbd79c9bda7478560faa886eaadf0dd8d181f	Xvg6q5Wp	thermal-foundation	no		2026-11-23
+7c4d3b7f341554e5a09c4fa289519a5d9b090b62	a8Jk9kpK	edivadlib	yes	3.0.0	2026-11-23
+7c5a1417b5d65cf53ecdb9fab6a1cdbf3eb8943b	mvs7RoIW	botany-trees	yes	21.1.7	2026-11-23
+7cae606158a0ddcecd0c68c1d82a29ad89da6ce2	OCJRPujW	relics-mod	yes	0.12.11	2026-11-23
+7d774bd9d03b31d582d3c333af93adebee718313	B1CBVXHX	ldlib	yes	mc1.21.1-2.2.46.a-neoforge	2026-11-23
+7e828cbb046ca3d622e92c68f956bd1c0155dc6f	LVnvHVBp	ice-and-fire-dragons	no		2026-11-23
+7eb4d3f7b9dc4b65cffd848f2949eb5d468dfc32	LmvnWWSV	cb-multipart	yes	3.5.0.155	2026-11-23
+7f7a9030f14b7c21d11696b5e373fb48351bbe7c	vFiP6C1Y	villager-tools	yes	1.21.1-1.0.4	2026-11-23
+8077ba5e1981cb135c967ed25c0825c003b9e1fc	pl0jGXIx	mystical-agradditions	yes	8.0.15	2026-11-23
+80bd5223cd8984dc1038cb9f2d1cb6b97f31998a	bV2crgLh	construction-wand	no		2026-11-23
+8138ec72d019ccf4e706d8466d2b1c78164ec937	lr2r2Dpz	aether-lost-content	no		2026-11-23
+81919356f84eab14258db98924b66c3c38e372b1	EsAfCjCV	appleskin	yes	3.0.9+mc1.21	2026-11-23
+821e5f406afa53a5c1d3346a20efb0ec7be97997	VRLhWB91	macaws-paths-and-pavings	yes	1.1.1	2026-11-23
+830539d5ad0e3814d7418f44191076713b52e6a3	ntMyNH8c	mmlib	yes	1.3.16-1.21.1	2026-11-23
+83da147d635e3adbbcd59a24e4c4de9bbdf9830e	UsLNxQgK	cable-tiers	yes	0.0.0	2026-11-23
+840036c824edfe6e155f4488337e5f5aec26a17f	wQfMUdZT	colorful-hearts	yes	10.5.9	2026-11-23
+8496291a5b7d0eecfb2b68f8c10c2bf7ae9c7bf7	lNK9A4rh	mystical-customization	yes	6.0.2	2026-11-23
+84e0678cdad2c007ee56fa3fef1403a612d07feb	s4OWxYQQ	irons-spells-n-spellbooks	yes	1.21.1-3.16.4	2026-11-23
+85fa58f6443605d9be588bd410dd832f954c781d	rlloIFEV	travelersbackpack	yes	1.21.1-10.1.41	2026-11-23
+8605ad00f483bb6d6ac0afc5b1c7b07a5cd5c476	QDNS5oAT	repurposed-structures-forge	yes	7.5.22+1.21.1-neoforge	2026-11-23
+8757a9f1d47f48463765d1d202cdadc41c84f6b0	3WjjSM5O	configuration	yes	3.1.1	2026-11-23
+889cd16a93764d1d6af2e2dda5bbc286a2683e7a	Z2mXHnxP	yungs-better-nether-fortresses	yes	1.21.1-NeoForge-3.1.5	2026-11-23
+889fa4f0aa90d3541e45ab59d41a249af3c9dd20	pNabrMMw	applied-energistics-2-wireless-terminals	yes	19.5.1	2026-11-23
+896ac25f3cd3317662017a4a3f49e51eb86cf688	uxLAKWU8	corn-delight	yes	1.2.10-1.21.1	2026-11-23
+8973852066055991cc72a154673ae7c19aaad7b5	TVQMH6pX	project-red-exploration	yes	4.23.0	2026-11-23
+898ef261a7d05e844dc879f38b2f37333765704a	RHN9OPTT	terramity	no		2026-11-23
+8abd0ee849f9654ec91d3ecbd115e2c296f08c73	nBqivi8H	draconic-evolution	yes	3.1.4.633	2026-11-23
+8bbcdfb61e9f0f738af0efff12c93b8f9daf2fb0	iAiqcykM	just-zoom	yes	3.1.0-1.21.1-neoforge	2026-11-23
+8d008954747ad6633b85f3ccfa0523807a400e8b	KfkTLdPl	redstone-arsenal	no		2026-11-23
+8d6ecb5e6c8b7dc0a95eeaba012c6bcd1b75e77d	Ro7yiyD4	thermal-integration	no		2026-11-23
+8dba04d7e727fd58d83b9361fa4c2e12a767dc57	fn5zBLFv	project-red-expansion	yes	4.23.0	2026-11-23
+8e2025ffdf106131f0ec644d39df59eb677c6b02	mVt3sz2a	lethality-a-terramity-addon	no		2026-11-23
+8e4553fe59b686239eddd25e1f77b9596ca1b1d9	BTmup08e	productivetrees	yes	1.21.1-0.7.0	2026-11-23
+8f786fcf31036d5af2f4a1caad5802da450c0185	MbejSZ2E	energymeter	yes	1.21.1-0.6.0+neoforge	2026-11-23
+8fa73fd4c5ae58636e159e54321651adf555ac44	fgmhI8kH	ct-overhaul-village	yes	3.6.4	2026-11-23
+8feae4ba8a3ffb117fa7b3b4291a520e2497fa1e	h5JyLdjM	domestication-innovation	no		2026-11-23
+908bb8c851a38e2ad4f3e5965b1b9a6668070d66	sdaSaQEz	almostunified	yes	1.21.1-1.4.2+neoforge	2026-11-23
+9117fbb20ce0b3b9abd25e19b3d5987a53be30c9	hi2dSXTu	elevatormod	yes	neoforge-1.21.1-1.11.4	2026-11-23
+9336db4e6ce458bccf7724c039f0371e822397ae	FYpiwiBR	connector-extras	yes	1.12.1+1.21.1	2026-11-23
+93fcf0eacc5dc08a4f719eaaed1dc93f0dc80f66	umyGl7zF	kubejs	yes	2101.7.2-build.381	2026-11-23
+94da0b23ffc8b7627cce05d0d3400d97a71be143	k3lrwGqk	dark-mode-everywhere	yes	1.21-1.4.0a	2026-11-23
+964aba479a6a9f03dd53dd57ee753a2237910064	5fNJnSba	dungeons-plus	no		2026-11-23
+984f774e71790deaec674c7587bd24e0711871b2	GchcoXML	oculus	no		2026-11-23
+98ecd24137c7a22e644c33483a41997d74b0a583	QejnMYJo	thermal-extra	no		2026-11-23
+997ff389bebed728e1e8094ba5438e7beb059ef3	dtWC90iB	macaws-furniture	yes	3.4.1	2026-11-23
+9a7f4ffdfe0dfe0a8071ac6501e52b1b4e208758	Tl8ESrhX	torchmaster	yes	21.1.13-release	2026-11-23
+9b0fb82995622a0070c00827c698c43b49d9d14b	qnQsVE2z	quark	yes	4.1-488	2026-11-23
+9b210b8931cc2303dc14a3d3ccd57dac8e26b601	tqQpq1lt	mekanism-tools	yes	10.7.19.85	2026-11-23
+9d28c33486b3847da965836f5cd6e243336567cf	BaiPFaoT	ae-additions	yes	6.0.2	2026-11-23
+9d55f629c8a9b0ea1912051fe04b16400c640944	692GClaE	modonomicon	yes	1.21.1-1.123.1	2026-11-23
+9d86230565f9262e845da2065f138e470eaed44c	DOSy3C4M	blue-skies	no		2026-11-23
+9eab28baff36942e1c924489e34753df10f40208	RH2KUdKJ	shatterbyte-lib	yes	0.6.3.2+1.21	2026-11-23
+a02780676072eb965def5d45f7b19f1dd1e685e2	73MCa9Po	everythingcopper	yes	1.21.1-2.4.2	2026-11-23
+a0291477907c8a8ac90cf884d5dff2962c44afc8	nCk7Sfz8	wireless-chargers	yes	1.0.9a-neoforge-mc1.21	2026-11-23
+a109f9d34f39af38a394a58fc506583eb078704d	EltpO5cN	lootr	yes	1.21.1-1.11.38.127	2026-11-23
+a1818c65f001d2dd7bfb16fab3c8c94c9abb0fbb	9a4Zqq1k	project-red-illumination	yes	4.23.0	2026-11-23
+a1e5c7b7c7eadda4c8e954acbcbaf75a7b500d53	U6GY0xp0	alexs-caves	no		2026-11-23
+a21f71df63bee7561a7e364654f8f4871a337142	OOUmRYso	tinkers-levelling-addon	no		2026-11-23
+a52918a500ff421180a1cbd1a0cabee712134ec4	lhGA9TYQ	architectury-api	yes	13.0.12+neoforge	2026-11-23
+a6928cb03b7c5f81900d3d3c8e8c8f6a89a51a5b	2u6LRnMa	botarium	no		2026-11-23
+a72c3f8828a2c922c11676a9908e609a75b35b6e	rylMOguI	entangled	yes	1.3.21-neoforge-mc1.21	2026-11-23
+a8b887188190f19932bb845ea546169822704c9d	ncAcdgk7	pneumaticcraft-repressurized	yes	8.2.24	2026-11-23
+a969ed0007ddee5bd9c93c66eb735849cf8e5224	Ce6I4WUE	mekanism	yes	10.7.19.85	2026-11-23
+a9fc844cc096dbd9180e2f98f9f86545a0daeb28	n2fvCDlM	macaws-trapdoors	yes	1.1.5	2026-11-23
+abd15442389827d9196c2dc703a62cbe0a2f1090	G9WbcGQ2	sushigocrafting	yes	1.21-0.6.7	2026-11-23
+ac6cec9a006afcd39165394537e6c28319a296b7	ZtdULK5c	eccentric-tome	no		2026-11-23
+ae50255ad8f3eb44951ee4ab1749f4b2cfa1dbe8	u58R1TMW	connector	yes	2.0.0-beta.17+1.21.1	2026-11-23
+af584b690f5646c6032002b58abc4591beed3833	Ua7DFN59	yungs-api	yes	1.21.1-NeoForge-5.1.9	2026-11-23
+b121710c6e85138b5f094568b273da6cae4d1ef3	BzHgFoGz	colorwheel	yes	1.3.2+mc1.21.1	2026-11-23
+b144b8599acd3fac3f8f9d31fa217a4a5b942f61	9X0318ev	fastfurnace	yes	1.21.1-9.0.1	2026-11-23
+b1fdcfdd48ac4519ea95cb3b8dbaacc5cf819b20	DWIEOniQ	iron-jetpacks	yes	8.0.11	2026-11-23
+b58c02289abe24eed27211b069e243a9af025192	Tanquv9C	macaws-biomes-o-plenty	yes	1.21.1-1.6	2026-11-23
+b616c118d611459a0711931c51c9c4d41408abb4	7tl2Pt3c	mythicbotany	no		2026-11-23
+b65cba59e87dc6c6d1aa9c47f09b9996b4e5075d	8shC1gFX	betterf3	yes	11.0.3	2026-11-23
+b6b007c9a8f66927a1add7386e2a8b171c4418df	R6YQjhwo	industrial-foregoing-souls	yes	1.21-1.10.7	2026-11-23
+b6e403e0e5be1802268be366ad1a7791f07fb793	tIm2nV03	immersiveengineering	yes	12.4.2-194	2026-11-23
+b8150764c16fe4674f6b5b50dd37b76cbed8b1b3	TFFWPTSD	aiot-botania	no		2026-11-23
+b8de9c7ad72fdd0c0181f7f3c578214147939e4e	sbJh4AZw	occultism	yes	1.21.1-neoforge-1.227.0	2026-11-23
+ba16d2207ec440e2f66fcbd2ad07b83bb163ce98	CkqTAIaP	dark-utilities	yes	21.1.1	2026-11-23
+ba1f5826f8f5d0772c9adf46fbe93befcdd5796a	T34cBZKl	extrastorage	yes	5.1.0	2026-11-23
+bb2fa8f3e493af16af9160d049f96c614a1faf2f	sk9rgfiA	embeddium	yes	1.0.15+mc1.21.1	2026-11-23
+bb88528b286ccd4aae1fe06654f4d8eb0879c8a8	lWxpUd04	industrial-foregoing	yes	1.21-3.6.39	2026-11-23
+bc63dee3a93b15f5e8c9036f7c16ea4b1c477d1a	ResbpANg	create-ore-excavation	yes	1.21.1-1.6.8	2026-11-23
+bcb1679d28123ad6c1847d79d009047c1b1af017	xIF7nCgD	platforms	yes	1.21.1-1.0	2026-11-23
+bd6e8152f01d7278fbafd41941592e42faf3f69b	fFEIiSDQ	supplementaries	yes	1.21.1-4.1.4	2026-11-23
+bdd6d2be506b584f115996159fe48cc0a7894d6f	GmjmRQ0A	slice-and-dice	yes	4.3.4	2026-11-23
+be88938ca5df78271e64bc9f85c3575754f33e2a	ccKDOlHs	owo-lib	yes	0.12.15.6-beta.1+1.21	2026-11-23
+bf9dc6fc028bfbfd0658659591329073f157aac6	gxSiDoVF	enderchests	yes	1.21.1-1.0	2026-11-23
+c0f6e2421088f06abf5c1be2f49f39639552b1d0	4cJkN3aF	natures-aura	yes	41.10	2026-11-23
+c30053984d1d0e329ae92db99bd6c1b0ee60d6e5	jXNvTKds	additional-lanterns	yes	1.1.2-neoforge-mc1.21	2026-11-23
+c318ed189e2e39a7770c61618a2f221ceef99359	2uEhdGKt	enders-delight	yes	1.3.1	2026-11-23
+c460ca3e95e40894c78fd327c5ba73c7da83f6d3	mo64mR1W	morejs	yes	1.21.1-0.16.0+neoforge	2026-11-23
+c46db36e9fc40865d54590c1a59ea71915e341a6	UEtTD3gP	ding	yes	1.5.0	2026-11-23
+c53d9eb5ce9e8ef0f2ea9b11e478d84ce958c3e5	uy4Cnpcm	bookshelf-lib	yes	21.1.81	2026-11-23
+c5407cfd0b38d8db6d6f1c0088397f4c5616c7ae	KJhXPbHQ	better-compatibility-checker	yes	21.1.8	2026-11-23
+c5eb5efad7a4776d558b44b28891f2e33eef03e4	LNytGWDc	create	yes	6.0.10+mc1.21.1	2026-11-23
+c65d07748acc57ceb45d53b3964368b84f34d54f	9s6osm5g	cloth-config	yes	15.0.140+neoforge	2026-11-23
+c6da9c681bf2ec1d7b3e96db739c2b1113f6b838	Vv0RM7WN	nethers-delight	no		2026-11-23
+c747ebbb7654b67c2b62b669605bcda041970ca4	Q2OqKxDG	better-advancements	yes	0.4.3.21	2026-11-23
+c7534db3248adfcf39a6158b423dfc9bfc99a378	UhW5uCKw	glodium	yes	1.21-2.2-neoforge	2026-11-23
+c79fe5b922653d109cdcee45f4bca24c86daf6c0	hmD6rrUJ	thermal-expansion	no		2026-11-23
+c83c9b719a6bab33fbd2b3f2f680eb3adbfc1aa1	sk9knFPE	rhino	yes	2101.2.8-build.91+Rhino-1.21	2026-11-23
+c85179368a33508306553757349e3bdcdcb22d7d	X6XpwjH5	integrated-simply-swords	yes	1.4.0+1.21.1-neoforge	2026-11-23
+c8a0ae25512d0cedef478df411c87e43703ae237	VYRu7qmG	observable	yes	5.4.4+neoforge	2026-11-23
+ca74a2ad65f149e7465e849b479abec863a82bf1	gu7yAYhd	cc-tweaked	yes	1.122.0	2026-11-23
+ca9417c369e75d38dacdac59937223e5f6adcc18	R2OftAxM	farmers-delight	yes	1.21.1-1.3.4	2026-11-23
+cac7145a61d29eed0bad5d303b52cb0a19092318	ix1qq8Ux	crash-assistant	yes	1.11.12	2026-11-23
+cacec8ace7987d33e76873bf574704aea7564a4e	B0g2vT6l	rechiseled	yes	1.2.6-neoforge-mc1.21	2026-11-23
+cb05a6adb2089d9e63f52ea7e98c12eaf28d564c	odpTfrvd	utilitarian	yes	1.21.1-0.13.15	2026-11-23
+ce28ca1679c9c353b8e4391b45499f16b19b6648	yPlaLxD1	iron-furnaces	yes	4.3.2	2026-11-23
+ce565f1dca2cb257b5ff089fc59755c714762424	XQDxCBVw	ad-astra-giselle-addon	yes	8.1	2026-11-23
+cea96c84a359f202f89622626a7625c41572804a	i6fiqm5y	platform	yes	1.4.2	2026-11-23
+d0092ae1bb847ef7baef59bfa0d6bba22d264b99	ONbfwGTw	integrated-catalcysm	yes	1.0.6+1.21.1-neoforge	2026-11-23
+d05e4298569fac7ac9337c8889bcaef3f708feae	Dfu00ggU	yungs-better-caves	yes	1.21.1-NeoForge-3.1.6	2026-11-23
+d08b26bb219c2eeff5d3dfd30b38dbbc682c0348	twkfQtEc	moonlight	yes	1.21.1-3.8.5	2026-11-23
+d1a755de84ee5d8910ff1e65e815473056e93ece	XaDC71GB	lithostitched	yes	1.8.1-neoforge-21.1	2026-11-23
+d27524e85bed0f0af83c03be46f9ca3eb02a1be9	PxQSWIcD	sodium-dynamic-lights	yes	neoforge-1.21.1-1.0.10	2026-11-23
+d29b7226d10005a649ec089e626efa534ee88598	80j65Nbw	bdlib	no		2026-11-23
+d2c593846975f8e39eca54e443c04b4850979df0	kc9FSsYx	glassential-renewed	yes	3.4.7	2026-11-23
+d356430ff9fe588998f4b85eb3a6b5b0e57e2b85	p19vrgc2	fusion-connected-textures	yes	1.3.16-neoforge-mc1.21.1	2026-11-23
+d37e1148b512c67cee704635b4f07d1f9ea8c31c	rOUBggPv	supermartijn642s-core-lib	yes	1.1.26b-neoforge-mc1.21	2026-11-23
+d41938569195b8b6a971a24f950f7999dfeba852	7tG215v7	gregtechceu-modern	yes	mc1.21.1-7.0.2	2026-11-23
+d4aba356b0bc53757973146ec163b8d6410af852	qG2blzpo	advanced-generators	no		2026-11-23
+d7089e5621f8c5ee050402700aa2a3ccd195eaa7	zZwEA08D	endertanks	yes	1.21.1-1.0	2026-11-23
+d751153e722a4e014691c83f39f5b07c6ec5333c	aC3cM3Vq	mouse-tweaks	yes	1.21-2.26.1-neoforge	2026-11-23
+d75610b0c34626cea8b1155a47d28333cc1f58a2	qEH6GYul	libx	yes	1.21.1-6.0.15	2026-11-23
+d823f6da5ea81ee09df8038dc5645986b184a451	Ejfl5qDL	the-undergarden	yes	0.9.6	2026-11-23
+d8e74ed19903752a97ed0e1d2b1a8bf378bc252f	3dT9sgt4	yungs-better-ocean-monuments	yes	1.21.1-NeoForge-4.1.2	2026-11-23
+daeccb1fbe1d67d426fcc8135cfff463ff0f7e1d	nmDcB62a	modernfix	yes	5.27.27+mc1.21.1	2026-11-23
+dafa61e94f9a97507223f3fe46e1c95ab22f02aa	YyNQVpOu	simple-magnets	yes	1.1.12c-neoforge-mc1.21	2026-11-23
+db1ab527fcc48852775e01f9504c7a3ec3083743	Cg6Uc79H	mantle	yes	1.12.35	2026-11-23
+dbc71f3d820ac117c17b56e9ad57e3290d17a8ee	545hUrw9	applied-botanics	yes	1.6.0-alpha.3	2026-11-23
+dbd9b1208cb14287d32e2d53fe05459e597ead58	CETpiisl	rats	no		2026-11-23
+dbf93d2f1da19e16739e91e8ea0fc6f4bc2f228f	2cMuAZAp	alexs-mobs	no		2026-11-23
+ddc5738ccf252c7bc29841439b0a6ced9bdf5a1c	cpRkny9R	bamboo-everything	yes	21.1.2	2026-11-23
+df540136f2ddb27c046ff71a1058716152f3065f	dXmH4rEw	project-red-transmission	yes	4.23.0	2026-11-23
+df617fca36358b26b2dd3531ceac365b0311d3a8	OFVYKsAk	mekanism-generators	yes	10.7.19.85	2026-11-23
+df7f28d82e572f8fd5e5bf61a9920e7390a03b68	Sjzdj2cy	rsinfinitybooster	yes	2.0.0+neoforge-1.21.1	2026-11-23
+df8cbd8e49e001696a3d3e2c8352c3bb310e8c6f	qelfSMnn	ae2-import-export-card	yes	1.21.1-1.9.1	2026-11-23
+e07b58008aeae90d61c5324c740cbbd66bbb34e3	c7m1mi73	packet-fixer	yes	3.3.1	2026-11-23
+e0a018f61c2302c377b26ef3f7c5bd6e8a7303b8	ImlP9deQ	ensorcellation	no		2026-11-23
+e17ebc9be0b3f0646f2de10563b72827442cc866	q0rRg4lH	dungeoncrawl	yes	2.3.17	2026-11-23
+e21fee36e0facf98c00da27da63928cca45dcddf	y9vDr4Th	item-collectors	yes	1.1.10-neoforge-mc1.21	2026-11-23
+e2ad1faa1f9764cf444851d6e4b700d1cc5f6ead	smUP7V3r	durability-tooltip	yes	1.2.0-neoforge-mc1.21	2026-11-23
+e2cbc574807a994bb9610184eb4bbfe29a6c0774	HjmxVlSr	yungs-better-mineshafts	yes	1.21.1-NeoForge-5.1.1	2026-11-23
+e3c00b7591fd5ea99cfbb853b9369fb999d68ed0	nbg22QFg	crash-utilities	no		2026-11-23
+e474f9de02552d2361f15e1422316950b1172bf8	JtSnhtNJ	delightful	no		2026-11-23
+e4afd6f512cc06311320357ed974cee586e031c3	tagwiZkJ	polymorph	yes	1.2.0+1.21.1	2026-11-23
+e508c4724a24f0c80836818fcdd3df6424b1fc40	rqFWfVlz	apotheosis	yes	1.21.1-8.9.0	2026-11-23
+e5c31395e10d9e858ca1fde42d35113945bfb658	RtE3n4Jo	wither-skeleton-tweaks	yes	1.21.1-10.1.1	2026-11-23
+e7432bafcc087045939858597680ee11d84d7bd4	8T53F0sy	slashblade-resharped	yes	2.2.1-1.21.1	2026-11-23
+e7b9fe89566bb1ee013e33745f22f309f679536e	SaCpeal4	comforts	yes	9.0.5+1.21.1	2026-11-23
+e85f53de2e582a79ce25ff1df1e7b5b5fc08440f	tCkE8p2N	placebo	yes	1.21.1-9.9.4	2026-11-23
+e91d2e2f251375d647d592b670ea6f310c2554eb	nU0bVIaL	patchouli	yes	1.21.1-93-neoforge	2026-11-23
+e9ef48672f01b076ea3b8c7c5e6a139c2491a67c	CnOG2wlS	toast-control	yes	1.21.1-9.0.1	2026-11-23
+ebb8d9033c29538824281b3ac651c49135aba78e	u6dRKJwZ	jei	yes	19.76.1.481	2026-11-23
+ec0c77124e7e29c6d642410e3b7b3652a866aff5	6bLUlbZn	hostile-neural-networks	yes	1.21.1-6.6.0	2026-11-23
+ec15dfd15a8b9f3ebb05038038f92c79ff5ceb02	PbNc6qBY	blood-magic	no		2026-11-23
+ec8c59d2a69eca3249a8da673f572b40b6d59895	T8TGycIQ	structure-gel-api	no		2026-11-23
+ed2158bade0615c90d50474e2cbf0b32b5eeee61	8OIeAukW	gateways-to-eternity	yes	1.21.1-5.1.0	2026-11-23
+ed6fd5eb0c782529be03f199d66d9a7c9eb2a518	jjuIRIVr	mega	yes	4.11.0	2026-11-23
+eefcb28a80c6a8e42d452b2caf232a49a40f7b3c	MdlnLS7Q	forbidden-arcanus	yes	2.6.1	2026-11-23
+ef268ca6183561fefb76db04be5d2ab9dc1a12d0	NNAgCjsB	entityculling	yes	1.12.2	2026-11-23
+ef2783acc8efb4f820ec9915f2f67711dfa0d2e8	zFiY2Go0	blockus	no		2026-11-23
+f05566e3b898de8542fa7fa79aebd2cff69b89e6	bRa1UAVZ	webdisplays	no		2026-11-23
+f11443ef3371fa790eb33cba1a517638a3afcb07	mSQF1NpT	elytra-slot	yes	9.0.2+1.21.1	2026-11-23
+f14fb093062f193d758cd90acffae0ce1c461dc2	jzaTHh0C	shrink	yes	2.0.2.53	2026-11-23
+f1b9a009529134c736c59d6d192d53a4a25e5e5f	pJmCFF0p	handcrafted	yes	4.0.3	2026-11-23
+f1dada3ff6978a46ce6ba5b6738218cc237786aa	4H6sumDB	euphoria-patches	yes	1.11.2-r5.10-neoforge	2026-11-23
+f2be323d589b953eaa303f8b74913831a5a9b77b	M1ZKbfkJ	journeymap-integration	yes	1.21.1-1.9.1+neoforge	2026-11-23
+f376bdf46bce7d9d8cf275b05899e1abaed98c3b	Rw1NrDzF	cucumber	yes	8.0.16	2026-11-23
+f39c3b75c4a34bc838c1abcc1ba88a8e724b11ec	L3eFR8i3	thermal-locomotion	no		2026-11-23
+f622f585fb6421897b0f7c5859731188f7239a01	fZ324GMc	ars-creo	yes	5.4.0	2026-11-23
+f6dca27edc5de2e33de36969622c0ce3060ccd72	KZO4S4DO	powah	yes	6.2.10-neoforge	2026-11-23
+f80f9eed728966adcfbcc848633e789645057281	LN9BxssP	supermartijn642s-config-lib	yes	1.1.8-neoforge-mc1.21	2026-11-23
+f8c84d824c433e7e6e9f44ae6d4885925a08087f	BOCJKD49	friends-and-foes-forge	yes	neoforge-5.0.5+mc1.21.1	2026-11-23
+f9b90ff58442b5967366fd90d24980a34540518d	2gq0ALnz	codechicken-lib	yes	4.6.1.529	2026-11-23
+fb22bf4c7293cd1791f172918ae81863ed1e81dd	lL2MtE37	bad-wither-no-cookie	yes	3.20.4	2026-11-23
+fb2324f7de5b84d18d90a47fac17c9afc650fa85	5A34Stj8	ponder-kjs	yes	1.21.1-2.4.0+neoforge	2026-11-23
+fb45df310579991d8fab2db1b3c6fb5326940bef	pOeA0exL	psi	yes	1.21.1-110-neoforge	2026-11-23
+fbec8b7d7e5bf0bf7ef7d3e3d1d7519e5d46fe71	pyFjCT3F	backported-animal-variants	yes	0.2-1.21.1	2026-11-23
+fc66445539dbd7cd7d763297ea73af5e34c642db	Ck4E7v7R	guideme	yes	21.1.22	2026-11-23
+fc9de622fa0eaa5acf2846c4fa6b01e0dcbb4a6f	NTi7d3Xc	oh-the-biomes-weve-gone	yes	2.6.3-NeoForge	2026-11-23
+fd242367e58ddd84558e97e4ff0a7c48bb817059	C95ReXie	mystical-agriculture	yes	8.0.29	2026-11-23
+fdf9cb568546e80485ea4402a39656ed9acfa991	VsM5EDoI	blueprint	yes	8.2.0	2026-11-23
+fe4c1ec5ca037e884832a98f48362f7089a5de63	73mSSnCf	silent-gear	yes	4.2.1.1	2026-11-23
+ff69fd8513b7eed4f20eb270838ce684add2706c	NEipHNYm	no-villager-death-messages	yes	6.0.0	2026-11-23
+ff801e939da0f9afc2d96cce4375d8c4bb368533	bK3Ubu9p	simply-swords	yes	1.70.2-1.21.1	2026-11-23
+ffcf6207d71ba069a8baf18f6ac4ee8668376490	KSyWOxT5	flickerfix	yes	6.0.0	2026-11-23
+id:additional_lights			no		2026-11-23
+id:addonslib	cl5ec0Qm	addonslib	yes	1.21.1-1.14	2026-11-23
+id:advancedperipherals	SOw6jD6x	advancedperipherals	yes	1.21.1-0.8.2a	2026-11-23
+id:ae2things	veunMwU3	ae2things	no		2026-11-23
+id:aeinfinitybooster	VQhDBNs8	aeinfinitybooster	yes	2.1.2+neoforge-1.21.1	2026-11-23
+id:aether	YhmgMVyu	aether	yes	1.21.1-1.5.10-neoforge	2026-11-23
+id:alchemistry			no		2026-11-23
+id:alchemylib			no		2026-11-23
+id:alexsdelight			no		2026-11-23
+id:allthearcanistgear			no		2026-11-23
+id:allthecompressed			no		2026-11-23
+id:alltheleaks			no		2026-11-23
+id:allthemodium	YDA6eZ1t	allthemodium	yes	3.0.1	2026-11-23
+id:alltheores			no		2026-11-23
+id:allthetweaks			no		2026-11-23
+id:allthewizardgear			no		2026-11-23
+id:amendments	6iTJugQR	amendments	yes	1.21-2.3.0	2026-11-23
+id:angelring			no		2026-11-23
+id:appflux	oMgZ004U	appflux	yes	1.21-2.1.5-neoforge	2026-11-23
+id:aquaculture	Vl1uNAuy	aquaculture	yes	2.7.22	2026-11-23
+id:ars_elemental			no		2026-11-23
+id:balm	MBAkmtvl	balm	yes	21.0.67+neoforge-1.21.1	2026-11-23
+id:betterp2p	9DDxOvTJ	betterp2p	yes	1.5.2	2026-11-23
+id:bhc			no		2026-11-23
+id:bigreactors			no		2026-11-23
+id:biomesoplenty			no		2026-11-23
+id:blockui			no		2026-11-23
+id:blueflame	8k7QiW7U	blueflame	yes	1.21.1-1.1.1	2026-11-23
+id:born_in_chaos_v1			no		2026-11-23
+id:buildinggadgets2			no		2026-11-23
+id:caelus	40FYwb4z	caelus	yes	7.0.1+1.21.1	2026-11-23
+id:casinocraft	kDlnENV6	casinocraft	no		2026-11-23
+id:caupona	EFoYZIZL	caupona	yes	1.21.1-0.5.6	2026-11-23
+id:cfm			no		2026-11-23
+id:charginggadgets			no		2026-11-23
+id:chemlib			no		2026-11-23
+id:chimes	mjGOuygR	chimes	yes	2.1.1	2026-11-23
+id:chiselsandbits			no		2026-11-23
+id:cleanswing			no		2026-11-23
+id:clickadv			no		2026-11-23
+id:clumps	Wnxd13zP	clumps	yes	19.0.0.1	2026-11-23
+id:commoncapabilities			no		2026-11-23
+id:connectivity			no		2026-11-23
+id:controlling	xv94TkTM	controlling	yes	19.0.5	2026-11-23
+id:cookingforblockheads			no		2026-11-23
+id:corail_woodcutter			no		2026-11-23
+id:cosmeticarmorreworked			no		2026-11-23
+id:craftingtweaks	y4LuSXgJ	craftingtweaks	no		2026-11-23
+id:createaddition	kU1G12Nn	createaddition	yes	neoforge-1.21.1-1.7.2	2026-11-23
+id:createbb			no		2026-11-23
+id:croptopia			no		2026-11-23
+id:crystalix	tnxhDX6A	crystalix	yes	3.0.0	2026-11-23
+id:cupboard			no		2026-11-23
+id:cyclic	UcVTWyCI	cyclic	yes	1.21.1-1.14.2	2026-11-23
+id:cyclopscore			no		2026-11-23
+id:dankstorage			no		2026-11-23
+id:deepresonance			no		2026-11-23
+id:defaultsettings			no		2026-11-23
+id:despawntimers			no		2026-11-23
+id:domum_ornamentum			no		2026-11-23
+id:doom			no		2026-11-23
+id:dyenamics			no		2026-11-23
+id:dyenamicsandfriends	5SMDy8RU	dyenamicsandfriends	no		2026-11-23
+id:easy_villagers	Kaov2qgi	easy-villagers	yes	neoforge-1.21.1-1.1.49	2026-11-23
+id:eidolon	nnHVetGk	eidolon	no		2026-11-23
+id:epherolib	DIIgdJzf	epherolib	yes	1.2.0	2026-11-23
+id:evilcraft	3ANq2btA	evilcraft	yes	1.21.1-1.2.103	2026-11-23
+id:exchangers			no		2026-11-23
+id:expatternprovider			no		2026-11-23
+id:fairylights	wKhMANDF	fairylights	yes	1.3.1	2026-11-23
+id:farmingforblockheads			no		2026-11-23
+id:farsight_view			no		2026-11-23
+id:fastleafdecay	FnE6S0Zk	fastleafdecay	yes	2.0.0	2026-11-23
+id:fastsuite	roccmqou	fastsuite	yes	1.21.1-6.0.7	2026-11-23
+id:flib	FAUSd09K	flib	yes	1.21.1-0.2.9	2026-11-23
+id:fluxnetworks			no		2026-11-23
+id:framework			no		2026-11-23
+id:ftbchunks			no		2026-11-23
+id:ftbessentials			no		2026-11-23
+id:ftblibrary			no		2026-11-23
+id:ftbquests			no		2026-11-23
+id:ftbranks			no		2026-11-23
+id:ftbteams			no		2026-11-23
+id:ftbultimine			no		2026-11-23
+id:ftbxmodcompat			no		2026-11-23
+id:glitchcore	s3dmwKy5	glitchcore	yes	2.1.0.2	2026-11-23
+id:gravitationalmodulatingunittweaks			no		2026-11-23
+id:gunpowderlib			no		2026-11-23
+id:harvestwithease			no		2026-11-23
+id:idas	Z8OZShAU	idas	yes	1.13.7+1.21.1-neoforge	2026-11-23
+id:integrated_stronghold	KUJdfPQz	integrated-stronghold	yes	1.1.4+1.21.1-neoforge	2026-11-23
+id:integratedcrafting			no		2026-11-23
+id:integrateddynamics			no		2026-11-23
+id:integratedterminals			no		2026-11-23
+id:integratedtunnels			no		2026-11-23
+id:inventoryessentials			no		2026-11-23
+id:invtweaks	xWacFE2z	invtweaks	no		2026-11-23
+id:itemfilters			no		2026-11-23
+id:jearchaeology			no		2026-11-23
+id:jei_mekanism_multiblocks			no		2026-11-23
+id:jeresources			no		2026-11-23
+id:journeymap	lfHFW1mp	journeymap	yes	1.21.1-6.0.10+neoforge	2026-11-23
+id:justenoughprofessions			no		2026-11-23
+id:laserio			no		2026-11-23
+id:lionfishapi			no		2026-11-23
+id:littlelogistics			no		2026-11-23
+id:logprot			no		2026-11-23
+id:lostcities			no		2026-11-23
+id:lucky77			no		2026-11-23
+id:mahoutsukai			no		2026-11-23
+id:maidensmerrymaking			no		2026-11-23
+id:mcjtylib	1Zu0uTEE	mcjtylib	yes	1.21-9.0.23	2026-11-23
+id:measurements	wLINU2AB	measurements	yes	3.0.3	2026-11-23
+id:memorysettings			no		2026-11-23
+id:minecolonies	sSr0QEGx	minecolonies	no		2026-11-23
+id:mininggadgets			no		2026-11-23
+id:mob_grinding_utils			no		2026-11-23
+id:moredragoneggs			no		2026-11-23
+id:moreoverlays			no		2026-11-23
+id:multipiston			no		2026-11-23
+id:netherportalfix	nPZr02ET	netherportalfix	yes	21.1.1+neoforge-1.21.1	2026-11-23
+id:noflyzone	LNSVGQqy	noflyzone	no		2026-11-23
+id:notrample	ODeoPWT6	notrample	no		2026-11-23
+id:nuclearcraft	eZvzLNgK	nuclearcraft	no		2026-11-23
+id:oculus	GchcoXML	oculus	no		2026-11-23
+id:packingtape			no		2026-11-23
+id:packmenu			no		2026-11-23
+id:pipez	iRmWy6ga	pipez	yes	neoforge-1.21.1-1.2.31	2026-11-23
+id:potionblender			no		2026-11-23
+id:potionsmaster			no		2026-11-23
+id:rangedpumps			no		2026-11-23
+id:refinedpolymorph			no		2026-11-23
+id:refinedstorage			no		2026-11-23
+id:refinedstorageaddons			no		2026-11-23
+id:refurbished_furniture			no		2026-11-23
+id:reliquary	tslY68Iy	reliquary	no		2026-11-23
+id:rftoolsbase			no		2026-11-23
+id:rftoolsbuilder			no		2026-11-23
+id:rftoolscontrol			no		2026-11-23
+id:rftoolspower			no		2026-11-23
+id:rftoolsstorage			no		2026-11-23
+id:rftoolsutility			no		2026-11-23
+id:searchables	fuuu3xnx	searchables	yes	1.0.2	2026-11-23
+id:silentlib			no		2026-11-23
+id:simplylight	GDyUrJQW	simplylight	no		2026-11-23
+id:smartbrainlib	PuyPazRT	smartbrainlib	yes	1.16.11	2026-11-23
+id:smoothchunk			no		2026-11-23
+id:solcarrot			no		2026-11-23
+id:sophisticatedbackpacks			no		2026-11-23
+id:sophisticatedcore			no		2026-11-23
+id:sophisticatedstorage			no		2026-11-23
+id:sparsestructuresreforged			no		2026-11-23
+id:structory	aKCwCJlY	structory	yes	1.3.17	2026-11-23
+id:structurecompass			no		2026-11-23
+id:structurize			no		2026-11-23
+id:stylecolonies			no		2026-11-23
+id:terrablender	kkmrDlKT	terrablender	yes	4.1.0.8	2026-11-23
+id:tiab			no		2026-11-23
+id:tombstone			no		2026-11-23
+id:toolbelt			no		2026-11-23
+id:totw_modded	54eqfZSC	totw-modded	yes	1.0.9	2026-11-23
+id:towntalk			no		2026-11-23
+id:trashslot	vRYk0bv7	trashslot	yes	21.1.11+neoforge-1.21.1	2026-11-23
+id:trials			no		2026-11-23
+id:twilightdelight	rXSy9m41	twilightdelight	no		2026-11-23
+id:twilightforest			no		2026-11-23
+id:voidscape	cRFhlVgs	voidscape	yes	1.0	2026-11-23
+id:waystones	LOpKHB2A	waystones	yes	21.1.47+neoforge-1.21.1	2026-11-23
+id:xnet	iu1jkWqa	xnet	yes	1.21-7.0.8	2026-11-23
+id:xycraft_core			no		2026-11-23
+id:xycraft_machines			no		2026-11-23
+id:xycraft_world			no		2026-11-23
+id:zerocore	rHpb85Mf	zerocore	yes	1.21.1-2.4.9	2026-11-23

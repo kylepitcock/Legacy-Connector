@@ -187,8 +187,8 @@ def run_gap1201(jar_dir, out, keep_detail=None):
            f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]
     if os.environ.get("GAP1201_ASSUME_NATIVE"):   # e.g. mcjty/theoneprobe/api/,dev/emi/emi/api/,me/shedaniel/rei/ : API packages of libraries the pack gets as native 1.21.1 builds
         cmd.append("-Pgap.assumeNative=" + os.environ["GAP1201_ASSUME_NATIVE"])   # the report is of the jars AFTER the layer (facades, library bridges, renames)
-    if os.environ.get("GAP1201_TRANSLATED_DIR"):   # keep the translated jars (what the layer leaves) for javap
-        cmd.append("-Pgap.translated.dir=" + os.environ["GAP1201_TRANSLATED_DIR"])
+    translated = os.environ.get("GAP1201_TRANSLATED_DIR") or str(tmp / "translated")   # the translated jars (what the layer leaves): the soft/hard scan reads them,
+    cmd.append("-Pgap.translated.dir=" + translated)                                    # because the report names are the renamed ones (Mojang, NeoForge)
     print(f"gap report for {len(jars)} Forge 1.20.1 jar(s) ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     detail = pathlib.Path(str(report) + ".detail.tsv")
@@ -197,10 +197,10 @@ def run_gap1201(jar_dir, out, keep_detail=None):
     if keep_detail:   # the full per-jar symbol list (records keep only 20): tools/compat/atm9_run.py ranks the blockers from it
         import shutil
         shutil.copyfile(detail, keep_detail)
-    records_1201(jars, detail, out, keep_detail)
+    records_1201(jars, detail, out, keep_detail, translated)
 
 
-def records_1201(jars, detail, out, keep_detail=None):
+def records_1201(jars, detail, out, keep_detail=None, translated=None):
     """The records of a 1.20.1 gap report (detail.tsv: <jar, kind, symbol>) over `jars`: link result, native 1.21.1 version (Modrinth, cached), engine/library
     replacement and, for jars with unresolved references, the soft/hard verdict (tools/compat/soft_links.py). Needs the jars again (class files are scanned)."""
     detail = pathlib.Path(detail)
@@ -237,7 +237,8 @@ def records_1201(jars, detail, out, keep_detail=None):
         elif miss:
             rec.update({"result": "unresolved", "unresolved": len(miss), "missing": miss[:20]})
             try:   # soft or hard: does anything that runs hold an unresolved reference?
-                entry = soft_links.scan_entry(j, sorted(symbols.get(j.name, [])))
+                target = pathlib.Path(translated) / j.name if translated and (pathlib.Path(translated) / j.name).exists() else j   # report names are post-layer names
+                entry = soft_links.scan_entry(target, sorted(symbols.get(j.name, [])))
                 soft, hard, off = soft_links.soft_verdict(entry)
                 rec.update({"soft": soft, "hardSymbols": hard, "softOff": off})
                 for sym in entry["syms"]:
@@ -384,7 +385,7 @@ def merge(records, mc, date, layer):
         for m in rec["mods"]:
             name = (m.get("name") or m["id"]).strip()
             key = norm(name)
-            if key in hidden:
+            if key in hidden and k != "engine":   # engine mods are listed (status engine) even where the site hides other uninteresting mods
                 continue
             existing = listed.get(key, [])
             if any(e.get("source") != "probe" for e in existing) and k != "engine":
@@ -610,6 +611,7 @@ def main():
     ap.add_argument("--fail-on-regression", action="store_true", help="exit 2 when a mod got worse than in the previous run (after writing the results)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--detail-in", help="1.20.1: build the records from an existing gap report (detail.tsv) and the jars in <jar-dir> instead of running gap1201 (soft/native annotation of an earlier run)")
+    ap.add_argument("--translated-dir", help="with --detail-in: the directory of translated jars the report was made from (gap1201 -Pgap.translated.dir); the soft/hard scan reads them")
     ap.add_argument("--no-native", action="store_true", help="native 1.21.1 versions: use only the cached answers of tools/compat/native-modrinth.tsv, no Modrinth request")
     ap.add_argument("--refresh-native", action="store_true", help="ask Modrinth again for every jar and rewrite tools/compat/native-modrinth.tsv")
     ap.add_argument("--only", default="", help="regex on the archive file name: probe only those (a mod family alone, e.g. --only buildcraft)")
@@ -620,7 +622,7 @@ def main():
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
         if a.mc == "1.20.1" and a.detail_in:
-            records_1201(sorted(pathlib.Path(a.jar_dir).glob("*.jar")), a.detail_in, path, a.detail)
+            records_1201(sorted(pathlib.Path(a.jar_dir).glob("*.jar")), a.detail_in, path, a.detail, a.translated_dir)
         elif a.mc == "1.20.1":
             run_gap1201(a.jar_dir, path, a.detail)
         else:
@@ -662,4 +664,5 @@ def main():
                 sys.exit(2)
 
 
-main()
+if __name__ == "__main__":
+    main()

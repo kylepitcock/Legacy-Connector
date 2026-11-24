@@ -110,10 +110,11 @@ def parse_class(b):
             o = cls(e[1][0])
             nat = cp[e[1][1]]
             if o and nat and nat[0] == 12:
-                members.add((o, utf(nat[1][1])))
+                name, desc = utf(nat[1][0]), utf(nat[1][1])
+                members.add((o, name + desc if desc.startswith("(") else name + ":" + desc))   # "name(desc)" for methods, "name:desc" for fields
         elif e[0] == 1:
-            if e[1] == "Lnet/minecraftforge/fml/common/Mod;":
-                mod = True
+            if e[1] in ("Lnet/minecraftforge/fml/common/Mod;", "Lnet/neoforged/fml/common/Mod;") or e[1].endswith("Mod$EventBusSubscriber;"):
+                mod = True   # an entry point: the @Mod class, or an event subscriber class FML registers on its own
             elif e[1] == "Lorg/spongepowered/asm/mixin/Mixin;":
                 mixin = True
     return this, sup, [x for x in ifs if x], refs, members, mod, mixin
@@ -131,6 +132,12 @@ def scan_jar(path):
                     r = None
                 if r:
                     out[r[0]] = {"sup": r[1], "ifs": r[2], "refs": sorted(r[3]), "members": sorted(r[4]), "mod": r[5], "mixin": r[6]}
+        for n in z.namelist():   # service providers are loaded by name: entry points too
+            if n.startswith("META-INF/services/") and not n.endswith("/"):
+                for line in z.read(n).decode("utf-8", "replace").splitlines():
+                    c = line.split("#", 1)[0].strip().replace(".", "/")
+                    if c in out:
+                        out[c]["mod"] = True
     return out
 
 
@@ -175,15 +182,10 @@ def analyse(jar_path, symbols):
                 if names & set(d["refs"]):
                     holders[(kind, sym)].add(c)
         else:
-            if kind == "method":
-                owner, rest = sym.split(".", 1)
-                desc = rest[rest.index("("):]
-            else:
-                owner, rest = sym.split(".", 1)
-                desc = rest.split(":", 1)[1] if ":" in rest else ""
+            owner, rest = sym.split(".", 1)
             for o in alt(owner):
                 for c, d in by_owner.get(o, ()):
-                    if d == desc or (kind == "field" and False):
+                    if d == rest or (kind == "field" and ":" not in rest and d.split(":", 1)[0] == rest):
                         holders[(kind, sym)].add(c)
     # reachability from @Mod and mixin classes
     roots = [c for c, d in cl.items() if d["mod"] or d["mixin"]]
@@ -226,12 +228,17 @@ def scan_entry(jar_path, syms):
 
 
 def sym_is_hard(s, deps):
-    """One symbol: hard when a class that runs holds it (reachable, not an integration class), or a mixin class does; another mod's API only when that mod is mandatory."""
+    """One symbol: hard when a class that runs holds it (reachable from an entry point, not an integration class), or a mixin class does.
+    A symbol of another mod's API is soft when that mod is declared in mods.toml as not mandatory (a guarded optional integration), otherwise hard.
+    A Minecraft/Forge symbol that no class of the jar holds cannot be shown to sit in dead code (a member of the vanilla class the jar's own class inherits,
+    or one renamed since the scan), so it is hard too."""
     if s["mixin"]:
         return True
     if s["area"] in ("mc", "own"):
-        return bool(s["reachnoninteg"])
-    return bool(s["reachnoninteg"]) and (not s["depid"] or bool(deps.get(s["depid"])))
+        return bool(s["reachnoninteg"]) or (s["holders"] == 0 and s["k"] != "class")
+    if s["holders"] == 0:
+        return s["depid"] is None or deps.get(s["depid"]) is not False
+    return bool(s["reachnoninteg"]) and (s["depid"] is None or deps.get(s["depid"]) is not False)
 
 
 def soft_verdict(entry):
@@ -241,4 +248,4 @@ def soft_verdict(entry):
     hard = [s for s in syms if sym_is_hard(s, deps)]
     off = sorted({s["dep"] for s in syms if s["area"] == "dep" and s["depid"] and not deps.get(s["depid"]) and not sym_is_hard(s, deps)} |
                  {s["dep"] for s in syms if s["area"] == "dep" and s["integ"] and not sym_is_hard(s, deps)})
-    return (not hard and bool(syms)), len(hard), off
+    return (not hard and bool(syms) and entry.get("roots", 1) > 0), len(hard), off
