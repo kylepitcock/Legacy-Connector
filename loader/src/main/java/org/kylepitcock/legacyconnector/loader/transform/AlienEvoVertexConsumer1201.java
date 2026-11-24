@@ -19,6 +19,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  */
 final class AlienEvoVertexConsumer1201 implements Opcodes {
     static final String FLAT = "net/habb/alienevo/client/renderer/ModuleLootItemFx$Flat";
+    static final String PLUMBER_COLLECTOR = "net/habb/alienevo/client/plumber/scan/ScanSlicer$Collector";
     static final String DEFAULTED = "com/mojang/blaze3d/vertex/DefaultedVertexConsumer";
     static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
     static final String HELPER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/VertexCompat";
@@ -30,6 +31,7 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
 
     /** Returns the number of structural and bytecode changes. */
     static int apply(ClassNode node) {
+        if (PLUMBER_COLLECTOR.equals(node.name)) return applyPlumberCollector(node);
         if (!FLAT.equals(node.name) || !DEFAULTED.equals(node.superName)) return 0;
 
         int changes = 0;
@@ -139,6 +141,96 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         if (flushAfterMethodReturn(node, "setNormal", "(FFF)L" + VERTEX + ";")) changes++;
 
         return changes;
+    }
+
+    /**
+     * Adapts AlienEvo's Plumber scan collector to the 1.21.1 VertexConsumer
+     * contract while preserving its old per-vertex quad accumulator.
+     */
+    private static int applyPlumberCollector(ClassNode node) {
+        if (!node.interfaces.contains(VERTEX)
+                || find(node, "vertex", "(DDD)L" + VERTEX + ";") == null
+                || find(node, "endVertex", "()V") == null) {
+            return 0;
+        }
+
+        String[][] setters = {
+                {"color", "(IIII)L" + VERTEX + ";", "setColor"},
+                {"uv", "(FF)L" + VERTEX + ";", "setUv"},
+                {"overlayCoords", "(II)L" + VERTEX + ";", "setUv1"},
+                {"uv2", "(II)L" + VERTEX + ";", "setUv2"},
+                {"normal", "(FFF)L" + VERTEX + ";", "setNormal"}
+        };
+        // Do not partially rewrite a class if its expected 1.20.1 method shape
+        // is absent. Accept already-renamed methods so this remains idempotent.
+        for (String[] setter : setters) {
+            if (find(node, setter[0], setter[1]) == null
+                    && find(node, setter[2], setter[1]) == null) {
+                return 0;
+            }
+        }
+
+        int changes = 0;
+        if (find(node, "addVertex", "(FFF)L" + VERTEX + ";") == null) {
+            node.methods.add(plumberAddVertexBridge(node.name));
+            changes++;
+        }
+        for (String[] setter : setters) {
+            changes += rename(node, setter[0], setter[1], setter[2]);
+        }
+        if (flushCollectorAfterSetNormal(node)) changes++;
+        return changes;
+    }
+
+    /**
+     * The legacy collector's vertex(double,double,double) only stores position;
+     * its endVertex() commits the completed position/UV/normal tuple to a quad.
+     * The new addVertex call must therefore only set position, not flush.
+     */
+    private static MethodNode plumberAddVertexBridge(String owner) {
+        MethodNode method = new MethodNode(ACC_PUBLIC | ACC_SYNTHETIC, "addVertex",
+                "(FFF)L" + VERTEX + ";", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new VarInsnNode(FLOAD, 1));
+        method.instructions.add(new InsnNode(F2D));
+        method.instructions.add(new VarInsnNode(FLOAD, 2));
+        method.instructions.add(new InsnNode(F2D));
+        method.instructions.add(new VarInsnNode(FLOAD, 3));
+        method.instructions.add(new InsnNode(F2D));
+        method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, owner, "vertex",
+                "(DDD)L" + VERTEX + ";", false));
+        method.instructions.add(new InsnNode(ARETURN));
+        method.maxLocals = 4;
+        method.maxStack = 7;
+        return method;
+    }
+
+    /**
+     * In 1.20.1 endVertex() followed normal(). In 1.21.1 setNormal() is the
+     * final operation in the vertex chain, so commit the collected vertex there.
+     */
+    private static boolean flushCollectorAfterSetNormal(ClassNode node) {
+        MethodNode method = find(node, "setNormal", "(FFF)L" + VERTEX + ";");
+        if (method == null) return false;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.owner.equals(node.name)
+                    && call.name.equals("endVertex")
+                    && call.desc.equals("()V")) {
+                return false;
+            }
+        }
+        boolean changed = false;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction.getOpcode() == ARETURN) {
+                InsnList flush = new InsnList();
+                flush.add(new VarInsnNode(ALOAD, 0));
+                flush.add(new MethodInsnNode(INVOKEVIRTUAL, node.name, "endVertex", "()V", false));
+                method.instructions.insertBefore(instruction, flush);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     private static int migrateDelegateCall(MethodNode method, MethodInsnNode call) {

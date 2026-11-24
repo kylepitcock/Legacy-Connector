@@ -21,6 +21,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 /** Verifies the removed superclass and old vertex-call shapes are migrated. */
 class AlienEvoVertexConsumer1201Test implements Opcodes {
     private static final String VERTEX = AlienEvoVertexConsumer1201.VERTEX;
+    private static final String PLUMBER_COLLECTOR = AlienEvoVertexConsumer1201.PLUMBER_COLLECTOR;
 
     private static ClassNode flat() {
         ClassNode node = new ClassNode();
@@ -124,6 +125,44 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         return node;
     }
 
+    private static ClassNode plumberCollector() {
+        ClassNode node = new ClassNode();
+        node.version = V17;
+        node.access = ACC_FINAL;
+        node.name = PLUMBER_COLLECTOR;
+        node.superName = "java/lang/Object";
+        node.interfaces.add(VERTEX);
+
+        MethodNode position = new MethodNode(ACC_PUBLIC, "vertex", "(DDD)L" + VERTEX + ";", null, null);
+        position.instructions.add(new VarInsnNode(ALOAD, 0));
+        position.instructions.add(new InsnNode(ARETURN));
+        position.maxLocals = 7;
+        position.maxStack = 1;
+        node.methods.add(position);
+
+        MethodNode endVertex = new MethodNode(ACC_PUBLIC, "endVertex", "()V", null, null);
+        endVertex.instructions.add(new InsnNode(RETURN));
+        endVertex.maxLocals = 1;
+        endVertex.maxStack = 0;
+        node.methods.add(endVertex);
+
+        for (String[] method : new String[][] {
+                {"color", "(IIII)L" + VERTEX + ";"},
+                {"uv", "(FF)L" + VERTEX + ";"},
+                {"overlayCoords", "(II)L" + VERTEX + ";"},
+                {"uv2", "(II)L" + VERTEX + ";"},
+                {"normal", "(FFF)L" + VERTEX + ";"}
+        }) {
+            MethodNode setter = new MethodNode(ACC_PUBLIC, method[0], method[1], null, null);
+            setter.instructions.add(new VarInsnNode(ALOAD, 0));
+            setter.instructions.add(new InsnNode(ARETURN));
+            setter.maxLocals = 5;
+            setter.maxStack = 1;
+            node.methods.add(setter);
+        }
+        return node;
+    }
+
     @Test
     void flatConsumerBecomesAValidOneTwentyOneVertexConsumerShape() {
         ClassNode node = flat();
@@ -189,6 +228,61 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         node.accept(writer);
         assertTrue(writer.toByteArray().length > 0);
+    }
+
+    @Test
+    void plumberScanCollectorImplementsTheFullOneTwentyOneVertexSequence() {
+        ClassNode node = plumberCollector();
+
+        assertTrue(AlienEvoVertexConsumer1201.apply(node) > 0,
+                "the Plumber collector should receive the 1.21.1 adapter");
+        assertTrue(node.interfaces.contains(VERTEX));
+        assertNotNull(find(node, "vertex", "(DDD)L" + VERTEX + ";"),
+                "the legacy position setter must remain as the bridge target");
+        assertNotNull(find(node, "endVertex", "()V"),
+                "the old quad-accumulation terminal must remain intact");
+
+        MethodNode addVertex = find(node, "addVertex", "(FFF)L" + VERTEX + ";");
+        assertNotNull(addVertex);
+        assertNotNull(findCall(addVertex, node.name, "vertex", "(DDD)L" + VERTEX + ";"));
+        assertEquals(3, java.util.Arrays.stream(addVertex.instructions.toArray())
+                .filter(instruction -> instruction.getOpcode() == F2D).count(),
+                "each 1.21.1 float coordinate must be widened for the legacy position method");
+        assertNull(findCall(addVertex, node.name, "endVertex", "()V"),
+                "adding a position must not commit an incomplete quad vertex");
+
+        for (String[] method : new String[][] {
+                {"setColor", "(IIII)L" + VERTEX + ";"},
+                {"setUv", "(FF)L" + VERTEX + ";"},
+                {"setUv1", "(II)L" + VERTEX + ";"},
+                {"setUv2", "(II)L" + VERTEX + ";"},
+                {"setNormal", "(FFF)L" + VERTEX + ";"}
+        }) {
+            assertNotNull(find(node, method[0], method[1]), "missing 1.21.1 setter " + method[0]);
+        }
+        assertNotNull(find(node, "setNormal", "(FFF)L" + VERTEX + ";"));
+        assertNull(find(node, "normal", "(FFF)L" + VERTEX + ";"),
+                "the legacy normal name must be remapped to the 1.21.1 setter");
+        assertNotNull(findCall(find(node, "setNormal", "(FFF)L" + VERTEX + ";"),
+                node.name, "endVertex", "()V"),
+                "setNormal must commit the old per-vertex buffer entry after writing its normal");
+
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        node.accept(writer);
+        assertTrue(writer.toByteArray().length > 0);
+
+        assertEquals(0, AlienEvoVertexConsumer1201.apply(node),
+                "reapplying the transformer must not duplicate bridges or endVertex flushes");
+    }
+
+    @Test
+    void plumberCollectorMigrationFailsClosedWhenTheLegacyShapeIsIncomplete() {
+        ClassNode node = plumberCollector();
+        node.methods.remove(find(node, "normal", "(FFF)L" + VERTEX + ";"));
+
+        assertEquals(0, AlienEvoVertexConsumer1201.apply(node));
+        assertNull(find(node, "addVertex", "(FFF)L" + VERTEX + ";"),
+                "do not install a partial adapter when the old normal setter is missing");
     }
 
     private static MethodNode find(ClassNode node, String name, String desc) {
