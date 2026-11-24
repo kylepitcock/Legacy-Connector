@@ -1310,6 +1310,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static String skipReason(LegacyJar jar) {
+        if (jar.otherVersionReason != null) return jar.otherVersionReason;
         String lib = LIBRARY_SKIPS.get(jar);
         if (lib != null) return lib;
         String dup = DUPLICATE_SKIPS.get(jar);

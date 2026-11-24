@@ -48,7 +48,7 @@ for e in mods["mods"]:
 for r in probe["runs"]:
     check(all(k in r for k in ("mc", "date", "version", "counts", "mods")), f"probe.json run without the required fields: {r.get('mc')} {r.get('date')}")
     for row in r["mods"]:
-        check(len(row) >= 4 and row[2] in ("links", "stubs", "gap_shim", "gap_mod", "gap_lib", "obsolete", "unresolved", "soft", "native", "engine"), f"{r['mc']} {r['date']}: odd row {row[:4]}")
+        check(len(row) >= 4 and row[2] in ("links", "stubs", "gap_shim", "gap_mod", "gap_lib", "gap_version", "obsolete", "unresolved", "soft", "native", "engine"), f"{r['mc']} {r['date']}: odd row {row[:4]}")
     if "stubCounts" in r:
         check(isinstance(r["stubCounts"], dict) and all(isinstance(n, int) for n in r["stubCounts"].values()), f"{r['mc']} {r['date']}: stubCounts is not {{name: int}}")
 
