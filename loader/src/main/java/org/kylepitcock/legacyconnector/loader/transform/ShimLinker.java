@@ -59,6 +59,14 @@ public final class ShimLinker {
             }
             return false;
         };
+        report.removedInAncestor = (owner, member) -> {
+            for (String c = owner; c != null && !c.startsWith("java/"); ) {
+                if (report.optionalRemoved.contains(c + "." + member)) return true;
+                var info = hierarchy.find(c);
+                c = info == null ? null : info.superName;
+            }
+            return false;
+        };
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {

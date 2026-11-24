@@ -573,7 +573,7 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
     }
 
     /** Whether the game runs on a 64-bit Java. */
-    public static boolean isJava64bit() {
+    public boolean isJava64bit() {
         String[] keys = {"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"};
         for (String key : keys) {
             String value = System.getProperty(key);

@@ -33,13 +33,15 @@ public final class LinkReport {
 
     /** Set by the linker: true when a class (or an ancestor) lost an {@code @Optional.Interface}, so members it declared may be missing on purpose. */
     java.util.function.Predicate<String> lostOptionalInterface = c -> false;
+    /** Set by the linker: true when the member was removed from the owner or one of its superclasses (a call through a subclass of the class that declared it). */
+    java.util.function.BiPredicate<String, String> removedInAncestor = (o, m) -> false;
 
     void missingClass(String owner, String from) {
         missingClasses.computeIfAbsent(owner, k -> new TreeSet<>()).add(from);
     }
 
     void missingMember(String owner, String member, String from, boolean shim) {
-        if (optionalRemoved.contains(owner + "." + member) || lostOptionalInterface.test(owner)) {
+        if (optionalRemoved.contains(owner + "." + member) || lostOptionalInterface.test(owner) || removedInAncestor.test(owner, member)) {
             optionalMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
             return;
         }
