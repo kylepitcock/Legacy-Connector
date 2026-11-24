@@ -15,6 +15,11 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
  */
 public class FallbackResourceManager implements IResourceManager {
     protected final List<IResourcePack> resourcePacks = new ArrayList<>();
+
+    /** A copy of the packs, oldest first (not a 1.12 method). */
+    public List<IResourcePack> mcc$packs() {
+        return new ArrayList<>(resourcePacks);
+    }
     private final MetadataSerializer frmMetadataSerializer;
 
     public FallbackResourceManager(MetadataSerializer serializer) {

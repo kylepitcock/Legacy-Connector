@@ -474,6 +474,40 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
         return legacyconnector.v1_12_2.net.minecraft.client.resources.SkinManager.mcc$instance();
     }
 
+    /**
+     * A file served by a pack a mod installed at run time (defaultResourcePacks, reloadResourcePack, a domain's FallbackResourceManager), newest
+     * first; null when none has it. Asset translation uses it for resources a mod generates (GregTech's blockstates). Not a 1.12 method.
+     */
+    private final java.util.Set<Object> toldPacks = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
+    public java.io.InputStream mcc$runtimePackStream(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation location) {
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack> packs = new java.util.ArrayList<>();
+        if (resourceManager instanceof legacyconnector.v1_12_2.net.minecraft.client.resources.SimpleReloadableResourceManager m) {
+            var fm = m.domainResourceManagers.get(location.getResourceDomain());
+            if (fm != null) packs.addAll(fm.mcc$packs());
+        }
+        synchronized (defaultResourcePacks) {
+            for (var p : defaultResourcePacks) if (!packs.contains(p)) packs.add(p);
+        }
+        for (int i = packs.size() - 1; i >= 0; i--) {
+            var pack = packs.get(i);
+            try {
+                // a pack that is also a reload listener (GregTech's hook loads its templates there) has not been told yet when translation runs first
+                if (pack instanceof legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManagerReloadListener l) {
+                    boolean first;
+                    synchronized (toldPacks) {
+                        first = toldPacks.add(l);
+                    }
+                    if (first) l.onResourceManagerReload(resourceManager);
+                }
+                if (pack.resourceExists(location)) return pack.getInputStream(location);
+            } catch (java.io.IOException | RuntimeException | LinkageError e) {
+                // a broken pack serves nothing
+            }
+        }
+        return null;
+    }
+
     /** Reloads the resources; packs mods put into {@code defaultResourcePacks} are added to the legacy lookups first. */
     public void refreshResources() {
         if (resourceManager instanceof legacyconnector.v1_12_2.net.minecraft.client.resources.SimpleReloadableResourceManager m) {
