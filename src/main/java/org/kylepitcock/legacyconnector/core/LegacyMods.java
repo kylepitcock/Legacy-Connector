@@ -145,6 +145,22 @@ public final class LegacyMods {
         return false;
     }
 
+    /**
+     * True when {@code id} is the id of a modern (non-legacy) mod that is loaded: a legacy mod of the same name (TerraFirmaCraft 1.12.2 next to
+     * TerraFirmaCraft 4.x; the legacy one loads as {@code tfc_legacy}) must not register things in a registry both of them write to under that
+     * name (saved data files, Patchouli multiblocks).
+     */
+    public static synchronized boolean sharedWithModernMod(String id) {
+        try {
+            var list = net.neoforged.fml.ModList.get();
+            if (list == null || !list.isLoaded(id)) return false;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+        for (var m : MODS) if (id.equals(m.container.getModId())) return false;
+        return true;
+    }
+
     public static synchronized boolean isEmpty() {
         return MODS.isEmpty();
     }

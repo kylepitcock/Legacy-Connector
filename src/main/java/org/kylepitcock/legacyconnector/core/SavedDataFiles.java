@@ -21,7 +21,27 @@ public final class SavedDataFiles {
     /** The name (without {@code .dat}) the modern storage uses for the legacy saved data {@code name}. */
     public static String file(String name) {
         String clean = name.replaceAll("[^a-zA-Z0-9_.-]", "_");
-        return reserved(clean) || !clean.equals(name) ? "legacy_" + clean : clean;
+        return reserved(clean) || !clean.equals(name) || sharedWithModernMod(clean) ? "legacy_" + clean : clean;
+    }
+
+    private static final java.util.Map<String, Boolean> MODERN_PREFIX = new ConcurrentHashMap<>();
+
+    /**
+     * A legacy mod and a modern mod of the same name loaded together (TerraFirmaCraft 1.12.2 next to TerraFirmaCraft 4.x) both keep a
+     * {@code tfc_calendar} saved data: the modern storage returns whichever object was cached first and the other mod's cast fails. Data
+     * named after the id of a modern (non-legacy) mod keeps the {@code legacy_} prefix.
+     */
+    static boolean sharedWithModernMod(String clean) {
+        int end = 0;
+        while (end < clean.length() && clean.charAt(end) != '_' && clean.charAt(end) != '.' && clean.charAt(end) != '-') end++;
+        if (end < 2) return false;
+        String token = clean.substring(0, end);
+        Boolean known = MODERN_PREFIX.get(token);
+        if (known != null) return known;
+        if (net.neoforged.fml.ModList.get() == null) return false;
+        boolean shared = LegacyMods.sharedWithModernMod(token);
+        MODERN_PREFIX.put(token, shared);
+        return shared;
     }
 
     static boolean reserved(String name) {
