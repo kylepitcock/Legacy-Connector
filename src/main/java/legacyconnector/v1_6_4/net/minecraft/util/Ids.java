@@ -178,6 +178,22 @@ public final class Ids {
         return reg().blockId(block);
     }
 
+    /**
+     * Id of an item in the id space of the caller when it has one already (an ItemBlock has its block's), else -1; never claims.
+     * What legacy NBT writes for an id-era mod ({@code new ItemStack(id, count, damage)} reads it back in the same space).
+     */
+    public static synchronized int claimedItemId(Item item) {
+        if (item == null) return 0;
+        IdRegistry r = reg();
+        int id = r.itemId(item);
+        if (id >= 0) return id;
+        if (item instanceof ItemBlock ib && ib.mcc$block() != null) {
+            int blockId = r.blockId(ib.mcc$block());
+            if (blockId > 0 && blockId < items.length && items[blockId] == item) return blockId;
+        }
+        return -1;
+    }
+
     /** The claim a Block constructor makes: {@code super(id, material)}. */
     public static synchronized void claimBlock(Block block, int requestedId) {
         reg();
@@ -214,7 +230,13 @@ public final class Ids {
         return items;
     }
 
-    public static synchronized Item item(int id) {
+    public static Item item(int id) {
+        Item own = ownItem(id);
+        // an item the host has but 1.4.7 to 1.6.4 do not: saved under its modern-only id (outside the lock: ItemBridge has its own)
+        return own == null && id >= 20000 ? ItemBridge.byId(id) : own;
+    }
+
+    private static synchronized Item ownItem(int id) {
         reg();
         if (id < 0 || id >= items.length) return null;
         if (items[id] == null && id < blocks.length && id > 0) resolvePendingItemBlocks();
