@@ -341,8 +341,8 @@ public final class Forge1201PreflightAnalyzer {
         }
         for (Path entry : normalizedTargetClasspath) {
             if (!Files.exists(entry) || (!Files.isDirectory(entry) && !Files.isRegularFile(entry))) {
-                throw new IllegalArgumentException(domainName
-                        + " classpath entry does not exist or is not a file/directory: " + entry);
+                throw new IllegalArgumentException(
+                        "Target classpath entry does not exist or is not a file/directory: " + entry);
             }
         }
         List<Path> normalizedConnectorRuntimeClasspath = connectorRuntimeClasspath == null ? List.of()
@@ -1772,7 +1772,8 @@ public final class Forge1201PreflightAnalyzer {
             if (value.isEmpty()) continue;
             Path entry = Path.of(value).toAbsolutePath().normalize();
             if (!Files.exists(entry) || (!Files.isDirectory(entry) && !Files.isRegularFile(entry))) {
-                throw new IllegalArgumentException("Target classpath entry does not exist or is not a file/directory: " + entry);
+                throw new IllegalArgumentException(domainName
+                        + " classpath entry does not exist or is not a file/directory: " + entry);
             }
             entries.add(entry);
             if (entries.size() > MAX_TARGET_CLASSPATH_ENTRIES) {
