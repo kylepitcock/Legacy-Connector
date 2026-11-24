@@ -41,6 +41,7 @@ public final class Forge1201TargetApiVerifier {
         INCOMPLETE_HIERARCHY,
         REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
         NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+        NOT_CHECKED_INSUFFICIENT_CALLSITE_CONTEXT,
         UNMAPPED_SOURCE_MEMBER_NAME
     }
 
@@ -475,20 +476,37 @@ public final class Forge1201TargetApiVerifier {
                     sourceName.mappingRule(), "CATALOG_FIELD_DESCRIPTOR_MAPPING",
                     !sourceName.name().equals(targetName) ? "MC1201_MEMBER_NAME_MAPPING" : null);
 
+            boolean staticFieldHelper = false;
             Mc1201ApiMappings.StaticFieldMapping staticFieldMapping =
                     Mc1201ApiMappings.staticFieldMapping(reference.owner(), sourceName.name(), reference.descriptor());
             if (staticFieldMapping != null) {
                 if (!allFieldCallSitesAreGetStatic(analysis, reference)) {
-                    // mc-fields.tsv is a GETSTATIC-only bytecode rewrite. Without that opcode evidence,
-                    // retain the unmodified shape rather than applying a static-field rule to handles
-                    // or other reference forms.
-                } else if ("none".equals(staticFieldMapping.targetDescriptor())) {
                     fieldIssues.add(new MemberIssue(
                             reference.owner(), reference.name(), reference.descriptor(),
-                            targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                            List.of(), callSites, "MC1201_STATIC_FIELD_REPLACED_BY_HELPER:" + staticFieldMapping.postAdapter(),
+                            targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_INSUFFICIENT_CALLSITE_CONTEXT,
+                            List.of(), callSites,
+                            "MC1201_STATIC_FIELD_RULE_REQUIRES_GETSTATIC_CALLSITE_EVIDENCE:"
+                                    + staticFieldMapping.postAdapter(),
                             targetName));
                     continue;
+                } else if ("none".equals(staticFieldMapping.targetDescriptor())) {
+                    if (!staticFieldMapping.usesHelper()) {
+                        fieldIssues.add(new MemberIssue(
+                                reference.owner(), reference.name(), reference.descriptor(),
+                                targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
+                                List.of(), callSites,
+                                "MC1201_STATIC_FIELD_HELPER_SIGNATURE_UNAVAILABLE:" + staticFieldMapping.postAdapter(),
+                                targetName));
+                        continue;
+                    }
+                    targetOwner = staticFieldMapping.helperOwner();
+                    targetName = staticFieldMapping.helperName();
+                    targetDescriptor = mapMethodDescriptor(
+                            staticFieldMapping.helperOwner(), staticFieldMapping.helperName(),
+                            staticFieldMapping.helperDescriptor());
+                    mappingRule = combineMappingRules(mappingRule,
+                            "MC1201_STATIC_FIELD_HELPER_ADAPTER:" + staticFieldMapping.postAdapter());
+                    staticFieldHelper = true;
                 } else {
                     targetName = staticFieldMapping.targetName();
                     targetDescriptor = mapFieldDescriptor(staticFieldMapping.targetDescriptor());
@@ -514,7 +532,9 @@ public final class Forge1201TargetApiVerifier {
             Set<String> hierarchyVisited = new LinkedHashSet<>();
             Lookup lookup = readClass(targetOwner) == null
                     ? new Lookup(false, true)
-                    : findField(targetOwner, new MemberKey(targetName, targetDescriptor), hierarchyVisited);
+                    : staticFieldHelper
+                            ? findMethod(targetOwner, new MemberKey(targetName, targetDescriptor), hierarchyVisited)
+                            : findField(targetOwner, new MemberKey(targetName, targetDescriptor), hierarchyVisited);
             if (lookup.found()) {
                 verifiedFields++;
                 verifiedFieldMatches.add(new MemberMatch(
@@ -595,7 +615,14 @@ public final class Forge1201TargetApiVerifier {
                         && callSite.targetName().equals(reference.name())
                         && callSite.targetDescriptor().equals(reference.descriptor()))
                 .toList();
-        return !sites.isEmpty() && sites.stream().allMatch(site -> site.opcode() == Opcodes.GETSTATIC);
+        boolean matchingHandle = analysis.dynamicReferences().stream().anyMatch(referenceHandle ->
+                referenceHandle.kind() == Forge1201ApiUsageAnalyzer.ApiDynamicReferenceKind.FIELD_HANDLE
+                        && reference.owner().equals(referenceHandle.owner())
+                        && reference.name().equals(referenceHandle.name())
+                        && reference.descriptor().equals(referenceHandle.descriptor()));
+        return !sites.isEmpty()
+                && !matchingHandle
+                && sites.stream().allMatch(site -> site.opcode() == Opcodes.GETSTATIC);
     }
 
     private static Remapper descriptorRemapper() {
