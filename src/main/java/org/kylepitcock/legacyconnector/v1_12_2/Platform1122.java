@@ -316,6 +316,10 @@ public final class Platform1122 implements LegacyPlatform {
         java.util.Set<String> seen = new java.util.HashSet<>();
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Method m : c.getDeclaredMethods()) {
+                // FML's SideTransformer removes methods of the other physical side before dispatch (a @SideOnly(CLIENT) initClient does not exist on a server)
+                legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.SideOnly so = m.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.SideOnly.class);
+                if (so != null && so.value() != (FMLEnvironment.dist.isClient() ? legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.CLIENT
+                        : legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.SERVER)) continue;
                 if (m.isAnnotationPresent(Mod.EventHandler.class) && m.getParameterCount() == 1
                         && seen.add(m.getName() + ":" + m.getParameterTypes()[0].getName())) out.add(m);
             }

@@ -1318,7 +1318,10 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         if (jar.hasMods() && "SERVER".equals(currentSide) && jar.mods.stream().allMatch(m -> m.clientSideOnly)) {
             return "client-only mod (@SideOnly(CLIENT) mod class); not loaded on a dedicated server";
         }
-        if (!jar.hasMods() && jar.tweakClass != null) {
+        // A 1.12.2 library whose tweaker only installs its own class transformers (ChickenASM, needed by Forge Multipart) is kept as a library: other mods link against its classes.
+        // Mixin loaders stay skipped (they bundle Mixin, which cannot load as a second copy).
+        boolean libraryTweaker = jar.version == LegacyVersion.V1_12_2 && jar.tweakClass != null && !jar.tweakClass.toLowerCase(java.util.Locale.ROOT).contains("mixin");
+        if (!jar.hasMods() && jar.tweakClass != null && !libraryTweaker) {
             return "LaunchWrapper tweaker (" + jar.tweakClass + ") with no @Mod; tweakers cannot run on modlauncher";
         }
         return null;
