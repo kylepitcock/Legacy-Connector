@@ -88,6 +88,8 @@ public enum LoaderFlags {
     /** 1.20.1 gap analyzer: lists the soft-linked references per jar. */
     GAP_SOFTLIST("gap.softlist", Type.FLAG, "false", Category.TOOL, "1.20.1 gap analyzer: lists the soft-linked references per jar."),
     /** 1.20.1 gap analyzer: second SRG table whose names win (experimental 1.19.2). */
+    /** Offline chain experiments (stage C): the Forge version of the jars the gap tool translates; its stages run in order. */
+    GAP_SOURCE("gap.source", Type.STRING, "1.20.1", Category.TOOL, "Gap analyzer/transformer: source version of the jars (1.20.1; 1.19.2 runs stage C then D, offline only)."),
     GAP_SRG_OVERLAY("gap.srgOverlay", Type.PATH, "unset", Category.TOOL, "1.20.1 gap analyzer: second SRG table whose names win (experimental 1.19.2)."),
     /** 1.20.1 gap analyzer: runs the jars through the real 1.20.1 transformer first. */
     GAP_TRANSLATE("gap.translate", Type.FLAG, "false", Category.TOOL, "1.20.1 gap analyzer: runs the jars through the real 1.20.1 transformer first."),

@@ -13,7 +13,7 @@ How they behave:
 
 <!-- switches:begin (generated from Flags, CompatFlags and LoaderFlags; run SwitchRegistryTest with SWITCH_DOCS_UPDATE=1 to rewrite) -->
 
-131 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
+132 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
 
 ### Debug (25)
 
@@ -141,7 +141,7 @@ How they behave:
 | `legacyconnector.mc125.clientCallbacks` | flag | `false` | runtime | Switch for A/B checks of 1.2.5 client callbacks (read live). |
 | `legacyconnector.renderLock` | flag | `unset` | both | true: legacy renderers take the capture lock (the loader sets it when a jar has a render library with static state). |
 
-### Tool (21)
+### Tool (22)
 
 | Switch | Type | Default | Read by | What it does |
 |---|---|---|---|---|
@@ -151,6 +151,7 @@ How they behave:
 | `gap.mc` | string | `1.20.1` | loader | 1.20.1 gap analyzer: Forge version named in the report heading. |
 | `gap.shimIndex` | path | `unset` | loader | 1.20.1 gap analyzer: the real shim index, so facade classes get their in-game names. |
 | `gap.softlist` | flag | `false` | loader | 1.20.1 gap analyzer: lists the soft-linked references per jar. |
+| `gap.source` | string | `1.20.1` | loader | Gap analyzer/transformer: source version of the jars (1.20.1; 1.19.2 runs stage C then D, offline only). |
 | `gap.srgOverlay` | path | `unset` | loader | 1.20.1 gap analyzer: second SRG table whose names win (experimental 1.19.2). |
 | `gap.translate` | flag | `false` | loader | 1.20.1 gap analyzer: runs the jars through the real 1.20.1 transformer first. |
 | `gap.translated.dir` | path | `unset` | loader | 1.20.1 gap analyzer: directory to keep the translated jars in. |

@@ -371,6 +371,7 @@ def registerGap = { String taskName, String mcVersion, String srgTask, String sr
     // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
     classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
     systemProperty 'gap.mc', mcVersion
+    if (project.findProperty('gap.source')) systemProperty 'gap.source', project.findProperty('gap.source').toString() // offline chain experiment: 1.19.2 jars run stage C then D
     if (project.findProperty('gap.srgOverlay')) systemProperty 'gap.srgOverlay', project.findProperty('gap.srgOverlay').toString() // EXPERIMENTAL 1.19.2: second SRG table whose names win (ids still present in 1.20.1)
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
     // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list

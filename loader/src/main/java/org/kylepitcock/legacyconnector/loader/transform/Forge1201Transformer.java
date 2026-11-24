@@ -151,7 +151,7 @@ public final class Forge1201Transformer {
 
     public Forge1201Transformer(ShimIndex shim) {
         this.shim = shim;
-        this.srg = SrgMojangTable.load();
+        this.srg = SrgMojangTable.loadChain(ForwardStage.sourceVersion());
         this.classRenames = loadRenames();
     }
 

@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
 import java.io.IOException;
+import org.kylepitcock.legacyconnector.loader.LoaderFlags;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -44,6 +45,14 @@ public record ForwardStage(String source, String target, String dir, String help
         } catch (IOException e) {
             throw new IllegalStateException("Corrupt table " + resource(file), e);
         }
+    }
+
+    /**
+     * The source version the offline tools (gap analyzer, identity check) translate: {@code gap.source}, default 1.20.1. Nothing at run time sets it: the
+     * loader does not detect 1.19.2 jars, so the game always runs the 1.20.1 chain.
+     */
+    public static String sourceVersion() {
+        return LoaderFlags.GAP_SOURCE.get("1.20.1");
     }
 
     /** The stages a jar of {@code version} goes through, in order, ending at the host version; empty for an unknown version. */

@@ -65,6 +65,21 @@ class ForwardStageTest {
     void tablesOfStageDAreFoundAndAnAbsentStageHasNone() {
         assertNotNull(ForwardStage.D_1201.open("mc-classes.tsv"));
         assertEquals("legacyconnector/forward/1.20.1/mc-classes.tsv", ForwardStage.D_1201.resource("mc-classes.tsv"));
-        assertEquals(null, ForwardStage.C_1192.read("mc-classes.tsv"));
+        assertEquals(null, ForwardStage.C_1192.read("no-such-table.tsv"));
+    }
+
+    @Test
+    void chainFrom1192LoadsStageCThenDWithHandRowsAndProvenance() {
+        Mc1201Tables chain = Mc1201Tables.loadChain(ForwardStage.chainFrom("1.19.2"));
+        Mc1201Tables d = Mc1201Tables.load(ForwardStage.D_1201);
+        // stage C's hand row and stage D's rows are both there
+        assertEquals("net/minecraft/server/packs/resources/IoSupplier", chain.classes.get("net/minecraft/server/packs/resources/Resource$IoSupplier"));
+        for (Map.Entry<String, String> e : d.classes.entrySet()) {
+            if (!e.getKey().equals(e.getValue())) assertEquals(e.getValue(), chain.classes.get(e.getKey()), e.getKey());
+        }
+        // the 1.20.1 chain is stage D alone: nothing of stage C leaks into it
+        assertFalse(Mc1201Tables.loadChain(ForwardStage.chainFrom("1.20.1")).classes.containsKey("net/minecraft/server/packs/resources/Resource$IoSupplier"));
+        // the provenance column is data, not a name
+        assertFalse(chain.classes.containsValue("hand") || chain.classes.containsValue("gen"));
     }
 }

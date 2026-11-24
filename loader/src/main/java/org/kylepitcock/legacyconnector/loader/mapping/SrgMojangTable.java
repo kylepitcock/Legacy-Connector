@@ -117,8 +117,43 @@ public final class SrgMojangTable {
         return table = Collections.unmodifiableMap(map);
     }
 
+    private static final Map<String, Map<String, String>> CHAINS = new HashMap<>();
+
+    /**
+     * The SRG to Mojang table for a jar of {@code sourceVersion} that goes through the stage chain: the table of each stage's source version, later stages
+     * winning (SRG ids are stable across versions, so an id that 1.20.1 still has gets its 1.20.1 name; ids only the older game has keep their older name,
+     * which the stages' class and member rows then carry forward). 1.20.1 is the plain {@link #load()}.
+     */
+    public static synchronized Map<String, String> loadChain(String sourceVersion) {
+        var chain = org.kylepitcock.legacyconnector.loader.transform.ForwardStage.chainFrom(sourceVersion);
+        if (chain.size() <= 1) return load();
+        return CHAINS.computeIfAbsent(sourceVersion, v -> {
+            Map<String, String> merged = new HashMap<>(100_000);
+            for (var s : chain) merged.putAll(s.source().equals("1.20.1") ? load() : loadVersion(s.source()));
+            return Collections.unmodifiableMap(merged);
+        });
+    }
+
+    private static Map<String, String> loadVersion(String version) {
+        Map<String, String> map = new HashMap<>(80_000);
+        String resource = "legacyconnector/mappings/" + version + "/srg-mojang.tsv";
+        try (InputStream in = SrgMojangTable.class.getClassLoader().getResourceAsStream(resource)) {
+            if (in != null) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                for (String line; (line = reader.readLine()) != null;) {
+                    int tab = line.indexOf('	');
+                    if (tab > 0 && tab < line.length() - 1) map.put(line.substring(0, tab), line.substring(tab + 1));
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("cannot read " + resource, e);
+        }
+        return map;
+    }
+
     public static synchronized void releaseCaches() {
         table = null;
+        CHAINS.clear();
     }
 
     /** Build step: {@code <joined.tsrg> <client.txt> <out.tsv> [coverage.properties]}. */
