@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 import legacyconnector.v1_12_2.net.minecraft.block.Block;
@@ -242,9 +243,48 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         }
     }
 
+    private static final String SHADOW = "__mod";
+
+    /**
+     * An item registered under the name of a model file the mod ships for another subtype (Galacticraft's {@code item_basic_asteroids}: the item's name,
+     * and the model file of its subtype 5) gets a generated model of that name for its first subtype, which hides the mod's file. The mod's file is
+     * copied to {@code <name>__mod} and the subtypes that name it point there. Returns the "namespace:item/name" targets that were moved.
+     */
+    private static Set<String> shadowCollidingModels(Map<String, Supplier<byte[]>> out) {
+        Set<String> moved = new java.util.HashSet<>();
+        for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+            if (item.getRegistryName() == null) continue;
+            for (int meta : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).keySet()) {
+                var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
+                if (modern == null) continue;
+                var mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, meta);
+                if (mrl == null) continue;
+                ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+                String own = id.getNamespace() + ":item/" + id.getPath();
+                String target = itemModelTarget(mrl.getNamespace(), mrl.getPath());
+                if (target.equals(own) || !modelExists(id.getNamespace(), "item/" + id.getPath()) || ObjAssets1122.isObj(mrl.getPath())) continue;
+                if (!moved.add(own)) continue;
+                String file = "assets/" + id.getNamespace() + "/models/item/" + id.getPath() + SHADOW + ".json";
+                try (var in = Thread.currentThread().getContextClassLoader().getResourceAsStream("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json")) {
+                    if (in == null) continue;
+                    byte[] bytes = in.readAllBytes();
+                    out.put(file, () -> bytes);
+                    if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+                        org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + SHADOW),
+                                new String(bytes, StandardCharsets.UTF_8));
+                    }
+                } catch (java.io.IOException e) {
+                    moved.remove(own);
+                }
+            }
+        }
+        return moved;
+    }
+
     /** Item models registered in code (ModelLoader): each subtype's modern item points at the model file the mod named. */
     private static void itemModels(Map<String, Supplier<byte[]>> out) {
         meshIds = meshItemIds();
+        Set<String> shadowed = shadowCollidingModels(out);
         for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
             if (item.getRegistryName() == null) continue;
             // an ItemBlock draws its block's model of the same metadata unless the mod registered models for it (blockItemModels): torches, lamps and
@@ -262,6 +302,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 if (meshModel(item, mrl, id, out)) continue;
                 if (mrl == null) continue;
                 String target = itemModelTarget(mrl.getNamespace(), mrl.getPath());
+                if (shadowed.contains(target)) target = target + SHADOW; // the mod's own model of a name another subtype's id takes over
                 if (ObjAssets1122.isObj(mrl.getPath())) {
                     // an OBJ item model (models/item/<name>.obj): NeoForge's OBJ loader
                     target = ObjAssets1122.model(Ids.namespace(mrl.getNamespace()),
