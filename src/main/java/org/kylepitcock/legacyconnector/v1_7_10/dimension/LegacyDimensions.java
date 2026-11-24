@@ -51,7 +51,8 @@ public final class LegacyDimensions {
     public static WorldProvider provider(int dimension) {
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) return null;
-        var level = server.getLevel(levelKey(dimension));
+        // dimension 0: the overworld of a world created with a mod's world type that has its own chunk generator (LegacyWorldPresets)
+        var level = dimension == 0 ? server.overworld() : server.getLevel(levelKey(dimension));
         if (level == null) return null;
         if (BROKEN.contains(dimension)) return null;
         try {

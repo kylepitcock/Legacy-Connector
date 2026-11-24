@@ -591,6 +591,7 @@ public final class Platform1122 implements LegacyPlatform {
                 legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidRegistry.getRegisteredFluids().size(),
                 legacyconnector.v1_12_2.net.minecraftforge.oredict.OreDictionary.getOreNames().length);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122.registerTabs();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyWorldPresets1122.registerNames();
     }
 
     @Override

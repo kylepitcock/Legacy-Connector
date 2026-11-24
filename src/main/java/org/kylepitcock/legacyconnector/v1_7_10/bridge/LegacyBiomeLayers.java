@@ -119,7 +119,9 @@ public final class LegacyBiomeLayers {
             LevelStem stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).get(LevelStem.OVERWORLD);
             if (stem != null) {
                 var source = stem.generator().getBiomeSource();
-                if (source instanceof LegacyLayeredBiomeSource layered) {
+                if (stem.generator() instanceof org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator own && !own.mcc$worldType().isEmpty()) {
+                    bindOwnGenerator(own);
+                } else if (source instanceof LegacyLayeredBiomeSource layered) {
                     bindLayers(server, layered);
                 } else if (source instanceof MultiNoiseBiomeSource multiNoise) {
                     if (BiomePlacement.hasTerraBlenderRegion()) {
@@ -149,6 +151,19 @@ public final class LegacyBiomeLayers {
             LOG.info("This world was created with world type {} before it had its own biome source; new chunks place legacy biomes by climate",
                     mod.getWorldTypeName());
         }
+    }
+
+    /** A world of a world type with its own terrain generator: the overworld's world provider reports that type (its chunk manager and generator come from it). */
+    private static void bindOwnGenerator(org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator generator) {
+        WorldType type = null;
+        for (WorldType t : LegacyWorldPresets.modTypes()) if (t.getWorldTypeName().equals(generator.mcc$worldType())) type = t;
+        if (type == null) {
+            LOG.warn("World type {} of this world is not installed; the overworld has no terrain", generator.mcc$worldType());
+            return;
+        }
+        legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = type;
+        mode = type.getWorldTypeName() + " chunk generator";
+        LOG.info("World type {}: its own chunk generator and biome provider generate the overworld", type.getWorldTypeName());
     }
 
     private static void bindLayers(MinecraftServer server, LegacyLayeredBiomeSource source) {

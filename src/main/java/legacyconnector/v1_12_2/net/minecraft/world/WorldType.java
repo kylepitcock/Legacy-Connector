@@ -21,10 +21,12 @@ public class WorldType {
     private boolean canBeCreated = true;
     private boolean versioned;
     private boolean hasInfoNotice;
+    /** Modern id of the legacy mod that registered this world type (null for the vanilla types, even when this class loads while a mod initialises). */
+    public final String mcc$owner;
 
     /** Forge: a mod's world type, at the next free id. */
     public WorldType(String name) {
-        this(getNextID(), name);
+        this(getNextID(), name, 0, mcc$activeMod());
     }
 
     private WorldType(int id, String name) {
@@ -32,6 +34,21 @@ public class WorldType {
     }
 
     private WorldType(int id, String name, int version) {
+        this(id, name, version, null);
+    }
+
+    private static String mcc$activeMod() {
+        var owner = org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.active();
+        return owner == null ? "legacyconnector" : owner.record().modernId;
+    }
+
+    /** Id of the world preset generated for a mod's world type. */
+    public net.minecraft.resources.ResourceLocation mcc$presetId() {
+        return org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldPresetPack.presetId(mcc$owner, name);
+    }
+
+    private WorldType(int id, String name, int version, String owner) {
+        this.mcc$owner = owner;
         this.name = name;
         this.version = version;
         this.id = id;
@@ -149,7 +166,38 @@ public class WorldType {
         if (full.isDebug()) return DEBUG_ALL_BLOCK_STATES;
         if (full instanceof net.minecraft.server.level.ServerLevel s
                 && s.getChunkSource().getGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource) return FLAT;
+        // a world created with a mod's world type: the overworld's noise settings are the type's preset (LegacyWorldPresetPack)
+        if (full instanceof net.minecraft.server.level.ServerLevel s) {
+            var overworld = s.getServer().overworld();
+            WorldType own = overworld == null ? null : mcc$ofSettings(overworld.getChunkSource().getGenerator());
+            if (own != null) return own;
+        }
         return DEFAULT;
+    }
+
+    private static volatile java.util.Map<net.minecraft.resources.ResourceLocation, WorldType> byPreset;
+    private static volatile int byPresetCount = -1;
+
+    /** The mod world type whose preset the generator was created from (its noise settings), or null. */
+    public static WorldType mcc$ofSettings(net.minecraft.world.level.chunk.ChunkGenerator generator) {
+        if (!(generator instanceof net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator noise)) return null;
+        var key = noise.generatorSettings().unwrapKey();
+        if (key.isEmpty() || "minecraft".equals(key.get().location().getNamespace())) return null;
+        var map = byPreset;
+        int count = countMod();
+        if (map == null || byPresetCount != count) {
+            map = new java.util.HashMap<>();
+            for (WorldType t : WORLD_TYPES) if (t != null && t.mcc$owner != null) map.putIfAbsent(t.mcc$presetId(), t);
+            byPreset = map;
+            byPresetCount = count;
+        }
+        return map.get(key.get().location());
+    }
+
+    private static int countMod() {
+        int n = 0;
+        for (WorldType t : WORLD_TYPES) if (t != null && t.mcc$owner != null) n++;
+        return n;
     }
 
     @Override
