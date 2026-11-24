@@ -1,0 +1,91 @@
+# Run A (the only run for 1.16.5): 1.16.5 table (MCP class names and func_/field_ ids to Mojang names) + the 1.20.1 -> 1.21.1 rows, no translation (gradlew gap1165 -Pexperimental.mc1165=true -Pgap.extraRenames=<mc-classes.tsv>), walked along 1.16.5 -> 1.18.2 -> 1.19.2 -> 1.20.1 by tools/compat/gap_stage_analyze.py
+chain 1.16.5 -> 1.18.2 -> 1.19.2 -> 1.20.1 (stages A, B, C); Fabric-intermediary symbols dropped (multi-loader jars): 1133
+jars with code: 439 of 442; forge (mods.toml): 438; fabric/quilt marker: 23
+jar status: unresolved 415, links 22, no code 3, links but for other mods/libraries 2
+distinct Minecraft/Forge symbols: 7223; occurrences (jar x symbol): 50531
+by class and stage (distinct/occurrences): DD: 2330/17907, FDD: 329/1420, FaA: 95/2072, FaB: 52/575, FaC: 1/4, FbA: 195/2424, FbB: 351/4060, FbC: 27/342, aA: 72/673, aB: 20/205, aC: 50/424, bA: 1017/7884, bB: 358/2838, bC: 610/5876, n: 429/769, u: 1287/3058
+
+per stage, Minecraft symbols (a = rename/move row, b = changed or removed): distinct / occurrences / jars
+  stage A class Fa: 95 / 2072 / 295
+  stage A class Fb: 195 / 2424 / 361
+  stage A class a: 72 / 673 / 190
+  stage A class b: 1017 / 7884 / 292
+  stage B class Fa: 52 / 575 / 198
+  stage B class Fb: 351 / 4060 / 353
+  stage B class a: 20 / 205 / 112
+  stage B class b: 358 / 2838 / 319
+  stage C class Fa: 1 / 4 / 4
+  stage C class Fb: 27 / 342 / 130
+  stage C class a: 50 / 424 / 141
+  stage C class b: 610 / 5876 / 318
+
+shape x (stage,class) (distinct symbols / occurrences / jars):
+  entities/attributes/AI: DD=548/3697/241; FDD=10/43/35; FbA=32/132/71; FbB=86/890/216; FbC=2/5/5; aA=13/72/47; aB=2/9/9; aC=10/31/29; bA=146/717/169; bB=82/285/99; bC=64/252/89; n=9/9/2; u=276/550/139
+  block/item/state: DD=425/3622/279; FDD=21/78/38; FaB=13/125/79; FbA=15/154/99; FbB=8/83/69; FbC=1/1/1; aB=1/32/32; aC=6/138/75; bA=72/651/180; bB=63/255/98; bC=26/134/80; n=16/19/6; u=304/1203/205
+  other Minecraft/server: DD=337/3541/282; FDD=3/4/2; FbA=6/76/45; FbC=1/10/10; aA=6/152/117; aB=10/100/57; aC=4/7/6; bA=57/592/163; bB=41/441/202; bC=36/192/100; n=127/313/98; u=184/270/55
+  rendering (entity renderers/models/layers/shaders): DD=173/1685/175; FDD=1/1/1; FaA=1/111/111; FaB=2/72/49; FbA=24/133/58; FbB=25/130/72; FbC=2/12/12; aA=20/173/79; aC=4/15/12; bA=206/2319/213; bB=17/71/54; bC=78/620/164; n=21/21/2; u=98/163/56
+  worldgen (features/biomes/structures): DD=70/335/90; FaA=2/6/6; FbB=1/79/79; aA=20/204/51; aB=4/60/57; aC=3/11/11; bA=313/2061/124; bB=37/425/94; bC=9/59/42; n=4/4/1; u=30/122/63
+  level/world/chunks/capabilities: DD=88/554/197; FDD=22/100/70; FaB=8/124/85; FbA=6/197/67; FbB=18/157/108; aA=7/46/34; aC=4/8/8; bA=101/717/162; bB=20/182/106; bC=10/30/23; n=61/77/2; u=89/130/38
+  RegistryEvent / registries (Forge): FDD=7/34/21; FaA=1/170/170; FaB=2/22/21; FbA=8/280/165; FbB=100/1618/281; FbC=1/35/35; n=2/2/2; u=7/7/5
+  client other (resources/keys/gui screens): DD=136/533/135; FaA=4/27/23; FaB=11/67/36; FbA=14/154/87; FbB=60/521/107; aA=1/1/1; aB=2/3/3; aC=3/38/36; bA=30/61/39; bB=28/134/67; bC=40/161/87; n=27/28/3; u=82/140/47
+  network/packets: DD=52/464/128; FaA=19/978/201; FbB=3/61/41; aA=1/3/3; aC=1/1/1; bA=15/127/96; bB=11/21/13; bC=8/15/12; n=18/18/2; u=18/51/33
+  GUI rendering (PoseStack/GuiComponent/Button/Font): DD=42/180/81; FaA=27/139/48; FaB=3/88/66; FbA=2/12/12; FbB=5/114/69; aC=1/2/2; bA=2/7/6; bB=2/4/4; bC=73/1016/168; n=8/8/1; u=55/102/43
+  Forge: config/fml/mods: FDD=13/114/85; FaA=30/548/202; FbA=29/797/321; FbB=2/2/2; FbC=1/1/1; n=37/38/3; u=1/1/1
+  other: FDD=218/960/131; FbA=25/213/119; FbB=8/20/17; n=29/150/74; u=5/5/2
+  loot: DD=115/619/103; FDD=1/3/3; FbB=2/30/29; FbC=4/11/9; aA=2/3/3; aC=3/14/12; bA=13/200/48; bB=5/100/56; bC=42/351/88; u=2/13/13
+  data generators: DD=54/365/72; FDD=4/4/4; FaA=2/68/68; FbC=6/65/31; aA=1/8/8; bA=31/217/74; bB=10/135/83; bC=22/316/64; n=2/4/2; u=7/67/36
+  damage sources: DD=49/566/107; FDD=7/12/8; FbB=2/51/39; aC=8/139/55; bC=16/199/65; n=4/4/1; u=5/5/2
+  Forge: other API: FDD=20/57/26; FaA=9/25/15; FaB=9/54/38; FaC=1/4/4; FbA=30/258/135; FbB=20/267/117; FbC=7/195/108; n=19/23/8; u=2/3/3
+  registry statics (Registry.X, BuiltinRegistries): DD=39/388/125; FbC=1/1/1; bA=16/83/55; bB=5/6/6; bC=27/281/120; n=13/17/2; u=34/51/15
+  recipes/smithing: DD=66/418/98; FDD=2/10/10; FaB=1/3/3; FbB=2/8/8; FbC=1/6/6; bA=5/100/68; bB=1/1/1; bC=20/212/83; u=23/58/29
+  creative tabs: DD=5/151/140; aC=1/1/1; bB=1/1/1; bC=69/595/215; n=27/29/2; u=7/14/11
+  com.mojang.math (Vector3f/Matrix4f/Quaternion): DD=13/30/12; FbB=2/7/7; bA=3/22/20; bC=41/625/169; n=4/4/1; u=12/23/11
+  Material: DD=2/4/4; aC=1/8/8; bC=16/665/195; u=3/3/1
+  sounds/particles: DD=92/513/156; FbA=4/18/13; FbB=1/3/3; aB=1/1/1; bA=1/1/1; bB=8/61/45; bC=8/24/13; n=1/1/1; u=14/29/18
+  text components (TextComponent/TranslatableComponent): DD=5/118/62; FbB=1/2/2; bB=4/475/267
+  commands: DD=10/33/18; FbB=1/5/5; aA=1/11/11; bA=5/6/6; bB=12/102/47; bC=2/86/80; u=26/42/4
+  chat/messages: DD=2/18/15; FbB=4/12/9; bB=11/139/84; u=2/2/1
+  explosions: DD=7/73/44; FaB=3/20/15; aC=1/11/11; bA=1/3/3; bC=3/43/32; u=1/4/4
+
+jars with no unresolved Minecraft/Forge symbol at all (pure renames + the 1.20.1 -> 1.21.1 tables already link them): 24 of 439
+
+link rate by stage (cumulative: the stages up to and including the one named are done; share of the jars with code):
+  'no work' = jars that have no a/b symbol in those stages at all; 'tables' = jars whose a/b symbols there are all rename rows (class a);
+  'full' = also nothing else left unresolved (class D, Forge-not-diffed, u, n): such jars would link on 1.21.1; 'MC only' ignores Forge API symbols
+  through stage A: no work 50 (11.4%), tables only 56 (12.8%), MC-only no work 136; full link: no work 30, tables only 30, all done 36 of 439
+  through stage B: no work 32 (7.3%), tables only 35 (8.0%), MC-only no work 87; full link: no work 24, tables only 24, all done 55 of 439
+  through stage C: no work 31 (7.1%), tables only 34 (7.7%), MC-only no work 79; full link: no work 24, tables only 24, all done 56 of 439
+
+stage-local (only the symbols that break in exactly this transition; earlier stages assumed done):
+  stage A: jars with a-class symbols 322, with b-class 383, with either 389; stage-local link rate (renames applied, nothing else) 56 of 439 (12.8%), with no a or b symbol at all 50 (11.4%); Minecraft symbols only: b 297, either 303 (link rate after renames 32.3%)
+  stage B: jars with a-class symbols 226, with b-class 376, with either 382; stage-local link rate (renames applied, nothing else) 63 of 439 (14.4%), with no a or b symbol at all 57 (13.0%); Minecraft symbols only: b 336, either 337 (link rate after renames 23.5%)
+  stage C: jars with a-class symbols 143, with b-class 323, with either 326; stage-local link rate (renames applied, nothing else) 116 of 439 (26.4%), with no a or b symbol at all 113 (25.7%); Minecraft symbols only: b 318, either 321 (link rate after renames 27.6%)
+
+greedy order of shapes to fix (jars blocked by each shape of the stages, most first):
+   1. stage A: Forge: config/fml/mods: cleared of chain blockers 14
+   2. stage B: entities/attributes/AI: cleared of chain blockers 25
+   3. stage B: level/world/chunks/capabilities: cleared of chain blockers 35
+   4. stage B: block/item/state: cleared of chain blockers 43
+   5. stage B: text components (TextComponent/TranslatableComponent): cleared of chain blockers 47
+   6. stage B: RegistryEvent / registries (Forge): cleared of chain blockers 50
+   7. stage A: RegistryEvent / registries (Forge): cleared of chain blockers 54
+   8. stage C: creative tabs: cleared of chain blockers 61
+   9. stage C: Material: cleared of chain blockers 66
+  10. stage A: Forge: other API: cleared of chain blockers 71
+  11. stage A: network/packets: cleared of chain blockers 74
+  12. stage A: other Minecraft/server: cleared of chain blockers 77
+  13. stage C: loot: cleared of chain blockers 79
+  14. stage A: block/item/state: cleared of chain blockers 82
+  15. stage C: other Minecraft/server: cleared of chain blockers 84
+  16. stage A: rendering (entity renderers/models/layers/shaders): cleared of chain blockers 87
+  17. stage C: Forge: other API: cleared of chain blockers 89
+  18. stage A: level/world/chunks/capabilities: cleared of chain blockers 92
+  19. stage A: entities/attributes/AI: cleared of chain blockers 95
+  20. stage B: other Minecraft/server: cleared of chain blockers 101
+  21. stage A: other: cleared of chain blockers 106
+  22. stage C: GUI rendering (PoseStack/GuiComponent/Button/Font): cleared of chain blockers 109
+  23. stage C: commands: cleared of chain blockers 112
+  24. stage B: chat/messages: cleared of chain blockers 115
+  25. stage C: entities/attributes/AI: cleared of chain blockers 118
+
+unresolved symbol occurrences by area: Minecraft common 31692, Other mod or library 22851, Forge API 10514, Minecraft client 8317, JDK 16, Mixin/ASM 8
