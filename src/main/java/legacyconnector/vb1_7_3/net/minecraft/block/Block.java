@@ -364,6 +364,10 @@ public class Block {
     public void onEntityCollision(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
             legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {}
 
+    /** MCP {@code velocityToAddToEntity}: a block that pushes entities adds its push to {@code velocity} (the base block adds none; native fluids flow on their own). */
+    public void applyVelocity(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d velocity) {}
+
     /** MCP {@code onBlockPlaced}: {@code side} is the face of the block clicked to place it. */
     public void onPlaced(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {}
 

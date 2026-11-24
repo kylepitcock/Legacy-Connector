@@ -105,4 +105,21 @@ public class PlayerInventory implements Inventory {
     public boolean canPlayerUse(PlayerEntity player) {
         return !this.player.dead && player.getSquaredDistance(this.player.x, this.player.y, this.player.z) <= 64.0;
     }
+    /** Beta's {@code getStrVsBlock}: the mining speed of the held stack (1 for bare hands). */
+    public float getStrengthOnBlock(legacyconnector.vb1_7_3.net.minecraft.block.Block block) {
+        ItemStack held = getSelectedItem();
+        return held == null || held.getItem() == null ? 1.0F : held.getItem().getStrVsBlock(held, block, 0);
+    }
+    /** Beta's {@code changeCurrentItem(int)}: scrolls the hotbar selection by the wheel delta. */
+    public void scrollInHotbar(int delta) {
+        if (delta > 0) delta = 1;
+        if (delta < 0) delta = -1;
+        selectedSlot -= delta;
+        while (selectedSlot < 0) selectedSlot += 9;
+        while (selectedSlot >= 9) selectedSlot -= 9;
+    }
+    /** Beta's {@code setCurrentItem(int, boolean)}: selects the hotbar slot (the creative-style search for an item id is not modelled). */
+    public void setHeldItem(int slot, boolean search) { if (slot >= 0 && slot < 9) selectedSlot = slot; }
+    /** Beta's {@code decrementAnimations()}: stack animation counters tick down; stacks keep none here. */
+    public void inventoryTick() {}
 }

@@ -114,11 +114,13 @@ public class Screen extends DrawContext {
     // ------------------------------------------------------------------ for the modern screen (the legacy methods are protected)
 
     public void mcc$mouseClicked(int mouseX, int mouseY, int button) {
-        mouseClicked(mouseX, mouseY, button);
+        legacyconnector.vb1_7_3.org.lwjgl.input.Mouse.mcc$setEvent(button, true);
+        try { mouseClicked(mouseX, mouseY, button); } finally { legacyconnector.vb1_7_3.org.lwjgl.input.Mouse.mcc$setEvent(-1, false); }
     }
 
     public void mcc$mouseReleased(int mouseX, int mouseY, int button) {
-        mouseReleased(mouseX, mouseY, button);
+        legacyconnector.vb1_7_3.org.lwjgl.input.Mouse.mcc$setEvent(button, false);
+        try { mouseReleased(mouseX, mouseY, button); } finally { legacyconnector.vb1_7_3.org.lwjgl.input.Mouse.mcc$setEvent(-1, false); }
     }
     public void mcc$mouseDragged(int mouseX,int mouseY,int button) {}
     public void mcc$mouseScrolled(double amount) {}
