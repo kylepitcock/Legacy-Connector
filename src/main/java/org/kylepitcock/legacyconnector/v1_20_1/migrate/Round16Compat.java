@@ -166,6 +166,63 @@ public final class Round16Compat {
         entity.setPos(x, y, z);
     }
 
+    // ------------------------------------------------------------------ trading, spiders, arrows, crossbows, armor wear
+
+    /** {@code MerchantOffer.baseCostA} (field read, an ItemStack in 1.20.1; an ItemCost in 1.21.1). */
+    public static net.minecraft.world.item.ItemStack merchantBaseCostA(net.minecraft.world.item.trading.MerchantOffer offer) {
+        return offer.getBaseCostA();
+    }
+
+    /** {@code MerchantOffer.costB} (field read, an ItemStack in 1.20.1; an optional ItemCost in 1.21.1): empty stack when there is no second cost. */
+    public static net.minecraft.world.item.ItemStack merchantCostB(net.minecraft.world.item.trading.MerchantOffer offer) {
+        return offer.getCostB();
+    }
+
+    /** {@code SpiderEffectsGroupData.effect} (field read, a MobEffect in 1.20.1; a Holder in 1.21.1). */
+    public static net.minecraft.world.effect.MobEffect spiderEffect(net.minecraft.world.entity.monster.Spider.SpiderEffectsGroupData data) {
+        return data.effect == null ? null : data.effect.value();
+    }
+
+    /** {@code data.effect = effect} (field write). */
+    public static void setSpiderEffect(net.minecraft.world.entity.monster.Spider.SpiderEffectsGroupData data, net.minecraft.world.effect.MobEffect effect) {
+        data.effect = effect == null ? null : net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect);
+    }
+
+    /**
+     * {@code AbstractArrow.setEnchantmentEffectsFromEntity(shooter, velocity)}: 1.21.1 applies the shooter's enchantments when the weapon creates the arrow.
+     * APPROXIMATION: only the velocity-based base damage ({@code setBaseDamageFromMob}) of the removed method is applied.
+     */
+    public static void arrowEnchantmentEffects(net.minecraft.world.entity.projectile.AbstractArrow arrow, net.minecraft.world.entity.LivingEntity shooter, float velocity) {
+        arrow.setBaseDamageFromMob(velocity);
+    }
+
+    /** {@code CrossbowItem.getStartSound(quickCharge)} (private in 1.20.1, gone in 1.21.1). */
+    public static net.minecraft.sounds.SoundEvent crossbowStartSound(net.minecraft.world.item.CrossbowItem item, int quickCharge) {
+        return switch (quickCharge) {
+            case 1 -> net.minecraft.sounds.SoundEvents.CROSSBOW_QUICK_CHARGE_1.value();
+            case 2 -> net.minecraft.sounds.SoundEvents.CROSSBOW_QUICK_CHARGE_2.value();
+            case 3 -> net.minecraft.sounds.SoundEvents.CROSSBOW_QUICK_CHARGE_3.value();
+            default -> net.minecraft.sounds.SoundEvents.CROSSBOW_LOADING_START.value();
+        };
+    }
+
+    private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.FEET,
+            net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.HEAD};
+
+    /** {@code Inventory.hurtArmor(source, damage, slots)} (moved to {@code LivingEntity.doHurtEquipment} in 1.21.1): wears the armor pieces at the inventory indexes. */
+    public static void hurtArmor(net.minecraft.world.entity.player.Inventory inventory, net.minecraft.world.damagesource.DamageSource source, float damage, int[] slots) {
+        if (damage <= 0.0F) return;
+        int amount = (int) Math.max(1.0F, damage / 4.0F);
+        for (int index : slots) {
+            if (index < 0 || index >= ARMOR_SLOTS.length) continue;
+            net.minecraft.world.item.ItemStack stack = inventory.armor.get(index);
+            if (stack.getItem() instanceof net.minecraft.world.item.ArmorItem && stack.canBeHurtBy(source)) {
+                net.minecraft.world.entity.EquipmentSlot slot = ARMOR_SLOTS[index];
+                stack.hurtAndBreak(amount, inventory.player, slot);
+            }
+        }
+    }
+
     // ------------------------------------------------------------------ recipes
 
     /**

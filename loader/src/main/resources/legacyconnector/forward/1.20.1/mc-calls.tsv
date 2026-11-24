@@ -1213,3 +1213,11 @@ net/minecraft/world/item/armortrim/ArmorTrim	setTrim	(Lnet/minecraft/core/Regist
 net/minecraft/world/item/enchantment/EnchantmentHelper	getDamageProtection	(Ljava/lang/Iterable;Lnet/minecraft/world/damagesource/DamageSource;)I	Round16Compat	damageProtection
 net/minecraft/core/dispenser/DispenseItemBehavior	setEntityPokingOutOfBlock	(Lnet/minecraft/core/dispenser/BlockSource;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/Direction;)V	Round16Compat	setEntityPokingOutOfBlock
 net/minecraft/client/renderer/texture/SpriteLoader	loadSprite	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/server/packs/resources/Resource;)Lnet/minecraft/client/renderer/texture/SpriteContents;	Round16ClientCompat	loadSprite
+net/minecraft/world/item/trading/MerchantOffer	$get$baseCostA	()Lnet/minecraft/world/item/ItemStack;	Round16Compat	merchantBaseCostA	-
+net/minecraft/world/item/trading/MerchantOffer	$get$costB	()Lnet/minecraft/world/item/ItemStack;	Round16Compat	merchantCostB	-
+net/minecraft/world/entity/monster/Spider$SpiderEffectsGroupData	$get$effect	()Lnet/minecraft/world/effect/MobEffect;	Round16Compat	spiderEffect	-
+net/minecraft/world/entity/monster/Spider$SpiderEffectsGroupData	$set$effect	(Lnet/minecraft/world/effect/MobEffect;)V	Round16Compat	setSpiderEffect	-
+net/minecraft/world/entity/projectile/AbstractArrow	setEnchantmentEffectsFromEntity	(Lnet/minecraft/world/entity/LivingEntity;F)V	Round16Compat	arrowEnchantmentEffects
+net/minecraft/world/item/CrossbowItem	getStartSound	(I)Lnet/minecraft/sounds/SoundEvent;	Round16Compat	crossbowStartSound
+net/minecraft/world/entity/player/Inventory	hurtArmor	(Lnet/minecraft/world/damagesource/DamageSource;F[I)V	Round16Compat	hurtArmor
+net/neoforged/neoforge/common/extensions/IBlockExtension	getCloneItemStack	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/phys/HitResult;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/item/ItemStack;	=	-	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/phys/HitResult;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/item/ItemStack;
