@@ -598,7 +598,15 @@ public final class Models1122 {
                 }
                 pose.last().pose().mul(matrix);
                 org.joml.Matrix3f normal = new org.joml.Matrix3f(matrix);
-                if (Math.abs(normal.determinant()) > 1.0E-12F) pose.last().normal().mul(normal.invert().transpose());
+                if (Math.abs(normal.determinant()) > 1.0E-12F) {
+                    normal.invert().transpose();
+                    // the game packs a vertex normal in signed bytes and its shaders expect unit length: a transform that scales the model (a
+                    // 3D item's gui or ground matrix, 0.1 to 0.5) would make the inverse-transpose longer than 1, so every item lit by the
+                    // normal drew black (Galacticraft's rockets and buggy in the gui); vanilla's PoseStack.scale keeps the normal matrix unit as well
+                    float k = (float) Math.cbrt(Math.abs(normal.determinant()));
+                    if (k > 1.0E-6F && Float.isFinite(k)) normal.scale(1.0F / k);
+                    pose.last().normal().mul(normal);
+                }
             }
             IBakedModel chosen = pair.getLeft();
             return chosen == null || chosen == legacy ? this : modern(chosen);
