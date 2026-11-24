@@ -1134,11 +1134,37 @@ public class Block {
     }
 
     public int isProvidingWeakPower(IBlockAccess world, int x, int y, int z, int side) {
-        return mcc$vanilla != null && world != null ? world.mcc$weakSignal(x, y, z, side) : 0;
+        if (mcc$vanilla == null || world == null) return 0;
+        return mcc$modBlockAt(world, x, y, z) ? mcc$ownSignal(side, false) : world.mcc$weakSignal(x, y, z, side);
     }
 
     public int isProvidingStrongPower(IBlockAccess world, int x, int y, int z, int side) {
-        return mcc$vanilla != null && world != null ? world.isBlockProvidingPowerTo(x, y, z, side) : 0;
+        if (mcc$vanilla == null || world == null) return 0;
+        return mcc$modBlockAt(world, x, y, z) ? mcc$ownSignal(side, true) : world.isBlockProvidingPowerTo(x, y, z, side);
+    }
+
+    /**
+     * Whether the position holds a mod's block, not a vanilla one. A mod block that copies another block (a multiblock part showing
+     * the block it replaced) asks that vanilla block for its power at its own position; reading the world there would ask the mod
+     * block again, without end.
+     */
+    private boolean mcc$modBlockAt(IBlockAccess world, int x, int y, int z) {
+        Block at = world.getBlock(x, y, z);
+        return at != null && at != this && at.mcc$vanilla == null;
+    }
+
+    /** The power this vanilla block gives by itself, whatever stands at the position: 1.7.10's own method of the block class. */
+    private int mcc$ownSignal(int side, boolean strong) {
+        try {
+            var state = mcc$modern != null ? mcc$modern.defaultBlockState()
+                    : org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.state(mcc$vanilla.legacyId(), 0);
+            if (state == null) return 0;
+            var dir = net.minecraft.core.Direction.from3DDataValue(side);
+            var empty = net.minecraft.world.level.EmptyBlockGetter.INSTANCE;
+            return strong ? state.getDirectSignal(empty, net.minecraft.core.BlockPos.ZERO, dir) : state.getSignal(empty, net.minecraft.core.BlockPos.ZERO, dir);
+        } catch (RuntimeException ignored) {
+            return 0;
+        }
     }
 
     public boolean canConnectRedstone(IBlockAccess world, int x, int y, int z, int side) {
