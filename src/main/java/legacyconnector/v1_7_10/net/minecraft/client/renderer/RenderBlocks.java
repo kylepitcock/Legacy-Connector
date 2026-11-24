@@ -501,7 +501,12 @@ public class RenderBlocks {
                     sheet = null;
                 }
             }
-            if (sheet != null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, tile, true);
+            // a sheet the renderer bound by name while the atlas is bound: RenderContext.quad maps UVs that are positions in that sheet onto the tile
+            // the pack cut (Thermal Expansion 1.4.7's Machine Frame item), so the tile's sheet-space icon (below) is what it needs; an atlas sprite
+            // would be mapped a second time and land on an empty tile (#248)
+            if (sheet != null && !org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheetMapped()) {
+                return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, tile, true);
+            }
         } else if (block != null && org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet() == null) {
             // capturing a block's geometry with no sheet bound by name: Forge 1.4.7 had bound the block's own texture file before the block was rendered, so the tile
             // index is a position in it (Xycraft's coloured overlay faces draw tile 255 of the block's sheet with nothing bound). IsbrhQuads maps the quads onto the cut tile.

@@ -580,6 +580,12 @@ public final class RenderContext {
         return st().sheet;
     }
 
+    /** Whether quads drawn now have their UVs read as positions in {@link #sheet()} and mapped onto the cut tiles (see {@code quad}). */
+    public static boolean sheetMapped() {
+        State s = st();
+        return s.capture == null && s.sheet != null && net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS.equals(s.texture) && has147Mods();
+    }
+
     public static void setSheet(String path) {
         st().sheet = path;
     }
