@@ -78,8 +78,36 @@ public final class Dimensions1122 {
         }
     }
 
+    /** The dimension type of a mod dimension: 1.12's 0-255 world with the provider's sky; its effects are the 1.12.2 ones (the provider's sky, fog and clouds). */
+    static JsonObject dimensionType(boolean sky) {
+        JsonObject type = new JsonObject();
+        type.addProperty("ultrawarm", false);
+        type.addProperty("natural", true);
+        type.addProperty("coordinate_scale", 1.0);
+        type.addProperty("has_skylight", sky);
+        type.addProperty("has_ceiling", false);
+        type.addProperty("ambient_light", 0.0F);
+        type.addProperty("monster_spawn_light_level", 7);
+        type.addProperty("monster_spawn_block_light_limit", 0);
+        type.addProperty("piglin_safe", false);
+        type.addProperty("bed_works", true);
+        type.addProperty("respawn_anchor_works", false);
+        type.addProperty("has_raids", false);
+        type.addProperty("logical_height", 256);
+        type.addProperty("min_y", 0);
+        type.addProperty("height", 256);
+        type.addProperty("infiniburn", "#minecraft:infiniburn_overworld");
+        type.addProperty("effects", EFFECTS.toString()); // client: LegacyDimensionEffects1122 asks the provider
+        return type;
+    }
+
     /** Data pack entries of every mod dimension registered by the end of legacy loading. */
     public static void contribute(Map<String, Supplier<byte[]>> out) {
+        // the generic types of dimensions a mod registers while the server runs (RuntimeDimensions1122; Galacticraft's planets)
+        for (boolean generic : new boolean[] {true, false}) {
+            byte[] bytes = dimensionType(generic).toString().getBytes(StandardCharsets.UTF_8);
+            out.put("data/" + NAMESPACE + "/dimension_type/" + RuntimeDimensions1122.typeId(generic).getPath() + ".json", () -> bytes);
+        }
         for (var e : modDimensions().entrySet()) {
             int id = e.getKey();
             boolean sky = true;
@@ -90,24 +118,7 @@ public final class Dimensions1122 {
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 // keep the overworld-like default
             }
-            JsonObject type = new JsonObject();
-            type.addProperty("ultrawarm", false);
-            type.addProperty("natural", true);
-            type.addProperty("coordinate_scale", 1.0);
-            type.addProperty("has_skylight", sky);
-            type.addProperty("has_ceiling", false);
-            type.addProperty("ambient_light", 0.0F);
-            type.addProperty("monster_spawn_light_level", 7);
-            type.addProperty("monster_spawn_block_light_limit", 0);
-            type.addProperty("piglin_safe", false);
-            type.addProperty("bed_works", true);
-            type.addProperty("respawn_anchor_works", false);
-            type.addProperty("has_raids", false);
-            type.addProperty("logical_height", 256);
-            type.addProperty("min_y", 0);
-            type.addProperty("height", 256);
-            type.addProperty("infiniburn", "#minecraft:infiniburn_overworld");
-            type.addProperty("effects", EFFECTS.toString()); // client: LegacyDimensionEffects1122 asks the provider
+            JsonObject type = dimensionType(sky);
             byte[] typeBytes = type.toString().getBytes(StandardCharsets.UTF_8);
             String name = PREFIX + id;
             out.put("data/" + NAMESPACE + "/dimension_type/" + name + ".json", () -> typeBytes);

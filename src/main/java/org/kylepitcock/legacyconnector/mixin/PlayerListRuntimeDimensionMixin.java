@@ -25,6 +25,9 @@ public abstract class PlayerListRuntimeDimensionMixin {
         ServerLevel level = original.call(server, key);
         if (level != null || key == null) return level;
         Integer id = LegacyDimensions.idOf(key.location());
-        return id == null ? null : RuntimeDimensions.getOrCreate(server, id);
+        if (id == null) return null;
+        ServerLevel made = RuntimeDimensions.getOrCreate(server, id);
+        // the same dim_<id> names belong to 1.12.2 dimensions (Galacticraft's planets, registered when the server starts)
+        return made != null ? made : org.kylepitcock.legacyconnector.v1_12_2.dimension.RuntimeDimensions1122.getOrCreate(server, id);
     }
 }

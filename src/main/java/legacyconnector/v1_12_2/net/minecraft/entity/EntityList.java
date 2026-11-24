@@ -7,7 +7,19 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegis
 /** Entity names: registered entries by class, vanilla entity classes by their class name ("EntityCow" is "minecraft:cow"). */
 public class EntityList {
     /** Spawn egg colours by entity name (filled when an entry gets its egg). */
-    public static final java.util.Map<ResourceLocation, EntityEggInfo> ENTITY_EGGS = new java.util.concurrent.ConcurrentHashMap<>();
+    public static final java.util.Map<ResourceLocation, EntityEggInfo> ENTITY_EGGS = new java.util.concurrent.ConcurrentHashMap<>() {
+        @Override
+        public EntityEggInfo put(ResourceLocation key, EntityEggInfo value) {
+            EntityEggInfo old = super.put(key, value);
+            // mods that add an egg straight to the map (not through EntityRegistry) still get a modern spawn egg item
+            try {
+                org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.eggAdded(key, value);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("Could not make the spawn egg of {}: {}", key, e.toString());
+            }
+            return old;
+        }
+    };
 
     /** A spawn egg's entity and colours. */
     public static class EntityEggInfo {

@@ -335,6 +335,14 @@ public final class ScreenEvents1122 {
     }
 
     private static void onRenderPost(ScreenEvent.Render.Post e) {
+        if (e.getScreen() == net.minecraft.client.Minecraft.getInstance().screen) {
+            RenderContext.beginGui(e.getGuiGraphics());
+            try {
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.renderTickEnd(e.getPartialTick());
+            } finally {
+                RenderContext.end();
+            }
+        }
         if (legacyHost(e.getScreen()) || !wants(GuiScreenEvent.DrawScreenEvent.Post.class)) return;
         RenderContext.beginGui(e.getGuiGraphics());
         try {

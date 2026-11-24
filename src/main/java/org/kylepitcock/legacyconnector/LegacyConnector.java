@@ -239,6 +239,7 @@ public final class LegacyConnector {
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ForgeEvents1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.DimensionPhysics1122.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.compat.chromaticraft.ChromaDimensionBarriers.register(game);
         org.kylepitcock.legacyconnector.v1_12_2.entity.Entities1122.register(game);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.register(game);

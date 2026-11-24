@@ -443,6 +443,11 @@ public final class EventBridge1122 {
         if (player != null) post(new TickEvent.PlayerTickEvent(phase, player));
     }
 
+    /** The END of the render tick of a frame that draws a screen; the caller has begun a GUI render context. */
+    public static void renderTickEnd(float partial) {
+        if (wants(TickEvent.RenderTickEvent.class)) post(new TickEvent.RenderTickEvent(TickEvent.Phase.END, partial));
+    }
+
     private static final class Client {
         static void register(IEventBus bus) {
             bus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Pre e) -> {
@@ -455,7 +460,8 @@ public final class EventBridge1122 {
                 if (wants(TickEvent.RenderTickEvent.class)) post(new TickEvent.RenderTickEvent(TickEvent.Phase.START, e.getPartialTick().getGameTimeDeltaPartialTick(false)));
             });
             bus.addListener((net.neoforged.neoforge.client.event.RenderFrameEvent.Post e) -> {
-                if (wants(TickEvent.RenderTickEvent.class)) post(new TickEvent.RenderTickEvent(TickEvent.Phase.END, e.getPartialTick().getGameTimeDeltaPartialTick(false)));
+                // with a screen open the END phase is posted while that screen is drawn (renderTickEnd): 1.12 posted it after the screen, and what mods draw from it needs a GUI context
+                if (wants(TickEvent.RenderTickEvent.class) && net.minecraft.client.Minecraft.getInstance().screen == null) post(new TickEvent.RenderTickEvent(TickEvent.Phase.END, e.getPartialTick().getGameTimeDeltaPartialTick(false)));
             });
         }
     }

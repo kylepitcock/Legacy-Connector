@@ -102,8 +102,22 @@ public final class Hosts1122 {
         BY_CLASS.put(cls, info);
         BY_TYPE.put(type, info);
         LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE, id, type);
-        registerSpawnEgg(entry, id, type, kind);
+        String regName = entry.getRegistryName().getNamespace() + ":" + entry.getRegistryName().getPath();
+        EGG_TARGETS.put(regName, new Object[] {id, type, kind});
+        registerSpawnEgg(entry.getEgg() != null ? entry.getEgg() : legacyconnector.v1_12_2.net.minecraft.entity.EntityList.ENTITY_EGGS.get(entry.getRegistryName()),
+                id, type, kind);
         return info;
+    }
+
+    /** Registered entries by their legacy registry name: {id, type, kind}, for eggs a mod adds to {@code EntityList.ENTITY_EGGS} after registering the entity. */
+    private static final Map<String, Object[]> EGG_TARGETS = new ConcurrentHashMap<>();
+
+    /** A mod put an egg into {@code EntityList.ENTITY_EGGS} directly (Galacticraft does, after {@code registerModEntity}). */
+    public static void eggAdded(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name, legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo egg) {
+        if (name == null || egg == null) return;
+        Object[] t = EGG_TARGETS.get(name.getNamespace() + ":" + name.getPath());
+        if (t == null) return; // the entity registers later: register() reads the map
+        registerSpawnEgg(egg, (ResourceLocation) t[0], (EntityType<?>) t[1], (Kind) t[2]);
     }
 
     private static final Set<ResourceLocation> EGG_ITEMS = ConcurrentHashMap.newKeySet();
@@ -118,8 +132,7 @@ public final class Hosts1122 {
      * the modern spawn egg item of its type, so creative mode lists it and pick-block on the entity gives it.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static void registerSpawnEgg(EntityEntry entry, ResourceLocation id, EntityType<?> type, Kind kind) {
-        var egg = entry.getEgg();
+    private static void registerSpawnEgg(legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo egg, ResourceLocation id, EntityType<?> type, Kind kind) {
         if (egg == null || kind == Kind.ENTITY) return;
         try {
             ResourceLocation eggId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_spawn_egg");
@@ -199,9 +212,15 @@ public final class Hosts1122 {
     public static net.minecraft.network.chat.Component displayName(EntityType<?> type) {
         Info i = BY_TYPE.get(type);
         if (i == null) return null;
-        String translated = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(i.translationKey());
-        return net.minecraft.network.chat.Component.translatableWithFallback(i.translationKey(),
-                translated.equals(i.translationKey()) ? i.fallbackName() : translated);
+        String key = i.translationKey();
+        String translated = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(key);
+        if (translated.equals(key) && !key.equals("entity." + i.fallbackName() + ".name")) {
+            // 1.12.2 named the key after the registered name alone ("entity.<name>.name": Galacticraft's boss bars showed the raw name); the modid-prefixed key is the older form
+            String plain = "entity." + i.fallbackName() + ".name";
+            String t2 = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(plain);
+            if (!t2.equals(plain)) return net.minecraft.network.chat.Component.translatableWithFallback(plain, t2);
+        }
+        return net.minecraft.network.chat.Component.translatableWithFallback(key, translated.equals(key) ? i.fallbackName() : translated);
     }
 
     public static Info info(EntityType<?> type) {
