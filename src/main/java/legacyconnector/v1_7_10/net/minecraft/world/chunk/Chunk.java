@@ -318,7 +318,7 @@ public class Chunk {
         var fast = mcc$directState(x, y, z);
         if (fast != null) {
             // 1.7.10's overworld always had bedrock at y=0 (World.getBlock: mcc$bedrockFloor)
-            if (y == 0 && fast.isAir() && modern.getMinBuildHeight() < 0) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
+            if (x == 0 && y == 0 && z == 0 && xPosition == 0 && zPosition == 0 && fast.isAir() && modern.getMinBuildHeight() < 0) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
             return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(fast);
         }
         if (mcc$blocks != null) {

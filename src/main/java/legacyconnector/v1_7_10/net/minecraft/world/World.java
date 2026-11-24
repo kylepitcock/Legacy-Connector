@@ -637,17 +637,19 @@ public class World implements IBlockAccess {
         BlockState state = offThread != null ? offThread : lvl().getBlockState(mcc$readPos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
         if (state.is(Blocks.DEEPSLATE) && (inDeepPass() || mcc$oreVeinBelowZero(y))) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
-        if (mcc$bedrockFloor(y, state)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
+        if (mcc$bedrockFloor(x, y, z, state)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
         return BlockBridge.legacyBlock(state);
     }
 
     /**
      * 1.7.10's overworld always had bedrock at y=0, and mods rely on it: Traincraft's track pieces check their origin, which
-     * is (0,0,0) until placement finishes, and break when it is air. Where a modern world extends below 0 and has air at
+     * is (0,0,0) until placement finishes, and break when it is air. Only that exact origin answers bedrock: every other y=0 position
+     * shows its real air (the layer used to be bedrock everywhere, so BuildCraft's wells and quarries stopped digging at y=0 and no
+     * block could be placed there, #329). Where a modern world extends below 0 and has air at
      * y=0 (superflat worlds, caves), the legacy view answers bedrock. Nether and End views (bottom 0) are unchanged.
      */
-    private boolean mcc$bedrockFloor(int y, BlockState state) {
-        return y == 0 && state.isAir() && lvl().getMinBuildHeight() < 0;
+    private boolean mcc$bedrockFloor(int x, int y, int z, BlockState state) {
+        return x == 0 && y == 0 && z == 0 && state.isAir() && lvl().getMinBuildHeight() < 0;
     }
 
     /**
@@ -851,7 +853,7 @@ public class World implements IBlockAccess {
         if (mcc$aboveDeepLayer(y)) return false;
         BlockState offThread = mcc$offThreadState(x, y, z);
         BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
-        return state.isAir() && !mcc$bedrockFloor(y, state);
+        return state.isAir() && !mcc$bedrockFloor(x, y, z, state);
     }
 
     public boolean blockExists(int x, int y, int z) {
