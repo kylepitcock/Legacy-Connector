@@ -278,8 +278,12 @@ final class Forge1201TargetApiVerifierTest {
         assertEquals(2, result.verifiedClassCount());
         assertEquals(1, result.verifiedMethodReferences());
         assertEquals(targetMethodDescriptor, result.verifiedMethods().getFirst().targetDescriptor());
+        assertEquals("DEFERRED_REGISTER_REGISTER_RETURNS_DEFERRED_HOLDER",
+                result.verifiedMethods().getFirst().mappingRule());
         assertEquals("Ljava/util/function/Supplier;",
                 result.verifiedFields().getFirst().targetDescriptor());
+        assertEquals("CATALOG_FIELD_DESCRIPTOR_MAPPING",
+                result.verifiedFields().getFirst().mappingRule());
         assertTrue(result.methodIssues().isEmpty());
         assertTrue(result.fieldIssues().isEmpty());
     }
