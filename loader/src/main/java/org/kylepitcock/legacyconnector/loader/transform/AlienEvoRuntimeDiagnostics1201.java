@@ -135,7 +135,9 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
         if (returns == 0) {
             throw new IllegalStateException("AlienEvo CancelFirstPersonSwingMixin has no FRETURN site to trace");
         }
-        method.maxStack = Math.max(method.maxStack, 2);
+        // DUP retains the FRETURN value, and FLOAD adds the original progress:
+        // the diagnostic call reaches three stack values before consuming two.
+        method.maxStack = Math.max(method.maxStack, 3);
         return changed;
     }
 
