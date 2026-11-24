@@ -78,6 +78,15 @@ public class DimensionManager {
     /** Numeric ids of modern dimensions that are not vanilla's: first come, first numbered, from 2 up (skipping registered ids). */
     private static final Map<net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level>, Integer> MODERN_IDS = new java.util.HashMap<>();
 
+    static {
+        // the ids are numbered from the levels of the server that is running: the next world of the same session numbers its own (as after a restart)
+        org.kylepitcock.legacyconnector.core.WorldStateReset.onWorldLeft(() -> {
+            synchronized (DimensionManager.class) {
+                MODERN_IDS.clear();
+            }
+        });
+    }
+
     /** The legacy dimension id of a modern level key. */
     public static synchronized int mcc$idOf(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> key) {
         if (key == null || key == net.minecraft.world.level.Level.OVERWORLD) return 0;

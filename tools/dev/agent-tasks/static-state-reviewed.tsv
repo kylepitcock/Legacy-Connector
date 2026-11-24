@@ -1,0 +1,118 @@
+# Hand review of tools/dev/static_state_audit.py hits. class (dotted suffix) <TAB> field (* = all) <TAB> verdict <TAB> reason
+# verdicts: ok = world-independent; keyed = per level/server key with an unload/stop hook (or weak); fixed = reset added (WorldStateReset); left = memory-only retention, see wiki
+v1_7_10.net.minecraft.enchantment.Enchantment	*	ok	legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+v1_7_10.net.minecraft.util.DamageSource	*	ok	name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+v1_12_2.net.minecraft.world.DimensionType	*	ok	legacy dimension types mods register once at load
+v1_12_2.net.minecraftforge.common.DimensionManager	DIMENSIONS	ok	registrations by mods at load
+v1_12_2.net.minecraftforge.common.DimensionManager	MODERN_IDS	fixed	numbered in order of first sight from the running server's levels: the next world of a session got other ids than after a restart; cleared on stop and logout
+v1_7_10.net.minecraftforge.common.DimensionManager	*	ok	registrations by mods at load
+v1_12_2.net.minecraftforge.common.ForgeChunkManager	TICKETS	keyed	mcc$unloadWorld on level unload (WorldEvents1122)
+v1_7_10.net.minecraftforge.common.ForgeChunkManager	*	keyed	per ServerLevel, removed through LevelReleases.onLevelUnload (perf.releaseUnloadedLevels, default on)
+v1_20_1.migrate.MigrateContext	*	fixed	remembered registry access (datapack-registry holders) survived into the next world as a fallback and as the render thread's ThreadLocal; generation counter plus reset on stop and logout
+v1_20_1.migrate.HolderCompat	lazyView	ok	a proxy that asks the current registry on every call
+v1_20_1.ObjectHolders1201	byType	ok	built-in registries (items, blocks): identical in every world
+v1_20_1.migrate.Round11Compat	UNLOADED	ok	constant Either of a marker
+v1_20_1.migrate.ArmorCompat	CACHE	ok	ArmorMaterial is a built-in registry
+v1_7_10.entity.EntityTracker	REMOVED	fixed	entities of the previous world were returned by id (their frozen level time equals removedTime); cleared on stop
+v1_7_10.bridge.VanillaVillageBuildings	CACHE	fixed	templates of the first server's resources, and an empty answer from before any server, cached for the session; cleared on stop
+v1_7_10.bridge.VanillaOreGate	TYPES	fixed	PlacedFeature keys and registry-key answers of one world's data packs; cleared on stop
+v1_12_2.bridge.VanillaOreGate1122	TYPES	fixed	same as VanillaOreGate
+v1_6_4.net.minecraft.src.ModLoader	commandsRegisteredOn	fixed	identity compare was already correct (new server, new command tree); now also released on stop
+core.ArrivalUnstick	*	fixed	LAST (player UUID to dimension) and PENDING (ServerPlayers) cleared on stop; the logout listener alone missed a crash and a stop without logout
+v1_12_2.bridge.Spawns1122	*	ok	BASELINE is read from VanillaRegistries.createLookup() (the built-in bootstrap data), not from a world's registry
+v1_12_2.bridge.BiomeBridge1122	CACHE	ok	modern biome key to the mod's legacy Biome object; no holder is kept
+v1_12_2.bridge.LegacyBiomes1122	byId	ok	built once from the mods' biome registrations
+core.worldgen.BiomePlacement	nativeParameters	keyed	bound per server at start and cleared by clearNative on stop; only returned for the exact bound source
+core.worldgen.LegacyStructureRegistry	*	keyed	cleared on ServerStoppedEvent
+v1_7_10.bridge.DeferredGenWrites	*	keyed	per ServerLevel, cleared on LevelEvent.Unload
+vb1_7_3.BetaDeferredGenData	*	keyed	per ServerLevel, Load/Unload hooks
+vb1_7_3.BetaDeferredGenEntities	*	keyed	per ServerLevel, Unload hook
+vb1_7_3.PlayerApiLifecycleB173	*	keyed	sinks set per server and cleared on ServerStoppedEvent
+vb1_7_3.ServerGameHooksB173	*	keyed	sink cleared on ServerStoppedEvent
+v1_7_10.client.NetHandlerPlayClient	*	keyed	mcc$connectionClosed on client logout
+v1_7_10.net.minecraft.client.network.NetHandlerPlayClient	*	keyed	mcc$connectionClosed on client logout
+v1_7_10.bridge.EventBridge1710	HURT_ACTIVE	ok	scratch of one hurt call on the calling thread
+v1_7_10.entity.EntitySelfTest	*	ok	self test only, cleared on ServerStoppingEvent
+v1_7_10.net.minecraft.world.World	MCC_TEST_PLAYERS	ok	self test only
+v1_7_10.net.minecraft.world.World	REGION	ok	ThreadLocal scratch set and cleared around one generation call
+v1_7_10.net.minecraft.world.World	REGION_VIEW	ok	ThreadLocal scratch set and cleared around one call
+v1_7_10.net.minecraft.world.World	GENERATION	ok	ThreadLocal scratch set and cleared around one generation call
+v1_12_2.bridge.WorldBridge1122	*	keyed	IDS: dimension key to id (stable per key); views released through LevelReleases
+vb1_7_3.net.minecraft.world.World	CLIENT_MIRROR	ok	function installed by the client; no level held
+vb1_7_3.client.DimensionClientB173	*	left	compared by identity with the current level and reset on a change; keeps the old ClientLevel until the next client tick (memory only)
+vb1_7_3.client.PlayerInventoryClientB173	previousPlayer	left	identity compare, released with the old player's view on change; keeps the old player until the next tick (memory only)
+vb1_7_3.client.PlayerPresentationClientB173	*	left	identity compare with the current connection and level; memory only
+vb1_7_3.client.ModTicksClientB173	*	left	identity compare with the current level; memory only
+vb1_7_3.WorldStorageB173	client	ok	client-installed function, evaluated per call
+v1_12_2.entity.LiveStacks1122	SERVER	keyed	entries flushed and forgotten after every legacy call and tick (flushAll)
+v1_12_2.net.minecraft.client.renderer.entity.RenderHorse	*	ok	texture names
+v1_12_2.net.minecraftforge.fml.client.config.GuiUtils	cachedTooltipStack	left	one client stack until the next tooltip; memory only
+v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry	*	ok	world generators registered by mods at load
+v1_7_10.cpw.mods.fml.common.registry.GameRegistry	*	ok	world generators registered by mods at load
+v1_12_2.net.minecraft.world.biome.Biome	MCC_IDS	ok	ids of the mods' shim biomes
+v1_12_2.net.minecraftforge.common.BiomeDictionary	*	ok	registrations by mods
+v1_12_2.net.minecraft.world.gen.structure.MapGenVillage	*	ok	shim biome lists
+v1_12_2.net.minecraft.world.gen.structure.WoodlandMansion	*	ok	shim biome lists
+v1_7_10.bridge.ItemBridge	CUSTOM_STACKS	ok	stacks mods registered at load (legacy shim stacks, no components)
+v1_7_10.bridge.Brewing1710	*	ok	built-in potion registry
+v1_7_10.bridge.PotionBridge	*	ok	built-in mob effect registry
+v1_12_2.entity.Effects1122	EFFECTS	ok	built-in mob effect registry
+v1_12_2.client.EffectIcons1122	VANILLA	ok	built-in mob effect registry
+v1_7_10.bridge.LegacyBiomeLayers	KEEP	ok	resource keys only (also cleared on start and stop)
+v1_7_10.bridge.LegacyBiomes	TAG_KEYS	ok	tag keys only
+core.StackHolders	encoderCache	fixed	issue 113: cleared on server start and stop
+core.LevelReleases	*	ok	registries of callbacks
+core.ViewSweeper	CACHES	ok	registrations of caches
+compat.nei.NeiBridge	*	ok	recipes and stacks registered by mods at load; no registry holder
+v1_7_10.client.VanillaModelIcons	*	ok	texture names by id
+v1_12_2.bridge.RecipeBridge1122	RECIPES	ok	recipes mods registered; regenerated into the data pack per world
+v1_7_10.bridge.RecipeBridge	CUSTOM	ok	recipes mods registered; regenerated into the data pack per world
+vb1_7_3.RecipesB173	RECIPES	ok	same
+v1_7_10.bridge.VanillaRecipes1710	cached	ok	vanilla recipe table of the shim
+v1_7_10.net.minecraftforge.oredict.OreDictionary	*	ok	registrations by mods
+vb1_7_3.AssetsB173	WORLD_TEXTURES	ok	asset names
+vb1_7_3.ContentB173	*	ok	per mod bookkeeping
+vb1_7_3.LegacyB173Animal	TICK_FAILURES	ok	log throttle by class
+vb1_7_3.LegacyB173BlockEntity	WORLD_TEXTURED	ok	per class flag
+v1_7_10.entity.Hosts1122	LOGGED_TICK_FAILURES	ok	log throttle
+v1_12_2.entity.Hosts1122	LOGGED_TICK_FAILURES	ok	log throttle
+v1_7_10.entity.LegacyHosts	LOGGED_TICK_FAILURES	ok	log throttle
+v1_12_2.Platform1122	LOG_MODDED_HOLDERS	ok	log throttle (reset on stop already)
+v1_6_4.bridge.Mc125Host	SINGLE_WORLD	ok	class loaders
+v1_7_10.bridge.BlockAccessView	WORLD_LIGHTS	ok	ThreadLocal int scratch
+v1_7_10.net.minecraftforge.client.ForgeHooksClient	WORLD_PASS	ok	ThreadLocal int scratch
+vb1_7_3.net.minecraft.world.World	SERVER_READS	ok	ThreadLocal int scratch
+v1_12_2.net.minecraft.network.datasync.EntityDataManager	NEXT_ID_MAP	ok	per class counters of the shim
+v1_12_2.net.minecraft.util.ChatAllowedCharacters	NETTY_LEAK_DETECTION	ok	netty enum
+v1_20_1.net.minecraftforge.network.PacketDistributor	*	ok	distributor singletons
+v1_6_4.net.minecraft.src.ModLoader	cfgLoggingLevel	ok	java.util.logging level
+v1_7_10.net.minecraftforge.common.ForgeChunkManager	ticketConstraints	ok	mod configuration
+v1_7_10.net.minecraft.potion.PotionHelper	potionColorCache	ok	colour by effect id
+v1_7_10.net.minecraft.util.EnchantmentNameParts	instance	ok	word list singleton
+vb1_7_3.net.minecraft.src.forge.ForgeHooks	toolHarvestLevels	ok	registrations by mods
+v1_7_10.net.minecraftforge.oredict.OreDictionary	EMPTY_LIST	ok	constant
+v1_12_2.net.minecraft.item.ItemFishFood	META_LOOKUP	ok	constant table
+v1_12_2.net.minecraft.client.renderer.entity.RenderHorse	LAYERED_LOCATION_CACHE	ok	texture names
+v1_12_2.net.minecraft.advancements.CriteriaTriggers	REGISTRY	ok	registrations by mods
+v1_12_2.net.minecraft.network.datasync.DataSerializers	REGISTRY	ok	registrations by mods
+v1_12_2.net.minecraft.block.Block	capturedDrops	ok	ThreadLocal scratch of one harvest
+v1_12_2.net.minecraft.world.World	GENERATED	ok	ThreadLocal scratch of one generation call
+v1_12_2.net.minecraftforge.common.BiomeManager	*	ok	biome lists mods fill at load
+v1_12_2.net.minecraftforge.oredict.OreDictionary	idToStack	ok	registrations by mods
+v1_12_2.nei.ItemList	items	ok	registrations by mods
+v1_6_4.net.minecraft.src.Keyboard	QUEUE	ok	input scratch
+core.WorldStateReset	*	ok	the reset hook itself (registrations of actions)
+v1_12_2.bridge.TileEntityBridge1122	BY_NAME	ok	tile classes mods registered
+v1_12_2.bridge.TileViews1122	FACTORIES	ok	view factories registered at load
+v1_12_2.client.Fields1122	CACHE	ok	reflection cache
+v1_12_2.client.PostShaders1122	CACHE	ok	resource existence by name
+v1_7_10.bridge.CreativeTabBridge	ICONS	ok	tab icons of the mods, rebuilt per lookup from registered items
+v1_7_10.bridge.GeneratorProviders1710	flat	ok	chunk provider singletons of the shim
+v1_7_10.bridge.TileEntityBridge	*	ok	tile classes and the block entity type mods registered
+v1_7_10.bridge.WorldGenBridge	DUMMY	ok	a provider with no world
+v1_7_10.client.WorldScreenshotTest	QUEUE	ok	test tool only
+v1_7_10.entity.LegacySpawnExtras	PROVIDERS	ok	providers registered at load
+vb1_7_3.ProjectileTexturesB173	SPRITES	ok	sprites by name
+vb1_7_3.client.NativeIconsClientB173	CACHE	ok	resource locations by id
+nei.ItemList	items	ok	stacks mods registered; no registry holder
+input.Keyboard	QUEUE	ok	input scratch

@@ -322,6 +322,11 @@ public class ModLoader {
     private static final List<legacyconnector.v1_7_10.net.minecraft.command.ICommand> COMMANDS = new CopyOnWriteArrayList<>();
     private static MinecraftServer commandsRegisteredOn;
 
+    static {
+        // a stopped server is not kept alive by the bookkeeping of the commands registered on it
+        org.kylepitcock.legacyconnector.core.WorldStateReset.onServerStopped(() -> commandsRegisteredOn = null);
+    }
+
     /**
      * Adds a command to the server command manager. It is registered on each server's first tick (a new world has a new command tree), so it
      * also works when called while the mods load.
