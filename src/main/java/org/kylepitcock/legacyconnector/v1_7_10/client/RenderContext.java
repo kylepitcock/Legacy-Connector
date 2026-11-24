@@ -105,6 +105,9 @@ public final class RenderContext {
         boolean lineMode;
         ResourceLocation texture = UNKNOWN_TEXTURE;
         float r = 1, g = 1, b = 1, a = 1;
+        /** While a display list is baked: 1 until the list sets a colour itself, 2 after; 0 when none is. {@link #bakeColorDep}: it read the colour it was called with first. */
+        int bakeColor;
+        boolean bakeColorDep;
         /** Matrices pushed by legacy code outside any context (should be rare): count only, so pops stay balanced. */
         int strayPushes;
         boolean texture2d = true;
@@ -608,6 +611,7 @@ public final class RenderContext {
         blue = Math.max(0.0F, Math.min(1.0F, blue));
         alpha = Math.max(0.0F, Math.min(1.0F, alpha));
         State s = st();
+        if (s.bakeColor == 1) s.bakeColor = 2;
         s.r = red;
         s.g = green;
         s.b = blue;
@@ -619,6 +623,7 @@ public final class RenderContext {
     /** glGetFloat(GL_CURRENT_COLOR): the colour the legacy code last set (a model that multiplies its own colour by the current one reads it). */
     public static void currentColor(java.nio.FloatBuffer out) {
         State s = st();
+        s.bakeColorDep |= s.bakeColor == 1;
         int p = out.position();
         if (out.remaining() < 4) return;
         out.put(p, s.r).put(p + 1, s.g).put(p + 2, s.b).put(p + 3, s.a);
@@ -638,6 +643,12 @@ public final class RenderContext {
     }
 
     static int argb(State s) {
+        if (s.bakeColor == 1) s.bakeColorDep = true;
+        return argbQuiet(s);
+    }
+
+    /** The current colour without noting that a baked list read it (a draw takes it only for corners without a colour of their own: {@link #color(State, double[])}). */
+    static int argbQuiet(State s) {
         return ((int) (s.a * 255) & 255) << 24 | ((int) (s.r * 255) & 255) << 16 | ((int) (s.g * 255) & 255) << 8 | ((int) (s.b * 255) & 255);
     }
 
@@ -1125,7 +1136,11 @@ public final class RenderContext {
      * be called by several threads.
      */
     static long color(State s, double[] x) {
-        return s.drawColorSet && x.length > 7 && x[7] == 0.0D ? s.drawColor : (long) x[5];
+        if (s.drawColorSet && x.length > 7 && x[7] == 0.0D) {
+            if (s.bakeColor == 1) s.bakeColorDep = true;
+            return s.drawColor;
+        }
+        return (long) x[5];
     }
 
     private static void emitCorner(State s, VertexConsumer buffer, PoseStack.Pose last, boolean entity, int overlay, double[] x, float nx, float ny, float nz) {
@@ -1204,7 +1219,10 @@ public final class RenderContext {
             legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDepthFunc(s.depthFunc());
             legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDepthMask(s.depthWrite());
         }
-        if ((m & GL_CURRENT_BIT) != 0) color(s.r(), s.g(), s.b(), s.a());
+        if ((m & GL_CURRENT_BIT) != 0) {
+            st.bakeColorDep |= st.bakeColor != 0; // the colour goes back to what it was: what the list drew in between depends on it
+            color(s.r(), s.g(), s.b(), s.a());
+        }
         st.activeUnit = (m & GL_TEXTURE_BIT) != 0 ? s.activeUnit() : current;
     }
 
@@ -1288,6 +1306,7 @@ public final class RenderContext {
      * showing), and the whole eye cube drew over the claw as a solid red cube.
      */
     private static boolean binaryAlphaOverlay(State s) {
+        if (s.bakeColor == 1) s.bakeColorDep = true;
         return s.blendSrc == 770 && s.blendDst == 771 && s.a >= 0.999F && s.depthWrite && s.depthTest && TextureAlpha.binary(s.texture);
     }
 
@@ -1306,6 +1325,9 @@ public final class RenderContext {
             boolean additiveAlpha, boolean lighting, boolean lightmap, boolean legacyDepthTest, boolean depthWrite, boolean lineMode,
             boolean armorLayering, boolean exactDepthState, boolean compatPack, int forcedLight, int blendSrc, int blendDst, int depthFunc,
             int colorWrite, int light, int overlay, int kind, float r, float g, float b, float a) {}
+
+    /** Calls that could not be baked by reason (1 no frame, 2 screen, 3 no buffers, 4 capture, 5 projection, 6 texture matrix, 7 texgen, 8 bounds, 9 matrix mode, 10 texture unit, 11 glBegin open, 12 item, 13 nested frames, 14 shadow pass); racy counts for logs. */
+    static final int[] NOT_ELIGIBLE = new int[15];
 
     /** A baking run: the frame the list's draws go to, instead of the caller's. */
     static final class BakeRun {
@@ -1337,10 +1359,14 @@ public final class RenderContext {
         if (!RenderSystem.isOnRenderThread()) return null;
         State s = st();
         Frame f = s.frames.peek();
-        if (f == null || f.gui != null || f.buffers == null || s.capture != null || s.projection != null || s.textureMatrix != null
-                || s.texGenMask != 0 || s.bounds != null || s.matrixMode != GL_MODELVIEW || s.activeUnit != 0 || s.immediate.isDrawing()
-                || !s.itemBrightness.isEmpty() || s.frames.size() > 4) return null;
-        if (IrisState.compatShadowPass()) return null;
+        int no = f == null ? 1 : f.gui != null ? 2 : f.buffers == null ? 3 : s.capture != null ? 4 : s.projection != null ? 5
+                : s.textureMatrix != null ? 6 : s.texGenMask != 0 ? 7 : s.bounds != null ? 8 : s.matrixMode != GL_MODELVIEW ? 9
+                : s.activeUnit != 0 ? 10 : s.immediate.isDrawing() ? 11 : !s.itemBrightness.isEmpty() ? 12 : s.frames.size() > 4 ? 13
+                : IrisState.compatShadowPass() ? 14 : 0;
+        if (no != 0) {
+            NOT_ELIGIBLE[no]++;
+            return null;
+        }
         return new BakeState(s.texture, s.sheet, s.texture2d, s.blend, s.depthTest, s.additive, s.additiveAlpha, s.lighting, s.lightmap,
                 s.legacyDepthTest, s.depthWrite, s.lineMode, s.armorLayering, f.exactDepthState, IrisState.compatPack(), s.forcedLight,
                 s.blendSrc, s.blendDst, s.depthFunc, s.colorWrite, f.light, f.overlay, f.kind, s.r, s.g, s.b, s.a);
@@ -1359,7 +1385,36 @@ public final class RenderContext {
         Frame f = new Frame(null, pose, recorder, top.light, top.overlay, pose.last(), false, top.kind, top.exactDepthState);
         BakeRun r = new BakeRun(s, pose, f);
         s.frames.push(f);
+        s.bakeColor = 1;
+        s.bakeColorDep = false;
         return r;
+    }
+
+    /** Whether what the list drew depends on the colour it was called with. */
+    static boolean bakeColorDependent(BakeRun run) {
+        return run.s.bakeColorDep;
+    }
+
+    /** The colour after the list when it set one itself (r, g, b, a), else null. */
+    static float[] bakeColorSet(BakeRun run) {
+        State s = run.s;
+        return s.bakeColor == 2 ? new float[] {s.r, s.g, s.b, s.a} : null;
+    }
+
+    /** Puts the colour a baked list leaves behind (what its replay would have set last). */
+    static void setColorAfterBake(float[] c) {
+        State s = st();
+        s.r = c[0];
+        s.g = c[1];
+        s.b = c[2];
+        s.a = c[3];
+    }
+
+    /** The same state with the colour left out of the comparison. */
+    static BakeState withoutColor(BakeState k) {
+        return new BakeState(k.texture(), k.sheet(), k.texture2d(), k.blend(), k.depthTest(), k.additive(), k.additiveAlpha(), k.lighting(), k.lightmap(),
+                k.legacyDepthTest(), k.depthWrite(), k.lineMode(), k.armorLayering(), k.exactDepthState(), k.compatPack(), k.forcedLight(), k.blendSrc(),
+                k.blendDst(), k.depthFunc(), k.colorWrite(), k.light(), k.overlay(), k.kind(), 0, 0, 0, 0);
     }
 
     /** Ends a baking run and puts the emulated state back as it was at the call (the list ran against it only to be recorded). */
@@ -1367,6 +1422,7 @@ public final class RenderContext {
         State s = run.s;
         Frame f = s.frames.peek();
         if (f == run.frame) s.frames.pop();
+        s.bakeColor = 0;
         s.texture = before.texture();
         s.sheet = before.sheet();
         s.texture2d = before.texture2d();
@@ -1392,11 +1448,36 @@ public final class RenderContext {
     }
 
     /** Whether the emulated state is what {@code before} says (a list that changes the state for its caller cannot be baked). */
-    static boolean bakeStateIs(BakeState before) {
+    static boolean bakeStateIs(BakeState before, boolean ignoreColor) {
         State s = st();
         Frame f = s.frames.peek();
-        return f != null && s.matrixMode == GL_MODELVIEW && s.activeUnit == 0 && s.itemBrightness.isEmpty()
-                && bakeStateNow(s, f).equals(before);
+        if (f == null || s.matrixMode != GL_MODELVIEW || s.activeUnit != 0 || !s.itemBrightness.isEmpty()) return false;
+        BakeState now = bakeStateNow(s, f);
+        return ignoreColor ? withoutColor(now).equals(withoutColor(before)) : now.equals(before);
+    }
+
+    /** Which parts of the emulated state differ from {@code before} (log text for a list that cannot be baked). */
+    static String bakeStateDiff(BakeState before) {
+        State s = st();
+        Frame f = s.frames.peek();
+        if (f == null) return "no frame";
+        BakeState now = bakeStateNow(s, f);
+        StringBuilder out = new StringBuilder();
+        try {
+            for (var c : BakeState.class.getRecordComponents()) {
+                Object a = c.getAccessor().invoke(before), b = c.getAccessor().invoke(now);
+                if (!java.util.Objects.equals(a, b)) out.append(c.getName()).append(' ').append(a).append("->").append(b).append("; ");
+            }
+        } catch (ReflectiveOperationException e) {
+            out.append(e);
+        }
+        if (s.matrixMode != GL_MODELVIEW) out.append("matrixMode; ");
+        if (s.activeUnit != 0) out.append("activeUnit; ");
+        return out.toString();
+    }
+
+    static long quads() {
+        return st().quadCount;
     }
 
     private static BakeState bakeStateNow(State s, Frame f) {

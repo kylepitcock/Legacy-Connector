@@ -54,6 +54,7 @@ final class BakedLists {
     private static final Set<DisplayLists.Entry> LIVE = ConcurrentHashMap.newKeySet();
     private static final AtomicLong BYTES = new AtomicLong();
     private static final AtomicLong BAKED = new AtomicLong(), REFUSED = new AtomicLong(), DRAWS = new AtomicLong();
+    private static final Map<String, Integer> REASONS = new ConcurrentHashMap<>();
     private static volatile boolean capNoted;
     private static final Field LIGHTS = lightsField();
 
@@ -64,14 +65,25 @@ final class BakedLists {
 
     /** The baked meshes of a list, valid for the state they were made under. */
     static final class Baked {
-        final RenderContext.BakeState key;
+        final RenderContext.BakeState key, keyNoColor;
         final Seg[] segs;
         final long bytes;
+        /** Whether the geometry depends on the colour the list was called with (then it is part of the key). */
+        final boolean colorDependent;
+        /** The colour the list leaves current when it sets one itself (a list that colours its own draws), else null. */
+        final float[] setsColor;
 
-        Baked(RenderContext.BakeState key, Seg[] segs, long bytes) {
+        Baked(RenderContext.BakeState key, Seg[] segs, long bytes, boolean colorDependent, float[] setsColor) {
             this.key = key;
+            this.keyNoColor = RenderContext.withoutColor(key);
             this.segs = segs;
             this.bytes = bytes;
+            this.colorDependent = colorDependent;
+            this.setsColor = setsColor;
+        }
+
+        boolean matches(RenderContext.BakeState now) {
+            return colorDependent ? key.equals(now) : keyNoColor.equals(RenderContext.withoutColor(now));
         }
     }
 
@@ -103,12 +115,21 @@ final class BakedLists {
         final Map<RenderType, Part> parts = new LinkedHashMap<>();
         /** A render type whose draws must be sorted by distance on every upload, which a fixed mesh cannot do. */
         RenderType sorted;
+        /**
+         * Sorting changes nothing for geometry of one opaque-or-clear texture at full alpha (alpha blending of opaque texels replaces
+         * what is behind them, whatever the order; legacy GL did not sort either), so such a list may be baked with a translucent type.
+         */
+        final boolean unsortedOk;
+
+        Recorder(boolean unsortedOk) {
+            this.unsortedOk = unsortedOk;
+        }
 
         @Override
         public VertexConsumer getBuffer(RenderType type) {
             Part p = parts.get(type);
             if (p == null) {
-                if (type.sortOnUpload() && sorted == null) sorted = type;
+                if (type.sortOnUpload() && !unsortedOk && sorted == null) sorted = type;
                 parts.put(type, p = new Part(type));
             }
             return p.builder;
@@ -130,7 +151,7 @@ final class BakedLists {
         if (now == null) return false;
         int calls = ++e.calls;
         Baked b = (Baked) e.baked;
-        if (b == null || !b.key.equals(now)) {
+        if (b == null || !b.matches(now)) {
             if (calls < 2) return false; // a list called once is not worth the second run
             if (e.bakes >= MAX_BAKES && (long) e.bakes * MAX_BAKES > calls) {
                 giveUp(e, "its calls keep arriving under other states");
@@ -145,7 +166,9 @@ final class BakedLists {
             b = bake(e, now);
             if (b == null) return false;
         }
-        return draw(b);
+        if (!draw(b)) return false;
+        if (b.setsColor != null) RenderContext.setColorAfterBake(b.setsColor); // what replaying the list would have left current
+        return true;
     }
 
     private static void giveUp(DisplayLists.Entry e, String why) {
@@ -155,14 +178,21 @@ final class BakedLists {
     }
 
     private static Baked bake(DisplayLists.Entry e, RenderContext.BakeState now) {
-        Recorder rec = new Recorder();
+        // a texture a mod loaded through raw GL (legacyconnector:gl/<id>) cannot be scanned: legacy GL never sorted either, so full alpha is enough
+        boolean rawGl = now.texture() != null && "legacyconnector".equals(now.texture().getNamespace()) && now.texture().getPath().startsWith("gl/");
+        Recorder rec = new Recorder(now.a() >= 0.999F && (rawGl || TextureAlpha.binary(now.texture())));
         RenderContext.BakeRun run = RenderContext.beginBake(rec);
         String why = null;
+        long quads0 = RenderContext.quads();
+        boolean dep = true;
+        float[] sets = null;
         try {
             DisplayLists.runActions(e);
+            dep = RenderContext.bakeColorDependent(run);
+            sets = RenderContext.bakeColorSet(run);
             if (rec.sorted != null) why = "translucent render type " + rec.sorted;
             else if (!run.clean()) why = "changes real GL state or leaves attributes pushed";
-            else if (!RenderContext.bakeStateIs(now)) why = "leaves the emulated state changed";
+            else if (!RenderContext.bakeStateIs(now, !dep)) why = "leaves the emulated state changed: " + RenderContext.bakeStateDiff(now);
             else if (!identity(run.pose)) why = "leaves its matrix changed";
         } catch (Throwable t) {
             why = "threw " + t;
@@ -173,7 +203,8 @@ final class BakedLists {
             rec.close();
             e.off = true;
             REFUSED.incrementAndGet();
-            if (REFUSED.get() <= 20) LOG.debug("display list not baked: {}", why);
+            REASONS.merge(why.replaceAll("[0-9a-fA-F]{6,}|@\\w+", "#"), 1, Integer::sum);
+            if (REFUSED.get() <= 5) LOG.info("display list not baked: {}", why);
             return null;
         }
         List<Seg> segs = new ArrayList<>();
@@ -205,7 +236,13 @@ final class BakedLists {
             e.off = true;
             return null;
         }
-        Baked nb = new Baked(now, segs.toArray(new Seg[0]), bytes);
+        if (BAKED.get() < 12) {
+            StringBuilder sb = new StringBuilder();
+            for (Seg s : segs) sb.append(s.type.mode()).append(' ');
+            LOG.info("display list baked: {} actions, {} bytes, replay drew {} primitives, segments {}, key lineMode={} colour={},{},{},{} light={}", e.actions.length,
+                    bytes, RenderContext.quads() - quads0, sb, now.lineMode(), now.r(), now.g(), now.b(), now.a(), now.light());
+        }
+        Baked nb = new Baked(now, segs.toArray(new Seg[0]), bytes, dep, dep ? null : sets);
         Baked old = (Baked) e.baked;
         e.baked = nb;
         BYTES.addAndGet(bytes);
@@ -305,6 +342,6 @@ final class BakedLists {
 
     /** For the log: lists baked, bytes held, draws from buffers. */
     static String stats() {
-        return LIVE.size() + " lists, " + (BYTES.get() >> 10) + " KB, " + BAKED.get() + " bakes, " + DRAWS.get() + " draws, " + REFUSED.get() + " not bakeable";
+        return LIVE.size() + " lists, " + (BYTES.get() >> 10) + " KB, " + BAKED.get() + " bakes, " + DRAWS.get() + " draws, " + REFUSED.get() + " not bakeable " + REASONS + " ineligible calls " + java.util.Arrays.toString(RenderContext.NOT_ELIGIBLE);
     }
 }
