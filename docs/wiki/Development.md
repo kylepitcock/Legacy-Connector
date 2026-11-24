@@ -190,6 +190,18 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
 - **Entity self test determinism:** the test pins the world to night with the daylight/weather cycles and mob griefing off (undead no longer burn
   in sunlight, whose timing made `entOk` vary between identical runs); the AI still runs, so an entity that dies from its own code counts as removed.
 
+## Re-rating stale rows (`tools/compat/rerate.py`)
+
+Rows of `docs/data/mods.json` rated "fails" long ago often predate fixes, and probe results never override client or corpus rows. `rerate.py`
+re-tests them: `python tools/compat/rerate.py --mc 1.12.2 --status fails [--source client,corpus,probe,none] [--name frag] [--limit N]`.
+It selects the rows, finds each mod's jar with `tools/dev/verify/picker.py` (the folders of `verify.sh`, the same version rules) and the
+dependencies the row's notes name (`requires X`, the package of a `NoClassDefFoundError`; `--deps file.tsv` adds `mod name<TAB>fragment,fragment`),
+and plans groups of at most `--group-size` (3) mods of one Minecraft version. Each group becomes a temporary suite run by `tools/dev/verify.sh`
+(own port, `run-verify/zz-rerate-*`), after waiting until `--min-free-gb` (6) of RAM is free; the log goes to `from_client.py` with the label
+`rerate <date>` (new "client" rows; the old rows stay and rank lower). `--plan` prints the groups and the rows it cannot test (no jar, a required
+dependency missing) and starts nothing; `--dry-run` runs but rates into a scratch copy. The old -> new table is printed and written to
+`build/devtools/rerate-<date>.txt`. Unit tests: `python -m unittest tools/compat/test_rerate.py`.
+
 ## Practices learned on 2026-11-16
 
 - **Wiki links.** `python tools/dev/check_wiki_links.py` checks every relative link and anchor in `docs/wiki` and `README.md` and lists pages Home.md does not link; run it after adding a page.

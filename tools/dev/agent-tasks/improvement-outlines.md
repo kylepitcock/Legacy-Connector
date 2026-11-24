@@ -16,7 +16,7 @@ Read `BRIEF.md` and `issue-worker.md` first. Mark an outline `DONE <commit>` or 
 - Approach: on master, after a clean run, `tools/dev/verify.sh --update <suite...>`. Before updating, check that flaky metrics such as srp `entities_alive` have tolerances in `verify.py`.
 - Verify: a second run of the same suites PASSes.
 
-### T3. Stale-rating re-rater (M)
+### T3. Stale-rating re-rater (M) DONE (branch worktree-agent-a4cd3876e39b96cbe; `tools/compat/rerate.py`, wiki Development; real run not yet done)
 - Why: many `docs/data/mods.json` "fails" rows (1.12.2: most of 89; pre-1.7: several) predate fixes. Probe results never override client/corpus rows, so stale rows stay on the site.
 - Where: `tools/compat/from_client.py`, `tools/dev/verify/picker.py` (jar resolution), `docs/data/mods.json`.
 - Approach: `tools/compat/rerate.py --mc <v> --status fails --source client,corpus` picks those rows. It resolves each mod's jar plus required dependencies through the picker, runs the server self test in small groups (own port, RAM check), and feeds each log to `from_client.py` with label "rerate <date>". It writes a summary of old -> new ratings.
