@@ -83,6 +83,9 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             try {
                 var textures = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager();
                 textures.bindTexture(textures.getResourceLocation(view.getItemSpriteNumber()));
+                // 1.4.7/1.5.2 face renderers take tile indices of "the bound sheet" (RenderContext.sheet): one left by an earlier draw on this thread made
+                // Thermal Expansion 1.4.7's Machine Frame draw the vanilla terrain tile (sandstone, #248); with none they use the block's own file.
+                RenderContext.setSheet(ownSheet(view));
             } catch (RuntimeException | LinkageError e) {
                 logOnce(renderer.getClass().getName() + "#bind", e);
             }
@@ -209,6 +212,26 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     private static void logOnce(String renderer, Throwable e) {
         if (LOGGED.add(renderer)) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy item renderer {} failed (logged once)", renderer, e);
+    }
+
+    /**
+     * The mod sprite sheet a pre-1.6 stack names (its item's texture file, or its block's for a block item): Forge bound it before the item renderer ran,
+     * and 1.4.7 face renderers take tile indices of it. Null for 1.6.4/1.7.10 items and the vanilla sheets (no sheet is bound then, and a stale one must not stay).
+     */
+    private static String ownSheet(ItemStack view) {
+        var item = view.getItem();
+        String sheet = item.getTextureFile();
+        if (isModSheet(sheet)) return sheet;
+        if (item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib) {
+            sheet = ib.mcc$block().getTextureFile();
+            if (isModSheet(sheet)) return sheet;
+        }
+        return null;
+    }
+
+    private static boolean isModSheet(String sheet) {
+        return sheet != null && !sheet.equals("/terrain.png") && !sheet.equals("/gui/items.png")
+                && org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.isCutSheet(sheet);
     }
 
     private static boolean helper(IItemRenderer r, ItemRenderType type, ItemStack stack, ItemRendererHelper helper) {
