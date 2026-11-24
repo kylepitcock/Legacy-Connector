@@ -608,6 +608,58 @@ final class Forge1201TargetApiVerifierTest {
         assertTrue(result.missingTargetClasses().isEmpty());
     }
 
+    @Test
+    void verifiesRemovedStaticFieldsThroughTheirConnectorMigrationHelper() throws Exception {
+        String sourceOwner = "net/minecraft/core/registries/BuiltInRegistries";
+        String helperOwner = "org/kylepitcock/legacyconnector/v1_20_1/migrate/HolderCompat";
+        String helperDescriptor = "()Lnet/minecraft/core/Registry;";
+
+        ClassWriter helperWriter = new ClassWriter(0);
+        helperWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, helperOwner, null, "java/lang/Object", null);
+        helperWriter.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+                "enchantmentRegistry", helperDescriptor, null, null).visitEnd();
+        helperWriter.visitEnd();
+
+        var callSite = new Forge1201ApiUsageAnalyzer.ApiFieldCallSite(
+                "fixture/Caller", "readRegistry", "()V",
+                sourceOwner, "ENCHANTMENT", "Lnet/minecraft/core/Registry;", Opcodes.GETSTATIC, 1);
+        var result = verify(
+                analysis(
+                        List.of(sourceOwner),
+                        List.of(),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceOwner, "ENCHANTMENT", "Lnet/minecraft/core/Registry;", 1)),
+                        List.of(),
+                        List.of(callSite)),
+                Map.of(helperOwner, helperWriter.toByteArray()));
+
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertEquals(helperOwner, result.verifiedFields().getFirst().targetOwner());
+        assertEquals("enchantmentRegistry", result.verifiedFields().getFirst().targetName());
+        assertEquals(helperDescriptor, result.verifiedFields().getFirst().targetDescriptor());
+        assertTrue(result.verifiedFields().getFirst().mappingRule().contains("MC1201_STATIC_FIELD_HELPER_ADAPTER"));
+    }
+
+    @Test
+    void doesNotApplyGetStaticOnlyMigrationWithoutDirectOpcodeEvidence() throws Exception {
+        String sourceOwner = "net/minecraft/core/registries/BuiltInRegistries";
+        var result = verify(
+                analysis(
+                        List.of(sourceOwner),
+                        List.of(),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceOwner, "ENCHANTMENT", "Lnet/minecraft/core/Registry;", 1))),
+                Map.of(sourceOwner, targetEmptyClass(sourceOwner, "java/lang/Object")));
+
+        assertEquals(0, result.verifiedFieldReferences());
+        assertEquals(1, result.fieldIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.NOT_CHECKED_INSUFFICIENT_CALLSITE_CONTEXT,
+                result.fieldIssues().getFirst().status());
+        assertTrue(result.fieldIssues().getFirst().mappingRule()
+                .contains("MC1201_STATIC_FIELD_RULE_REQUIRES_GETSTATIC_CALLSITE_EVIDENCE"));
+    }
+
     private static Forge1201ApiUsageAnalyzer.Analysis analysis(
             List<String> classes,
             List<Forge1201ApiUsageAnalyzer.ApiMemberReference> methods,
