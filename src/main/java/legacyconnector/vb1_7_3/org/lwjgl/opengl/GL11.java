@@ -143,4 +143,32 @@ public final class GL11 {
     public static int glGetError() {
         return 0;
     }
+
+    // ---- state the core-profile game owns itself: a legacy mod's changes to it have nothing to apply to
+    public static void glHint(int target, int mode) {}
+    public static void glPixelStorei(int name, int value) {}
+    public static void glScissor(int x, int y, int width, int height) {}
+    public static void glClearColor(float r, float g, float b, float a) {}
+    public static void glClearDepth(double depth) {}
+    public static void glColorMaterial(int face, int mode) {}
+    public static void glCullFace(int mode) {}
+    public static void glFogf(int pname, float value) {}
+    public static void glFogi(int pname, int value) {}
+    public static void glFog(int pname, java.nio.FloatBuffer values) {}
+    public static void glPushClientAttrib(int mask) {}
+    public static void glPopClientAttrib() {}
+    /** The texture names this layer hands out are all 0 (see {@link #glGenTextures()}). */
+    public static void glGenTextures(java.nio.IntBuffer names) { while (names.hasRemaining()) names.put(glGenTextures()); }
+    public static void glDeleteTextures(java.nio.IntBuffer names) { while (names.hasRemaining()) glDeleteTextures(names.get()); }
+    /** The few integer limits a mod queries (maximum texture size); everything else reads 0. */
+    public static void glGetInteger(int pname, java.nio.IntBuffer out) { out.put(out.position(), pname == 3379 ? 4096 : 0); }
+    public static String glGetString(int name) {
+        return switch (name) {
+            case 7936 -> "Legacy Connector";
+            case 7937 -> "Legacy Connector (modern core profile)";
+            case 7938 -> "2.1";
+            case 7939 -> "";
+            default -> null;
+        };
+    }
 }

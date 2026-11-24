@@ -593,18 +593,18 @@ public class World implements BlockView {
     public int getLightLevel(int x, int y, int z, boolean useNeighbors) { return getLightLevel(x, y, z); }
 
     /** Beta's {@code getIChunkProvider}: a chunk source view of this world's loaded terrain. */
-    public legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource getChunkSource() {
-        World world = this;
-        return new legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource() {
-            @Override public boolean isChunkLoaded(int x, int z) { return world.mcc$level != null && world.mcc$level.hasChunk(x, z); }
-            @Override public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk getChunk(int x, int z) { return world.getChunk(x, z); }
-            @Override public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk loadChunk(int x, int z) { return world.getChunk(x, z); }
-            @Override public void decorate(legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource source, int x, int z) {}
-            @Override public boolean save(boolean force, legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.LoadingDisplay display) { return true; }
-            @Override public boolean tick() { return false; }
-            @Override public boolean canSave() { return false; }
-            @Override public String getDebugInfo() { return "LegacyChunkSource"; }
-        };
+    public legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource getChunkSource() { return new ChunkSourceView(this); }
+    private static final class ChunkSourceView implements legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource {
+        private final World world;
+        ChunkSourceView(World world) { this.world = world; }
+        @Override public boolean isChunkLoaded(int x, int z) { return world.mcc$level != null && world.mcc$level.hasChunk(x, z); }
+        @Override public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk getChunk(int x, int z) { return world.getChunk(x, z); }
+        @Override public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk loadChunk(int x, int z) { return world.getChunk(x, z); }
+        @Override public void decorate(legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource source, int x, int z) {}
+        @Override public boolean save(boolean force, legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.LoadingDisplay display) { return true; }
+        @Override public boolean tick() { return false; }
+        @Override public boolean canSave() { return false; }
+        @Override public String getDebugInfo() { return "LegacyChunkSource"; }
     }
 
     public long getSeed() {

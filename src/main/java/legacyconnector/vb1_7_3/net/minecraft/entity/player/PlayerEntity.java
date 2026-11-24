@@ -121,6 +121,15 @@ public abstract class PlayerEntity extends LivingEntity {
     public void dropItem(ItemStack stack, boolean scatter) {
         MenusB173.drop(this, stack, scatter);
     }
+    /** Beta's {@code attackTargetEntityWithCurrentItem}: the native player hits the target with what it holds (damage, enchantments and knockback are the native ones). */
+    public void attack(legacyconnector.vb1_7_3.net.minecraft.entity.Entity target) {
+        if (target != null && target.mcc$modern != null && mcc$modern instanceof net.minecraft.world.entity.player.Player player) player.attack(target.mcc$modern);
+    }
+    /** Beta's {@code useCurrentItemOnEntity}: a right click on the entity (feeding, taming, shearing, mounting). */
+    public void interact(legacyconnector.vb1_7_3.net.minecraft.entity.Entity target) {
+        if (target != null && target.mcc$modern != null && mcc$modern instanceof net.minecraft.world.entity.player.Player player)
+            player.interactOn(target.mcc$modern, net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
     /** Beta's portal overlay state ({@code timeInPortal} family): kept for mods that read or drive it; the native portal overlay is separate. */
     public boolean inTeleportationState;
     public float screenDistortion, lastScreenDistortion;

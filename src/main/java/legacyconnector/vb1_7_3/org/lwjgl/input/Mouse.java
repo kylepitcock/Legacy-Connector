@@ -31,14 +31,12 @@ public class Mouse {
 
     /** The offset while it still applies: until the game's own position moved on (the pointer is free), always while the pointer is grabbed. */
     private static double offsetX() {
-        var h = net.minecraft.client.Minecraft.getInstance().mouseHandler;
-        if (!h.isMouseGrabbed() && h.xpos() != baseX) offsetX = 0;
+        if (!Handler.grabbed() && Handler.xpos() != baseX) offsetX = 0;
         return offsetX;
     }
 
     private static double offsetY() {
-        var h = net.minecraft.client.Minecraft.getInstance().mouseHandler;
-        if (!h.isMouseGrabbed() && h.ypos() != baseY) offsetY = 0;
+        if (!Handler.grabbed() && Handler.ypos() != baseY) offsetY = 0;
         return offsetY;
     }
 
@@ -174,11 +172,10 @@ public class Mouse {
         if (window == null) return;
         org.lwjgl.glfw.GLFW.glfwSetCursorPos(window.getWindow(), x, window.getScreenHeight() - y);
         try {
-            var handler = net.minecraft.client.Minecraft.getInstance().mouseHandler;
-            baseX = handler.xpos();
-            baseY = handler.ypos();
-            offsetX = x - handler.xpos();
-            offsetY = y - (window.getHeight() - (int) handler.ypos() - 1);
+            baseX = Handler.xpos();
+            baseY = Handler.ypos();
+            offsetX = x - Handler.xpos();
+            offsetY = y - (window.getHeight() - (int) Handler.ypos() - 1);
         } catch (RuntimeException | LinkageError e) {
             offsetX = 0;
             offsetY = 0;
@@ -240,5 +237,12 @@ public class Mouse {
     /** When the current event happened (System.nanoTime() clock; events are delivered as they occur). */
     public static long getEventNanoseconds() {
         return System.nanoTime();
+    }
+
+    /** The game's mouse handler, kept in a holder so a dedicated server never loads the client class to verify this one. */
+    private static final class Handler {
+        static double xpos() { return net.minecraft.client.Minecraft.getInstance().mouseHandler.xpos(); }
+        static double ypos() { return net.minecraft.client.Minecraft.getInstance().mouseHandler.ypos(); }
+        static boolean grabbed() { return net.minecraft.client.Minecraft.getInstance().mouseHandler.isMouseGrabbed(); }
     }
 }
