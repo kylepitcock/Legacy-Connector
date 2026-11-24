@@ -84,4 +84,42 @@ class StackHoldersTest {
         var again = StackHolders.recover(stack, server, failure, s -> s.save(server));
         assertTrue(again.toString().contains("fortune"));
     }
+
+    /** A registry access like a world's (the default {@code createSerializationContext}, unlike the data generator lookups above): one enchantment registry of its own. */
+    private static net.minecraft.core.RegistryAccess.Frozen world() {
+        var source = VanillaRegistries.createLookup().lookupOrThrow(Registries.ENCHANTMENT);
+        var registry = new net.minecraft.core.MappedRegistry<>(Registries.ENCHANTMENT, com.mojang.serialization.Lifecycle.stable());
+        source.listElements().forEach(h -> registry.register(h.key(), h.value(), net.minecraft.core.RegistrationInfo.BUILT_IN));
+        registry.freeze();
+        return new net.minecraft.core.RegistryAccess.ImmutableRegistryAccess(java.util.List.of(registry)).freeze();
+    }
+
+    /**
+     * Vanilla caches the encoding of enchantments (DataComponents.ENCODER_CACHE, errors included) by (codec, value, ops); NeoForge makes holders of
+     * the same key equal across registries and ops of one registry access are equal, so a failed encode of a FOREIGN holder is served again for the
+     * equal VALID holder of the same registry access: the case of issue 113 where the diagnostics said the holder was valid and the save failed all the same.
+     */
+    @Test
+    void failedEncodeOfAForeignHolderDoesNotPoisonTheValidOne() {
+        var firstWorld = world();
+        var secondWorld = world();
+        var stale = enchantedFrom(firstWorld);
+        assertThrows(RuntimeException.class, () -> stale.save(secondWorld)); // cached for (codec, fortune 3, ops of the second world)
+        var valid = enchantedFrom(secondWorld);
+        // EncoderCacheErrorsMixin (not applied in a unit test) stops the poisoning at the source; without it vanilla serves the cached failure
+        assertTrue(StackHolders.clearEncoderCache());
+        valid.save(secondWorld);
+    }
+
+    @Test
+    void recoveryClearsAPoisonedEncoderCacheAndKeepsTheEnchantments() {
+        var firstWorld = world();
+        var secondWorld = world();
+        var stale = enchantedFrom(firstWorld);
+        assertThrows(RuntimeException.class, () -> stale.save(secondWorld));
+        var valid = enchantedFrom(secondWorld);
+        var failure = assertThrows(IllegalStateException.class, () -> valid.save(secondWorld)); // the cached failure of the stale stack
+        var tag = StackHolders.recover(valid, secondWorld, failure, s -> s.save(secondWorld));
+        assertTrue(tag.toString().contains("fortune"), tag.toString());
+    }
 }
