@@ -788,7 +788,6 @@ public final class LegacyJarInspector {
         // the notch fingerprint is the strongest evidence, so it comes first and overrides the 1.5.2/1.6 markers (1.4.7 jars use @PreInit, ISidedInventory...)
         boolean candidate = refs17 > 0 || modLoader;
         double[] score = candidate ? NotchFingerprint.scores(zip) : null;
-        if (otherVersionScores(score)) jar.otherVersionReason = OTHER_VERSION_REASON;
         if (score != null && score[0] >= 0.6 && score[0] > score[1] + 0.15 && score[0] > score[2] + 0.15) {
             jar.versionEvidence = "obfuscated names match Minecraft 1.4.7 (" + Math.round(score[0] * 100) + "% of the member references; 1.5.2 " + Math.round(score[1] * 100)
                     + "%, 1.6.4 " + Math.round(score[2] * 100) + "%)";
@@ -818,6 +817,9 @@ public final class LegacyJarInspector {
         }
         if (modLoader && refs17 == 0) {
             // BaseMod exists up to 1.5.2; without any other evidence a bare ModLoader mod is taken for the oldest supported version
+            // ... unless its obfuscated names fit none of the supported versions (a 1.6.2/1.6.3 jar): then it is reported, not guessed. Only here: Minecraft 1.2.5 and Beta jars were
+            // decided before this point (they never reach it), and a jar with any other evidence (declared version, markers, file name) keeps its version.
+            if (jar.sourceVersion == null && otherVersionScores(score)) jar.otherVersionReason = OTHER_VERSION_REASON;
             jar.versionEvidence = "ModLoader mod (extends BaseMod), no version evidence: taken for 1.4.7";
             return LegacyVersion.V1_4_7;
         }

@@ -54,6 +54,20 @@ class OtherVersionJarTest {
         assertNull(legacy.otherVersionReason);
     }
 
+    /** Any other evidence keeps the guess: a file name that names 1.4.x is evidence, so the jar is not reported as another version. */
+    @Test
+    void jarWithVersionEvidenceIsNotFlagged(@TempDir Path dir) throws IOException {
+        Path jar = dir.resolve("mod_Foreign-1.4.7.zip");
+        try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(jar))) {
+            out.putNextEntry(new ZipEntry("mod_Foreign.class"));
+            out.write(modClass(20));
+            out.closeEntry();
+        }
+        LegacyJar legacy = LegacyJarInspector.inspect(jar);
+        assertNotNull(legacy);
+        assertNull(legacy.otherVersionReason);
+    }
+
     private static byte[] modClass(int refs) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "mod_" + (refs > 10 ? "Foreign" : "Small"), null, "BaseMod", null);
