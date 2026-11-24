@@ -586,6 +586,7 @@ public final class LegacyJarTransformer {
             ClassLoaderCasts.apply(node, hierarchy, version);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             buildHeightChecks += BuildHeightRewriter.apply(node, hierarchy, version);
+            org.kylepitcock.legacyconnector.loader.transform.compat.BuildCraftChestPairing.apply(node, version);
             floorClamps += WorldFloorClampRewriter.apply(node, hierarchy, version);
             EntityHeightAbsRewriter.apply(node, version);
             BetaActorTargets.apply(node,hierarchy,version);
