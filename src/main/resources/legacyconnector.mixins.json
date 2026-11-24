@@ -48,7 +48,8 @@
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",
     "ClientLanguageLegacyKeysMixin",
-    "PalladiumCoreRendererRegistryProbeMixin"
+    "PalladiumCoreRendererRegistryProbeMixin",
+    "AlienEvoTransformBubbleDiagnosticsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
