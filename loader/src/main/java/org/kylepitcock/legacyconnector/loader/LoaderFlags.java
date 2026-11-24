@@ -41,6 +41,8 @@ public enum LoaderFlags {
     MC125("legacyconnector.mc125", Type.STRING, "unset", Category.COMPAT, "true or false: 1.2.5 hosting on or off, wins over the config key."),
     /** true or false: side-by-side library versions on or off, wins over the config key. */
     SIDE_BY_SIDE_LIBRARIES("legacyconnector.sideBySideLibraries", Type.STRING, "unset", Category.COMPAT, "true or false: side-by-side library versions on or off, wins over the config key."),
+    /** Directory of a translation cache shared by several game directories or worktrees (read through on a local miss, published to after a translation); env LEGACYCONNECTOR_SHARED_CACHE is the fallback. */
+    SHARED_CACHE("legacyconnector.sharedCache", Type.PATH, "unset", Category.PERF, "Directory of a translation cache shared by several game directories or worktrees (read through on a local miss, published to after a translation); env LEGACYCONNECTOR_SHARED_CACHE is the fallback."),
     /** Threads translating jars at once (0 = automatic). */
     TRANSLATION_THREADS("legacyconnector.translationThreads", Type.INT, "0", Category.PERF, "Threads translating jars at once (0 = automatic)."),
     /** Vanilla client jar of a legacy version (key written with the version without dots, for example vanilla1122); default: config coremods.vanillaJar or the launcher's copy. */

@@ -157,6 +157,8 @@ neoForge {
         configureEach {
             if (project.hasProperty('embeddedLibs')) systemProperty 'legacyconnector.libsDir', layout.buildDirectory.dir('legacy-libs').get().asFile.absolutePath
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            // optional translation cache shared between worktrees (see docs/wiki/Development.md)
+            if (System.getenv('LEGACYCONNECTOR_SHARED_CACHE')) systemProperty 'legacyconnector.sharedCache', System.getenv('LEGACYCONNECTOR_SHARED_CACHE')
             // In production the loader reads the index from the embedded runtime jar.
             systemProperty 'legacyconnector.shimIndex', shimIndexFile.get().asFile.absolutePath
             // ... and legacy coremods' FML classes from the runtime jar; in development, from its compiled classes.

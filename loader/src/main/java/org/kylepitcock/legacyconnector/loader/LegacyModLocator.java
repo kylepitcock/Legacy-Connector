@@ -590,9 +590,15 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
             List<RiskyMods.Entry> risky = new ArrayList<>();
             int uncached = 0;
+            // Optional shared translation cache (-Dlegacyconnector.sharedCache / LEGACYCONNECTOR_SHARED_CACHE): a local miss is filled from it before counting.
+            SharedCache shared = SharedCache.configured();
             for (LegacyJar jar : legacy) {
                 if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
                 Path cached = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
+                if (shared != null && (!Files.exists(cached) || !Files.exists(cached.resolveSibling(cached.getFileName() + ".synth.txt")))) {
+                    String key = sharedKey(jar, modSet.get(jar.version));
+                    if (shared.fetch(key, sharedParts(cached))) LOG.info("Legacy Connector: {} taken from the shared cache ({})", jar.fileName(), key.substring(key.length() - 12));
+                }
                 if (!Files.exists(cached) || !Files.exists(cached.resolveSibling(cached.getFileName() + ".synth.txt"))) uncached++;
             }
             TranslationProgress progress = new TranslationProgress(uncached);
@@ -656,6 +662,10 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         }
                     }
                     demand.computeIfAbsent(jar.version, v -> new SynthDemand()).merge(SynthDemand.read(demandFile));
+                    if (shared != null && Files.exists(out) && Files.exists(demandFile)) {
+                        String key = sharedKey(jar, modSet.get(jar.version));
+                        if (shared.publish(key, sharedParts(out))) LOG.info("Legacy Connector: {} published to the shared cache ({})", jar.fileName(), key.substring(key.length() - 12));
+                    }
                     keep.add(out);
                     keep.add(linkReport);
                     keep.add(demandFile);
@@ -687,6 +697,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
             progress.close();
             pool.close();
+            if (shared != null) LOG.info("Legacy Connector: {}", shared.summary());
 
             // One generated jar per legacy version with every API class/member the shim lacks, for all mods at once
             // (mods pass these types to each other, so there must be exactly one copy of each).
@@ -1340,6 +1351,21 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
      * change re-translates. No hand-kept version number takes part (one existed until 0.5.2 and only duplicated {@link #LOADER_DIGEST}).
      */
     private static String cacheName(LegacyJar jar, byte[] modSet) throws IOException {
+        return baseName(jar) + "-" + HexFormat.of().formatHex(cacheDigest(jar, modSet)).substring(0, 16) + ".jar";
+    }
+
+    /** Key of the shared translation cache: the same digest as {@link #cacheName}, in full (64 hex digits), so entries cannot collide on a 64-bit prefix. */
+    static String sharedKey(LegacyJar jar, byte[] modSet) throws IOException {
+        return baseName(jar) + "-" + HexFormat.of().formatHex(cacheDigest(jar, modSet));
+    }
+
+    private static String baseName(LegacyJar jar) {
+        String name = jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
+        if (name.endsWith(".jar") || name.endsWith(".zip")) name = name.substring(0, name.length() - 4);
+        return name;
+    }
+
+    private static byte[] cacheDigest(LegacyJar jar, byte[] modSet) throws IOException {
         MessageDigest md = SplitPackageResolver.sha256();
         md.update(fileDigest(jar.existing()));
         if ("false".equals(LoaderFlags.FORGE1201_SOFTLINK.get())) md.update("nosoftlink".getBytes(StandardCharsets.UTF_8));
@@ -1348,9 +1374,36 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         if (runtimeDigest != null) md.update(runtimeDigest);
         if (indexDigest != null) md.update(indexDigest);
         if (modSet != null) md.update(modSet);
-        String name = jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
-        if (name.endsWith(".jar") || name.endsWith(".zip")) name = name.substring(0, name.length() - 4);
-        return name + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar";
+        translationSwitches(md, jar);
+        return md.digest();
+    }
+
+    /**
+     * The inputs of a translation that are neither bytes of the jar set nor the loader build: the source version a jar was detected as (1.2.5
+     * hosting renames it to 1.4.7), whether 1.2.5 hosting is on, and every switch that changes translation (compat, workaround and debug
+     * switches that are set to a non-default value, except paths). Nothing is added when none applies, so ordinary keys stay as they were.
+     */
+    private static void translationSwitches(MessageDigest md, LegacyJar jar) {
+        StringBuilder sb = new StringBuilder();
+        if (jar.sourceVersion != null && jar.sourceVersion != jar.version) sb.append("|source=").append(jar.sourceVersion);
+        if (!Mc125Jars.enabled()) sb.append("|mc125=off");
+        for (LoaderFlags f : LoaderFlags.values()) {
+            if (f.category() != LoaderFlags.Category.COMPAT && f.category() != LoaderFlags.Category.WORKAROUND && f.category() != LoaderFlags.Category.DEBUG) continue;
+            if (f.type() == LoaderFlags.Type.PATH || f == LoaderFlags.FORGE1201_SOFTLINK) continue;
+            String v = f.nonDefaultValue();
+            if (v != null) sb.append('|').append(f.property()).append('=').append(v);
+        }
+        if (sb.length() > 0) md.update(sb.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** The files of one cached translation, by the part names of {@link SharedCache}. */
+    static Map<String, Path> sharedParts(Path out) {
+        Map<String, Path> parts = new java.util.LinkedHashMap<>();
+        parts.put("jar", out);
+        parts.put("synth", out.resolveSibling(out.getFileName() + ".synth.txt"));
+        parts.put("links", out.resolveSibling(out.getFileName() + ".links.txt"));
+        parts.put("risk", out.resolveSibling(out.getFileName() + ".risk.txt"));
+        return parts;
     }
 
     private static byte[] indexDigest;

@@ -90,6 +90,15 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   while one runs.
 - Translation results are cached per jar and mod set (`run-*/.legacyconnector/cache`). After changing the loader, linker, stubber or shim,
   delete the cache or the old translation is reused.
+- **Shared translation cache (optional, off by default).** Worktrees that run the same suites each retranslate the same jars. Set
+  `LEGACYCONNECTOR_SHARED_CACHE=<dir>` (or `-Dlegacyconnector.sharedCache=<dir>`; `build.gradle` forwards the variable to every game run, so
+  `verify.sh`, `run-subset.sh` and `quick-shots.sh` pick it up) and a local cache miss is first looked up there by the full 256-bit key (jar bytes, mod-set digest,
+  loader build id, runtime and shim index digests, side, 1.2.5 hosting, and the compat/workaround/debug switches set to a non-default value); a
+  local translation is published there. An entry is a directory `<key>/` with the translated jar, its `.synth.txt`/`.links.txt`/`.risk.txt` and a manifest of
+  sizes and SHA-256 hashes; it is built under a `.tmp-` name and renamed into place atomically, never overwritten, verified on every read (a corrupt entry is
+  logged and ignored) and restored by hard link when the volume allows it, else copy. Processes of several worktrees can share one directory (no lock is held
+  while translating; the loser of a race discards its copy). The log has one line per hit and publish and a summary line (`shared cache ...: N hit(s), M miss(es), K published`)
+  after the translation. The directory only grows: delete it to reset. To measure the gain: run one suite in worktree A, then the same suite in worktree B (both with the variable set); B logs hits instead of `translated ...` lines.
 - On a Windows desktop (no Docker) `tools/dev/quick-shots.sh` runs the graphical test directly in about a minute (superflat world, short render
   distance, a dozen blocks and items per mod); mods go in `run-screenshots/mods`.
 - Headless server probing (no window): `./gradlew runServerSubTest -PautostopTicks=0 -PserverScript=probe -PserverScriptMod=<legacy mod id>` runs a long-lived server that executes
