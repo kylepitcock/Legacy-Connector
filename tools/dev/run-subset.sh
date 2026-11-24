@@ -25,6 +25,7 @@ rm -rf $D/world
 [[ -z $LEVELTYPE ]] && sed -i '' 's#^level-type=.*#level-type=minecraft\\:normal#' $D/server.properties
 # no watchdog kill (60 s) during the dimension self test of big packs
 [[ -f $D/server.properties ]] && { grep -v '^max-tick-time=' $D/server.properties > $D/server.properties.new; echo "max-tick-time=-1" >> $D/server.properties.new; mv $D/server.properties.new $D/server.properties; }
+[[ -n $LEGACYCONNECTOR_SHARED_CACHE ]] && echo "shared translation cache: $LEGACYCONNECTOR_SHARED_CACHE"  # passed to the game as -Dlegacyconnector.sharedCache by build.gradle
 ./gradlew runServerSubTest > build/devtools/subtest.log 2>&1 &
 GPID=$!
 for i in $(seq 1 144); do

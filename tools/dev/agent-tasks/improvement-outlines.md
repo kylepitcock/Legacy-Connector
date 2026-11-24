@@ -22,7 +22,7 @@ Read `BRIEF.md` and `issue-worker.md` first. Mark an outline `DONE <commit>` or 
 - Approach: `tools/compat/rerate.py --mc <v> --status fails --source client,corpus` picks those rows. It resolves each mod's jar plus required dependencies through the picker, runs the server self test in small groups (own port, RAM check), and feeds each log to `from_client.py` with label "rerate <date>". It writes a summary of old -> new ratings.
 - Verify: run it on 10 1.12.2 rows; the rows change only where the run supports it.
 
-### T4. Shared translation cache across worktrees (M)
+### T4. Shared translation cache across worktrees (M) - DONE (`SharedCache`, `LEGACYCONNECTOR_SHARED_CACHE`; see wiki Development)
 - Why: every worktree retranslates the same jars (minutes per suite, GBs of disk). Workers in parallel worktrees pay this again and again.
 - Where: the loader cache (`run-*/.legacyconnector/cache`, key = jar hash + mod set + loader build id).
 - Approach: optional `-Dlegacyconnector.sharedCache=<dir>` read-through cache; entries are immutable and keyed by the full key; write to a temp name, then atomic rename. Default off for players.

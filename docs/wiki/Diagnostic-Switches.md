@@ -13,7 +13,7 @@ How they behave:
 
 <!-- switches:begin (generated from Flags, CompatFlags and LoaderFlags; run SwitchRegistryTest with SWITCH_DOCS_UPDATE=1 to rewrite) -->
 
-132 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
+133 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
 
 ### Debug (25)
 
@@ -105,7 +105,7 @@ How they behave:
 | `mc125.corpus` | path | `unset` | loader | Directory of the real 1.2.5 archives of the bridge corpus test. |
 | `shim.client.update` | string | `unset` | runtime | true: unit test rewrites the shim client type baseline when nothing is new; force: also adds new entries. |
 
-### Perf (5)
+### Perf (6)
 
 | Switch | Type | Default | Read by | What it does |
 |---|---|---|---|---|
@@ -113,6 +113,7 @@ How they behave:
 | `legacyconnector.displayListBake` | toggle | `true` | runtime | false turns off baking legacy display lists into GPU meshes (every call replays the recorded draws again). |
 | `legacyconnector.displayListBakeMb` | int | `256` | runtime | Megabytes of GPU geometry the baked display lists may hold in all (more lists are replayed). |
 | `legacyconnector.itemLock` | toggle | `true` | runtime | false turns off the render lock that item rendering forces (measurement switch). |
+| `legacyconnector.sharedCache` | path | `unset` | loader | Directory of a translation cache shared by several game directories or worktrees (read through on a local miss, published to after a translation); env LEGACYCONNECTOR_SHARED_CACHE is the fallback. |
 | `legacyconnector.translationThreads` | int | `0` | loader | Threads translating jars at once (0 = automatic). |
 
 ### Compat (14)
