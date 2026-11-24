@@ -6,4 +6,10 @@ public interface IJeiHelpers {
     legacyconnector.v1_12_2.mezz.jei.api.recipe.IStackHelper getStackHelper();
     legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientBlacklist getIngredientBlacklist();
     legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper getRecipeTransferHandlerHelper();
+    default legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper recipeTransferHandlerHelper() {
+        return getRecipeTransferHandlerHelper();
+    }
+    legacyconnector.v1_12_2.mezz.jei.api.recipe.IVanillaRecipeFactory getVanillaRecipeFactory();
+    /** JEI 3. */
+    legacyconnector.v1_12_2.mezz.jei.api.IItemBlacklist getItemBlacklist();
 }

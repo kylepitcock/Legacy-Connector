@@ -149,7 +149,7 @@ public class EntityRegistry {
     }
 
     /** FML's hook that lets the tracker decide for a mod entity: the modern tracker handles every entity, so mods never get to take over. */
-    public static boolean tryTrackingEntity(legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker tracker,
+    public boolean tryTrackingEntity(legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker tracker,
             legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
         return false;
     }

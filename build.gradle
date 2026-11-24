@@ -243,6 +243,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
     testImplementation project(':loader') // SwitchRegistryTest: the loader's LoaderFlags go into the same documentation page as the runtime's Flags
+    testImplementation "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}" // Jei1122ApiTest: the bridge's classes link against the modern JEI API
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // Match the launcher's parser; Nashorn otherwise pulls ASM 7 into standalone tests (cannot read Java 21 fixtures).
     testRuntimeOnly "org.ow2.asm:asm:${asm_version}"
@@ -384,6 +385,7 @@ def registerGap = { String taskName, String mcVersion, String srgTask, String sr
     maxHeapSize = '3g'
     argumentProviders.add({
         def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: ['forge-*.tsv', 'mc-classes.tsv']).files.join(',')
+        if (project.findProperty('gap.extraRenames')) renames = project.findProperty('gap.extraRenames').toString() + ',' + renames // the jar's own class names first (1.16.5: MCP -> Mojang), then the 1.20.1 -> 1.21.1 rows
         def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
         if (jars.join(' ').length() > 6000) { // a pack of hundreds of jars: the Windows command line is limited, hand over "@file" (one path per line)
             def jarList = new File(buildDir, "${taskName}-jars.txt")
@@ -400,6 +402,10 @@ registerGap('gap1201', '1.20.1', ':loader:genSrgMojang1201', 'generated/srg-moja
 // EXPERIMENTAL (scoping of 1.19.2, docs/wiki/Legacy-1.19.2-Estimate.md), opt-in: ./gradlew gap1192 -Pexperimental.mc1192=true -PtargetJars=... -PgapJars=<dir of 1.19.2 jars>
 // [-Pgap.srgOverlay=<1.20.1 srg-mojang.tsv>]; the 1.20.1 -> 1.21.1 tables are applied as they are. No translation (-Pgap.translate is for 1.20.1 jars).
 if (project.findProperty('experimental.mc1192')) registerGap('gap1192', '1.19.2', ':loader:genSrgMojang1192', 'generated/srg-mojang-1192/legacyconnector/mappings/1.19.2/srg-mojang.tsv')
+// 1.18.2 and 1.16.5 scoping (docs/wiki/Legacy-1.18.2-Estimate.md, Legacy-1.16.5-Estimate.md): -Pexperimental.mc1182=true / -Pexperimental.mc1165=true; for 1.16.5 also pass
+// -Pgap.extraRenames=<loader/build/generated/srg-mojang-1165/legacyconnector/mappings/1.16.5/mc-classes.tsv> (MCP class names -> Mojang names)
+if (project.findProperty('experimental.mc1182')) registerGap('gap1182', '1.18.2', ':loader:genSrgMojang1182', 'generated/srg-mojang-1182/legacyconnector/mappings/1.18.2/srg-mojang.tsv')
+if (project.findProperty('experimental.mc1165')) registerGap('gap1165', '1.16.5', ':loader:genSrgMojang1165', 'generated/srg-mojang-1165/legacyconnector/mappings/1.16.5/srg-mojang.tsv')
 
 // Offline mixin target census of Forge 1.20.1 jars (no game): ./gradlew mixinSurvey1201 -PsurveyJars=dir1,dir2 [-PsurveyReport=file]; ranked by tools/dev/mixin_census_1201.py
 tasks.register('mixinSurvey1201', JavaExec) {
@@ -428,7 +434,8 @@ tasks.register('eventTables1201', JavaExec) {
 tasks.register('preflight1201', JavaExec) {
     group = 'verification'
     description = 'Writes a deterministic JSON and text preflight report for one Forge 1.20.1 JAR.'
-    dependsOn ':loader:classes'
+    dependsOn ':loader:classes', 'classes', generateShimIndex
+
     classpath = project(':loader').sourceSets.main.runtimeClasspath +
             project(':loader').sourceSets.main.compileClasspath.filter {
                 it.name.startsWith('gson') || it.name.startsWith('slf4j')
@@ -437,7 +444,12 @@ tasks.register('preflight1201', JavaExec) {
     // compile classpath. Pass those resource roots separately; the analyzer reads .class resources
     // without defining or initializing target classes.
     def targetCompileClasspath = sourceSets.main.compileClasspath
+    def connectorRuntimeOutput = sourceSets.main.output.classesDirs
     inputs.files(targetCompileClasspath)
+    inputs.files(connectorRuntimeOutput)
+    inputs.property('connectorRuntimeOutputOrder', providers.provider {
+        connectorRuntimeOutput.files.collect { it.absolutePath }.join('\n')
+    })
     def mappingProfileValue = project.findProperty('preflightMappingProfile')
     if (mappingProfileValue) inputs.file(file(mappingProfileValue.toString()))
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
@@ -482,6 +494,15 @@ tasks.register('preflight1201', JavaExec) {
                 + System.lineSeparator(), 'UTF-8')
         args.add('--target-classpath-file')
         args.add(targetClasspathFile.absolutePath)
+
+        // Connector-owned Forge shims are a separate runtime domain from NeoForge/Minecraft.
+        def connectorRuntimeClasspathFile = new File(reportDir, 'connector-runtime-classpath.txt')
+        def connectorRuntimeEntries = connectorRuntimeOutput.files.collect { it.absolutePath }
+        connectorRuntimeClasspathFile.parentFile.mkdirs()
+        connectorRuntimeClasspathFile.setText(connectorRuntimeEntries.join(System.lineSeparator())
+                + System.lineSeparator(), 'UTF-8')
+        args.add('--connector-runtime-classpath-file')
+        args.add(connectorRuntimeClasspathFile.absolutePath)
         args.add('--json')
         args.add(jsonFile.absolutePath)
         args.add('--text')
@@ -561,6 +582,11 @@ tasks.register('checkLegacyMod', JavaExec) {
     maxHeapSize = '3g'
     // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
     if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
+    // -Pcoremods=true: run the set's coremod class transformers over every class (structural additions to other mods' classes)
+    if (project.findProperty('coremods')) {
+        systemProperty 'legacyconnector.check.coremods', project.findProperty('coremods').toString()
+        systemProperty 'legacyconnector.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
+    }
         // -Pmc125Unresolved=<file>: append the game members of 1.2.5 jars the join table could not name (diagnostics)
     if (project.findProperty('mc125Unresolved')) systemProperty 'legacyconnector.mc125.unresolved', project.findProperty('mc125Unresolved').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)

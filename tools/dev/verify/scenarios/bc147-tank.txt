@@ -1,0 +1,10 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): the tank's markings sit flush with the block
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /tp @s 0.5 150 3.5
+cmd /setblock 0 149 0 buildcraft_core:tankblock
+cmd /setblock 0 150 0 buildcraft_core:tankblock
+wait 60
+look 180 30
+wait 20
+shot bc147-tank

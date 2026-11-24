@@ -14,6 +14,11 @@ public class PlayerProfileCache {
         this.mcc$server = server;
     }
 
+    /** The constructor 1.7.10's dedicated server called: the cache file is ignored, the modern profile cache backs it. */
+    public PlayerProfileCache(legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer server, java.io.File file) {
+        this(server == null ? null : server.mcc$modern());
+    }
+
     /** Online players first: 1.7.10's cache always held them, the modern one misses offline-mode players (EnderIO's login). */
     public GameProfile getGameProfileForUsername(String name) {
         if (mcc$server == null || name == null) return null;

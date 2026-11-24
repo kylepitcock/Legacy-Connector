@@ -7,6 +7,9 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 /** Typed arrow identity and shooter field used by original combat callbacks. */
 public class ArrowEntity extends Entity {
     public LivingEntity owner;
+    /** Beta's {@code arrowShake} (the wobble after a hit) and whether a player may pick the arrow up. */
+    public int shake;
+    public boolean pickupAllowed;
     public ArrowEntity(World world){super(world);setBoundingBoxSpacing(.5F,.5F);}
     public ArrowEntity(World world,LivingEntity owner){
         this(world);this.owner=owner;

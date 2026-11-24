@@ -4,4 +4,11 @@ package legacyconnector.v1_12_2.mezz.jei.api.gui;
 public interface ICraftingGridHelper {
     void setInputs(IGuiItemStackGroup guiItemStacks, java.util.List<java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> input);
     void setInputs(IGuiItemStackGroup guiItemStacks, java.util.List<java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> input, int width, int height);
+    /** JEI 4.12+: the same for any ingredient group of items. */
+    default void setInputs(IGuiIngredientGroup<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> guiIngredients, java.util.List<java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> input) {
+        if (guiIngredients instanceof IGuiItemStackGroup g) setInputs(g, input);
+    }
+    default void setInputs(IGuiIngredientGroup<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> guiIngredients, java.util.List<java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> input, int width, int height) {
+        if (guiIngredients instanceof IGuiItemStackGroup g) setInputs(g, input, width, height);
+    }
 }

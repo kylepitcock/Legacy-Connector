@@ -157,6 +157,7 @@ How they behave:
 | `gap.translated.dir` | path | `unset` | loader | 1.20.1 gap analyzer: directory to keep the translated jars in. |
 | `legacyconnector.check.assets` | string | `unset` | loader | false: the offline check skips the resource check. |
 | `legacyconnector.check.bridges` | string | `unset` | loader | false: the offline check treats the jars as plain mods (no library bridges). |
+| `legacyconnector.check.coremods` | string | `unset` | loader | true: the offline check runs the set's coremod class transformers over the jars' classes. |
 | `legacyconnector.check.json` | path | `unset` | loader | File the offline check writes its result to as JSON. |
 | `legacyconnector.check.keep` | path | `unset` | loader | Directory the offline check keeps the translated jars in. |
 | `legacyconnector.check.quiet` | string | empty | loader | -q: the offline check does not print the link report. |
