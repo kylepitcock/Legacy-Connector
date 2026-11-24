@@ -111,6 +111,7 @@ public final class LegacyProblems {
             if (FMLEnvironment.dist.isDedicatedServer()) finish("server started");
         });
         ProblemsCommand.register();
+        org.kylepitcock.legacyconnector.core.report.BugReport.register();
         synchronized (LegacyProblems.class) {
             if (!hookInstalled) {
                 hookInstalled = true;
