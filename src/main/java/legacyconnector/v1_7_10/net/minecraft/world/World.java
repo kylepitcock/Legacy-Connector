@@ -598,7 +598,29 @@ public class World implements IBlockAccess {
     }
 
     public static List mcc$get$loadedTileEntityList(World w) {
-        return new ArrayList<>();
+        return new ModTickList();
+    }
+
+    /**
+     * What a mod does to the world's tile entity ticking list: a tile entity it adds is ticked by the layer's host, one it removes is
+     * not (IndustrialCraft 2 adds its tiles to the list from a world tick callback on the server only and never on the client, which
+     * does not simulate them; {@code canUpdate()} is false for all of them). Nothing is kept, so it holds no tile entity alive.
+     */
+    private static final class ModTickList extends ArrayList<Object> {
+        @Override
+        public boolean add(Object o) {
+            if (o instanceof TileEntity te) {
+                te.mcc$modTicked = true;
+                if (te.mcc$host instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockEntity be) be.mcc$tickingChanged();
+            }
+            return true;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            if (o instanceof TileEntity te) te.mcc$modTicked = false;
+            return false;
+        }
     }
 
     // ------------------------------------------------------------------ blocks

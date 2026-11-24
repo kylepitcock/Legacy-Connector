@@ -27,6 +27,9 @@ public class TileEntity {
     /** The modern host; set by the bridge. */
     public net.minecraft.world.level.block.entity.BlockEntity mcc$host;
 
+    /** A mod put this tile entity into {@code World.loadedTileEntityList} (the world ticks it whatever {@code canUpdate()} says). */
+    public boolean mcc$modTicked;
+
     /** Legacy id <-> class registry (mods read these maps by reflection). */
     private static java.util.Map<String, Class<?>> nameToClassMap = new java.util.HashMap<>();
     private static java.util.Map<Class<?>, String> classToNameMap = new java.util.HashMap<>();

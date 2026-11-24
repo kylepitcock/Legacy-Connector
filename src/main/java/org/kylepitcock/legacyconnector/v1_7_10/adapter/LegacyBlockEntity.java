@@ -268,10 +268,25 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
     private static boolean ticks(TileEntity te) {
         if (EMPTY_UPDATE.get(te.getClass())) return false;
         try {
-            return te.canUpdate() || overridesUpdate(te.getClass());
+            return te.canUpdate() || te.mcc$modTicked || !clientSide(te) && overridesUpdate(te.getClass());
         } catch (RuntimeException | LinkageError e) {
             return true;
         }
+    }
+
+    /**
+     * A tile entity on the client: the world there ticks only what asked for it ({@code canUpdate()}, or the mod adding it to the
+     * world's list). IC2's tiles only ask on the server; ticking the client copies made them simulate on their own (their GUI energy
+     * and a generator's active flag drifted away from the server's, which only sends changes).
+     */
+    private static boolean clientSide(TileEntity te) {
+        return te.mcc$host != null && te.mcc$host.getLevel() != null && te.mcc$host.getLevel().isClientSide;
+    }
+
+    /** The mod added the tile entity to the world's ticking list: a ticker dropped for it is restored. */
+    public void mcc$tickingChanged() {
+        tickedTile = null;
+        tickerMayChange();
     }
 
     @Override
@@ -316,7 +331,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             return;
         }
         TileEntity te = legacy();
-        if (te == null || te.isInvalid() || !(te.canUpdate() || overridesUpdate(te.getClass()))) return;
+        if (te == null || te.isInvalid() || !ticks(te)) return;
         update(te);
     }
 
