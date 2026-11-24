@@ -29,6 +29,7 @@ public final class ModernScreens1122 {
     static GuiScreen viewOf(Screen screen) {
         try {
             if (screen instanceof TitleScreen) return new MainMenuView(screen);
+            if (screen instanceof net.minecraft.client.gui.screens.PauseScreen) return new PauseView(screen);
             if (screen instanceof net.minecraft.client.gui.screens.options.controls.ControlsScreen cs) return new ControlsView(cs);
             if (screen instanceof net.minecraft.client.gui.screens.worldselection.SelectWorldScreen ws) return new WorldSelectionView(ws);
             if (screen instanceof CreativeModeInventoryScreen cs) return new CreativeView(cs);
@@ -182,6 +183,31 @@ public final class ModernScreens1122 {
                 Object last = Fields1122.get(net.minecraft.client.gui.screens.options.OptionsSubScreen.class, s, "lastScreen");
                 if (last instanceof Screen ls) parentScreen = ScreenEvents1122.legacyOf(ls);
             }
+        }
+    }
+
+    public static final class PauseView extends legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngameMenu implements ScreenEvents1122.Modern {
+        private final java.lang.ref.WeakReference<Screen> modern;
+
+        PauseView(Screen modern) {
+            this.modern = new java.lang.ref.WeakReference<>(modern);
+            init(this, modern);
+        }
+
+        @Override
+        public Screen mcc$modern() {
+            return modern.get();
+        }
+
+        @Override
+        public void mcc$sync() {
+            Screen s = modern.get();
+            if (s != null) setGuiSize(s.width, s.height);
+        }
+
+        @Override
+        public boolean doesGuiPauseGame() {
+            return true;
         }
     }
 
