@@ -24,6 +24,8 @@ public class WorldGenMinable extends WorldGenerator {
         this.field_150519_a = block;
         this.numberOfBlocks = count;
         this.field_150518_c = target;
+        // a mod's own ore block that this generator puts into stone is an ore (deepslate twin), whatever its material and render type
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.oreGeneratedInStone(block, target);
     }
 
     public WorldGenMinable(Block block, int meta, int count, Block target) {
@@ -41,6 +43,11 @@ public class WorldGenMinable extends WorldGenerator {
         this.numberOfBlocks = count;
         this.mcc$oreById = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(blockId);
         this.mcc$targetById = legacyconnector.v1_6_4.net.minecraft.util.Ids.lazyBlock(targetId);
+        try {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.oreGeneratedInStone(mcc$oreById.get(), mcc$targetById.get());
+        } catch (RuntimeException e) {
+            // the block is not constructed yet: no twin for it
+        }
     }
 
     /** Forge 1.6.4: {@code new WorldGenMinable(blockId, meta, count, targetId)}. */

@@ -156,7 +156,9 @@ final class IdConstructors {
 
         // 1.4.7: Block(int id, int textureIndex, Material, ...) -> the shim's Block(Material) and the index handed to the facade afterwards
         String textureOwner = null;
-        if (claimOwner != null && isBlock && h.version().flatNames() && args.length >= 3 && args[1].getSort() == Type.INT && args[2].getSort() == Type.OBJECT) {
+        // (BlockLeaves(int id, int index), BlockSand(id, index), BlockFlower(id, index): a vanilla block class whose shim constructor has no index parameter)
+        if (claimOwner != null && isBlock && h.version().flatNames() && args[1 % args.length].getSort() == Type.INT
+                && ((args.length >= 3 && args[2].getSort() == Type.OBJECT) || (args.length == 2 && java.util.Arrays.stream(Type.getArgumentTypes(targetDesc)).noneMatch(t -> t.getSort() == Type.INT)))) {
             String facade = h.facadeOf(blockCls);
             if (facade != null && h.find(facade).hasMethod("mcc$claimTexture", "(L" + blockCls + ";I)V")) textureOwner = facade;
         }

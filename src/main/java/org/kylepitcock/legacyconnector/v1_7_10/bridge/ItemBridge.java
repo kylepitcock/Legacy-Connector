@@ -1024,7 +1024,13 @@ public final class ItemBridge {
 
     /** 1.7.10 layout {id:short, Count:byte, Damage:short, tag:{}} plus the modern item name for portability. */
     public static void writeLegacyNBT(ItemStack stack, NBTTagCompound nbt) {
-        nbt.setShort("id", (short) idOf(stack.getItem()));
+        int numeric = idOf(stack.getItem());
+        if (legacyconnector.v1_6_4.net.minecraft.util.Ids.modVersionOnStack() != null) {
+            // an id-era mod (1.4.7 to 1.6.4) reads the number back with new ItemStack(id, ...): the id of its own numeric space, not the host's
+            int own = legacyconnector.v1_6_4.net.minecraft.util.Ids.claimedItemId(stack.getItem());
+            if (own > 0) numeric = own;
+        }
+        nbt.setShort("id", (short) numeric);
         nbt.setByte("Count", (byte) stack.mcc$count());
         nbt.setShort("Damage", (short) stack.getItemDamage());
         nbt.setString("mcc:item", BuiltInRegistries.ITEM.getKey(stack.mcc$modern().getItem()).toString());
