@@ -151,6 +151,7 @@ public final class Forge1201PreflightAnalyzer {
 
     public enum TargetApiVerificationStatus {
         COMPLETED,
+        COMPLETED_WITH_UNCHECKED_CONNECTOR_RUNTIME,
         NOT_RUN_NO_TARGET_CLASSPATH,
         NOT_RUN_SOURCE_METADATA_NOT_RECOGNIZED
     }
@@ -788,10 +789,14 @@ public final class Forge1201PreflightAnalyzer {
         classFindings.sort(Comparator.comparing(TargetApiClassFinding::sourceInternalName));
         Forge1201TargetApiVerifier.Result memberVerification =
                 targetIndex == null ? null : targetIndex.verify(usage);
+        boolean connectorRuntimeUnchecked = classFindings.stream().anyMatch(finding ->
+                finding.status() == TargetApiClassStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT);
         return new TargetApiVerificationFinding(
                 targetIndex == null
                         ? TargetApiVerificationStatus.NOT_RUN_NO_TARGET_CLASSPATH
-                        : TargetApiVerificationStatus.COMPLETED,
+                        : connectorRuntimeUnchecked
+                                ? TargetApiVerificationStatus.COMPLETED_WITH_UNCHECKED_CONNECTOR_RUNTIME
+                                : TargetApiVerificationStatus.COMPLETED,
                 targetClasspathEntryCount,
                 connectorRuntimeClasspath.size(),
                 connectorRuntimeClasspath.stream().map(Path::toString).toList(),
