@@ -1271,6 +1271,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/aliensvspredator",
    "date": "2026-11-23",
    "open": true
+  },
+  {
+   "issue": 342,
+   "mod": "gregtech_tj_fork-1.18.7",
+   "mc": "1.12.2",
+   "status": "fails",
+   "details": "None of the items or blocks are displayed.",
+   "lc": "0.5.2",
+   "neoforge": "21.1.267",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/gtce-tj-edition",
+   "date": "2026-11-24",
+   "open": true
   }
  ]
 }
