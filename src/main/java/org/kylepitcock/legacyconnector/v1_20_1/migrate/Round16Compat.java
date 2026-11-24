@@ -27,6 +27,16 @@ public final class Round16Compat {
         return dimensions.eyeHeight();
     }
 
+    /** The dimensions a living entity has before the mod's eye height override is applied (the type's own, as {@code LivingEntity.getDefaultDimensions}). */
+    public static net.minecraft.world.entity.EntityDimensions baseDimensions(Object entity) {
+        return ((Entity) entity).getType().getDimensions();
+    }
+
+    /** The result of a bridged {@code getStandingEyeHeight(pose, dimensions)} override as the dimensions 1.21.1 asks for: the type's size with the mod's eye height. */
+    public static net.minecraft.world.entity.EntityDimensions withEyeHeight(float eyeHeight, Object entity) {
+        return baseDimensions(entity).withEyeHeight(eyeHeight);
+    }
+
     // ------------------------------------------------------------------ portals
 
     /** {@code Entity.isInsidePortal} (field read, 1.20.1): the entity stands in a portal this tick. */
@@ -221,6 +231,42 @@ public final class Round16Compat {
                 stack.hurtAndBreak(amount, inventory.player, slot);
             }
         }
+    }
+
+    // ------------------------------------------------------------------ advancement triggers, minecart loot, suspicious blocks, effect packets
+
+    /** The context predicate of a trigger instance, optional in 1.21.1. */
+    public static java.util.Optional<net.minecraft.advancements.critereon.ContextAwarePredicate> optionalPredicate(
+            net.minecraft.advancements.critereon.ContextAwarePredicate predicate) {
+        return java.util.Optional.ofNullable(predicate);
+    }
+
+    /** {@code AbstractMinecartContainer.getLootTable()} (a location in 1.20.1; a resource key in 1.21.1). */
+    public static ResourceLocation minecartLootTable(net.minecraft.world.entity.vehicle.AbstractMinecartContainer minecart) {
+        var key = minecart.getLootTable();
+        return key == null ? null : key.location();
+    }
+
+    private static net.minecraft.world.item.component.SuspiciousStewEffects.Entry firstSuspiciousEffect(net.minecraft.world.level.block.SuspiciousEffectHolder holder) {
+        var list = holder.getSuspiciousEffects().effects();
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    /** {@code SuspiciousEffectHolder.getSuspiciousEffect()} (one effect in 1.20.1; a list in 1.21.1): the first. */
+    public static net.minecraft.world.effect.MobEffect suspiciousEffect(net.minecraft.world.level.block.SuspiciousEffectHolder holder) {
+        var e = firstSuspiciousEffect(holder);
+        return e == null ? null : e.effect().value();
+    }
+
+    /** {@code SuspiciousEffectHolder.getEffectDuration()}: the first effect's duration. */
+    public static int suspiciousEffectDuration(net.minecraft.world.level.block.SuspiciousEffectHolder holder) {
+        var e = firstSuspiciousEffect(holder);
+        return e == null ? 0 : e.duration();
+    }
+
+    /** {@code new ClientboundRemoveMobEffectPacket(entityId, effect)}: the effect is a holder in 1.21.1. */
+    public static net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket removeMobEffectPacket(int entityId, net.minecraft.world.effect.MobEffect effect) {
+        return new net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket(entityId, net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect));
     }
 
     // ------------------------------------------------------------------ recipes

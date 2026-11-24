@@ -154,3 +154,4 @@ net/minecraft/world/item/enchantment/FireAspectEnchantment	org/kylepitcock/legac
 net/minecraft/world/item/enchantment/KnockbackEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyKnockbackEnchantment
 net/minecraft/world/item/enchantment/TridentLoyaltyEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTridentLoyaltyEnchantment
 net/minecraft/world/item/crafting/SingleItemRecipe$Serializer$SingleItemMaker	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySingleItemMaker
+com/mojang/blaze3d/vertex/BufferBuilder$SortState	org/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder$SortState
