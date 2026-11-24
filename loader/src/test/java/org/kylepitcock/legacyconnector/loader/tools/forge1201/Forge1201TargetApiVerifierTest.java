@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -491,6 +492,120 @@ final class Forge1201TargetApiVerifierTest {
         assertTrue(result.fieldIssues().isEmpty());
         assertTrue(result.verifiedMethods().getFirst().callSites().isEmpty());
         assertTrue(result.verifiedFields().getFirst().callSites().isEmpty());
+    }
+
+    @Test
+    void normalizesForgeRuntimeSrgNamesBeforeLookingUpMojangTargetMembers() throws Exception {
+        String owner = "net/minecraft/client/player/LocalPlayer";
+        String methodName = SrgMojangTable.load().get("m_146892_");
+        String fieldName = SrgMojangTable.load().get("f_19797_");
+        assertTrue(methodName != null && !methodName.isBlank(),
+                "The generated 1.20.1 SRG -> Mojang table must contain m_146892_");
+        assertTrue(fieldName != null && !fieldName.isBlank(),
+                "The generated 1.20.1 SRG -> Mojang table must contain f_19797_");
+
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, owner, null, "java/lang/Object", null);
+        writer.visitMethod(Opcodes.ACC_PUBLIC, methodName,
+                "()Lnet/minecraft/world/phys/Vec3;", null, null).visitEnd();
+        writer.visitField(Opcodes.ACC_PUBLIC, fieldName, "I", null, null).visitEnd();
+        writer.visitEnd();
+
+        var result = verify(
+                analysis(
+                        List.of(owner),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "m_146892_", "()Lnet/minecraft/world/phys/Vec3;", 1)),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "f_19797_", "I", 1))),
+                Map.of(owner, writer.toByteArray()));
+
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertEquals(methodName, result.verifiedMethods().getFirst().targetName());
+        assertEquals(fieldName, result.verifiedFields().getFirst().targetName());
+        assertTrue(result.verifiedMethods().getFirst().mappingRule().contains("SRG_TO_MOJANG"));
+        assertTrue(result.verifiedFields().getFirst().mappingRule().contains("SRG_TO_MOJANG"));
+    }
+
+    @Test
+    void reportsUnknownSrgMemberNamesAsUnmappedInsteadOfTargetApiMissing() throws Exception {
+        String owner = "net/minecraft/client/player/LocalPlayer";
+        byte[] ownerClass = targetEmptyClass(owner, "java/lang/Object");
+        var result = verify(
+                analysis(
+                        List.of(owner),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "m_999999999_", "()V", 1)),
+                        List.of()),
+                Map.of(owner, ownerClass));
+
+        assertEquals(0, result.verifiedMethodReferences());
+        assertEquals(1, result.methodIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.UNMAPPED_SOURCE_MEMBER_NAME,
+                result.methodIssues().getFirst().status());
+        assertEquals("SRG_TO_MOJANG_MAPPING_NOT_FOUND",
+                result.methodIssues().getFirst().mappingRule());
+    }
+
+    @Test
+    void appliesExistingMinecraftMethodRenameAndStaticHolderFieldRules() throws Exception {
+        String livingEntity = "net/minecraft/world/entity/LivingEntity";
+        String mobEffects = "net/minecraft/world/effect/MobEffects";
+        String holderDescriptor = "Lnet/minecraft/core/Holder;";
+
+        ClassWriter livingWriter = new ClassWriter(0);
+        livingWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, livingEntity, null, "java/lang/Object", null);
+        livingWriter.visitMethod(Opcodes.ACC_PUBLIC, "onAddedToLevel", "()V", null, null).visitEnd();
+        livingWriter.visitEnd();
+
+        ClassWriter effectsWriter = new ClassWriter(0);
+        effectsWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, mobEffects, null, "java/lang/Object", null);
+        effectsWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "POISON",
+                holderDescriptor, null, null).visitEnd();
+        effectsWriter.visitEnd();
+
+        var poisonCallSite = new Forge1201ApiUsageAnalyzer.ApiFieldCallSite(
+                "fixture/Caller", "readPoison", "()V", mobEffects, "POISON",
+                "Lnet/minecraft/world/effect/MobEffect;", Opcodes.GETSTATIC, 1);
+
+        var result = verify(
+                analysis(
+                        List.of(livingEntity, mobEffects),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                livingEntity, "onAddedToWorld", "()V", 1)),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                mobEffects, "POISON", "Lnet/minecraft/world/effect/MobEffect;", 1)),
+                        List.of(),
+                        List.of(poisonCallSite)),
+                Map.of(
+                        livingEntity, livingWriter.toByteArray(),
+                        mobEffects, effectsWriter.toByteArray()));
+
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertEquals("onAddedToLevel", result.verifiedMethods().getFirst().targetName());
+        assertTrue(result.verifiedMethods().getFirst().mappingRule().contains("MC1201_MEMBER_NAME_MAPPING"));
+        assertEquals(holderDescriptor, result.verifiedFields().getFirst().targetDescriptor());
+        assertTrue(result.verifiedFields().getFirst().mappingRule().contains("MC1201_STATIC_FIELD_ADAPTER"));
+    }
+
+    @Test
+    void mapsRemovedMinecraftClassesToConnectorMigrationHelpers() throws Exception {
+        String sourceMobType = "net/minecraft/world/entity/MobType";
+        String helperMobType = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMobType";
+        Map<String, byte[]> classes = Map.of(
+                helperMobType, targetEmptyClass(helperMobType, "java/lang/Object"));
+
+        var result = verify(analysis(List.of(sourceMobType), List.of(), List.of()), classes);
+
+        assertEquals(1, result.candidateClassCount());
+        assertEquals(1, result.verifiedClassCount());
+        assertTrue(result.missingTargetClasses().isEmpty());
     }
 
     private static Forge1201ApiUsageAnalyzer.Analysis analysis(
