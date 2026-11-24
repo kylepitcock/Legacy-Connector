@@ -58,6 +58,11 @@ public final class LegacyResourceConverter {
             return true; // NeoForge synthesizes mod pack metadata; a pack_format 1 file only confuses it.
         }
         if (!path.startsWith("assets/")) return false;
+        if (path.endsWith(".class")) {
+            // class bytes a mod keeps as data (TFC Florae reads the TFC classes it replaces from assets/): found by their original name
+            output.putIfAbsent(path, data);
+            return true;
+        }
 
         String modern = normalizePath(path);
         if (modern.contains("/textures/")) sawTextures = true;

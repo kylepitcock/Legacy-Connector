@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 262;
+    public static final int TRANSFORMER_VERSION = 264;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -202,6 +202,10 @@ public final class LegacyJarTransformer {
                     // a stray class in the JDK's own package tree (JEI 1.12.2 ships java/mezz/jei/config/Tags): Java 8 never loaded it, but
                     // the module layer refuses to define such a package at all and the game does not start
                     continue;
+                } else if (name.endsWith(".class") && misfiledClass(name, data)) {
+                    // a class file kept as data under assets/ or data/ (TFC Florae carries the TFC classes it replaces there): its internal name is
+                    // not its path, so no class loader would load it from here; it stays a resource the mod reads
+                    other.put(name, data);
                 } else if (name.endsWith(".class")) {
                     classes.put(name.substring(0, name.length() - 6), data);
                 } else {
@@ -840,6 +844,15 @@ public final class LegacyJarTransformer {
         Map<String, byte[]> out = new LinkedHashMap<>(in);
         out.keySet().removeIf(n -> n.startsWith("org/spongepowered/asm/synthetic/"));
         return out;
+    }
+
+    private static boolean misfiledClass(String path, byte[] data) {
+        if (!path.startsWith("assets/") && !path.startsWith("data/")) return false;
+        try {
+            return !new ClassReader(data).getClassName().equals(path.substring(0, path.length() - 6));
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     private static void addParents(java.util.Set<String> dirs, String name) {

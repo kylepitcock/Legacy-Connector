@@ -38,8 +38,17 @@ public final class CrossVersionPackages {
      * {@code keep} are packages never relocated (those of {@code @Mod} classes). Call before {@link #done()}.
      */
     public CrossVersionPackages modern(Set<String> modernPackages, Set<String> keep) {
-        for (String pkg : packages.keySet()) if (modernPackages.contains(pkg) && !keep.contains(pkg)) modern.add(pkg);
+        for (String pkg : packages.keySet()) if ((modernPackages.contains(pkg) || hiddenRoot(pkg)) && !keep.contains(pkg)) modern.add(pkg);
         return this;
+    }
+
+    /**
+     * A package under the root folder {@code assets} or {@code data}: FML leaves those roots out of a mod's module (they are resource
+     * roots), so a class there (Rival Rebels' {@code assets.rivalrebels.RivalRebels}) is not found by the game's class loader. Moved
+     * like the packages of a modern mod.
+     */
+    static boolean hiddenRoot(String pkg) {
+        return pkg.equals("assets") || pkg.equals("data") || pkg.startsWith("assets/") || pkg.startsWith("data/");
     }
 
     /** Packages of legacy jars a modern jar also defines. */
