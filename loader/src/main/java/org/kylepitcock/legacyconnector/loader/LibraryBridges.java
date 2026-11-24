@@ -55,7 +55,13 @@ public final class LibraryBridges {
             new Bridge(null, "cofh/api/energy/", null, "cofhEnergy"),
             // The same for 1.12.2's Redstone Flux library (cofh.redstoneflux.api / .impl, a separate mod "redstoneflux" that Thermal Expansion,
             // Thermal Dynamics, Mekanism, ... need): re-implemented in the 1.12.2 shim, so the library jar itself is not loaded.
-            new Bridge("redstoneflux", "cofh/redstoneflux/", null, "cofhEnergy"));
+            new Bridge("redstoneflux", "cofh/redstoneflux/", null, "cofhEnergy"),
+            // GTNH Mixins' API (IEarlyMixinLoader, ILateMixinLoader, the mixin/transformer catalogues): 90+ GTNH mods implement it. The library is an
+            // engine mod (engine-mods.tsv) the layer never loads, so the API is kept in the 1.7.10 shim and the mods link and load without it.
+            new Bridge(null, "com/gtnewhorizon/gtnhmixins/", null, "gtnhmixins"),
+            // Interfaces and annotations that engine mods (Angelica, Hodgepodge) export for other mods to implement; the engine mods are never loaded.
+            new Bridge(null, "com/gtnewhorizons/angelica/api/", null, "angelica"),
+            new Bridge(null, "com/mitchej123/hodgepodge/textures/", null, "hodgepodge"));
 
     /** One row of {@code engine-mods.tsv}: a mod that only makes sense on its own engine (see {@link #engineMods()}). */
     public record EngineMod(String id, Set<String> versions, List<String> names, String replacement, String reason) {}

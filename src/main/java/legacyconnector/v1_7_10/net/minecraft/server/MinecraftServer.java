@@ -33,6 +33,11 @@ public class MinecraftServer implements ICommandSender, Runnable {
         this.configurationManager = mcc$createPlayerList();
     }
 
+    /** Vanilla's public constructor; a mod's own server subclass (test servers) has no modern server behind it. */
+    public MinecraftServer(java.io.File anvilFile, java.net.Proxy proxy) {
+        this((net.minecraft.server.MinecraftServer) null);
+    }
+
     /** The dedicated server answers with its {@code DedicatedPlayerList}. */
     protected ServerConfigurationManager mcc$createPlayerList() {
         return new ServerConfigurationManager(this);

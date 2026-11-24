@@ -30,6 +30,11 @@ public class Cuboid6 {
         return AxisAlignedBB.getBoundingBox(min.x, min.y, min.z, max.x, max.y, max.z);
     }
 
+    /** Sets the block's collision/render bounds to this box. */
+    public void setBlockBounds(legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        block.setBlockBounds((float) min.x, (float) min.y, (float) min.z, (float) max.x, (float) max.y, (float) max.z);
+    }
+
     public Cuboid6 copy() {
         return new Cuboid6(this);
     }
