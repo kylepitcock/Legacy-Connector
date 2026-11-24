@@ -1,0 +1,33 @@
+# Issue 113 (Kindred Legacy, 1.12.2): an enchanted vanilla tool must still save after the world was left and opened again in the same game session
+# ("Element ... is not valid in current registry set": vanilla's EncoderCache served a failed encode of a stale holder for the valid one).
+# Steps: enchant a hoe, save, quit to the title, open the same world again (a new registry access), use and enchant again, save, check the log.
+mods: 1.12.2 kindredlegacy
+cmd /give @s minecraft:netherite_hoe
+slot 0
+wait 20
+cmd /enchant @s minecraft:fortune 3
+wait 10
+expect fortune :: String(server.getPlayerList().getPlayers().get(0).getMainHandItem().getEnchantments())
+expect true :: String(server.saveEverything(false, false, true))
+# remember the save folder, leave the world, wait for the title screen
+js java.lang.System.setProperty("lc.level", String(mc.getLevelSource().getBaseDir().toFile().list()[0]))
+js mc.disconnect()
+expect true :: String(mc.level == null && mc.getSingleplayerServer() == null)
+wait 40
+# open the same world again
+js mc.createWorldOpenFlows().openWorld(String(java.lang.System.getProperty("lc.level")), function () {})
+expect Player :: mc.player == null ? "none" : "Player"
+wait 60
+slot 0
+cmd /give @s minecraft:netherite_hoe
+cmd /enchant @s minecraft:fortune 3
+wait 10
+attack
+wait 10
+expect fortune :: String(server.getPlayerList().getPlayers().get(0).getMainHandItem().getEnchantments())
+expect true :: String(server.saveEverything(false, false, true))
+expect 2 :: String(server.getPlayerList().getPlayers().get(0).getInventory().items.stream().filter(function (s) { return !s.isEmpty() && String(s.getEnchantments()).contains("fortune"); }).count())
+logabsent not valid in current registry set
+logabsent Error saving
+logabsent StackHolders
+shot reload-twice

@@ -55,6 +55,7 @@
     "EnchantmentHelperHookMixin",
     "ItemStackHookMixin",
     "ItemStackSaveHolderMixin",
+    "EncoderCacheErrorsMixin",
     "AnvilMenuCostHookMixin",
     "ServerSprintHookMixin",
     "LevelRainHookMixin",

@@ -73,6 +73,30 @@ public final class StackHolders {
     }
 
     private static volatile boolean diagnosed;
+    private static volatile com.google.common.cache.Cache<?, ?> encoderCache;
+
+    /**
+     * Empties vanilla's {@code DataComponents.ENCODER_CACHE}. It keeps encode results by (codec, value, ops) and used to keep failures too, which
+     * made a valid enchanted stack fail like the foreign one that failed first (see EncoderCacheErrorsMixin; issue 113). @return false when the
+     * cache could not be reached
+     */
+    public static boolean clearEncoderCache() {
+        try {
+            var cache = encoderCache;
+            if (cache == null) {
+                var field = DataComponents.class.getDeclaredField("ENCODER_CACHE");
+                field.setAccessible(true);
+                Object holder = field.get(null);
+                var inner = holder.getClass().getDeclaredField("cache");
+                inner.setAccessible(true);
+                encoderCache = cache = (com.google.common.cache.Cache<?, ?>) inner.get(holder);
+            }
+            cache.invalidateAll();
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
 
     /**
      * A save of the stack failed with "not valid in current registry set" although {@link #repair} found nothing foreign: says what it can
@@ -104,6 +128,7 @@ public final class StackHolders {
                 LOG.error("Saving a stack failed ({}); diagnostics failed: {}", failure.getMessage(), e.toString());
             }
         }
+        clearEncoderCache(); // an earlier failed encode of equal enchantments may be served again for the valid holders
         repair(stack, provider, true);
         try {
             return save.apply(stack);
