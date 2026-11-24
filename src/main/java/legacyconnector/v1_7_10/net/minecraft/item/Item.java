@@ -325,6 +325,12 @@ public class Item {
 
     public void onArmorTick(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
             ItemStack stack) {
+        onArmorTickUpdate(world, player, stack);
+    }
+
+    /** Forge 1.4.7 to 1.6.4 name of {@link #onArmorTick} (1.7.10 renamed it): mods of those versions override this one (IC2's nightvision goggles). */
+    public void onArmorTickUpdate(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            ItemStack stack) {
     }
 
     public boolean onBlockStartBreak(ItemStack stack, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {

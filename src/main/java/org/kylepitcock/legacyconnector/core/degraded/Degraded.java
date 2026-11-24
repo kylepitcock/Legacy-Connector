@@ -46,6 +46,7 @@ public final class Degraded {
         GL_EMULATION("GL call not emulated"),
         MIXIN("mixin not applied"),
         LEGACY_CALL("legacy call failed (fallback used)"),
+        ID_CONFLICT("numeric id taken by another legacy mod (moved to a free id)"),
         OTHER("other");
 
         public final String label;
