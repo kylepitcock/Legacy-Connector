@@ -639,7 +639,7 @@ public final class Forge1201SrgIntermediaryHierarchyAudit {
             Forge1201SourceRuntimeMemberVerifier.Index sourceClasses,
             Forge1201SourceRuntimeMemberVerifier.Index targetClasses,
             Forge1201SourceOfficialMappingIndex sourceMappings,
-            Forge1201TargetOfficialMappingIndex targetMappings) {
+            Forge1201TargetOfficialMappingIndex.Index targetMappings) {
         StringBuilder report = new StringBuilder();
         report.append("FORGE 1.20.1 -> NEOFORGE 1.21.1 HIERARCHY-AWARE INTERMEDIARY AUDIT\n");
         report.append("MODE=READ_ONLY_MAPPING_AND_CLASSFILE_INSPECTION\n");
