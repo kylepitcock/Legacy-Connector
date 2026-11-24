@@ -125,6 +125,28 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
     }
 
     @Override
+    public void registerIngredients(mezz.jei.api.registration.IModIngredientRegistration registration) {
+        loadPlugins();
+        Helpers.MOD_INGREDIENTS.clear();
+        ModIngredientTypes.clear();
+        for (IModPlugin p : plugins) {
+            guard(p, "registerIngredients", () -> {
+                var modIngredients = new ModIngredients();
+                p.registerIngredients((legacyconnector.v1_12_2.mezz.jei.api.IModIngredientRegistration) modIngredients);
+                p.registerIngredients((legacyconnector.v1_12_2.mezz.jei.api.ingredients.IModIngredientRegistration) modIngredients);
+            });
+        }
+        for (var e : Helpers.MOD_INGREDIENTS.entrySet()) registerModType(registration, e.getKey(), e.getValue());
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerModType(mezz.jei.api.registration.IModIngredientRegistration registration, Class<?> cls, Object[] o) {
+        if (o[0] == null || o[1] == null) return;
+        ModIngredientTypes.register(registration, cls, (legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientHelper) o[0],
+                (legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer) o[1], (java.util.Collection) o[2]);
+    }
+
+    @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         loadPlugins();
         categories.clear();
@@ -132,11 +154,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         Helpers.modernGui = registration.getJeiHelpers().getGuiHelper();
         List<IRecipeCategory<?>> legacy = new ArrayList<>();
         for (IModPlugin p : plugins) {
-            guard(p, "registerIngredients", () -> {
-                var modIngredients = new ModIngredients();
-                p.registerIngredients((legacyconnector.v1_12_2.mezz.jei.api.IModIngredientRegistration) modIngredients);
-                p.registerIngredients((legacyconnector.v1_12_2.mezz.jei.api.ingredients.IModIngredientRegistration) modIngredients);
-            });
+
             guard(p, "registerCategories", () -> p.registerCategories(new legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategoryRegistration() {
                 @Override
                 public void addRecipeCategories(IRecipeCategory<?>... recipeCategories) {
@@ -276,7 +294,131 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         }
     }
 
-    /** Recipes a plugin added to the anvil or brewing category (built with the vanilla recipe factory) become the modern ones. */
+    /** The legacy form of what the modern JEI holds (items and fluids are the shim's, a mod's own types are the same objects). */
+    private static Object legacyIngredient(Object modern) {
+        if (modern instanceof net.minecraft.world.item.ItemStack s) return Stacks1122.fromModern(s);
+        if (modern instanceof net.neoforged.neoforge.fluids.FluidStack f) return FluidBridge1122.fromModern(f);
+        return modern;
+    }
+
+    /** Ghost ingredient handlers (dragging an ingredient from the list into a slot of the GUI): the modern JEI has the same hook. */
+    private void registerGhosts(IGuiHandlerRegistration registration) {
+        if (registry.ghosts.isEmpty()) return;
+        registration.addGhostIngredientHandler(org.kylepitcock.legacyconnector.v1_12_2.client.LegacyContainerScreen1122.class,
+                new mezz.jei.api.gui.handlers.IGhostIngredientHandler<org.kylepitcock.legacyconnector.v1_12_2.client.LegacyContainerScreen1122>() {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    @Override
+                    public <I> List<Target<I>> getTargetsTyped(org.kylepitcock.legacyconnector.v1_12_2.client.LegacyContainerScreen1122 screen,
+                            mezz.jei.api.ingredients.ITypedIngredient<I> ingredient, boolean doStart) {
+                        var gui = screen.legacy();
+                        List<Target<I>> out = new ArrayList<>();
+                        if (gui == null) return out;
+                        Object legacy = legacyIngredient(ingredient.getIngredient());
+                        for (Ghost g : registry.ghosts) {
+                            if (!g.guiClass().isInstance(gui)) continue;
+                            try {
+                                var targets = ((legacyconnector.v1_12_2.mezz.jei.api.gui.IGhostIngredientHandler) g.handler()).getTargets(gui, legacy, doStart);
+                                if (targets == null) continue;
+                                for (Object o : targets) {
+                                    var t = (legacyconnector.v1_12_2.mezz.jei.api.gui.IGhostIngredientHandler.Target) o;
+                                    java.awt.Rectangle r = t.getArea();
+                                    var area = new net.minecraft.client.renderer.Rect2i(r.x, r.y, r.width, r.height);
+                                    out.add(new Target<I>() {
+                                        @Override
+                                        public net.minecraft.client.renderer.Rect2i getArea() {
+                                            return area;
+                                        }
+
+                                        @Override
+                                        public void accept(I value) {
+                                            t.accept(legacyIngredient(value));
+                                        }
+                                    });
+                                }
+                            } catch (RuntimeException | LinkageError e) {
+                                if (FAILED.add(g.handler().getClass())) LOG.warn("1.12.2 JEI ghost handler {} failed: {}", g.handler().getClass().getName(), e.toString());
+                            }
+                        }
+                        return out;
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        for (Ghost g : registry.ghosts) {
+                            try {
+                                g.handler().onComplete();
+                            } catch (RuntimeException | LinkageError e) {
+                                LOG.debug("1.12.2 JEI ghost handler {} onComplete failed: {}", g.handler().getClass().getName(), e.toString());
+                            }
+                        }
+                    }
+                });
+    }
+
+    private static legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus<Object> legacyFocus(mezz.jei.api.recipe.IFocus<?> focus) {
+        var mode = focus.getRole() == RecipeIngredientRole.OUTPUT ? legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus.Mode.OUTPUT : legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus.Mode.INPUT;
+        return new Helpers.Focus<>(legacyIngredient(focus.getTypedValue().getIngredient()), mode);
+    }
+
+    /** Recipe registry plugins (a plugin answering lookups itself) are the modern recipe manager plugins, for the bridged categories. */
+    @Override
+    public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
+        if (registry.registryPlugins.isEmpty()) return;
+        registration.addRecipeManagerPlugin(new mezz.jei.api.recipe.advanced.IRecipeManagerPlugin() {
+            @Override
+            public <V> List<RecipeType<?>> getRecipeTypes(mezz.jei.api.recipe.IFocus<V> focus) {
+                List<RecipeType<?>> out = new ArrayList<>();
+                var legacy = legacyFocus(focus);
+                for (var p : registry.registryPlugins) {
+                    try {
+                        var uids = p.getRecipeCategoryUids(legacy);
+                        if (uids != null) for (String uid : uids) {
+                            RecipeType<?> t = typeOf(uid);
+                            if (t != null && !out.contains(t)) out.add(t);
+                        }
+                    } catch (RuntimeException | LinkageError e) {
+                        if (FAILED.add(p.getClass())) LOG.warn("1.12.2 JEI registry plugin {} failed: {}", p.getClass().getName(), e.toString());
+                    }
+                }
+                return out;
+            }
+
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Override
+            public <T, V> List<T> getRecipes(mezz.jei.api.recipe.category.IRecipeCategory<T> category, mezz.jei.api.recipe.IFocus<V> focus) {
+                List<T> out = new ArrayList<>();
+                if (!(category instanceof Category c)) return out;
+                var legacy = legacyFocus(focus);
+                for (var p : registry.registryPlugins) {
+                    try {
+                        var wrappers = p.getRecipeWrappers(c.legacy, legacy);
+                        if (wrappers != null) for (Object w : wrappers) out.add((T) new Recipe((IRecipeWrapper) w, c));
+                    } catch (RuntimeException | LinkageError e) {
+                        if (FAILED.add(p.getClass())) LOG.warn("1.12.2 JEI registry plugin {} failed: {}", p.getClass().getName(), e.toString());
+                    }
+                }
+                return out;
+            }
+
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            @Override
+            public <T> List<T> getRecipes(mezz.jei.api.recipe.category.IRecipeCategory<T> category) {
+                List<T> out = new ArrayList<>();
+                if (!(category instanceof Category c)) return out;
+                for (var p : registry.registryPlugins) {
+                    try {
+                        var wrappers = p.getRecipeWrappers(c.legacy);
+                        if (wrappers != null) for (Object w : wrappers) out.add((T) new Recipe((IRecipeWrapper) w, c));
+                    } catch (RuntimeException | LinkageError e) {
+                        if (FAILED.add(p.getClass())) LOG.warn("1.12.2 JEI registry plugin {} failed: {}", p.getClass().getName(), e.toString());
+                    }
+                }
+                return out;
+            }
+        });
+    }
+
+    /** Recipes a plugin added to the vanilla anvil, brewing, crafting or smelting category become the modern ones. */
     private void registerVanillaRecipes(IRecipeRegistration registration) {
         var factory = registration.getVanillaRecipeFactory();
         List<mezz.jei.api.recipe.vanilla.IJeiAnvilRecipe> anvil = new ArrayList<>();
@@ -295,6 +437,31 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                 LOG.debug("JEI refused a 1.12.2 brewing recipe: {}", e.toString());
             }
         }
+        List<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> crafting = new ArrayList<>();
+        List<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> smelting = new ArrayList<>();
+        int n = 0;
+        for (Object o : registry.recipes.getOrDefault(legacyconnector.v1_12_2.mezz.jei.api.recipe.VanillaRecipeCategoryUid.CRAFTING, List.of())) {
+            try {
+                if (o instanceof IRecipeWrapper w) {
+                    var r = VanillaRecipes.crafting(w, n++);
+                    if (r != null) crafting.add(r);
+                }
+            } catch (RuntimeException | LinkageError e) {
+                if (FAILED.add(o.getClass())) LOG.debug("JEI refused a 1.12.2 crafting recipe {}: {}", o.getClass().getName(), e.toString());
+            }
+        }
+        for (Object o : registry.recipes.getOrDefault(legacyconnector.v1_12_2.mezz.jei.api.recipe.VanillaRecipeCategoryUid.SMELTING, List.of())) {
+            try {
+                if (o instanceof IRecipeWrapper w) {
+                    var r = VanillaRecipes.smelting(w, n++);
+                    if (r != null) smelting.add(r);
+                }
+            } catch (RuntimeException | LinkageError e) {
+                if (FAILED.add(o.getClass())) LOG.debug("JEI refused a 1.12.2 smelting recipe {}: {}", o.getClass().getName(), e.toString());
+            }
+        }
+        if (!crafting.isEmpty()) registration.addRecipes(RecipeTypes.CRAFTING, crafting);
+        if (!smelting.isEmpty()) registration.addRecipes(RecipeTypes.SMELTING, smelting);
         if (!anvil.isEmpty()) registration.addRecipes(RecipeTypes.ANVIL, anvil);
         if (!brewing.isEmpty()) registration.addRecipes(RecipeTypes.BREWING, brewing);
     }
@@ -315,6 +482,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        registerGhosts(registration);
         if (registry.clickAreas.isEmpty() && registry.guiHandlers.isEmpty()) return;
         registration.addGuiContainerHandler(org.kylepitcock.legacyconnector.v1_12_2.client.LegacyContainerScreen1122.class,
                 new mezz.jei.api.gui.handlers.IGuiContainerHandler<org.kylepitcock.legacyconnector.v1_12_2.client.LegacyContainerScreen1122>() {
@@ -385,6 +553,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
 
     record Info(List<?> ingredients, String[] keys) {}
 
+    record Ghost(Class<?> guiClass, legacyconnector.v1_12_2.mezz.jei.api.gui.IGhostIngredientHandler<?> handler) {}
+
     static final class Registry implements legacyconnector.v1_12_2.mezz.jei.api.IModRegistry {
         final Map<String, List<Object>> recipes = new LinkedHashMap<>();
         final List<Handler> handlers = new ArrayList<>();
@@ -398,7 +568,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         final List<legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeHandler<?>> jei3Handlers = new ArrayList<>();
         final List<Object> pendingRecipes = new ArrayList<>();
         final List<Jei1122Transfer.Entry> transfers = new ArrayList<>();
-        final List<Object> recordedOnly = new ArrayList<>();
+        final List<Ghost> ghosts = new ArrayList<>();
+        final List<legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeRegistryPlugin> registryPlugins = new ArrayList<>();
         /** The wrapper made for a recipe object of a JEI 3 plugin, to take it away again. */
         final Map<Object, IRecipeWrapper> wrapperOf = new java.util.IdentityHashMap<>();
 
@@ -408,7 +579,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             jei3Handlers.clear();
             pendingRecipes.clear();
             transfers.clear();
-            recordedOnly.clear();
+            ghosts.clear();
+            registryPlugins.clear();
             recipes.clear();
             handlers.clear();
             catalysts.clear();
@@ -494,12 +666,12 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
 
         @Override
         public void addRecipeRegistryPlugin(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeRegistryPlugin plugin) {
-            if (plugin != null) recordedOnly.add(plugin);
+            if (plugin != null) registryPlugins.add(plugin);
         }
 
         @Override
         public void addGhostIngredientHandler(Class<? extends legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen> guiClass, legacyconnector.v1_12_2.mezz.jei.api.gui.IGhostIngredientHandler<?> handler) {
-            if (handler != null) recordedOnly.add(handler);
+            if (handler != null && guiClass != null) ghosts.add(new Ghost(guiClass, handler));
         }
 
         /** The JEI 3 handler of a recipe object: the category and the wrapper, or null when no handler takes it. */
@@ -831,6 +1003,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         final ItemGroup items = new ItemGroup();
         final FluidGroup fluids = new FluidGroup();
         final IRecipeCategory<?> category;
+        final Map<Class<?>, Group<?>> others = new LinkedHashMap<>();
         boolean shapeless;
 
         Layout(IRecipeCategory<?> category) {
@@ -852,12 +1025,28 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         @Override
         public <T> legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiIngredientGroup<T> getIngredientsGroup(Class<T> cls) {
             if (cls != null && legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack.class.isAssignableFrom(cls)) return (legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiIngredientGroup<T>) fluids;
+            if (cls != null && ModIngredientTypes.of(cls) != null) return (legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiIngredientGroup<T>) others.computeIfAbsent(cls, Group::new);
             return (legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiIngredientGroup<T>) items;
         }
 
         @Override public legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus<?> getFocus() { return null; }
         @Override public void setRecipeTransferButton(int posX, int posY) {}
         @Override public void setShapeless() { shapeless = true; }
+
+        /** The slots of a mod's own ingredient type: the bridged modern type, drawn by the legacy renderer at the size the slot gave. */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        private static void emitCustom(IRecipeLayoutBuilder builder, Class<?> cls, Group<?> group) {
+            var bridged = (ModIngredientTypes.Bridged) ModIngredientTypes.of(cls);
+            if (bridged == null) return;
+            for (var e : group.slots.entrySet()) {
+                var s = e.getValue();
+                IRecipeSlotBuilder slot = builder.addSlot(s.input ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT, s.x + s.insetX, s.y + s.insetY);
+                List<Object> stacks = new ArrayList<>();
+                for (Object o : s.stacks) if (o != null) stacks.add(o);
+                slot.addIngredients(bridged.type(), (List) stacks);
+                slot.setCustomRenderer(bridged.type(), ((ModIngredientTypes.Renderer) bridged.renderer()).sized(s.w - 2 * s.insetX, s.h - 2 * s.insetY));
+            }
+        }
 
         /** The legacy slots as modern ones (an item slot's item sat one pixel inside its frame). */
         void emit(IRecipeLayoutBuilder builder) {
@@ -915,6 +1104,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                     });
                 }
             }
+            for (var e : others.entrySet()) emitCustom(builder, e.getKey(), e.getValue());
             if (shapeless) builder.setShapeless();
         }
     }

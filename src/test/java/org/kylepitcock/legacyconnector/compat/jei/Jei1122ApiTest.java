@@ -86,7 +86,8 @@ class Jei1122ApiTest {
         assertTrue(registry.extraCategories.isEmpty());
         registry.addGhostIngredientHandler(null, null);
         registry.addRecipeRegistryPlugin(null);
-        assertTrue(registry.recordedOnly.isEmpty());
+        assertTrue(registry.ghosts.isEmpty());
+        assertTrue(registry.registryPlugins.isEmpty());
         registry.clear();
     }
 
