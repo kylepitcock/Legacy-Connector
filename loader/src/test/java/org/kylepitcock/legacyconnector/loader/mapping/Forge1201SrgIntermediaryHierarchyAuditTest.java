@@ -33,7 +33,7 @@ final class Forge1201SrgIntermediaryHierarchyAuditTest {
                 Forge1201SrgIntermediaryBridgeResolver.OwnerAwareStatus.MAPPED_VIA_INTERFACE_OWNER,
                 result.ownerAwareResolution().status());
         assertEquals("net/minecraft/Entity", result.sourceInvocationOfficialOwner());
-        assertEquals("net/minecraft/world/level/entity/EntityAccess", result.ownerAwareResolution()
+        assertEquals("net/minecraft/EntityAccess", result.ownerAwareResolution()
                 .candidates().getFirst().mappingOfficialOwner());
         assertEquals("net/minecraft/world/entity/Entity", result.targetInvocationOfficialOwner());
         assertEquals("net/minecraft/world/level/entity/EntityAccess", result.targetMappingOfficialOwner());
