@@ -13,7 +13,7 @@ How they behave:
 
 <!-- switches:begin (generated from Flags, CompatFlags and LoaderFlags; run SwitchRegistryTest with SWITCH_DOCS_UPDATE=1 to rewrite) -->
 
-133 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
+134 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
 
 ### Debug (25)
 
