@@ -62,6 +62,15 @@ public final class CustomModels1122 {
                 RenderErrors1122.report("listing the textures of the model " + variant.ns() + ":" + variant.path(), e);
             }
         }
+        for (var sub : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.loaderSubs()) {
+            IModel model = loadLoaderModel(sub.ns(), sub.path(), sub.source());
+            if (model == null) continue;
+            try {
+                registerTextures(model, new java.util.HashSet<>());
+            } catch (RuntimeException | LinkageError e) {
+                RenderErrors1122.report("listing the textures of the submodel " + sub.ns() + ":" + sub.path(), e);
+            }
+        }
         if (models > 0) LOG.info("{} 1.12.2 model location(s) come from custom model loaders", models);
         if (variants > 0) LOG.info("{} 1.12.2 block variant(s) are models of custom model loaders", variants);
     }
@@ -78,10 +87,13 @@ public final class CustomModels1122 {
      * textures, given the variant's custom data (a map of JSON strings).
      */
     private static IModel loadVariant(org.kylepitcock.legacyconnector.v1_12_2.Assets1122.LoaderVariant variant) {
-        String key = variant.ns() + ":models/" + variant.path();
+        return loadLoaderModel(variant.ns(), variant.path(), variant.source());
+    }
+
+    private static IModel loadLoaderModel(String ns, String path, com.google.gson.JsonObject source) {
+        String key = ns + ":models/" + path;
         try {
-            IModel model = ModelLoaderRegistry.getModel(new ResourceLocation(variant.ns(), "models/" + variant.path()));
-            var source = variant.source();
+            IModel model = ModelLoaderRegistry.getModel(new ResourceLocation(ns, "models/" + path));
             var textures = com.google.common.collect.ImmutableMap.<String, String>builder();
             if (source.has("textures") && source.get("textures").isJsonObject()) {
                 for (var t : source.getAsJsonObject("textures").entrySet()) {
@@ -103,16 +115,61 @@ public final class CustomModels1122 {
         }
     }
 
+    /** Bakes a loader model of a blockstate variant: with the variant's x/y rotation as its model state, as Forge's variant loader did. */
+    private static IBakedModel bakeVariantModel(IModel model, com.google.gson.JsonObject source) {
+        var state = model.getDefaultState();
+        int x = rotation(source, "x"), y = rotation(source, "y");
+        if (x != 0 || y != 0) state = legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelRotation.getModelRotation(x, y);
+        return model.bake(state, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
+    }
+
+    private static int rotation(com.google.gson.JsonObject source, String key) {
+        if (!source.has(key) || !source.get(key).isJsonPrimitive()) return 0;
+        try {
+            return Math.floorMod((int) (Math.round(source.get(key).getAsDouble() / 90.0) * 90), 360);
+        } catch (RuntimeException e) {
+            return 0;
+        }
+    }
+
+    /** A variant's model and its submodels, drawn together (Forge's MultiModel). */
+    private static final class CompositeBaked extends legacyconnector.v1_12_2.net.minecraftforge.client.model.BakedModelWrapper<IBakedModel> {
+        private final java.util.List<IBakedModel> extra;
+
+        CompositeBaked(IBakedModel base, java.util.List<IBakedModel> extra) {
+            super(base);
+            this.extra = extra;
+        }
+
+        @Override
+        public java.util.List<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.BakedQuad> getQuads(
+                legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, long rand) {
+            var all = new java.util.ArrayList<>(super.getQuads(state, side, rand));
+            for (IBakedModel m : extra) all.addAll(m.getQuads(state, side, rand));
+            return all;
+        }
+    }
+
     /** Bakes the loader models of the block variants no json describes, as the models of their metadata states. */
     private static void bakeVariants(Map<net.minecraft.client.resources.model.ModelResourceLocation, BakedModel> models) {
+        var subs = org.kylepitcock.legacyconnector.v1_12_2.Assets1122.loaderSubs();
         for (var variant : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.loaderVariants()) {
             IModel model = loadVariant(variant);
             if (model == null) continue;
             try {
                 if (!(org.kylepitcock.legacyconnector.core.host.HostRegistries.get(net.minecraft.core.registries.BuiltInRegistries.BLOCK, variant.block()) instanceof
                         org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block block)) continue;
-                IBakedModel baked = model.bake(model.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
+                IBakedModel baked = bakeVariantModel(model, variant.source());
                 if (baked == null) continue;
+                // Forge's variant loader drew the variant's submodels with it (each with its own rotation and custom data)
+                java.util.List<IBakedModel> extra = new java.util.ArrayList<>();
+                for (var sub : subs) {
+                    if (!sub.block().equals(variant.block()) || sub.meta() != variant.meta()) continue;
+                    IModel subModel = loadLoaderModel(sub.ns(), sub.path(), sub.source());
+                    IBakedModel subBaked = subModel == null ? null : bakeVariantModel(subModel, sub.source());
+                    if (subBaked != null) extra.add(subBaked);
+                }
+                if (!extra.isEmpty()) baked = new CompositeBaked(baked, extra);
                 var state = block.defaultBlockState().setValue(org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.META, variant.meta());
                 models.put(net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state), Models1122.modern(baked));
             } catch (RuntimeException | LinkageError ex) {

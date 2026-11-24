@@ -61,10 +61,19 @@ public final class LegacyBiomes1122 {
 
     public static void contribute(Map<String, Supplier<byte[]>> out) {
         int n = 0;
+        // biomes the default overworld places (BiomeManager lists): they keep their analog's vanilla features and carvers and decorate through the legacy decorator
+        Map<ResourceLocation, String> placed = new java.util.HashMap<>();
+        try {
+            for (var e : LegacyBiomeClimate1122.entries()) placed.put(e.biome().location(), e.analog().location().getPath());
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("Could not read the overworld biome placement: {}", e.toString());
+        }
         for (Biome b : modBiomes()) {
             try {
                 ResourceLocation id = BiomeBridge1122.modernId(b);
-                byte[] bytes = biomeJson(b).toString().getBytes(StandardCharsets.UTF_8);
+                JsonObject biome = biomeJson(b);
+                if (placed.containsKey(id)) inheritAnalog(biome, placed.get(id));
+                byte[] bytes = biome.toString().getBytes(StandardCharsets.UTF_8);
                 out.put("data/" + id.getNamespace() + "/worldgen/biome/" + id.getPath() + ".json", () -> bytes);
                 n++;
             } catch (RuntimeException | LinkageError e) {
@@ -72,6 +81,42 @@ public final class LegacyBiomes1122 {
             }
         }
         if (n > 0) LOG.info("1.12.2: generated {} mod biome(s)", n);
+    }
+
+    /**
+     * A mod biome that generates in the default overworld: the vanilla analog's features (ores, caves' carvers, plants) with its
+     * trees and grass replaced by the legacy decorator ({@code legacyconnector:legacy_biome}, which also applies the surface blocks).
+     */
+    private static void inheritAnalog(JsonObject json, String analog) {
+        JsonObject template = null;
+        String path = "data/minecraft/worldgen/biome/" + analog + ".json";
+        for (ClassLoader cl : new ClassLoader[] {net.minecraft.world.level.biome.Biome.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
+            if (cl == null) continue;
+            try (var in = cl.getResourceAsStream(path)) {
+                if (in != null) {
+                    template = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+                    break;
+                }
+            } catch (java.io.IOException | RuntimeException ignored) {
+                // try the next loader
+            }
+        }
+        if (template == null) {
+            LOG.warn("Vanilla biome template {} not found; the mod biome keeps no vanilla features", analog);
+            return;
+        }
+        JsonArray steps = template.getAsJsonArray("features");
+        while (steps.size() <= 9) steps.add(new JsonArray());
+        JsonArray vegetation = new JsonArray();
+        for (var f : steps.get(9).getAsJsonArray()) {
+            String id = f.isJsonPrimitive() ? f.getAsString() : "";
+            if (id.contains("tree") || id.contains("grass") || id.contains("bamboo") || id.contains("vines")) continue;
+            vegetation.add(f);
+        }
+        vegetation.add("legacyconnector:legacy_biome");
+        steps.set(9, vegetation);
+        json.add("features", steps);
+        if (template.has("carvers")) json.add("carvers", template.get("carvers"));
     }
 
     private static JsonObject biomeJson(Biome b) {
@@ -158,6 +203,89 @@ public final class LegacyBiomes1122 {
             return s.getAsInt();
         } catch (RuntimeException | LinkageError e) {
             return fallback;
+        }
+    }
+
+    // ------------------------------------------------------------------ decoration in the default overworld
+
+    private static final java.util.concurrent.atomic.AtomicInteger DECORATED = new java.util.concurrent.atomic.AtomicInteger();
+    private static volatile Map<ResourceLocation, Biome> byId;
+
+    public static void registerDecoration() {
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyBiomeFeature.addHook(LegacyBiomes1122::decorate);
+    }
+
+    /** O(1): chunk generation asks for this per column; the registries are final once the first chunk generates, so the map is built once. */
+    private static Biome byModernId(ResourceLocation id) {
+        Map<ResourceLocation, Biome> m = byId;
+        if (m == null) {
+            synchronized (LegacyBiomes1122.class) {
+                m = byId;
+                if (m == null) {
+                    Map<ResourceLocation, Biome> built = new java.util.HashMap<>();
+                    for (Biome b : modBiomes()) built.put(BiomeBridge1122.modernId(b), b);
+                    byId = m = built;
+                }
+            }
+        }
+        return m.get(id);
+    }
+
+    /** What GenLayer-placed mod biomes got in 1.12: the surface blocks of genTerrainBlocks, then the biome's decorator for the chunk. */
+    private static boolean decorate(net.minecraft.world.level.levelgen.feature.FeaturePlaceContext<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> ctx) {
+        net.minecraft.world.level.WorldGenLevel level = ctx.level();
+        net.minecraft.core.BlockPos origin = ctx.origin();
+        int chunkX = origin.getX() >> 4;
+        int chunkZ = origin.getZ() >> 4;
+        int cx = (chunkX << 4) + 8;
+        int cz = (chunkZ << 4) + 8;
+        var center = new net.minecraft.core.BlockPos(cx, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, cx, cz), cz);
+        Biome legacy = level.getBiome(center).unwrapKey().map(k -> byModernId(k.location())).orElse(null);
+        if (legacy == null) return false;
+        if (DECORATED.incrementAndGet() <= 5) LOG.info("1.12.2 overworld decoration of chunk {} {} in {}", chunkX, chunkZ, BiomeBridge1122.modernId(legacy));
+        applySurface(level, chunkX, chunkZ, legacy);
+        legacyconnector.v1_12_2.net.minecraft.world.World world = WorldBridge1122.wrap(level);
+        legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$beginPopulating(chunkX, chunkZ);
+        try {
+            // ChunkGeneratorOverworld.populate's seeding
+            java.util.Random rand = new java.util.Random(level.getSeed());
+            long a = rand.nextLong() / 2L * 2L + 1L;
+            long b = rand.nextLong() / 2L * 2L + 1L;
+            rand.setSeed((long) chunkX * a + (long) chunkZ * b ^ level.getSeed());
+            legacy.decorate(world, rand, new BlockPos(chunkX << 4, 0, chunkZ << 4));
+        } finally {
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$endPopulating();
+            WorldBridge1122.mcc$releaseRegion();
+        }
+        return true;
+    }
+
+    /** The legacy biome's topBlock/fillerBlock replace the vanilla grass/dirt in its columns (what genTerrainBlocks did). */
+    private static void applySurface(net.minecraft.world.level.WorldGenLevel level, int chunkX, int chunkZ, Biome legacy) {
+        var top = legacy.topBlock == null ? null : StatesBridge1122.toModern(legacy.topBlock);
+        var filler = legacy.fillerBlock == null ? null : StatesBridge1122.toModern(legacy.fillerBlock);
+        var grass = net.minecraft.world.level.block.Blocks.GRASS_BLOCK;
+        var dirt = net.minecraft.world.level.block.Blocks.DIRT;
+        if ((top == null || top.is(grass)) && (filler == null || filler.is(dirt))) return;
+        var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int dx = 0; dx < 16; dx++) {
+            for (int dz = 0; dz < 16; dz++) {
+                int x = (chunkX << 4) + dx;
+                int z = (chunkZ << 4) + dz;
+                int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1;
+                pos.set(x, y, z);
+                if (level.getBiome(pos).unwrapKey().map(k -> byModernId(k.location()) != legacy).orElse(true)) continue;
+                for (int depth = 0; depth < 4; depth++, pos.move(0, -1, 0)) {
+                    var s = level.getBlockState(pos);
+                    if (depth == 0 && top != null && s.is(grass)) {
+                        level.setBlock(pos, top, 2);
+                    } else if (filler != null && (s.is(dirt) || s.is(grass))) {
+                        level.setBlock(pos, filler, 2);
+                    } else if (depth > 0) {
+                        break;
+                    }
+                }
+            }
         }
     }
 }

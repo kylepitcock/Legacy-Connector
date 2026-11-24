@@ -105,6 +105,19 @@ public final class Assets1122 implements GeneratedPack.Contributor {
 
     private static final List<LoaderVariant> LOADER_VARIANTS = new java.util.concurrent.CopyOnWriteArrayList<>();
 
+    /**
+     * A submodel of a block variant whose model a mod's own ModelLoader loads (Forge's "submodel": drawn in addition to the variant's model;
+     * The Betweenlands' poison ivy has a blank model and one submodel per connected side). {@code index} is the order in the variant.
+     */
+    public record LoaderSub(ResourceLocation block, int meta, int index, String ns, String path, JsonObject source) {}
+
+    private static final List<LoaderSub> LOADER_SUBS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** The loader submodels of all block variants. */
+    public static List<LoaderSub> loaderSubs() {
+        return List.copyOf(LOADER_SUBS);
+    }
+
     /** Modern state locations ("ns:block#meta=N") drawn by a stand-in cube because the legacy block had no usable model json (1.12 drew the missing model there). */
     private static final java.util.Set<String> FALLBACK_STATES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
@@ -1890,10 +1903,15 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         if (!modelResolves(modelNs, modelPath, out, 0)) {
             // a model no json file describes may belong to a mod's own ModelLoader (Immersive Engineering's "smartmodel/connector"): the
             // variant is baked from that loader at ModelEvent (CustomModels1122), the blockstate gets a plain cube until then
-            java.util.regex.Matcher meta = java.util.regex.Pattern.compile("meta_(\\d+)(_\\d+)?").matcher(key);
+            java.util.regex.Matcher meta = java.util.regex.Pattern.compile("meta_(\\d+)(_\\d+)?(_sub(\\d+))?").matcher(key);
             if (meta.matches() && loaderAccepts(modelNs, modelPath)) {
                 int n = Integer.parseInt(meta.group(1));
-                if (LOADER_VARIANTS.stream().noneMatch(v -> v.block().equals(blockId) && v.meta() == n)) {
+                if (meta.group(3) != null) {
+                    int index = Integer.parseInt(meta.group(4));
+                    if (LOADER_SUBS.stream().noneMatch(v -> v.block().equals(blockId) && v.meta() == n && v.index() == index)) {
+                        LOADER_SUBS.add(new LoaderSub(blockId, n, index, modelNs, modelPath, source.deepCopy()));
+                    }
+                } else if (LOADER_VARIANTS.stream().noneMatch(v -> v.block().equals(blockId) && v.meta() == n)) {
                     LOADER_VARIANTS.add(new LoaderVariant(blockId, n, modelNs, modelPath, source.deepCopy()));
                 }
                 return fallbackModel(blockId, source, key, out) instanceof JsonObject placeholder ? placeholder : null;

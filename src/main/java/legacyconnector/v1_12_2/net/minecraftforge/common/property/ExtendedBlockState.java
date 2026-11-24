@@ -92,9 +92,9 @@ public class ExtendedBlockState extends BlockStateContainer {
         }
 
         @Override
-        public ImmutableMap<IUnlistedProperty<?>, com.google.common.base.Optional<?>> getUnlistedProperties() {
-            ImmutableMap.Builder<IUnlistedProperty<?>, com.google.common.base.Optional<?>> b = ImmutableMap.builder();
-            for (IUnlistedProperty<?> p : unlistedProperties) b.put(p, com.google.common.base.Optional.fromNullable(unlisted.get(p)));
+        public ImmutableMap<IUnlistedProperty<?>, java.util.Optional<?>> getUnlistedProperties() {
+            ImmutableMap.Builder<IUnlistedProperty<?>, java.util.Optional<?>> b = ImmutableMap.builder();
+            for (IUnlistedProperty<?> p : unlistedProperties) b.put(p, java.util.Optional.ofNullable(unlisted.get(p)));
             return b.build();
         }
 

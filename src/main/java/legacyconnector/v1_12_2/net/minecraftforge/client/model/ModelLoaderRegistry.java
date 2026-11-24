@@ -65,7 +65,11 @@ public class ModelLoaderRegistry {
                 ? location : new ResourceLocation(location.getNamespace(), "models/" + location.getPath());
         ICustomModelLoader loader = mcc$loaderFor(actual);
         IModel model;
-        if (loader != null) {
+        if (loader == null && isForgeFluid(actual)) {
+            // Forge's own loader of "forge:fluid" / "forge:block/fluid" (a blockstate's fluid layer: The Betweenlands' underwater reeds); the custom data
+            // picks the fluid. It is not a mod loader, so without this the location became a json model that is not there: a cube of the missing texture.
+            model = ModelFluid.WATER;
+        } else if (loader != null) {
             model = loader.loadModel(actual);
             if (model == null) throw new LoaderException("Loader " + loader + " returned null for " + location);
         } else {
@@ -75,6 +79,12 @@ public class ModelLoaderRegistry {
         }
         CACHE.put(location, model);
         return model;
+    }
+
+    private static boolean isForgeFluid(ResourceLocation location) {
+        if (!"forge".equals(location.getNamespace()) || location instanceof ModelResourceLocation) return false;
+        String path = location.getPath();
+        return path.equals("fluid") || path.equals("models/block/fluid") || path.equals("models/block/fluid.json") || path.equals("models/fluid");
     }
 
     public static IModel getModelOrMissing(ResourceLocation location) {
