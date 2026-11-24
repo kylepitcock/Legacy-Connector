@@ -172,7 +172,10 @@ public final class ItemBridge1122 {
                 // many items list their subtypes only for their own tab (Electroblob's Wizardry spell books: `if (tab == WizardryTabs.SPELLS)`)
                 var own = item.getCreativeTab();
                 if (own != null && own != CreativeTabs.SEARCH) item.getSubItems(own, list);
-                for (var s : list) if (!s.isEmpty() && s.getItem() == item && s.getMetadata() >= 0 && !out.contains(s.getMetadata())) out.add(s.getMetadata());
+                // an item without setHasSubtypes whose listed stacks carry NBT (Forestry's cans: meta 1 plus the fluid in the tag) is one item with data, not subtypes
+                boolean tagged = false;
+                if (!item.getHasSubtypes()) for (var s : list) if (!s.isEmpty() && s.getItem() == item && s.hasTagCompound()) tagged = true;
+                if (!tagged) for (var s : list) if (!s.isEmpty() && s.getItem() == item && s.getMetadata() >= 0 && !out.contains(s.getMetadata())) out.add(s.getMetadata());
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Could not list the subtypes of {}: {}", item.getRegistryName(), e.toString());
             }
