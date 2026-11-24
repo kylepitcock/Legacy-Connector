@@ -49,10 +49,20 @@ public final class Forge1201TargetApiVerifier {
             String targetDescriptor,
             MemberStatus status,
             List<String> hierarchyVisited,
-            List<String> callSites) {
+            List<String> callSites,
+            String mappingRule) {
         public MemberIssue {
             hierarchyVisited = List.copyOf(hierarchyVisited);
             callSites = List.copyOf(callSites);
+            mappingRule = mappingRule == null ? "CATALOG_METHOD_OR_FIELD_MAPPING" : mappingRule;
+        }
+
+        public MemberIssue(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor, MemberStatus status,
+                List<String> hierarchyVisited, List<String> callSites) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor, status,
+                    hierarchyVisited, callSites, "CATALOG_METHOD_OR_FIELD_MAPPING");
         }
 
         /** Source-compatible constructor for callers that do not retain hierarchy details. */
@@ -60,13 +70,13 @@ public final class Forge1201TargetApiVerifier {
                 String sourceOwner, String name, String sourceDescriptor,
                 String targetOwner, String targetDescriptor, MemberStatus status, List<String> callSites) {
             this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor,
-                    status, List.of(), callSites);
+                    status, List.of(), callSites, "CATALOG_METHOD_OR_FIELD_MAPPING");
         }
 
         public String display() {
             return sourceOwner.replace('/', '.') + "#" + name + sourceDescriptor
                     + " -> " + targetOwner.replace('/', '.') + "#" + name + targetDescriptor
-                    + " [" + status + "]";
+                    + " [" + status + "; mapping=" + mappingRule + "]";
         }
     }
 
@@ -78,16 +88,26 @@ public final class Forge1201TargetApiVerifier {
             String targetOwner,
             String targetDescriptor,
             List<String> hierarchyVisited,
-            List<String> callSites) {
+            List<String> callSites,
+            String mappingRule) {
         public MemberMatch {
             hierarchyVisited = List.copyOf(hierarchyVisited);
             callSites = List.copyOf(callSites);
+            mappingRule = mappingRule == null ? "CATALOG_METHOD_OR_FIELD_MAPPING" : mappingRule;
+        }
+
+        public MemberMatch(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor,
+                List<String> hierarchyVisited, List<String> callSites) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor,
+                    hierarchyVisited, callSites, "CATALOG_METHOD_OR_FIELD_MAPPING");
         }
 
         public String display() {
             return sourceOwner.replace('/', '.') + "#" + name + sourceDescriptor
                     + " -> " + targetOwner.replace('/', '.') + "#" + name + targetDescriptor
-                    + " [FOUND; hierarchy=" + hierarchyVisited + "]";
+                    + " [FOUND; hierarchy=" + hierarchyVisited + "; mapping=" + mappingRule + "]";
         }
     }
 
@@ -362,18 +382,19 @@ public final class Forge1201TargetApiVerifier {
         for (var reference : candidateMethods) {
             String targetOwner = mapType(reference.owner());
             String targetDescriptor = mapMethodDescriptor(reference.owner(), reference.name(), reference.descriptor());
+            String mappingRule = methodDescriptorMappingRule(reference.owner(), reference.name(), reference.descriptor());
             if (descriptorNeedsManualAdapter(reference.descriptor(), true)) {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                        List.of(), methodCallSites(analysis, reference)));
+                        List.of(), methodCallSites(analysis, reference), "MANUAL_ADAPTER_CATALOG"));
                 continue;
             }
             if (isUnavailableClass(targetOwner)) {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
-                        List.of(), methodCallSites(analysis, reference)));
+                        List.of(), methodCallSites(analysis, reference), mappingRule));
                 continue;
             }
             Set<String> hierarchyVisited = new LinkedHashSet<>();
@@ -385,7 +406,7 @@ public final class Forge1201TargetApiVerifier {
                 verifiedMethodMatches.add(new MemberMatch(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, new ArrayList<>(hierarchyVisited),
-                        methodCallSites(analysis, reference)));
+                        methodCallSites(analysis, reference), mappingRule));
             } else {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
@@ -401,18 +422,19 @@ public final class Forge1201TargetApiVerifier {
         for (var reference : candidateFields) {
             String targetOwner = mapType(reference.owner());
             String targetDescriptor = mapFieldDescriptor(reference.descriptor());
+            String mappingRule = "CATALOG_FIELD_DESCRIPTOR_MAPPING";
             if (descriptorNeedsManualAdapter(reference.descriptor(), false)) {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                        List.of(), fieldCallSites(analysis, reference)));
+                        List.of(), fieldCallSites(analysis, reference), "MANUAL_ADAPTER_CATALOG"));
                 continue;
             }
             if (isUnavailableClass(targetOwner)) {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
-                        List.of(), fieldCallSites(analysis, reference)));
+                        List.of(), fieldCallSites(analysis, reference), mappingRule));
                 continue;
             }
             Set<String> hierarchyVisited = new LinkedHashSet<>();
@@ -424,7 +446,7 @@ public final class Forge1201TargetApiVerifier {
                 verifiedFieldMatches.add(new MemberMatch(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, new ArrayList<>(hierarchyVisited),
-                        fieldCallSites(analysis, reference)));
+                        fieldCallSites(analysis, reference), mappingRule));
             } else {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
@@ -494,6 +516,17 @@ public final class Forge1201TargetApiVerifier {
                     Type.getArgumentTypes(mappedDescriptor));
         }
         return mappedDescriptor;
+    }
+
+    private static String methodDescriptorMappingRule(String sourceOwner, String methodName, String descriptor) {
+        Type sourceReturn = Type.getReturnType(descriptor);
+        if ("net/minecraftforge/registries/DeferredRegister".equals(sourceOwner)
+                && "register".equals(methodName)
+                && sourceReturn.getSort() == Type.OBJECT
+                && "net/minecraftforge/registries/RegistryObject".equals(sourceReturn.getInternalName())) {
+            return "DEFERRED_REGISTER_REGISTER_RETURNS_DEFERRED_HOLDER";
+        }
+        return "CATALOG_METHOD_OWNER_AND_DESCRIPTOR_MAPPING";
     }
 
     private static String mapFieldDescriptor(String descriptor) {
