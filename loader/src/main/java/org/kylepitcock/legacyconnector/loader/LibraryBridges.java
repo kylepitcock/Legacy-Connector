@@ -57,64 +57,47 @@ public final class LibraryBridges {
             // Thermal Dynamics, Mekanism, ... need): re-implemented in the 1.12.2 shim, so the library jar itself is not loaded.
             new Bridge("redstoneflux", "cofh/redstoneflux/", null, "cofhEnergy"));
 
+    /** One row of {@code engine-mods.tsv}: a mod that only makes sense on its own engine (see {@link #engineMods()}). */
+    public record EngineMod(String id, Set<String> versions, List<String> names, String replacement, String reason) {}
+
     /**
-     * Mods that only make sense on the 1.7.10 engine or launcher (performance/bug-fix patches, ID extenders, mixin
-     * loaders, profilers). They are not translated; the report says why. Client-side conveniences (Inventory Tweaks,
-     * JourneyMap, Custom Main Menu, ...) are loaded like any other legacy mod.
-     * Keys are lower-case legacy mod ids.
+     * Mods that only make sense on their own engine or launcher (performance/bug-fix patches, ID extenders, mixin loaders, profilers, renderer
+     * replacements). They are not translated; the report says why. Client-side conveniences (Inventory Tweaks, JourneyMap, Custom Main Menu, ...)
+     * are loaded like any other legacy mod. Source of truth is the resource {@code legacyconnector/engine-mods.tsv}, which the compatibility
+     * tooling (tools/compat/engine_mods.py) reads too, so the site and the game agree. Keys are lower-case legacy mod ids.
      */
-    private static final java.util.Map<String, String> OBSOLETE = java.util.Map.ofEntries(
-            java.util.Map.entry("fastcraft", "1.7.10 performance patches; not applicable to 1.21.1"),
-            java.util.Map.entry("archaicfix", "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"),
-            java.util.Map.entry("hodgepodge", "1.7.10 bug-fix patches; not applicable to 1.21.1"),
-            java.util.Map.entry("bugtorch", "1.7.10 bug-fix patches; not applicable to 1.21.1"),
-            java.util.Map.entry("coretweaks", "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"),
-            java.util.Map.entry("lwjgl3ify", "runs 1.7.10 on LWJGL 3 / modern Java; 1.21.1 already does"),
-            java.util.Map.entry("angelica", "1.7.10 renderer replacement; use a modern renderer mod (e.g. Sodium/Embeddium)"),
-            java.util.Map.entry("mcpatcherforge", "1.7.10 MCPatcher port patching the old renderer (bundled in Angelica); the layer converts connected textures itself"),
-            java.util.Map.entry("beddium", "1.7.10 renderer replacement (Sodium port); use a modern renderer mod (e.g. Sodium/Embeddium)"),
-            java.util.Map.entry("falsetweaks", "1.7.10 renderer performance patches; not applicable to 1.21.1"),
-            java.util.Map.entry("infiview", "1.7.10 render distance patch; 1.21.1 has no such limit"),
-            java.util.Map.entry("angellib", "library of the 1.7.10 renderer replacement Angelica; not applicable to 1.21.1"),
-            java.util.Map.entry("euphoriacompanion", "companion of the 1.7.10 shader renderer Angelica; use a modern shader mod (Iris)"),
-            java.util.Map.entry("crash_assistant", "1.7.10 JVM crash window (AWT); not applicable to 1.21.1"),
-            java.util.Map.entry("notfine","1.7.10 graphics options; use a modern renderer/options mod"),
-            java.util.Map.entry("neid", "1.7.10 ID limit extender; 1.21.1 has no ID limits"),
-            java.util.Map.entry("fastleafdecay", "use a modern fast leaf decay mod"),
-            java.util.Map.entry("betterloadingscreen", "1.7.10 loading screen; NeoForge has its own"),
-            java.util.Map.entry("bettercrashes", "1.7.10 crash handling; not applicable"),
-            java.util.Map.entry("letsnecryptcraft", "Java 8 certificate fix; modern Java includes it"),
-            java.util.Map.entry("helpfixer", "1.7.10 /help fix; not needed on 1.21.1"),
-            java.util.Map.entry("netherportalfix", "1.7.10 portal fix; use a modern equivalent if wanted"),
-            java.util.Map.entry("resourceloader", "1.7.10 resource pack loader; 1.21.1 loads resource packs natively"),
-            java.util.Map.entry("oauth", "1.7.10 Microsoft login helper; not needed"),
-            java.util.Map.entry("betterachievements", "1.21 replaced achievements with advancements"),
-            java.util.Map.entry("unimixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("gtnhmixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("spongemixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("mixinbooterlegacy", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("unimixins-mixin", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("unimixins-compat", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("mixingasm", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("gasstation", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("mixinextras", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("opis", "1.7.10 profiler; use Spark"),
-            // 1.12.2
-            java.util.Map.entry("cubicchunks", "1.12.2 world-height mod that replaces vanilla chunk storage, world generation and lighting with 3D cubes; cannot be translated onto 1.21.1 (use a native height/datapack approach)"),
-            java.util.Map.entry("betterfps", "1.12.2 performance patches; not applicable to 1.21.1"),
-            java.util.Map.entry("foamfix", "1.12.2 performance/memory patches; not applicable to 1.21.1"),
-            java.util.Map.entry("phosphor-lighting", "1.12.2 lighting engine rewrite; 1.21.1 has its own"),
-            java.util.Map.entry("vanillafix", "1.12.2 bug-fix patches; not applicable to 1.21.1"),
-            java.util.Map.entry("randompatches", "1.12.2 bug-fix patches; not applicable to 1.21.1"),
-            java.util.Map.entry("aireducer", "1.12.2 AI performance patch; not applicable to 1.21.1"),
-            java.util.Map.entry("mixinbooter", "1.12.2 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("loliasm", "1.12.2 performance patches; not applicable to 1.21.1"),
-            java.util.Map.entry("ifpatcher", "1.12.2 class patcher; not applicable to 1.21.1"),
-            java.util.Map.entry("oldjavawarning", "warns about old Java versions; not applicable"),
-            java.util.Map.entry("serializationisbad", "1.12.2 deserialization security patch; not applicable to 1.21.1"),
-            java.util.Map.entry("tidychunk", "1.12.2 chunk unloading tweak; not applicable to 1.21.1"),
-            java.util.Map.entry("reauth", "1.12.2 login helper; not needed"),
-            java.util.Map.entry("laggoggles", "1.12.2 profiler; use Spark"));
+    private static final java.util.Map<String, EngineMod> ENGINE_MODS = loadEngineMods();
+
+    private static java.util.Map<String, EngineMod> loadEngineMods() {
+        java.util.Map<String, EngineMod> out = new java.util.LinkedHashMap<>();
+        try (java.io.InputStream in = LibraryBridges.class.getResourceAsStream("/legacyconnector/engine-mods.tsv")) {
+            if (in == null) throw new IllegalStateException("engine-mods.tsv is missing from the loader");
+            for (String line : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\\R")) {
+                if (line.isBlank() || line.startsWith("#")) continue;
+                String[] c = line.split("\t", -1);
+                if (c.length < 5) continue;
+                String id = c[0].trim().toLowerCase(Locale.ROOT);
+                List<String> names = c[2].isBlank() ? List.of() : List.of(c[2].split("\\|"));
+                out.put(id, new EngineMod(id, Set.of(c[1].trim().split(",")), names, c[3].trim(), c[4].trim()));
+            }
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+        return java.util.Collections.unmodifiableMap(out);
+    }
+
+    /** The engine-only mods table (lower-case mod id to row). */
+    public static java.util.Map<String, EngineMod> engineMods() {
+        return ENGINE_MODS;
+    }
+
+    /** The row for a legacy mod id of a jar of the given Minecraft version ("1.7.10", "1.20.1", ...), or null. */
+    static EngineMod engineMod(String legacyId, LegacyJar jar) {
+        EngineMod m = ENGINE_MODS.get(legacyId.toLowerCase(Locale.ROOT));
+        if (m == null) return null;
+        if (jar.version != null && m.versions().contains(jar.version.id())) return m;
+        return jar.sourceVersion != null && m.versions().contains(jar.sourceVersion.id()) ? m : null;
+    }
 
     /** Legacy mod ids (lower case) the pack maker switched off with {@code mods.skip} in config/legacyconnector.properties. */
     private static volatile Set<String> userSkips = Set.of();
@@ -176,7 +159,7 @@ public final class LibraryBridges {
 
     /** Lower-case ids of the engine-only mods that are never loaded: a dependency on one of them counts as satisfied. */
     public static Set<String> obsoleteIds() {
-        return OBSOLETE.keySet();
+        return ENGINE_MODS.keySet();
     }
 
     /** Why a legacy jar is obsolete on 1.21.1 (all its mods are on the list) or switched off by the pack maker, or null. */
@@ -188,8 +171,9 @@ public final class LibraryBridges {
         }
         String reason = null;
         for (LegacyModDecl m : jar.mods) {
-            reason = OBSOLETE.get(m.legacyId.toLowerCase(Locale.ROOT));
-            if (reason == null) return null;
+            EngineMod e = engineMod(m.legacyId, jar);
+            if (e == null) return null;
+            reason = e.reason();
         }
         return reason;
     }

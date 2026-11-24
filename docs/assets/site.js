@@ -3,23 +3,35 @@
 (function () {
   "use strict";
   var REPO = "kylepitcock/Legacy-Connector";
-  var LABEL = { perfect: "Fully playable", playable: "Mostly playable", works: "Basics work", partial: "Partly working", loads: "Starts and loads", fails: "Does not start", crashes: "Crashes the game", untested: "Not tested" };
+  var LABEL = { perfect: "Fully playable", playable: "Mostly playable", works: "Basics work", partial: "Partly working", loads: "Starts and loads", fails: "Does not start", crashes: "Crashes the game", untested: "Not tested",
+                 native: "Use the native 1.21.1 version", engine: "Engine mod: not needed" };
   var TIER = ["community", "maintainer", "client", "corpus", "probe"];
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
+  // Two statuses are not ratings: they are in no percentage and in no version card's "N mods". "native": a native NeoForge 1.21.1 version of the mod exists (1.20.1 jars).
+  // "engine": a renderer/performance/patch mod the layer never hosts by design (loader/.../engine-mods.tsv, every version). Both stay searchable.
+  var EXTRA = ["native", "engine"];
+  var HOSTED_OK = ["perfect", "playable", "works", "partial"]; // a better-sourced result that says the mod really runs when hosted outranks "engine"/"native"
+  function counted(s) { return EXTRA.indexOf(s) < 0; }
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
   var PLANNED = ["1.6.4", "1.5.2", "1.4.7", "1.2.5", "b1.7.3", "1.20.1", "1.19.2", "1.18.2", "1.16.5"]; // roadmap order (docs/wiki/Version-Roadmap.md)
   // Plain-language result categories of the automated check (probe.py "kind"). "unresolved" is the older, unsplit cause of runs made before the split.
   var KINDS = [
     { key: "links", label: "Ready to test", color: "var(--links)", hint: "translates, and nothing it needs is missing" },
+    { key: "soft", label: "Starts, optional parts off", color: "var(--soft)", hint: "unresolved references only in code nothing runs at startup (optional integrations that are off)" },
     { key: "stubs", label: "Partly placeholder", color: "var(--stubs)", hint: "translates, but 10+ of its features are empty placeholders" },
     { key: "gap_shim", label: "Missing game features", color: "var(--gap-shim)", hint: "needs old Minecraft/Forge features we have not built yet" },
     { key: "gap_mod", label: "Needs another mod", color: "var(--gap-mod)", hint: "depends on another mod's code that is not available or does not match" },
     { key: "gap_lib", label: "Needs removed code", color: "var(--gap-lib)", hint: "uses old Java/library code that no longer exists" },
     { key: "unresolved", label: "Has missing pieces", color: "var(--unresolved)", hint: "something it needs is missing (older runs, cause not split)" },
-    { key: "obsolete", label: "Not needed", color: "var(--obsolete)", hint: "engine patches with nothing to do on 1.21.1, and 1.20.1 libraries replaced by their native 1.21.1 build" }
+    { key: "obsolete", label: "Not needed", color: "var(--obsolete)", hint: "libraries replaced by their native 1.21.1 build (older runs) and Fabric/Quilt jars the layer never translates" }
   ];
-  var RESLABEL = { links: "Ready", stubs: "Placeholder", gap_shim: "Game features", gap_mod: "Other mod", gap_lib: "Old code", unresolved: "Missing", obsolete: "Not needed" };
+  // not slices of the pie: in no percentage (shown under it, still filterable)
+  var UNCOUNTED = [
+    { key: "native", label: "Use the native 1.21.1 version", color: "var(--native)", hint: "a NeoForge 1.21.1 version of this mod exists (Modrinth)" },
+    { key: "engine", label: "Engine mod: not needed", color: "var(--engine)", hint: "performance, renderer and patch mods the layer never hosts by design" }
+  ];
+  var RESLABEL = { links: "Ready", soft: "Optional parts off", native: "Native 1.21.1", engine: "Engine mod", stubs: "Placeholder", gap_shim: "Game features", gap_mod: "Other mod", gap_lib: "Old code", unresolved: "Missing", obsolete: "Not needed" };
   // everything except "not needed" is a mod the layer has to handle; only "links" counts as ready
   function missingCount(c) { return (c.gap_shim || 0) + (c.gap_mod || 0) + (c.gap_lib || 0) + (c.unresolved || 0); }
   var PAGE_MODS = 80, PAGE_PROBE = 100, HISTORY_SHOWN = 8;
@@ -65,9 +77,10 @@
     for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (+x[i] || 0) - (+y[i] || 0); if (d) return d; }
     return 0;
   }
-  function total(c) { return (c.links || 0) + (c.stubs || 0) + missingCount(c) + (c.obsolete || 0); }
-  function applicable(c) { return (c.links || 0) + (c.stubs || 0) + missingCount(c); }
-  function rate(c) { var a = applicable(c); return a ? 100 * (c.links || 0) / a : 0; }
+  // "native" and "engine" are in none of these: the counts of a run are of the mods the layer has to handle
+  function total(c) { return (c.links || 0) + (c.soft || 0) + (c.stubs || 0) + missingCount(c) + (c.obsolete || 0); }
+  function applicable(c) { return (c.links || 0) + (c.soft || 0) + (c.stubs || 0) + missingCount(c); }
+  function rate(c) { var a = applicable(c); return a ? 100 * ((c.links || 0) + (c.soft || 0)) / a : 0; }
   function pct(n, t) { return t ? (100 * n / t).toFixed(1) + "%" : "0%"; }
 
   // ---------- theme ----------
@@ -124,7 +137,7 @@
     maintainer.forEach(function (m) {
       var mc = mcOf(m.mc) || "1.7.10";
       withMc[norm(m.name) + "|" + mc] = true;
-      slot(m.name, mc).entries.push({ source: m.source || "maintainer", version: m.version, mc: mc, status: m.status, notes: m.notes || "", date: m.date });
+      slot(m.name, mc).entries.push({ source: m.source || "maintainer", version: m.version, mc: mc, status: m.status, notes: m.notes || "", date: m.date, nativeUrl: safeLink(m.nativeUrl) });
     });
     community.forEach(function (r) {
       var mc = mcOf(r.mc);
@@ -156,10 +169,14 @@
         counts[e.status] = (counts[e.status] || 0) + 1;
         if ((e.date || "") >= (newest[e.status] || "")) newest[e.status] = e.date || "";
       });
-      m.status = ORDER.slice().sort(function (a, b) {
+      m.status = ORDER.concat(EXTRA).sort(function (a, b) {
         return (counts[b] || 0) - (counts[a] || 0) || (newest[b] || "").localeCompare(newest[a] || "") || ORDER.indexOf(a) - ORDER.indexOf(b);
       })[0];
       if (!counts[m.status]) m.status = "untested";
+      // an engine/performance mod is never hosted: that outranks a probe or startup-test result, but not a rating that says it really runs when hosted
+      var eng = m.entries.filter(function (e) { return e.status === "engine"; })[0];
+      if (eng && !(HOSTED_OK.indexOf(m.status) >= 0 && tierUsed !== "probe" && tierUsed !== "corpus")) { m.status = "engine"; tierUsed = eng.source; }
+      m.nativeUrl = (m.entries.filter(function (e) { return e.nativeUrl; })[0] || {}).nativeUrl || "";
       // the maintainer's survival-ready verdict ("perfect") outranks a plain Works from any tier
       if ((m.status === "works" || m.status === "playable") && m.entries.some(function (e) { return e.source === "maintainer" && e.status === "perfect"; })) m.status = "perfect";
       else if (m.status === "works" && m.entries.some(function (e) { return e.source === "maintainer" && e.status === "playable"; })) m.status = "playable";
@@ -181,12 +198,14 @@
       // newest first; on the same day and version the larger population leads
       .sort(function (a, b) { return (b.date || "").localeCompare(a.date || "") || byVersion(b.version || "0", a.version || "0") || total(b.counts) - total(a.counts); });
   }
+  // every jar a run looked at, native and engine mods included (they are not in total())
+  function jarsIn(c) { return total(c) + (c.native || 0) + (c.engine || 0); }
   function sourcesOf(mc) {
     var seen = {};
     state.runs.forEach(function (r) { if (r.mc === mc) seen[sourceOf(r)] = 1; });
     return Object.keys(seen).sort(function (a, b) {
       var ra = runsOfSource(mc, a)[0], rb = runsOfSource(mc, b)[0];
-      return total(rb.counts) - total(ra.counts) || (rb.date || "").localeCompare(ra.date || "") || (a < b ? -1 : 1);
+      return jarsIn(rb.counts) - jarsIn(ra.counts) || (rb.date || "").localeCompare(ra.date || "") || (a < b ? -1 : 1);
     });
   }
   function sourceFor(mc) {
@@ -238,7 +257,7 @@
     if (p.route === "search") {
       state.q = p.q || "";
       state.mc = p.mc || "";
-      state.status = ORDER.indexOf(p.s) >= 0 ? p.s : "all";
+      state.status = ORDER.concat(EXTRA).indexOf(p.s) >= 0 ? p.s : "all";
       state.sort = SORTS[p.sort] ? p.sort : "relevance";
       state.modsShown = PAGE_MODS;
       $("q").value = state.q;
@@ -329,7 +348,9 @@
      ["partial", "It loads and you can use part of it, but some features are known to be broken."],
      ["loads", "It starts without errors and its content passes the startup check. It has not been play-tested yet, so no problems are known."],
      ["fails", "The game starts but the mod is disabled because it failed while loading."],
-     ["crashes", "Using it takes the whole game down."]].forEach(function (t) {
+     ["crashes", "Using it takes the whole game down."],
+     ["native", "A native NeoForge 1.21.1 version of this mod exists (looked up on Modrinth), so install that instead of the old jar. Not rated and in no percentage."],
+     ["engine", "A renderer, performance or patch mod (OptiFine, FastCraft, Embeddium, FoamFix, mixin loaders...) that only made sense on its own Minecraft version. The layer never hosts it; use its modern replacement. Not rated and in no percentage."]].forEach(function (t) {
       var row = el("div", "tier");
       row.appendChild(el("span", "badge " + t[0], LABEL[t[0]]));
       row.appendChild(el("span", null, t[1]));
@@ -365,7 +386,8 @@
   // ---------- search view (the landing page) ----------
   var VERSION_STAGE = { "1.7.10": "Beta", "1.12.2": "Beta", "1.6.4": "Beta", "1.5.2": "Alpha", "1.4.7": "Alpha", "1.2.5": "Alpha", "b1.7.3": "Alpha", "1.20.1": "Alpha" };
   var WHO = { community: "Player report", maintainer: "Maintainer", client: "In-game test", corpus: "Startup test", probe: "Automated check" };
-  var STATUS_HINT = { perfect: "survival-ready", playable: "most gameplay works", works: "basics work, not tested deeply", partial: "some features broken", loads: "starts cleanly, play test pending", fails: "disabled at startup", crashes: "takes the game down" };
+  var STATUS_HINT = { perfect: "survival-ready", playable: "most gameplay works", works: "basics work, not tested deeply", partial: "some features broken", loads: "starts cleanly, play test pending", fails: "disabled at startup", crashes: "takes the game down",
+                      native: "a native NeoForge 1.21.1 version exists; not rated", engine: "never hosted by design; not rated" };
   function isGood(s) { return s === "perfect" || s === "playable" || s === "works"; }
   function runs(s) { return isGood(s) || s === "partial" || s === "loads"; }
 
@@ -464,15 +486,20 @@
     box.textContent = "";
     var hasQ = !!state.q.trim() || state.status !== "all";
     var byMc = {}, totalByMc = {}, goodByMc = {}, runByMc = {}, statByMc = {};
+    var nativeByMc = {}, engineByMc = {};
     state.all.forEach(function (m) {
+      if (m.status === "native") { nativeByMc[m.mc] = (nativeByMc[m.mc] || 0) + 1; return; }
+      if (m.status === "engine") { engineByMc[m.mc] = (engineByMc[m.mc] || 0) + 1; return; }
       totalByMc[m.mc] = (totalByMc[m.mc] || 0) + 1;
       if (isGood(m.status)) goodByMc[m.mc] = (goodByMc[m.mc] || 0) + 1;
       if (runs(m.status)) runByMc[m.mc] = (runByMc[m.mc] || 0) + 1;
       (statByMc[m.mc] = statByMc[m.mc] || {})[m.status] = ((statByMc[m.mc] || {})[m.status] || 0) + 1;
     });
-    facet.forEach(function (x) { byMc[x.m.mc] = (byMc[x.m.mc] || 0) + 1; });
+    // with no search or rating filter the card counts the mods the layer has to handle; a search still counts every match, native and engine mods included
+    facet.forEach(function (x) { if (hasQ || counted(x.m.status)) byMc[x.m.mc] = (byMc[x.m.mc] || 0) + 1; });
+    Object.keys(nativeByMc).concat(Object.keys(engineByMc)).forEach(function (v) { if (!totalByMc[v]) totalByMc[v] = 0; });
     var versions = SUPPORTED.concat(Object.keys(totalByMc).filter(function (v) { return SUPPORTED.indexOf(v) < 0; }).sort(byVersion).reverse());
-    versions = versions.filter(function (v) { return totalByMc[v]; });
+    versions = versions.filter(function (v) { return totalByMc[v] || nativeByMc[v] || engineByMc[v]; });
     function card(id, title, stage, count, sub, bar) {
       var b = el("button", "vcard");
       b.type = "button";
@@ -489,17 +516,18 @@
     }
     function statBar(counts) {
       var t = 0, bar = el("div", "bar"); bar.setAttribute("aria-hidden", "true");
-      ORDER.forEach(function (s) { t += counts[s] || 0; });
+      ORDER.forEach(function (s) { t += counts[s] || 0; });   // native and engine mods are not part of the bar
       ORDER.forEach(function (s) { var sp = el("span"); sp.style.width = (t ? 100 * (counts[s] || 0) / t : 0) + "%"; sp.style.background = "var(--" + s + ")"; bar.appendChild(sp); });
       return bar;
     }
     var all = {};
     state.all.forEach(function (m) { all[m.status] = (all[m.status] || 0) + 1; });
-    var allCount = facet.length;
+    var allCount = hasQ ? facet.length : facet.filter(function (x) { return counted(x.m.status); }).length;
     var allBtn = card("", "All versions", "", allCount, "", statBar(all));
     box.appendChild(allBtn);
     versions.forEach(function (v) {
-      box.appendChild(card(v, "MC " + v, VERSION_STAGE[v] || "", byMc[v] || 0, Math.round(100 * (runByMc[v] || 0) / totalByMc[v]) + "% start and run" + (goodByMc[v] ? " · " + goodByMc[v] + " confirmed working" : ""), statBar(statByMc[v] || {})));
+      box.appendChild(card(v, "MC " + v, VERSION_STAGE[v] || "", byMc[v] || 0, (totalByMc[v] ? Math.round(100 * (runByMc[v] || 0) / totalByMc[v]) + "% start and run" : "no rated mods") + (goodByMc[v] ? " · " + goodByMc[v] + " confirmed working" : "") +
+        (nativeByMc[v] ? " · " + nativeByMc[v] + " have a native 1.21.1 version" : "") + (engineByMc[v] ? " · " + engineByMc[v] + " engine mods not needed" : ""), statBar(statByMc[v] || {})));
     });
   }
 
@@ -508,7 +536,7 @@
     box.textContent = "";
     var counts = {};
     facet.forEach(function (x) { counts[x.m.status] = (counts[x.m.status] || 0) + 1; });
-    var items = [["all", "All ratings", facet.length]].concat(ORDER.map(function (s) { return [s, LABEL[s], counts[s] || 0]; }));
+    var items = [["all", "All ratings", facet.length]].concat(ORDER.concat(EXTRA).map(function (s) { return [s, LABEL[s], counts[s] || 0]; }));
     items.forEach(function (c) {
       var b = el("button", "chip" + (c[0] !== "all" ? " st " + c[0] : ""));
       b.type = "button";
@@ -546,8 +574,8 @@
       return;
     }
     host.appendChild(p([b("Alpha, on by default. "), "Forge 1.20.1 support is remapped in place onto NeoForge 1.21.1 (there is no old game to emulate) and is on by default (it only does something when a Forge 1.20.1 jar is installed); ", code("experimental.forge1201=false"), " in the Legacy Connector config turns it off. Early alpha: a first set of mods works (Terramity and Another Furniture run), most mods below do not link yet: the Minecraft 1.20.1 to 1.21.1 migration covers the common cases, not all of them."]));
-    host.appendChild(p([b("What the automated result means here. "), b("Ready to test"), " means every reference of the translated jar resolves against Minecraft 1.21.1, NeoForge and the other jars of the run, including the layer's Forge facades. It is a link check only. A server start that registers a mod's content is a higher rating (", b("Starts, untested"), " and up, from the in-game test). Mods that fail the link check can still start, since unresolved code may sit on paths that never run, so a red result is not a verdict (on this version “Does not start” on an automated row means unresolved references, not a failed start)."]));
-    host.appendChild(p([b("Libraries. "), "Architectury, Curios, Patchouli, GeckoLib, Cloth Config, Resourceful Lib/Config, Puzzles Lib, Citadel, Jade and a few more use the ", b("native NeoForge 1.21.1 build"), " (same mod id): install it in the mods folder and the 1.20.1 jar is skipped (counted as “Not needed”). Without the 1.21.1 build the pack's 1.20.1 jar is translated as a fallback; with neither, the log names the build to install. Rewrites exist for Architectury, Curios and Patchouli; GeckoLib content mods are not fully supported yet."]));
+    host.appendChild(p([b("What the automated result means here. "), b("Ready to test"), " means every reference of the translated jar resolves against Minecraft 1.21.1, NeoForge and the other jars of the run, including the layer's Forge facades. It is a link check only. A server start that registers a mod's content is a higher rating (", b("Starts, untested"), " and up, from the in-game test). The check now tells which unresolved references can matter: a jar whose unresolved references all sit in code nothing runs at startup (optional integrations whose mod is not installed, classes no entry point reaches; the layer's stand-ins only throw if that code is used) is rated “Starts and loads” with a note naming the integrations that are off. A jar with an unresolved reference in code that does run is “Does not start” (on this version that means unresolved references, not a measured failed start). Mods with a native NeoForge 1.21.1 version and engine/performance mods are not rated at all and are left out of every percentage."]));
+    host.appendChild(p([b("Libraries. "), "Architectury, Curios, Patchouli, GeckoLib, Cloth Config, Resourceful Lib/Config, Puzzles Lib, Citadel, Jade and a few more use the ", b("native NeoForge 1.21.1 build"), " (same mod id): install it in the mods folder and the 1.20.1 jar is skipped (shown as “Use the native 1.21.1 version”, in no percentage). Without the 1.21.1 build the pack's 1.20.1 jar is translated as a fallback; with neither, the log names the build to install. Rewrites exist for Architectury, Curios and Patchouli; GeckoLib content mods are not fully supported yet."]));
   }
 
   // ---------- one mod ----------
@@ -615,6 +643,12 @@
       var basis = el("p", "small");
       basis.textContent = STATUS_HINT[m.status] ? "This rating (" + STATUS_HINT[m.status] + ") comes from " + (BASIS_TEXT[m.basis] || "the available results") + "." : "This rating comes from " + (BASIS_TEXT[m.basis] || "the available results") + ".";
       sec.appendChild(basis);
+      if (m.nativeUrl) {
+        var nat = el("p", "small native-hint");
+        nat.appendChild(document.createTextNode(m.status === "native" ? "Use the native 1.21.1 version: " : "A native NeoForge 1.21.1 version of this mod also exists: "));
+        var na = ext(el("a", null, m.nativeUrl.replace(/^https?:\/\//, "")), m.nativeUrl); na.rel = "noopener nofollow"; nat.appendChild(na);
+        sec.appendChild(nat);
+      } else if (m.status === "native") sec.appendChild(el("p", "small native-hint", "Use the native 1.21.1 version of this mod instead of the old jar."));
       var vn = el("div", "vnote"); versionNote(vn, m.mc); if (!vn.hidden) { var dd = el("details", "inline"); dd.appendChild(el("summary", null, "About MC " + m.mc + " support")); while (vn.firstChild) dd.appendChild(vn.firstChild); sec.appendChild(dd); }
       var seenEntry = {};
       m.entries.forEach(function (en) {
@@ -659,9 +693,10 @@
       var card = el("div", "cmp");
       card.appendChild(donut(c, { size: 120, R: 56, r: 36, big: 24, label: "MC " + mc + ": " + Math.round(rate(c)) + " percent of applicable mods are ready to test" }));
       card.appendChild(el("h3", null, "Minecraft " + mc));
-      var big = el("div", "big", pct(c.links || 0, applicable(c)));
+      var ready = (c.links || 0) + (c.soft || 0);
+      var big = el("div", "big", pct(ready, applicable(c)));
       card.appendChild(big);
-      var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods ready to test · " + t + " checked");
+      var sub = el("div", "sub", ready + " of " + applicable(c) + " applicable mods ready to test · " + t + " checked" + ((c.native || c.engine) ? " (not counted: " + [c.native ? c.native + " native 1.21.1" : "", c.engine ? c.engine + " engine mods" : ""].filter(Boolean).join(", ") + ")" : ""));
       card.appendChild(sub);
       var foot = el("div", "foot");
       foot.appendChild(stackBar(c));
@@ -781,6 +816,23 @@
       box.appendChild(row);
     });
     host.appendChild(box);
+    // native and engine mods are in no slice and no percentage; they stay listed (and filterable) here
+    var extra = UNCOUNTED.filter(function (k) { return c[k.key]; });
+    if (extra.length) {
+      var ub = el("div", "legendbox uncounted");
+      ub.appendChild(el("p", "small", "Not counted in the percentages above:"));
+      extra.forEach(function (k) {
+        var row = el("button", "row");
+        row.type = "button";
+        row.setAttribute("aria-pressed", String(state.kind === k.key));
+        var dot = el("span", "dot"); dot.style.background = k.color;
+        var label = el("span"); label.appendChild(document.createTextNode(k.label)); label.appendChild(document.createElement("br")); label.appendChild(el("small", null, k.hint));
+        row.appendChild(dot); row.appendChild(label); row.appendChild(el("b", null, String(c[k.key])));
+        row.onclick = function () { setKind(k.key); };
+        ub.appendChild(row);
+      });
+      host.appendChild(ub);
+    }
   }
 
   function sparkline(runsAsc) {
@@ -823,7 +875,7 @@
     var tb = el("tbody");
     (state.histAll ? runs : runs.slice(0, HISTORY_SHOWN)).forEach(function (r) {
       var c = r.counts, t = total(c), tr = el("tr");
-      [r.date, r.version || "-", t, c.links || 0, c.stubs || 0, missingCount(c), c.obsolete || 0, rate(c).toFixed(1) + "%"].forEach(function (v, i) {
+      [r.date, r.version || "-", t, (c.links || 0) + (c.soft || 0), c.stubs || 0, missingCount(c), c.obsolete || 0, rate(c).toFixed(1) + "%"].forEach(function (v, i) {
         tr.appendChild(el("td", i >= 2 ? "num" : "", String(v)));
       });
       var td = el("td"); td.appendChild(stackBar(c)); tr.appendChild(td);
@@ -857,7 +909,7 @@
       return (state.kind === "all" || m[2] === state.kind) && (!q || String(m[0]).toLowerCase().indexOf(q) >= 0);
     });
     if (state.psort === "result") {
-      var order = { gap_shim: 0, gap_mod: 1, gap_lib: 2, unresolved: 3, stubs: 4, links: 5, obsolete: 6 };
+      var order = { gap_shim: 0, gap_mod: 1, gap_lib: 2, unresolved: 3, stubs: 4, soft: 5, links: 6, obsolete: 7, native: 8, engine: 9 };
       rows = rows.slice().sort(function (a, b) { return (order[a[2]] != null ? order[a[2]] : 7) - (order[b[2]] != null ? order[b[2]] : 7) || String(a[0]).localeCompare(String(b[0])); });
     } else {
       rows = rows.slice().sort(function (a, b) { return String(a[0]).localeCompare(String(b[0])); });

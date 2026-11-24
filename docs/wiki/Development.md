@@ -251,7 +251,25 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
 - It runs `./gradlew checkLegacyMod -PlegacyJar=... -PcheckJson=<file>` on all jars as ONE mod set (mods that extend each other link), then
   merges the per-jar records into `docs/data/mods.json` with source `probe`.
 - `links` (every reference resolves; missing legacy API is synthesized) becomes status `loads`, `unresolved` becomes `fails` with the first
-  unresolved references in the note. Engine patches (`obsolete`) and library jars without a mod are not listed.
+  unresolved references in the note. Library jars without a mod are not listed.
+- **Three more kinds, in no percentage or two of them** (since 0.5.2; the site shows `native` and `engine` as non-rating statuses, left out of every
+  percentage, every card's mod count and the pie chart's total, but still searchable and filterable):
+  - `engine` ("Engine mod: not needed"): a renderer, performance, bug-fix, ID-extender, mixin-loader or profiler mod the layer never hosts, on ANY version. The list is
+    `loader/src/main/resources/legacyconnector/engine-mods.tsv` (id, Minecraft versions, display names, modern replacement, reason): `LibraryBridges` skips those jars by it
+    and `tools/compat/engine_mods.py` feeds the site, so the two cannot drift. Client conveniences (Inventory Tweaks, JourneyMap...) are never in it. To add one, add a row
+    (check it is engine-only), then `python tools/compat/migrate_engine_status.py` applies it to the existing `docs/data` files. An `engine` entry outranks a probe or startup-test
+    result; a maintainer, client or community rating of works/playable/perfect/partial (the mod really runs when hosted) outranks it.
+  - `native` ("Use the native 1.21.1 version", 1.20.1 only for now: `native_lookup.NATIVE_MC`): a NeoForge 1.21.1 build exists on Modrinth (lookup by file hash, then by project slug = mod
+    id; `loaders=neoforge`, `game_versions=1.21.1`). Answers are cached in `tools/compat/native-modrinth.tsv` (sha1 or `id:<modid>` to project, slug, yes/no), so a probe
+    runs offline with `--no-native` and does not hammer the API (one request at a time, own User-Agent); `--refresh-native` asks again. A mod that has a better-sourced rating keeps
+    it and only gets the `nativeUrl` hint (shown on its page).
+  - `soft` (1.20.1, shown as status `loads` with a note): every unresolved reference sits where nothing runs. `tools/compat/soft_links.py` reads the class files of the translated jar
+    (`-Pgap.translated.dir`, the names the report uses), walks class references from the entry points (`@Mod` classes, event subscriber classes, service providers and mixin
+    classes, which always count as reachable) and calls a symbol hard when a reachable class that is not an integration class holds it; another mod's API is soft only when `mods.toml`
+    declares that mod as not mandatory. A Minecraft/Forge member no class holds is hard (cannot be shown to sit in dead code). `probe.py --detail <file>` also writes `<file>.soft.tsv`: per
+    unresolved reference its holder class and verdict. The layer's `SoftLink1201` stand-ins only throw when executed, which is why such a jar can start.
+  The soft verdict was checked on a server with 10 jars (8 loaded; the two failures were not unresolved-reference failures, see [Legacy-1.20.1-Failure-Classes](Legacy-1.20.1-Failure-Classes.md)).
+  `python tools/compat/test_rating.py` tests the rules, `python tools/compat/card_numbers.py` prints the numbers of the site's version cards from `mods.json`.
 - A probe proves only that a jar translates and links, never that it works in game. The site ranks it below player reports, maintainer, client
   and startup-test results, and the script never overwrites those. Re-running refreshes earlier probe entries.
 - Every run is also appended to `docs/data/probe.json` (counts per result plus the per-mod list of the last 10 runs per version), which the

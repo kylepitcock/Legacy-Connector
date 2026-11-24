@@ -1,0 +1,98 @@
+# Engine and performance mods the layer never hosts (single source of truth: LibraryBridges reads it, tools/compat/engine_mods.py feeds the compatibility site).
+# Mods that only make sense on their own engine or launcher: performance/bug-fix patches, ID extenders, mixin loaders, profilers, renderer replacements.
+# Client-side conveniences (Inventory Tweaks, JourneyMap, Custom Main Menu, ...) are NOT listed: they are loaded like any other legacy mod.
+# id (lower case legacy mod id) TAB Minecraft versions it applies to (comma separated; the loader matches by id alone) TAB display names the site data lists it under ("|"-separated, optional)
+# TAB modern replacement (optional) TAB reason (shown in the report and on the site)
+fastcraft	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	FastCraft	ModernFix + FerriteCore	1.7.10 performance patches; not applicable to 1.21.1
+archaicfix	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	ArchaicFix	ModernFix + FerriteCore	1.7.10 bug-fix/performance patches; not applicable to 1.21.1
+hodgepodge	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Hodgepodge		1.7.10 bug-fix patches; not applicable to 1.21.1
+bugtorch	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	BugTorch		1.7.10 bug-fix patches; not applicable to 1.21.1
+coretweaks	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	CoreTweaks		1.7.10 bug-fix/performance patches; not applicable to 1.21.1
+lwjgl3ify	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	lwjgl3ify		runs 1.7.10 on LWJGL 3 / modern Java; 1.21.1 already does
+angelica	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Angelica	Sodium / Embeddium (+ Iris)	1.7.10 renderer replacement; use a modern renderer mod (e.g. Sodium/Embeddium)
+mcpatcherforge	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	MCPatcherForge	built into the layer (connected textures)	1.7.10 MCPatcher port patching the old renderer (bundled in Angelica); the layer converts connected textures itself
+beddium	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Beddium	Sodium / Embeddium	1.7.10 renderer replacement (Sodium port); use a modern renderer mod (e.g. Sodium/Embeddium)
+falsetweaks	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	FalseTweaks	Sodium / Embeddium	1.7.10 renderer performance patches; not applicable to 1.21.1
+infiview	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	InfiView		1.7.10 render distance patch; 1.21.1 has no such limit
+angellib	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	AngelLib		library of the 1.7.10 renderer replacement Angelica; not applicable to 1.21.1
+euphoriacompanion	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Euphoria Companion	Iris	companion of the 1.7.10 shader renderer Angelica; use a modern shader mod (Iris)
+crash_assistant	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Crash Assistant		1.7.10 JVM crash window (AWT); not applicable to 1.21.1
+notfine	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	NotFine	Sodium / Embeddium	1.7.10 graphics options; use a modern renderer/options mod
+neid	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	NEID		1.7.10 ID limit extender; 1.21.1 has no ID limits
+fastleafdecay	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2,1.20.1	Fast Leaf Decay	a modern fast leaf decay mod	use a modern fast leaf decay mod
+betterloadingscreen	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 loading screen; NeoForge has its own
+bettercrashes	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 crash handling; not applicable
+letsnecryptcraft	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			Java 8 certificate fix; modern Java includes it
+helpfixer	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 /help fix; not needed on 1.21.1
+netherportalfix	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 portal fix; use a modern equivalent if wanted
+resourceloader	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 resource pack loader; 1.21.1 loads resource packs natively
+oauth	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 Microsoft login helper; not needed
+betterachievements	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.21 replaced achievements with advancements
+unimixins	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	UniMixins		1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin
+gtnhmixins	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	GTNHMixins		1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin
+spongemixins	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	SpongeMixins		1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin
+mixinbooterlegacy	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	MixinConBooter-Legacy|MixinBooter Legacy		1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin
+unimixins-mixin	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin
+unimixins-compat	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin
+mixingasm	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Mixingasm		1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin
+gasstation	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin
+mixinextras	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2			1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin
+opis	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5,1.12.2	Opis	Spark	1.7.10 profiler; use Spark
+cubicchunks	1.12.2	CubicChunks		1.12.2 world-height mod that replaces vanilla chunk storage, world generation and lighting with 3D cubes; cannot be translated onto 1.21.1 (use a native height/datapack approach)
+betterfps	1.12.2	BetterFps	Sodium / Embeddium + ModernFix	1.12.2 performance patches; not applicable to 1.21.1
+foamfix	1.12.2	FoamFix	ModernFix + FerriteCore	1.12.2 performance/memory patches; not applicable to 1.21.1
+phosphor-lighting	1.12.2		built into Minecraft 1.21.1	1.12.2 lighting engine rewrite; 1.21.1 has its own
+vanillafix	1.12.2	VanillaFix		1.12.2 bug-fix patches; not applicable to 1.21.1
+randompatches	1.12.2	RandomPatches		1.12.2 bug-fix patches; not applicable to 1.21.1
+aireducer	1.12.2			1.12.2 AI performance patch; not applicable to 1.21.1
+mixinbooter	1.12.2	MixinBooter		1.12.2 mixin loader; NeoForge 1.21.1 ships its own Mixin
+loliasm	1.12.2	LoliASM		1.12.2 performance patches; not applicable to 1.21.1
+ifpatcher	1.12.2			1.12.2 class patcher; not applicable to 1.21.1
+oldjavawarning	1.12.2	Old Java Warning		warns about old Java versions; not applicable
+serializationisbad	1.12.2			1.12.2 deserialization security patch; not applicable to 1.21.1
+tidychunk	1.12.2			1.12.2 chunk unloading tweak; not applicable to 1.21.1
+reauth	1.12.2			1.12.2 login helper; not needed
+laggoggles	1.12.2	LagGoggles	Spark	1.12.2 profiler; use Spark
+optifine	1.7.10,1.6.4,1.5.2,1.4.7,1.12.2,1.2.5,b1.7.3,1.20.1	OptiFine|OptiFine HD	Sodium + Iris (shaders)	OptiFine patches the renderer of its own Minecraft version; use a modern renderer (Sodium or Embeddium, Iris for shaders)
+mcpatcher	1.7.10,1.6.4,1.5.2,1.4.7,1.2.5	MCPatcher|mod_MCPatcher	built into the layer (connected textures)	MCPatcher patches the old renderer; the layer converts connected textures and custom colours itself
+rightpropermcpatcher	1.7.10	Right Proper MCPatcher	built into the layer (connected textures)	1.7.10 MCPatcher port patching the old renderer; the layer converts connected textures itself
+entityculling	1.7.10,1.12.2,1.20.1	EntityCulling|Entity Culling Unofficial|Entity Culling	Entity Culling (native 1.21.1)	entity culling renderer optimisation; the game renders through a modern renderer on 1.21.1
+leafculling	1.7.10	Leaf Culling	Sodium / Embeddium	1.7.10 leaf rendering optimisation; not applicable to 1.21.1
+particleculling	1.12.2	Particle Culling	Sodium / Embeddium	1.12.2 particle rendering optimisation; not applicable to 1.21.1
+fpsreducer	1.7.10,1.12.2	FPS Reducer	Sodium / Embeddium	lowers the frame rate while the window is unfocused; not a gameplay mod
+euphoria_patcher	1.7.10,1.12.2	Euphoria Patcher|EuphoriaPatcher	Euphoria Patcher (native 1.21.1)	companion of the shader renderer (Angelica / Iris); use a modern shader mod (Iris)
+optimizationsandtweaks	1.7.10	Optimizations and Tweaks	ModernFix + FerriteCore	1.7.10 performance patches; not applicable to 1.21.1
+phosphorcrashfix	1.12.2	Phosphor Crash Fix	built into Minecraft 1.21.1	crash fix for the 1.12.2 lighting engine rewrite Phosphor; 1.21.1 has its own
+sparkunforged	1.12.2	Spark Unforged|spark	Spark	1.12.2 profiler; use Spark
+patcher	1.12.2	Patcher	ModernFix + Sodium	1.12.2 performance and bug-fix patches; not applicable to 1.21.1
+embeddium	1.20.1	Embeddium	Embeddium / Sodium	Sodium port for Forge 1.20.1; install the native 1.21.1 renderer
+rubidium	1.20.1	Rubidium	Sodium / Embeddium	Sodium port for Forge 1.20.1; install the native 1.21.1 renderer
+rubidium_extra	1.20.1	Rubidium Extra|Embeddium Extra	Sodium Extra	Sodium add-on for Forge 1.20.1; use the native 1.21.1 version
+embeddiumplus	1.20.1	Embeddium Plus|Embeddium++	Sodium Extra	Sodium add-on for Forge 1.20.1; use the native 1.21.1 version
+embeddium_extras	1.20.1	Embeddium Extras	Sodium Extra	Sodium add-on for Forge 1.20.1; use the native 1.21.1 version
+magnesium	1.20.1	Magnesium	Sodium Extra	Sodium add-on for Forge 1.20.1; use the native 1.21.1 version
+oculus	1.20.1	Oculus	Iris	Iris shader engine port for Forge 1.20.1; install Iris
+sodium	1.20.1	Sodium	Sodium	rendering engine; install the native 1.21.1 version
+iris	1.20.1	Iris Shaders	Iris	shader engine; install the native 1.21.1 version
+immediatelyfast	1.20.1	ImmediatelyFast	ImmediatelyFast	rendering performance patch; install the native 1.21.1 version
+ferritecore	1.20.1	FerriteCore|Ferrite Core	FerriteCore	memory patch; install the native 1.21.1 version
+modernfix	1.20.1	ModernFix	ModernFix	performance patch; install the native 1.21.1 version
+canary	1.20.1	Canary	ModernFix + FerriteCore	performance patch (Lithium port); not applicable to 1.21.1
+radium	1.20.1	Radium	ModernFix + FerriteCore	performance patch (Lithium port); not applicable to 1.21.1
+lithium	1.20.1	Lithium	Lithium	performance patch; install the native 1.21.1 version
+starlight	1.20.1	Starlight	built into Minecraft 1.21.1	lighting engine rewrite; 1.21.1 has its own
+smoothboot	1.20.1	Smooth Boot|Smooth Boot (Reloaded)	Smooth Boot (Reloaded)	startup performance patch; install the native 1.21.1 version
+moreculling	1.20.1	More Culling	More Culling	culling performance patch; install the native 1.21.1 version
+badoptimizations	1.20.1	BadOptimizations	BadOptimizations	performance patch; install the native 1.21.1 version
+c2me	1.20.1	C2ME|Concurrent Chunk Management Engine	C2ME	chunk performance patch; install the native 1.21.1 version
+clumps	1.20.1	Clumps	Clumps	experience orb performance patch; install the native 1.21.1 version
+fastsuite	1.20.1	Fast Suite	Fast Suite	recipe lookup performance patch; install the native 1.21.1 version
+fastfurnace	1.20.1	FastFurnace	FastFurnace	recipe lookup performance patch; install the native 1.21.1 version
+fastbench	1.12.2,1.20.1	FastWorkbench|Fast Workbench	FastWorkbench	recipe lookup performance patch; install the native 1.21.1 version
+memoryleakfix	1.20.1	Memory Leak Fix	Memory Leak Fix	memory patch; install the native 1.21.1 version
+noisium	1.20.1	Noisium	Noisium	world generation performance patch; install the native 1.21.1 version
+lazydfu	1.20.1	LazyDFU	ModernFix	startup performance patch; not applicable to 1.21.1
+saturn	1.20.1	Saturn	ModernFix + FerriteCore	memory patch; not applicable to 1.21.1
+connectivity	1.20.1	Connectivity	Connectivity	network disconnect fixes; install the native 1.21.1 version
+spark	1.20.1	spark	Spark	profiler; install the native 1.21.1 version
+betterfpsrender	1.20.1	Better FPS Render	Sodium / Embeddium	rendering performance patch; install a modern renderer

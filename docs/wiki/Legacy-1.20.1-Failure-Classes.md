@@ -2,6 +2,8 @@
 
 Analysis of the 231 jars the offline link probe rates "fails" in the ATM 9 run of 2026-11-23 (506 jars; 242 link, 231 unresolved, 26 replaced by a native library build, 7 not translated). Back to [Home](Home.md); the run itself is in [Legacy-1.20.1-ATM9-Run](Legacy-1.20.1-ATM9-Run.md). Script: `tools/dev/classify_1201_failures.py` (reads `detail.tsv`/`jars.json` of `tools/compat/atm9_run.py`, the mods folder, and Modrinth; caches in its `--out` dir). Per-jar result: `tools/dev/agent-tasks/1.20.1-failure-classes.tsv` (jar, class, detail).
 
+**Status (2026-11-23): the rating change of section 5 is implemented** (probe, data and site; see "Implemented" below). The tables in sections 1 to 4 are the analysis that led to it and keep their numbers; the script now shares its class scanner with the probe (`tools/compat/soft_links.py`).
+
 Method limits, stated up front: no server runs were done (less than 6 GB free RAM when this was written), so "soft" below is a structural judgement, not a measured load. The Modrinth match is by SHA-1 of the jar (151 of 170 positive answers) or by slug equal to the mod id (19); CurseForge-only mods are not seen, so the native counts are a lower bound.
 
 ## 1. Primary cause per failing jar
@@ -59,7 +61,7 @@ Over all 231 jars the most referenced other-mod APIs are The One Probe (38 jars)
 2. **Rate soft links as loading: 22 more jars (28% of the 78 left)**, 41 more among the native ones. See section 5.
 3. **Minecraft signature families**, which hit several jars at once: `renderToBuffer` model override with the 1.21 colour argument (5 hard jars), portal fields and methods (`isInsidePortal`, `portalTime`, `handleInsidePortal`: 4 hard, 10 over all 231), advancement triggers/predicates (`critereon`: 6 hard, 20 over all), recipe classes (8 hard, 36 over all), `PathNavigationRegion level` (4), removed enchantment classes (3 hard, 14 over all), packets (4 hard, 20), authlib (3). Fixing them as override/accessor bridges (not one symbol at a time) is worth 20 to 25 of the 56 hard jars; the top single symbol blocks only 2 jars.
 
-## 5. Recommended rating change (propose only, nothing implemented)
+## 5. Rating change (proposed here, implemented below)
 
 Today `tools/compat/probe.py` (`run_gap1201`) writes `result: unresolved` for any jar with one missing symbol, and `status = fails` unless `links`; `Gap1201` re-adds the soft-linked symbols to the report, so the verdict ignores the layer's own soft link. A fairer rule, per jar:
 
@@ -69,6 +71,16 @@ Today `tools/compat/probe.py` (`run_gap1201`) writes `result: unresolved` for an
 4. `fails` otherwise.
 
 Effect on this probe (506 jars): today 242 loads (47.8%), 231 fails (45.6%). Published site data (older run, 507 entries): 137 loads (27%), 355 fails (70%). Under the rule: native 326 (300 jars plus the 26 library replacements) and 7 not translated and 2 engine mods are left out; of the remaining 171, loads = 93 (linking, no native) + 22 (soft) = **115 (67%)**, fails = **56 (33%)**. Even with a crude heuristic, the 1.20.1 card reads "326 native, 115 load, 56 fail" instead of "242 load, 231 fail".
+
+### Implemented (2026-11-23)
+
+`tools/compat/probe.py --mc 1.20.1` now rates by these rules; the data of the ATM 9 run (`docs/data`, source `atm9`, Connector `0.5.2-rating`) was regenerated with the same real-libraries setup as before (`GAP1201_LIBS` = the ATM 10 mods folder).
+
+- `native` ("Use the native 1.21.1 version"): Modrinth lookup by file hash, then by project slug (`loaders=neoforge`, `game_versions=1.21.1`), cached in `tools/compat/native-modrinth.tsv`. 316 of the 506 jars (the 26 library replacements included). In no percentage and no card count; a better-sourced rating is kept and only gets the hint.
+- `engine` ("Engine mod: not needed"), every version, from the loader's own table `engine-mods.tsv` (13 jars of this run: Embeddium, Oculus, Mekalus, ModernFix, FerriteCore, Entity Culling, spark, Clumps, FastFurnace, FastWorkbench, FastSuite, FastLeafDecay, Connectivity).
+- `soft` (rated `loads` with a note naming the integrations that are off): **10** jars, not the 22 of the first estimate. The estimate over-counted because it matched members by descriptor only and treated a Minecraft member that no class of the jar holds as dead code; the probe matches name and descriptor on the translated jar (the names the report uses) and treats such a symbol as hard. Entry points are `@Mod` and event subscriber classes, service providers and mixin classes.
+- Result for the 506 jars: 316 native, 13 engine (excluded); of the remaining 170, 92 link + 10 soft = **102 load (60%)**, 68 fail (37 Minecraft/Forge symbols, 31 other mods' APIs). The site's 1.20.1 card went from 472 mods / 32% start and run to 205 mods / 54% (the other mod entries of the data set count too), with 279 native and 14 engine mods left out.
+- Real check of the soft verdict: 10 soft jars run on a server with only their mandatory dependencies (a jar that fails to load would be a wrong verdict): **8 of 10 loaded**. The two that did not (IronJetpacks with the 1.21.1 Cucumber, Rechiseled) died of a `NoSuchMethodError` on a reference that links in the probe (a changed constructor of a library or of the mod's own datagen class), not of an unresolved reference, so they are blind spots of the link check in general ("links" is not "works"); both are `native` jars, so neither is shown as "loads" on the site. A third sample jar (XyCraft World) could not be judged because its dependency XyCraft Core failed (`Round4Compat.readFluidStack` missing) and was replaced by Colorful Hearts.
 
 ## 6. The 15 most valuable next tasks
 

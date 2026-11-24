@@ -14,6 +14,11 @@ All jars are translated as ONE mod set so mods that extend each other link. Per 
   gap_lib     missing removed Java/library code                      -> status "fails"
   gap_dep     a required dependency mod is not in the set            -> "fails", or "loads" when the jar links apart from that
   obsolete    engine patch with nothing to do on 1.21.1 -> not listed
+  engine      an engine/performance mod the layer never hosts (loader/.../engine-mods.tsv, any version) -> status "engine", in no percentage
+  native      1.20.1 only (native_lookup.NATIVE_MC): a NeoForge 1.21.1 version of the mod exists (Modrinth, cached in tools/compat/native-modrinth.tsv)
+              -> status "native" ("Use the native 1.21.1 version"), in no percentage; a better-sourced rating is kept and only gets the nativeUrl hint
+  soft        1.20.1 only: unresolved references that all sit where nothing runs (classes no @Mod/mixin class reaches, or optional integrations that are
+              off; tools/compat/soft_links.py, the layer's SoftLink1201 stand-ins throw only when executed) -> status "loads" with a note
 --mc 1.20.1 (Forge 1.20.1 jars, remapped in place onto NeoForge 1.21.1) has no shim to link against: it runs ./gradlew gap1201 (loader tools Gap1201: SRG to
 Mojang and Forge to NeoForge renames, then every reference is resolved against Minecraft 1.21.1 + NeoForge + the other jars) and turns the unresolved symbols into the
 same records, so a jar is "loads" when nothing is left unresolved (a link check of the renamed jar, like the others). It needs build/moddev/artifacts/neoforge-*-merged.jar
@@ -24,7 +29,11 @@ Every run is also appended to docs/data/probe.json (counts + per-mod list), whic
 """
 import argparse, datetime, glob, json, os, pathlib, re, subprocess, sys, tempfile, zipfile
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import engine_mods, native_lookup, soft_links  # noqa: E402
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
+NATIVE = {"lookup": None}   # set by main(): the native_lookup.Lookup used for the mc versions in native_lookup.NATIVE_MC
 DATA = ROOT / "docs" / "data" / "mods.json"
 RESOURCES = ROOT / "docs" / "data" / "resources.json"   # the missing-resources tab: every unresolved model/texture reference of the latest run per Minecraft version
 HISTORY = ROOT / "docs" / "data" / "probe.json"   # one entry per run: the pie chart page (docs/probe.html) reads it
@@ -178,8 +187,8 @@ def run_gap1201(jar_dir, out, keep_detail=None):
            f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]
     if os.environ.get("GAP1201_ASSUME_NATIVE"):   # e.g. mcjty/theoneprobe/api/,dev/emi/emi/api/,me/shedaniel/rei/ : API packages of libraries the pack gets as native 1.21.1 builds
         cmd.append("-Pgap.assumeNative=" + os.environ["GAP1201_ASSUME_NATIVE"])   # the report is of the jars AFTER the layer (facades, library bridges, renames)
-    if os.environ.get("GAP1201_TRANSLATED_DIR"):   # keep the translated jars (what the layer leaves) for javap
-        cmd.append("-Pgap.translated.dir=" + os.environ["GAP1201_TRANSLATED_DIR"])
+    translated = os.environ.get("GAP1201_TRANSLATED_DIR") or str(tmp / "translated")   # the translated jars (what the layer leaves): the soft/hard scan reads them,
+    cmd.append("-Pgap.translated.dir=" + translated)                                    # because the report names are the renamed ones (Mojang, NeoForge)
     print(f"gap report for {len(jars)} Forge 1.20.1 jar(s) ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     detail = pathlib.Path(str(report) + ".detail.tsv")
@@ -188,13 +197,22 @@ def run_gap1201(jar_dir, out, keep_detail=None):
     if keep_detail:   # the full per-jar symbol list (records keep only 20): tools/compat/atm9_run.py ranks the blockers from it
         import shutil
         shutil.copyfile(detail, keep_detail)
-    missing, refs = {}, {}
+    records_1201(jars, detail, out, keep_detail, translated)
+
+
+def records_1201(jars, detail, out, keep_detail=None, translated=None):
+    """The records of a 1.20.1 gap report (detail.tsv: <jar, kind, symbol>) over `jars`: link result, native 1.21.1 version (Modrinth, cached), engine/library
+    replacement and, for jars with unresolved references, the soft/hard verdict (tools/compat/soft_links.py). Needs the jars again (class files are scanned)."""
+    detail = pathlib.Path(detail)
+    missing, refs, symbols = {}, {}, {}
     for line in detail.read_text(encoding="utf-8").splitlines():
         jar, k, sym = line.split("\t", 2)
         if k == "refs":
             refs[jar] = int(sym)
         else:
             missing.setdefault(jar, []).append(dotted(k, sym))
+            symbols.setdefault(jar, []).append((k, sym.replace(".", "/") if k == "class" else sym))
+    soft_rows = []
     records = []
     for j in jars:
         with zipfile.ZipFile(j) as z:
@@ -204,15 +222,34 @@ def run_gap1201(jar_dir, out, keep_detail=None):
         miss.sort(key=lambda m: (not m.startswith(("net.minecraftforge.", "net.neoforged.", "net.minecraft.", "com.mojang.")), m))
         info = mod_info(j)
         rec = {"jar": j.name, "mc": "1.20.1", "mods": info, "classes": classes, "synthesizedMembers": 0, "references": refs.get(j.name, 0)}
+        lookup = NATIVE["lookup"]
+        if lookup and "1.20.1" in native_lookup.NATIVE_MC:   # is there a native NeoForge 1.21.1 version of this mod? (cached answers, one request at a time otherwise)
+            row = lookup(j, info[0]["id"] if info else "")
+            if row and row["native"]:
+                rec["hasNative"] = True
+                rec["nativeUrl"] = native_lookup.url_of(row)
         if info and all(m["id"].lower() in native_libraries() for m in info):
             rec["result"] = "obsolete"   # a library with a native 1.21.1 build of the same mod id: the layer skips this jar (NativeLibraries1201), the native build is what runs
+            rec["hasNative"] = True
+            rec["nativeLibrary"] = True
         elif not_translated(j):
             rec.update({"result": "obsolete", "notTranslated": not_translated(j)})   # the layer never touches it: its unresolved names (Fabric intermediary...) are not gaps
         elif miss:
             rec.update({"result": "unresolved", "unresolved": len(miss), "missing": miss[:20]})
+            try:   # soft or hard: does anything that runs hold an unresolved reference?
+                target = pathlib.Path(translated) / j.name if translated and (pathlib.Path(translated) / j.name).exists() else j   # report names are post-layer names
+                entry = soft_links.scan_entry(target, sorted(symbols.get(j.name, [])))
+                soft, hard, off = soft_links.soft_verdict(entry)
+                rec.update({"soft": soft, "hardSymbols": hard, "softOff": off})
+                for sym in entry["syms"]:
+                    soft_rows.append((j.name, sym["k"], sym["s"], sym["area"], sym["dep"], sym["holderClass"], "hard" if soft_links.sym_is_hard(sym, entry["deps"]) else "soft"))
+            except Exception as e:   # unreadable jar: no verdict, it keeps the plain "unresolved" rating
+                print(f"  soft scan of {j.name} failed: {e}", flush=True)
         else:
             rec["result"] = "links"
         records.append(rec)
+    if keep_detail:   # per unresolved reference: the class that holds it and whether that is soft (nothing that runs) or hard
+        pathlib.Path(str(keep_detail) + ".soft.tsv").write_text("jar\tkind\tsymbol\tarea\tdependency\tholder class\tverdict\n" + "".join("\t".join(r) + "\n" for r in soft_rows), encoding="utf-8")
     pathlib.Path(out).write_text(json.dumps(records), encoding="utf-8")
 
 
@@ -233,8 +270,27 @@ def cause(missing):
     return "gap_lib"
 
 
+def annotate_engine(records):
+    """Marks the records of engine/performance mods the layer never hosts (table loader/.../engine-mods.tsv, the one the loader skips jars by)."""
+    rows = engine_mods.load()
+    for rec in records:
+        if rec.get("mods") and not rec.get("engine"):
+            row = engine_mods.find(rec.get("mc", ""), [m["id"] for m in rec["mods"]], rows=rows)
+            if row:
+                rec["engine"] = row["id"]
+                rec["engineReplacement"] = row["replacement"]
+                rec["engineReason"] = row["reason"]
+
+
 def kind(rec):
-    """The category a record counts as: links, stubs (links but largely placeholders), gap_shim / gap_mod / gap_lib, obsolete."""
+    """The category a record counts as: links, stubs (links but largely placeholders), soft (1.20.1: unresolved only in code that never runs),
+    gap_shim / gap_mod / gap_lib, obsolete, and the two that are in no percentage: engine (never hosted by design) and native (a 1.21.1 version exists)."""
+    if rec.get("engine"):
+        return "engine"
+    if rec.get("hasNative") and rec["result"] in ("links", "unresolved", "obsolete"):
+        return "native"
+    if rec["result"] == "unresolved" and rec.get("soft"):
+        return "soft"
     if rec["result"] == "links":
         return "stubs" if rec.get("synthesizedMembers", 0) >= STUB_LIMIT else "links"
     if rec["result"] == "missing-dependency":
@@ -279,6 +335,20 @@ def note(rec, layer):
 def note_links(rec, layer):
     base = f"Automated check {layer}: " if layer else "Automated check: "
     k = kind(rec)
+    if k == "engine":
+        text = "Engine mod: not needed. " + rec.get("engineReason", "").rstrip(".") + "."
+        if rec.get("engineReplacement"):
+            text += " Modern replacement: " + rec["engineReplacement"] + "."
+        return text
+    if k == "native":
+        link = f" ({rec['nativeUrl']})" if rec.get("nativeUrl") else ""
+        return (f"Use the native 1.21.1 version{link}: a NeoForge 1.21.1 build of this mod exists, so the 1.20.1 jar should not be loaded. "
+                + (f"The layer skips the 1.20.1 library jar when the native build is installed." if rec.get("nativeLibrary") else
+                   f"For reference, the 1.20.1 jar itself: {rec.get('unresolved', 0)} unresolved reference(s)." if rec["result"] == "unresolved" else "The 1.20.1 jar itself links."))
+    if k == "soft":
+        off = ", ".join(rec.get("softOff") or []) or "optional integrations"
+        return (f"{base}starts: its {rec.get('unresolved', 0)} unresolved reference(s) sit only in code that nothing runs at startup "
+                f"(optional integrations that are off: {off}; the layer's stand-ins throw only if that code is used). The game was not started: this is a structural verdict, not a play test.")
     if k in ("links", "stubs"):
         stubs = rec.get("synthesizedMembers", 0)
         text = f"{base}translates offline and everything it uses exists ({rec.get('classes', 0)} classes)."
@@ -308,20 +378,27 @@ def merge(records, mc, date, layer):
     hidden = {norm(h) for h in data.get("hidden", [])} | {norm(h) for h in data.get("hidden_by_mc", {}).get(mc, [])}
     added = refreshed = skipped = 0
     for rec in records:
-        if rec["result"] not in ("links", "unresolved", "missing-dependency") or rec.get("mc") != mc:
+        if rec.get("mc") != mc or not (rec["result"] in ("links", "unresolved", "missing-dependency") or rec.get("engine") or rec.get("nativeLibrary")):
             continue
-        status = "loads" if rec["result"] == "links" or rec.get("linksWithoutDependency") else "fails"
+        k = kind(rec)
+        status = {"engine": "engine", "native": "native", "soft": "loads"}.get(k) or ("loads" if rec["result"] == "links" or rec.get("linksWithoutDependency") else "fails")
         for m in rec["mods"]:
             name = (m.get("name") or m["id"]).strip()
             key = norm(name)
-            if key in hidden:
+            if key in hidden and k != "engine":   # engine mods are listed (status engine) even where the site hides other uninteresting mods
                 continue
             existing = listed.get(key, [])
-            if any(e.get("source") != "probe" for e in existing):
+            if any(e.get("source") != "probe" for e in existing) and k != "engine":
+                if k == "native" and rec.get("nativeUrl"):   # a better rating stays; the mod only gets the hint that a native version exists
+                    existing[0]["nativeUrl"] = rec["nativeUrl"]
                 skipped += 1   # a maintainer, client or corpus result is better than a link probe
                 continue
             entry = {"name": name, "version": (m.get("version") or "").strip(), "mc": mc, "source": "probe", "date": date,
                      "status": status, "notes": note(rec, layer)}
+            if k == "native" and rec.get("nativeUrl"):
+                entry["nativeUrl"] = rec["nativeUrl"]
+            if k == "engine":   # wins over a probe/corpus result on the site, not over a rating that says it works when hosted (docs/assets/site.js)
+                existing = [e for e in existing if e.get("source") == "probe"]
             if existing:
                 existing[0].update(entry)
                 refreshed += 1
@@ -334,7 +411,7 @@ def merge(records, mc, date, layer):
     return data, added, refreshed, skipped
 
 
-RANK = {"links": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "gap_dep": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
+RANK = {"links": 0, "soft": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "gap_dep": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
 MAX_CHANGES = 100
 
 
@@ -450,7 +527,7 @@ def self_test():
 def history(records, mc, date, layer, source=""):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     records = newest_builds(records, mc)
-    rows, counts, seen = [], {"links": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0}, set()
+    rows, counts, seen = [], {"links": 0, "soft": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0, "native": 0, "engine": 0}, set()
     assets = {"checked": 0, "modsWithLayerProblems": 0, "layerRefs": 0, "modsWithOwnProblems": 0, "ownRefs": 0}
     for r in records:
         k = kind(r) if r.get("result") else ""
@@ -464,6 +541,12 @@ def history(records, mc, date, layer, source=""):
         counts[k] += 1
         stubs = r.get("synthesizedMembers", 0)
         detail = r.get("reason") or (r.get("missing") or [""])[0] if r["result"] != "links" else (f"{stubs} synthesized stub(s)" if stubs else "")
+        if k == "native":
+            detail = "native 1.21.1 version" + (": " + r["nativeUrl"] if r.get("nativeUrl") else "")
+        elif k == "engine":
+            detail = r.get("engineReplacement") or r.get("engineReason", "")
+        elif k == "soft":
+            detail = "soft: only optional integrations off" + ((" (" + ", ".join(r.get("softOff") or []) + ")") if r.get("softOff") else "")
         row = [(m.get("name") or m["id"]).strip(), (m.get("version") or "").strip(), k, detail]
         a = r.get("assets")
         if a:
@@ -527,13 +610,23 @@ def main():
     ap.add_argument("--no-history", action="store_true", help="do not add the run to docs/data/probe.json")
     ap.add_argument("--fail-on-regression", action="store_true", help="exit 2 when a mod got worse than in the previous run (after writing the results)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--detail-in", help="1.20.1: build the records from an existing gap report (detail.tsv) and the jars in <jar-dir> instead of running gap1201 (soft/native annotation of an earlier run)")
+    ap.add_argument("--translated-dir", help="with --detail-in: the directory of translated jars the report was made from (gap1201 -Pgap.translated.dir); the soft/hard scan reads them")
+    ap.add_argument("--no-native", action="store_true", help="native 1.21.1 versions: use only the cached answers of tools/compat/native-modrinth.tsv, no Modrinth request")
+    ap.add_argument("--refresh-native", action="store_true", help="ask Modrinth again for every jar and rewrite tools/compat/native-modrinth.tsv")
     ap.add_argument("--only", default="", help="regex on the archive file name: probe only those (a mod family alone, e.g. --only buildcraft)")
     a = ap.parse_args()
+    NATIVE["lookup"] = native_lookup.Lookup(online=not a.no_native, refresh=a.refresh_native) if a.mc in native_lookup.NATIVE_MC else None
     if a.from_json:
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=old_zip_era(a.mc), mc=a.mc, only=a.only)
+        if a.mc == "1.20.1" and a.detail_in:
+            records_1201(sorted(pathlib.Path(a.jar_dir).glob("*.jar")), a.detail_in, path, a.detail, a.translated_dir)
+        elif a.mc == "1.20.1":
+            run_gap1201(a.jar_dir, path, a.detail)
+        else:
+            run_probe(a.jar_dir, path, zips=old_zip_era(a.mc), mc=a.mc, only=a.only)
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
@@ -541,6 +634,9 @@ def main():
         for r in records:
             if r.get("mc") == "1.4.7":
                 r["mc"] = "1.2.5"
+    annotate_engine(records)
+    if NATIVE["lookup"]:
+        NATIVE["lookup"].save()
     counts = {}
     for r in records:
         counts[r["result"]] = counts.get(r["result"], 0) + 1
@@ -568,4 +664,5 @@ def main():
                 sys.exit(2)
 
 
-main()
+if __name__ == "__main__":
+    main()
