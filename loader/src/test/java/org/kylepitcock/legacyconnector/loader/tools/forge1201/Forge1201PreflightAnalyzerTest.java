@@ -119,8 +119,8 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.16", first.schemaVersion());
-        assertEquals("1.16.0", first.analyzerVersion());
+        assertEquals("1.17", first.schemaVersion());
+        assertEquals("1.17.0", first.analyzerVersion());
         assertEquals(Forge1201AccessTransformerAnalyzer.ResultStatus.NOT_PRESENT,
                 first.accessTransformers().status());
         assertEquals(Forge1201CoremodAnalyzer.ResultStatus.NOT_PRESENT, first.coremodMetadata().status());
@@ -306,6 +306,66 @@ final class Forge1201PreflightAnalyzerTest {
         assertTrue(report.contains("MANUAL_ADAPTER_REQUIRED"));
         assertTrue(report.contains("Structural-only evidence"));
         assertTrue(Forge1201PreflightAnalyzer.toJson(result).contains("\"targetApiVerification\""));
+    }
+
+    @Test
+    void verifiesConnectorShimsAgainstSeparateRuntimeOutputAndNeverAgainstNeoForgeClasspath() throws IOException {
+        Path sourceJar = createForgeModJar(
+                "connector-runtime-domain.jar", false,
+                nestedArchiveWithClassBytes(forgeNetworkShimUseClass()));
+
+        Path targetRoot = tempDir.resolve("connector-domain-neoforge-classpath");
+        Files.createDirectories(targetRoot);
+
+        Path connectorRoot = tempDir.resolve("connector-domain-runtime-output");
+        String targetContext = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkEvent$Context";
+        String targetDirection = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkDirection";
+        Path contextClass = connectorRoot.resolve(targetContext + ".class");
+        Path directionClass = connectorRoot.resolve(targetDirection + ".class");
+        Files.createDirectories(contextClass.getParent());
+        Files.createDirectories(directionClass.getParent());
+        Files.write(contextClass, connectorNetworkContextClass());
+        Files.write(directionClass, plainTargetClass(targetDirection));
+
+        var withConnectorOutput = Forge1201PreflightAnalyzer.analyze(
+                sourceJar, List.of(), List.of(targetRoot), List.of(connectorRoot), null, null);
+        var verification = withConnectorOutput.targetApiVerification();
+
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiVerificationStatus.COMPLETED, verification.status());
+        assertEquals(1, verification.targetClasspathEntryCount());
+        assertEquals(1, verification.connectorRuntimeClasspathEntryCount());
+        assertEquals(List.of(connectorRoot.toAbsolutePath().normalize().toString()),
+                verification.connectorRuntimeClasspathEntries());
+        assertEquals(2, verification.presentTargetClassCount());
+        var contextFinding = verification.classFindings().stream()
+                .filter(finding -> finding.sourceInternalName()
+                        .equals("net/minecraftforge/network/NetworkEvent$Context"))
+                .findFirst().orElseThrow();
+        assertEquals(targetContext, contextFinding.targetInternalName());
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiClassStatus.PRESENT, contextFinding.status());
+        var directionFinding = verification.classFindings().stream()
+                .filter(finding -> finding.sourceInternalName()
+                        .equals("net/minecraftforge/network/NetworkDirection"))
+                .findFirst().orElseThrow();
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiClassStatus.PRESENT, directionFinding.status());
+        assertEquals(1, verification.memberVerification().verifiedMethodReferences());
+        assertTrue(verification.memberVerification().methodIssues().isEmpty());
+        assertEquals(targetContext, verification.memberVerification().verifiedMethods().getFirst().targetOwner());
+
+        // The same input with no Connector output is explicitly not checked, never mislabeled MISSING.
+        var withoutConnectorOutput = Forge1201PreflightAnalyzer.analyze(
+                sourceJar, List.of(), List.of(targetRoot));
+        var unchecked = withoutConnectorOutput.targetApiVerification();
+        assertEquals(0, unchecked.connectorRuntimeClasspathEntryCount());
+        assertTrue(unchecked.classFindings().stream().filter(finding ->
+                        finding.targetInternalName() != null
+                                && finding.targetInternalName().startsWith("legacyconnector/v1_20_1/"))
+                .allMatch(finding -> finding.status()
+                        == Forge1201PreflightAnalyzer.TargetApiClassStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT));
+        assertEquals(1, unchecked.memberVerification().methodIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+                unchecked.memberVerification().methodIssues().getFirst().status());
+        assertTrue(unchecked.memberVerification().missingTargetClasses().isEmpty());
     }
 
     @Test
@@ -1118,6 +1178,41 @@ final class Forge1201PreflightAnalyzerTest {
                 "Lnet/minecraftforge/event/TickEvent$Phase;", null, null).visitEnd();
         writer.visitMethod(Opcodes.ACC_PUBLIC, "setPhase",
                 "(Lnet/minecraftforge/event/TickEvent$Phase;)V", null, null).visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] forgeNetworkShimUseClass() {
+        String context = "net/minecraftforge/network/NetworkEvent$Context";
+        String direction = "net/minecraftforge/network/NetworkDirection";
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, "fixture/NetworkShimUse", null, "java/lang/Object", null);
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "use", "()V", null, null);
+        method.visitCode();
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitTypeInsn(Opcodes.CHECKCAST, context);
+        method.visitMethodInsn(Opcodes.INVOKEVIRTUAL, context, "getDirection",
+                "()L" + direction + ";", false);
+        method.visitInsn(Opcodes.POP);
+        method.visitInsn(Opcodes.RETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] connectorNetworkContextClass() {
+        String owner = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkEvent$Context";
+        String direction = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkDirection";
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, owner, null, "java/lang/Object", null);
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC, "getDirection",
+                "()L" + direction + ";", null, null);
+        method.visitCode();
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
         writer.visitEnd();
         return writer.toByteArray();
     }
