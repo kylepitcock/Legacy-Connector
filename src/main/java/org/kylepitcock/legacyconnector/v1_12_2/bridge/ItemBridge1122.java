@@ -163,19 +163,21 @@ public final class ItemBridge1122 {
     /** The metadata values the creative inventory lists for this item (at least 0). */
     private static List<Integer> metas(Item item) {
         List<Integer> out = new ArrayList<>();
-        if (item.getHasSubtypes()) {
+        // an item that never called setHasSubtypes but lists stacks of several metadata values in the creative inventory is still one item per
+        // value in 1.12 (Galacticraft's buggy: 0 to 3 are the storage sizes); an item with durability uses its damage as damage instead
+        if (item.getHasSubtypes() || (item.getMaxDamage() <= 0 && !item.isDamageable())) {
             try {
                 NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> list = NonNullList.create();
                 item.getSubItems(CreativeTabs.SEARCH, list);
                 // many items list their subtypes only for their own tab (Electroblob's Wizardry spell books: `if (tab == WizardryTabs.SPELLS)`)
                 var own = item.getCreativeTab();
                 if (own != null && own != CreativeTabs.SEARCH) item.getSubItems(own, list);
-                for (var s : list) if (!s.isEmpty() && s.getItem() == item && !out.contains(s.getMetadata())) out.add(s.getMetadata());
+                for (var s : list) if (!s.isEmpty() && s.getItem() == item && s.getMetadata() >= 0 && !out.contains(s.getMetadata())) out.add(s.getMetadata());
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Could not list the subtypes of {}: {}", item.getRegistryName(), e.toString());
             }
         }
-        if (out.isEmpty()) out.add(0);
+        if (out.isEmpty() || (!item.getHasSubtypes() && !out.contains(0))) out.add(0, 0);
         return out;
     }
 
