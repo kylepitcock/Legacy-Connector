@@ -1,0 +1,64 @@
+name: Forge 1.20.1 preflight analyzer tests
+
+on:
+  push:
+    branches:
+      - work/forge1201-preflight-nested-mixin-inventory
+    paths:
+      - '.github/workflows/forge1201-preflight-analyzers.yml'
+      - 'build.gradle'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'loader/build.gradle'
+      - 'loader/src/**'
+      - 'settings.gradle'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forge1201-preflight-analyzers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyzer-tests:
+    name: Five focused Forge 1.20.1 preflight analyzer tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out preflight branch
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run focused preflight analyzer tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :loader:test \
+            --tests 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201ArchiveGraphTest' \
+            --tests 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201MixinAnalyzerTest' \
+            --tests 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201AccessTransformerAnalyzerTest' \
+            --tests 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201CoremodAnalyzerTest' \
+            --tests 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzerTest' \
+            --no-daemon --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge1201-preflight-analyzer-test-reports
+          path: |
+            loader/build/reports/tests/test/
+            loader/build/test-results/test/
+          if-no-files-found: ignore
+          retention-days: 7
