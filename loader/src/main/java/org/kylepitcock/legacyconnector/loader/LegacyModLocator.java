@@ -516,6 +516,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LoaderFlags.COREMOD_HOOKS.set(coremodHooks.values().stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator)));
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2; 1.12.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
+            Set<String> otherModTargets = java.util.concurrent.ConcurrentHashMap.newKeySet();
             transformer.patcher((jar, name, bytes) -> {
                 if (!org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.supports(jar.version)) return bytes;
                 LegacyVersion api = org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiFor(jar.version);
@@ -540,7 +541,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             }
                         }
                     }
-                    return transformers.apply(name, bytes);
+                    byte[] patched = transformers.apply(name, bytes);
+                    // A coremod that extends another mod's class (Logistics Pipes into Thermal Dynamics): the structural change is part of the class from here on, so
+                    // the jar's translation, link check and peers see it; the jar's cache entry is keyed by the whole set's digest, which includes the coremod's jar.
+                    if (patched != bytes && (jar.coreModClass == null || jar.coreModClass.isBlank()) && otherModTargets.add(jar.fileName())) {
+                        LOG.info("Legacy Connector: a legacy coremod of this mod set changes classes of {} (first: {}); its added members are part of the translated jar", jar.fileName(), name.replace('/', '.'));
+                    }
+                    return patched;
                 }
             });
             LegacyModDecl.setFmlIds(fmlIdRenames(loading, legacy, List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))));

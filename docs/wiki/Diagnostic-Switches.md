@@ -13,7 +13,7 @@ How they behave:
 
 <!-- switches:begin (generated from Flags, CompatFlags and LoaderFlags; run SwitchRegistryTest with SWITCH_DOCS_UPDATE=1 to rewrite) -->
 
-131 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
+132 switches. "Read by" says which half of the layer reads (or, for internal ones, sets) the property.
 
 ### Debug (25)
 
@@ -141,7 +141,7 @@ How they behave:
 | `legacyconnector.mc125.clientCallbacks` | flag | `false` | runtime | Switch for A/B checks of 1.2.5 client callbacks (read live). |
 | `legacyconnector.renderLock` | flag | `unset` | both | true: legacy renderers take the capture lock (the loader sets it when a jar has a render library with static state). |
 
-### Tool (21)
+### Tool (22)
 
 | Switch | Type | Default | Read by | What it does |
 |---|---|---|---|---|
@@ -156,6 +156,7 @@ How they behave:
 | `gap.translated.dir` | path | `unset` | loader | 1.20.1 gap analyzer: directory to keep the translated jars in. |
 | `legacyconnector.check.assets` | string | `unset` | loader | false: the offline check skips the resource check. |
 | `legacyconnector.check.bridges` | string | `unset` | loader | false: the offline check treats the jars as plain mods (no library bridges). |
+| `legacyconnector.check.coremods` | string | `unset` | loader | true: the offline check runs the set's coremod class transformers over the jars' classes. |
 | `legacyconnector.check.json` | path | `unset` | loader | File the offline check writes its result to as JSON. |
 | `legacyconnector.check.keep` | path | `unset` | loader | Directory the offline check keeps the translated jars in. |
 | `legacyconnector.check.quiet` | string | empty | loader | -q: the offline check does not print the link report. |

@@ -50,7 +50,7 @@ Read `BRIEF.md` and `issue-worker.md` first. Mark an outline `DONE <commit>` or 
 - Approach: find which side the legacy code writes (Fisk changes `bipedRightArm.rotateAngleX` on the main model in `RenderPlayerEvent.Pre`/`SetArmorModel`). Copy the legacy main-model angles to the modern `PlayerModel` before it renders, and the modern ones to the legacy model before legacy armor renders.
 - Verify: client with Fisk Superheroes; use a suit animation and take a shot showing the arms moving together.
 
-### C2. Coremod structural additions to another mod's classes (L)
+### C2. Coremod structural additions to another mod's classes (L) DONE for 1.7.10, 1.6.4 PARTLY (2026-11-24; design, result and the remaining 1.6.4 coremod-environment work in `coremod-structural-additions.md`)
 - Why: Logistics Pipes 1.6.4/1.7.10 coremod adds fields and interfaces to Thermal Expansion / BuildCraft classes. The current coremod emulation only handles vanilla targets.
 - Where: `coremod-structural-additions.md`, loader coremod hook discovery.
 - Approach: when a coremod's transformer targets a class of another translated jar in the same mod set, apply the structural part (added fields, interfaces, methods) at translation time of that jar, and make the translation-cache key include the coremod's jar.

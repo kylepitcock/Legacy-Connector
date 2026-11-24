@@ -483,6 +483,8 @@ public final class LegacyCoreModTransformers {
     private static final class ShimLoader extends ClassLoader {
         private static final String PREFIX = LegacyVersion.V1_7_10.shimPrefix();
         private final LegacyVersion hierarchy;
+        /** The API flavour's own version when it is not the hierarchy's (1.6.4: classes of Forge 1.6 the 1.7.10 data lacks, e.g. IChatListener). */
+        private final LegacyVersion ownHierarchy;
         /** Shim roots tried in order: the 1.6.4 API (ITickHandler, TickType...) lives in its own root over the 1.7.10 one. */
         private final List<String> prefixes;
         private final java.util.zip.ZipFile jar;
@@ -494,6 +496,7 @@ public final class LegacyCoreModTransformers {
             this.prefixes = api == LegacyVersion.V1_6_4 ? List.of(LegacyVersion.V1_6_4.shimPrefix(), PREFIX)
                     : api == LegacyVersion.V1_12_2 ? List.of(LegacyVersion.V1_12_2.shimPrefix()) : List.of(PREFIX);
             this.hierarchy = api == LegacyVersion.V1_12_2 ? LegacyVersion.V1_12_2 : LegacyVersion.V1_7_10;
+            this.ownHierarchy = api == LegacyVersion.V1_6_4 ? LegacyVersion.V1_6_4 : null;
             this.dir = Files.isDirectory(runtime) ? runtime : null;
             this.jar = dir == null ? new java.util.zip.ZipFile(runtime.toFile()) : null;
         }
@@ -526,10 +529,28 @@ public final class LegacyCoreModTransformers {
             } catch (java.io.IOException ex) {
                 throw new ClassNotFoundException(name, ex);
             }
+            String forwardOf = null;
+            if (bytes == null && ownHierarchy != null) {
+                // A class 1.6.4 / 1.5.2 / 1.4.7 had under another name than the 1.7.10 shim (Forge's Configuration): the transformer (and the mod classes
+                // it initialises) name the old one, so serve the shim's class under the old name.
+                String target = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(ownHierarchy, internal);
+                if (!target.equals(internal) && LegacyVersion.isRelocatedRoot(target)) {
+                    try {
+                        for (String prefix : prefixes) {
+                            bytes = read(prefix + target + ".class");
+                            if (bytes != null) break;
+                        }
+                    } catch (java.io.IOException ex) {
+                        throw new ClassNotFoundException(name, ex);
+                    }
+                    if (bytes != null) forwardOf = target;
+                }
+            }
             if (bytes == null) {
                 // A vanilla class the shim has no hand-written version of: coremods still name it (ClassWriter's
                 // frame computation asks for common superclasses), so serve an empty class with its real supertypes.
                 var entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(hierarchy).get(internal);
+                if (entryData == null && ownHierarchy != null) entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(ownHierarchy).get(internal);
                 if (entryData == null) {
                     // A Minecraft class of the mod's own version (1.5.2 names such as net.minecraft.network.packet.Packet are not in the 1.7.10
                     // data): mod classes whose static initialisers install transformers (Immibis Core) only name it in signatures, and the verifier
@@ -552,10 +573,16 @@ public final class LegacyCoreModTransformers {
                 return defineClass(name, out, 0, out.length);
             }
             ClassWriter writer = new ClassWriter(0);
+            final String renamed = forwardOf;
             new ClassReader(bytes).accept(new ClassRemapper(writer, new Remapper() {
                 @Override
                 public String map(String n) {
-                    for (String prefix : prefixes) if (n.startsWith(prefix)) return n.substring(prefix.length());
+                    for (String prefix : prefixes) {
+                        if (n.startsWith(prefix)) {
+                            String plain = n.substring(prefix.length());
+                            return plain.equals(renamed) ? internal : plain;
+                        }
+                    }
                     return n;
                 }
             }), 0);

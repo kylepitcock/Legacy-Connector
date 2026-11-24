@@ -576,6 +576,11 @@ tasks.register('checkLegacyMod', JavaExec) {
     maxHeapSize = '3g'
     // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
     if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
+    // -Pcoremods=true: run the set's coremod class transformers over every class (structural additions to other mods' classes)
+    if (project.findProperty('coremods')) {
+        systemProperty 'legacyconnector.check.coremods', project.findProperty('coremods').toString()
+        systemProperty 'legacyconnector.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
+    }
         // -Pmc125Unresolved=<file>: append the game members of 1.2.5 jars the join table could not name (diagnostics)
     if (project.findProperty('mc125Unresolved')) systemProperty 'legacyconnector.mc125.unresolved', project.findProperty('mc125Unresolved').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
