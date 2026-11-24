@@ -11,7 +11,7 @@ public interface IExtendedBlockState extends IBlockState {
 
     <V> IExtendedBlockState withProperty(IUnlistedProperty<V> property, V value);
 
-    ImmutableMap<IUnlistedProperty<?>, com.google.common.base.Optional<?>> getUnlistedProperties();
+    ImmutableMap<IUnlistedProperty<?>, java.util.Optional<?>> getUnlistedProperties();
 
     IBlockState getClean();
 }

@@ -50,7 +50,7 @@ public class BlockStateContainer {
 
     /** Forge's {@code ExtendedBlockState} super call: listed properties plus unlisted ones (unlisted values live in the states' extended part). */
     public BlockStateContainer(Block block, IProperty<?>[] properties,
-            ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, com.google.common.base.Optional<?>> unlistedProperties) {
+            ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, java.util.Optional<?>> unlistedProperties) {
         this(block, properties);
     }
 
@@ -89,7 +89,7 @@ public class BlockStateContainer {
 
     /** Forge's form with the unlisted properties' values (null for a plain container); mods override it to make their own states. */
     protected StateImplementation createState(Block block, ImmutableMap<IProperty<?>, Comparable<?>> properties,
-            ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, com.google.common.base.Optional<?>> unlistedProperties) {
+            ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, java.util.Optional<?>> unlistedProperties) {
         return createState(block, properties);
     }
 
