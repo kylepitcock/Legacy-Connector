@@ -8,6 +8,7 @@ themselves (same name = same symbol), moves from the unique simple name, renames
 from the unique descriptor among the members that vanished and appeared in the same class.
 
   python tools/dev/version_index.py diff 1.20.1 1.21.1 [--out DIR] [--no-jar]     # writes class-diff / member-diff / hierarchy-diff TSVs
+  python tools/dev/version_index.py emit 1.19.2 1.20.1                             # writes the high-confidence rows into forward/1.19.2/ (provenance column)
   python tools/dev/version_index.py compare 1.20.1 1.21.1 [--forward-dir 1.20.1]   # diff + how many hand-made rows of the stage it reproduces
 
 Output files (in --out, default build/version-index/diff-<a>-<b>/):
@@ -366,9 +367,51 @@ def compare(va, vb, fdir, out):
     (out / "compare-detail.txt").write_text("\n".join(full) + "\n", encoding="utf-8")
 
 
+HEADERS = {
+    "mc-classes.tsv": "# Class renames and moves (old TAB new TAB provenance). Provenance: gen = emitted by tools/dev/version_index.py emit (replaced on every run),\n"
+                      "# hand = curated; a hand row for the same old name wins over a generated one.\n",
+    "mc-members.tsv": "# Renamed methods and fields (owner TAB name TAB descriptor (fields: ':' + descriptor) TAB new name TAB provenance); gen rows are replaced on every run,\n"
+                      "# hand rows win.\n",
+}
+
+
+def merge_stage(path, key, gen_rows):
+    """Writes gen_rows (lists of columns without provenance) into a stage table, keeping the hand rows and dropping generated rows whose key a hand row has."""
+    hand = []
+    if path.exists():
+        for l in open(path, encoding="utf-8"):
+            l = l.rstrip("\n")
+            if not l.strip() or l.startswith("#"):
+                continue
+            c = l.split("\t")
+            if c[-1] == "gen":
+                continue
+            hand.append(c)
+    hand_keys = {key(c) for c in hand}
+    gen = sorted(r for r in gen_rows if key(r) not in hand_keys)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(HEADERS[path.name])
+        for c in hand:
+            f.write("\t".join(c if c[-1] == "hand" else c + ["hand"]) + "\n")
+        for r in gen:
+            f.write("\t".join(r + ["gen"]) + "\n")
+    return len(hand), len(gen)
+
+
+def emit(va, vb, fdir, out):
+    a, b, classes, members, desc, removed = run_diff(va, vb, out)
+    base = FORWARD / fdir
+    cl = [[o, n] for o, n, kind, conf, why in classes if conf == "high"]
+    mem = [[o, n, (":" + d if k == "field" else d), nn] for o, n, d, nn, k, conf in members if conf == "high"]
+    h1, g1 = merge_stage(base / "mc-classes.tsv", lambda c: c[0], cl)
+    h2, g2 = merge_stage(base / "mc-members.tsv", lambda c: (c[0], c[1], c[2]), mem)
+    print(f"{base}: mc-classes {h1} hand + {g1} generated; mc-members {h2} hand + {g2} generated")
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("cmd", choices=["diff", "compare"])
+    p.add_argument("cmd", choices=["diff", "compare", "emit"])
     p.add_argument("a")
     p.add_argument("b")
     p.add_argument("--out")
@@ -378,6 +421,8 @@ def main():
     out = pathlib.Path(args.out) if args.out else CACHE / f"diff-{args.a}-{args.b}"
     if args.cmd == "diff":
         run_diff(args.a, args.b, out, not args.no_jar)
+    elif args.cmd == "emit":
+        emit(args.a, args.b, args.forward_dir or args.a, out)
     else:
         compare(args.a, args.b, args.forward_dir or args.a, out)
 

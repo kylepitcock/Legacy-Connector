@@ -115,7 +115,7 @@ public final class Mc1201Tables {
         Mc1201Tables t = instance;
         if (t == null) {
             synchronized (Mc1201Tables.class) {
-                if ((t = instance) == null) instance = t = loadChain(ForwardStage.chainFrom(STAGE.source()));
+                if ((t = instance) == null) instance = t = loadChain(ForwardStage.chainFrom(ForwardStage.sourceVersion()));
             }
         }
         return t;

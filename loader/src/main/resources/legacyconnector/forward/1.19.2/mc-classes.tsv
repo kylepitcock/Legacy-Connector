@@ -1,0 +1,27 @@
+# Class renames and moves (old TAB new TAB provenance). Provenance: gen = emitted by tools/dev/version_index.py emit (replaced on every run),
+# hand = curated; a hand row for the same old name wins over a generated one.
+net/minecraft/client/renderer/texture/TextureAtlas$Preparations	net/minecraft/client/renderer/texture/SpriteLoader$Preparations	hand
+net/minecraft/server/packs/resources/Resource$IoSupplier	net/minecraft/server/packs/resources/IoSupplier	hand
+net/minecraft/world/level/storage/loot/LootContext$DynamicDrop	net/minecraft/world/level/storage/loot/LootParams$DynamicDrop	hand
+net/minecraft/data/BuiltinRegistries$RegistryBootstrap	net/minecraft/core/RegistrySetBuilder$RegistryBootstrap	hand
+net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo	net/minecraft/client/renderer/texture/SpriteContents$FrameInfo	hand
+net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture	net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture	hand
+net/minecraft/client/renderer/texture/TextureAtlasSprite$InterpolationData	net/minecraft/client/renderer/texture/SpriteContents$InterpolationData	hand
+net/minecraft/server/level/ChunkHolder$FullChunkStatus	net/minecraft/server/level/FullChunkStatus	hand
+net/minecraft/commands/arguments/ResourceOrTagLocationArgument$Result	net/minecraft/commands/arguments/ResourceOrTagKeyArgument$Result	hand
+net/minecraft/core/RegistryAccess$RegistryData	net/minecraft/resources/RegistryDataLoader$RegistryData	hand
+net/minecraft/world/level/biome/MultiNoiseBiomeSource$Preset	net/minecraft/world/level/biome/MultiNoiseBiomeSourceParameterList$Preset	hand
+net/minecraft/client/ClientTelemetryManager	net/minecraft/client/telemetry/ClientTelemetryManager	gen
+net/minecraft/client/gui/font/providers/GlyphProviderBuilderType	net/minecraft/client/gui/font/providers/GlyphProviderType	gen
+net/minecraft/client/gui/screens/worldselection/WorldCreationContext$SimpleUpdater	net/minecraft/client/gui/screens/worldselection/WorldCreationContext$DimensionsUpdater	gen
+net/minecraft/client/multiplayer/ProfileKeyPairManager$Result	net/minecraft/client/multiplayer/ProfileKeyPairManager$1	gen
+net/minecraft/client/renderer/texture/AtlasSet	net/minecraft/client/resources/model/AtlasSet	gen
+net/minecraft/core/Registry$RegistryBootstrap	net/minecraft/core/RegistrySetBuilder$RegistryBootstrap	gen
+net/minecraft/data/tags/BlockTagsProvider	net/minecraft/data/tags/VanillaBlockTagsProvider	gen
+net/minecraft/network/chat/OutgoingPlayerChatMessage	net/minecraft/network/chat/OutgoingChatMessage	gen
+net/minecraft/network/chat/PreviewableCommand$Argument	net/minecraft/network/chat/SignableCommand$Argument	gen
+net/minecraft/network/chat/SignedMessageChain$Link	net/minecraft/network/chat/SignedMessageLink	gen
+net/minecraft/world/item/crafting/SimpleRecipeSerializer	net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer	gen
+net/minecraft/world/level/block/BambooBlock	net/minecraft/world/level/block/BambooStalkBlock	gen
+net/minecraft/world/level/material/MaterialColor$Brightness	net/minecraft/world/level/material/MapColor$Brightness	gen
+net/minecraft/world/level/storage/loot/PredicateManager$CompositePredicate	net/minecraft/world/level/storage/loot/LootDataManager$CompositePredicate	gen
