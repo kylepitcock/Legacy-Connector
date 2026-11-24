@@ -36,6 +36,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :loader:test \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBufferingGlowConsumer1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoPossessionAbility1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBoneAnchors1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoCameraRotationCallers1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoRuntimeDiagnostics1201Test' \
