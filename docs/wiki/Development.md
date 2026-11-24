@@ -177,6 +177,13 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
   counts) is more than 2 percent lower (10 percent for entities alive, which varies between identical runs), or when the self test was not reached. A suite without a baseline entry is NEW. After an intended change run
   `tools/dev/verify.sh --update [suite]` and commit `baseline.json`. The table is also written to `build/devtools/verify-report.txt`; the exit code is
   non-zero when a suite failed.
+- **Resumable runs:** every run has an id (`YYYYMMDD-HHMMSS`, printed first with the git revision). Each suite writes
+  `build/devtools/verify-<suite>-result.json` the moment it finishes, so a run that dies midway (Git Bash fork errors, RAM pressure) loses
+  nothing. `tools/dev/verify.sh --resume <run-id> [same suites]` skips suites that finished in that run at the same revision (SETUP, SKIP
+  and timed-out suites run again) and prints the table of all named suites at the end. `python tools/dev/verify/verify.py report [baseline.json]
+  --run <id> [--dir build/devtools] [--update]` rebuilds the table of a run, also a dead one, without running anything. The old form
+  `verify.py report <baseline.json> <results.json>` still works. Test hooks: `VERIFY_FAKE=<dir>` reads `<dir>/<suite>.log` instead of starting
+  a server, `VERIFY_FAKE_DIE_AFTER=<n>` exits abruptly after n suites.
 - **Watchdog:** `verify.sh`, `run-subset.sh` and `run-corpus.sh` write `max-tick-time=-1` into the `server.properties` of the run directory:
   the dimension self test of big packs blocks the main thread for more than the 60 s watchdog, which killed the run. (A hand-made run directory
   needs the same line.)
