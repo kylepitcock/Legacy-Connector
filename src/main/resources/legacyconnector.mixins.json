@@ -9,6 +9,7 @@
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
     "AlienEvoDimensionsProbeMixin",
+    "AlienEvoLivingDimensions1201Mixin",
     "SynchedEntityDataBuilderMixin",
     "SynchedEntityDataDefineIdMixin",
     "TreeGrowerLegacyMixin",
