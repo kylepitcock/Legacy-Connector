@@ -196,4 +196,9 @@ public final class LibraryCompat {
         }
         return out;
     }
+
+    /** LWJGL 2's {@code PointerBuffer.getBuffer()}: the buffer's memory as bytes (LWJGL 3 has no such accessor). */
+    public static ByteBuffer pointerBufferGetBuffer(org.lwjgl.PointerBuffer buffer) {
+        return org.lwjgl.system.MemoryUtil.memByteBuffer(buffer.address(), buffer.capacity() * org.lwjgl.system.Pointer.POINTER_SIZE);
+    }
 }
