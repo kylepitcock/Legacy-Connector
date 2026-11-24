@@ -364,6 +364,7 @@ public final class Forge1201Transformer {
         int alienEvoColoredProjectileRendererChanges = 0;
         int alienEvoSuperheroFlightControllerChanges = 0;
         int alienEvoLateEffectBuffersChanges = 0;
+        int alienEvoTransformBubbleDiagnosticsChanges = 0;
         int alienEvoSlimeDecalMeshChanges = 0;
         int alienEvoMolangCompatChanges = 0;
         int alienEvoMolangMixinDropped = 0;
@@ -496,6 +497,8 @@ public final class Forge1201Transformer {
             int alienEvoLateEffectBuffersChange = AlienEvoLateEffectBuffers1201.apply(node);
             alienEvoLateEffectBuffersChanges += alienEvoLateEffectBuffersChange;
             viaCalls += alienEvoLateEffectBuffersChange;
+            int alienEvoTransformBubbleDiagnosticsChange = AlienEvoTransformBubbleDiagnostics1201.apply(node);
+            alienEvoTransformBubbleDiagnosticsChanges += alienEvoTransformBubbleDiagnosticsChange;
             int alienEvoSlimeDecalMeshChange = AlienEvoSlimeDecalMesh1201.apply(node);
             alienEvoSlimeDecalMeshChanges += alienEvoSlimeDecalMeshChange;
             viaCalls += alienEvoSlimeDecalMeshChange;
@@ -532,6 +535,7 @@ public final class Forge1201Transformer {
                     + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange
                     + alienEvoDynamicColorParticleRenderTypeChange + alienEvoBoneAnchorsChange
                     + alienEvoBeamAbilityParticlesChange + alienEvoSuperheroFlightControllerChange
+                    + alienEvoTransformBubbleDiagnosticsChange
                     + alienEvoMolangChange + alienEvoGeckoMixinChange + alienEvoGeckoRenderLayerChange + alienEvoGeckoExceptionChange);
         }
         if (mapper.authlibPropertyMethodReferences > 0) {
@@ -600,6 +604,10 @@ public final class Forge1201Transformer {
         if (alienEvoLateEffectBuffersChanges > 0) {
             result.notes.add("AlienEvo LateEffectBuffers.flush migrated from RenderType.end(BufferBuilder, VertexSorting) to the 1.21.1 MeshData sort-and-draw path: "
                     + alienEvoLateEffectBuffersChanges + " bytecode rewrite(s)");
+        }
+        if (alienEvoTransformBubbleDiagnosticsChanges > 0) {
+            result.notes.add("AlienEvo TransformBubbleRenderer received opt-in coordinate-frame diagnostics; enable -Dlegacyconnector.debug.alienevoTransformBubble=true to log entry, head-anchor and first-person camera matrices: "
+                    + alienEvoTransformBubbleDiagnosticsChanges + " observation call site(s), with no rendering behavior changes");
         }
         if (alienEvoSlimeDecalMeshChanges > 0) {
             result.notes.add("AlienEvo SlimeDecalRenderer.bake now skips an empty 1.21.1 MeshData result before close/upload: "
