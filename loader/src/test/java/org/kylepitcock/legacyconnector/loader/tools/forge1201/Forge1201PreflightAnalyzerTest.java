@@ -356,6 +356,9 @@ final class Forge1201PreflightAnalyzerTest {
         var withoutConnectorOutput = Forge1201PreflightAnalyzer.analyze(
                 sourceJar, List.of(), List.of(targetRoot));
         var unchecked = withoutConnectorOutput.targetApiVerification();
+        assertEquals(Forge1201PreflightAnalyzer.TargetApiVerificationStatus
+                        .COMPLETED_WITH_UNCHECKED_CONNECTOR_RUNTIME,
+                unchecked.status());
         assertEquals(0, unchecked.connectorRuntimeClasspathEntryCount());
         assertTrue(unchecked.classFindings().stream().filter(finding ->
                         finding.targetInternalName() != null
