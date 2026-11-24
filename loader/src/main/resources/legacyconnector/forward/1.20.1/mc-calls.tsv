@@ -1181,3 +1181,16 @@ net/minecraft/client/renderer/PostPass	<init>	(Lnet/minecraft/server/packs/resou
 net/minecraft/client/gui/components/ChatComponent	render	(Lnet/minecraft/client/gui/GuiGraphics;III)V	=args	0,1,2,3,false	(Lnet/minecraft/client/gui/GuiGraphics;IIIZ)V
 net/minecraft/client/resources/sounds/SimpleSoundInstance	forRecord	(Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/client/resources/sounds/SimpleSoundInstance;	=	forJukeboxSong
 net/neoforged/neoforge/client/ClientHooks	onDrawHighlight	(Lnet/minecraft/client/renderer/LevelRenderer;Lnet/minecraft/client/Camera;Lnet/minecraft/world/phys/HitResult;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;)Z	Round15ClientCompat	onDrawHighlight	-
+# --- round 15 common: server/common members that changed shape (helpers in Round15CommonCompat)
+net/minecraft/resources/ResourceLocation	<init>	(Ljava/lang/String;)V	Round15CommonCompat	newResourceLocation	-
+net/minecraft/advancements/critereon/MinMaxBounds	getMin	()Ljava/lang/Number;	Round15CommonCompat	boundsMin	-
+net/minecraft/advancements/critereon/MinMaxBounds	getMax	()Ljava/lang/Number;	Round15CommonCompat	boundsMax	-
+net/minecraft/advancements/AdvancementType	getName	()Ljava/lang/String;	=	getSerializedName
+net/minecraft/advancements/AdvancementType	byName	(Ljava/lang/String;)Lnet/minecraft/advancements/AdvancementType;	Round15CommonCompat	advancementTypeByName	-
+net/minecraft/world/item/crafting/SmithingTrimRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;)V	=args	1,2,3	(Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;)V
+net/minecraft/world/level/chunk/storage/ChunkStorage	<init>	(Ljava/nio/file/Path;Lcom/mojang/datafixers/DataFixer;Z)V	Round15CommonCompat	newChunkStorage	-
+net/minecraft/commands/arguments/ResourceLocationArgument	getRecipe	(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Lnet/minecraft/world/item/crafting/Recipe;	Round15CommonCompat	argumentRecipe	-
+net/minecraft/commands/arguments/ScoreHolderArgument	getName	(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)Ljava/lang/String;	Round15CommonCompat	scoreHolderName	-
+net/minecraft/world/level/block/DispenserBlock	getDispenseMethod	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/core/dispenser/DispenseItemBehavior;	Round15CommonCompat	dispenseMethod	-
+net/minecraft/commands/CommandBuildContext	holderLookup	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/HolderLookup;	=	lookupOrThrow	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/HolderLookup$RegistryLookup;
+net/minecraft/world/entity/vehicle/AbstractMinecart	createMinecart	(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/entity/vehicle/AbstractMinecart$Type;)Lnet/minecraft/world/entity/vehicle/AbstractMinecart;	Round15CommonCompat	createMinecart	-
