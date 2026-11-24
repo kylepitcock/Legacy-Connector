@@ -360,6 +360,8 @@ final class Forge1201PreflightAnalyzerTest {
                         .COMPLETED_WITH_UNCHECKED_CONNECTOR_RUNTIME,
                 unchecked.status());
         assertEquals(0, unchecked.connectorRuntimeClasspathEntryCount());
+        assertEquals(2, unchecked.candidateClassCount());
+        assertEquals(0, unchecked.presentTargetClassCount());
         assertTrue(unchecked.classFindings().stream().filter(finding ->
                         finding.targetInternalName() != null
                                 && finding.targetInternalName().startsWith("legacyconnector/v1_20_1/"))
@@ -1189,7 +1191,7 @@ final class Forge1201PreflightAnalyzerTest {
         String context = "net/minecraftforge/network/NetworkEvent$Context";
         String direction = "net/minecraftforge/network/NetworkDirection";
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, "fixture/NetworkShimUse", null, "java/lang/Object", null);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, "nested/LibraryFeature", null, "java/lang/Object", null);
         MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "use", "()V", null, null);
         method.visitCode();
         method.visitInsn(Opcodes.ACONST_NULL);
