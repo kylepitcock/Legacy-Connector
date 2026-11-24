@@ -119,12 +119,12 @@ public final class BuildHeightRewriter {
                     }
                     break;
                 }
-                boolean self = op == Opcodes.ILOAD && ((VarInsnNode) p).var == slot;
-                if (!(self || (op >= Opcodes.ICONST_M1 && op <= Opcodes.ICONST_5) || op == Opcodes.BIPUSH || op == Opcodes.SIPUSH
+                if (op == Opcodes.ILOAD && ((VarInsnNode) p).var == slot) { ok = true; break; } // y = y +- constants
+                if (!( (op >= Opcodes.ICONST_M1 && op <= Opcodes.ICONST_5) || op == Opcodes.BIPUSH || op == Opcodes.SIPUSH
                         || op == Opcodes.IADD || op == Opcodes.ISUB)) break;
             }
             if (!ok) bad.add(slot);
-            else owners.putIfAbsent(slot, owner);
+            else if (owner != null) owners.putIfAbsent(slot, owner);
         }
         int n = 0;
         for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
