@@ -68,4 +68,20 @@ class StackHoldersTest {
         assertTrue(StackHolders.repair(book, server));
         book.save(server);
     }
+
+    @Test
+    void failedSaveIsRetriedAndFinallySavedWithoutEnchantments() {
+        HolderLookup.Provider server = VanillaRegistries.createLookup();
+        var stack = enchantedFrom(server);
+        var failure = new IllegalStateException("Element x is not valid in current registry set");
+        // a save that keeps failing as long as the stack carries enchantments: the copy without them is written
+        var tag = StackHolders.recover(stack, server, failure, s -> {
+            if (!s.getEnchantments().isEmpty()) throw new IllegalStateException("Element y is not valid in current registry set");
+            return s.save(server);
+        });
+        assertTrue(tag.toString().contains("netherite_hoe") || tag.toString().contains("diamond_pickaxe"));
+        // a save that works after the holders were looked up again keeps them
+        var again = StackHolders.recover(stack, server, failure, s -> s.save(server));
+        assertTrue(again.toString().contains("fortune"));
+    }
 }
