@@ -58,7 +58,7 @@ final class AlienEvoOmnitrixDisplayResources1201 implements Opcodes {
                     throw new IllegalStateException(
                             "AlienEvo OmnitrixDisplayResources references GEO_GSON outside lambda$model$3");
                 }
-                if (field.getOpcode() != GETSTATIC || field.itf) {
+                if (field.getOpcode() != GETSTATIC) {
                     throw new IllegalStateException(
                             "AlienEvo OmnitrixDisplayResources GEO_GSON access is not the inspected GETSTATIC");
                 }
