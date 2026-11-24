@@ -95,6 +95,7 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         assertTrue(trace.getPrevious() instanceof VarInsnNode);
         assertEquals(FLOAD, trace.getPrevious().getOpcode());
         assertEquals(DUP, trace.getPrevious().getPrevious().getOpcode());
+        assertTrue(swing.maxStack >= 3, "swing trace must reserve the duplicated result and original progress");
         new Analyzer<>(new BasicVerifier()).analyze(node.name, swing);
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
     }
