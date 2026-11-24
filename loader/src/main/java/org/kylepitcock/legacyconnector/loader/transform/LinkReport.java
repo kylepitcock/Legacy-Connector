@@ -33,14 +33,25 @@ public final class LinkReport {
 
     /** Set by the linker: true when a class (or an ancestor) lost an {@code @Optional.Interface}, so members it declared may be missing on purpose. */
     java.util.function.Predicate<String> lostOptionalInterface = c -> false;
+    /** Set by the linker: true when the member was removed from the owner or one of its superclasses (a call through a subclass of the class that declared it). */
+    java.util.function.BiPredicate<String, String> removedInAncestor = (o, m) -> false;
+
+    /** True when the class and all its ancestors belong to the jar being linked: a member missing there is a defect of the mod itself. */
+    java.util.function.Predicate<String> ownClassChain = c -> false;
+    /** Members a mod's own classes reference on its other own classes that do not exist (the original throws NoSuchFieldError/NoSuchMethodError only if that code runs). Informational. */
+    public final Map<String, TreeSet<String>> ownMissingMembers = new TreeMap<>();
 
     void missingClass(String owner, String from) {
         missingClasses.computeIfAbsent(owner, k -> new TreeSet<>()).add(from);
     }
 
     void missingMember(String owner, String member, String from, boolean shim) {
-        if (optionalRemoved.contains(owner + "." + member) || lostOptionalInterface.test(owner)) {
+        if (optionalRemoved.contains(owner + "." + member) || lostOptionalInterface.test(owner) || removedInAncestor.test(owner, member)) {
             optionalMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
+            return;
+        }
+        if (shim && !member.contains("(static/instance mismatch)") && ownClassChain.test(owner)) {
+            ownMissingMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
             return;
         }
         (shim ? missingShimMembers : missingLibraryMembers).computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
@@ -116,6 +127,7 @@ public final class LinkReport {
         }
         section(sb, "Missing shim classes (legacy API not implemented yet)", missingClasses);
         section(sb, "Missing shim members", missingShimMembers);
+        section(sb, "Members the mod's own classes lack (a defect of the mod itself: fails only if that code runs)", ownMissingMembers);
         section(sb, "Removed library/JDK members", missingLibraryMembers);
         section(sb, "Synthesized legacy APIs (link, but have no behaviour yet)", stubbedMembers);
         section(sb, "Adapted to the shim's signature (real behaviour)", adaptedMembers);

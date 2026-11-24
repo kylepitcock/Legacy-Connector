@@ -59,6 +59,15 @@ public final class ShimLinker {
             }
             return false;
         };
+        report.removedInAncestor = (owner, member) -> {
+            for (String c = owner; c != null && !c.startsWith("java/"); ) {
+                if (report.optionalRemoved.contains(c + "." + member)) return true;
+                var info = hierarchy.find(c);
+                c = info == null ? null : info.superName;
+            }
+            return false;
+        };
+        report.ownClassChain = owner -> ownChain(hierarchy, owner, 0);
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {
@@ -537,6 +546,9 @@ public final class ShimLinker {
 
     private static void checkLibrary(Hierarchy hierarchy, LinkReport report, String from, String owner, String member, Hierarchy.Lookup l) {
         if (l == null) return;
+        // Forge 1.6.4 and older Scala mods run on the bundled Scala 2.10 (BundledLibraries "scala210"); the class path this check reads is 2.11,
+        // whose trait implementation classes ($class) and internals differ, so a scala member it lacks says nothing about the mod.
+        if (owner.startsWith("scala/") && hierarchy.version() != null && hierarchy.version().numericIds()) return;
         if (l == Hierarchy.Lookup.MISSING_CLASS) {
             report.absentClass(hierarchy, owner, from);
         } else if (l == Hierarchy.Lookup.MISSING_MEMBER) {
@@ -550,6 +562,18 @@ public final class ShimLinker {
             case MISSING_MEMBER -> report.missingMember(owner, member, from, shim);
             default -> { }
         }
+    }
+
+    /** True when {@code owner} and all its ancestors are classes of the jar being linked (or java.*): a member missing from it is the mod's own defect, not a shim gap. */
+    private static boolean ownChain(Hierarchy h, String owner, int depth) {
+        if (owner == null || depth > 40) return false;
+        if (owner.startsWith("java/")) return true;
+        if (!h.isLocal(owner)) return false;
+        var info = h.find(owner);
+        if (info == null) return false;
+        if (info.superName != null && !ownChain(h, info.superName, depth + 1)) return false;
+        for (String i : info.interfaces) if (!ownChain(h, i, depth + 1)) return false;
+        return true;
     }
 
     private static boolean isVanillaSingletonHolder(String owner) {

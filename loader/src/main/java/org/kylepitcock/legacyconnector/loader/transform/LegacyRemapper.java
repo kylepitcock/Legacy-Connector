@@ -496,6 +496,11 @@ public final class LegacyRemapper extends Remapper {
      * package and the module layer refuses to boot (#220).
      */
     boolean relocatedForVersion(String internalName) {
+        // 1.12.2 mods enable GL debug output with LWJGL 2's callback object (OpenModsLib, RenderLib); the shim adapts it onto LWJGL 3's
+        if (version == LegacyVersion.V1_12_2 && internalName.startsWith("org/lwjgl/opengl/")) {
+            String n = internalName.indexOf('$') < 0 ? internalName : internalName.substring(0, internalName.indexOf('$'));
+            if (n.equals("org/lwjgl/opengl/KHRDebug") || n.equals("org/lwjgl/opengl/KHRDebugCallback") || n.equals("org/lwjgl/opengl/GL43")) return true;
+        }
         if (version != LegacyVersion.VB1_7_3) return false;
         // Beta GuiAPI uses TWL model/widget types; preserve their hierarchy through the versioned shims.
         if (internalName.startsWith("de/matthiasmann/twl/")) return true;

@@ -12,6 +12,11 @@ public class RegistryNamespaced<K, V> extends RegistrySimple<K, V> {
     /** Object to id (lookups stay O(1)). */
     private final Map<V, Integer> mcc$ids = new IdentityHashMap<>();
 
+    @Override
+    protected Map<K, V> createUnderlyingMap() {
+        return com.google.common.collect.HashBiMap.create();
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static RegistryNamespaced mcc$synthDefault(String key) {
         return RegistryNamespacedDefaultedByKey.mcc$synthDefault(key);
@@ -24,8 +29,14 @@ public class RegistryNamespaced<K, V> extends RegistrySimple<K, V> {
         if (previous != null) mcc$ids.remove(previous);
         underlyingIntegerMap.set(id, value);
         mcc$ids.put(value, id);
-        super.putObject(key, value);
+        mcc$put(key, value);
         inverseObjectRegistry.put(value, key);
+    }
+
+    /** One value under two keys threw nowhere before the map became a BiMap: the newest key wins instead of failing. */
+    private void mcc$put(K key, V value) {
+        if (registryObjects instanceof com.google.common.collect.BiMap<K, V> bi) bi.forcePut(key, value);
+        else registryObjects.put(key, value);
     }
 
     @Override
@@ -34,7 +45,7 @@ public class RegistryNamespaced<K, V> extends RegistrySimple<K, V> {
             register(underlyingIntegerMap.size(), key, value);
             return;
         }
-        super.putObject(key, value);
+        mcc$put(key, value);
         inverseObjectRegistry.put(value, key);
     }
 
