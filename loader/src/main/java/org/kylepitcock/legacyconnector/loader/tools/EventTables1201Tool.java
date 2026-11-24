@@ -117,7 +117,7 @@ public final class EventTables1201Tool {
     public static void main(String[] args) throws Exception {
         List<Path> neo = new ArrayList<>();
         Path forge = null;
-        Path renames = Path.of("loader/src/main/resources/legacyconnector/forward/1.20.1");
+        Path renames = Path.of("loader/src/main/resources/legacyconnector/forward/" + org.kylepitcock.legacyconnector.loader.transform.ForwardStage.D_1201.dir());
         Path out = null;
         Path baseline = null;
         Path facades = null;

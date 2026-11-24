@@ -24,7 +24,7 @@ public final class McMembers1201Tool {
     private static final String[] PREFIXES = {"net/minecraft/", "net/neoforged/neoforge/", "com/mojang/blaze3d/", "com/mojang/math/"};
 
     public static void main(String[] args) throws Exception {
-        Path out = Path.of(args.length > 1 ? args[1] : "loader/src/main/resources/legacyconnector/forward/1.20.1/mc-members.index.gz");
+        Path out = Path.of(args.length > 1 ? args[1] : "loader/src/main/resources/" + org.kylepitcock.legacyconnector.loader.transform.ForwardStage.D_1201.resource("mc-members.index.gz"));
         TreeMap<String, String> lines = new TreeMap<>();
         TreeMap<String, String> statics = new TreeMap<>();
         TreeMap<String, String> hidden = new TreeMap<>();

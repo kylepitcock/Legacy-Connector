@@ -161,7 +161,7 @@ public final class Forge1201Transformer {
         if (renamesCache != null) return renamesCache;
         Map<String, String> map = new HashMap<>();
         for (String f : List.of("forge-event-renames.tsv", "forge-fml-renames.tsv", "forge-curated-renames.tsv")) {
-            try (InputStream in = Forge1201Transformer.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/" + f)) {
+            try (InputStream in = ForwardStage.D_1201.open(f)) {
                 if (in == null) continue;
                 for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
                     if (l.startsWith("#")) continue;
@@ -181,7 +181,7 @@ public final class Forge1201Transformer {
     private static synchronized Map<String, String> forgeMembers() {
         if (membersCache != null) return membersCache;
         Map<String, String> map = new HashMap<>();
-        try (InputStream in = Forge1201Transformer.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/forge-members.tsv")) {
+        try (InputStream in = ForwardStage.D_1201.open("forge-members.tsv")) {
             if (in != null) {
                 for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
                     if (l.startsWith("#") || l.isBlank()) continue;
