@@ -170,6 +170,11 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
         }
 
         @Override
+        public ResourceLocation getRegistryName(NeiBridge.Recipe recipe) {
+            return recipe.id();
+        }
+
+        @Override
         public Component getTitle() {
             return title;
         }
