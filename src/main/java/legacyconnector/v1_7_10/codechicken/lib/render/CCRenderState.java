@@ -175,6 +175,14 @@ public class CCRenderState {
         hasColour = true;
     }
 
+    /**
+     * The instance of newer CodeChickenLib builds ({@code CCRenderState.instance().setBrightness(...)}): the state is static here, so the handle is
+     * only a receiver; the linker turns instance calls of the static methods into static calls (ShimLinker) and drops it.
+     */
+    public static CCRenderState instance() {
+        return null;
+    }
+
     public static void setBrightness(int b) {
         brightness = b;
         hasBrightness = true;
