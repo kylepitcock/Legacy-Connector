@@ -67,8 +67,10 @@ public final class AlienEvoTransformBubbleDiagnostics1201Runtime {
     private static boolean allow(UUID playerId, String phase, boolean firstPerson) {
         String key = String.valueOf(playerId) + ":" + phase + ":" + firstPerson;
         long now = System.nanoTime();
-        Long previous = LAST_LOG_NANOS.put(key, now);
-        return previous == null || now - previous >= LOG_INTERVAL_NANOS;
+        Long previous = LAST_LOG_NANOS.get(key);
+        if (previous != null && now - previous < LOG_INTERVAL_NANOS) return false;
+        LAST_LOG_NANOS.put(key, now);
+        return true;
     }
 
     private static String pose(PoseStack poseStack) {
