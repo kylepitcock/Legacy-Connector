@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 final class Forge1201TargetApiVerifierTest {
@@ -23,6 +25,10 @@ final class Forge1201TargetApiVerifierTest {
                 TARGET_BUS, targetInterface(TARGET_BUS),
                 "net/neoforged/fml/Base", targetBaseClass());
 
+        var methodCallSite = new Forge1201ApiUsageAnalyzer.ApiMethodCallSite(
+                "fixture/Caller", "register", "()V",
+                "net/minecraftforge/fml/common/Mod", "register",
+                "(Lnet/minecraftforge/eventbus/api/IEventBus;)V", Opcodes.INVOKESTATIC, 1);
         Forge1201TargetApiVerifier.Result result = verify(
                 analysis(
                         List.of("net/minecraftforge/fml/common/Mod", "net/minecraftforge/eventbus/api/IEventBus"),
@@ -35,7 +41,9 @@ final class Forge1201TargetApiVerifierTest {
                                 "net/minecraftforge/fml/common/Mod",
                                 "BUS",
                                 "Lnet/minecraftforge/eventbus/api/IEventBus;",
-                                1))),
+                                1)),
+                        List.of(methodCallSite),
+                        List.of()),
                 classes);
 
         assertEquals(2, result.candidateClassCount());
@@ -44,9 +52,15 @@ final class Forge1201TargetApiVerifierTest {
         assertEquals(1, result.uniqueMethodReferences());
         assertEquals(1, result.verifiedMethodReferences());
         assertTrue(result.methodIssues().isEmpty());
+        assertEquals(1, result.verifiedMethods().size());
+        var verifiedMethod = result.verifiedMethods().getFirst();
+        assertEquals(List.of(TARGET_MOD, "net/neoforged/fml/Base"), verifiedMethod.hierarchyVisited());
+        assertEquals(List.of(methodCallSite.display()), verifiedMethod.callSites());
         assertEquals(1, result.uniqueFieldReferences());
         assertEquals(1, result.verifiedFieldReferences());
         assertTrue(result.fieldIssues().isEmpty());
+        assertEquals(1, result.verifiedFields().size());
+        assertEquals(List.of(TARGET_MOD), result.verifiedFields().getFirst().hierarchyVisited());
     }
 
     @Test
@@ -124,6 +138,8 @@ final class Forge1201TargetApiVerifierTest {
                 result.missingTargetClasses());
         assertEquals(Forge1201TargetApiVerifier.MemberStatus.INCOMPLETE_HIERARCHY,
                 result.methodIssues().get(0).status());
+        assertEquals(List.of(TARGET_MOD, "net/neoforged/fml/UnseenParent"),
+                result.methodIssues().get(0).hierarchyVisited());
     }
 
     @Test
@@ -194,6 +210,82 @@ final class Forge1201TargetApiVerifierTest {
         assertTrue(result.methodIssues().isEmpty());
         assertEquals(1, result.uniqueFieldReferences());
         assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.fieldIssues().isEmpty());
+    }
+
+    @Test
+    void reportsConnectorShimReferencesAsNotCheckedWhenRuntimeDomainWasNotSupplied() throws Exception {
+        String sourceContext = "net/minecraftforge/network/NetworkEvent$Context";
+        String sourceDirection = "net/minecraftforge/network/NetworkDirection";
+        String targetContext = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkEvent$Context";
+
+        var analysis = analysis(
+                List.of(sourceContext, sourceDirection),
+                List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                        sourceContext, "getDirection",
+                        "()L" + sourceDirection + ";", 1)),
+                List.of());
+
+        Forge1201TargetApiVerifier.TargetIndex index = Forge1201TargetApiVerifier.createIndex(
+                internalName -> null,
+                java.util.Set.of("legacyconnector/v1_20_1/"));
+        var result = index.verify(analysis);
+
+        assertEquals(2, result.candidateClassCount());
+        assertEquals(0, result.verifiedClassCount());
+        assertTrue(result.missingTargetClasses().isEmpty());
+        assertEquals(1, result.uniqueMethodReferences());
+        assertEquals(0, result.verifiedMethodReferences());
+        assertEquals(1, result.methodIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+                result.methodIssues().getFirst().status());
+        assertEquals(targetContext, result.methodIssues().getFirst().targetOwner());
+    }
+
+    @Test
+    void mapsOnlyDeferredRegisterRegisterReturnToDeferredHolder() throws Exception {
+        String sourceRegister = "net/minecraftforge/registries/DeferredRegister";
+        String sourceRegistryObject = "net/minecraftforge/registries/RegistryObject";
+        String targetRegister = "net/neoforged/neoforge/registries/DeferredRegister";
+        String targetHolder = "net/neoforged/neoforge/registries/DeferredHolder";
+        String supplier = "java/util/function/Supplier";
+        String sourceMethodDescriptor =
+                "(Ljava/lang/String;L" + supplier + ";)L" + sourceRegistryObject + ";";
+        String targetMethodDescriptor =
+                "(Ljava/lang/String;L" + supplier + ";)L" + targetHolder + ";";
+
+        ClassWriter registerWriter = new ClassWriter(0);
+        registerWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, targetRegister, null, "java/lang/Object", null);
+        registerWriter.visitMethod(Opcodes.ACC_PUBLIC, "register",
+                targetMethodDescriptor, null, null).visitEnd();
+        registerWriter.visitField(Opcodes.ACC_PUBLIC, "factory", "L" + supplier + ";", null, null).visitEnd();
+        registerWriter.visitEnd();
+
+        Map<String, byte[]> classes = Map.of(
+                targetRegister, registerWriter.toByteArray(),
+                targetHolder, targetEmptyClass(targetHolder, "java/lang/Object"),
+                supplier, targetEmptyClass(supplier, "java/lang/Object"));
+
+        var result = verify(
+                analysis(
+                        List.of(sourceRegister, sourceRegistryObject),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceRegister, "register", sourceMethodDescriptor, 1)),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceRegister, "factory", "L" + sourceRegistryObject + ";", 1))),
+                classes);
+
+        assertEquals(2, result.candidateClassCount());
+        assertEquals(2, result.verifiedClassCount());
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(targetMethodDescriptor, result.verifiedMethods().getFirst().targetDescriptor());
+        assertEquals("DEFERRED_REGISTER_REGISTER_RETURNS_DEFERRED_HOLDER",
+                result.verifiedMethods().getFirst().mappingRule());
+        assertEquals("Ljava/util/function/Supplier;",
+                result.verifiedFields().getFirst().targetDescriptor());
+        assertEquals("CATALOG_FIELD_DESCRIPTOR_MAPPING",
+                result.verifiedFields().getFirst().mappingRule());
+        assertTrue(result.methodIssues().isEmpty());
         assertTrue(result.fieldIssues().isEmpty());
     }
 
@@ -319,6 +411,255 @@ final class Forge1201TargetApiVerifierTest {
         assertTrue(independent.classInfo(missingParent).isEmpty());
     }
 
+    @Test
+    void sharedTargetIndexVerifiesArrayDescriptorsAndReportsMissingOwnerAsMissing() throws Exception {
+        String arrayDescriptor = "([Lnet/minecraftforge/eventbus/api/IEventBus;)V";
+        Map<String, byte[]> classes = Map.of(
+                TARGET_MOD, targetArrayMethodClass(),
+                TARGET_BUS, targetInterface(TARGET_BUS));
+
+        var indexed = Forge1201TargetApiVerifier.createIndex(internalName -> {
+            byte[] bytes = classes.get(internalName);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        });
+        var arrayAnalysis = analysis(
+                List.of("net/minecraftforge/fml/common/Mod",
+                        "net/minecraftforge/eventbus/api/IEventBus"),
+                List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                        "net/minecraftforge/fml/common/Mod", "registerAll", arrayDescriptor, 1)),
+                List.of());
+        var arrayResult = indexed.verify(arrayAnalysis);
+        assertEquals(1, arrayResult.verifiedMethodReferences());
+        assertTrue(arrayResult.methodIssues().isEmpty());
+
+        String missingOwner = "net/minecraftforge/client/event/DoesNotExist";
+        var missingIndex = Forge1201TargetApiVerifier.createIndex(name -> null);
+        var callSite = new Forge1201ApiUsageAnalyzer.ApiMethodCallSite(
+                "fixture/Caller", "call", "()V", missingOwner, "missing", "()V", Opcodes.INVOKESTATIC, 2);
+        var missingResult = missingIndex.verify(
+                analysis(List.of(missingOwner),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                missingOwner, "missing", "()V", 1)),
+                        List.of(), List.of(callSite), List.of()));
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.MISSING,
+                missingResult.methodIssues().getFirst().status());
+        assertEquals(List.of(callSite.display()), missingResult.methodIssues().getFirst().callSites());
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.MISSING,
+                missingIndex.lookupMethod(missingOwner, "missing", "()V").status());
+    }
+
+    @Test
+    void verifiesForgeApiMethodAndFieldHandlesCollectedFromDynamicConstants() throws Exception {
+        var inventory = new Forge1201ApiUsageAnalyzer.Inventory();
+        assertTrue(inventory.scanNestedClass(
+                "source/fixture.jar!/nested.jar", "fixture/HandleUse.class", forgeHandleReferenceClass()));
+        var analysis = inventory.finish(null);
+
+        assertTrue(analysis.dynamicReferences().stream().anyMatch(reference ->
+                reference.kind() == Forge1201ApiUsageAnalyzer.ApiDynamicReferenceKind.METHOD_HANDLE
+                        && "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "get".equals(reference.name())));
+        assertTrue(analysis.dynamicReferences().stream().anyMatch(reference ->
+                reference.kind() == Forge1201ApiUsageAnalyzer.ApiDynamicReferenceKind.FIELD_HANDLE
+                        && "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "INSTANCE".equals(reference.name())));
+        assertTrue(analysis.methodReferences().stream().anyMatch(reference ->
+                "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "get".equals(reference.name())));
+        assertTrue(analysis.fieldReferences().stream().anyMatch(reference ->
+                "net/minecraftforge/fml/ModList".equals(reference.owner())
+                        && "INSTANCE".equals(reference.name())));
+
+        String targetModList = "net/neoforged/fml/ModList";
+        ClassWriter targetWriter = new ClassWriter(0);
+        targetWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, targetModList, null, "java/lang/Object", null);
+        targetWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "INSTANCE",
+                "Lnet/neoforged/fml/ModList;", null, null).visitEnd();
+        targetWriter.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "get",
+                "()Lnet/neoforged/fml/ModList;", null, null).visitEnd();
+        targetWriter.visitEnd();
+        Map<String, byte[]> targetClasses = Map.of(targetModList, targetWriter.toByteArray());
+
+        var index = Forge1201TargetApiVerifier.createIndex(internalName -> {
+            byte[] bytes = targetClasses.get(internalName);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        });
+        var result = index.verify(analysis);
+
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertTrue(result.verifiedMethods().getFirst().callSites().isEmpty());
+        assertTrue(result.verifiedFields().getFirst().callSites().isEmpty());
+    }
+
+    @Test
+    void normalizesForgeRuntimeSrgNamesBeforeLookingUpMojangTargetMembers() throws Exception {
+        String owner = "net/minecraft/client/player/LocalPlayer";
+        String methodName = SrgMojangTable.load().get("m_146892_");
+        String fieldName = SrgMojangTable.load().get("f_19797_");
+        assertTrue(methodName != null && !methodName.isBlank(),
+                "The generated 1.20.1 SRG -> Mojang table must contain m_146892_");
+        assertTrue(fieldName != null && !fieldName.isBlank(),
+                "The generated 1.20.1 SRG -> Mojang table must contain f_19797_");
+
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, owner, null, "java/lang/Object", null);
+        writer.visitMethod(Opcodes.ACC_PUBLIC, methodName,
+                "()Lnet/minecraft/world/phys/Vec3;", null, null).visitEnd();
+        writer.visitField(Opcodes.ACC_PUBLIC, fieldName, "I", null, null).visitEnd();
+        writer.visitEnd();
+
+        var result = verify(
+                analysis(
+                        List.of(owner),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "m_146892_", "()Lnet/minecraft/world/phys/Vec3;", 1)),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "f_19797_", "I", 1))),
+                Map.of(owner, writer.toByteArray()));
+
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertEquals(methodName, result.verifiedMethods().getFirst().targetName());
+        assertEquals(fieldName, result.verifiedFields().getFirst().targetName());
+        assertTrue(result.verifiedMethods().getFirst().mappingRule().contains("SRG_TO_MOJANG"));
+        assertTrue(result.verifiedFields().getFirst().mappingRule().contains("SRG_TO_MOJANG"));
+    }
+
+    @Test
+    void reportsUnknownSrgMemberNamesAsUnmappedInsteadOfTargetApiMissing() throws Exception {
+        String owner = "net/minecraft/client/player/LocalPlayer";
+        byte[] ownerClass = targetEmptyClass(owner, "java/lang/Object");
+        var result = verify(
+                analysis(
+                        List.of(owner),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "m_999999999_", "()V", 1)),
+                        List.of()),
+                Map.of(owner, ownerClass));
+
+        assertEquals(0, result.verifiedMethodReferences());
+        assertEquals(1, result.methodIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.UNMAPPED_SOURCE_MEMBER_NAME,
+                result.methodIssues().getFirst().status());
+        assertEquals("SRG_TO_MOJANG_MAPPING_NOT_FOUND",
+                result.methodIssues().getFirst().mappingRule());
+    }
+
+    @Test
+    void appliesExistingMinecraftMethodRenameAndStaticHolderFieldRules() throws Exception {
+        String livingEntity = "net/minecraft/world/entity/LivingEntity";
+        String mobEffects = "net/minecraft/world/effect/MobEffects";
+        String holderDescriptor = "Lnet/minecraft/core/Holder;";
+
+        ClassWriter livingWriter = new ClassWriter(0);
+        livingWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, livingEntity, null, "java/lang/Object", null);
+        livingWriter.visitMethod(Opcodes.ACC_PUBLIC, "onAddedToLevel", "()V", null, null).visitEnd();
+        livingWriter.visitEnd();
+
+        ClassWriter effectsWriter = new ClassWriter(0);
+        effectsWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, mobEffects, null, "java/lang/Object", null);
+        effectsWriter.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "POISON",
+                holderDescriptor, null, null).visitEnd();
+        effectsWriter.visitEnd();
+
+        var poisonCallSite = new Forge1201ApiUsageAnalyzer.ApiFieldCallSite(
+                "fixture/Caller", "readPoison", "()V", mobEffects, "POISON",
+                "Lnet/minecraft/world/effect/MobEffect;", Opcodes.GETSTATIC, 1);
+
+        var result = verify(
+                analysis(
+                        List.of(livingEntity, mobEffects),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                livingEntity, "onAddedToWorld", "()V", 1)),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                mobEffects, "POISON", "Lnet/minecraft/world/effect/MobEffect;", 1)),
+                        List.of(),
+                        List.of(poisonCallSite)),
+                Map.of(
+                        livingEntity, livingWriter.toByteArray(),
+                        mobEffects, effectsWriter.toByteArray()));
+
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertEquals("onAddedToLevel", result.verifiedMethods().getFirst().targetName());
+        assertTrue(result.verifiedMethods().getFirst().mappingRule().contains("MC1201_MEMBER_NAME_MAPPING"));
+        assertEquals(holderDescriptor, result.verifiedFields().getFirst().targetDescriptor());
+        assertTrue(result.verifiedFields().getFirst().mappingRule().contains("MC1201_STATIC_FIELD_ADAPTER"));
+    }
+
+    @Test
+    void mapsRemovedMinecraftClassesToConnectorMigrationHelpers() throws Exception {
+        String sourceMobType = "net/minecraft/world/entity/MobType";
+        String helperMobType = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMobType";
+        Map<String, byte[]> classes = Map.of(
+                helperMobType, targetEmptyClass(helperMobType, "java/lang/Object"));
+
+        var result = verify(analysis(List.of(sourceMobType), List.of(), List.of()), classes);
+
+        assertEquals(1, result.candidateClassCount());
+        assertEquals(1, result.verifiedClassCount());
+        assertTrue(result.missingTargetClasses().isEmpty());
+    }
+
+    @Test
+    void verifiesRemovedStaticFieldsThroughTheirConnectorMigrationHelper() throws Exception {
+        String sourceOwner = "net/minecraft/core/registries/BuiltInRegistries";
+        String helperOwner = "org/kylepitcock/legacyconnector/v1_20_1/migrate/HolderCompat";
+        String helperDescriptor = "()Lnet/minecraft/core/Registry;";
+
+        ClassWriter helperWriter = new ClassWriter(0);
+        helperWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, helperOwner, null, "java/lang/Object", null);
+        helperWriter.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+                "enchantmentRegistry", helperDescriptor, null, null).visitEnd();
+        helperWriter.visitEnd();
+
+        var callSite = new Forge1201ApiUsageAnalyzer.ApiFieldCallSite(
+                "fixture/Caller", "readRegistry", "()V",
+                sourceOwner, "ENCHANTMENT", "Lnet/minecraft/core/Registry;", Opcodes.GETSTATIC, 1);
+        var result = verify(
+                analysis(
+                        List.of(sourceOwner),
+                        List.of(),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceOwner, "ENCHANTMENT", "Lnet/minecraft/core/Registry;", 1)),
+                        List.of(),
+                        List.of(callSite)),
+                Map.of(helperOwner, helperWriter.toByteArray()));
+
+        assertEquals(1, result.verifiedFieldReferences());
+        assertTrue(result.fieldIssues().isEmpty());
+        assertEquals(helperOwner, result.verifiedFields().getFirst().targetOwner());
+        assertEquals("enchantmentRegistry", result.verifiedFields().getFirst().targetName());
+        assertEquals(helperDescriptor, result.verifiedFields().getFirst().targetDescriptor());
+        assertTrue(result.verifiedFields().getFirst().mappingRule().contains("MC1201_STATIC_FIELD_HELPER_ADAPTER"));
+    }
+
+    @Test
+    void doesNotApplyGetStaticOnlyMigrationWithoutDirectOpcodeEvidence() throws Exception {
+        String sourceOwner = "net/minecraft/core/registries/BuiltInRegistries";
+        var result = verify(
+                analysis(
+                        List.of(sourceOwner),
+                        List.of(),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceOwner, "ENCHANTMENT", "Lnet/minecraft/core/Registry;", 1))),
+                Map.of(sourceOwner, targetEmptyClass(sourceOwner, "java/lang/Object")));
+
+        assertEquals(0, result.verifiedFieldReferences());
+        assertEquals(1, result.fieldIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.NOT_CHECKED_INSUFFICIENT_CALLSITE_CONTEXT,
+                result.fieldIssues().getFirst().status());
+        assertTrue(result.fieldIssues().getFirst().mappingRule()
+                .contains("MC1201_STATIC_FIELD_RULE_REQUIRES_GETSTATIC_CALLSITE_EVIDENCE"));
+    }
+
     private static Forge1201ApiUsageAnalyzer.Analysis analysis(
             List<String> classes,
             List<Forge1201ApiUsageAnalyzer.ApiMemberReference> methods,
@@ -342,6 +683,35 @@ final class Forge1201TargetApiVerifierTest {
         return new Forge1201ApiUsageAnalyzer.Analysis(
                 metadata, 1, List.of(), List.of(), null, Map.of(), classes,
                 methodCallSites, fieldCallSites, methods, fields);
+    }
+
+    private static byte[] forgeHandleReferenceClass() {
+        String owner = "net/minecraftforge/fml/ModList";
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, "fixture/HandleUse", null, "java/lang/Object", null);
+        MethodVisitor method = writer.visitMethod(
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "references", "()V", null, null);
+        method.visitCode();
+        method.visitLdcInsn(new org.objectweb.asm.Handle(
+                Opcodes.H_INVOKESTATIC, owner, "get", "()L" + owner + ";", false));
+        method.visitInsn(Opcodes.POP);
+        method.visitLdcInsn(new org.objectweb.asm.Handle(
+                Opcodes.H_GETSTATIC, owner, "INSTANCE", "L" + owner + ";", false));
+        method.visitInsn(Opcodes.POP);
+        method.visitInsn(Opcodes.RETURN);
+        method.visitMaxs(1, 0);
+        method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] targetArrayMethodClass() {
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, TARGET_MOD, null, "java/lang/Object", null);
+        writer.visitMethod(Opcodes.ACC_PUBLIC, "registerAll",
+                "([Lnet/neoforged/bus/api/IEventBus;)V", null, null).visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
     }
 
     private static byte[] targetModClass(String superName, boolean registerMethod, boolean busField) {

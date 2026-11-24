@@ -974,6 +974,245 @@ def coremodApi1122Jar = tasks.register('coremodApi1122Jar', Jar) {
 sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar, coremodApi164Jar, coremodApi1122Jar))
 
 
+
+// Bounded read-only check of the three Symbiote interface-owner mapping gaps against
+// the exact Forge source runtime and NeoForge target compile classpaths.
+def forge1201InterfaceOwnerHierarchyReport = layout.buildDirectory.file(
+        'reports/source-runtime/interface-owner-hierarchy-1201-to-1211.txt')
+tasks.register('auditForge1201InterfaceOwnerHierarchy1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Verifies the three known interface-owner mapping candidates against actual source and target classfile hierarchies.'
+    dependsOn tasks.named('classes'), rootProject.tasks.named('inventoryTargetApi1211')
+    inputs.file(forge1201SourceClasspath)
+    inputs.file(forge1201SourceManifest)
+    inputs.file(targetApiClasspathFile)
+    inputs.files(targetCompileClasspath)
+    inputs.property('sourceMinecraftVersion', '1.20.1')
+    inputs.property('sourceForgeVersion', '47.3.0')
+    inputs.property('sourceForgeGradleVersion', '6.0.24')
+    inputs.property('targetMinecraftVersion', '1.21.1')
+    inputs.property('targetNeoForgeVersion', '21.1.258')
+    outputs.file(forge1201InterfaceOwnerHierarchyReport)
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201InterfaceOwnerHierarchyAudit'
+    maxHeapSize = '3g'
+    doFirst {
+        if (!forge1201SourceClasspath.isFile() || !forge1201SourceManifest.isFile()) {
+            throw new GradleException('Export the Forge 1.20.1 source runtime classpath and manifest first with exportForge1201SourceRuntimeClasspath.')
+        }
+        if (!targetApiClasspathFile.get().asFile.isFile()) {
+            throw new GradleException('Target API classpath list is missing; inventoryTargetApi1211 must complete first.')
+        }
+
+        def sourceManifest = new groovy.json.JsonSlurper().parse(forge1201SourceManifest)
+        if (sourceManifest.status != 'SOURCE_RUNTIME_CLASSPATH_EXPORTED'
+                || sourceManifest.sourceRuntime?.minecraftVersion != '1.20.1'
+                || sourceManifest.sourceRuntime?.forgeVersion != '47.3.0'
+                || sourceManifest.sourceRuntime?.forgeGradleVersion != '6.0.24'
+                || sourceManifest.sourceRuntime?.mappings?.channel != 'official'
+                || sourceManifest.sourceRuntime?.mappings?.version != '1.20.1') {
+            throw new GradleException('The source runtime manifest is not the pinned Forge 1.20.1 / 47.3.0 / ForgeGradle 6.0.24 / Mojang official profile.')
+        }
+
+        def listedSourceEntries = forge1201SourceClasspath.readLines('UTF-8')
+                .findAll { !it.isBlank() }
+                .collect { new File(it).absoluteFile.toPath().normalize().toString() }
+        def manifestEntries = (sourceManifest.classpathEntries ?: []).collect {
+            new File(it.path.toString()).absoluteFile.toPath().normalize().toString()
+        }
+        if (listedSourceEntries.isEmpty() || listedSourceEntries != manifestEntries) {
+            throw new GradleException('Source runtime classpath list does not match the exact ordered entries recorded in its manifest.')
+        }
+        if (sourceManifest.classpathFile == null
+                || new File(sourceManifest.classpathFile.toString()).absoluteFile.toPath().normalize()
+                        != forge1201SourceClasspath.absoluteFile.toPath().normalize()) {
+            throw new GradleException('Source runtime manifest does not identify the supplied classpath list.')
+        }
+
+        sourceManifest.classpathEntries.eachWithIndex { record, index ->
+            def entry = new File(record.path.toString())
+            if (!entry.exists()) {
+                throw new GradleException('Source runtime classpath entry disappeared after export: ' + entry)
+            }
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            if (entry.isDirectory()) {
+                def files = fileTree(entry).files.sort { left, right ->
+                    entry.toPath().relativize(left.toPath()).toString()
+                            <=> entry.toPath().relativize(right.toPath()).toString()
+                }
+                files.each { child ->
+                    def relative = entry.toPath().relativize(child.toPath()).toString()
+                            .replace(File.separatorChar, '/' as char)
+                    digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                    digest.update((byte) 0)
+                    child.withInputStream { input ->
+                        byte[] buffer = new byte[64 * 1024]
+                        int count
+                        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                    }
+                    digest.update((byte) 0xff)
+                }
+            } else if (entry.isFile()) {
+                entry.withInputStream { input ->
+                    byte[] buffer = new byte[64 * 1024]
+                    int count
+                    while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                }
+            } else {
+                throw new GradleException('Unsupported source runtime classpath entry: ' + entry)
+            }
+            def actualSha256 = digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+            if (!record.sha256?.toString()?.equalsIgnoreCase(actualSha256)) {
+                throw new GradleException('Source runtime classpath entry SHA-256 no longer matches its export manifest at index '
+                        + index + ': ' + entry)
+            }
+        }
+
+        def targetEntries = targetApiClasspathFile.get().asFile.readLines('UTF-8')
+                .findAll { !it.isBlank() }
+                .collect { new File(it).absoluteFile.toPath().normalize().toString() }
+        if (targetEntries.isEmpty() || targetEntries.any { !new File(it).exists() }) {
+            throw new GradleException('Target compile classpath list is empty or contains a missing entry.')
+        }
+
+        setArgs([
+                forge1201SourceClasspath.absolutePath,
+                targetApiClasspathFile.get().asFile.absolutePath,
+                forge1201InterfaceOwnerHierarchyReport.get().asFile.absolutePath
+        ])
+    }
+}
+
+
+// End-to-end, read-only validation of the owner-aware SRG -> Intermediary -> target official path.
+// The preceding classfile audit validates the full pinned Forge source-runtime manifest and target classpath list.
+def forge1201SrgIntermediaryHierarchyOwnerReport = layout.buildDirectory.file(
+        'reports/mappings/1.20.1-1.21.1/srg-intermediary-hierarchy-owner-audit.txt')
+tasks.register('auditSrgIntermediaryHierarchyOwner1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Builds source hierarchy mapping candidates from pinned Forge classfiles and verifies mapped methods against target NeoForge classfiles.'
+    dependsOn tasks.named('classes'),
+            fetchMojang1201,
+            recordSrgMojangProvenance1201,
+            extractMcpConfigJoinedTsrg1201,
+            extractFabricIntermediary1201,
+            extractFabricIntermediary1211,
+            rootProject.tasks.named('inventoryTargetApi1211')
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    inputs.file(fabricIntermediary1211Tiny)
+    inputs.file(mojang1201)
+    inputs.file(targetOfficialTsrg1211)
+    inputs.property('targetOfficialTsrg1211Sha256', targetOfficialTsrg1211Sha256)
+    inputs.file(forge1201SourceClasspath)
+    inputs.file(forge1201SourceManifest)
+    inputs.files(providers.provider {
+        def manifest = new groovy.json.JsonSlurper().parse(forge1201SourceManifest)
+        (manifest.classpathEntries ?: []).collect { new File(it.path.toString()) }
+    })
+    inputs.files(targetCompileClasspath)
+    inputs.file(targetApiClasspathFile)
+    inputs.property('sourceMinecraftVersion', '1.20.1')
+    inputs.property('sourceForgeVersion', '47.3.0')
+    inputs.property('targetMinecraftVersion', '1.21.1')
+    inputs.property('targetNeoForgeVersion', '21.1.258')
+    outputs.file(forge1201SrgIntermediaryHierarchyOwnerReport)
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Forge1201SrgIntermediaryHierarchyAudit'
+    maxHeapSize = '2g'
+    doFirst {
+        if (!forge1201SourceClasspath.isFile() || !forge1201SourceManifest.isFile()) {
+            throw new GradleException('Pinned Forge 1.20.1 source-runtime export is missing.')
+        }
+        if (!targetApiClasspathFile.get().asFile.isFile() || !targetOfficialTsrg1211.isFile()) {
+            throw new GradleException('Pinned NeoForge target classpath or official mapping input is missing.')
+        }
+
+        def sourceManifest = new groovy.json.JsonSlurper().parse(forge1201SourceManifest)
+        if (sourceManifest.status != 'SOURCE_RUNTIME_CLASSPATH_EXPORTED'
+                || sourceManifest.sourceRuntime?.minecraftVersion != '1.20.1'
+                || sourceManifest.sourceRuntime?.forgeVersion != '47.3.0'
+                || sourceManifest.sourceRuntime?.forgeGradleVersion != '6.0.24'
+                || sourceManifest.sourceRuntime?.mappings?.channel != 'official'
+                || sourceManifest.sourceRuntime?.mappings?.version != '1.20.1') {
+            throw new GradleException('Source runtime manifest is not the pinned Forge 1.20.1 / 47.3.0 / ForgeGradle 6.0.24 / Mojang official profile.')
+        }
+
+        def listedSourceEntries = forge1201SourceClasspath.readLines('UTF-8')
+                .findAll { !it.isBlank() }
+                .collect { new File(it).absoluteFile.toPath().normalize().toString() }
+        def manifestEntries = (sourceManifest.classpathEntries ?: []).collect {
+            new File(it.path.toString()).absoluteFile.toPath().normalize().toString()
+        }
+        if (listedSourceEntries.isEmpty() || listedSourceEntries != manifestEntries) {
+            throw new GradleException('Source runtime classpath list differs from the exported manifest.')
+        }
+        if (sourceManifest.classpathFile == null
+                || new File(sourceManifest.classpathFile.toString()).absoluteFile.toPath().normalize()
+                        != forge1201SourceClasspath.absoluteFile.toPath().normalize()) {
+            throw new GradleException('Source runtime manifest does not identify the supplied classpath list.')
+        }
+
+        sourceManifest.classpathEntries.eachWithIndex { record, index ->
+            def entry = new File(record.path.toString())
+            if (!entry.exists()) {
+                throw new GradleException('Source runtime classpath entry is missing: ' + entry)
+            }
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            if (entry.isDirectory()) {
+                def files = fileTree(entry).files.sort { left, right ->
+                    entry.toPath().relativize(left.toPath()).toString()
+                            <=> entry.toPath().relativize(right.toPath()).toString()
+                }
+                files.each { child ->
+                    def relative = entry.toPath().relativize(child.toPath()).toString()
+                            .replace(File.separatorChar, '/' as char)
+                    digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                    digest.update((byte) 0)
+                    child.withInputStream { input ->
+                        byte[] buffer = new byte[64 * 1024]
+                        int count
+                        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                    }
+                    digest.update((byte) 0xff)
+                }
+            } else if (entry.isFile()) {
+                entry.withInputStream { input ->
+                    byte[] buffer = new byte[64 * 1024]
+                    int count
+                    while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                }
+            } else {
+                throw new GradleException('Unsupported source runtime classpath entry: ' + entry)
+            }
+            def actualSha256 = digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+            if (!record.sha256?.toString()?.equalsIgnoreCase(actualSha256)) {
+                throw new GradleException('Source runtime classpath entry SHA-256 mismatch at index '
+                        + index + ': ' + entry)
+            }
+        }
+
+        def targetEntries = targetApiClasspathFile.get().asFile.readLines('UTF-8')
+                .findAll { !it.isBlank() }
+                .collect { new File(it).absoluteFile.toPath().normalize().toString() }
+        if (targetEntries.isEmpty() || targetEntries.any { !new File(it).exists() }) {
+            throw new GradleException('Target API classpath list is empty or contains a missing entry.')
+        }
+
+        setArgs([
+                joinedTsrg1201.get().asFile.absolutePath,
+                fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                fabricIntermediary1211Tiny.get().asFile.absolutePath,
+                mojang1201.get().asFile.absolutePath,
+                targetOfficialTsrg1211.absolutePath,
+                targetOfficialTsrg1211Sha256,
+                forge1201SourceClasspath.absolutePath,
+                targetApiClasspathFile.get().asFile.absolutePath,
+                forge1201SrgIntermediaryHierarchyOwnerReport.get().asFile.absolutePath
+        ])
+    }
+}
+
 // Bounded read-only comparison of actual Mob.finalizeSpawn overrides across the two runtimes.
 // This consumes the exact source runtime export and the target compile-classpath list created
 // by inventoryTargetApi1211; it does not rewrite selectors or produce a runtime mapping table.
