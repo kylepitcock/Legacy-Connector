@@ -176,11 +176,14 @@ public class CCRenderState {
     }
 
     /**
-     * The instance of newer CodeChickenLib builds ({@code CCRenderState.instance().setBrightness(...)}): the state is static here, so the handle is
-     * only a receiver; the linker turns instance calls of the static methods into static calls (ShimLinker) and drops it.
+     * The instance of newer CodeChickenLib builds ({@code CCRenderState.instance().setBrightness(...)}): the state is static here, so the one instance
+     * is only a receiver. The linker turns instance calls of the static methods and instance reads and writes of the static fields into static ones
+     * (ShimLinker) and drops the receiver, so a mod that stores the handle sees the same state as one that uses the static API.
      */
+    private static final CCRenderState INSTANCE = new CCRenderState();
+
     public static CCRenderState instance() {
-        return null;
+        return INSTANCE;
     }
 
     public static void setBrightness(int b) {

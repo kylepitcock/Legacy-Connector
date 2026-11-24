@@ -82,6 +82,30 @@ public final class ShimLinker {
                             "(Ljava/lang/Object;Ljava/lang/Object;)V", false));
                     insns.insertBefore(f, hook);
                     method.maxStack += 3;
+                } else if (insn instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)
+                        && hierarchy.isShim(f.owner) && hierarchy.find(f.owner) != null
+                        && hierarchy.find(f.owner).fields.getOrDefault(f.name + ":" + f.desc, 0) != 0
+                        && (hierarchy.find(f.owner).fields.get(f.name + ":" + f.desc) & Opcodes.ACC_STATIC) != 0) {
+                    // An instance field access of a shim class that keeps the state in static fields (CodeChickenLib's CCRenderState.instance().brightness):
+                    // the receiver is dropped and the static field read or written, so both shapes of the library reach the same state.
+                    boolean get = f.getOpcode() == Opcodes.GETFIELD;
+                    InsnList fix = new InsnList();
+                    if (get) {
+                        fix.add(new InsnNode(Opcodes.POP));
+                    } else if (Type.getType(f.desc).getSize() == 2) {
+                        fix.add(new InsnNode(Opcodes.DUP2_X1));
+                        fix.add(new InsnNode(Opcodes.POP2));
+                        fix.add(new InsnNode(Opcodes.POP));
+                    } else {
+                        fix.add(new InsnNode(Opcodes.SWAP));
+                        fix.add(new InsnNode(Opcodes.POP));
+                    }
+                    FieldInsnNode stat = new FieldInsnNode(get ? Opcodes.GETSTATIC : Opcodes.PUTSTATIC, f.owner, f.name, f.desc);
+                    fix.add(stat);
+                    insns.insert(f, fix);
+                    insns.remove(f);
+                    report.adapted(f.owner, f.name + ":" + f.desc + " (instance access of a static shim field)", node.name);
+                    insn = stat;
                 } else if (insn instanceof FieldInsnNode f) {
                     AbstractInsnNode replacement = virtualField(f, hierarchy);
                     if (replacement != null) {

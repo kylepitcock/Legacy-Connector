@@ -31,4 +31,16 @@ public class ARBSync {
     public static void glWaitSync(GLSync sync, int flags, long timeout) {
         GL32.glWaitSync(sync, flags, timeout);
     }
+
+    public static void glGetInteger64(int pname, java.nio.LongBuffer data) {
+        GL32.glGetInteger64(pname, data);
+    }
+
+    public static int glGetSync(GLSync sync, int pname) {
+        return GL32.glGetSync(sync, pname);
+    }
+
+    public static void glGetSync(GLSync sync, int pname, java.nio.IntBuffer length, java.nio.IntBuffer values) {
+        GL32.glGetSync(sync, pname, length, values);
+    }
 }
