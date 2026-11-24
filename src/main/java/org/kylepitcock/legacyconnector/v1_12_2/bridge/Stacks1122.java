@@ -20,7 +20,11 @@ public final class Stacks1122 {
         if (modern == null && item instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket) return FluidBridge1122.modernUniversalBucket(stack);
         if (modern == null) return net.minecraft.world.item.ItemStack.EMPTY;
         var out = new net.minecraft.world.item.ItemStack(modern, stack.getCount());
-        if ((item.isDamageable() || item.mcc$vanillaModern != null && modern.components().has(DataComponents.MAX_DAMAGE)) && stack.getMetadata() > 0) {
+        // a subtype item that merely claims isDamageable (CoFH's multi-tier items, for the charge bar) has its metadata in the item, not in a damage the
+        // modern item would clamp to its durability (every tier above Hardened became Hardened, #311)
+        boolean subtypeItem = item.mcc$vanillaModern == null && item.getHasSubtypes() && ItemBridge1122.hasVariant(item, stack.getMetadata());
+        if ((item.isDamageable() || item.mcc$vanillaModern != null && modern.components().has(DataComponents.MAX_DAMAGE)) && stack.getMetadata() > 0
+                && !(subtypeItem && !modern.components().has(DataComponents.MAX_DAMAGE))) {
             out.setDamageValue(stack.getMetadata());
         }
         // 1.12 kept a filled map's id in its metadata
