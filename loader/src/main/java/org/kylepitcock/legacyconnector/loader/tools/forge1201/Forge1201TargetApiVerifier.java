@@ -572,7 +572,7 @@ public final class Forge1201TargetApiVerifier {
         boolean srgName = sourceName != null && (method
                 ? sourceName.matches("m_\\d+_")
                 : sourceName.matches("f_\\d+_"));
-        if (!srgName) return new SourceMemberName(sourceName, true, "SOURCE_MOJANG_OR_LITERAL_NAME");
+        if (!srgName) return new SourceMemberName(sourceName, true, null);
         String mapped = SrgMojangTable.load().get(sourceName);
         return mapped == null
                 ? new SourceMemberName(sourceName, false, "SRG_TO_MOJANG_MAPPING_NOT_FOUND")
