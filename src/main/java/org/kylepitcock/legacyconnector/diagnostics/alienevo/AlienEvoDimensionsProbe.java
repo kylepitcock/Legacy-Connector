@@ -45,7 +45,8 @@ public final class AlienEvoDimensionsProbe {
                 + " pose=" + player.getPose()
                 + " pos=" + player.position()
                 + " dimensions=" + dimensions.width() + "x" + dimensions.height()
-                + " eyeHeight=" + dimensions.eyeHeight()
+                + " dimensionsEyeHeight=" + dimensions.eyeHeight()
+                + " actualEyeHeight=" + player.getEyeHeight()
                 + " bb=" + player.getBbWidth() + "x" + player.getBbHeight()
                 + " aabb=[" + box.minX + "," + box.minY + "," + box.minZ
                 + " .. " + box.maxX + "," + box.maxY + "," + box.maxZ + "]"
