@@ -46,6 +46,16 @@ public class EntityTracker {
     private static final Map<Integer, Entity> REMOVED = new HashMap<>();
     private static long removedTime = Long.MIN_VALUE;
 
+    static {
+        // the entities of a stopped server must not be found again by id in the next world of the session (their level's game time is frozen at removedTime)
+        org.kylepitcock.legacyconnector.core.WorldStateReset.onServerStopped(() -> {
+            synchronized (EntityTracker.class) {
+                REMOVED.clear();
+                removedTime = Long.MIN_VALUE;
+            }
+        });
+    }
+
     /** A hosted legacy entity is being removed from its level: remembers it for the rest of this game tick. */
     public static synchronized void mcc$noteRemoved(Entity legacy, net.minecraft.world.level.Level level) {
         if (legacy == null || level == null || level.isClientSide()) return;

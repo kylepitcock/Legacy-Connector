@@ -47,6 +47,11 @@ public final class VanillaVillageBuildings {
     private static final ResourceLocation ENTRANCE = ResourceLocation.withDefaultNamespace("building_entrance");
     private static final Map<String, Optional<Building>> CACHE = new ConcurrentHashMap<>();
 
+    static {
+        // templates come from the running server's resources (data packs of that world), and an empty answer from before a server existed is cached too
+        org.kylepitcock.legacyconnector.core.WorldStateReset.onServerStopped(CACHE::clear);
+    }
+
     /** A template with its entrance: the jigsaw block the street connects to, and the direction it faces. */
     private record Building(StructureTemplate template, Direction entrance, int entranceY) {}
 

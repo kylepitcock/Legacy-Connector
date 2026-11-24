@@ -21,6 +21,11 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 public final class VanillaOreGate {
     private static final Map<PlacedFeature, Optional<OreGenEvent.GenerateMinable.EventType>> TYPES = new ConcurrentHashMap<>();
 
+    static {
+        // keyed by the placed features (and answered from the registry) of one world's data packs
+        org.kylepitcock.legacyconnector.core.WorldStateReset.onServerStopped(TYPES::clear);
+    }
+
     private VanillaOreGate() {}
 
     /** Whether the placed feature may run at {@code origin} (the event gets its own random: the feature's must not move). */

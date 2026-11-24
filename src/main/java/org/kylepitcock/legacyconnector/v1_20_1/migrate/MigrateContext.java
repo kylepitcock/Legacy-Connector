@@ -14,20 +14,46 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * again; a call with nothing remembered falls back to the running server's, or on a client the connected level's, registry access.
  */
 public final class MigrateContext {
-    private static final ThreadLocal<HolderLookup.Provider> PROVIDER = new ThreadLocal<>();
+    /** A remembered provider and the world generation it belongs to (a ThreadLocal of another thread cannot be cleared from here). */
+    private record Stamped(HolderLookup.Provider provider, int generation) {}
+
+    private static final ThreadLocal<Stamped> PROVIDER = new ThreadLocal<>();
+    /** Bumped when a world is left: what was remembered before belongs to the registries of that world (issue 113's class of defect). */
+    private static volatile int generation;
     private static final ThreadLocal<SynchedEntityData.Builder> BUILDER = new ThreadLocal<>();
     private static volatile HolderLookup.Provider last;
     /** The last full registry access remembered (a later provider that only wraps registry lookups must not hide it). */
     private static volatile RegistryAccess lastAccess;
 
+    static {
+        org.kylepitcock.legacyconnector.core.WorldStateReset.onWorldLeft(MigrateContext::reset);
+    }
+
     private MigrateContext() {}
+
+    /** Forgets the registry access of the world that was just left, on every thread (the next world remembers its own). */
+    public static void reset() {
+        generation++;
+        last = null;
+        lastAccess = null;
+    }
+
+    private static HolderLookup.Provider current() {
+        Stamped s = PROVIDER.get();
+        if (s == null) return null;
+        if (s.generation() != generation) {
+            PROVIDER.remove();
+            return null;
+        }
+        return s.provider();
+    }
 
     /** Called first thing by a generated bridge method with the new parameter that carries context. */
     public static void remember(Object o) {
         if (o instanceof HolderLookup.Provider p) {
             // the empty access of a call before any registries existed must not hide the real one remembered earlier
             if (p instanceof RegistryAccess empty && empty.registries().findAny().isEmpty()) return;
-            PROVIDER.set(p);
+            PROVIDER.set(new Stamped(p, generation));
             last = p;
             if (p instanceof RegistryAccess ra) lastAccess = ra;
         } else if (o instanceof SynchedEntityData.Builder b) {
@@ -37,13 +63,13 @@ public final class MigrateContext {
 
     /** The registry access to use for NBT and component conversion. Never null once a server or a client level exists; a vanilla-only empty one before. */
     public static HolderLookup.Provider provider() {
-        HolderLookup.Provider p = PROVIDER.get();
+        HolderLookup.Provider p = current();
         if (p != null) return p;
         return registries();
     }
 
     public static RegistryAccess registries() {
-        HolderLookup.Provider p = PROVIDER.get();
+        HolderLookup.Provider p = current();
         if (p instanceof RegistryAccess ra) return ra;
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) return server.registryAccess();

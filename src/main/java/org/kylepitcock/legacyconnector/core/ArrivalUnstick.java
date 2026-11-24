@@ -52,6 +52,15 @@ public final class ArrivalUnstick {
             tick();
         });
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> LAST.remove(e.getEntity().getUUID()));
+        // a player's UUID is the same in the next world of the session: its last dimension there is unknown, and the players of a stopped server are gone
+        WorldStateReset.onServerStopped(() -> {
+            synchronized (ArrivalUnstick.class) {
+                LAST.clear();
+            }
+            synchronized (PENDING) {
+                PENDING.clear();
+            }
+        });
     }
 
     private static void tick() {
