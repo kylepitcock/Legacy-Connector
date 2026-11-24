@@ -225,4 +225,23 @@ class BuildHeightRewriterTest implements Opcodes {
         assertEquals(2, BuildHeightRewriter.apply(n, hierarchy(), LegacyVersion.V1_7_10));
         assertEquals(3, m.maxStack, "grows once per method, not per comparison");
     }
+
+    @Test
+    void tileLocalDerivedFromYCoordAsksTheTilesWorld() {
+        ClassNode n = node();
+        MethodNode m = method(n, ACC_PUBLIC, "()V");
+        Label l = new Label();
+        m.visitVarInsn(ALOAD, 0);
+        m.visitFieldInsn(GETFIELD, "mod/Placer", "yCoord", "I");
+        m.visitInsn(ICONST_1);
+        m.visitInsn(ISUB);
+        m.visitVarInsn(ISTORE, 1);
+        m.visitVarInsn(ILOAD, 1);
+        m.visitJumpInsn(IFLT, l);
+        m.visitInsn(RETURN);
+        m.visitLabel(l);
+        m.visitInsn(RETURN);
+        assertEquals(1, BuildHeightRewriter.apply(n, hierarchy(), LegacyVersion.V1_7_10));
+        assertEquals(String.valueOf(IF_ICMPLT), ops(m).get(ops(m).size() - 3));
+    }
 }

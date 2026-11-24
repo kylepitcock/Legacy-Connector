@@ -8,6 +8,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -53,7 +54,10 @@ public final class BuildHeightRewriter {
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             int[] slots = slots(m, t -> worldLike.computeIfAbsent(t, n -> isWorldLike(n, world, access, hierarchy, 0)));
-            if (slots == null) continue;
+            if (slots == null) {
+                rewritten += tileLocals(m, world, helperArg);
+                continue;
+            }
             int worldSlot = slots[0], ySlot = slots[1];
             if (storesTo(m, worldSlot)) continue;
             int n = 0;
@@ -85,6 +89,65 @@ public final class BuildHeightRewriter {
             }
         }
         return rewritten;
+    }
+
+    /**
+     * Tile entity methods that scan from their own {@code yCoord} with a local ({@code int y = yCoord - 1; ... y >= 0}; BuildCraft's
+     * mining well and quarry): a local int whose every store is {@code this.yCoord} plus or minus constants (or itself) is a y
+     * coordinate, and its zero tests ask the tile's {@code worldObj} for the bottom of the build range instead.
+     */
+    private static int tileLocals(MethodNode m, String world, String helperArg) {
+        if ((m.access & Opcodes.ACC_STATIC) != 0) return 0;
+        int paramSlots = Type.getArgumentsAndReturnSizes(m.desc) >> 2;
+        java.util.Map<Integer, String> owners = new HashMap<>();
+        java.util.Set<Integer> bad = new java.util.HashSet<>();
+        for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+            if (insn.getOpcode() != Opcodes.ISTORE) continue;
+            int slot = ((VarInsnNode) insn).var;
+            if (slot < paramSlots) { bad.add(slot); continue; }
+            String owner = null;
+            boolean ok = false;
+            for (AbstractInsnNode p = insn.getPrevious(); p != null; p = p.getPrevious()) {
+                int op = p.getOpcode();
+                if (op == -1) continue;
+                if (op == Opcodes.GETFIELD) {
+                    FieldInsnNode f = (FieldInsnNode) p;
+                    if (f.name.equals("yCoord") && f.desc.equals("I")) {
+                        AbstractInsnNode q = p.getPrevious();
+                        ok = q != null && q.getOpcode() == Opcodes.ALOAD && ((VarInsnNode) q).var == 0;
+                        owner = f.owner;
+                    }
+                    break;
+                }
+                if (op == Opcodes.ILOAD && ((VarInsnNode) p).var == slot) { ok = true; break; } // y = y +- constants
+                if (!( (op >= Opcodes.ICONST_M1 && op <= Opcodes.ICONST_5) || op == Opcodes.BIPUSH || op == Opcodes.SIPUSH
+                        || op == Opcodes.IADD || op == Opcodes.ISUB)) break;
+            }
+            if (!ok) bad.add(slot);
+            else if (owner != null) owners.putIfAbsent(slot, owner);
+        }
+        int n = 0;
+        for (AbstractInsnNode insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+            if (insn.getOpcode() != Opcodes.ILOAD) continue;
+            int slot = ((VarInsnNode) insn).var;
+            if (bad.contains(slot) || !owners.containsKey(slot)) continue;
+            AbstractInsnNode next = insn.getNext();
+            if (next == null) break;
+            int op = next.getOpcode();
+            if (op == Opcodes.IFLT || op == Opcodes.IFGE || op == Opcodes.IFLE || op == Opcodes.IFGT) {
+                JumpInsnNode jump = (JumpInsnNode) next;
+                InsnList l = new InsnList();
+                l.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                l.add(new FieldInsnNode(Opcodes.GETFIELD, owners.get(slot), "worldObj", "L" + world + ";"));
+                l.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HELPER, "bottom", helperArg, false));
+                m.instructions.insert(insn, l);
+                jump.setOpcode(op - Opcodes.IFLT + Opcodes.IF_ICMPLT);
+                insn = jump;
+                n++;
+            }
+        }
+        if (n > 0) m.maxStack += 1;
+        return n;
     }
 
     private static InsnList helper(int worldSlot, String name, String desc) {
