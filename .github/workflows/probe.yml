@@ -43,6 +43,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # 1.20.1: which jars have a native NeoForge 1.21.1 version (Modrinth lookups, tools/compat/native-modrinth.tsv). The file is committed; this cache keeps the answers
+      # of earlier runs on top of it so the weekly run only asks about jars it has not seen.
+      - name: Cache native-version lookups
+        uses: actions/cache@v4
+        with:
+          path: tools/compat/native-modrinth.tsv
+          key: native-modrinth-${{ github.run_id }}
+          restore-keys: native-modrinth-
+
       - name: Probe
         env:
           LIMIT: ${{ inputs.limit || '700' }}

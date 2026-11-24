@@ -268,6 +268,7 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
     classes, which always count as reachable) and calls a symbol hard when a reachable class that is not an integration class holds it; another mod's API is soft only when `mods.toml`
     declares that mod as not mandatory. A Minecraft/Forge member no class holds is hard (cannot be shown to sit in dead code). `probe.py --detail <file>` also writes `<file>.soft.tsv`: per
     unresolved reference its holder class and verdict. The layer's `SoftLink1201` stand-ins only throw when executed, which is why such a jar can start.
+  The soft verdict was checked on a server with 10 jars (8 loaded; the two failures were not unresolved-reference failures, see [Legacy-1.20.1-Failure-Classes](Legacy-1.20.1-Failure-Classes.md)).
   `python tools/compat/test_rating.py` tests the rules, `python tools/compat/card_numbers.py` prints the numbers of the site's version cards from `mods.json`.
 - A probe proves only that a jar translates and links, never that it works in game. The site ranks it below player reports, maintainer, client
   and startup-test results, and the script never overwrites those. Re-running refreshes earlier probe entries.

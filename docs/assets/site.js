@@ -198,12 +198,14 @@
       // newest first; on the same day and version the larger population leads
       .sort(function (a, b) { return (b.date || "").localeCompare(a.date || "") || byVersion(b.version || "0", a.version || "0") || total(b.counts) - total(a.counts); });
   }
+  // every jar a run looked at, native and engine mods included (they are not in total())
+  function jarsIn(c) { return total(c) + (c.native || 0) + (c.engine || 0); }
   function sourcesOf(mc) {
     var seen = {};
     state.runs.forEach(function (r) { if (r.mc === mc) seen[sourceOf(r)] = 1; });
     return Object.keys(seen).sort(function (a, b) {
       var ra = runsOfSource(mc, a)[0], rb = runsOfSource(mc, b)[0];
-      return total(rb.counts) - total(ra.counts) || (rb.date || "").localeCompare(ra.date || "") || (a < b ? -1 : 1);
+      return jarsIn(rb.counts) - jarsIn(ra.counts) || (rb.date || "").localeCompare(ra.date || "") || (a < b ? -1 : 1);
     });
   }
   function sourceFor(mc) {
@@ -691,9 +693,10 @@
       var card = el("div", "cmp");
       card.appendChild(donut(c, { size: 120, R: 56, r: 36, big: 24, label: "MC " + mc + ": " + Math.round(rate(c)) + " percent of applicable mods are ready to test" }));
       card.appendChild(el("h3", null, "Minecraft " + mc));
-      var big = el("div", "big", pct(c.links || 0, applicable(c)));
+      var ready = (c.links || 0) + (c.soft || 0);
+      var big = el("div", "big", pct(ready, applicable(c)));
       card.appendChild(big);
-      var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods ready to test · " + t + " checked");
+      var sub = el("div", "sub", ready + " of " + applicable(c) + " applicable mods ready to test · " + t + " checked" + ((c.native || c.engine) ? " (not counted: " + [c.native ? c.native + " native 1.21.1" : "", c.engine ? c.engine + " engine mods" : ""].filter(Boolean).join(", ") + ")" : ""));
       card.appendChild(sub);
       var foot = el("div", "foot");
       foot.appendChild(stackBar(c));
