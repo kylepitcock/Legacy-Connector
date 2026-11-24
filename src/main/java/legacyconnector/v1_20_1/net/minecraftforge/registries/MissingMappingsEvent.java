@@ -5,6 +5,11 @@ import net.neoforged.bus.api.Event;
 
 /** Forge 1.20.1's "registry entries from an old save are gone" event. NeoForge 1.21.1 has no such event; mods that listen to it (to remap ids) link and are never called. */
 public class MissingMappingsEvent extends Event {
+    /** The registry the event is for (never fired in 1.21.1, so none). */
+    public net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<?>> getKey() {
+        return null;
+    }
+
     public <T> List<Mapping<T>> getMappings(net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<T>> registry, String modid) {
         return List.of();
     }

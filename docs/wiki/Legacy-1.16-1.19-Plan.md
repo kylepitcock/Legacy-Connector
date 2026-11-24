@@ -60,7 +60,17 @@ A mod is taken through the stages from its own version forward. A 1.19.2 mod run
 
 ## The stages
 
-Sizes are relative to stage D (1.20.1 to 1.21.1), the only one measured so far.
+Sizes are relative to stage D (1.20.1 to 1.21.1, 25 to 30 agent-days to broad coverage). **Milestone 2 (measurement) is done for all three stages** (2026-11-16 for C, 2026-11-24 for B and A); measured relative sizes, in
+distinct symbols that need real adapters and in agent-days to the link ceiling:
+
+| Stage | Symbols (b, own sample) | Agent-days | Relative to D | Link today / ceiling | Page |
+|---|---|---|---|---|---|
+| D: 1.20.1 to 1.21.1 | | 25 to 30 | 1.0 | 28% of ATM 9 | [1.20.1 estimate](Legacy-1.20.1-Estimate.md) |
+| C: 1.19.2 to 1.20.1 | 992 (1.19.2 sample) / 655 (1.18.2 sample) | 22 to 28 | 0.9 | 11.7% / 29.7% | [1.19.2 estimate](Legacy-1.19.2-Estimate.md) |
+| B: 1.18.2 to 1.19.2 | 743 (1.18.2 sample) / 709 (1.16.5 sample) | 14 to 18 | 0.5 to 0.6 | 7.7% / 22.7% (with C) | [1.18.2 estimate](Legacy-1.18.2-Estimate.md) |
+| A: 1.16.5 to 1.18.2 | 1,212 (+1,287 Forge-patch members) | 35 to 50 | 1.4 to 2 | 5.5% (raw) / 12.8% (raw, lower bound) | [1.16.5 estimate](Legacy-1.16.5-Estimate.md) |
+
+The samples differ (451, 446 and 442 jars of each version's most downloaded content mods), so the columns are comparable in order of magnitude only (plus or minus 40%).
 
 ### Stage C: 1.19.2 to 1.20.1 (smallest; do first)
 
@@ -80,6 +90,11 @@ adds them to the block atlas (the 1.12.2 layer already does this for code-refere
 
 ### Stage B: 1.18.2 to 1.19.2
 
+Measured on 446 jars (2026-11-24): [Legacy-1.18.2-Estimate](Legacy-1.18.2-Estimate.md). The 1.20.1 layer links **34 of 441** of them today (7.7%), **14.5%** would link against 1.19.2's names once pure renames are applied
+(22.2% counting Minecraft alone), and the ceiling with all of B and C done is 100 jars (22.7%). Of 3,024 distinct unresolved symbols 580 are one table row (the SRG ids the 1.20.1 table lacks), 100 are renames of stage B,
+**743 need real adapters** (467 Minecraft, 276 Forge: the Forge 40 to 43 break removes 297 classes, about 100 of them events), 704 belong to stage C. **Size: about 0.6 to 0.7 of stage C, 14 to 18 agent-days, 0.5 to 0.6 of
+stage D**; the table below keeps the right shape list, and `Random` to `RandomSource` (177 symbols, 1,103 occurrences) is the most error-prone item.
+
 | Area | Change | Approach |
 |---|---|---|
 | Text | `TextComponent`, `TranslatableComponent` and other classes became `Component` factory methods | Constructor-to-factory call rewrites |
@@ -89,7 +104,13 @@ adds them to the block atlas (the 1.12.2 layer already does this for code-refere
 
 ### Stage A: 1.16.5 to 1.18.2 (largest; three eras in one)
 
-1.16.5 is the second largest pool of abandoned mods and packs, and the hardest stage:
+1.16.5 is the second largest pool of abandoned mods and packs, and the hardest stage.
+
+Measured on 442 jars (2026-11-24): [Legacy-1.16.5-Estimate](Legacy-1.16.5-Estimate.md). The name step is solved by data: the opt-in table matches 100% of the 1.16.5 methods (35,370) and fields (19,841) and
+5,003 class rows (MCP to Mojang). Raw (no 1.16.5 translation exists to run) **24 of 439 jars link** (5.5%); 12.8% would link against 1.18.2's names after pure renames (32.3% counting Minecraft alone). Of 7,223 distinct unresolved symbols
+167 are stage A renames, **1,212 need real work at stage A** (1,017 Minecraft, 195 Forge), 1,287 are members added by Forge's binary patches that cannot be diffed offline, and 709 (B) and 637 (C) belong to the later stages.
+Stage A removes 5,512 methods and 295 classes against 2,024 and 140 at stage B. **Size: about 1.7 times stage B and 1.9 times stage C by symbol count, 35 to 50 agent-days alone (1.4 to 2 times stage D), 71 to 96 agent-days for a 1.16.5 mod through all four stages**
+(2.5 to 3.5 times stage D). Rendering (206 symbols, fixed-function GL), world generation (313) and the block entity model are the three big items. The table below stays the right shape list:
 
 | Area | Change | Approach |
 |---|---|---|
@@ -106,15 +127,17 @@ first place where the two families meet. That is the main design risk and the re
 
 1. **Engine refactoring (within 1.20.1 work).** Stage directory as a parameter, the version index tool, generated tables with a diff
    against the hand-made ones. Exit: the 1.20.1 probe result is unchanged or better with generated tables.
-2. **Measurement for all three.** Corpus per version, generated tables only, gap report and ranking, written up like the 1.20.1 estimate.
-   Exit: a link rate per version and a ranked symbol list. This decides whether the estimates below hold.
+2. **Measurement for all three. Done 2026-11-24.** Corpus per version, generated tables only, gap report and ranking, written up like the 1.20.1 estimate
+   ([1.19.2](Legacy-1.19.2-Estimate.md), [1.18.2](Legacy-1.18.2-Estimate.md), [1.16.5](Legacy-1.16.5-Estimate.md)). Exit: a link rate per version and a ranked symbol list.
+   Result: the estimates hold in order (B smallest, then C, then A); the "1 to 2 days each" is off by an order of magnitude, and stage A is larger than stage D.
 3. **Stage C, then B, then A.** For each: link rate target first (the share of content mods that link completely, client-only mods not
    counted), then a regression suite of five to ten mods of that version in `tools/dev/verify.sh`, then a client scenario per mod family.
    A version is announced as alpha when its suite passes and as beta when a real pack of that version reaches the title screen and a world.
 
 Not estimated in days on purpose: stage D is at 20 percent of ATM 9 linking after its first weeks, and the earlier "1 to 2 days each"
 figure in the roadmap assumed a finished 1.20.1 stage. A realistic statement after milestone 2: each stage costs a fraction of stage D
-proportional to its ranked symbol count, and stage A costs at least as much as stage D.
+proportional to its ranked symbol count, and stage A costs at least as much as stage D. **Measured (milestone 2):** B 0.5 to 0.6, C 0.9, A 1.4 to 2 times D in agent-days (table above).
+What the measurement cannot show: behaviour, library APIs, Forge's binary patches (1,287 symbols of 1.16.5), the 1.20.1 translation of 1.16.5 jars (no such run exists), and abandoned-pack bias.
 
 ## What to decide before starting
 
@@ -125,3 +148,45 @@ proportional to its ranked symbol count, and stage A costs at least as much as s
   ranking cost little and tell how large stage A really is.
 - **Mapping data.** The stage tables are derived from Mojang's official mappings, as the 1.20.1 ones are; only differences are shipped.
   Intermediate full mappings are fetched by the tool and never committed.
+
+## Milestone 1 status (2026-11-24)
+
+**Inventory: where stage D (1.20.1 to 1.21.1) was hardcoded.** The tables sit in `loader/src/main/resources/legacyconnector/forward/1.20.1/`:
+`mc-classes`, `mc-members`, `mc-calls`, `mc-fields`, `mc-bridges`, `mc-overrides` (+ `lib-*` twins for library bridges), `mc-hierarchy.tsv.gz`,
+`mc-closed.txt.gz`, `mc-protected.tsv.gz`, `mc-members/static/private.index.gz` (index of the 1.21.1 classes), `mixin-targets.tsv`, the Forge side
+(`forge-call-rewrites`, `forge-curated-renames`, `forge-event-renames`, `forge-fml-renames`, `forge-members`, `forge-c-tag-pairs`, `c-tags`,
+`neoforge-abstract-events`) and `libraries.tsv`. Eleven readers opened them by a string literal of the folder (`Mc1201Tables`, `Mc1201Hierarchy`,
+`McMembers1201`, `ClassShape1201`, `ProtectedCalls1201`, `Subscribers1201`, `ForgeApiRewrites1201`, `Forge1201Transformer`, `mixin1201/TargetRemap`,
+`DataConverter1201`, `NativeLibraries1201`), two generators wrote into it (`EventTables1201Tool`, `McMembers1201Tool`), and the helper package of
+`mc-calls` rows (`v1_20_1/migrate/`) was a constant of `Mc1201Tables`. Still stage specific by design, not by accident: the class names (`*1201`),
+the `Forge1201Transformer` special cases (library compat under `transform/compat`), the migration helpers (`migrate` classes), the data converters
+(`resource/*1201`), the SRG table (`genSrgMojang1201`, one per source version) and `Gap1201` (`LegacyJar.version = V1_20_1`).
+
+**Done.** `transform/ForwardStage` is `(source, target, dir, helperPackage)`; every reader above and both generators now go through it
+(`ForwardStage.D_1201.open("mc-classes.tsv")`). `ForwardStage.chainFrom(version)` returns the stages a jar of that version passes in order
+(`1.19.2` gives C then D; C is declared but has no tables and no loader detection), `composeRenames` composes the class renames of consecutive stages
+(a rename of stage C followed by one of stage D is one row), and `Mc1201Tables.loadChain` loads a chain (class renames composed, the other tables
+merged, later stages winning). One stage loads exactly as before. Tests: `ForwardStageTest`.
+
+**Byte identity.** `python tools/dev/identity_1201.py run <label>` translates 40 ATM 9 jars (every 13th of the sorted instance folder) with the real
+transformer (`gap1201 -Pgap.translate=true`) and `compare <a> <b>` compares every entry of every translated jar (SHA-256, except
+`provenance.json`, which carries a timestamp). Before and after the refactoring: 40 jars, 64,497 entries, identical; the gap counts are unchanged
+(`classes 509/509 fields 6/6 methods 30/37`); two runs of the same build are identical too, so the check is deterministic.
+
+**Version index and generator.** `python tools/dev/version_index.py diff|compare <from> <to>` fetches Mojang's official mappings and client jars into
+`build/version-index/` (gitignored) and writes candidate rows: class moves (unique simple name) and renames (same package and similar name, or similar
+member shape), member renames (the only vanished and the only new member of a class with the same descriptor), descriptor changes, removed members,
+hierarchy changes. It needs no SRG data. `compare` measures it against the hand-made tables of a stage. For 1.20.1 to 1.21.1 (10 seconds):
+8,269 classes against 7,436, 506 gone, 92 class candidates (40 moves, 52 renames), 386 member renames, 4,252 descriptor changes, 341 hierarchy changes.
+
+| Hand-made rows | Applicable | Reproduced | Contradicted | Detected, not proposed | Missed |
+|---|---|---|---|---|---|
+| `mc-classes` + `lib-classes` (207) | 71 (69 are libraries or Forge, 67 point at layer helpers) | 39 | 2 | 2 (old name still exists: deliberate redirect) | 28 (renames by a changed name only, e.g. `BootstapContext`, `BlockPathTypes` to `PathType`, `FriendlyByteBuf$Writer` to `StreamEncoder`) |
+| `mc-members` + `mc-fields` (569) | 472 | 27 | 1 | 281 (descriptor changed: needs a call row, not a rename) | 163 (no change visible by name: enum constants of other types, behaviour) |
+| `mc-calls` (1,174) | 1,048 | n/a | n/a | 821 flagged (member gone, renamed or descriptor changed) | 216 (behaviour change or inherited member) + 11 constructors |
+
+Reading: the generator proposes about half of the applicable class rows and 6 percent of the member rows by itself; the rest of the hand work is
+semantic (helpers), which is what the plan says stays per stage. Its real use is the other direction: the 4,252 descriptor changes and 5,129 removed
+members are the work list for a new stage, ranked by corpus usage in milestone 2. **Left for milestone 1:** feeding the generated candidates into a
+stage directory with a provenance column (hand rows win), the per-stage SRG tables for 1.16.5 to 1.19.2, and moving the shared `Forge1201Transformer`
+special cases that are not stage D specific into the engine.

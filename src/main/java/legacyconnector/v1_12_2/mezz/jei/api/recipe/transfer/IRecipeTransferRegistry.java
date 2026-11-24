@@ -11,5 +11,7 @@ public interface IRecipeTransferRegistry {
     @Deprecated
     default void addRecipeTransferHandler(IRecipeTransferHandler<?> recipeTransferHandler) {}
 
+    default void addRecipeTransferHandler(IRecipeTransferInfo<?> recipeTransferInfo) {}
+
     default void addUniversalRecipeTransferHandler(IRecipeTransferHandler<?> recipeTransferHandler) {}
 }

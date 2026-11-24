@@ -12,6 +12,7 @@ All jars are translated as ONE mod set so mods that extend each other link. Per 
   gap_shim    missing old Minecraft/Forge functionality (our shim)   -> status "fails"
   gap_mod     missing another mod's API (NEI, Thaumcraft, AE2, ...)  -> status "fails"
   gap_lib     missing removed Java/library code                      -> status "fails"
+  gap_version built for another Minecraft version (obfuscation fits none of 1.4.7/1.5.2/1.6.4) -> status "fails"
   gap_dep     a required dependency mod is not in the set            -> "fails", or "loads" when the jar links apart from that
   obsolete    engine patch with nothing to do on 1.21.1 -> not listed
   engine      an engine/performance mod the layer never hosts (loader/.../engine-mods.tsv, any version) -> status "engine", in no percentage
@@ -295,6 +296,8 @@ def kind(rec):
         return "stubs" if rec.get("synthesizedMembers", 0) >= STUB_LIMIT else "links"
     if rec["result"] == "missing-dependency":
         return "gap_dep"
+    if rec["result"] == "other-version":
+        return "gap_version"
     if rec["result"] == "unresolved":
         return cause(rec.get("missing") or [])
     return rec["result"]
@@ -305,6 +308,7 @@ GAP_TEXT = {
     "gap_mod": "needs code from another mod or API that is not available or does not match",
     "gap_lib": "uses old Java or library code that no longer exists",
     "gap_dep": "needs another mod that was not installed",
+    "gap_version": "was built for another Minecraft version than the layer supports",
 }
 
 
@@ -364,6 +368,8 @@ def note_links(rec, layer):
             ids = ", ".join(sorted({m.split(" requires ", 1)[-1].split(",", 1)[0].split(" (", 1)[0] for m in rec.get("missingDependencies", [])}))
             return f"{base}declares a mod that was not installed: {ids}. Everything else it uses links; the mod may still work without it."
         return f"{base}{'; '.join(rec.get('missingDependencies', [])[:3])}."
+    if k == "gap_version":
+        return f"{base}{rec.get('reason') or GAP_TEXT['gap_version']}."
     miss = ", ".join(rec.get("missing", [])[:5])
     more = f" (+{rec['unresolved'] - 5} more)" if rec.get("unresolved", 0) > 5 else ""
     return f"{base}{GAP_TEXT.get(k, 'has missing pieces')}: {miss}{more}."
@@ -411,7 +417,7 @@ def merge(records, mc, date, layer):
     return data, added, refreshed, skipped
 
 
-RANK = {"links": 0, "soft": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "gap_dep": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
+RANK = {"links": 0, "soft": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "gap_dep": 2, "gap_version": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
 MAX_CHANGES = 100
 
 
@@ -527,7 +533,7 @@ def self_test():
 def history(records, mc, date, layer, source=""):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     records = newest_builds(records, mc)
-    rows, counts, seen = [], {"links": 0, "soft": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0, "native": 0, "engine": 0}, set()
+    rows, counts, seen = [], {"links": 0, "soft": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "gap_version": 0, "obsolete": 0, "native": 0, "engine": 0}, set()
     assets = {"checked": 0, "modsWithLayerProblems": 0, "layerRefs": 0, "modsWithOwnProblems": 0, "ownRefs": 0}
     for r in records:
         k = kind(r) if r.get("result") else ""

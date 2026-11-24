@@ -85,6 +85,25 @@ public class Minecraft {
         for(P player:registeredPlayers.get())if(sameLevel.test(player)){double value=distance.applyAsDouble(player);if(value<best){best=value;closest=player;}}
         return closest;
     }
+    /** Beta's {@code renderViewEntity}: the entity the camera follows, the player unless a mod set another. */
+    public static legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity mcc$get$camera(Minecraft minecraft){
+        Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();
+        return active.cameraEntity!=null?active.cameraEntity:mcc$get$player(minecraft);
+    }
+    public static void mcc$set$camera(Minecraft minecraft,legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity camera){
+        (SCOPED.get()==null?minecraft:SCOPED.get()).cameraEntity=camera;
+    }
+    private legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity cameraEntity;
+    /** Beta's {@code objectMouseOver}: what the player's crosshair points at (blocks within the survival reach; null for nothing). */
+    public static legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult mcc$get$crosshairTarget(Minecraft minecraft){
+        var player=mcc$get$player(minecraft);
+        return player==null||player.world==null?null:player.raycast(5.0,1.0F);
+    }
+    /** Beta's {@code running}: false once the game was asked to stop. */
+    public volatile boolean running=true;
+    public java.awt.Canvas canvas;
+    public legacyconnector.vb1_7_3.net.minecraft.client.render.WorldRenderer worldRenderer=legacyconnector.vb1_7_3.net.minecraft.client.render.WorldRenderer.mcc$instance();
+    public legacyconnector.vb1_7_3.net.minecraft.client.resource.pack.TexturePacks texturePacks=new legacyconnector.vb1_7_3.net.minecraft.client.resource.pack.TexturePacks();
     public static void mcc$set$player(Minecraft minecraft,legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player){
         Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();
         if(active!=INSTANCE)active.explicitPlayer=player;else if(player==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(player);
@@ -109,6 +128,18 @@ public class Minecraft {
     public void setWorld(World world,String message,legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player){
         org.kylepitcock.legacyconnector.vb1_7_3.PlayerClassOverridesB173.hand(player);
     }
+
+    /** Beta's {@code changeWorld1(World)} / {@code changeWorld(World, String)}: the client switches to another world view. */
+    public void setWorld(World world){if(world!=null)this.world=world;}
+    public void setWorld(World world,String message){setWorld(world);}
+
+    /** Beta's {@code usePortal()}: the player goes through a portal, between the overworld and the Nether (the Nether's dimension id is -1). */
+    public void changeDimension(){
+        var player=mcc$get$player(this);
+        if(player!=null)org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.usePortal(player.dimensionId==-1?0:-1);
+    }
+    /** Beta's {@code setIngameFocus()}: closes any screen and gives the mouse back to the game. */
+    public void lockMouse(){setScreen(null);}
 
     public static Minecraft mcc$instance() {
         Minecraft scoped=SCOPED.get();return scoped==null?INSTANCE:scoped;

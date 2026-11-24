@@ -39,6 +39,8 @@ public final class ClientB173 implements MenusB173.Client {
         HighlightClientB173.install();
         LoadingProgressB173.register();
         legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions.mcc$graphics(Minecraft::useFancyGraphics);
+        OptionsViewClientB173.install();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ScreenEvent.MouseScrolled.Pre e) -> legacyconnector.vb1_7_3.org.lwjgl.input.Mouse.mcc$scrolled(e.getScrollDeltaY()));
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent event) ->
                 event.register(org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.EFFECTS, new DimensionEffectsB173()));
         legacyconnector.vb1_7_3.org.lwjgl.input.Keyboard.mcc$keys(code->{

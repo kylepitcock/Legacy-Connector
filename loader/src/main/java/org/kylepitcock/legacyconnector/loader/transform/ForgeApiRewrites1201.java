@@ -19,7 +19,7 @@ import org.objectweb.asm.tree.MethodNode;
  */
 public final class ForgeApiRewrites1201 {
     public static final String HELPERS = "legacyconnector/v1_20_1/ForgeApi1201";
-    static final String RESOURCE = "legacyconnector/forward/1.20.1/forge-call-rewrites.tsv";
+    static final String RESOURCE = ForwardStage.D_1201.resource("forge-call-rewrites.tsv");
 
     private static volatile Map<String, String> table;
 

@@ -6,6 +6,8 @@ public interface IStackHelper {
     java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getAllSubtypes(Iterable<?> stacks);
     java.util.List<java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> expandRecipeItemStackInputs(java.util.List<?> inputs);
     java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> toItemStackList(Object stacks);
+    /** The first stack of the first list that the second list holds, or null. */
+    legacyconnector.v1_12_2.net.minecraft.item.ItemStack containsAnyStack(Iterable<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> lhs, Iterable<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> rhs);
     boolean isEquivalent(legacyconnector.v1_12_2.net.minecraft.item.ItemStack lhs, legacyconnector.v1_12_2.net.minecraft.item.ItemStack rhs);
     String getUniqueIdentifierForStack(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack);
 }

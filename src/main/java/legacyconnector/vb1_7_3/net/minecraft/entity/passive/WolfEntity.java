@@ -26,6 +26,15 @@ public class WolfEntity extends AnimalEntity {
     public void setSitting(boolean sitting){if(nativeWolf())((net.minecraft.world.entity.TamableAnimal)mcc$modern).setInSittingPose(sitting);else mcc$sitting=sitting;}
     /** Beta's tail angle: raised when angry, lowered with lost health when tamed. */
     public float getTailAngle(){if(isAngry())return 1.5393804F;if(isTamed())return (0.55F-(20-health)*0.02F)*(float)Math.PI;return (float)Math.PI/5.0F;}
+    /** Beta's wolf render helpers, answered by the native wolf's own animation state (a mod's wolf shows none). */
+    public boolean isFurWet(){return nativeWolf()&&((net.minecraft.world.entity.animal.Wolf)mcc$modern).getWetShade(1.0F)<1.0F;}
+    public float getFurBrightnessMultiplier(float partial){return nativeWolf()?((net.minecraft.world.entity.animal.Wolf)mcc$modern).getWetShade(partial):1.0F;}
+    public float getBegAnimationProgress(float partial){return nativeWolf()?((net.minecraft.world.entity.animal.Wolf)mcc$modern).getHeadRollAngle(partial):0.0F;}
+    public float getShakeAnimationProgress(float partial,float offset){return nativeWolf()?((net.minecraft.world.entity.animal.Wolf)mcc$modern).getBodyRollAngle(partial,offset):0.0F;}
+    /** Beta's status byte 7 (hearts) or 6 (smoke) around a wolf. */
+    public void showFeedParticles(boolean hearts){
+        if(nativeWolf()&&mcc$modern.level() instanceof net.minecraft.server.level.ServerLevel level)level.broadcastEntityEvent(mcc$modern,(byte)(hearts?7:6));
+    }
     public String getOwnerName(){return mcc$ownerName;}
     public void setOwnerName(String name){mcc$ownerName=name==null?"":name;}
 

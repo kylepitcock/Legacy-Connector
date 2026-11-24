@@ -4,6 +4,7 @@ package legacyconnector.v1_12_2.mezz.jei.api;
 public interface IModPlugin {
     default void registerItemSubtypes(legacyconnector.v1_12_2.mezz.jei.api.ISubtypeRegistry subtypeRegistry) {}
     default void registerIngredients(legacyconnector.v1_12_2.mezz.jei.api.IModIngredientRegistration registry) {}
+    default void registerIngredients(legacyconnector.v1_12_2.mezz.jei.api.ingredients.IModIngredientRegistration registry) {}
     default void registerCategories(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategoryRegistration registry) {}
     default void register(legacyconnector.v1_12_2.mezz.jei.api.IModRegistry registry) {}
     default void onRuntimeAvailable(legacyconnector.v1_12_2.mezz.jei.api.IJeiRuntime jeiRuntime) {}

@@ -101,3 +101,8 @@ net/minecraft/world/entity/Mob	getDefaultLootTable	()Lnet/minecraft/resources/Re
 net/minecraft/client/particle/Particle	shouldCull	()Z	getRenderBoundingBox	(F)Lnet/minecraft/world/phys/AABB;	-	this:MixinTargetCompat.renderBox	-
 # --- round 15 client: a mod's SoundEventListener (1.21.1 adds the range)
 net/minecraft/client/sounds/SoundEventListener	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;)V	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;F)V	0,1	-	-
+net/minecraft/world/entity/Entity	handleInsidePortal	(Lnet/minecraft/core/BlockPos;)V	setAsInsidePortal	(Lnet/minecraft/world/level/block/Portal;Lnet/minecraft/core/BlockPos;)V	1	-	-
+net/minecraft/world/entity/projectile/ThrowableProjectile	getGravity	()F	getDefaultGravity	()D	-	Round16Compat.gravityOf	-
+net/minecraft/world/entity/monster/AbstractSkeleton	getArrow	(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;	getArrow	(Lnet/minecraft/world/item/ItemStack;FLnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/AbstractArrow;	0,1	-	-
+# --- failure classes batch 4: a mod's eye height override feeds the default dimensions (1.21.1 keeps the eye height there)
+net/minecraft/world/entity/LivingEntity	getStandingEyeHeight	(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F	getDefaultDimensions	(Lnet/minecraft/world/entity/Pose;)Lnet/minecraft/world/entity/EntityDimensions;	0,Round16Compat.baseDimensions@this	this:Round16Compat.withEyeHeight	-

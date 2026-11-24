@@ -216,4 +216,6 @@ public abstract class LivingEntity extends Entity {
     public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getLookVector() {
         return getLookVector(1.0F);
     }
+    /** Beta's {@code prevHealth}: the health at the previous tick (the hurt flash compares it). */
+    public int prevHealth = 10;
 }

@@ -27,4 +27,12 @@ public interface IModRegistry {
     default void addRecipeCategoryCraftingItem(legacyconnector.v1_12_2.net.minecraft.item.ItemStack craftingItem, String... recipeCategoryUids) {
         addRecipeCatalyst(craftingItem, recipeCategoryUids);
     }
+    /** JEI 3 and early JEI 4: categories registered from register(). */
+    void addRecipeCategories(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategory<?>... recipeCategories);
+    /** JEI 3: maps a mod's recipe class to its category and wrapper. */
+    void addRecipeHandlers(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeHandler<?>... recipeHandlers);
+    /** JEI 3: recipes found by their handlers. */
+    void addRecipes(java.util.Collection<?> recipes);
+    default void addRecipeRegistryPlugin(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeRegistryPlugin recipeRegistryPlugin) {}
+    default void addGhostIngredientHandler(Class<? extends legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen> guiClass, legacyconnector.v1_12_2.mezz.jei.api.gui.IGhostIngredientHandler<?> handler) {}
 }

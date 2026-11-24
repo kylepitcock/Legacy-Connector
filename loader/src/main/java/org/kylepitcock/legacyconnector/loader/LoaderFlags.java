@@ -63,6 +63,8 @@ public enum LoaderFlags {
     CHECK_ASSETS("legacyconnector.check.assets", Type.STRING, "unset", Category.TOOL, "false: the offline check skips the resource check."),
     /** false: the offline check treats the jars as plain mods (no library bridges). */
     CHECK_BRIDGES("legacyconnector.check.bridges", Type.STRING, "unset", Category.TOOL, "false: the offline check treats the jars as plain mods (no library bridges)."),
+    /** true: the offline check runs the set's coremod class transformers over the jars' classes. */
+    CHECK_COREMODS("legacyconnector.check.coremods", Type.STRING, "unset", Category.TOOL, "true: the offline check runs the set's coremod class transformers over the jars' classes."),
     /** File the offline check writes its result to as JSON. */
     CHECK_JSON("legacyconnector.check.json", Type.PATH, "unset", Category.TOOL, "File the offline check writes its result to as JSON."),
     /** Directory the offline check keeps the translated jars in. */

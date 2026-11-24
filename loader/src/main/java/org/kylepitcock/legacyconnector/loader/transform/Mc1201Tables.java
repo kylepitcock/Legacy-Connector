@@ -23,8 +23,9 @@ import java.util.Map;
  * </ul>
  */
 public final class Mc1201Tables {
-    static final String HELPER_PACKAGE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/";
-    private static final String DIR = "legacyconnector/forward/1.20.1/";
+    /** The stage whose tables this engine instance reads (stage D, 1.20.1 to 1.21.1, until more stages are enabled). */
+    static final ForwardStage STAGE = ForwardStage.D_1201;
+    static final String HELPER_PACKAGE = STAGE.helperPackage();
 
     /** A call redirected to {@code helper.helperName helperDesc} (the receiver is the first parameter of an instance method). */
     record Call(String owner, String name, String desc, String helper, String helperName, String helperDesc) {}
@@ -114,25 +115,54 @@ public final class Mc1201Tables {
         Mc1201Tables t = instance;
         if (t == null) {
             synchronized (Mc1201Tables.class) {
-                if ((t = instance) == null) instance = t = load();
+                if ((t = instance) == null) instance = t = loadChain(ForwardStage.chainFrom(STAGE.source()));
             }
         }
         return t;
     }
 
     static Mc1201Tables load() {
+        return load(STAGE);
+    }
+
+    /**
+     * The tables of a chain of stages (oldest first), for a jar that goes through several of them. Class renames are composed (a rename of stage 1 followed
+     * by a rename of stage 2 is one row); every other table keeps the rows of all stages, later ones winning on the same key, and stays per stage in
+     * meaning: calls and bridges are written against the names of their own stage, so a table that reshapes a call must be authored with that in mind.
+     * One stage: its own tables, untouched.
+     */
+    static Mc1201Tables loadChain(List<ForwardStage> chain) {
+        if (chain.size() == 1) return load(chain.get(0));
         Mc1201Tables t = new Mc1201Tables();
-        for (String[] f : rows("mc-classes.tsv", 2)) t.classes.put(f[0], f[1]);
-        for (String[] f : rows("mc-members.tsv", 4)) t.members.put(f[0] + "." + f[1] + f[2], f[3]);
-        for (String[] f : rows("mc-calls.tsv", 5)) {
-            String helper = f[3].contains("/") || f[3].startsWith("=") ? f[3] : HELPER_PACKAGE + f[3];
+        List<Map<String, String>> classMaps = new ArrayList<>();
+        for (ForwardStage s : chain) {
+            Mc1201Tables one = load(s);
+            classMaps.add(one.classes);
+            t.members.putAll(one.members);
+            t.calls.putAll(one.calls);
+            t.fields.putAll(one.fields);
+            t.bridges.addAll(one.bridges);
+            t.overrides.addAll(one.overrides);
+            t.lambdas.putAll(one.lambdas);
+        }
+        t.classes.putAll(ForwardStage.composeRenames(classMaps));
+        return t;
+    }
+
+    /** The tables of one stage (engine entry point: the stage is the only thing that differs between 1.20.1 and later stages). */
+    static Mc1201Tables load(ForwardStage stage) {
+        Mc1201Tables t = new Mc1201Tables();
+        for (String[] f : rows(stage, "mc-classes.tsv", 2)) t.classes.put(f[0], f[1]);
+        for (String[] f : rows(stage, "mc-members.tsv", 4)) t.members.put(f[0] + "." + f[1] + f[2], f[3]);
+        for (String[] f : rows(stage, "mc-calls.tsv", 5)) {
+            String helper = f[3].contains("/") || f[3].startsWith("=") ? f[3] : stage.helperPackage() + f[3];
             String hdesc = f.length > 5 && !f[5].equals("-") ? f[5] : null;
             t.calls.put(f[0] + "." + f[1] + f[2], new Call(f[0], f[1], f[2], helper, f[4], hdesc));
         }
-        for (String[] f : rows("mc-fields.tsv", 6)) t.fields.put(f[0] + "." + f[1] + ":" + f[2], new Field(f[0], f[1], f[2], f[3], f[4], f[5]));
-        t.overrides.addAll(rows("mc-overrides.tsv", 4));
-        for (String[] f : rows("lib-lambdas.tsv", 4)) t.lambdas.put(f[0] + "." + f[1] + f[2], f);
-        for (String[] f : rows("mc-bridges.tsv", 8)) {
+        for (String[] f : rows(stage, "mc-fields.tsv", 6)) t.fields.put(f[0] + "." + f[1] + ":" + f[2], new Field(f[0], f[1], f[2], f[3], f[4], f[5]));
+        t.overrides.addAll(rows(stage, "mc-overrides.tsv", 4));
+        for (String[] f : rows(stage, "lib-lambdas.tsv", 4)) t.lambdas.put(f[0] + "." + f[1] + f[2], f);
+        for (String[] f : rows(stage, "mc-bridges.tsv", 8)) {
             List<String> args = f[5].equals("-") ? List.of() : List.of(f[5].split(","));
             t.bridges.add(new Bridge(f[0], f[1], f[2], f[3], f[4], args, f[6].equals("-") ? null : f[6], f[7].equals("-") ? -1 : Integer.parseInt(f[7])));
         }
@@ -151,10 +181,10 @@ public final class Mc1201Tables {
     }
 
     /** The rows of {@code mc-X.tsv} followed by those of {@code lib-X.tsv} (the 1.20.1 library bridges: same formats, kept in their own files). */
-    private static List<String[]> rows(String file, int min) {
-        List<String[]> out = rows1(file, min);
+    private static List<String[]> rows(ForwardStage stage, String file, int min) {
+        List<String[]> out = rows1(stage, file, min);
         if (file.startsWith("mc-")) {
-            for (String[] f : rows1("lib-" + file.substring(3), min)) {
+            for (String[] f : rows1(stage, "lib-" + file.substring(3), min)) {
                 if (!fallbackRoots.isEmpty() && (ofFallbackLibrary(f[0]) || file.equals("mc-classes.tsv") && ofFallbackLibrary(f[1]))) continue;
                 out.add(f);
             }
@@ -162,9 +192,9 @@ public final class Mc1201Tables {
         return out;
     }
 
-    private static List<String[]> rows1(String file, int min) {
+    private static List<String[]> rows1(ForwardStage stage, String file, int min) {
         List<String[]> out = new ArrayList<>();
-        try (InputStream in = Mc1201Tables.class.getClassLoader().getResourceAsStream(DIR + file)) {
+        try (InputStream in = stage.open(file)) {
             if (in == null) return out;
             BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             for (String l = r.readLine(); l != null; l = r.readLine()) {

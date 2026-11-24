@@ -43,7 +43,7 @@ final class Subscribers1201 {
 
     private static java.util.Set<String> loadAbstractEvents() {
         java.util.Set<String> out = new java.util.HashSet<>();
-        try (java.io.InputStream in = Subscribers1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/neoforge-abstract-events.tsv")) {
+        try (java.io.InputStream in = ForwardStage.D_1201.open("neoforge-abstract-events.tsv")) {
             if (in != null) {
                 for (String l : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\\R")) {
                     if (l.isBlank() || l.startsWith("#")) continue;

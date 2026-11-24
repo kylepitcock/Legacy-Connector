@@ -2165,15 +2165,30 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static JsonObject readJson(String path) {
         var cached = JSON_FILES.get(path);
         if (cached == null) {
-            cached = java.util.Optional.ofNullable(parseJson(path));
-            JSON_FILES.put(path, cached);
+            JsonObject parsed = parseJson(path);
+            cached = java.util.Optional.ofNullable(parsed);
+            if (parsed != null || !path.contains("/blockstates/")) JSON_FILES.put(path, cached);
         }
         return cached.map(JsonObject::deepCopy).orElse(null);
     }
 
+    /** A mod file, or else a file a pack the mod installed at run time serves (GregTech generates its blockstates that way). */
+    private static java.io.InputStream openResource(ClassLoader loader, String path) {
+        java.io.InputStream in = loader.getResourceAsStream(path);
+        if (in != null || !path.startsWith("assets/")) return in;
+        int slash = path.indexOf('/', 7);
+        if (slash < 0) return null;
+        try {
+            return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().mcc$runtimePackStream(
+                    new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(path.substring(7, slash), path.substring(slash + 1)));
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     private static JsonObject parseJson(String path) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        try (var in = loader.getResourceAsStream(path)) {
+        try (var in = openResource(loader, path)) {
             if (in == null) return null;
             JsonElement root = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             return root.isJsonObject() ? root.getAsJsonObject() : null;

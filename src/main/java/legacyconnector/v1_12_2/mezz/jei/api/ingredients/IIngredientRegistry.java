@@ -12,4 +12,7 @@ public interface IIngredientRegistry {
     java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getFuels();
     java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getPotionIngredients();
     boolean isFuel(legacyconnector.v1_12_2.net.minecraft.item.ItemStack itemStack);
+    <V> void addIngredientsAtRuntime(Class<V> ingredientClass, java.util.List<V> ingredients);
+    <V> legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientHelper<V> getIngredientHelper(Class<V> ingredientClass);
+    <V> legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer<V> getIngredientRenderer(Class<V> ingredientClass);
 }

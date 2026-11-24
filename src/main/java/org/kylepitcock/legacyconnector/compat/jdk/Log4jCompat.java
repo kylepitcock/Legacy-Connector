@@ -49,4 +49,10 @@ public final class Log4jCompat {
         b.setFilter(filter);
         return b.build();
     }
+
+    /** log4j 2.0-beta9's {@code Logger.log(Marker, fqcn, Level, Message, Throwable)}; later versions call it {@code logMessage} with the arguments reordered. */
+    public static void log(org.apache.logging.log4j.core.Logger logger, org.apache.logging.log4j.Marker marker, String fqcn,
+            org.apache.logging.log4j.Level level, org.apache.logging.log4j.message.Message message, Throwable t) {
+        logger.logMessage(fqcn, level, marker, message, t);
+    }
 }

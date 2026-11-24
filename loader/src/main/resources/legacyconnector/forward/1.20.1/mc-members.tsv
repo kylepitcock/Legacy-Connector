@@ -99,3 +99,8 @@ net/minecraft/world/level/block/ChangeOverTimeBlock	onRandomTick	*	changeOverTim
 net/minecraft/server/level/ChunkHolder	getLastAvailableStatus	*	getLatestStatus
 net/minecraft/client/renderer/ViewArea	chunks	:*	sections
 net/minecraft/world/effect/MobEffect	isDurationEffectTick	*	shouldApplyEffectTickThisTick
+net/minecraft/server/level/ChunkHolder	getLastAvailable	*	getLatestChunk
+net/minecraft/world/level/storage/PlayerDataStorage	getPlayerDataFolder	*	getPlayerDir
+net/minecraft/client/gui/components/AbstractSelectionList	getLeft	*	getX
+net/minecraft/client/gui/components/AbstractSelectionList	getTop	*	getY
+net/minecraft/client/gui/components/AbstractSelectionList	renderList	*	renderListItems

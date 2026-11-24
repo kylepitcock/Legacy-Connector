@@ -4,4 +4,7 @@ package legacyconnector.v1_12_2.mezz.jei.api;
 public interface IRecipesGui {
     <V> void show(legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus<V> focus);
     void showCategories(java.util.List<String> recipeCategoryUids);
+    default Object getIngredientUnderMouse() {
+        return null;
+    }
 }

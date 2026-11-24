@@ -13,6 +13,7 @@ import org.kylepitcock.legacyconnector.loader.LegacyJarInspector;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
 import org.kylepitcock.legacyconnector.loader.transform.CoremodHookDiscovery;
 import org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan;
+import org.kylepitcock.legacyconnector.loader.transform.CoremodModTargets;
 import org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -61,6 +62,15 @@ public final class CoremodHookProbe {
             e.getValue().forEach(System.out::println);
         }
         System.out.println(changes.size() + " transformed class version(s)");
+        // The classes of the mod jars themselves (a coremod that extends another mod's class): applied at translation, listed here.
+        Map<String, List<String>> modReport = new LinkedHashMap<>();
+        for (CoremodHookScan.Change c : CoremodModTargets.scan(transformers, jars)) {
+            describe(modReport, c.transformer(), c.className(), "the mod jar", c.before(), c.after());
+        }
+        for (var e : modReport.entrySet()) {
+            System.out.println("== mod classes: " + e.getKey());
+            e.getValue().forEach(System.out::println);
+        }
     }
 
     private static void describe(Map<String, List<String>> report, String transformer, String cls, String form, ClassNode before, ClassNode after) {

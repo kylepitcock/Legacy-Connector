@@ -29,7 +29,7 @@ public final class SpawnerAnimals {
     }
 
     /** Vanilla's per-tick spawn pass: the host does it natively for every entity, so a mod calling it spawns nothing extra and sees 0 spawns. */
-    public static int findChunksForSpawning(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world, boolean hostile, boolean peaceful, boolean animals) {
+    public int findChunksForSpawning(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world, boolean hostile, boolean peaceful, boolean animals) {
         return 0;
     }
 

@@ -23,6 +23,7 @@
     { key: "gap_shim", label: "Missing game features", color: "var(--gap-shim)", hint: "needs old Minecraft/Forge features we have not built yet" },
     { key: "gap_mod", label: "Needs another mod", color: "var(--gap-mod)", hint: "depends on another mod's code that is not available or does not match" },
     { key: "gap_lib", label: "Needs removed code", color: "var(--gap-lib)", hint: "uses old Java/library code that no longer exists" },
+    { key: "gap_version", label: "Built for another Minecraft version", color: "var(--gap-version)", hint: "built for a Minecraft release the layer has no obfuscation table for (for example 1.6.2/1.6.3)" },
     { key: "unresolved", label: "Has missing pieces", color: "var(--unresolved)", hint: "something it needs is missing (older runs, cause not split)" },
     { key: "obsolete", label: "Not needed", color: "var(--obsolete)", hint: "libraries replaced by their native 1.21.1 build (older runs) and Fabric/Quilt jars the layer never translates" }
   ];
@@ -31,9 +32,9 @@
     { key: "native", label: "Use the native 1.21.1 version", color: "var(--native)", hint: "a NeoForge 1.21.1 version of this mod exists (Modrinth)" },
     { key: "engine", label: "Engine mod: not needed", color: "var(--engine)", hint: "performance, renderer and patch mods the layer never hosts by design" }
   ];
-  var RESLABEL = { links: "Ready", soft: "Optional parts off", native: "Native 1.21.1", engine: "Engine mod", stubs: "Placeholder", gap_shim: "Game features", gap_mod: "Other mod", gap_lib: "Old code", unresolved: "Missing", obsolete: "Not needed" };
+  var RESLABEL = { links: "Ready", soft: "Optional parts off", native: "Native 1.21.1", engine: "Engine mod", stubs: "Placeholder", gap_shim: "Game features", gap_mod: "Other mod", gap_lib: "Old code", gap_version: "Other version", unresolved: "Missing", obsolete: "Not needed" };
   // everything except "not needed" is a mod the layer has to handle; only "links" counts as ready
-  function missingCount(c) { return (c.gap_shim || 0) + (c.gap_mod || 0) + (c.gap_lib || 0) + (c.unresolved || 0); }
+  function missingCount(c) { return (c.gap_shim || 0) + (c.gap_mod || 0) + (c.gap_lib || 0) + (c.gap_version || 0) + (c.unresolved || 0); }
   var PAGE_MODS = 80, PAGE_PROBE = 100, HISTORY_SHOWN = 8;
 
   var state = { route: "search", p: {}, q: "", mc: "", status: "all", sort: "relevance", all: [], modsShown: PAGE_MODS,
@@ -909,7 +910,7 @@
       return (state.kind === "all" || m[2] === state.kind) && (!q || String(m[0]).toLowerCase().indexOf(q) >= 0);
     });
     if (state.psort === "result") {
-      var order = { gap_shim: 0, gap_mod: 1, gap_lib: 2, unresolved: 3, stubs: 4, soft: 5, links: 6, obsolete: 7, native: 8, engine: 9 };
+      var order = { gap_shim: 0, gap_mod: 1, gap_lib: 2, gap_version: 2, unresolved: 3, stubs: 4, soft: 5, links: 6, obsolete: 7, native: 8, engine: 9 };
       rows = rows.slice().sort(function (a, b) { return (order[a[2]] != null ? order[a[2]] : 7) - (order[b[2]] != null ? order[b[2]] : 7) || String(a[0]).localeCompare(String(b[0])); });
     } else {
       rows = rows.slice().sort(function (a, b) { return String(a[0]).localeCompare(String(b[0])); });
