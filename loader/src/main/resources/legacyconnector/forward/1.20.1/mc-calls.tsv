@@ -1194,3 +1194,15 @@ net/minecraft/commands/arguments/ScoreHolderArgument	getName	(Lcom/mojang/brigad
 net/minecraft/world/level/block/DispenserBlock	getDispenseMethod	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/core/dispenser/DispenseItemBehavior;	Round15CommonCompat	dispenseMethod	-
 net/minecraft/commands/CommandBuildContext	holderLookup	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/HolderLookup;	=	lookupOrThrow	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/HolderLookup$RegistryLookup;
 net/minecraft/world/entity/vehicle/AbstractMinecart	createMinecart	(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/entity/vehicle/AbstractMinecart$Type;)Lnet/minecraft/world/entity/vehicle/AbstractMinecart;	Round15CommonCompat	createMinecart	-
+# --- failure classes (hard ATM 9 jars): eye height, portal members, chunk holder, throwable gravity, single-item recipe factory (Round16Compat)
+net/minecraft/world/entity/Entity	getStandingEyeHeight	(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F	Round16Compat	standingEyeHeight
+net/minecraft/world/entity/Entity	handleInsidePortal	(Lnet/minecraft/core/BlockPos;)V	Round16Compat	handleInsidePortal
+net/minecraft/world/entity/Entity	handleInsidePortal	(Lnet/minecraft/core/BlockPos;)V@special	Round16Compat	superHandleInsidePortal	(Ljava/lang/Object;Lnet/minecraft/core/BlockPos;)V
+net/minecraft/world/entity/Entity	handleNetherPortal	()V	=	handlePortal
+net/minecraft/world/entity/Entity	$get$isInsidePortal	()Z	Round16Compat	insidePortal	-
+net/minecraft/world/entity/Entity	$set$isInsidePortal	(Z)V	Round16Compat	setInsidePortal	-
+net/minecraft/world/entity/Entity	$get$portalTime	()I	Round16Compat	portalTime	-
+net/minecraft/world/entity/Entity	$set$portalTime	(I)V	Round16Compat	setPortalTime	-
+net/minecraft/server/level/ChunkHolder	getFullChunk	()Lnet/minecraft/world/level/chunk/LevelChunk;	Round16Compat	fullChunk	-
+net/minecraft/world/entity/projectile/ThrowableProjectile	getGravity	()F@special	Round16Compat	superThrowableGravity	(Ljava/lang/Object;)F
+net/minecraft/world/item/crafting/SingleItemRecipe$Serializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySingleItemMaker;)V	=args	Round16Compat.singleItemFactory@0	(Lnet/minecraft/world/item/crafting/SingleItemRecipe$Factory;)V

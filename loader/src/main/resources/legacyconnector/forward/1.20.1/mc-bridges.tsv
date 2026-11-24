@@ -101,3 +101,5 @@ net/minecraft/world/entity/Mob	getDefaultLootTable	()Lnet/minecraft/resources/Re
 net/minecraft/client/particle/Particle	shouldCull	()Z	getRenderBoundingBox	(F)Lnet/minecraft/world/phys/AABB;	-	this:MixinTargetCompat.renderBox	-
 # --- round 15 client: a mod's SoundEventListener (1.21.1 adds the range)
 net/minecraft/client/sounds/SoundEventListener	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;)V	onPlaySound	(Lnet/minecraft/client/resources/sounds/SoundInstance;Lnet/minecraft/client/sounds/WeighedSoundEvents;F)V	0,1	-	-
+net/minecraft/world/entity/Entity	handleInsidePortal	(Lnet/minecraft/core/BlockPos;)V	setAsInsidePortal	(Lnet/minecraft/world/level/block/Portal;Lnet/minecraft/core/BlockPos;)V	1	-	-
+net/minecraft/world/entity/projectile/ThrowableProjectile	getGravity	()F	getDefaultGravity	()D	-	Round16Compat.gravityOf	-
