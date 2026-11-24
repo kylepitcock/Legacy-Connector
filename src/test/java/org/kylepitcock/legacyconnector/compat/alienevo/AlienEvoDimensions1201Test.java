@@ -11,7 +11,7 @@ class AlienEvoDimensions1201Test {
 
     @Test
     void grayMatterUsesSmallCollisionAndIndependentEyeHeightMultipliers() {
-        EntityDimensions original = EntityDimensions.scalable(0.6F, 1.8F);
+        EntityDimensions original = EntityDimensions.fixed(0.6F, 1.8F).withEyeHeight(1.62F);
 
         // Gray Matter: overall 0.25, hitbox height 1.1, eye height 1.125.
         EntityDimensions scaled = AlienEvoDimensions1201.applyScales(
@@ -20,11 +20,12 @@ class AlienEvoDimensions1201Test {
         assertEquals(0.15F, scaled.width(), EPSILON);
         assertEquals(0.495F, scaled.height(), EPSILON);
         assertEquals(0.455625F, scaled.eyeHeight(), EPSILON);
+        assertEquals(true, scaled.fixed(), "The adapter preserves the original fixed-dimensions flag");
     }
 
     @Test
     void diamondheadUsesLargeCollisionAndIndependentEyeHeightMultipliers() {
-        EntityDimensions original = EntityDimensions.scalable(0.6F, 1.8F);
+        EntityDimensions original = EntityDimensions.fixed(0.6F, 1.8F).withEyeHeight(1.62F);
 
         // Diamondhead: overall 1.35, hitbox height 1.15, eye height 1.23.
         EntityDimensions scaled = AlienEvoDimensions1201.applyScales(
@@ -33,6 +34,7 @@ class AlienEvoDimensions1201Test {
         assertEquals(0.81F, scaled.width(), EPSILON);
         assertEquals(2.7945F, scaled.height(), EPSILON);
         assertEquals(2.69001F, scaled.eyeHeight(), EPSILON);
+        assertEquals(true, scaled.fixed(), "The adapter preserves the original fixed-dimensions flag");
     }
 
     @Test
