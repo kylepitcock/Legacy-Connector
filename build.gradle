@@ -344,7 +344,7 @@ tasks.register('gap1201', JavaExec) {
 tasks.register('preflight1201', JavaExec) {
     group = 'verification'
     description = 'Writes a deterministic JSON and text preflight report for one Forge 1.20.1 JAR.'
-    dependsOn ':loader:classes'
+    dependsOn ':loader:classes', tasks.named('classes'), generateShimIndex
     classpath = project(':loader').sourceSets.main.runtimeClasspath +
             project(':loader').sourceSets.main.compileClasspath.filter {
                 it.name.startsWith('gson') || it.name.startsWith('slf4j')
@@ -352,8 +352,13 @@ tasks.register('preflight1201', JavaExec) {
     // ModDevGradle adds the pinned Minecraft / NeoForge development artifacts to the root main
     // compile classpath. Pass those resource roots separately; the analyzer reads .class resources
     // without defining or initializing target classes.
-    def targetCompileClasspath = sourceSets.main.compileClasspath
-    inputs.files(targetCompileClasspath)
+    def targetCompileClasspath = sourceSets.main.compileClasspath
+    def connectorRuntimeOutput = sourceSets.main.output.classesDirs
+    inputs.files(targetCompileClasspath)
+    inputs.files(connectorRuntimeOutput)
+    inputs.property('connectorRuntimeOutputOrder', providers.provider {
+        connectorRuntimeOutput.files.collect { it.absolutePath }.join('\\n')
+    })
     def mappingProfileValue = project.findProperty('preflightMappingProfile')
     if (mappingProfileValue) inputs.file(file(mappingProfileValue.toString()))
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
@@ -397,7 +402,16 @@ tasks.register('preflight1201', JavaExec) {
         targetClasspathFile.setText(targetClasspathEntries.join(System.lineSeparator())
                 + System.lineSeparator(), 'UTF-8')
         args.add('--target-classpath-file')
-        args.add(targetClasspathFile.absolutePath)
+        args.add(targetClasspathFile.absolutePath)
+
+        // Connector-owned Forge shims are a separate runtime domain from NeoForge/Minecraft.
+        def connectorRuntimeClasspathFile = new File(reportDir, 'connector-runtime-classpath.txt')
+        def connectorRuntimeEntries = connectorRuntimeOutput.files.collect { it.absolutePath }
+        connectorRuntimeClasspathFile.parentFile.mkdirs()
+        connectorRuntimeClasspathFile.setText(connectorRuntimeEntries.join(System.lineSeparator())
+                + System.lineSeparator(), 'UTF-8')
+        args.add('--connector-runtime-classpath-file')
+        args.add(connectorRuntimeClasspathFile.absolutePath)
         args.add('--json')
         args.add(jsonFile.absolutePath)
         args.add('--text')
