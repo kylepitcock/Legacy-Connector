@@ -86,6 +86,12 @@ public final class AssemblyTableNei extends TemplateRecipeHandler {
         return "Assembly Table";
     }
 
+    /** The id the bridge lists all of this handler's recipes under. */
+    @Override
+    public String getOverlayIdentifier() {
+        return "buildcraft_assembly";
+    }
+
     @Override
     public String getGuiTexture() {
         return null;

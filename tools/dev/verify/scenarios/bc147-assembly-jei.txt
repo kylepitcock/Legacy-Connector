@@ -1,0 +1,5 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): the Assembly Table's recipe list is a handler of the NEI bridge (the bridge's handlers are JEI's categories)
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /tp @s 0.5 150 0.5
+wait 100
+expect assembly=[1-9][0-9]* :: (function(){var N=Java.type("org.kylepitcock.legacyconnector.compat.nei.NeiBridge");N.loadConfigs();var hs=N.templateHandlers();var o=[];for(var i=0;i<hs.size();i++){var h=hs.get(i);o.push(h.getRecipeName()+"="+N.recipes(h).size());}return "handlers "+o.join(",").replace("Assembly Table","assembly");})()
