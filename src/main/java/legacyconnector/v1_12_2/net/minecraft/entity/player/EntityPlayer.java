@@ -692,6 +692,10 @@ public abstract class EntityPlayer extends EntityLivingBase {
         var menu = org.kylepitcock.legacyconnector.v1_12_2.entity.MenuView1122.modern(v);
         if (v == null || menu == m.inventoryMenu) m.containerMenu = m.inventoryMenu;
         else if (menu != null) m.containerMenu = menu;
+        else if (p instanceof EntityPlayerMP mp && m instanceof net.minecraft.server.level.ServerPlayer sp) {
+            // a container the mod made and opens by hand (its own packet showed the GUI on the client): the server hosts it in a menu under the window id the mod counted
+            org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.openManual(sp, mp.mcc$windowCounter, v);
+        }
     }
 
     public static legacyconnector.v1_12_2.net.minecraft.inventory.Container mcc$get$inventoryContainer(EntityPlayer p) {

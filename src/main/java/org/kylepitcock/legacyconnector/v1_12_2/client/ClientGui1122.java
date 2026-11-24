@@ -144,6 +144,18 @@ public final class ClientGui1122 {
         if (gui instanceof GuiScreen screen) display(screen);
     }
 
+    /**
+     * The server opened a container by hand (a mod's own packet made this client build the screen, see {@code GuiBridge1122.openManual})
+     * under this window id: the screen's menu becomes the player's open menu with that id, so the server's slot data, progress bars,
+     * clicks and closing find it.
+     */
+    public static void manualOpen(int windowId) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.screen instanceof LegacyContainerScreen1122 cs && cs.getMenu() instanceof ClientMenu1122 menu && menu.mcc$adopt(windowId)) return;
+        // no screen to take the menu (the mod's packet failed): tell the server so that its menu does not swallow the inventory clicks
+        if (mc.getConnection() != null) mc.getConnection().send(new net.minecraft.network.protocol.game.ServerboundContainerClosePacket(windowId));
+    }
+
     public static void openFromServer(IGuiHandler handler, int id, int x, int y, int z) {
         var p = Minecraft.getInstance().player;
         if (p == null) return;

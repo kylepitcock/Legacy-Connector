@@ -125,6 +125,28 @@ public final class GuiBridge1122 {
         }
     }
 
+    /**
+     * {@code player.openContainer = container}: how 1.12 mods opened a container with their own network code (Galacticraft's buggy and
+     * parachest inventories send their own packet that makes the client build the GUI, then assign the server container and add the player
+     * as its listener). The container is hosted in a menu with the window id the mod counted ({@code getNextWindowId}), and the client is
+     * told the id so that the screen it built becomes the player's open menu; without a menu the server would not see the clicks.
+     */
+    public static void openManual(ServerPlayer sp, int counted, Container container) {
+        if (container == null || menuType == null || sp instanceof net.neoforged.neoforge.common.util.FakePlayer) return;
+        if (container.mcc$menu instanceof LegacyMenu1122 m && sp.containerMenu == m) return;
+        int id = container.windowId != 0 ? container.windowId : counted > 0 && counted <= 100 ? counted : sp.containerMenu.containerId % 100 + 1;
+        if (sp.containerMenu != sp.inventoryMenu) sp.closeContainer();
+        LegacyMenu1122 menu = new LegacyMenu1122(menuType, id, sp.getInventory(), container, null);
+        menu.mcc$listenerManaged(); // initMenu broadcasts changes, which would add the player before the mod does ("Listener already listening")
+        ByteBuf buf = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.buffer().writeInt(id);
+        byte[] data = new byte[buf.readableBytes()];
+        buf.readBytes(data);
+        PacketDistributor.sendToPlayer(sp, new LegacyPayload(FAMILY, "manual", 0, data));
+        sp.containerMenu = menu;
+        sp.initMenu(menu);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open(sp, menu));
+    }
+
     /** Client side of {@link MenuType} creation: rebuild the legacy GUI from the menu extra data. */
     public static LegacyMenu1122 clientMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
         String modId = buf.readUtf();
@@ -142,7 +164,9 @@ public final class GuiBridge1122 {
         if (!FMLEnvironment.dist.isClient()) return;
         ByteBuf buf = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(payload.data());
         context.enqueueWork(() -> {
-            if ("open".equals(payload.channel())) {
+            if ("manual".equals(payload.channel())) {
+                Client.manualOpen(buf.readInt());
+            } else if ("open".equals(payload.channel())) {
                 byte[] modId = new byte[buf.readInt()];
                 buf.readBytes(modId);
                 IGuiHandler handler = handlerFor(new String(modId, StandardCharsets.UTF_8));
@@ -178,6 +202,10 @@ public final class GuiBridge1122 {
 
         static void showClientOnly(IGuiHandler handler, EntityPlayer player, int id, World world, int x, int y, int z) {
             org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.showClientOnly(handler, player, id, world, x, y, z);
+        }
+
+        static void manualOpen(int windowId) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.manualOpen(windowId);
         }
 
         static void openFromServer(IGuiHandler handler, int id, int x, int y, int z) {

@@ -16,6 +16,8 @@ import org.kylepitcock.legacyconnector.v1_12_2.gui.LegacyMenu1122;
  */
 public final class ClientMenu1122 extends LegacyMenu1122 {
     private final net.minecraft.world.entity.player.Player owner;
+    /** The server opened this container by hand (see {@code GuiBridge1122.openManual}): the menu is the player's open menu with the server's window id. */
+    private boolean adopted;
 
     private ClientMenu1122(GuiContainer gui, net.minecraft.world.entity.player.Player player) {
         super(GuiBridge1122.menuType(), gui.inventorySlots.windowId, player.getInventory(), gui.inventorySlots, gui);
@@ -29,6 +31,14 @@ public final class ClientMenu1122 extends LegacyMenu1122 {
         return new LegacyContainerScreen1122(new ClientMenu1122(gui, player), player.getInventory(), Component.empty());
     }
 
+    /** The window id arrived: this menu is the player's open menu from now on, with its own slots, cursor stack and clicks. */
+    public boolean mcc$adopt(int windowId) {
+        if (owner == null || !mcc$setWindowId(windowId)) return false;
+        adopted = true;
+        owner.containerMenu = this;
+        return true;
+    }
+
     private net.minecraft.world.inventory.AbstractContainerMenu open() {
         var open = owner.containerMenu;
         return open == null || open == this ? owner.inventoryMenu : open;
@@ -36,12 +46,12 @@ public final class ClientMenu1122 extends LegacyMenu1122 {
 
     @Override
     public ItemStack getCarried() {
-        return owner == null ? super.getCarried() : open().getCarried();
+        return owner == null || adopted ? super.getCarried() : open().getCarried();
     }
 
     @Override
     public void setCarried(ItemStack stack) {
-        if (owner == null) super.setCarried(stack);
+        if (owner == null || adopted) super.setCarried(stack);
         else open().setCarried(stack);
     }
 

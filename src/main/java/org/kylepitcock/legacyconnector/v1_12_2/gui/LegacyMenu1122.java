@@ -51,6 +51,35 @@ public class LegacyMenu1122 extends AbstractContainerMenu {
         return false;
     }
 
+    /** The mod adds the player to the container's listeners itself (it opened the container by hand); the menu must not add the player first. */
+    public void mcc$listenerManaged() {
+        listenerAdded = true;
+    }
+
+    private static final java.lang.reflect.Field CONTAINER_ID = containerIdField();
+
+    private static java.lang.reflect.Field containerIdField() {
+        try {
+            var f = AbstractContainerMenu.class.getField("containerId");
+            f.setAccessible(true);
+            return f;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Gives a menu the window id the server opened its container under ({@code containerId} is final); false when that is not possible. */
+    public boolean mcc$setWindowId(int id) {
+        if (CONTAINER_ID == null) return false;
+        try {
+            CONTAINER_ID.setInt(this, id);
+            legacy.windowId = id;
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
+
     public Container legacy() {
         return legacy;
     }

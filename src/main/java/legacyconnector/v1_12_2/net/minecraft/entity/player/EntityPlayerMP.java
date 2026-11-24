@@ -17,6 +17,8 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
     @Deprecated
     public int ping;
     private legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer mcc$connection;
+    /** The window id {@link #getNextWindowId} last counted to (1..100, as 1.12's), 0 before the first; a container a mod opens by hand gets it. */
+    public int mcc$windowCounter;
 
     public EntityPlayerMP(World world) {
         super(world, null);
@@ -86,7 +88,8 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
 
     public static int mcc$get$currentWindowId(EntityPlayerMP p) {
         var player = p.mcc$serverPlayer();
-        return player == null ? 0 : player.containerMenu.containerId;
+        if (player == null) return 0;
+        return p.mcc$windowCounter > 0 ? p.mcc$windowCounter : player.containerMenu.containerId;
     }
 
     public static boolean mcc$get$invulnerableDimensionChange(EntityPlayerMP p) {
@@ -139,7 +142,8 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
     }
 
     public void getNextWindowId() {
-        // the modern player numbers its containers when it opens them
+        // the modern player numbers its containers when it opens them; a container the mod opens by hand ({@code openContainer = ...}) uses this count
+        mcc$windowCounter = mcc$windowCounter % 100 + 1;
     }
 
     public void updateHeldItem() {
