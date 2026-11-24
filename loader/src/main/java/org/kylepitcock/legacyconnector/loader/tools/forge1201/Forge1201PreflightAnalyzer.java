@@ -36,8 +36,9 @@ import java.util.zip.ZipFile;
  * success, gameplay compatibility, or runtime behavior.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.16";
-    public static final String ANALYZER_VERSION = "1.16.0";
+    public static final String SCHEMA_VERSION = "1.17";
+    public static final String ANALYZER_VERSION = "1.17.0";
+    private static final String CONNECTOR_SHIM_PREFIX = "legacyconnector/v1_20_1/";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
@@ -159,6 +160,7 @@ public final class Forge1201PreflightAnalyzer {
         MISSING,
         MANUAL_ADAPTER_REQUIRED,
         NOT_CHECKED_NO_TARGET_CLASSPATH,
+        NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
         NOT_AUTOMATICALLY_MAPPED
     }
 
@@ -174,11 +176,14 @@ public final class Forge1201PreflightAnalyzer {
     public record TargetApiVerificationFinding(
             TargetApiVerificationStatus status,
             int targetClasspathEntryCount,
+            int connectorRuntimeClasspathEntryCount,
+            List<String> connectorRuntimeClasspathEntries,
             int candidateClassCount,
             int presentTargetClassCount,
             List<TargetApiClassFinding> classFindings,
             Forge1201TargetApiVerifier.Result memberVerification) {
         public TargetApiVerificationFinding {
+            connectorRuntimeClasspathEntries = List.copyOf(connectorRuntimeClasspathEntries);
             classFindings = List.copyOf(classFindings);
         }
     }
@@ -269,7 +274,7 @@ public final class Forge1201PreflightAnalyzer {
 
     /** Inspects one source archive. Installed native-mod directories and target classpath are optional. */
     public static PreflightResult analyze(Path jarPath, Collection<Path> installedModDirectories) throws IOException {
-        return analyze(jarPath, installedModDirectories, List.of(), null);
+        return analyze(jarPath, installedModDirectories, List.of(), List.of(), null, null);
     }
 
     /**
@@ -280,7 +285,7 @@ public final class Forge1201PreflightAnalyzer {
             Path jarPath,
             Collection<Path> installedModDirectories,
             Collection<Path> targetClasspath) throws IOException {
-        return analyze(jarPath, installedModDirectories, targetClasspath, null);
+        return analyze(jarPath, installedModDirectories, targetClasspath, List.of(), null, null);
     }
 
     /** Null context leaves context selection unresolved and inventories all refmap tables. */
@@ -289,7 +294,8 @@ public final class Forge1201PreflightAnalyzer {
             Collection<Path> installedModDirectories,
             Collection<Path> targetClasspath,
             String requestedRefmapContextKey) throws IOException {
-        return analyze(jarPath, installedModDirectories, targetClasspath, requestedRefmapContextKey, null);
+        return analyze(jarPath, installedModDirectories, targetClasspath, List.of(),
+                requestedRefmapContextKey, null);
     }
 
     /**
@@ -300,6 +306,22 @@ public final class Forge1201PreflightAnalyzer {
             Path jarPath,
             Collection<Path> installedModDirectories,
             Collection<Path> targetClasspath,
+            String requestedRefmapContextKey,
+            Path mappingProfilePath) throws IOException {
+        return analyze(jarPath, installedModDirectories, targetClasspath, List.of(),
+                requestedRefmapContextKey, mappingProfilePath);
+    }
+
+    /**
+     * Inspects a source archive with independent NeoForge/Minecraft and Connector-runtime classpaths.
+     * Connector shim class bytes are routed only to the Connector index; they are never looked up
+     * in the NeoForge dependency index used by Mixin target checks.
+     */
+    public static PreflightResult analyze(
+            Path jarPath,
+            Collection<Path> installedModDirectories,
+            Collection<Path> targetClasspath,
+            Collection<Path> connectorRuntimeClasspath,
             String requestedRefmapContextKey,
             Path mappingProfilePath) throws IOException {
         if (jarPath == null || !Files.isRegularFile(jarPath)) {
@@ -319,7 +341,21 @@ public final class Forge1201PreflightAnalyzer {
         }
         for (Path entry : normalizedTargetClasspath) {
             if (!Files.exists(entry) || (!Files.isDirectory(entry) && !Files.isRegularFile(entry))) {
-                throw new IllegalArgumentException("Target classpath entry does not exist or is not a file/directory: " + entry);
+                throw new IllegalArgumentException(domainName
+                        + " classpath entry does not exist or is not a file/directory: " + entry);
+            }
+        }
+        List<Path> normalizedConnectorRuntimeClasspath = connectorRuntimeClasspath == null ? List.of()
+                : connectorRuntimeClasspath.stream().filter(java.util.Objects::nonNull)
+                        .map(path -> path.toAbsolutePath().normalize()).distinct().toList();
+        if (normalizedConnectorRuntimeClasspath.size() > MAX_TARGET_CLASSPATH_ENTRIES) {
+            throw new IllegalArgumentException("Connector runtime classpath exceeds "
+                    + MAX_TARGET_CLASSPATH_ENTRIES + " entries");
+        }
+        for (Path entry : normalizedConnectorRuntimeClasspath) {
+            if (!Files.exists(entry) || (!Files.isDirectory(entry) && !Files.isRegularFile(entry))) {
+                throw new IllegalArgumentException(
+                        "Connector runtime classpath entry does not exist or is not a file/directory: " + entry);
             }
         }
 
@@ -388,10 +424,23 @@ public final class Forge1201PreflightAnalyzer {
         ForgeMetadata forgeMetadata = null;
         TargetApiVerificationFinding targetApiVerification = null;
 
-        try (URLClassLoader sharedTargetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
+        try (URLClassLoader sharedTargetLoader = createTargetClassLoader(normalizedTargetClasspath);
+                URLClassLoader sharedConnectorRuntimeLoader =
+                        createTargetClassLoader(normalizedConnectorRuntimeClasspath)) {
+            // This index is deliberately NeoForge/Minecraft-only and remains the input to Mixin checks.
             Forge1201TargetApiVerifier.TargetIndex sharedTargetIndex = sharedTargetLoader == null ? null
                     : Forge1201TargetApiVerifier.createIndex(internalName ->
                             sharedTargetLoader.getResourceAsStream(internalName + ".class"));
+            // API references are routed by owner namespace into independent runtime domains.
+            Forge1201TargetApiVerifier.TargetIndex sharedApiIndex = sharedTargetLoader == null ? null
+                    : Forge1201TargetApiVerifier.createIndex(internalName -> {
+                        if (internalName.startsWith(CONNECTOR_SHIM_PREFIX)) {
+                            return sharedConnectorRuntimeLoader == null ? null
+                                    : sharedConnectorRuntimeLoader.getResourceAsStream(internalName + ".class");
+                        }
+                        return sharedTargetLoader.getResourceAsStream(internalName + ".class");
+                    }, sharedConnectorRuntimeLoader == null
+                            ? Set.of(CONNECTOR_SHIM_PREFIX) : Set.of());
             Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
             Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
             Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
@@ -550,7 +599,7 @@ public final class Forge1201PreflightAnalyzer {
                 usageInventory.scanOuterJar(jar);
                 Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
                 targetApiVerification = buildTargetApiVerification(
-                        usage, sharedTargetIndex, normalizedTargetClasspath.size());
+                        usage, sharedApiIndex, normalizedTargetClasspath.size(), normalizedConnectorRuntimeClasspath);
                 classCount = usage.classCount();
                 outerClassScannedCount = usageInventory.outerClassScannedCount();
                 nestedClassCount = archiveGraph.classScanSummaries().stream()
@@ -646,7 +695,7 @@ public final class Forge1201PreflightAnalyzer {
                     "The top-level dependency status list is an ID-presence summary only. Detailed version-range-aware provider resolution is in archiveGraph.dependencyEdges; NATIVE_ID_PRESENT alone does not select a dependency or prove version/API compatibility.",
                     "Installed provider discovery records top-level and nested archive paths, mod IDs, loader kinds, and declared versions. For required/optional dependencies, a unique installed NeoForge provider is preferred as a target-native candidate only when its numeric version satisfies the declared range; duplicate native providers, range mismatches, and unparseable versions remain explicit. This is a preflight candidate, not proof of API or behavioral compatibility; installed API compatibility are not verified by this analysis, and no source-bundled archive is removed or suppressed.",
                     "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
-                    "Source API target class/member verification is structural only and runs only when a target compile classpath is supplied; exact JVM descriptors and visible inherited members in the API method/field reference inventories are checked, while manual-adapter types remain explicit blockers. Dynamic/bootstrap references remain separately inventoried for context; exact member verification consumes the collected owner/name/descriptor references, including member handles surfaced through ASM remapping. Invokedynamic call-site linkage and bootstrap behavior are not semantically verified. This does not prove access, generic-signature, semantic, initialization, or runtime compatibility. Shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate injection semantics.",
+                    "Source API verification uses two independent class-byte domains: NeoForge/Minecraft target compile inputs and Connector-owned v1_20_1 shim runtime outputs. Shim references are never looked up in the NeoForge-only Mixin target index. If Connector runtime outputs are not supplied, shim members are reported NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT rather than MISSING. Exact JVM descriptors and visible inherited members are structural evidence only; manual-adapter types remain explicit blockers. Dynamic/bootstrap references remain separately inventoried for context; member handles surfaced through ASM remapping are included, but invokedynamic call-site linkage and bootstrap behavior are not semantically verified. This does not prove access, generic-signature, semantic, initialization, or runtime compatibility. Shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The Mixin class-presence check remains limited to statically mapped @Mixin class targets and uses only the NeoForge/Minecraft target index.",
                     "Access Transformer inventory covers the outer source JAR and bounded source-nested archives. It preserves original line locations, reports class-owner/member/descriptor namespace evidence, and never applies directives, resolves selectors, or remaps them. Nested resource presence is distinct from the pinned Forge/NeoForge loader consumer eligibility reported per archive; that structural eligibility models the normal ModInfo-backed sort path and is conditional on successful loader validation/sorting, not a guarantee against unrelated duplicate-ID, dependency, cycle, or global loading errors.",
                     "Coremod metadata inventory covers META-INF/coremods.json in the outer source JAR and bounded source-nested archives. Script paths are checked against a bounded in-memory archive path index; duplicate paths and incomplete indexes are reported as ambiguous/unknown rather than falsely present or missing. The NeoForge accessTransformers TOML list is not expanded into individual file paths in this slice; when such a list is declared, selection is reported as unresolved rather than assuming the default cfg is consumed. No JavaScript is evaluated, no transformer is created, and Forge 47.3.0 script/API/transformer compatibility with the NeoForged engine remains unverified."
             );
@@ -654,7 +703,9 @@ public final class Forge1201PreflightAnalyzer {
             if (targetApiVerification == null) {
                 targetApiVerification = new TargetApiVerificationFinding(
                         TargetApiVerificationStatus.NOT_RUN_SOURCE_METADATA_NOT_RECOGNIZED,
-                        normalizedTargetClasspath.size(), 0, 0, List.of(), null);
+                        normalizedTargetClasspath.size(), normalizedConnectorRuntimeClasspath.size(),
+                        normalizedConnectorRuntimeClasspath.stream().map(Path::toString).toList(),
+                        0, 0, List.of(), null);
             }
 
             return new PreflightResult(
@@ -674,7 +725,8 @@ public final class Forge1201PreflightAnalyzer {
     private static TargetApiVerificationFinding buildTargetApiVerification(
             Forge1201ApiUsageAnalyzer.Analysis usage,
             Forge1201TargetApiVerifier.TargetIndex targetIndex,
-            int targetClasspathEntryCount) throws IOException {
+            int targetClasspathEntryCount,
+            List<Path> connectorRuntimeClasspath) throws IOException {
         List<TargetApiClassFinding> classFindings = new ArrayList<>();
         Set<String> candidateTargets = new TreeSet<>();
         Set<String> presentTargets = new TreeSet<>();
@@ -717,6 +769,13 @@ public final class Forge1201PreflightAnalyzer {
                         "A target compile classpath was not supplied; class presence was not checked."));
                 continue;
             }
+            if (targetIndex.isUnavailableClass(targetInternalName)) {
+                classFindings.add(new TargetApiClassFinding(
+                        sourceInternalName, targetInternalName, kind,
+                        TargetApiClassStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+                        "Connector runtime output was not supplied; the Connector-owned shim was not checked against NeoForge."));
+                continue;
+            }
 
             boolean present = targetIndex.classInfo(targetInternalName).isPresent();
             if (present) presentTargets.add(targetInternalName);
@@ -734,6 +793,8 @@ public final class Forge1201PreflightAnalyzer {
                         ? TargetApiVerificationStatus.NOT_RUN_NO_TARGET_CLASSPATH
                         : TargetApiVerificationStatus.COMPLETED,
                 targetClasspathEntryCount,
+                connectorRuntimeClasspath.size(),
+                connectorRuntimeClasspath.stream().map(Path::toString).toList(),
                 candidateTargets.size(),
                 presentTargets.size(),
                 classFindings,
@@ -1142,9 +1203,13 @@ public final class Forge1201PreflightAnalyzer {
         }
         TargetApiVerificationFinding targetApi = result.targetApiVerification();
         out.append("\nTarget API structural verification: ").append(targetApi.status())
-                .append(" | target classpath entries=").append(targetApi.targetClasspathEntryCount())
+                .append(" | NeoForge/Minecraft classpath entries=").append(targetApi.targetClasspathEntryCount())
+                .append(" | Connector runtime entries=").append(targetApi.connectorRuntimeClasspathEntryCount())
                 .append(" | candidate target classes=").append(targetApi.candidateClassCount())
                 .append(" | present=").append(targetApi.presentTargetClassCount()).append('\n');
+        for (String entry : targetApi.connectorRuntimeClasspathEntries()) {
+            out.append("  Connector runtime input: ").append(entry).append('\n');
+        }
         for (TargetApiClassFinding finding : targetApi.classFindings()) {
             out.append("  ").append(finding.sourceInternalName()).append(" -> ")
                     .append(finding.targetInternalName() == null ? "<no automatic target>" : finding.targetInternalName())
@@ -1692,13 +1757,13 @@ public final class Forge1201PreflightAnalyzer {
         return new URLClassLoader(urls, ClassLoader.getPlatformClassLoader());
     }
 
-    private static List<Path> readTargetClasspathFile(Path classpathFile) throws IOException {
+    private static List<Path> readClasspathFile(Path classpathFile, String domainName) throws IOException {
         if (classpathFile == null) return List.of();
         if (!Files.isRegularFile(classpathFile)) {
-            throw new IllegalArgumentException("Target classpath list is not a file: " + classpathFile);
+            throw new IllegalArgumentException(domainName + " classpath list is not a file: " + classpathFile);
         }
         if (Files.size(classpathFile) > MAX_TARGET_CLASSPATH_FILE_BYTES) {
-            throw new IllegalArgumentException("Target classpath list exceeds "
+            throw new IllegalArgumentException(domainName + " classpath list exceeds "
                     + MAX_TARGET_CLASSPATH_FILE_BYTES + " bytes");
         }
         Set<Path> entries = new java.util.LinkedHashSet<>();
@@ -1711,7 +1776,7 @@ public final class Forge1201PreflightAnalyzer {
             }
             entries.add(entry);
             if (entries.size() > MAX_TARGET_CLASSPATH_ENTRIES) {
-                throw new IllegalArgumentException("Target classpath exceeds "
+                throw new IllegalArgumentException(domainName + " classpath exceeds "
                         + MAX_TARGET_CLASSPATH_ENTRIES + " entries");
             }
         }
@@ -1751,16 +1816,18 @@ public final class Forge1201PreflightAnalyzer {
         Files.writeString(absolute, content, StandardCharsets.UTF_8);
     }
 
-    /** CLI: <jar> [--mods-dir <directory>]... [--target-classpath-file <path>] [--refmap-context <key>] [--mapping-profile <path>] [--json <path>] [--text <path>] */
+    /** CLI: <jar> [--mods-dir <directory>]... [--target-classpath-file <path>] [--connector-runtime-classpath-file <path>] [--refmap-context <key>] [--mapping-profile <path>] [--json <path>] [--text <path>] */
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             throw new IllegalArgumentException("Usage: <jar> [--mods-dir <directory>]... "
-                    + "[--target-classpath-file <path>] [--refmap-context <key>] "
+                    + "[--target-classpath-file <path>] [--connector-runtime-classpath-file <path>] "
+                + "[--refmap-context <key>] "
                     + "[--mapping-profile <path>] [--json <path>] [--text <path>]");
         }
         Path jar = Path.of(args[0]);
         List<Path> modDirectories = new ArrayList<>();
         Path targetClasspathFile = null;
+        Path connectorRuntimeClasspathFile = null;
         Path json = null;
         Path text = null;
         String requestedRefmapContextKey = null;
@@ -1780,13 +1847,16 @@ public final class Forge1201PreflightAnalyzer {
             switch (option) {
                 case "--mods-dir" -> modDirectories.add(value);
                 case "--target-classpath-file" -> targetClasspathFile = value;
+                case "--connector-runtime-classpath-file" -> connectorRuntimeClasspathFile = value;
                 case "--json" -> json = value;
                 case "--text" -> text = value;
                 default -> throw new IllegalArgumentException("Unknown preflight option: " + option);
             }
         }
         PreflightResult result = analyze(
-                jar, modDirectories, readTargetClasspathFile(targetClasspathFile),
+                jar, modDirectories,
+                readClasspathFile(targetClasspathFile, "Target"),
+                readClasspathFile(connectorRuntimeClasspathFile, "Connector runtime"),
                 requestedRefmapContextKey, mappingProfile);
         if (json != null) write(json, toJson(result));
         if (text != null) write(text, toText(result));
