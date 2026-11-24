@@ -27,6 +27,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.kylepitcock.legacyconnector.loader.transform.Mc1201ApiMappings;
 
 /**
  * Deterministic, read-only preflight inventory for one Forge 1.20.1 archive.
@@ -39,6 +40,7 @@ public final class Forge1201PreflightAnalyzer {
     public static final String SCHEMA_VERSION = "1.17";
     public static final String ANALYZER_VERSION = "1.17.0";
     private static final String CONNECTOR_SHIM_PREFIX = "legacyconnector/v1_20_1/";
+    private static final String CONNECTOR_MIGRATION_PREFIX = "org/kylepitcock/legacyconnector/v1_20_1/";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
@@ -435,13 +437,13 @@ public final class Forge1201PreflightAnalyzer {
             // API references are routed by owner namespace into independent runtime domains.
             Forge1201TargetApiVerifier.TargetIndex sharedApiIndex = sharedTargetLoader == null ? null
                     : Forge1201TargetApiVerifier.createIndex(internalName -> {
-                        if (internalName.startsWith(CONNECTOR_SHIM_PREFIX)) {
+                        if (isConnectorRuntimeType(internalName)) {
                             return sharedConnectorRuntimeLoader == null ? null
                                     : sharedConnectorRuntimeLoader.getResourceAsStream(internalName + ".class");
                         }
                         return sharedTargetLoader.getResourceAsStream(internalName + ".class");
                     }, sharedConnectorRuntimeLoader == null
-                            ? Set.of(CONNECTOR_SHIM_PREFIX) : Set.of());
+                            ? Set.of(CONNECTOR_SHIM_PREFIX, CONNECTOR_MIGRATION_PREFIX) : Set.of());
             Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
             Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
             Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
@@ -723,6 +725,11 @@ public final class Forge1201PreflightAnalyzer {
         }
     }
 
+    private static boolean isConnectorRuntimeType(String internalName) {
+        return internalName.startsWith(CONNECTOR_SHIM_PREFIX)
+                || internalName.startsWith(CONNECTOR_MIGRATION_PREFIX);
+    }
+
     private static TargetApiVerificationFinding buildTargetApiVerification(
             Forge1201ApiUsageAnalyzer.Analysis usage,
             Forge1201TargetApiVerifier.TargetIndex targetIndex,
@@ -761,7 +768,7 @@ public final class Forge1201PreflightAnalyzer {
                     kind == Forge1201MappingCatalog.Kind.PACKAGE_RELOCATION_CANDIDATE
                             || kind == Forge1201MappingCatalog.Kind.EXPLICIT_TYPE_REPLACEMENT
                     ? decision.targetInternalName()
-                    : sourceInternalName;
+                    : Mc1201ApiMappings.targetClassName(sourceInternalName);
             candidateTargets.add(targetInternalName);
             if (targetIndex == null) {
                 classFindings.add(new TargetApiClassFinding(
