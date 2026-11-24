@@ -887,7 +887,8 @@ public final class WorldScreenshotTest {
     private static void onTick() {
         if (!started) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) mc.setScreen(null);
+        // (an interactive control session opens the pause screen on purpose)
+        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen && !"control".equals(Flags.SHOT_SCENARIO.get())) mc.setScreen(null);
         confirmWarnings(mc);
         if (mc.screen instanceof net.minecraft.client.gui.screens.DisconnectedScreen) {
             LOG.error("The game disconnected during the screenshot test");
