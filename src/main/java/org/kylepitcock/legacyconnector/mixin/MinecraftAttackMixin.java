@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoPossessionDiagnostics1201Runtime;
 
 /**
  * MOD-SPECIFIC COMPAT (Fisk's Superheroes): its coremod skipped the attack and the held-button block breaking while a shield is up or
@@ -27,5 +28,30 @@ public abstract class MinecraftAttackMixin {
                 && org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesClient.disableLeftClick()) {
             ci.cancel();
         }
+    }
+
+    // Diagnostic-only taps: independent from the Fisk Heroes cancellation path.
+    @Inject(method = "startAttack", at = @At("HEAD"), require = 0)
+    private void legacyconnector$tracePossessionAttackStart(CallbackInfoReturnable<Boolean> cir) {
+        AlienEvoPossessionDiagnostics1201Runtime.traceAttackInput(
+                (Minecraft) (Object) this, "startAttack:HEAD", null);
+    }
+
+    @Inject(method = "startAttack", at = @At("RETURN"), require = 0)
+    private void legacyconnector$tracePossessionAttackReturn(CallbackInfoReturnable<Boolean> cir) {
+        AlienEvoPossessionDiagnostics1201Runtime.traceAttackInput(
+                (Minecraft) (Object) this, "startAttack:RETURN", cir.getReturnValue());
+    }
+
+    @Inject(method = "continueAttack", at = @At("HEAD"), require = 0)
+    private void legacyconnector$tracePossessionContinueAttack(boolean leftClick, CallbackInfo ci) {
+        if (leftClick) AlienEvoPossessionDiagnostics1201Runtime.traceAttackInput(
+                (Minecraft) (Object) this, "continueAttack:HEAD", null);
+    }
+
+    @Inject(method = "startUseItem", at = @At("HEAD"), require = 0)
+    private void legacyconnector$tracePossessionUseItem(CallbackInfo ci) {
+        AlienEvoPossessionDiagnostics1201Runtime.traceAttackInput(
+                (Minecraft) (Object) this, "startUseItem:HEAD", null);
     }
 }

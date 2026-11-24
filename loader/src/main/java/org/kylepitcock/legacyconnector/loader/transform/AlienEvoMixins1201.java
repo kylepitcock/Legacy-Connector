@@ -46,6 +46,7 @@ final class AlienEvoMixins1201 implements Opcodes {
         int possessionChanges = AlienEvoPossessionAbility1201.apply(node);
         int gruntMeleeChanges = AlienEvoGruntMeleeGoal1201.apply(node);
         int possessionHandTraceChanges = AlienEvoPossessionHandDiagnostics1201.apply(node);
+        int swimmingControllerChanges = AlienEvoSwimmingController1201.apply(node);
         int compatibilityChanges = switch (node.name) {
             case HUD -> migrateHudHotbar(node);
             case VIGNETTE -> migrateKineceleranVignette(node);
@@ -61,7 +62,7 @@ final class AlienEvoMixins1201 implements Opcodes {
             default -> 0;
         };
         return diagnosticChanges + possessionChanges + gruntMeleeChanges
-                + possessionHandTraceChanges + compatibilityChanges;
+                + possessionHandTraceChanges + swimmingControllerChanges + compatibilityChanges;
     }
 
     private static int migrateHudHotbar(ClassNode node) {

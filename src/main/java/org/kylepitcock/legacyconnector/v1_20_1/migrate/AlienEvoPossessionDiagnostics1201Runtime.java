@@ -8,6 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,50 @@ public final class AlienEvoPossessionDiagnostics1201Runtime {
             LOGGER.warn("[AlienEvoPossessionTrace] handRender phase={} player={} unavailable={}",
                     phase, id, error.toString());
         }
+    }
+
+    /**
+     * Observes the real client attack/use input path while AlienEvo possession diagnostics
+     * are enabled. This does not cancel input or alter the target/result.
+     */
+    public static void traceAttackInput(Minecraft minecraft, String phase, Boolean result) {
+        if (!Boolean.getBoolean(PROPERTY) || minecraft == null || minecraft.player == null) return;
+        LocalPlayer player = minecraft.player;
+        UUID id = player.getUUID();
+        String key = "input:" + phase;
+        long now = System.nanoTime();
+        Long previous = LAST_LOG.put(id + ":" + key, now);
+        if (previous != null && now - previous < 500_000_000L) return;
+
+        try {
+            Class<?> ability = Class.forName(ABILITY, false, player.getClass().getClassLoader());
+            Object clientEntity = invokeStatic(ability, "getClientEntity", Player.class, player);
+            Object clientProfile = invokeStatic(ability, "getClientPlayerProfile", Player.class, player);
+            Object victim = invokeStatic(ability, "getClientVictimUUID", Player.class, player);
+            Object playerPossession = invokeStatic(ability, "isPlayerPossession", Player.class, player);
+            Object renderingPossessed = staticField(ability, "renderingPossessed");
+            Object possessorMainArm = staticField(ability, "possessorMainArm");
+            Entity camera = minecraft.getCameraEntity();
+
+            LOGGER.info("[AlienEvoPossessionTrace] input phase={} result={} player={} cameraEntity={} "
+                            + "crosshair={} clientPossessedEntity={} clientPlayerProfile={} clientVictimUUID={} "
+                            + "isPlayerPossession={} renderingPossessed={} possessorMainArm={} "
+                            + "playerMainArm={} invisible={} spectator={} mainHand={} offHand={} "
+                            + "usingItem={} useItem={}",
+                    phase, result, describe(player), describe(camera), describeHit(minecraft.hitResult),
+                    describe(clientEntity), clientProfile, victim, playerPossession, renderingPossessed,
+                    possessorMainArm, player.getMainArm(), player.isInvisible(), player.isSpectator(),
+                    player.getMainHandItem(), player.getOffhandItem(), player.isUsingItem(), player.getUseItem());
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError error) {
+            LOGGER.warn("[AlienEvoPossessionTrace] input phase={} player={} unavailable={}",
+                    phase, id, error.toString());
+        }
+    }
+
+    private static String describeHit(HitResult hit) {
+        if (hit == null) return "null";
+        if (hit instanceof EntityHitResult entityHit) return "entity:" + describe(entityHit.getEntity());
+        return hit.getType() + "@" + hit.getLocation();
     }
 
     private static Object invokeStatic(Class<?> type, String name, Class<?> parameter, Object argument)
