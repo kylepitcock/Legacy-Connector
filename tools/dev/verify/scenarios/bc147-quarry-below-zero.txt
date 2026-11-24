@@ -1,0 +1,9 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): a quarry below y=0 plans its dig (createColumnVisitList scanned down from yCoord+3 while y >= 0, so below the old world bottom the column list stayed empty)
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -14 -50 -14 14 -31 14 minecraft:stone
+cmd /fill -14 -30 -14 14 -20 14 minecraft:air
+cmd /tp @s 0.5 -28 -3.5
+wait 40
+cmd /setblock 0 -30 0 buildcraft_core:machineblock
+wait 20
+expect visit=[1-9][0-9]* :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var t=l.getBlockEntity(new BP(0,-30,0)).legacy();var C=t.getClass();var m=C.getDeclaredMethod("createColumnVisitList");m.setAccessible(true);m.invoke(t);var f=C.getDeclaredField("visitList");f.setAccessible(true);var v=f.get(t);r="visit="+v.size()+" first="+(v.isEmpty()?"-":v.getFirst()[1]);});return r;})()
