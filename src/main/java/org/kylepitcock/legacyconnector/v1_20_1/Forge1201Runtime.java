@@ -61,6 +61,9 @@ public final class Forge1201Runtime {
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
                 legacyconnector.v1_20_1.net.minecraftforge.common.world.ForgeChunkManager.registerControllers(e, modIds));
         org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::contribute);
+        // music discs: a jukebox_song data pack entry per legacy RecordItem plus the item's default jukebox_playable component
+        modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyJukeboxSongs::onModifyDefaultComponents);
+        org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyJukeboxSongs::contribute);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.simple.SimpleChannel::registerAll);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel::registerAll);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyLibChannel::registerAll);

@@ -41,6 +41,14 @@ class DataConverter1201Test {
     }
 
     @Test
+    void modelNamingTheRenamedVanillaGrassTextureIsRepointed() {
+        same("{\"parent\":\"minecraft:block/cross\",\"textures\":{\"cross\":\"minecraft:block/short_grass\",\"p\":\"block/short_grass\",\"own\":\"m:block/grass\",\"r\":\"#cross\"}}",
+                one("assets/m/models/block/x.json",
+                        "{\"parent\":\"minecraft:block/cross\",\"textures\":{\"cross\":\"minecraft:block/grass\",\"p\":\"block/grass\",\"own\":\"m:block/grass\",\"r\":\"#cross\"}}",
+                        "assets/m/models/block/x.json"));
+    }
+
+    @Test
     void forgeFoldersMoveToNeoForge() {
         assertEquals("data/m/neoforge/biome_modifier/x.json", DataConverter1201.mapPath("data/m/forge/biome_modifier/x.json"));
         assertEquals("data/neoforge/loot_modifiers/global_loot_modifiers.json", DataConverter1201.mapPath("data/forge/loot_modifiers/global_loot_modifiers.json"));
@@ -389,8 +397,8 @@ class DataConverter1201Test {
         JsonObject o = r.getAsJsonObject();
         same("\"heated\"", o.get("heat_requirement"));
         same("100", o.get("processing_time"));
-        same("{\"amount\":250,\"fluid\":\"minecraft:water\"}", o.getAsJsonArray("ingredients").get(1));
-        assertTrue(o.getAsJsonArray("ingredients").get(2).getAsJsonObject().has("tag"));
+        same("{\"type\":\"neoforge:single\",\"amount\":250,\"fluid\":\"minecraft:water\"}", o.getAsJsonArray("ingredients").get(1));
+        same("{\"type\":\"neoforge:tag\",\"amount\":100,\"tag\":\"c:milk\"}", o.getAsJsonArray("ingredients").get(2));
         same("{\"id\":\"m:out\",\"count\":2,\"chance\":0.5}", o.getAsJsonArray("results").get(0));
         same("{\"id\":\"minecraft:lava\",\"amount\":50}", o.getAsJsonArray("results").get(1));
     }

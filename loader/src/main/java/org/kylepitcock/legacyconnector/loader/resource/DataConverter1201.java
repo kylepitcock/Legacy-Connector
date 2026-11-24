@@ -256,6 +256,7 @@ public final class DataConverter1201 {
         String[] parts = np.split("/", 4);
         String dir = parts.length > 2 ? parts[2] : "";
         if (model) {
+            if (root.isJsonObject()) vanillaTextureRenames(root.getAsJsonObject(), c);
             generic(root, c, true);
             outs.add(new Out(np, bytes(root)));
         } else if (dir.equals("recipe") && root.isJsonObject()) {
@@ -563,6 +564,25 @@ public final class DataConverter1201 {
         if (known == null || known.contains(block)) return;
         o.addProperty("block", "minecraft:air");
         c.hit("unknown_blocks");
+    }
+
+    /** Vanilla textures a model may name that 1.20.3 to 1.21.1 renamed (1.21.1 has no texture under the old name); keys are paths without namespace. */
+    private static final Map<String, String> VANILLA_TEXTURES = Map.of("block/grass", "block/short_grass");
+
+    /** A model's {@code textures} entries naming a renamed vanilla texture ({@code minecraft:block/grass} or the bare {@code block/grass}) get the new name. */
+    private static void vanillaTextureRenames(JsonObject model, Ctx c) {
+        if (!model.has("textures") || !model.get("textures").isJsonObject()) return;
+        JsonObject textures = model.getAsJsonObject("textures");
+        for (String k : new ArrayList<>(textures.keySet())) {
+            JsonElement v = textures.get(k);
+            if (!v.isJsonPrimitive() || !v.getAsJsonPrimitive().isString()) continue;
+            String s = v.getAsString();
+            boolean prefixed = s.startsWith("minecraft:");
+            String renamed = VANILLA_TEXTURES.get(prefixed ? s.substring(10) : s);
+            if (renamed == null) continue;
+            textures.addProperty(k, prefixed ? "minecraft:" + renamed : renamed);
+            c.hit("vanilla_texture");
+        }
     }
 
     /** Walks any JSON: {@code forge:} type/loader/condition ids, {@code forge:} tags, renamed ids, {@code forge_data}, model parents. */
