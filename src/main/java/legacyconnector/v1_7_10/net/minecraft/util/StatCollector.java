@@ -14,6 +14,8 @@ public class StatCollector {
         // before constructing the mods: on a server, and on a client before its languages load, no resource pack serves them.
         String registered = org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.get("en_US", key);
         if (registered != null) return registered;
+        String generic = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.genericName(key);
+        if (generic != null) return generic;
         String modern = mcc$modernKey(key);
         if (modern != null && lang.has(modern)) return lang.getOrDefault(modern);
         return lang.getOrDefault(key);
