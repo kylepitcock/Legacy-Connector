@@ -22,12 +22,15 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Remapper;
 
 /**
- * Verifies package-relocation candidates against the actual target compile classpath.
+ * Verifies Forge and Minecraft API references against the target compile classpath and
+ * Connector-owned compatibility runtime outputs.
  *
  * <p>This is a read-only verifier. It parses class-file headers and member descriptors as data;
- * it never defines, initializes, or executes target classes. It is deliberately conservative:
- * inherited members are checked through the visible class hierarchy, and unresolved hierarchy
- * information is reported separately from a confirmed missing member.</p>
+ * it never defines, initializes, or executes target classes. It normalizes Forge-runtime SRG
+ * member identifiers, applies the recorded direct Minecraft 1.20.1-to-1.21.1 mappings, and
+ * checks inherited members through the visible target hierarchy. Unmapped source identifiers,
+ * unavailable Connector runtime classes, and unresolved hierarchy information remain distinct
+ * from a confirmed missing target member.</p>
  */
 public final class Forge1201TargetApiVerifier {
     @FunctionalInterface
