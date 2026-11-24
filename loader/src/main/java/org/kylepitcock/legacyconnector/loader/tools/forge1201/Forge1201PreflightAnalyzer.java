@@ -37,8 +37,8 @@ import org.kylepitcock.legacyconnector.loader.transform.Mc1201ApiMappings;
  * success, gameplay compatibility, or runtime behavior.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.17";
-    public static final String ANALYZER_VERSION = "1.17.0";
+    public static final String SCHEMA_VERSION = "1.18";
+    public static final String ANALYZER_VERSION = "1.18.0";
     private static final String CONNECTOR_SHIM_PREFIX = "legacyconnector/v1_20_1/";
     private static final String CONNECTOR_MIGRATION_PREFIX = "org/kylepitcock/legacyconnector/v1_20_1/";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
@@ -787,10 +787,13 @@ public final class Forge1201PreflightAnalyzer {
 
             boolean present = targetIndex.classInfo(targetInternalName).isPresent();
             if (present) presentTargets.add(targetInternalName);
+            String explanation = targetInternalName.equals(sourceInternalName)
+                    ? decision.reason()
+                    : "Applied the recorded Forge/NeoForge or Minecraft 1.20.1-to-1.21.1 class mapping.";
             classFindings.add(new TargetApiClassFinding(
                     sourceInternalName, targetInternalName, kind,
                     present ? TargetApiClassStatus.PRESENT : TargetApiClassStatus.MISSING,
-                    decision.reason()));
+                    explanation));
         }
 
         classFindings.sort(Comparator.comparing(TargetApiClassFinding::sourceInternalName));
