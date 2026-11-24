@@ -54,6 +54,7 @@
     "MobAiHookMixin",
     "EnchantmentHelperHookMixin",
     "ItemStackHookMixin",
+    "ItemStackSaveHolderMixin",
     "AnvilMenuCostHookMixin",
     "ServerSprintHookMixin",
     "LevelRainHookMixin",

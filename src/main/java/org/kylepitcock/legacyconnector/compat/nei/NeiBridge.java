@@ -10,6 +10,7 @@ import legacyconnector.v1_7_10.codechicken.nei.recipe.ICraftingHandler;
 import legacyconnector.v1_7_10.codechicken.nei.recipe.IUsageHandler;
 import legacyconnector.v1_7_10.codechicken.nei.recipe.TemplateRecipeHandler;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,16 @@ public final class NeiBridge {
      * One recipe: its slots, plus the handler instance that loaded it and its index there, so the JEI category can run the
      * handler's own drawing ({@code drawBackground(index)}, {@code drawForeground(index)}) for it as NEI did.
      */
-    public record Recipe(List<Slot> inputs, List<Slot> outputs, List<Slot> others, TemplateRecipeHandler handler, int index) {}
+    public record Recipe(List<Slot> inputs, List<Slot> outputs, List<Slot> others, TemplateRecipeHandler handler,
+                         int index, ResourceLocation id) {
+        private Recipe(List<Slot> inputs, List<Slot> outputs, List<Slot> others, TemplateRecipeHandler handler, int index) {
+            this(inputs, outputs, others, handler, index, null);
+        }
+
+        private Recipe identifiedBy(NeiRecipeIds ids) {
+            return new Recipe(inputs, outputs, others, handler, index, ids.next(inputs, outputs, others));
+        }
+    }
 
     private NeiBridge() {}
 
@@ -175,6 +185,7 @@ public final class NeiBridge {
         } catch (RuntimeException | LinkageError e) {
             // a handler whose transfer rectangles cannot be read lists only its overlay id
         }
+        NeiRecipeIds recipeIds = new NeiRecipeIds(handler.getClass());
         for (var id : ids.entrySet()) {
             try {
                 TemplateRecipeHandler h = handler.newInstance();
@@ -182,7 +193,7 @@ public final class NeiBridge {
                 for (int i = 0; i < h.numRecipes(); i++) {
                     try {
                         PositionedStack result = h.getResultStack(i);
-                        out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)));
+                        out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)).identifiedBy(recipeIds));
                     } catch (RuntimeException | LinkageError e) {
                         // skip a broken recipe
                     }
@@ -326,12 +337,13 @@ public final class NeiBridge {
         try {
             ItemStack legacy = ItemStack.mcc$wrap(stack);
             TemplateRecipeHandler h = handler.newInstance();
-            if (usage) h.loadUsageRecipes("item", legacy);
+                        if (usage) h.loadUsageRecipes("item", legacy);
             else h.loadCraftingRecipes("item", legacy);
+            NeiRecipeIds recipeIds = new NeiRecipeIds(handler.getClass());
             for (int i = 0; i < h.numRecipes(); i++) {
                 try {
                     PositionedStack result = h.getResultStack(i);
-                    out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)));
+                    out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)).identifiedBy(recipeIds));
                 } catch (RuntimeException | LinkageError e) {
                     // skip a broken recipe
                 }

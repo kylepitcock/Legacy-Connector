@@ -86,7 +86,55 @@ public class LanguageMap {
     public synchronized String translateKey(String key) {
         String own = languageList.get(key);
         if (own != null) return own;
+        if (!gameHasKey(key)) {
+            String early = earlyEntry(key);
+            if (early != null) return early;
+        }
         return gameTranslation(key);
+    }
+
+    private static volatile Map<String, String> earlyTable;
+    private static volatile int earlyMods = -1;
+
+    /**
+     * Mods translate while loading (an enum constant's constructor calling {@code I18n.translateToLocal}), before the game has loaded their
+     * language files: 1.12's table already held them (Forge injected every mod's lang file). The converted {@code en_us.json} files of the
+     * 1.12 mods' jars are read directly; the table is rebuilt only when more legacy mods have appeared since.
+     */
+    private static String earlyEntry(String key) {
+        var mods = org.kylepitcock.legacyconnector.core.LegacyMods.all();
+        Map<String, String> table = earlyTable;
+        if (table == null || earlyMods != mods.size()) {
+            final Map<String, String> built = new java.util.HashMap<>();
+            for (var rec : mods) {
+                if (!"1.12.2".equals(rec.version)) continue;
+                try {
+                    var file = rec.container.getModInfo().getOwningFile().getFile();
+                    java.nio.file.Path assets = file.findResource("assets");
+                    if (assets == null || !java.nio.file.Files.isDirectory(assets)) continue;
+                    try (var namespaces = java.nio.file.Files.list(assets)) {
+                        for (java.nio.file.Path ns : (Iterable<java.nio.file.Path>) namespaces::iterator) {
+                            java.nio.file.Path lang = ns.resolve("lang").resolve("en_us.json");
+                            if (!java.nio.file.Files.isRegularFile(lang)) continue;
+                            try (var in = java.nio.file.Files.newBufferedReader(lang)) {
+                                var json = com.google.gson.JsonParser.parseReader(in);
+                                if (json.isJsonObject()) {
+                                    json.getAsJsonObject().entrySet().forEach(e -> {
+                                        if (e.getValue().isJsonPrimitive()) built.putIfAbsent(e.getKey(), e.getValue().getAsString());
+                                    });
+                                }
+                            }
+                        }
+                    }
+                } catch (java.io.IOException | RuntimeException | LinkageError e) {
+                    // a mod whose files cannot be read adds nothing
+                }
+            }
+            table = built;
+            earlyTable = built;
+            earlyMods = mods.size();
+        }
+        return table.get(key);
     }
 
     public synchronized String translateKeyFormat(String key, Object... format) {

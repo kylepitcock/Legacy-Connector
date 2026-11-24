@@ -780,7 +780,9 @@ public class OBJModel implements IModel {
 
         public OBJState(List<String> visibleGroups, boolean visibility, IModelState parent) {
             this.parent = parent;
-            for (String s : visibleGroups) visibilityMap.put(s, visibility);
+            // Forge listed these groups as the visible ones whatever the flag said (Galacticraft builds its rocket and buggy item models with
+            // `new OBJState(groups, false, ...)` and they draw); changeGroupVisibilities hides or shows them afterwards
+            for (String s : visibleGroups) visibilityMap.put(s, true);
         }
 
         public IModelState getParent(IModelState parent) {

@@ -146,8 +146,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return this;
     }
 
+    /** The 1.7.10 name of {@link #getCreativeTab()}: 1.12 mods override the latter (func_149708_J), so this asks it. */
     public CreativeTabs getCreativeTabToDisplayOn() {
-        return displayOnCreativeTab;
+        return getCreativeTab();
     }
 
     /** Forge: whether the state has a tile entity (BlockContainer says yes). */
@@ -446,6 +447,22 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         out.addAll(capturedDrops.get());
         capturedDrops.get().clear();
         return out;
+    }
+
+    /** Runs a block's own drop code and returns the stacks it spawned (dropBlockAsItemWithChance overrides: the modern drop pipeline asks for a list). */
+    public static java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> mcc$captureSpawns(Runnable drop) {
+        boolean was = captureDrops.get();
+        var before = new java.util.ArrayList<>(capturedDrops.get());
+        captureDrops.set(true);
+        capturedDrops.get().clear();
+        try {
+            drop.run();
+            return new java.util.ArrayList<>(capturedDrops.get());
+        } finally {
+            captureDrops.set(was);
+            capturedDrops.get().clear();
+            capturedDrops.get().addAll(before);
+        }
     }
 
     /** Forge: the colour a beacon beam takes through this block (null: unchanged). */

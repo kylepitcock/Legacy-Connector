@@ -42,6 +42,14 @@ public final class Registries1122 {
 
     static {
         ENTITIES.vanilla = Registries1122::vanillaEntities;
+        // the vanilla biomes register themselves when the constants class loads: a mod walking Biome.REGISTRY (BiomeDictionary spawn setups) must see them
+        BIOMES.vanilla = reg -> {
+            try {
+                Class.forName("legacyconnector.v1_12_2.net.minecraft.init.Biomes", true, Registries1122.class.getClassLoader());
+            } catch (ClassNotFoundException | LinkageError e) {
+                // only the mods' biomes then
+            }
+        };
     }
 
     /** 1.12 entity ids the 1.13+ renames changed (legacy -> modern). */

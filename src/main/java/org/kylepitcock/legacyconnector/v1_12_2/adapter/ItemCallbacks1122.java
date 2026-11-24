@@ -80,9 +80,12 @@ final class ItemCallbacks1122 {
         destroySpeed = o("getDestroySpeed", S, IBlockState.class);
         interact = o("itemInteractionForEntity", S, P, L, H);
         effect = o("hasEffect", S);
-        durabilityBar = o("showDurabilityBar", S);
-        durability = o("getDurabilityForDisplay", S);
-        durabilityColor = o("getRGBDurabilityForDisplay", S);
+        // an item with subtypes that also has a maximum damage (Galacticraft's canisters: damage = how empty) is not a modern damageable item, so
+        // its modern stacks draw no bar by themselves; 1.12's defaults (damage / max damage) answer through the legacy methods
+        boolean damageBar = legacy.getHasSubtypes() && legacy.getMaxDamage() > 0;
+        durabilityBar = damageBar || o("showDurabilityBar", S);
+        durability = damageBar || o("getDurabilityForDisplay", S);
+        durabilityColor = damageBar || o("getRGBDurabilityForDisplay", S);
         created = o("onCreated", S, W, P);
         entityItemUpdate = o("onEntityItemUpdate", legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class);
         sneakBypass = o("doesSneakBypassUse", S, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, B, P);

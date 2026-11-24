@@ -34,9 +34,19 @@ public final class Stacks1122 {
             else if (data.contains(COMPONENTS)) data.remove(COMPONENTS);
             if (!data.isEmpty()) out.set(DataComponents.CUSTOM_DATA, CustomData.of(data));
         }
+        // an item with subtypes that also uses its damage as a value (Galacticraft's canisters: damage = how empty, 0-1001, with two listed
+        // subtypes): the modern variant stands for the listed subtype nearest the base, so the actual value rides along in the stack's data
+        if (item.mcc$vanillaModern == null && item.getHasSubtypes() && item.getMaxDamage() > 0 && stack.getMetadata() > 0
+                && !ItemBridge1122.hasVariant(item, stack.getMetadata())) {
+            int value = stack.getMetadata();
+            net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA, out, t -> t.putInt(DAMAGE_VALUE, value));
+        }
         for (Hook hook : HOOKS) out = hook.toModern(stack, out);
         return out;
     }
+
+    /** The data key under which a subtype item keeps a damage value no variant stands for. */
+    private static final String DAMAGE_VALUE = "mcc$damageValue";
 
     /** Stack conversion for items of modern mods that stand in for a legacy library (Patchouli's guide book keeps its book as a data component). */
     public interface Hook {
@@ -269,9 +279,15 @@ public final class Stacks1122 {
         }
         var mapId = stack.get(DataComponents.MAP_ID);
         if (mapId != null) meta = mapId.id();
-        ItemStack out = new ItemStack(legacy, stack.getCount(), meta);
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        if (data != null) out.setTagCompound(new NBTTagCompound(data.copyTag()));
+        net.minecraft.nbt.CompoundTag dataTag = data == null ? null : data.copyTag();
+        if (dataTag != null && !standIn && dataTag.contains(DAMAGE_VALUE, 3)) {
+            meta = dataTag.getInt(DAMAGE_VALUE);
+            dataTag.remove(DAMAGE_VALUE);
+            if (dataTag.isEmpty()) dataTag = null;
+        }
+        ItemStack out = new ItemStack(legacy, stack.getCount(), meta);
+        if (dataTag != null) out.setTagCompound(new NBTTagCompound(dataTag));
         var potion = stack.get(DataComponents.POTION_CONTENTS);
         if (potion != null && isPotionItem(stack.getItem())) potionFromModern(potion, out);
         if (standIn) keepComponents(stack, out);
