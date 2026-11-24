@@ -160,6 +160,14 @@ public final class CheckJar {
             records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
         }
         jars.removeAll(otherBuilds125.keySet());
+        // built for a Minecraft release the layer has no obfuscation table for (1.6.2 ...): reported, not linked
+        for (var it = jars.iterator(); it.hasNext(); ) {
+            LegacyJar j = it.next();
+            if (j.otherVersionReason == null) continue;
+            System.out.println(j.fileName() + " [" + j.version.id() + "]: " + j.otherVersionReason);
+            records.add(record(j, "other-version", j.otherVersionReason, null, 0));
+            it.remove();
+        }
         org.kylepitcock.legacyconnector.loader.transform.Notch125To147.registerSet(jars);
         // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
         // (-Pbridges=false checks the legacy jars as plain mods instead).

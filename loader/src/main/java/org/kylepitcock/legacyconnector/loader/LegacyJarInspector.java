@@ -776,6 +776,13 @@ public final class LegacyJarInspector {
      * flat names, a 1.4.7-only FML/Forge class, the notch fingerprint (member references that resolve against the 1.4.7 table but not the 1.5.2/1.6.4 ones),
      * the declared Minecraft version. Returns null when the jar is not 1.4.7 (or nothing says so), leaving the other versions' detection untouched.
      */
+    static final String OTHER_VERSION_REASON = "built for another Minecraft version (likely 1.6.2/1.6.3 or other): its obfuscated names match none of 1.4.7, 1.5.2 or 1.6.4";
+
+    /** True when a jar with enough obfuscated member references (the scores exist) fits none of the three supported obfuscations (every one under 0.5; real matches score 0.66 and up, 1.6.2 jars 0.24-0.39). */
+    static boolean otherVersionScores(double[] score) {
+        return score != null && score[0] < 0.5 && score[1] < 0.5 && score[2] < 0.5;
+    }
+
     private static LegacyVersion choose147(ZipFile zip, LegacyJar jar, Map<String, JsonObject> infos, int refs17, Markers markers, boolean modLoader) {
         if (markers.v17 > 0) return null;
         // the notch fingerprint is the strongest evidence, so it comes first and overrides the 1.5.2/1.6 markers (1.4.7 jars use @PreInit, ISidedInventory...)
@@ -810,6 +817,9 @@ public final class LegacyJarInspector {
         }
         if (modLoader && refs17 == 0) {
             // BaseMod exists up to 1.5.2; without any other evidence a bare ModLoader mod is taken for the oldest supported version
+            // ... unless its obfuscated names fit none of the supported versions (a 1.6.2/1.6.3 jar): then it is reported, not guessed. Only here: Minecraft 1.2.5 and Beta jars were
+            // decided before this point (they never reach it), and a jar with any other evidence (declared version, markers, file name) keeps its version.
+            if (jar.sourceVersion == null && otherVersionScores(score)) jar.otherVersionReason = OTHER_VERSION_REASON;
             jar.versionEvidence = "ModLoader mod (extends BaseMod), no version evidence: taken for 1.4.7";
             return LegacyVersion.V1_4_7;
         }
