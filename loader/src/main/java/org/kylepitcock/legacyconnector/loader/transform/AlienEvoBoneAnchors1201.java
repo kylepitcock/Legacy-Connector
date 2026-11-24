@@ -48,7 +48,8 @@ final class AlienEvoBoneAnchors1201 implements Opcodes {
     private AlienEvoBoneAnchors1201() {}
 
     static int apply(ClassNode node) {
-        if (!TARGET.equals(node.name)) return 0;
+        int additionalCameraCallChanges = AlienEvoCameraRotationCallers1201.apply(node);
+        if (!TARGET.equals(node.name)) return additionalCameraCallChanges;
 
         MethodNode boneWorld = findUniqueMethod(node, BONE_WORLD, BONE_WORLD_DESC);
         if (boneWorld == null || (boneWorld.access & ACC_STATIC) == 0) {
@@ -213,7 +214,7 @@ final class AlienEvoBoneAnchors1201 implements Opcodes {
             legacy.itf = false;
             changed++;
         }
-        return changed;
+        return changed + additionalCameraCallChanges;
     }
 
     private static boolean hasFirstPersonArmKeyFallback(
