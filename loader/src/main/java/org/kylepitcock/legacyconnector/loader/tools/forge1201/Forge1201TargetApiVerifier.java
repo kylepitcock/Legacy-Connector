@@ -37,7 +37,8 @@ public final class Forge1201TargetApiVerifier {
         VERIFIED,
         MISSING,
         INCOMPLETE_HIERARCHY,
-        REQUIRES_MANUAL_DESCRIPTOR_ADAPTER
+        REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
+        NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT
     }
 
     public record MemberIssue(
@@ -178,9 +179,16 @@ public final class Forge1201TargetApiVerifier {
      */
     public static final class TargetIndex {
         private final Forge1201TargetApiVerifier verifier;
+        private final Set<String> unavailablePrefixes;
 
-        private TargetIndex(ClassBytesProvider classBytes) {
-            this.verifier = new Forge1201TargetApiVerifier(classBytes);
+        private TargetIndex(ClassBytesProvider classBytes, Set<String> unavailablePrefixes) {
+            this.verifier = new Forge1201TargetApiVerifier(classBytes, unavailablePrefixes);
+            this.unavailablePrefixes = Set.copyOf(unavailablePrefixes);
+        }
+
+        /** True when the requested class belongs to a runtime domain not supplied to this index. */
+        public boolean isUnavailableClass(String internalName) {
+            return unavailablePrefixes.stream().anyMatch(internalName::startsWith);
         }
 
         /** Returns empty only when the requested target class is absent. */
@@ -251,8 +259,18 @@ public final class Forge1201TargetApiVerifier {
 
     /** Creates a fresh target index whose metadata cache is isolated to this analysis. */
     public static TargetIndex createIndex(ClassBytesProvider classBytes) {
+        return createIndex(classBytes, Set.of());
+    }
+
+    /**
+     * Creates an index with explicitly unavailable class-name domains. Members in those domains
+     * are reported as not checked instead of being mislabeled as missing.
+     */
+    public static TargetIndex createIndex(
+            ClassBytesProvider classBytes, Set<String> unavailablePrefixes) {
         if (classBytes == null) throw new IllegalArgumentException("Target class byte provider is required");
-        return new TargetIndex(classBytes);
+        if (unavailablePrefixes == null) throw new IllegalArgumentException("Unavailable prefixes are required");
+        return new TargetIndex(classBytes, unavailablePrefixes);
     }
 
     private record MemberKey(String name, String descriptor) {}
@@ -268,12 +286,18 @@ public final class Forge1201TargetApiVerifier {
     private record Lookup(boolean found, boolean complete) {}
 
     private final ClassBytesProvider classBytes;
+    private final Set<String> unavailablePrefixes;
     private final Map<String, TargetClass> classCache = new HashMap<>();
     private final Set<String> missingClassCache = new HashSet<>();
     private final Map<MethodCodeKey, Optional<MethodCodeSummary>> methodCodeCache = new HashMap<>();
 
-    private Forge1201TargetApiVerifier(ClassBytesProvider classBytes) {
+    private Forge1201TargetApiVerifier(ClassBytesProvider classBytes, Set<String> unavailablePrefixes) {
         this.classBytes = classBytes;
+        this.unavailablePrefixes = Set.copyOf(unavailablePrefixes);
+    }
+
+    private boolean isUnavailableClass(String internalName) {
+        return unavailablePrefixes.stream().anyMatch(internalName::startsWith);
     }
 
     public static Result verify(Path sourceJar, ClassLoader targetClassLoader) throws IOException {
@@ -301,7 +325,7 @@ public final class Forge1201TargetApiVerifier {
             ClassBytesProvider classBytes) throws IOException {
         if (analysis == null) throw new IllegalArgumentException("API analysis is required");
         if (classBytes == null) throw new IllegalArgumentException("Target class byte provider is required");
-        return new Forge1201TargetApiVerifier(classBytes).verify(analysis);
+        return new Forge1201TargetApiVerifier(classBytes, Set.of()).verify(analysis);
     }
 
     private Result verify(Forge1201ApiUsageAnalyzer.Analysis analysis) throws IOException {
@@ -316,7 +340,7 @@ public final class Forge1201TargetApiVerifier {
         int verifiedClasses = 0;
         for (String targetName : candidates) {
             if (readClass(targetName) == null) {
-                missingClasses.add(targetName);
+                if (!isUnavailableClass(targetName)) missingClasses.add(targetName);
             } else {
                 verifiedClasses++;
             }
@@ -337,11 +361,18 @@ public final class Forge1201TargetApiVerifier {
         int verifiedMethods = 0;
         for (var reference : candidateMethods) {
             String targetOwner = mapType(reference.owner());
-            String targetDescriptor = mapMethodDescriptor(reference.descriptor());
+            String targetDescriptor = mapMethodDescriptor(reference.owner(), reference.name(), reference.descriptor());
             if (descriptorNeedsManualAdapter(reference.descriptor(), true)) {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
+                        List.of(), methodCallSites(analysis, reference)));
+                continue;
+            }
+            if (isUnavailableClass(targetOwner)) {
+                methodIssues.add(new MemberIssue(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
                         List.of(), methodCallSites(analysis, reference)));
                 continue;
             }
@@ -374,6 +405,13 @@ public final class Forge1201TargetApiVerifier {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
+                        List.of(), fieldCallSites(analysis, reference)));
+                continue;
+            }
+            if (isUnavailableClass(targetOwner)) {
+                fieldIssues.add(new MemberIssue(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
                         List.of(), fieldCallSites(analysis, reference)));
                 continue;
             }
@@ -442,8 +480,20 @@ public final class Forge1201TargetApiVerifier {
         };
     }
 
-    private static String mapMethodDescriptor(String descriptor) {
-        return descriptorRemapper().mapMethodDesc(descriptor);
+    private static String mapMethodDescriptor(String sourceOwner, String methodName, String descriptor) {
+        String mappedDescriptor = descriptorRemapper().mapMethodDesc(descriptor);
+        Type sourceReturn = Type.getReturnType(descriptor);
+        if ("net/minecraftforge/registries/DeferredRegister".equals(sourceOwner)
+                && "register".equals(methodName)
+                && sourceReturn.getSort() == Type.OBJECT
+                && "net/minecraftforge/registries/RegistryObject".equals(sourceReturn.getInternalName())) {
+            // This one factory method returns DeferredHolder in NeoForge. Keep the general
+            // RegistryObject -> Supplier rule for unrelated get-only references.
+            return Type.getMethodDescriptor(
+                    Type.getObjectType("net/neoforged/neoforge/registries/DeferredHolder"),
+                    Type.getArgumentTypes(mappedDescriptor));
+        }
+        return mappedDescriptor;
     }
 
     private static String mapFieldDescriptor(String descriptor) {
