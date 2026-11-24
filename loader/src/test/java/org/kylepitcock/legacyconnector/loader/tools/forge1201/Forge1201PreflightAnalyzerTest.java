@@ -315,7 +315,14 @@ final class Forge1201PreflightAnalyzerTest {
                 nestedArchiveWithClassBytes(forgeNetworkShimUseClass()));
 
         Path targetRoot = tempDir.resolve("connector-domain-neoforge-classpath");
-        Files.createDirectories(targetRoot);
+        Path targetModAnnotation = targetRoot.resolve("net/neoforged/fml/common/Mod.class");
+        Path targetModList = targetRoot.resolve("net/neoforged/fml/ModList.class");
+        Files.createDirectories(targetModAnnotation.getParent());
+        Files.createDirectories(targetModList.getParent());
+        // createForgeModJar() also contributes the shared sample @Mod and ModList.get() references.
+        // Satisfy those NeoForge-side references so this test isolates the Connector shim domain.
+        Files.write(targetModAnnotation, targetModAnnotationClass());
+        Files.write(targetModList, targetModListWithGetMethod());
 
         Path connectorRoot = tempDir.resolve("connector-domain-runtime-output");
         String targetContext = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkEvent$Context";
@@ -336,7 +343,8 @@ final class Forge1201PreflightAnalyzerTest {
         assertEquals(1, verification.connectorRuntimeClasspathEntryCount());
         assertEquals(List.of(connectorRoot.toAbsolutePath().normalize().toString()),
                 verification.connectorRuntimeClasspathEntries());
-        assertEquals(2, verification.presentTargetClassCount());
+        assertEquals(4, verification.candidateClassCount());
+        assertEquals(4, verification.presentTargetClassCount());
         var contextFinding = verification.classFindings().stream()
                 .filter(finding -> finding.sourceInternalName()
                         .equals("net/minecraftforge/network/NetworkEvent$Context"))
@@ -348,9 +356,13 @@ final class Forge1201PreflightAnalyzerTest {
                         .equals("net/minecraftforge/network/NetworkDirection"))
                 .findFirst().orElseThrow();
         assertEquals(Forge1201PreflightAnalyzer.TargetApiClassStatus.PRESENT, directionFinding.status());
-        assertEquals(1, verification.memberVerification().verifiedMethodReferences());
+        assertEquals(2, verification.memberVerification().verifiedMethodReferences());
         assertTrue(verification.memberVerification().methodIssues().isEmpty());
-        assertEquals(targetContext, verification.memberVerification().verifiedMethods().getFirst().targetOwner());
+        var verifiedContextMethod = verification.memberVerification().verifiedMethods().stream()
+                .filter(method -> method.sourceOwner().equals("net/minecraftforge/network/NetworkEvent$Context")
+                        && method.name().equals("getDirection"))
+                .findFirst().orElseThrow();
+        assertEquals(targetContext, verifiedContextMethod.targetOwner());
 
         // The same input with no Connector output is explicitly not checked, never mislabeled MISSING.
         var withoutConnectorOutput = Forge1201PreflightAnalyzer.analyze(
@@ -360,8 +372,8 @@ final class Forge1201PreflightAnalyzerTest {
                         .COMPLETED_WITH_UNCHECKED_CONNECTOR_RUNTIME,
                 unchecked.status());
         assertEquals(0, unchecked.connectorRuntimeClasspathEntryCount());
-        assertEquals(2, unchecked.candidateClassCount());
-        assertEquals(0, unchecked.presentTargetClassCount());
+        assertEquals(4, unchecked.candidateClassCount());
+        assertEquals(2, unchecked.presentTargetClassCount());
         assertTrue(unchecked.classFindings().stream().filter(finding ->
                         finding.targetInternalName() != null
                                 && finding.targetInternalName().startsWith("legacyconnector/v1_20_1/"))
@@ -1218,6 +1230,16 @@ final class Forge1201PreflightAnalyzerTest {
         method.visitInsn(Opcodes.ARETURN);
         method.visitMaxs(0, 0);
         method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] targetModAnnotationClass() {
+        String name = "net/neoforged/fml/common/Mod";
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17,
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT | Opcodes.ACC_ANNOTATION,
+                name, null, "java/lang/Object", new String[] {"java/lang/annotation/Annotation"});
         writer.visitEnd();
         return writer.toByteArray();
     }
