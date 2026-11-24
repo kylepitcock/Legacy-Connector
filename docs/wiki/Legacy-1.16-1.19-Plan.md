@@ -190,3 +190,32 @@ semantic (helpers), which is what the plan says stays per stage. Its real use is
 members are the work list for a new stage, ranked by corpus usage in milestone 2. **Left for milestone 1:** feeding the generated candidates into a
 stage directory with a provenance column (hand rows win), the per-stage SRG tables for 1.16.5 to 1.19.2, and moving the shared `Forge1201Transformer`
 special cases that are not stage D specific into the engine.
+
+### Stage C measurement (2026-11-24, offline, nothing enabled for players)
+
+**What exists.** `tools/dev/version_index.py emit 1.19.2 1.20.1` writes `forward/1.19.2/mc-classes.tsv` and `mc-members.tsv` with a provenance column (`gen`
+rows are replaced on every run, `hand` rows win): 14 generated class rows, 125 generated member rows, 11 hand rows (nested classes whose outer class moved,
+e.g. `TextureAtlasSprite$FrameInfo` to `SpriteContents$FrameInfo`, `Resource$IoSupplier` to `IoSupplier`, `LootContext$DynamicDrop` to `LootParams$DynamicDrop`).
+`SrgMojangTable.loadChain` lays the 1.19.2 SRG table (opt-in `genSrgMojang1192`) under the 1.20.1 one, `Mc1201Tables.loadChain` composes the class
+renames of C and D. The chain runs only with `-Pgap.source=1.19.2` (offline gap tool); the loader detects no 1.19.2 jar, so players get the 1.20.1 chain as before.
+1.20.1 output stays byte-identical (`identity_1201.py`: 40 jars, 64,497 entries, identical after every step and after the merge of master).
+
+**Corpus.** The same 451 Modrinth jars as the scoping (`fetch_probe_mods.py 1.19.2 --limit 400 --content`), run through `gap1201 -Pgap.translate=true`, 428 jars with code.
+Measured with `tools/compat/link_rate_1192.py` (no unresolved Minecraft/Forge symbol) and `gap1192_analyze.py` (classes):
+
+| Run | Link fully | Link but for other mods | Distinct unresolved MC/Forge symbols | Pure-rename symbols (class a) | Changed API (class b) |
+|---|---|---|---|---|---|
+| 1.20.1 layer as it is (stage D only, SRG 1.20.1) | 32 | 14 | 2,014 | 165 (1,849 occurrences) | 962 |
+| Chain C + D, generated rows only | 32 | 15 | 1,810 | 17 (63) | 922 |
+| Chain C + D, plus 11 hand rows | 32 | 15 | 1,814 | 6 (32) | 923 |
+
+(The scoping run of 2026-11-16 counted 35 + 15 on the same sample; the layer has changed since, so the rows above are the like-for-like baseline: 46 of 428 before, 47 after.)
+
+Reading: the SRG overlay and the generated rows clear 159 of 165 pure-rename symbols (almost all of them `RenderSystem` and `Level` members whose SRG id the 1.20.1 table lacks),
+but the link rate moves by one jar, as the scoping predicted: what blocks 1.19.2 jars is **changed API**, not renames. Remaining pure renames: 6 symbols (the analyzer's
+"class a" rows that are shape guesses, such as `Material$Builder` to `CreativeModeTab$Builder`, are wrong and were not added). Ranked changed API (jars affected): `Material` 194,
+`Item$Properties.tab` 182 (creative tabs), `com.mojang.math` `Vector3f` 179 / `Quaternion` 175 / `Matrix4f` 128, `ItemTransforms$TransformType` 124, `GuiComponent` 111,
+`Registry.ITEM` 106 / `BLOCK` 97 and the other `Registry.*_REGISTRY` keys, `SoundEvent.<init>(ResourceLocation)` 103, `Button.<init>` 97, `BlockPos.<init>(DDD)` 97,
+`Font.draw`/`Screen.render(PoseStack,...)` 84/81, `CommandSourceStack.sendSuccess` 68, `LootTables` 65, `RenderSystem.enableTexture` 61, `DamageSource.FALL` 45. These are the stage C
+table of this page (GuiGraphics, registries, JOML, creative tabs, Material, damage sources): helpers and bridges, not rows. Greedy order of the analyzer: registry statics, creative tabs, Material,
+other server classes, `com.mojang.math`, GUI, rendering; fixing all 1.19.2 blockers reaches about 117 fully linking jars (the 1.20.1 layer's own ceiling on this sample).
