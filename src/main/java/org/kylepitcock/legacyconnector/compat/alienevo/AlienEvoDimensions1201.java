@@ -57,10 +57,11 @@ public final class AlienEvoDimensions1201 {
      * Pure scaling operation kept package-private so the channel arithmetic
      * can be regression-tested without loading AlienEvo.
      *
-     * <p>EntityDimensions.scale(width,height) scales its embedded eye height
-     * by the hitbox-height factor. AlienEvo has an independent EYE_HEIGHT
-     * channel, so replace that value with original.eyeHeight * eyeHeightScale
-     * after scaling the collision box.</p>
+     * <p>Build the dimensions record explicitly instead of calling
+     * EntityDimensions.scale: vanilla skips that method for dimensions marked
+     * fixed, but AlienEvo's independent size ability must still control player
+     * forms. Preserve attachment offsets and the original fixed flag while
+     * applying the three AlienEvo channels independently.</p>
      */
     static EntityDimensions applyScales(
             EntityDimensions original, float widthScale, float heightScale, float eyeHeightScale) {
@@ -75,8 +76,12 @@ public final class AlienEvoDimensions1201 {
             return original;
         }
 
-        return original.scale(widthScale, heightScale)
-                .withEyeHeight(original.eyeHeight() * eyeHeightScale);
+        return new EntityDimensions(
+                original.width() * widthScale,
+                original.height() * heightScale,
+                original.eyeHeight() * eyeHeightScale,
+                original.attachments().scale(widthScale, heightScale, widthScale),
+                original.fixed());
     }
 
     private static boolean validScale(float scale) {
