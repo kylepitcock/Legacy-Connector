@@ -37,7 +37,7 @@ Read `BRIEF.md` and `issue-worker.md` first. Mark an outline `DONE <commit>` or 
 - Why: there is no shared definition of "stable". The suggestion still awaiting a decision: a named set of major mods per version that is playable in survival.
 - Approach: draft `docs/wiki/Stable-Sets.md` with 8-12 mods per version (1.7.10, 1.12.2, 1.6.4) chosen by popularity and lack of a native 1.21.1 port. Give each a client scenario (`tools/dev/verify/scenarios/`) that crafts the mod's core item, places its main machine, and saves and reloads. Report pass/fail per mod. Ask the maintainer to approve the list before building scenarios for all of them.
 
-### T7. In-game bug report bundle (S)
+### T7. In-game bug report bundle (S) DONE (2026-11-24: `/legacyconnector report`, `core/report/BugReport` + `BugReportBundle`; a client run still has to create the zip)
 - Why: reporters often attach incomplete logs; workers spend time asking.
 - Approach: `/legacyconnector report` writes `logs/legacyconnector-bundle-<time>.zip` (latest.log, legacyconnector-report.txt, mod list with versions, LC version, settings) and prints the path in chat; the issue template points to it. Strip user paths and names (replace the home dir).
 - Verify: a unit test of the bundler; a client run creates the zip.
