@@ -79,6 +79,7 @@ final class AlienEvoMolang1201 implements Opcodes {
         }
         changes += migrateLegacyParserCalls(node);
         changes += migrateMclibKeyframeValues(node);
+        changes += AlienEvoOmnitrixDisplayResources1201.apply(node);
         return changes;
     }
 

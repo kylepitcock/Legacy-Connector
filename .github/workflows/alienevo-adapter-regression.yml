@@ -38,6 +38,8 @@ jobs:
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBufferingGlowConsumer1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBoneAnchors1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoRuntimeDiagnostics1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoMolang1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoOmnitrixDisplayResources1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoRenderLayerModel1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoSlimeDecalMesh1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.PalladiumResourceCompat1201Test' \
