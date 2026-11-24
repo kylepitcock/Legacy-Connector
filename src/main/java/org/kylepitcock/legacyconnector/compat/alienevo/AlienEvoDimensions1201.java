@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.ModList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public final class AlienEvoDimensions1201 {
      * height channels to the dimensions returned by 1.21.1 LivingEntity.
      */
     public static EntityDimensions apply(Entity entity, EntityDimensions original) {
-        if (entity == null || original == null || !ModList.get().isLoaded("alienevo")) {
+        if (!(entity instanceof Player) || original == null || !ModList.get().isLoaded("alienevo")) {
             return original;
         }
 
