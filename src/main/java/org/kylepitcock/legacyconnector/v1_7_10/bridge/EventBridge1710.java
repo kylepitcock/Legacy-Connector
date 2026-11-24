@@ -958,6 +958,18 @@ public final class EventBridge1710 {
     /** The connection ClientConnectedToServerEvent was last posted for (once per connection, before its first world or login, whichever comes first). */
     private static volatile Object connectedPostedFor;
 
+    private static volatile java.lang.reflect.Field pendingConnectionField;
+
+    private static net.minecraft.network.Connection pendingConnection() {
+        try {
+            java.lang.reflect.Field f = pendingConnectionField;
+            if (f == null) pendingConnectionField = f = net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.client.Minecraft.class, "pendingConnection");
+            return (net.minecraft.network.Connection) f.get(net.minecraft.client.Minecraft.getInstance());
+        } catch (RuntimeException | ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
     private static void postClientConnected(net.minecraft.network.Connection connection) {
         if (connection == null || connectedPostedFor == connection) return;
         connectedPostedFor = connection;
@@ -973,7 +985,9 @@ public final class EventBridge1710 {
         gameBus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (LevelEvent.Load e) -> {
             if (!e.getLevel().isClientSide()) return;
             var listener = net.minecraft.client.Minecraft.getInstance().getConnection();
-            postClientConnected(listener == null ? null : listener.getConnection());
+            // Joining directly into a world: the client level is built while handling the login packet, before the player (and so
+            // getConnection()) exists; the connection being set up is Minecraft's pending one.
+            postClientConnected(listener != null ? listener.getConnection() : pendingConnection());
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingIn e) -> {
             var manager = legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection());
