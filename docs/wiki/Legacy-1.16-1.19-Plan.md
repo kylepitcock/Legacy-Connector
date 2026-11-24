@@ -125,3 +125,45 @@ proportional to its ranked symbol count, and stage A costs at least as much as s
   ranking cost little and tell how large stage A really is.
 - **Mapping data.** The stage tables are derived from Mojang's official mappings, as the 1.20.1 ones are; only differences are shipped.
   Intermediate full mappings are fetched by the tool and never committed.
+
+## Milestone 1 status (2026-11-24)
+
+**Inventory: where stage D (1.20.1 to 1.21.1) was hardcoded.** The tables sit in `loader/src/main/resources/legacyconnector/forward/1.20.1/`:
+`mc-classes`, `mc-members`, `mc-calls`, `mc-fields`, `mc-bridges`, `mc-overrides` (+ `lib-*` twins for library bridges), `mc-hierarchy.tsv.gz`,
+`mc-closed.txt.gz`, `mc-protected.tsv.gz`, `mc-members/static/private.index.gz` (index of the 1.21.1 classes), `mixin-targets.tsv`, the Forge side
+(`forge-call-rewrites`, `forge-curated-renames`, `forge-event-renames`, `forge-fml-renames`, `forge-members`, `forge-c-tag-pairs`, `c-tags`,
+`neoforge-abstract-events`) and `libraries.tsv`. Eleven readers opened them by a string literal of the folder (`Mc1201Tables`, `Mc1201Hierarchy`,
+`McMembers1201`, `ClassShape1201`, `ProtectedCalls1201`, `Subscribers1201`, `ForgeApiRewrites1201`, `Forge1201Transformer`, `mixin1201/TargetRemap`,
+`DataConverter1201`, `NativeLibraries1201`), two generators wrote into it (`EventTables1201Tool`, `McMembers1201Tool`), and the helper package of
+`mc-calls` rows (`v1_20_1/migrate/`) was a constant of `Mc1201Tables`. Still stage specific by design, not by accident: the class names (`*1201`),
+the `Forge1201Transformer` special cases (library compat under `transform/compat`), the migration helpers (`migrate` classes), the data converters
+(`resource/*1201`), the SRG table (`genSrgMojang1201`, one per source version) and `Gap1201` (`LegacyJar.version = V1_20_1`).
+
+**Done.** `transform/ForwardStage` is `(source, target, dir, helperPackage)`; every reader above and both generators now go through it
+(`ForwardStage.D_1201.open("mc-classes.tsv")`). `ForwardStage.chainFrom(version)` returns the stages a jar of that version passes in order
+(`1.19.2` gives C then D; C is declared but has no tables and no loader detection), `composeRenames` composes the class renames of consecutive stages
+(a rename of stage C followed by one of stage D is one row), and `Mc1201Tables.loadChain` loads a chain (class renames composed, the other tables
+merged, later stages winning). One stage loads exactly as before. Tests: `ForwardStageTest`.
+
+**Byte identity.** `python tools/dev/identity_1201.py run <label>` translates 40 ATM 9 jars (every 13th of the sorted instance folder) with the real
+transformer (`gap1201 -Pgap.translate=true`) and `compare <a> <b>` compares every entry of every translated jar (SHA-256, except
+`provenance.json`, which carries a timestamp). Before and after the refactoring: 40 jars, 64,497 entries, identical; the gap counts are unchanged
+(`classes 509/509 fields 6/6 methods 30/37`); two runs of the same build are identical too, so the check is deterministic.
+
+**Version index and generator.** `python tools/dev/version_index.py diff|compare <from> <to>` fetches Mojang's official mappings and client jars into
+`build/version-index/` (gitignored) and writes candidate rows: class moves (unique simple name) and renames (same package and similar name, or similar
+member shape), member renames (the only vanished and the only new member of a class with the same descriptor), descriptor changes, removed members,
+hierarchy changes. It needs no SRG data. `compare` measures it against the hand-made tables of a stage. For 1.20.1 to 1.21.1 (10 seconds):
+8,269 classes against 7,436, 506 gone, 92 class candidates (40 moves, 52 renames), 386 member renames, 4,252 descriptor changes, 341 hierarchy changes.
+
+| Hand-made rows | Applicable | Reproduced | Contradicted | Detected, not proposed | Missed |
+|---|---|---|---|---|---|
+| `mc-classes` + `lib-classes` (207) | 71 (69 are libraries or Forge, 67 point at layer helpers) | 39 | 2 | 2 (old name still exists: deliberate redirect) | 28 (renames by a changed name only, e.g. `BootstapContext`, `BlockPathTypes` to `PathType`, `FriendlyByteBuf$Writer` to `StreamEncoder`) |
+| `mc-members` + `mc-fields` (569) | 472 | 27 | 1 | 281 (descriptor changed: needs a call row, not a rename) | 163 (no change visible by name: enum constants of other types, behaviour) |
+| `mc-calls` (1,174) | 1,048 | n/a | n/a | 821 flagged (member gone, renamed or descriptor changed) | 216 (behaviour change or inherited member) + 11 constructors |
+
+Reading: the generator proposes about half of the applicable class rows and 6 percent of the member rows by itself; the rest of the hand work is
+semantic (helpers), which is what the plan says stays per stage. Its real use is the other direction: the 4,252 descriptor changes and 5,129 removed
+members are the work list for a new stage, ranked by corpus usage in milestone 2. **Left for milestone 1:** feeding the generated candidates into a
+stage directory with a provenance column (hand rows win), the per-stage SRG tables for 1.16.5 to 1.19.2, and moving the shared `Forge1201Transformer`
+special cases that are not stage D specific into the engine.
