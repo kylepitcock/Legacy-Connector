@@ -118,8 +118,10 @@ public final class AlienEvoDimensionsProbe {
             if (!(result instanceof Collection<?> entries) || entries.isEmpty()) return "[]";
 
             Class<?> sizeAbilityClass = Class.forName("net.habb.alienevo.ability.AlienSizeAbility", true, loader);
-            Method getProperty = Class.forName("net.threetag.palladium.power.ability.AbilityInstance", true, loader)
-                    .getMethod("getProperty", propertyType);
+            Class<?> abilityInstanceType =
+                    Class.forName("net.threetag.palladium.power.ability.AbilityInstance", true, loader);
+            Method getProperty = abilityInstanceType.getMethod("getProperty", propertyType);
+            Method getReference = abilityInstanceType.getMethod("getReference");
             String[] properties = {
                     "SCALE", "HITBOX_WIDTH", "HITBOX_HEIGHT", "EYE_HEIGHT", "MODEL_WIDTH", "MODEL_HEIGHT"
             };
@@ -128,7 +130,9 @@ public final class AlienEvoDimensionsProbe {
             for (Object entry : entries) {
                 if (index++ > 0) out.append(';');
                 Object entryId = entry.getClass().getField("id").get(entry);
-                out.append("id=").append(entryId).append('{');
+                Object reference = getReference.invoke(entry);
+                out.append("powerEntry=").append(reference)
+                        .append(",id=").append(entryId).append('{');
                 for (int i = 0; i < properties.length; i++) {
                     if (i > 0) out.append(',');
                     String name = properties[i];
