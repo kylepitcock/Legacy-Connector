@@ -31,6 +31,8 @@ class AlienEvoDimensionsProbePackageTest {
                 "/org/kylepitcock/legacyconnector/diagnostics/alienevo/AlienEvoDimensionsProbe.class"));
         assertNotNull(getClass().getResource(
                 "/org/kylepitcock/legacyconnector/mixin/AlienEvoDimensionsProbeMixin.class"));
+        assertNotNull(getClass().getResource(
+                "/org/kylepitcock/legacyconnector/mixin/AlienEvoLivingDimensions1201Mixin.class"));
         assertNull(getClass().getResource(
                 "/org/kylepitcock/legacyconnector/mixin/AlienEvoDimensionsProbe.class"),
                 "A non-Mixin helper must not be emitted in the configured Mixin package");
@@ -49,17 +51,21 @@ class AlienEvoDimensionsProbePackageTest {
             var mixins = root.getAsJsonArray("mixins");
             assertNotNull(mixins);
 
-            boolean adapterRegistered = false;
+            boolean probeAdapterRegistered = false;
+            boolean sizeAdapterRegistered = false;
             boolean utilityRegistered = false;
             for (var entry : mixins) {
                 String name = entry.getAsString();
-                adapterRegistered |= name.equals("AlienEvoDimensionsProbeMixin");
+                probeAdapterRegistered |= name.equals("AlienEvoDimensionsProbeMixin");
+                sizeAdapterRegistered |= name.equals("AlienEvoLivingDimensions1201Mixin");
                 utilityRegistered |= name.equals("AlienEvoDimensionsProbe");
             }
 
-            assertTrue(adapterRegistered, "The dimensions diagnostic Mixin adapter must be registered");
+            assertTrue(probeAdapterRegistered, "The dimensions diagnostic Mixin adapter must be registered");
+            assertTrue(sizeAdapterRegistered, "The 1.21.1 AlienEvo size adapter must be registered");
             assertFalse(utilityRegistered, "The plain diagnostics utility must not be registered as a Mixin");
             assertTrue(config.contains("\"AlienEvoDimensionsProbeMixin\""));
+            assertTrue(config.contains("\"AlienEvoLivingDimensions1201Mixin\""));
             assertFalse(config.contains("\"AlienEvoDimensionsProbe\","));
         }
     }
