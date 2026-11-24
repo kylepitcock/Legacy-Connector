@@ -212,9 +212,15 @@ public final class Hosts1122 {
     public static net.minecraft.network.chat.Component displayName(EntityType<?> type) {
         Info i = BY_TYPE.get(type);
         if (i == null) return null;
-        String translated = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(i.translationKey());
-        return net.minecraft.network.chat.Component.translatableWithFallback(i.translationKey(),
-                translated.equals(i.translationKey()) ? i.fallbackName() : translated);
+        String key = i.translationKey();
+        String translated = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(key);
+        if (translated.equals(key) && !key.equals("entity." + i.fallbackName() + ".name")) {
+            // 1.12.2 named the key after the registered name alone ("entity.<name>.name": Galacticraft's boss bars showed the raw name); the modid-prefixed key is the older form
+            String plain = "entity." + i.fallbackName() + ".name";
+            String t2 = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(plain);
+            if (!t2.equals(plain)) return net.minecraft.network.chat.Component.translatableWithFallback(plain, t2);
+        }
+        return net.minecraft.network.chat.Component.translatableWithFallback(key, translated.equals(key) ? i.fallbackName() : translated);
     }
 
     public static Info info(EntityType<?> type) {
