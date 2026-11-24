@@ -47,7 +47,34 @@ public final class VanillaFlattening {
     private static final Map<Integer, Item> ITEMS = new HashMap<>();
     private static Map<String, Integer> itemIds;
 
+    /** 1.7.10's head block. */
+    private static final int SKULL_ID = 144;
+
     private VanillaFlattening() {}
+
+    /** The way a wall head faces for the 1.7.10 metadata 2 (north), 3 (south), 4 (west), 5 (east). */
+    private static net.minecraft.core.Direction skullFacing(int meta) {
+        return switch (meta) {
+            case 2 -> net.minecraft.core.Direction.NORTH;
+            case 3 -> net.minecraft.core.Direction.SOUTH;
+            case 4 -> net.minecraft.core.Direction.WEST;
+            default -> net.minecraft.core.Direction.EAST;
+        };
+    }
+
+    /** {@code 144 << 4 | meta} of any modern head (every type, floor or wall), or -1 when the state is no head. */
+    private static int skullKey(BlockState state) {
+        if (!(state.getBlock() instanceof net.minecraft.world.level.block.AbstractSkullBlock)) return -1;
+        if (state.hasProperty(net.minecraft.world.level.block.WallSkullBlock.FACING)) {
+            return SKULL_ID << 4 | switch (state.getValue(net.minecraft.world.level.block.WallSkullBlock.FACING)) {
+                case NORTH -> 2;
+                case SOUTH -> 3;
+                case WEST -> 4;
+                default -> 5;
+            };
+        }
+        return SKULL_ID << 4 | 1;
+    }
 
     private static int dataVersion() {
         return SharedConstants.getCurrentVersion().getDataVersion().getVersion();
@@ -71,6 +98,14 @@ public final class VanillaFlattening {
             if (states[key] != null && states[key].getBlock() instanceof net.minecraft.world.level.block.VineBlock) {
                 states[key] = states[key].setValue(net.minecraft.world.level.block.VineBlock.UP, (key & 15) == 0);
             }
+        }
+        // The flattening turns every head (id 144) into air: the head type came from its block entity, which the block state fixers
+        // never read. A head is a block of its own in 1.7.10 (and 1.12): metadata 1 on the ground, 2-5 on a wall (the face it hangs on).
+        // Witchery's vampire ritual compares the block of its skull with Blocks.skull.
+        states[SKULL_ID << 4 | 1] = Blocks.SKELETON_SKULL.defaultBlockState();
+        for (int meta = 2; meta <= 5; meta++) {
+            states[SKULL_ID << 4 | meta] = Blocks.SKELETON_WALL_SKULL.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.WallSkullBlock.FACING, skullFacing(meta));
         }
         for (int key = 0; key < 4096; key++) {
             BlockState s = states[key];
@@ -169,6 +204,8 @@ public final class VanillaFlattening {
     /** {@code id << 4 | meta} for a modern state, or -1 if the state has no legacy equivalent. */
     public static int legacyKey(BlockState state) {
         initBlocks();
+        int head = skullKey(state);
+        if (head >= 0) return head;
         Integer exact = reverseStates.get(state);
         if (exact != null) return exact;
         if (state.getBlock() instanceof net.minecraft.world.level.block.VineBlock) {
@@ -188,6 +225,8 @@ public final class VanillaFlattening {
      */
     public static int nearestLegacyKey(BlockState state) {
         initBlocks();
+        int head = skullKey(state);
+        if (head >= 0) return head;
         Integer exact = reverseStates.get(state);
         if (exact != null) return exact;
         Integer known = nearest.get(state);
