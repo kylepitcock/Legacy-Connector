@@ -17,6 +17,13 @@ public final class ForgeVersion {
         return Integer.parseInt(getVersion().split("\\.")[0]);
     }
 
+    /** The update-check status of the running NeoForge (Forge's {@code ForgeVersion.getStatus()}). */
+    public static net.neoforged.fml.VersionChecker.Status getStatus() {
+        return ModList.get().getModContainerById("neoforge")
+                .map(c -> net.neoforged.fml.VersionChecker.getResult(c.getModInfo()).status())
+                .orElse(net.neoforged.fml.VersionChecker.Status.UP_TO_DATE);
+    }
+
     public static String getSpec() {
         return getVersion();
     }

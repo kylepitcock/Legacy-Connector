@@ -501,6 +501,12 @@ public final class LegacyRemapper extends Remapper {
             String n = internalName.indexOf('$') < 0 ? internalName : internalName.substring(0, internalName.indexOf('$'));
             if (n.equals("org/lwjgl/opengl/KHRDebug") || n.equals("org/lwjgl/opengl/KHRDebugCallback") || n.equals("org/lwjgl/opengl/GL43")) return true;
         }
+        // LWJGL 2's GLSync-typed sync objects (MCHeli): LWJGL 3 uses long handles, the shim wraps them (1.4.7 to 1.7.10 only)
+        if ((version == LegacyVersion.V1_7_10 || version == LegacyVersion.V1_6_4 || version == LegacyVersion.V1_5_2 || version == LegacyVersion.V1_4_7)
+                && internalName.startsWith("org/lwjgl/opengl/")) {
+            String n = internalName.indexOf('$') < 0 ? internalName : internalName.substring(0, internalName.indexOf('$'));
+            if (n.equals("org/lwjgl/opengl/GL32") || n.equals("org/lwjgl/opengl/ARBSync") || n.equals("org/lwjgl/opengl/GLSync")) return true;
+        }
         if (version != LegacyVersion.VB1_7_3) return false;
         // Beta GuiAPI uses TWL model/widget types; preserve their hierarchy through the versioned shims.
         if (internalName.startsWith("de/matthiasmann/twl/")) return true;

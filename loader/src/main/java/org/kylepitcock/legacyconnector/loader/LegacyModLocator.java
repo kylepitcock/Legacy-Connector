@@ -516,6 +516,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LoaderFlags.COREMOD_HOOKS.set(coremodHooks.values().stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator)));
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2; 1.12.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
+            Set<String> otherModTargets = java.util.concurrent.ConcurrentHashMap.newKeySet();
             transformer.patcher((jar, name, bytes) -> {
                 if (!org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.supports(jar.version)) return bytes;
                 LegacyVersion api = org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiFor(jar.version);
@@ -540,7 +541,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             }
                         }
                     }
-                    return transformers.apply(name, bytes);
+                    byte[] patched = transformers.apply(name, bytes);
+                    // A coremod that extends another mod's class (Logistics Pipes into Thermal Dynamics): the structural change is part of the class from here on, so
+                    // the jar's translation, link check and peers see it; the jar's cache entry is keyed by the whole set's digest, which includes the coremod's jar.
+                    if (patched != bytes && (jar.coreModClass == null || jar.coreModClass.isBlank()) && otherModTargets.add(jar.fileName())) {
+                        LOG.info("Legacy Connector: a legacy coremod of this mod set changes classes of {} (first: {}); its added members are part of the translated jar", jar.fileName(), name.replace('/', '.'));
+                    }
+                    return patched;
                 }
             });
             LegacyModDecl.setFmlIds(fmlIdRenames(loading, legacy, List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))));
@@ -1310,6 +1317,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static String skipReason(LegacyJar jar) {
+        if (jar.otherVersionReason != null) return jar.otherVersionReason;
         String lib = LIBRARY_SKIPS.get(jar);
         if (lib != null) return lib;
         String dup = DUPLICATE_SKIPS.get(jar);
@@ -1318,7 +1326,10 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         if (jar.hasMods() && "SERVER".equals(currentSide) && jar.mods.stream().allMatch(m -> m.clientSideOnly)) {
             return "client-only mod (@SideOnly(CLIENT) mod class); not loaded on a dedicated server";
         }
-        if (!jar.hasMods() && jar.tweakClass != null) {
+        // A 1.12.2 library whose tweaker only installs its own class transformers (ChickenASM, needed by Forge Multipart) is kept as a library: other mods link against its classes.
+        // Mixin loaders stay skipped (they bundle Mixin, which cannot load as a second copy).
+        boolean libraryTweaker = jar.version == LegacyVersion.V1_12_2 && jar.tweakClass != null && !jar.tweakClass.toLowerCase(java.util.Locale.ROOT).contains("mixin");
+        if (!jar.hasMods() && jar.tweakClass != null && !libraryTweaker) {
             return "LaunchWrapper tweaker (" + jar.tweakClass + ") with no @Mod; tweakers cannot run on modlauncher";
         }
         return null;

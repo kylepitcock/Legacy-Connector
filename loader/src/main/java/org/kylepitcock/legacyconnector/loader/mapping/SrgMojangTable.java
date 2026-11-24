@@ -37,14 +37,20 @@ public final class SrgMojangTable {
     private static final Pattern CLASS = Pattern.compile("^(\\S+) -> (\\S+):$");
     private static final Pattern METHOD = Pattern.compile("^\\s+(?:\\d+:\\d+:)?(\\S+) (\\S+)\\((.*?)\\)(?::\\d+:\\d+)? -> (\\S+)$");
     private static final Pattern FIELD = Pattern.compile("^\\s+(\\S+) (\\S+) -> (\\S+)$");
-    private static final Pattern SRG_METHOD = Pattern.compile("^m_\\d+_$");
-    private static final Pattern SRG_FIELD = Pattern.compile("^f_\\d+_$");
+    // func_/field_ ids: EXPERIMENTAL 1.16.5 scoping (opt-in, tsrg1 joined file)
+    private static final Pattern SRG_METHOD = Pattern.compile("^(m_\\d+_|func_\\d+_[A-Za-z]+_?)$");
+    private static final Pattern SRG_FIELD = Pattern.compile("^(f_\\d+_|field_\\d+_[A-Za-z]+_?)$");
 
+    private static final Pattern SRG_NUMBER = Pattern.compile("[0-9]+");
+    private static long srgNumber(String id) {
+        Matcher m = SRG_NUMBER.matcher(id);
+        return m.find() ? Long.parseLong(m.group()) : 0L;
+    }
     private static final Comparator<String> SRG_ORDER = (left, right) -> {
         int kind = Character.compare(left.charAt(0), right.charAt(0));
-        return kind != 0 ? kind
-                : Long.compare(Long.parseLong(left.substring(2, left.length() - 1)),
-                        Long.parseLong(right.substring(2, right.length() - 1)));
+        if (kind != 0) return kind;
+        int number = Long.compare(srgNumber(left), srgNumber(right));
+        return number != 0 ? number : left.compareTo(right);
     };
 
     private static volatile Map<String, String> table;
@@ -79,7 +85,10 @@ public final class SrgMojangTable {
         }
     }
 
-    public record GenerationResult(Map<String, String> table, Coverage coverage) {
+    public record GenerationResult(Map<String, String> table, Coverage coverage, Map<String, String> classRenames) {
+        public GenerationResult(Map<String, String> table, Coverage coverage) {
+            this(table, coverage, Map.of());
+        }
         public GenerationResult {
             TreeMap<String, String> ordered = new TreeMap<>(SRG_ORDER);
             ordered.putAll(table);
@@ -123,7 +132,7 @@ public final class SrgMojangTable {
 
     /** Build step: {@code <joined.tsrg> <client.txt> <out.tsv> [coverage.properties]}. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 3 && args.length != 4) {
+        if (args.length < 3 || args.length > 5) {
             throw new IllegalArgumentException(
                     "Usage: SrgMojangTable <joined.tsrg> <client.txt> <out.tsv> [coverage.properties]");
         }
@@ -135,7 +144,14 @@ public final class SrgMojangTable {
             if (writer.checkError()) throw new IOException("Could not write generated mapping table: " + output);
         }
         Coverage coverage = result.coverage();
-        if (args.length == 4) {
+        if (args.length == 5 && !result.classRenames().isEmpty()) { // EXPERIMENTAL 1.16.5 scoping: class rows (MCP -> Mojang) in the tsv format of the forward tables
+            Path classes = Path.of(args[4]);
+            Files.createDirectories(classes.toAbsolutePath().getParent());
+            try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(classes, StandardCharsets.UTF_8))) {
+                result.classRenames().forEach((from, to) -> writer.println(from + "\t" + to));
+            }
+        }
+        if (args.length >= 4) {
             Path report = Path.of(args[3]);
             Files.createDirectories(report.toAbsolutePath().getParent());
             String reportText = "mojangClassRows=" + coverage.mojangClassRows() + "\n"
@@ -174,6 +190,7 @@ public final class SrgMojangTable {
         }
 
         Map<String, String> classes = new HashMap<>();
+        Map<String, String> classNames = new HashMap<>(); // tsrg1 (1.16.5): obfuscated class -> MCP class name
         record Raw(String cls, boolean method, String name, String ret, String args, String obf) {}
         java.util.List<Raw> raw = new java.util.ArrayList<>();
         int mojangClassRows = 0;
@@ -248,6 +265,9 @@ public final class SrgMojangTable {
         int matchedFields = 0;
         int duplicateSrgIds = 0;
         String obfuscatedClass = null;
+        String firstLine;
+        try (BufferedReader head = Files.newBufferedReader(tsrg, StandardCharsets.UTF_8)) { firstLine = head.readLine(); }
+        boolean tsrg1 = firstLine != null && !firstLine.startsWith("tsrg2");
         try (BufferedReader reader = Files.newBufferedReader(tsrg, StandardCharsets.UTF_8)) {
             int lineNumber = 0;
             for (String line; (line = reader.readLine()) != null;) {
@@ -259,6 +279,7 @@ public final class SrgMojangTable {
                         throw new IOException("Malformed TSRG2 class row at " + tsrg + ":" + lineNumber);
                     }
                     obfuscatedClass = classParts[0];
+                    if (tsrg1 && classParts.length > 1) classNames.put(obfuscatedClass, classParts[1]);
                     joinedClassRows++;
                     continue;
                 }
@@ -267,7 +288,17 @@ public final class SrgMojangTable {
                 String srg;
                 String readableName;
                 boolean method;
-                if (parts.length == 3 && SRG_FIELD.matcher(parts[1]).matches()) {
+                if (tsrg1 && parts.length == 2 && SRG_FIELD.matcher(parts[1]).matches()) {
+                    method = false;
+                    srg = parts[1];
+                    readableName = members.get(obfuscatedClass + "|" + parts[0] + "|");
+                    joinedFieldRows++;
+                } else if (tsrg1 && parts.length == 3 && SRG_METHOD.matcher(parts[2]).matches()) {
+                    method = true;
+                    srg = parts[2];
+                    readableName = members.get(obfuscatedClass + "|" + parts[0] + "|" + parts[1]);
+                    joinedMethodRows++;
+                } else if (parts.length == 3 && SRG_FIELD.matcher(parts[1]).matches()) {
                     method = false;
                     srg = parts[1];
                     readableName = members.get(obfuscatedClass + "|" + parts[0] + "|");
@@ -305,7 +336,14 @@ public final class SrgMojangTable {
                 mojangClassRows, mojangMethodRows, mojangFieldRows,
                 joinedClassRows, joinedMethodRows, joinedFieldRows,
                 matchedMethods, matchedFields, duplicateMemberKeys, duplicateSrgIds);
-        return new GenerationResult(output, coverage);
+        // EXPERIMENTAL 1.16.5 scoping: MCP class name -> Mojang class name (only where they differ), for tsrg1 files
+        Map<String, String> classRenames = new TreeMap<>();
+        for (Map.Entry<String, String> e : classes.entrySet()) {
+            String mcp = classNames.get(e.getValue());
+            String mojangName = e.getKey().replace('.', '/');
+            if (mcp != null && !mcp.equals(mojangName)) classRenames.put(mcp, mojangName);
+        }
+        return new GenerationResult(output, coverage, classRenames);
     }
 
     private static String desc(String type, Map<String, String> classes) {

@@ -55,7 +55,7 @@ public final class Mc1201Hierarchy {
         synchronized (Mc1201Hierarchy.class) {
             if (mc != null) return mc;
             Map<String, McClass> map = new HashMap<>(16384);
-            try (InputStream raw = Mc1201Hierarchy.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mc-hierarchy.tsv.gz")) {
+            try (InputStream raw = ForwardStage.D_1201.open("mc-hierarchy.tsv.gz")) {
                 if (raw != null) {
                     BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(raw), StandardCharsets.UTF_8));
                     for (String l = r.readLine(); l != null; l = r.readLine()) {

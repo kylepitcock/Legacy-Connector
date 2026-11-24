@@ -79,7 +79,7 @@ final class ClassShape1201 {
         synchronized (ClassShape1201.class) {
             if (closed != null) return closed;
             Set<String> set = new HashSet<>();
-            try (InputStream raw = ClassShape1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mc-closed.txt.gz")) {
+            try (InputStream raw = ForwardStage.D_1201.open("mc-closed.txt.gz")) {
                 if (raw != null) {
                     BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(raw), StandardCharsets.UTF_8));
                     for (String l = r.readLine(); l != null; l = r.readLine()) if (!l.isBlank()) set.add(l.trim());

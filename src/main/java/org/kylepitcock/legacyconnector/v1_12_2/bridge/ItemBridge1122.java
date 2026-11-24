@@ -181,7 +181,7 @@ public final class ItemBridge1122 {
 
     private static net.minecraft.world.item.Item.Properties properties(Item item) {
         var p = org.kylepitcock.legacyconnector.core.host.HostProperties.item();
-        if (item.isDamageable()) p.durability(item.getMaxDamage() + 1); // 1.12 broke at damage > max (max + 1 uses), the modern game at damage >= max
+        if (item.isDamageable() && item.getMaxDamage() > 0) p.durability(item.getMaxDamage() + 1); // 1.12 broke at damage > max (max + 1 uses), the modern game at damage >= max
         else p.stacksTo(Math.max(1, Math.min(99, item.getItemStackLimit())));
         var songKey = Records1122.songKey(item);
         if (songKey != null) p.jukeboxPlayable(songKey);

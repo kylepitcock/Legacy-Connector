@@ -50,7 +50,7 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     private static final class Texture {
         final int id;
         final String path;
-        final BufferedImage image;
+        BufferedImage image;
         ResourceLocation location;
 
         Texture(int id, String path, BufferedImage image) {
@@ -168,6 +168,17 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         int id = NEXT.getAndIncrement();
         TEXTURES.put(id, new Texture(id, null, image));
         return id;
+    }
+
+    @Override
+    public void update(int id, BufferedImage image) {
+        Texture t = TEXTURES.get(id);
+        if (t == null) return;
+        t.image = image;
+        if (t.location != null) {
+            Minecraft.getInstance().getTextureManager().release(t.location);
+            t.location = null;
+        }
     }
 
     @Override

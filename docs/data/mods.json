@@ -11,6 +11,15 @@
    "notes": "Fails during preInit: java.lang.NoClassDefFoundError: p455w0rdslib.LibGlobals$Mods"
   },
   {
+   "name": "/dank/null",
+   "version": "1.7.101",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 14 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "1.7.3  Somnia",
    "version": "0.0.0-legacy",
    "mc": "b1.7.3",
@@ -272,9 +281,9 @@
    "version": "1.12.2-3.3.0.0",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/endertech/minecraft/forge/ForgeMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconne; 2 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 7 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Advanced Machines",
@@ -608,9 +617,9 @@
    "version": "1.0.34",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: appeng.core.AEConfig; 12 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 3 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "AE2NoUltimatePattern",
@@ -741,9 +750,9 @@
    "version": "2.12.0-1.12.0-a6",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/infinityraider/infinitylib/InfinityMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyc; 35 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 31 items, 10 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "AGS ModernMarkings Mod",
@@ -1561,6 +1570,15 @@
    "source": "probe",
    "status": "loads",
    "version": "rv14.finale3"
+  },
+  {
+   "name": "Applied Energistics",
+   "version": "2 rv6-stable-7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 320 items, 77 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Applied Energistics 2",
@@ -4368,6 +4386,15 @@
    "nativeUrl": "https://modrinth.com/mod/bookshelf-lib"
   },
   {
+   "name": "Bookshelf",
+   "version": "2.3.590",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Booze",
    "version": "1.6.4",
    "mc": "1.6.4",
@@ -5900,13 +5927,13 @@
    "notes": "Automated check 0.4.14+int125.7037761: declares a mod that was not installed: geckolib3. Everything else it uses links; the mod may still work without it."
   },
   {
-   "name": "Chocolate_Quest_Repoured-1.12.2-2.6.15B",
-   "version": "",
+   "name": "Chocolate Quest Repoured Mod",
+   "version": "2.6.15B",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: alone in a world the game crashed before it started: "
+   "date": "2026-11-24",
+   "status": "partial",
+   "notes": "In server self test 2026-11-24 84 items, 85 blocks, 74 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: software.bernie.geckolib3.GeckoLib Runtime problems: 4 (nbt_failure=4)."
   },
   {
    "name": "Chocolate_Quest_Repoured-1.12.2-2.8.0B",
@@ -6201,15 +6228,6 @@
   },
   {
    "name": "CodeChicken Lib",
-   "version": "3.2.3.358",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads in server self test, 17 mods (BuildCraft, NuclearCraft, Advanced Rocketry, Mekanism, OpenComputers, Industrial Foregoing) without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "CodeChicken Lib",
    "version": "4.4.0.516",
    "mc": "1.20.1",
    "source": "probe",
@@ -6219,13 +6237,13 @@
    "nativeUrl": "https://modrinth.com/mod/codechicken-lib"
   },
   {
-   "name": "CoFH Core",
-   "version": "4.6.6",
+   "name": "CodeChicken Lib",
+   "version": "3.2.3.358",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-24",
    "status": "loads",
-   "notes": "Loads in server self test, 17 mods (BuildCraft, NuclearCraft, Advanced Rocketry, Mekanism, OpenComputers, Industrial Foregoing) without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CoFH Core",
@@ -6307,6 +6325,15 @@
    "date": "2026-11-17",
    "status": "works",
    "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 12 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "CoFH Core",
+   "version": "4.6.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CoFH Loot",
@@ -6424,6 +6451,15 @@
    "date": "2026-11-17",
    "status": "loads",
    "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "CoFH World",
+   "version": "1.4.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CoFHNetwork",
@@ -9563,6 +9599,15 @@
    "nativeUrl": "https://modrinth.com/mod/enderio"
   },
   {
+   "name": "Ender IO",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 1108 items, 199 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 10 blocks did not stay placed. Runtime problems: 1 (dropped_recipe=1)."
+  },
+  {
    "name": "Ender IO Applied Energistics Conduits",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -9579,6 +9624,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Applied Energistics Conduits",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Base",
@@ -9608,6 +9662,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Conduits",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Integration with Forestry",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -9624,6 +9687,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Integration with Forestry",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Integration with Tinkers' Construct",
@@ -9644,6 +9716,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Integration with Tinkers' Construct",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Inventory Panel",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -9660,6 +9741,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Inventory Panel",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Machines",
@@ -9680,6 +9770,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Machines",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Ender IO Open Computers Conduits",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -9696,6 +9795,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Open Computers Conduits",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Powertools",
@@ -9716,6 +9824,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Powertools",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Refined Storage Conduits",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -9732,6 +9849,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Refined Storage Conduits",
+   "version": "5.3.70",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender Mail",
@@ -9833,6 +9959,15 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "EnderCore",
+   "version": "1.12.2-0.5.76",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "EnderIO",
@@ -11767,6 +11902,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (275 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Forge Endertech",
+   "version": "1.12.2-4.5.5.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Forge Essentials",
    "version": "7.5.3",
    "mc": "1.7.10",
@@ -11831,30 +11975,30 @@
   },
   {
    "name": "Forge Microblocks",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 5 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Forge Microblocks",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "works",
+   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 5 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Forge Microblocks",
    "version": "2.6.2.83",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad type on operand stack; 14 error log lines"
-  },
-  {
-   "name": "Forge Microblocks",
-   "version": "1.0.1.268",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-17",
+   "date": "2026-11-24",
    "status": "works",
-   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 5 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "Forge Microblocks",
-   "version": "1.0.1.268",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-17",
-   "status": "works",
-   "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 5 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in server self test 2026-11-24: 17 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Forge Multipart",
@@ -11915,9 +12059,9 @@
    "version": "2.6.2.83",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad type on operand stack; 2 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 0 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Forgelin",
@@ -12606,9 +12750,9 @@
    "version": "5.3.70",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.IllegalStateException: EnderCorePlugin accessed too early!; 2 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Gateways To Eternity",
@@ -15110,9 +15254,9 @@
    "version": "1.12.2-1.12.0",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.RuntimeException: COULD NOT RETRIEVE FMLMODCONTAINER EVENT METHODS FIELD; 2 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "InfiView",
@@ -15490,21 +15634,21 @@
   },
   {
    "name": "Inventory Tweaks",
-   "version": "1.63+release.109.220f184",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during init: java.lang.NullPointerException: Cannot invoke \"net.minecraft.client.gui.Gui.getChat()\" because \"net.minecraft.client.Minecraft.getInstance().gui\" is null; 2 error log lines"
-  },
-  {
-   "name": "Inventory Tweaks",
    "version": "1.56",
    "mc": "1.6.4",
    "source": "probe",
    "date": "2026-11-24",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (67 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Inventory Tweaks",
+   "version": "1.63+release.109.220f184",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "InvHUD_Configurable",
@@ -16354,9 +16498,9 @@
    "version": "1.12.2-1.0.8.0",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/endertech/minecraft/forge/ForgeMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconne; 2 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Laser Creeper Robot Dino Riders From Space",
@@ -17503,9 +17647,9 @@
    "version": "1.12.2-1.0.46",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoSuchMethodException: net.machinemuse.powersuits.common.ModularPowersuits.<init>(); 25 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 29 items, 3 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 1 (dropped_recipe=1)."
   },
   {
    "name": "Machines",
@@ -17683,9 +17827,9 @@
    "version": "1.12.2-6.5.1-SNAPSHOT",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during init: java.lang.RuntimeException: java.lang.ExceptionInInitializerError; 2 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MalisisDoors",
@@ -18000,9 +18144,9 @@
    "version": "2.5.3",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-24",
    "status": "works",
-   "notes": "Automated client survey: 0 items, 1 blocks, 0 entity types; placed 1/1 sampled blocks"
+   "notes": "Self-tested in server self test 2026-11-24: 0 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "MCPatcherForge",
@@ -18080,15 +18224,6 @@
    "notes": "Loads alone; in a set with Emerald's Dimensional Warps the second mod fails with 'Failed to register dimension for id 3, One is already registered': both mods claim dimension 3, which Forge 1.6.4 refused as well."
   },
   {
-   "name": "Mekalus (Oculus)",
-   "version": "1.8.0.1",
-   "mc": "1.20.1",
-   "source": "probe",
-   "date": "2026-11-23",
-   "status": "engine",
-   "notes": "Engine mod: not needed. Iris shader engine port for Forge 1.20.1; install Iris. Modern replacement: Iris."
-  },
-  {
    "name": "Mekanism",
    "version": "1.12.2-9.8.3.390",
    "mc": "1.12.2",
@@ -18096,15 +18231,6 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Mekanism",
-   "version": "1.12.2-9.8.3.390",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-10-30",
-   "status": "works",
-   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 143 items, 20 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Mekanism",
@@ -18160,6 +18286,15 @@
    "date": "2026-11-24",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (748 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Mekanism",
+   "version": "1.12.2-9.8.3.390",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 315 items, 21 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 1 (nbt_failure=1)."
   },
   {
    "name": "Mekanism Community Edition",
@@ -19804,30 +19939,30 @@
   },
   {
    "name": "Minecraft Multipart Plugin",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Minecraft Multipart Plugin",
+   "version": "1.0.1.268",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-17",
+   "status": "loads",
+   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Minecraft Multipart Plugin",
    "version": "2.6.2.83",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.VerifyError: Bad type on operand stack; 2 error log lines"
-  },
-  {
-   "name": "Minecraft Multipart Plugin",
-   "version": "1.0.1.268",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-17",
+   "date": "2026-11-24",
    "status": "loads",
-   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "Minecraft Multipart Plugin",
-   "version": "1.0.1.268",
-   "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-17",
-   "status": "loads",
-   "notes": "Loads in pre-1.7 second pass server self test (fam164te) without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Minecraft Rich Presence",
@@ -23116,9 +23251,9 @@
    "version": "0.13",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.ClassNotFoundException: assets.recipehandler.RecipeMod; 3 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "NonConflictKeys",
@@ -23368,9 +23503,9 @@
    "version": "",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_12_2.net.minecraftforge.common.config.Property.setLanguageKey(String)\" because \"propertySpeedU; 8 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 665 items, 238 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors. 100 blocks did not stay placed."
   },
   {
    "name": "Nuclearcraft Neoteric",
@@ -23413,9 +23548,9 @@
    "version": "1.12.2-1.0.38",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoSuchMethodException: net.machinemuse.numina.basemod.Numina.<init>(); 3 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Nutrition",
@@ -24040,9 +24175,9 @@
    "version": "2.3.161",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-24",
    "status": "works",
-   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
+   "notes": "Self-tested in server self test 2026-11-24: 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "PackagedAuto",
@@ -24541,9 +24676,9 @@
    "version": "1.6.0",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during postInit: java.lang.NullPointerException: Cannot invoke \"java.lang.Boolean.booleanValue()\" because the return value of \"legacyconnector.v1_12_2.net.minecraftforge.fml.rel; 5 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Planetoid",
@@ -24952,9 +25087,9 @@
    "version": "1.9_for_1.12.2",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"java.io.File.exists()\" because \"options\" is null; 5 error log lines"
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Potion Descriptions",
@@ -25906,6 +26041,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (1228 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Reborn Core",
+   "version": "3.19.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "RebornCore",
    "version": "1.1.0.15",
    "mc": "1.7.10",
@@ -25913,15 +26057,6 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (90 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "RebornCore-FORK-1.12.2-3.19.5-universal",
-   "version": "",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: alone in a world the game crashed before it started: "
   },
   {
    "name": "RebornStorage",
@@ -26128,9 +26263,9 @@
    "version": "2.1.1",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-24",
    "status": "loads",
-   "notes": "Loads in server self test, 17 mods (BuildCraft, NuclearCraft, Advanced Rocketry, Mekanism, OpenComputers, Industrial Foregoing) without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "RedstoneLogicGates",
@@ -26882,15 +27017,6 @@
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (2002 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
-   "name": "Rubidium (Embeddium)",
-   "version": "0.7.1",
-   "mc": "1.20.1",
-   "source": "probe",
-   "date": "2026-11-23",
-   "status": "engine",
-   "notes": "Engine mod: not needed. Sodium port for Forge 1.20.1; install the native 1.21.1 renderer. Modern replacement: Embeddium / Sodium."
-  },
-  {
    "name": "Ruins Mod Fastcraft",
    "version": "15.4",
    "mc": "1.7.10",
@@ -27411,9 +27537,9 @@
    "version": "1.8.4",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-24",
    "status": "loads",
-   "notes": "Loads in server self test, 17 mods (BuildCraft, NuclearCraft, Advanced Rocketry, Mekanism, OpenComputers, Industrial Foregoing) without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Shadowfacts' Forgelin (Dummy)",
@@ -29490,9 +29616,9 @@
    "version": "6.1.BETA26",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Automated client survey: 376 items, 200 blocks, 43 entity types, 3 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 6 error log lines"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 374 items, 200 blocks, 43 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (0%). 9 blocks did not stay placed. Runtime problems: 5 (nbt_failure=5)."
   },
   {
    "name": "Thaumcraft 4 : Patched",
@@ -29634,9 +29760,9 @@
    "version": "12.7.8",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
+   "date": "2026-11-24",
    "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NullPointerException: Cannot invoke \"Object.getClass()\" because \"target\" is null; 4 error log lines"
+   "notes": "Fails during construction: java.lang.RuntimeException: java.lang.NoClassDefFoundError: com/zeitheron/hammercore/tile/TileSyncableTickable"
   },
   {
    "name": "Thaumic Augmentation",
@@ -30226,6 +30352,15 @@
    "notes": "Automated check 0.5.2-rating: needs code from another mod or API that is not available or does not match: cofh.requack.gradle.net.download.ApacheHttpClientDownloadTask.getOutputs, cofh.requack.gradle.net.download.ApacheHttpClientDownloadTask.getProject, cofh.requack.gradle.net.download.ApacheHttpClientDownloadTask.getState, cofh.requack.gradle.net.download.ApacheHttpClientDownloadTask.setDidWork, cofh.requack.gradle.net.download.DownloadTask.getOutputs (+42 more)."
   },
   {
+   "name": "Thermal Dynamics",
+   "version": "2.5.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 48 items, 5 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 1 (nbt_failure=1)."
+  },
+  {
    "name": "Thermal Expansion",
    "version": "4.1.5",
    "mc": "1.7.10",
@@ -30247,15 +30382,6 @@
    "date": "2026-11-23",
    "status": "loads",
    "notes": "Automated check 0.5.2-rating: translates offline and everything it uses exists (111 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Thermal Expansion",
-   "version": "5.5.7",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad return type; 2 error log lines"
   },
   {
    "name": "Thermal Expansion",
@@ -30339,6 +30465,15 @@
    "notes": "Self-tested in pre-1.7 second pass server self test (fam164te): 169 items, 20 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Thermal Expansion",
+   "version": "5.5.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 114 items, 8 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors. Runtime problems: 1 (nbt_failure=1)."
+  },
+  {
    "name": "Thermal Extra",
    "version": "3.2.7-1.20.1",
    "mc": "1.20.1",
@@ -30379,9 +30514,9 @@
    "version": "2.6.7",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Automated client survey: 444 items, 17 blocks, 6 entity types; placed 17/17 sampled blocks; spawned 6/6 entity types; spawned entities left no visible pixels (invisible?)"
+   "date": "2026-11-24",
+   "status": "works",
+   "notes": "Self-tested in server self test 2026-11-24: 503 items, 17 blocks, 6 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Thermal Innovation",
@@ -30520,6 +30655,15 @@
    "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (3562 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Time Core",
+   "version": "1.0.1.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-24",
+   "status": "loads",
+   "notes": "Loads in server self test 2026-11-24 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Time In A Bottle",
    "version": "4.0.4-mc1.20.1",
    "mc": "1.20.1",
@@ -30536,15 +30680,6 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (12 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "TimeCore-1.12.2-1.0.1.1",
-   "version": "",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated client survey: alone in a world the game crashed before it started: "
   },
   {
    "name": "Timeless & Classics Guns: Zero",

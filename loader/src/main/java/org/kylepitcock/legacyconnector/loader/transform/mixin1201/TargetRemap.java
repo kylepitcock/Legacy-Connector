@@ -55,7 +55,7 @@ public final class TargetRemap {
     private static synchronized void load() {
         if (loaded) return;
         loaded = true;
-        try (InputStream in = TargetRemap.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mixin-targets.tsv")) {
+        try (InputStream in = org.kylepitcock.legacyconnector.loader.transform.ForwardStage.D_1201.open("mixin-targets.tsv")) {
             if (in == null) return;
             BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             for (String line; (line = r.readLine()) != null; ) {

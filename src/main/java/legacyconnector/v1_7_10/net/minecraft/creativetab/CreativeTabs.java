@@ -44,7 +44,14 @@ public abstract class CreativeTabs {
         this.tabIndex = index;
         this.tabLabel = label;
         creativeTabArray[index] = this;
-        if (!(this instanceof Vanilla)) CreativeTabBridge.onTabCreated(this);
+        if (!(this instanceof Vanilla)) {
+            try {
+                CreativeTabBridge.onTabCreated(this);
+            } catch (LinkageError e) {
+                // A coremod transformer's class loader serves this class unrelocated (a mod class the transformer initialises builds its tab there), so the bridge's
+                // relocated signature does not match: such a tab is a throwaway of the translation and needs no registration.
+            }
+        }
     }
 
     private legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[] relevantEnchantmentTypes = new legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[0];

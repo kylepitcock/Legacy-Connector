@@ -82,6 +82,30 @@ public final class ShimLinker {
                             "(Ljava/lang/Object;Ljava/lang/Object;)V", false));
                     insns.insertBefore(f, hook);
                     method.maxStack += 3;
+                } else if (insn instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)
+                        && hierarchy.isShim(f.owner) && hierarchy.find(f.owner) != null
+                        && hierarchy.find(f.owner).fields.getOrDefault(f.name + ":" + f.desc, 0) != 0
+                        && (hierarchy.find(f.owner).fields.get(f.name + ":" + f.desc) & Opcodes.ACC_STATIC) != 0) {
+                    // An instance field access of a shim class that keeps the state in static fields (CodeChickenLib's CCRenderState.instance().brightness):
+                    // the receiver is dropped and the static field read or written, so both shapes of the library reach the same state.
+                    boolean get = f.getOpcode() == Opcodes.GETFIELD;
+                    InsnList fix = new InsnList();
+                    if (get) {
+                        fix.add(new InsnNode(Opcodes.POP));
+                    } else if (Type.getType(f.desc).getSize() == 2) {
+                        fix.add(new InsnNode(Opcodes.DUP2_X1));
+                        fix.add(new InsnNode(Opcodes.POP2));
+                        fix.add(new InsnNode(Opcodes.POP));
+                    } else {
+                        fix.add(new InsnNode(Opcodes.SWAP));
+                        fix.add(new InsnNode(Opcodes.POP));
+                    }
+                    FieldInsnNode stat = new FieldInsnNode(get ? Opcodes.GETSTATIC : Opcodes.PUTSTATIC, f.owner, f.name, f.desc);
+                    fix.add(stat);
+                    insns.insert(f, fix);
+                    insns.remove(f);
+                    report.adapted(f.owner, f.name + ":" + f.desc + " (instance access of a static shim field)", node.name);
+                    insn = stat;
                 } else if (insn instanceof FieldInsnNode f) {
                     AbstractInsnNode replacement = virtualField(f, hierarchy);
                     if (replacement != null) {
@@ -241,6 +265,30 @@ public final class ShimLinker {
         if (l == Hierarchy.Lookup.FOUND && staticMismatch(m, h)) {
             // the shim declares it static where the call is virtual, or the other way round: the JVM would throw
             // IncompatibleClassChangeError at the call, so it links like a missing method (a stub, reported)
+            Integer shimAccess = h.resolvedMethodAccess(m.owner, m.name, m.desc);
+            if (m.getOpcode() == Opcodes.INVOKEVIRTUAL && shimAccess != null && (shimAccess & Opcodes.ACC_STATIC) != 0) {
+                // A library's later "instance()" API over a static shim (CodeChickenLib's CCRenderState): the arguments go to temporaries, the receiver
+                // is dropped and the static method called, so both shapes of the library work.
+                org.objectweb.asm.Type[] args = org.objectweb.asm.Type.getArgumentTypes(m.desc);
+                int base = method.maxLocals;
+                org.objectweb.asm.tree.InsnList fix = new org.objectweb.asm.tree.InsnList();
+                int slot = base;
+                int[] slots = new int[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    slots[i] = slot;
+                    slot += args[i].getSize();
+                }
+                for (int i = args.length - 1; i >= 0; i--) fix.add(new org.objectweb.asm.tree.VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
+                fix.add(new org.objectweb.asm.tree.InsnNode(Opcodes.POP));
+                for (int i = 0; i < args.length; i++) fix.add(new org.objectweb.asm.tree.VarInsnNode(args[i].getOpcode(Opcodes.ILOAD), slots[i]));
+                MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC, m.owner, m.name, m.desc, false);
+                fix.add(call);
+                method.maxLocals = slot;
+                method.instructions.insert(m, fix);
+                method.instructions.remove(m);
+                report.adapted(m.owner, m.name + m.desc + " (instance call of a static shim method)", from);
+                return call;
+            }
             report.missingMember(m.owner, m.name + m.desc + " (static/instance mismatch)", from, true);
             l = Hierarchy.Lookup.MISSING_MEMBER;
         }

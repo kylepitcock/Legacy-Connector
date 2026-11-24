@@ -74,5 +74,42 @@ class CompareTest(unittest.TestCase):
         self.assertEqual(verify.parse_log("Legacy 1.20.1 mods: 3 loaded, 0 failed")["mods_loaded_1201"], 3)
 
 
+class ResumeTest(unittest.TestCase):
+    def test_result_files_resume_and_collect(self):
+        ok = {"suite": "a", "metrics": {"reached_selftest": 1}}
+        with tempfile.TemporaryDirectory() as d:
+            verify.write_result(d, "a", "run1", "rev1", ok)
+            verify.write_result(d, "b", "run1", "rev1", {"suite": "b", "setup": "x"})
+            verify.write_result(d, "c", "run1", "rev1", {"suite": "c", "metrics": {}, "note": "timed out after 900s"})
+            verify.write_result(d, "e", "run2", "rev1", {"suite": "e", "metrics": {"reached_selftest": 1}})
+            self.assertTrue(verify.reusable(d, "a", "run1", "rev1"))
+            self.assertFalse(verify.reusable(d, "a", "run1", "rev2"))   # other revision
+            self.assertFalse(verify.reusable(d, "a", "run2", "rev1"))   # other run
+            self.assertFalse(verify.reusable(d, "b", "run1", "rev1"))   # SETUP runs again
+            self.assertFalse(verify.reusable(d, "c", "run1", "rev1"))   # timeout runs again
+            self.assertFalse(verify.reusable(d, "zz", "run1", "rev1"))
+            self.assertEqual([r["suite"] for r in verify.collect(d, "run1", ["c", "a", "e"])], ["c", "a"])
+            self.assertEqual(sorted(r["suite"] for r in verify.collect(d, "run1")), ["a", "b", "c"])
+            with open(os.path.join(d, "verify-bad-result.json"), "w") as f:
+                f.write("{half")
+            self.assertEqual(len(verify.collect(d, "run1")), 3)
+
+    def test_report_run(self):
+        import contextlib
+        import io
+        with tempfile.TemporaryDirectory() as d:
+            verify.write_result(d, "a", "r", "x", {"suite": "a", "metrics": {"reached_selftest": 1, "blocks_ok": 5}})
+            base = os.path.join(d, "base.json")
+            with open(base, "w") as f:
+                f.write('{"a": {"reached_selftest": 1, "blocks_ok": 5}}')
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = verify.main(["verify.py", "report", base, "--run", "r", "--dir", d])
+            self.assertEqual(rc, 0)
+            self.assertIn("PASS", out.getvalue())
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(verify.main(["verify.py", "report", base, "--run", "nope", "--dir", d]), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

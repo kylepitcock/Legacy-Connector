@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Unattended regression runner for the headless server self test. See docs/wiki/Development.md ("Regression suites").
-# usage: tools/dev/verify.sh [--update] [--list] [suite ...]      (no suite = all of tools/dev/verify/suites/*.txt)
+# usage: tools/dev/verify.sh [--update] [--list] [--resume <run-id>] [suite ...]      (no suite = all of tools/dev/verify/suites/*.txt)
+# Every run has an id (printed first, with the git revision). Each suite's result is written to build/devtools/verify-<suite>-result.json the moment it finishes, so a run
+# that dies midway loses nothing: `--resume <run-id> [same suites]` skips suites that already finished in that run at the same revision (SETUP, SKIP and timed-out suites run
+# again) and prints the full table at the end. `python tools/dev/verify/verify.py report --run <id>` rebuilds the table of a run (also a dead one) without running anything.
+# Test hooks: VERIFY_FAKE=<dir> reads <dir>/<suite>.log instead of resolving jars and starting a server; VERIFY_FAKE_DIE_AFTER=<n> exits abruptly after n suites run.
 # --list: dry run, only prints which jar each suite line resolves to (status ok|missing|setup, see tools/dev/verify/picker.py); starts nothing.
 # Env: GRADLE_EXTRA (extra Gradle arguments, e.g. "-Pjfr=C:/tmp/a.jfr -PmsptLog=600 -PmemoryLog"), JAR_ROOT (main checkout holding the gitignored jar folders), AUTOSTOP (ticks, default 700), SUITE_TIMEOUT (seconds, default 900).
 set -u
@@ -18,14 +22,20 @@ SEARCH="test-mods-issues/298 test-mods-issues test-mods test-mods2 test-mods3 te
 ATM9_MODS="${ATM9_MODS:-X:/Modded games/Prism Launcher/instances/ATM 9 20026/minecraft/mods}"
 ATM10_MODS="${ATM10_MODS:-X:/Modded games/Prism Launcher/instances/ATM10 2026/minecraft/mods}"
 
-update=""; listonly=""; names=()
-for a in "$@"; do case "$a" in --update) update="--update";; --list) listonly=1;; *) names+=("$a");; esac; done
+update=""; listonly=""; names=(); resume=""; expect_run=""
+for a in "$@"; do
+  if [ -n "$expect_run" ]; then resume="$a"; expect_run=""; continue; fi
+  case "$a" in --update) update="--update";; --list) listonly=1;; --resume) expect_run=1;; --resume=*) resume="${a#--resume=}";; *) names+=("$a");; esac
+done
+if [ -n "$expect_run" ]; then echo "--resume needs a run id" >&2; exit 2; fi
 if [ ${#names[@]} -eq 0 ]; then for f in $SUITES_DIR/*.txt; do names+=("$(basename "$f" .txt)"); done; fi
 
 mkdir -p build/devtools run-verify
 RESULTS=build/devtools/verify-results.json
-echo "[" > "$RESULTS"
-first=1
+RDIR=build/devtools
+REV="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+RUN_ID="${resume:-$(date +%Y%m%d-%H%M%S)}"
+ran=0
 
 # resolve_suites <suite file ...>: TSV `suite status ver fragment path note`, one line per suite line. The picker (tools/dev/verify/picker.py)
 # prefers jars from a folder or file name of the line's Minecraft version, never picks a jar labelled with another version, and reports
@@ -41,10 +51,8 @@ kill_server() {
   powershell -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$ROOT/tools/dev/verify/kill-server.ps1")" -Root "$(cygpath -w "$ROOT")" >&2 2>/dev/null
 }
 
-emit() { # emit <json object>
-  [ $first -eq 1 ] || echo "," >> "$RESULTS"
-  first=0
-  echo "$1" >> "$RESULTS"
+emit() { # emit <suite> <json object>: the suite's result file is written right away (resumable runs)
+  printf '%s' "$2" | "$PY" tools/dev/verify/verify.py result-write "$RDIR" "$1" "$RUN_ID" "$REV"
 }
 
 if [ -n "$listonly" ]; then
@@ -53,12 +61,23 @@ if [ -n "$listonly" ]; then
   exit 0
 fi
 
+echo "verify run $RUN_ID at $REV${resume:+ (resumed)}: ${names[*]}" >&2
 idx=0
 for s in "${names[@]}"; do
   idx=$((idx+1))
   file="$SUITES_DIR/$s.txt"
-  if [ ! -f "$file" ]; then echo "unknown suite $s" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"suite file\"}"; continue; fi
+  if [ ! -f "$file" ]; then echo "unknown suite $s" >&2; emit "$s" "{\"suite\":\"$s\",\"skipped\":\"suite file\"}"; continue; fi
+  if [ -n "$resume" ] && "$PY" tools/dev/verify/verify.py resume-check "$RDIR" "$s" "$RUN_ID" "$REV"; then echo "=== suite $s (already finished in run $RUN_ID, skipped)" >&2; continue; fi
+  if [ -n "${VERIFY_FAKE_DIE_AFTER:-}" ] && [ "$ran" -ge "$VERIFY_FAKE_DIE_AFTER" ]; then echo "VERIFY_FAKE_DIE_AFTER: dying after $ran suites" >&2; exit 137; fi
+  ran=$((ran+1))
   echo "=== suite $s" >&2
+  if [ -n "${VERIFY_FAKE:-}" ]; then
+    D="run-verify/$s"; mkdir -p "$D/logs" "$D/crash-reports"
+    if [ -f "$VERIFY_FAKE/$s.log" ]; then cp -f "$VERIFY_FAKE/$s.log" "$D/logs/latest.log"; else : > "$D/logs/latest.log"; fi
+    "$PY" tools/dev/verify/verify.py parse "$D/logs/latest.log" "$D/crash-reports" > "build/devtools/verify-$s-metrics.json"
+    emit "$s" "$("$PY" -c 'import json,sys; print(json.dumps({"suite": sys.argv[1], "metrics": json.load(open(sys.argv[2]))}))' "$s" "build/devtools/verify-$s-metrics.json")"
+    continue
+  fi
   jars=(); missing=""; setup=""
   chosen="build/devtools/verify-$s-jars.txt"; : > "$chosen"
   while IFS=$'\t' read -r _ status ver frag j note; do
@@ -70,8 +89,8 @@ for s in "${names[@]}"; do
       *) jars+=("$ver|$j");;
     esac
   done < <(resolve_suites "$file")
-  if [ -n "$setup" ]; then echo "  SETUP: ambiguous jar pick for:$setup (see the NOTE lines above; fix the suite file)" >&2; emit "{\"suite\":\"$s\",\"setup\":\"${setup# }\"}"; continue; fi
-  if [ -n "$missing" ]; then echo "  skipped, missing:$missing" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"${missing# }\"}"; continue; fi
+  if [ -n "$setup" ]; then echo "  SETUP: ambiguous jar pick for:$setup (see the NOTE lines above; fix the suite file)" >&2; emit "$s" "{\"suite\":\"$s\",\"setup\":\"${setup# }\"}"; continue; fi
+  if [ -n "$missing" ]; then echo "  skipped, missing:$missing" >&2; emit "$s" "{\"suite\":\"$s\",\"skipped\":\"${missing# }\"}"; continue; fi
 
   D="run-verify/$s"
   rm -rf "$D/mods" "$D/world" "$D/config" "$D/crash-reports" "$D/logs" "$D/.legacyconnector/cache"
@@ -108,14 +127,16 @@ for s in "${names[@]}"; do
   log="$D/logs/latest.log"; [ -f "$log" ] || : > "$log"
   "$PY" tools/dev/verify/verify.py parse "$log" "$D/crash-reports" > "build/devtools/verify-$s-metrics.json"
   note=""; [ -n "$timedout" ] && note="$timedout"
-  "$PY" - "$s" "build/devtools/verify-$s-metrics.json" "$note" >> "$RESULTS.tmp" <<'PYEOF'
+  "$PY" - "$s" "build/devtools/verify-$s-metrics.json" "$note" > "$RESULTS.tmp" <<'PYEOF'
 import json, sys
 print(json.dumps({"suite": sys.argv[1], "metrics": json.load(open(sys.argv[2])), **({"note": sys.argv[3]} if sys.argv[3] else {})}))
 PYEOF
-  emit "$(cat "$RESULTS.tmp")"; rm -f "$RESULTS.tmp"
+  emit "$s" "$(cat "$RESULTS.tmp")"; rm -f "$RESULTS.tmp"
 done
-echo "]" >> "$RESULTS"
 
+# the table covers every named suite, those finished earlier in a resumed run included
+"$PY" tools/dev/verify/verify.py collect "$RDIR" "$RUN_ID" "${names[@]}" > "$RESULTS"
+echo "verify run $RUN_ID done (rebuild this table later: python tools/dev/verify/verify.py report --run $RUN_ID)" >&2
 "$PY" tools/dev/verify/verify.py report "$BASELINE" "$RESULTS" $update | tee build/devtools/verify-report.txt
 rc=${PIPESTATUS[0]}
 mkdir -p build/devtools

@@ -9,5 +9,6 @@ public interface IGuiIngredientGroup<T> {
     void addTooltipCallback(ITooltipCallback<T> tooltipCallback);
     java.util.Map<Integer, ? extends IGuiIngredient<T>> getGuiIngredients();
     void init(int slotIndex, boolean input, int xPosition, int yPosition);
+    void init(int slotIndex, boolean input, legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer<T> ingredientRenderer, int xPosition, int yPosition, int width, int height, int xInset, int yInset);
     void setOverrideDisplayFocus(legacyconnector.v1_12_2.mezz.jei.api.recipe.IFocus<T> focus);
 }

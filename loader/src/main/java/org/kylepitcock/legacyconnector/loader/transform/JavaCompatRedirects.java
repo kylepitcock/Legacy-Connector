@@ -105,6 +105,12 @@ public final class JavaCompatRedirects {
                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/logging/log4j/core/Layout;"
                         + "Lorg/apache/logging/log4j/core/Filter;Ljava/lang/String;Ljava/lang/String;Lorg/apache/logging/log4j/core/config/Configuration;)"
                         + "Lorg/apache/logging/log4j/core/appender/RandomAccessFileAppender;", COMPAT + "Log4jCompat", "createAppender");
+        INVOKES.put("org/lwjgl/PointerBuffer.getBuffer()Ljava/nio/ByteBuffer;", new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "LibraryCompat",
+                "pointerBufferGetBuffer", "(Lorg/lwjgl/PointerBuffer;)Ljava/nio/ByteBuffer;", false));
+        // log4j 2.0-beta9 Logger.log(Marker, fqcn, Level, Message, Throwable) became logMessage(fqcn, Level, Marker, Message, Throwable) (EnderCore's logger)
+        virtualToStatic("org/apache/logging/log4j/core/Logger", "log",
+                "(Lorg/apache/logging/log4j/Marker;Ljava/lang/String;Lorg/apache/logging/log4j/Level;Lorg/apache/logging/log4j/message/Message;Ljava/lang/Throwable;)V",
+                COMPAT + "Log4jCompat");
         staticToStatic("java/lang/System", "setSecurityManager", "(Ljava/lang/SecurityManager;)V", COMPAT + "JdkCompat", "setSecurityManager");
         // ASM 5 -> 9: descriptor parsing became strict.
         staticToStatic("org/objectweb/asm/Type", "getType", "(Ljava/lang/String;)Lorg/objectweb/asm/Type;", COMPAT + "LibraryCompat", "asmGetType");
@@ -350,7 +356,9 @@ public final class JavaCompatRedirects {
     private static final Map<String, String> CONSTRUCTOR_FACTORIES = Map.of(
             "com/google/common/base/Stopwatch", "createUnstarted",
             // Netty 4.0 -> 4.1: new AttributeKey(name) -> AttributeKey.valueOf(name)
-            "io/netty/util/AttributeKey", "valueOf");
+            "io/netty/util/AttributeKey", "valueOf",
+            // LWJGL 2 -> 3: new PointerBuffer(ByteBuffer) -> PointerBuffer.create(ByteBuffer) (GTNH Lib's MemoryStack)
+            "org/lwjgl/PointerBuffer", "create");
 
     private static void staticToStatic(String owner, String name, String desc, String target, String targetName) {
         INVOKES.put(owner + "." + name + desc, new MethodInsnNode(Opcodes.INVOKESTATIC, target, targetName, desc, false));
@@ -369,7 +377,7 @@ public final class JavaCompatRedirects {
                 if (insn instanceof MethodInsnNode call) {
                     MethodInsnNode target = INVOKES.get(call.owner + "." + call.name + call.desc);
                     // Only virtual call sites are rewritten for virtual methods; super calls stay intact.
-                    if (target != null && (call.getOpcode() != Opcodes.INVOKESPECIAL)) {
+                    if (target != null && (call.getOpcode() != Opcodes.INVOKESPECIAL || call.owner.equals("org/apache/logging/log4j/core/Logger"))) {
                         MethodInsnNode replacement = (MethodInsnNode) target.clone(null);
                         insns.set(call, replacement);
                         insn = replacement;
@@ -428,6 +436,33 @@ public final class JavaCompatRedirects {
                             insn = replaced;
                             count++;
                         }
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>") && call.desc.equals("()V")
+                            && (call.owner.equals("org/yaml/snakeyaml/constructor/SafeConstructor") || call.owner.equals("org/yaml/snakeyaml/representer/Representer"))
+                            && !node.name.equals(call.owner)) {
+                        // SnakeYAML 1.x no-argument constructors (also as a subclass's super()) need LoaderOptions / DumperOptions since 2.0
+                        boolean loader = call.owner.endsWith("SafeConstructor");
+                        String opts = loader ? "org/yaml/snakeyaml/LoaderOptions" : "org/yaml/snakeyaml/DumperOptions";
+                        InsnList fix = new InsnList();
+                        fix.add(new TypeInsnNode(Opcodes.NEW, opts));
+                        fix.add(new InsnNode(Opcodes.DUP));
+                        fix.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, opts, "<init>", "()V", false));
+                        insns.insertBefore(call, fix);
+                        call.desc = "(L" + opts + ";)V";
+                        method.maxStack += 3;
+                        count++;
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("calculateScalarStyle")
+                            && call.owner.equals("org/yaml/snakeyaml/DumperOptions")) {
+                        // DumperOptions.calculateScalarStyle (an override hook of SnakeYAML 1.x) is gone: the requested style stays, [this, analysis, style] -> [style]
+                        InsnList fix = new InsnList();
+                        fix.add(new InsnNode(Opcodes.SWAP));
+                        fix.add(new InsnNode(Opcodes.POP));
+                        fix.add(new InsnNode(Opcodes.SWAP));
+                        fix.add(new InsnNode(Opcodes.POP));
+                        AbstractInsnNode prev = call.getPrevious();
+                        insns.insertBefore(call, fix);
+                        insns.remove(call);
+                        insn = prev == null ? insns.getFirst() : prev;
+                        count++;
                     } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
                             && CONSTRUCTOR_FACTORIES.containsKey(call.owner) && !node.name.equals(call.owner)) {
                         // new Stopwatch(...) -> Stopwatch.createUnstarted(...), new AttributeKey(n) -> AttributeKey.valueOf(n)

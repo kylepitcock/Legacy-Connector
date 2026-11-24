@@ -12,4 +12,12 @@ public interface IRecipeRegistry {
     default void hideRecipe(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeWrapper recipe, String recipeCategoryUid) {
         removeRecipe(recipe, recipeCategoryUid);
     }
+    /** JEI 4: the wrapper of a mod's recipe object, found through the handler it registered (null if none takes it). */
+    legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeWrapper getRecipeWrapper(Object recipe, String recipeCategoryUid);
+    /** JEI 3: a recipe object of a mod, found through its handler. */
+    void addRecipe(Object recipe);
+    void removeRecipe(Object recipe);
+    java.util.List<legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategory> getRecipeCategories(java.util.List<String> recipeCategoryUids);
+    java.util.List<legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategory> getRecipeCategories();
+    legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandler getRecipeTransferHandler(legacyconnector.v1_12_2.net.minecraft.inventory.Container container, legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategory recipeCategory);
 }

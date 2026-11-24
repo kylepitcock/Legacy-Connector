@@ -835,6 +835,15 @@ public final class RenderContext {
             VertexConsumer shaderPack = shaderPackBuffer(s, buffers, texture);
             if (shaderPack != null) return shaderPack;
         }
+        // Legacy sky geometry (a mod's sky renderer: End-style sky cubes, void/horizon boxes, celestials) never wrote depth in 1.7.10
+        // (renderSky ran with glDepthMask(false)) and is unlit. The object types below write depth: a sky cube of radius 100 then hid
+        // all terrain beyond 100 blocks (Mystcraft's End-sky ages looked like a small box). Same as the shader-pack path.
+        if (!gui && !s.additive) {
+            Frame skyFrame = s.frames.peek();
+            if (skyFrame != null && skyFrame.kind == KIND_SKY) {
+                return buffers.getBuffer(stated(s, s.texture2d ? LegacyRenderTypes.skyTextured(texture, s.blend) : LegacyRenderTypes.skyUntextured()));
+            }
+        }
         if (gui && s.additive && s.texture2d) return buffers.getBuffer(stated(s, LegacyRenderTypes.guiAdditive(texture)));
         // a screen drawing with GL lighting off (Thaumcraft's aspect icons): the lit entity shader dimmed it
         // and a flat screen quad without a normal of its own, lighting or not: GUI item lighting left on by drawing items (the

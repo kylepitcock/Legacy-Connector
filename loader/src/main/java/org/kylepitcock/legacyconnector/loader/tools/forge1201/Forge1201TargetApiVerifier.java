@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
+import org.kylepitcock.legacyconnector.loader.transform.Mc1201ApiMappings;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -21,12 +23,15 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Remapper;
 
 /**
- * Verifies package-relocation candidates against the actual target compile classpath.
+ * Verifies Forge and Minecraft API references against the target compile classpath and
+ * Connector-owned compatibility runtime outputs.
  *
  * <p>This is a read-only verifier. It parses class-file headers and member descriptors as data;
- * it never defines, initializes, or executes target classes. It is deliberately conservative:
- * inherited members are checked through the visible class hierarchy, and unresolved hierarchy
- * information is reported separately from a confirmed missing member.</p>
+ * it never defines, initializes, or executes target classes. It normalizes Forge-runtime SRG
+ * member identifiers, applies the recorded direct Minecraft 1.20.1-to-1.21.1 mappings, and
+ * checks inherited members through the visible target hierarchy. Unmapped source identifiers,
+ * unavailable Connector runtime classes, and unresolved hierarchy information remain distinct
+ * from a confirmed missing target member.</p>
  */
 public final class Forge1201TargetApiVerifier {
     @FunctionalInterface
@@ -38,7 +43,10 @@ public final class Forge1201TargetApiVerifier {
         VERIFIED,
         MISSING,
         INCOMPLETE_HIERARCHY,
-        REQUIRES_MANUAL_DESCRIPTOR_ADAPTER
+        REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
+        NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+        NOT_CHECKED_INSUFFICIENT_CALLSITE_CONTEXT,
+        UNMAPPED_SOURCE_MEMBER_NAME
     }
 
     public record MemberIssue(
@@ -48,15 +56,86 @@ public final class Forge1201TargetApiVerifier {
             String targetOwner,
             String targetDescriptor,
             MemberStatus status,
-            List<String> callSites) {
+            List<String> hierarchyVisited,
+            List<String> callSites,
+            String mappingRule,
+            String targetName) {
         public MemberIssue {
+            hierarchyVisited = List.copyOf(hierarchyVisited);
             callSites = List.copyOf(callSites);
+            mappingRule = mappingRule == null ? "CATALOG_METHOD_OR_FIELD_MAPPING" : mappingRule;
+            targetName = targetName == null ? name : targetName;
+        }
+
+        public MemberIssue(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor, MemberStatus status,
+                List<String> hierarchyVisited, List<String> callSites, String mappingRule) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor, status,
+                    hierarchyVisited, callSites, mappingRule, name);
+        }
+
+        public MemberIssue(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor, MemberStatus status,
+                List<String> hierarchyVisited, List<String> callSites) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor, status,
+                    hierarchyVisited, callSites, "CATALOG_METHOD_OR_FIELD_MAPPING", name);
+        }
+
+        /** Source-compatible constructor for callers that do not retain hierarchy details. */
+        public MemberIssue(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor, MemberStatus status, List<String> callSites) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor,
+                    status, List.of(), callSites, "CATALOG_METHOD_OR_FIELD_MAPPING", name);
         }
 
         public String display() {
             return sourceOwner.replace('/', '.') + "#" + name + sourceDescriptor
-                    + " -> " + targetOwner.replace('/', '.') + "#" + name + targetDescriptor
-                    + " [" + status + "]";
+                    + " -> " + targetOwner.replace('/', '.') + "#" + targetName + targetDescriptor
+                    + " [" + status + "; mapping=" + mappingRule + "]";
+        }
+    }
+
+    /** Exact target-side match, including the inheritance path used to resolve it. */
+    public record MemberMatch(
+            String sourceOwner,
+            String name,
+            String sourceDescriptor,
+            String targetOwner,
+            String targetDescriptor,
+            List<String> hierarchyVisited,
+            List<String> callSites,
+            String mappingRule,
+            String targetName) {
+        public MemberMatch {
+            hierarchyVisited = List.copyOf(hierarchyVisited);
+            callSites = List.copyOf(callSites);
+            mappingRule = mappingRule == null ? "CATALOG_METHOD_OR_FIELD_MAPPING" : mappingRule;
+            targetName = targetName == null ? name : targetName;
+        }
+
+        public MemberMatch(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor,
+                List<String> hierarchyVisited, List<String> callSites, String mappingRule) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor,
+                    hierarchyVisited, callSites, mappingRule, name);
+        }
+
+        public MemberMatch(
+                String sourceOwner, String name, String sourceDescriptor,
+                String targetOwner, String targetDescriptor,
+                List<String> hierarchyVisited, List<String> callSites) {
+            this(sourceOwner, name, sourceDescriptor, targetOwner, targetDescriptor,
+                    hierarchyVisited, callSites, "CATALOG_METHOD_OR_FIELD_MAPPING", name);
+        }
+
+        public String display() {
+            return sourceOwner.replace('/', '.') + "#" + name + sourceDescriptor
+                    + " -> " + targetOwner.replace('/', '.') + "#" + targetName + targetDescriptor
+                    + " [FOUND; hierarchy=" + hierarchyVisited + "; mapping=" + mappingRule + "]";
         }
     }
 
@@ -69,11 +148,31 @@ public final class Forge1201TargetApiVerifier {
             List<MemberIssue> methodIssues,
             int uniqueFieldReferences,
             int verifiedFieldReferences,
-            List<MemberIssue> fieldIssues) {
+            List<MemberIssue> fieldIssues,
+            List<MemberMatch> verifiedMethods,
+            List<MemberMatch> verifiedFields) {
         public Result {
             missingTargetClasses = List.copyOf(missingTargetClasses);
             methodIssues = List.copyOf(methodIssues);
             fieldIssues = List.copyOf(fieldIssues);
+            verifiedMethods = List.copyOf(verifiedMethods);
+            verifiedFields = List.copyOf(verifiedFields);
+        }
+
+        /** Source-compatible constructor for earlier report consumers. */
+        public Result(
+                int candidateClassCount,
+                int verifiedClassCount,
+                List<String> missingTargetClasses,
+                int uniqueMethodReferences,
+                int verifiedMethodReferences,
+                List<MemberIssue> methodIssues,
+                int uniqueFieldReferences,
+                int verifiedFieldReferences,
+                List<MemberIssue> fieldIssues) {
+            this(candidateClassCount, verifiedClassCount, missingTargetClasses,
+                    uniqueMethodReferences, verifiedMethodReferences, methodIssues,
+                    uniqueFieldReferences, verifiedFieldReferences, fieldIssues, List.of(), List.of());
         }
     }
 
@@ -128,9 +227,16 @@ public final class Forge1201TargetApiVerifier {
      */
     public static final class TargetIndex {
         private final Forge1201TargetApiVerifier verifier;
+        private final Set<String> unavailablePrefixes;
 
-        private TargetIndex(ClassBytesProvider classBytes) {
-            this.verifier = new Forge1201TargetApiVerifier(classBytes);
+        private TargetIndex(ClassBytesProvider classBytes, Set<String> unavailablePrefixes) {
+            this.verifier = new Forge1201TargetApiVerifier(classBytes, unavailablePrefixes);
+            this.unavailablePrefixes = Set.copyOf(unavailablePrefixes);
+        }
+
+        /** True when the requested class belongs to a runtime domain not supplied to this index. */
+        public boolean isUnavailableClass(String internalName) {
+            return unavailablePrefixes.stream().anyMatch(internalName::startsWith);
         }
 
         /** Returns empty only when the requested target class is absent. */
@@ -160,15 +266,27 @@ public final class Forge1201TargetApiVerifier {
         }
 
         public MemberLookup lookupMethod(String owner, String name, String descriptor) throws IOException {
+            if (verifier.readClass(owner) == null) {
+                return new MemberLookup(LookupStatus.MISSING, List.of(owner));
+            }
             Set<String> visited = new LinkedHashSet<>();
             Lookup lookup = verifier.findMethod(owner, new MemberKey(name, descriptor), visited);
             return toPublicLookup(lookup, visited);
         }
 
         public MemberLookup lookupField(String owner, String name, String descriptor) throws IOException {
+            if (verifier.readClass(owner) == null) {
+                return new MemberLookup(LookupStatus.MISSING, List.of(owner));
+            }
             Set<String> visited = new LinkedHashSet<>();
             Lookup lookup = verifier.findField(owner, new MemberKey(name, descriptor), visited);
             return toPublicLookup(lookup, visited);
+        }
+
+        /** Verify through this index's existing class-byte provider and metadata caches. */
+        public Result verify(Forge1201ApiUsageAnalyzer.Analysis analysis) throws IOException {
+            if (analysis == null) throw new IllegalArgumentException("API analysis is required");
+            return verifier.verify(analysis);
         }
 
         private static MemberLookup toPublicLookup(Lookup lookup, Set<String> visited) {
@@ -189,8 +307,18 @@ public final class Forge1201TargetApiVerifier {
 
     /** Creates a fresh target index whose metadata cache is isolated to this analysis. */
     public static TargetIndex createIndex(ClassBytesProvider classBytes) {
+        return createIndex(classBytes, Set.of());
+    }
+
+    /**
+     * Creates an index with explicitly unavailable class-name domains. Members in those domains
+     * are reported as not checked instead of being mislabeled as missing.
+     */
+    public static TargetIndex createIndex(
+            ClassBytesProvider classBytes, Set<String> unavailablePrefixes) {
         if (classBytes == null) throw new IllegalArgumentException("Target class byte provider is required");
-        return new TargetIndex(classBytes);
+        if (unavailablePrefixes == null) throw new IllegalArgumentException("Unavailable prefixes are required");
+        return new TargetIndex(classBytes, unavailablePrefixes);
     }
 
     private record MemberKey(String name, String descriptor) {}
@@ -206,12 +334,18 @@ public final class Forge1201TargetApiVerifier {
     private record Lookup(boolean found, boolean complete) {}
 
     private final ClassBytesProvider classBytes;
+    private final Set<String> unavailablePrefixes;
     private final Map<String, TargetClass> classCache = new HashMap<>();
     private final Set<String> missingClassCache = new HashSet<>();
     private final Map<MethodCodeKey, Optional<MethodCodeSummary>> methodCodeCache = new HashMap<>();
 
-    private Forge1201TargetApiVerifier(ClassBytesProvider classBytes) {
+    private Forge1201TargetApiVerifier(ClassBytesProvider classBytes, Set<String> unavailablePrefixes) {
         this.classBytes = classBytes;
+        this.unavailablePrefixes = Set.copyOf(unavailablePrefixes);
+    }
+
+    private boolean isUnavailableClass(String internalName) {
+        return unavailablePrefixes.stream().anyMatch(internalName::startsWith);
     }
 
     public static Result verify(Path sourceJar, ClassLoader targetClassLoader) throws IOException {
@@ -239,7 +373,7 @@ public final class Forge1201TargetApiVerifier {
             ClassBytesProvider classBytes) throws IOException {
         if (analysis == null) throw new IllegalArgumentException("API analysis is required");
         if (classBytes == null) throw new IllegalArgumentException("Target class byte provider is required");
-        return new Forge1201TargetApiVerifier(classBytes).verify(analysis);
+        return new Forge1201TargetApiVerifier(classBytes, Set.of()).verify(analysis);
     }
 
     private Result verify(Forge1201ApiUsageAnalyzer.Analysis analysis) throws IOException {
@@ -254,7 +388,7 @@ public final class Forge1201TargetApiVerifier {
         int verifiedClasses = 0;
         for (String targetName : candidates) {
             if (readClass(targetName) == null) {
-                missingClasses.add(targetName);
+                if (!isUnavailableClass(targetName)) missingClasses.add(targetName);
             } else {
                 verifiedClasses++;
             }
@@ -271,55 +405,159 @@ public final class Forge1201TargetApiVerifier {
                         .toList();
 
         List<MemberIssue> methodIssues = new ArrayList<>();
+        List<MemberMatch> verifiedMethodMatches = new ArrayList<>();
         int verifiedMethods = 0;
         for (var reference : candidateMethods) {
             String targetOwner = mapType(reference.owner());
-            String targetDescriptor = mapMethodDescriptor(reference.descriptor());
+            String targetDescriptor = mapMethodDescriptor(reference.owner(), reference.name(), reference.descriptor());
+            List<String> callSites = methodCallSites(analysis, reference);
+            SourceMemberName sourceName = normalizeSourceMemberName(reference.name(), true);
+            if (!sourceName.mapped()) {
+                methodIssues.add(new MemberIssue(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, MemberStatus.UNMAPPED_SOURCE_MEMBER_NAME,
+                        List.of(), callSites, "SRG_TO_MOJANG_MAPPING_NOT_FOUND", reference.name()));
+                continue;
+            }
+            String targetName = Mc1201ApiMappings.targetMemberName(
+                    reference.owner(), sourceName.name(), reference.descriptor());
+            String mappingRule = combineMappingRules(
+                    sourceName.mappingRule(),
+                    methodDescriptorMappingRule(reference.owner(), sourceName.name(), reference.descriptor()),
+                    !sourceName.name().equals(targetName) ? "MC1201_MEMBER_NAME_MAPPING" : null);
             if (descriptorNeedsManualAdapter(reference.descriptor(), true)) {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                        methodCallSites(analysis, reference)));
+                        List.of(), callSites, "MANUAL_ADAPTER_CATALOG", targetName));
                 continue;
             }
-            Lookup lookup = findMethod(targetOwner, new MemberKey(reference.name(), targetDescriptor), new HashSet<>());
+            if (isUnavailableClass(targetOwner)) {
+                methodIssues.add(new MemberIssue(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+                        List.of(), callSites, mappingRule, targetName));
+                continue;
+            }
+            Set<String> hierarchyVisited = new LinkedHashSet<>();
+            Lookup lookup = readClass(targetOwner) == null
+                    ? new Lookup(false, true)
+                    : findMethod(targetOwner, new MemberKey(targetName, targetDescriptor), hierarchyVisited);
             if (lookup.found()) {
                 verifiedMethods++;
+                verifiedMethodMatches.add(new MemberMatch(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, new ArrayList<>(hierarchyVisited),
+                        callSites, mappingRule, targetName));
             } else {
                 methodIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor,
                         lookup.complete() ? MemberStatus.MISSING : MemberStatus.INCOMPLETE_HIERARCHY,
-                        methodCallSites(analysis, reference)));
+                        new ArrayList<>(hierarchyVisited), callSites, mappingRule, targetName));
             }
         }
 
         List<MemberIssue> fieldIssues = new ArrayList<>();
+        List<MemberMatch> verifiedFieldMatches = new ArrayList<>();
         int verifiedFields = 0;
         for (var reference : candidateFields) {
             String targetOwner = mapType(reference.owner());
             String targetDescriptor = mapFieldDescriptor(reference.descriptor());
+            List<String> callSites = fieldCallSites(analysis, reference);
+            SourceMemberName sourceName = normalizeSourceMemberName(reference.name(), false);
+            if (!sourceName.mapped()) {
+                fieldIssues.add(new MemberIssue(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, MemberStatus.UNMAPPED_SOURCE_MEMBER_NAME,
+                        List.of(), callSites, "SRG_TO_MOJANG_MAPPING_NOT_FOUND", reference.name()));
+                continue;
+            }
+
+            String targetName = Mc1201ApiMappings.targetMemberName(
+                    reference.owner(), sourceName.name(), ":" + reference.descriptor());
+            String mappingRule = combineMappingRules(
+                    sourceName.mappingRule(), "CATALOG_FIELD_DESCRIPTOR_MAPPING",
+                    !sourceName.name().equals(targetName) ? "MC1201_MEMBER_NAME_MAPPING" : null);
+
+            boolean staticFieldHelper = false;
+            Mc1201ApiMappings.StaticFieldMapping staticFieldMapping =
+                    Mc1201ApiMappings.staticFieldMapping(reference.owner(), sourceName.name(), reference.descriptor());
+            if (staticFieldMapping != null) {
+                if (!allFieldCallSitesAreGetStatic(analysis, reference)) {
+                    fieldIssues.add(new MemberIssue(
+                            reference.owner(), reference.name(), reference.descriptor(),
+                            targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_INSUFFICIENT_CALLSITE_CONTEXT,
+                            List.of(), callSites,
+                            "MC1201_STATIC_FIELD_RULE_REQUIRES_GETSTATIC_CALLSITE_EVIDENCE:"
+                                    + staticFieldMapping.postAdapter(),
+                            targetName));
+                    continue;
+                } else if ("none".equals(staticFieldMapping.targetDescriptor())) {
+                    if (!staticFieldMapping.usesHelper()) {
+                        fieldIssues.add(new MemberIssue(
+                                reference.owner(), reference.name(), reference.descriptor(),
+                                targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
+                                List.of(), callSites,
+                                "MC1201_STATIC_FIELD_HELPER_SIGNATURE_UNAVAILABLE:" + staticFieldMapping.postAdapter(),
+                                targetName));
+                        continue;
+                    }
+                    targetOwner = staticFieldMapping.helperOwner();
+                    targetName = staticFieldMapping.helperName();
+                    targetDescriptor = mapMethodDescriptor(
+                            staticFieldMapping.helperOwner(), staticFieldMapping.helperName(),
+                            staticFieldMapping.helperDescriptor());
+                    mappingRule = combineMappingRules(mappingRule,
+                            "MC1201_STATIC_FIELD_HELPER_ADAPTER:" + staticFieldMapping.postAdapter());
+                    staticFieldHelper = true;
+                } else {
+                    targetName = staticFieldMapping.targetName();
+                    targetDescriptor = mapFieldDescriptor(staticFieldMapping.targetDescriptor());
+                    mappingRule = combineMappingRules(mappingRule,
+                            "MC1201_STATIC_FIELD_ADAPTER:" + staticFieldMapping.postAdapter());
+                }
+            }
+
             if (descriptorNeedsManualAdapter(reference.descriptor(), false)) {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor, MemberStatus.REQUIRES_MANUAL_DESCRIPTOR_ADAPTER,
-                        fieldCallSites(analysis, reference)));
+                        List.of(), callSites, "MANUAL_ADAPTER_CATALOG", targetName));
                 continue;
             }
-            Lookup lookup = findField(targetOwner, new MemberKey(reference.name(), targetDescriptor), new HashSet<>());
+            if (isUnavailableClass(targetOwner)) {
+                fieldIssues.add(new MemberIssue(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+                        List.of(), callSites, mappingRule, targetName));
+                continue;
+            }
+            Set<String> hierarchyVisited = new LinkedHashSet<>();
+            Lookup lookup = readClass(targetOwner) == null
+                    ? new Lookup(false, true)
+                    : staticFieldHelper
+                            ? findMethod(targetOwner, new MemberKey(targetName, targetDescriptor), hierarchyVisited)
+                            : findField(targetOwner, new MemberKey(targetName, targetDescriptor), hierarchyVisited);
             if (lookup.found()) {
                 verifiedFields++;
+                verifiedFieldMatches.add(new MemberMatch(
+                        reference.owner(), reference.name(), reference.descriptor(),
+                        targetOwner, targetDescriptor, new ArrayList<>(hierarchyVisited),
+                        callSites, mappingRule, targetName));
             } else {
                 fieldIssues.add(new MemberIssue(
                         reference.owner(), reference.name(), reference.descriptor(),
                         targetOwner, targetDescriptor,
                         lookup.complete() ? MemberStatus.MISSING : MemberStatus.INCOMPLETE_HIERARCHY,
-                        fieldCallSites(analysis, reference)));
+                        new ArrayList<>(hierarchyVisited), callSites, mappingRule, targetName));
             }
         }
 
         methodIssues.sort(java.util.Comparator.comparing(MemberIssue::display));
         fieldIssues.sort(java.util.Comparator.comparing(MemberIssue::display));
+        verifiedMethodMatches.sort(java.util.Comparator.comparing(MemberMatch::display));
+        verifiedFieldMatches.sort(java.util.Comparator.comparing(MemberMatch::display));
 
         return new Result(
                 candidates.size(),
@@ -330,7 +568,9 @@ public final class Forge1201TargetApiVerifier {
                 methodIssues,
                 candidateFields.size(),
                 verifiedFields,
-                fieldIssues);
+                fieldIssues,
+                verifiedMethodMatches,
+                verifiedFieldMatches);
     }
 
     private boolean isCandidate(String sourceInternalName) {
@@ -342,26 +582,88 @@ public final class Forge1201TargetApiVerifier {
     }
 
     private static String mapType(String sourceInternalName) {
-        Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(sourceInternalName);
+        String minecraftMapped = Mc1201ApiMappings.targetClassName(sourceInternalName);
+        Forge1201MappingCatalog.Decision decision = Forge1201MappingCatalog.classify(minecraftMapped);
         return decision.kind() == Forge1201MappingCatalog.Kind.PACKAGE_RELOCATION_CANDIDATE
                         || decision.kind() == Forge1201MappingCatalog.Kind.EXPLICIT_TYPE_REPLACEMENT
                 ? decision.targetInternalName()
-                : sourceInternalName;
+                : minecraftMapped;
+    }
+
+    private record SourceMemberName(String name, boolean mapped, String mappingRule) {}
+
+    private static SourceMemberName normalizeSourceMemberName(String sourceName, boolean method) {
+        boolean srgName = sourceName != null && (method
+                ? sourceName.matches("m_\\d+_")
+                : sourceName.matches("f_\\d+_"));
+        if (!srgName) return new SourceMemberName(sourceName, true, null);
+        String mapped = SrgMojangTable.load().get(sourceName);
+        return mapped == null
+                ? new SourceMemberName(sourceName, false, "SRG_TO_MOJANG_MAPPING_NOT_FOUND")
+                : new SourceMemberName(mapped, true, "SRG_TO_MOJANG");
+    }
+
+    private static String combineMappingRules(String... rules) {
+        List<String> present = new ArrayList<>();
+        for (String rule : rules) {
+            if (rule != null && !rule.isBlank() && !present.contains(rule)) present.add(rule);
+        }
+        return present.isEmpty() ? "CATALOG_METHOD_OR_FIELD_MAPPING" : String.join("+", present);
+    }
+
+    private static boolean allFieldCallSitesAreGetStatic(
+            Forge1201ApiUsageAnalyzer.Analysis analysis,
+            Forge1201ApiUsageAnalyzer.ApiMemberReference reference) {
+        List<Forge1201ApiUsageAnalyzer.ApiFieldCallSite> sites = analysis.fieldCallSites().stream()
+                .filter(callSite -> callSite.targetOwner().equals(reference.owner())
+                        && callSite.targetName().equals(reference.name())
+                        && callSite.targetDescriptor().equals(reference.descriptor()))
+                .toList();
+        boolean matchingHandle = analysis.dynamicReferences().stream().anyMatch(referenceHandle ->
+                referenceHandle.kind() == Forge1201ApiUsageAnalyzer.ApiDynamicReferenceKind.FIELD_HANDLE
+                        && reference.owner().equals(referenceHandle.owner())
+                        && reference.name().equals(referenceHandle.name())
+                        && reference.descriptor().equals(referenceHandle.descriptor()));
+        return !sites.isEmpty()
+                && !matchingHandle
+                && sites.stream().allMatch(site -> site.opcode() == Opcodes.GETSTATIC);
     }
 
     private static Remapper descriptorRemapper() {
         return new Remapper() {
             @Override
             public String map(String internalName) {
-                // Qualify the verifier helper explicitly: Remapper itself has an instance mapType()
-                // that delegates back to map(), so an unqualified call here would recurse forever.
+                // Apply Minecraft class migrations first, then reviewed Forge-to-NeoForge type moves.
                 return Forge1201TargetApiVerifier.mapType(internalName);
             }
         };
     }
 
-    private static String mapMethodDescriptor(String descriptor) {
-        return descriptorRemapper().mapMethodDesc(descriptor);
+    private static String mapMethodDescriptor(String sourceOwner, String methodName, String descriptor) {
+        String mappedDescriptor = descriptorRemapper().mapMethodDesc(descriptor);
+        Type sourceReturn = Type.getReturnType(descriptor);
+        if ("net/minecraftforge/registries/DeferredRegister".equals(sourceOwner)
+                && "register".equals(methodName)
+                && sourceReturn.getSort() == Type.OBJECT
+                && "net/minecraftforge/registries/RegistryObject".equals(sourceReturn.getInternalName())) {
+            // This one factory method returns DeferredHolder in NeoForge. Keep the general
+            // RegistryObject -> Supplier rule for unrelated get-only references.
+            return Type.getMethodDescriptor(
+                    Type.getObjectType("net/neoforged/neoforge/registries/DeferredHolder"),
+                    Type.getArgumentTypes(mappedDescriptor));
+        }
+        return mappedDescriptor;
+    }
+
+    private static String methodDescriptorMappingRule(String sourceOwner, String methodName, String descriptor) {
+        Type sourceReturn = Type.getReturnType(descriptor);
+        if ("net/minecraftforge/registries/DeferredRegister".equals(sourceOwner)
+                && "register".equals(methodName)
+                && sourceReturn.getSort() == Type.OBJECT
+                && "net/minecraftforge/registries/RegistryObject".equals(sourceReturn.getInternalName())) {
+            return "DEFERRED_REGISTER_REGISTER_RETURNS_DEFERRED_HOLDER";
+        }
+        return "CATALOG_METHOD_OWNER_AND_DESCRIPTOR_MAPPING";
     }
 
     private static String mapFieldDescriptor(String descriptor) {
@@ -572,6 +874,7 @@ public final class Forge1201TargetApiVerifier {
                         && callSite.targetName().equals(reference.name())
                         && callSite.targetDescriptor().equals(reference.descriptor()))
                 .map(Forge1201ApiUsageAnalyzer.ApiMethodCallSite::display)
+                .sorted()
                 .toList();
     }
 
@@ -583,11 +886,15 @@ public final class Forge1201TargetApiVerifier {
                         && callSite.targetName().equals(reference.name())
                         && callSite.targetDescriptor().equals(reference.descriptor()))
                 .map(Forge1201ApiUsageAnalyzer.ApiFieldCallSite::display)
+                .sorted()
                 .toList();
     }
 
     static void printIssue(MemberIssue issue) {
         System.out.println("  " + issue.display());
+        if (!issue.hierarchyVisited().isEmpty()) {
+            System.out.println("    HIERARCHY: " + issue.hierarchyVisited());
+        }
         if (issue.callSites().isEmpty()) {
             System.out.println("    CALLSITE: none captured (the reference may come from a handle or metadata)");
             return;

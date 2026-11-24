@@ -1194,3 +1194,36 @@ net/minecraft/commands/arguments/ScoreHolderArgument	getName	(Lcom/mojang/brigad
 net/minecraft/world/level/block/DispenserBlock	getDispenseMethod	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/core/dispenser/DispenseItemBehavior;	Round15CommonCompat	dispenseMethod	-
 net/minecraft/commands/CommandBuildContext	holderLookup	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/HolderLookup;	=	lookupOrThrow	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/core/HolderLookup$RegistryLookup;
 net/minecraft/world/entity/vehicle/AbstractMinecart	createMinecart	(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/entity/vehicle/AbstractMinecart$Type;)Lnet/minecraft/world/entity/vehicle/AbstractMinecart;	Round15CommonCompat	createMinecart	-
+# --- failure classes (hard ATM 9 jars): eye height, portal members, chunk holder, throwable gravity, single-item recipe factory (Round16Compat)
+net/minecraft/world/entity/Entity	getStandingEyeHeight	(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F	Round16Compat	standingEyeHeight
+net/minecraft/world/entity/Entity	handleInsidePortal	(Lnet/minecraft/core/BlockPos;)V	Round16Compat	handleInsidePortal
+net/minecraft/world/entity/Entity	handleInsidePortal	(Lnet/minecraft/core/BlockPos;)V@special	Round16Compat	superHandleInsidePortal	(Ljava/lang/Object;Lnet/minecraft/core/BlockPos;)V
+net/minecraft/world/entity/Entity	handleNetherPortal	()V	=	handlePortal
+net/minecraft/world/entity/Entity	$get$isInsidePortal	()Z	Round16Compat	insidePortal	-
+net/minecraft/world/entity/Entity	$set$isInsidePortal	(Z)V	Round16Compat	setInsidePortal	-
+net/minecraft/world/entity/Entity	$get$portalTime	()I	Round16Compat	portalTime	-
+net/minecraft/world/entity/Entity	$set$portalTime	(I)V	Round16Compat	setPortalTime	-
+net/minecraft/server/level/ChunkHolder	getFullChunk	()Lnet/minecraft/world/level/chunk/LevelChunk;	Round16Compat	fullChunk	-
+net/minecraft/world/entity/projectile/ThrowableProjectile	getGravity	()F@special	Round16Compat	superThrowableGravity	(Ljava/lang/Object;)F
+net/minecraft/world/item/crafting/SingleItemRecipe$Serializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySingleItemMaker;)V	=args	Round16Compat.singleItemFactory@0	(Lnet/minecraft/world/item/crafting/SingleItemRecipe$Factory;)V
+net/minecraft/world/level/levelgen/structure/structures/JigsawStructure	<init>	(Lnet/minecraft/world/level/levelgen/structure/Structure$StructureSettings;Lnet/minecraft/core/Holder;Ljava/util/Optional;ILnet/minecraft/world/level/levelgen/heightproviders/HeightProvider;ZLjava/util/Optional;I)V	=args	0,1,2,3,4,5,6,7,Round16Compat.poolAliases@0,Round16Compat.dimensionPadding@0,Round16Compat.liquidSettings@0	(Lnet/minecraft/world/level/levelgen/structure/Structure$StructureSettings;Lnet/minecraft/core/Holder;Ljava/util/Optional;ILnet/minecraft/world/level/levelgen/heightproviders/HeightProvider;ZLjava/util/Optional;ILjava/util/List;Lnet/minecraft/world/level/levelgen/structure/pools/DimensionPadding;Lnet/minecraft/world/level/levelgen/structure/templatesystem/LiquidSettings;)V
+net/minecraft/world/entity/monster/AbstractSkeleton	getArrow	(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;	=args	0,1,Round16Compat.noWeapon@0	(Lnet/minecraft/world/item/ItemStack;FLnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/AbstractArrow;
+net/minecraft/world/level/block/LeverBlock	pull	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;	Round16Compat	pullLever
+net/minecraft/world/item/armortrim/ArmorTrim	setTrim	(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/armortrim/ArmorTrim;)Z	Round16Compat	setTrim
+net/minecraft/world/item/enchantment/EnchantmentHelper	getDamageProtection	(Ljava/lang/Iterable;Lnet/minecraft/world/damagesource/DamageSource;)I	Round16Compat	damageProtection
+net/minecraft/core/dispenser/DispenseItemBehavior	setEntityPokingOutOfBlock	(Lnet/minecraft/core/dispenser/BlockSource;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/Direction;)V	Round16Compat	setEntityPokingOutOfBlock
+net/minecraft/client/renderer/texture/SpriteLoader	loadSprite	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/server/packs/resources/Resource;)Lnet/minecraft/client/renderer/texture/SpriteContents;	Round16ClientCompat	loadSprite
+net/minecraft/world/item/trading/MerchantOffer	$get$baseCostA	()Lnet/minecraft/world/item/ItemStack;	Round16Compat	merchantBaseCostA	-
+net/minecraft/world/item/trading/MerchantOffer	$get$costB	()Lnet/minecraft/world/item/ItemStack;	Round16Compat	merchantCostB	-
+net/minecraft/world/entity/monster/Spider$SpiderEffectsGroupData	$get$effect	()Lnet/minecraft/world/effect/MobEffect;	Round16Compat	spiderEffect	-
+net/minecraft/world/entity/monster/Spider$SpiderEffectsGroupData	$set$effect	(Lnet/minecraft/world/effect/MobEffect;)V	Round16Compat	setSpiderEffect	-
+net/minecraft/world/entity/projectile/AbstractArrow	setEnchantmentEffectsFromEntity	(Lnet/minecraft/world/entity/LivingEntity;F)V	Round16Compat	arrowEnchantmentEffects
+net/minecraft/world/item/CrossbowItem	getStartSound	(I)Lnet/minecraft/sounds/SoundEvent;	Round16Compat	crossbowStartSound
+net/minecraft/world/entity/player/Inventory	hurtArmor	(Lnet/minecraft/world/damagesource/DamageSource;F[I)V	Round16Compat	hurtArmor
+net/neoforged/neoforge/common/extensions/IBlockExtension	getCloneItemStack	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/phys/HitResult;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/item/ItemStack;	=	-	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/phys/HitResult;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/item/ItemStack;
+# --- failure classes batch 4: beacon trigger, minecart loot, suspicious effect holders, remove-effect packet
+net/minecraft/advancements/critereon/ConstructBeaconTrigger$TriggerInstance	<init>	(Lnet/minecraft/advancements/critereon/ContextAwarePredicate;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;)V	=args	Round16Compat.optionalPredicate@0,1	(Ljava/util/Optional;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;)V
+net/minecraft/world/entity/vehicle/AbstractMinecartContainer	getLootTable	()Lnet/minecraft/resources/ResourceLocation;	Round16Compat	minecartLootTable
+net/minecraft/world/level/block/SuspiciousEffectHolder	getSuspiciousEffect	()Lnet/minecraft/world/effect/MobEffect;	Round16Compat	suspiciousEffect
+net/minecraft/world/level/block/SuspiciousEffectHolder	getEffectDuration	()I	Round16Compat	suspiciousEffectDuration
+net/minecraft/network/protocol/game/ClientboundRemoveMobEffectPacket	<init>	(ILnet/minecraft/world/effect/MobEffect;)V	Round16Compat	removeMobEffectPacket

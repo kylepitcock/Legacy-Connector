@@ -126,7 +126,8 @@ public final class LegacyCoreModTransformers {
                 }
             }
             Class<?> lclClass = apiLoader.loadClass("net.minecraft.launchwrapper.LaunchClassLoader");
-            lclClass.getField("mcc$definer").set(null, (UnaryOperator<byte[]>) LegacyCoreModTransformers::modernizeApi);
+            LegacyVersion renameVersion = api == LegacyVersion.V1_6_4 ? coremods.get(0).version : null;
+            lclClass.getField("mcc$definer").set(null, (UnaryOperator<byte[]>) b -> forwardRenames(modernizeApi(b), renameVersion));
             Class<?> lclImpl = api == LegacyVersion.V1_6_4 ? apiLoader.loadClass("cpw.mods.fml.relauncher.RelaunchClassLoader") : lclClass;
             URLClassLoader lcl = (URLClassLoader) lclImpl.getConstructor(URL[].class, ClassLoader.class)
                     .newInstance(urls.toArray(URL[]::new), fml);
@@ -483,6 +484,8 @@ public final class LegacyCoreModTransformers {
     private static final class ShimLoader extends ClassLoader {
         private static final String PREFIX = LegacyVersion.V1_7_10.shimPrefix();
         private final LegacyVersion hierarchy;
+        /** The API flavour's own version when it is not the hierarchy's (1.6.4: classes of Forge 1.6 the 1.7.10 data lacks, e.g. IChatListener). */
+        private final LegacyVersion ownHierarchy;
         /** Shim roots tried in order: the 1.6.4 API (ITickHandler, TickType...) lives in its own root over the 1.7.10 one. */
         private final List<String> prefixes;
         private final java.util.zip.ZipFile jar;
@@ -494,6 +497,7 @@ public final class LegacyCoreModTransformers {
             this.prefixes = api == LegacyVersion.V1_6_4 ? List.of(LegacyVersion.V1_6_4.shimPrefix(), PREFIX)
                     : api == LegacyVersion.V1_12_2 ? List.of(LegacyVersion.V1_12_2.shimPrefix()) : List.of(PREFIX);
             this.hierarchy = api == LegacyVersion.V1_12_2 ? LegacyVersion.V1_12_2 : LegacyVersion.V1_7_10;
+            this.ownHierarchy = api == LegacyVersion.V1_6_4 ? LegacyVersion.V1_6_4 : null;
             this.dir = Files.isDirectory(runtime) ? runtime : null;
             this.jar = dir == null ? new java.util.zip.ZipFile(runtime.toFile()) : null;
         }
@@ -515,7 +519,9 @@ public final class LegacyCoreModTransformers {
             String internal = name.replace('.', '/');
             byte[] bytes = null;
             try {
-                if (LegacyVersion.isRelocatedRoot(internal)) {
+                if (ownHierarchy != null && internal.startsWith("facade/")) {
+                    bytes = read(prefixes.get(0) + internal + ".class"); // the forward layer's facades (addFacadeMethods)
+                } else if (LegacyVersion.isRelocatedRoot(internal)) {
                     for (String prefix : prefixes) {
                         bytes = read(prefix + internal + ".class");
                         if (bytes != null) break;
@@ -530,6 +536,7 @@ public final class LegacyCoreModTransformers {
                 // A vanilla class the shim has no hand-written version of: coremods still name it (ClassWriter's
                 // frame computation asks for common superclasses), so serve an empty class with its real supertypes.
                 var entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(hierarchy).get(internal);
+                if (entryData == null && ownHierarchy != null) entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(ownHierarchy).get(internal);
                 if (entryData == null) {
                     // A Minecraft class of the mod's own version (1.5.2 names such as net.minecraft.network.packet.Packet are not in the 1.7.10
                     // data): mod classes whose static initialisers install transformers (Immibis Core) only name it in signatures, and the verifier
@@ -551,16 +558,105 @@ public final class LegacyCoreModTransformers {
                 byte[] out = bare.toByteArray();
                 return defineClass(name, out, 0, out.length);
             }
-            ClassWriter writer = new ClassWriter(0);
-            new ClassReader(bytes).accept(new ClassRemapper(writer, new Remapper() {
+            org.objectweb.asm.tree.ClassNode node = unrelocated(bytes);
+            if (ownHierarchy != null && (node.access & org.objectweb.asm.Opcodes.ACC_INTERFACE) == 0) addFacadeMethods(node, internal);
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            node.accept(writer);
+            byte[] out = writer.toByteArray();
+            return defineClass(name, out, 0, out.length);
+        }
+
+        private Remapper unrelocate() {
+            return new Remapper() {
                 @Override
                 public String map(String n) {
                     for (String prefix : prefixes) if (n.startsWith(prefix)) return n.substring(prefix.length());
                     return n;
                 }
-            }), 0);
-            byte[] out = writer.toByteArray();
-            return defineClass(name, out, 0, out.length);
+            };
+        }
+
+        private org.objectweb.asm.tree.ClassNode unrelocated(byte[] bytes) {
+            org.objectweb.asm.tree.ClassNode raw = new org.objectweb.asm.tree.ClassNode();
+            new ClassReader(bytes).accept(raw, 0);
+            neutralizeBridgeCalls(raw);
+            org.objectweb.asm.tree.ClassNode node = new org.objectweb.asm.tree.ClassNode();
+            raw.accept(new ClassRemapper(node, unrelocate()));
+            return node;
+        }
+
+        /**
+         * A shim class served here has lost its relocation, but the runtime's bridges (which the shim calls into the running game with) keep theirs, so a call whose
+         * descriptor names shim types can never link. A coremod's class loader has no running game anyway: such a call pops its operands and answers the type's
+         * default (null, 0, false), the way the game answers before it is set up.
+         */
+        private void neutralizeBridgeCalls(org.objectweb.asm.tree.ClassNode node) {
+            for (org.objectweb.asm.tree.MethodNode m : node.methods) {
+                for (org.objectweb.asm.tree.AbstractInsnNode insn = m.instructions.getFirst(); insn != null; ) {
+                    org.objectweb.asm.tree.AbstractInsnNode next = insn.getNext();
+                    if (insn instanceof org.objectweb.asm.tree.MethodInsnNode call && call.owner.startsWith("org/kylepitcock/legacyconnector/") && namesShimType(call.desc)) {
+                        org.objectweb.asm.tree.InsnList code = new org.objectweb.asm.tree.InsnList();
+                        org.objectweb.asm.Type[] args = org.objectweb.asm.Type.getArgumentTypes(call.desc);
+                        for (int i = args.length - 1; i >= 0; i--) code.add(new org.objectweb.asm.tree.InsnNode(args[i].getSize() == 2 ? org.objectweb.asm.Opcodes.POP2 : org.objectweb.asm.Opcodes.POP));
+                        if (call.getOpcode() != org.objectweb.asm.Opcodes.INVOKESTATIC) code.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Opcodes.POP));
+                        switch (org.objectweb.asm.Type.getReturnType(call.desc).getSort()) {
+                            case org.objectweb.asm.Type.VOID -> { }
+                            case org.objectweb.asm.Type.LONG -> code.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Opcodes.LCONST_0));
+                            case org.objectweb.asm.Type.FLOAT -> code.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Opcodes.FCONST_0));
+                            case org.objectweb.asm.Type.DOUBLE -> code.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Opcodes.DCONST_0));
+                            case org.objectweb.asm.Type.OBJECT, org.objectweb.asm.Type.ARRAY -> code.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Opcodes.ACONST_NULL));
+                            default -> code.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Opcodes.ICONST_0));
+                        }
+                        m.instructions.insert(call, code);
+                        m.instructions.remove(call);
+                    }
+                    insn = next;
+                }
+            }
+        }
+
+        private boolean namesShimType(String desc) {
+            for (String prefix : prefixes) if (desc.contains(prefix)) return true;
+            return false;
+        }
+
+        /** The forward layer's facade of a class ({@code <version root>facade/<name>}): static helpers taking the receiver first, for the calls the 1.7.10 shim shapes differently. */
+        private org.objectweb.asm.tree.ClassNode facadeOf(String plainName) {
+            try {
+                byte[] bytes = read(prefixes.get(0) + "facade/" + plainName + ".class");
+                return bytes == null ? null : unrelocated(bytes);
+            } catch (java.io.IOException | RuntimeException e) {
+                return null;
+            }
+        }
+
+        /**
+         * Gives the class the instance methods 1.4.7-1.6.4 mods call on it that the 1.7.10 shim shapes differently ({@code Configuration.getItem(String, int)}): each
+         * public static method of its facade whose first parameter is the class becomes an instance method that calls it. Translated mods get the same through
+         * {@code ForwardCalls}/{@code ForwardRedirects}; untranslated mod code a transformer runs sees the class this way.
+         */
+        private void addFacadeMethods(org.objectweb.asm.tree.ClassNode node, String facadeFor) {
+            org.objectweb.asm.tree.ClassNode facade = facadeOf(facadeFor);
+            if (facade == null) return;
+            String receiverDesc = "L" + facadeFor + ";";
+            for (org.objectweb.asm.tree.MethodNode m : facade.methods) {
+                if ((m.access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PUBLIC)) != (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PUBLIC)
+                        || !m.desc.startsWith("(" + receiverDesc)) continue;
+                String desc = "(" + m.desc.substring(1 + receiverDesc.length());
+                boolean exists = false;
+                for (org.objectweb.asm.tree.MethodNode have : node.methods) if (have.name.equals(m.name) && have.desc.equals(desc)) exists = true;
+                if (exists) continue;
+                org.objectweb.asm.tree.MethodNode add = new org.objectweb.asm.tree.MethodNode(org.objectweb.asm.Opcodes.ACC_PUBLIC, m.name, desc, null, null);
+                add.instructions.add(new org.objectweb.asm.tree.VarInsnNode(org.objectweb.asm.Opcodes.ALOAD, 0));
+                int slot = 1;
+                for (org.objectweb.asm.Type t : org.objectweb.asm.Type.getArgumentTypes(desc)) {
+                    add.instructions.add(new org.objectweb.asm.tree.VarInsnNode(t.getOpcode(org.objectweb.asm.Opcodes.ILOAD), slot));
+                    slot += t.getSize();
+                }
+                add.instructions.add(new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, facade.name, m.name, m.desc, false));
+                add.instructions.add(new org.objectweb.asm.tree.InsnNode(org.objectweb.asm.Type.getReturnType(desc).getOpcode(org.objectweb.asm.Opcodes.IRETURN)));
+                node.methods.add(add);
+            }
         }
     }
 
@@ -596,10 +692,31 @@ public final class LegacyCoreModTransformers {
         }
     }
 
+    /**
+     * The class renames of the forward layer ({@code ForwardRenames}: 1.6.4's {@code Configuration} is the shim's {@code config.Configuration}) applied to a class
+     * the coremod loader defines, so untranslated 1.4.7-1.6.4 mod code a transformer runs names the shim's classes, as translated mods do.
+     */
+    static byte[] forwardRenames(byte[] bytes, LegacyVersion version) {
+        if (version == null || version.forward() == null) return bytes;
+        try {
+            ClassWriter writer = new ClassWriter(0);
+            new ClassReader(bytes).accept(new ClassRemapper(writer, new Remapper() {
+                @Override
+                public String map(String internalName) {
+                    return org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(version, internalName);
+                }
+            }), 0);
+            return writer.toByteArray();
+        } catch (RuntimeException e) {
+            return bytes;
+        }
+    }
+
     /** Classes of coremods compiled against ASM 5 use names ASM 9 replaced (see {@link LegacyRemapper#JDK_RELOCATIONS}). */
     private static byte[] modernizeApi(byte[] bytes) {
         bytes = CoremodPatches.apply(bytes);
         bytes = guavaCalls(bytes);
+        bytes = AsmNodeCompat.apply(bytes);
         Map<String, String> renames = new HashMap<>();
         for (var e : LegacyRemapper.JDK_RELOCATIONS.entrySet()) {
             if (e.getKey().startsWith("org/objectweb/asm/")) renames.put(e.getKey(), e.getValue());

@@ -15,6 +15,11 @@ public final class LegacyJar {
     /** Why {@link #version} was chosen; shown in the compatibility report. */
     public String versionEvidence = "";
     /**
+     * Set when the jar names Minecraft by obfuscated names that fit none of the supported versions (1.4.7, 1.5.2, 1.6.4): it was built for another release
+     * (1.6.2/1.6.3, ...), whose names the layer has no table for. The jar is then not loaded (its calls would link to the wrong members); the text is the reason shown in the report.
+     */
+    public String otherVersionReason;
+    /**
      * Minecraft 1.2.5 jars hosted through the 1.4.7 chain (on by default, {@code versions.minecraft125=false} or {@code -Dlegacyconnector.mc125=false} turns it off): {@link #version} is 1.4.7, this is
      * {@link LegacyVersion#V1_2_5} and {@link #notchSide} the 1.2.5 obfuscation the jar uses ('c' client, 's' server). Null otherwise.
      */

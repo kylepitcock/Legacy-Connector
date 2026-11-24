@@ -1,0 +1,15 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): a mining well below y=0 digs down (its y scan asked for y >= 0 before the build range rewrite); a redstone engine beside it powers it
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -4 -50 -4 4 -31 4 minecraft:stone
+cmd /fill -4 -30 -4 4 -20 4 minecraft:air
+cmd /tp @s 0.5 -28 3.5
+wait 40
+cmd /setblock 1 -30 0 buildcraft_energy:engineblock
+cmd /setblock 1 -29 0 minecraft:redstone_block
+wait 20
+cmd /setblock 0 -30 0 buildcraft_core:miningwellblock
+wait 100
+expect orient=[^0] :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var e=l.getBlockEntity(new BP(1,-30,0)).legacy();e.switchOrientation();r="orient="+e.orientation+" well="+l.getBlockEntity(new BP(0,-30,0)).legacy().getPowerProvider().getEnergyStored();});return r;})()
+wait 500
+expect pipe=.*plainpipeblock :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var o=[];for(var y=-31;y>=-37;y--)o.push(String(l.getBlockState(new BP(0,y,0)).getBlock().builtInRegistryHolder().key().location()));r="pipe="+o.join(",");});return r;})()
+shot bc147-mining-below-zero

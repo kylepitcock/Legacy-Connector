@@ -112,13 +112,13 @@ final class Forge1201ArchiveGraphTest {
                 source, info, List.of(mods), "1.21.1");
 
         var geckoEdge = edge(graph, "geckolib");
-        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_PRESENT, geckoEdge.status());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_CANDIDATE, geckoEdge.status());
         assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.MATCH, geckoEdge.providerRangeStatus());
         assertTrue(geckoEdge.providerArchivePaths().getFirst().endsWith("geckolib.jar"));
         assertEquals("4.9.3", geckoEdge.providerVersions().getFirst());
 
         var nestedEdge = edge(graph, "nesteddep");
-        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_PRESENT, nestedEdge.status());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_CANDIDATE, nestedEdge.status());
         assertEquals("2.4.0", nestedEdge.providerVersions().getFirst());
         assertTrue(nestedEdge.providerArchivePaths().getFirst().contains("provider-container.jar!/"));
 
@@ -163,7 +163,7 @@ final class Forge1201ArchiveGraphTest {
                 source, info, List.of(mods), "1.21.1");
 
         var ambiguous = edge(graph, "dupeprovider");
-        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_AMBIGUOUS, ambiguous.status());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_AMBIGUOUS, ambiguous.status());
         assertEquals(List.of("1.2.0", "1.3.0"), ambiguous.providerVersions());
         assertEquals(2, ambiguous.providerArchivePaths().size());
 
@@ -175,9 +175,111 @@ final class Forge1201ArchiveGraphTest {
                         == Forge1201ArchiveGraph.ProviderKind.INSTALLED_TOP_LEVEL_FORGE_1201));
 
         var mismatch = edge(graph, "versioned");
-        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_VERSION_MISMATCH, mismatch.status());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_RANGE_MISMATCH, mismatch.status());
         assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.OUTSIDE_RANGE, mismatch.providerRangeStatus());
         assertEquals(List.of("1.5.0"), mismatch.providerVersions());
+    }
+
+    @Test
+    void prefersRangeMatchingTargetNativeProviderOverBundledForgeCopyWithoutSuppressingInventory() throws IOException {
+        Path mods = Files.createDirectories(tempDir.resolve("native-preference-mods"));
+        Files.write(mods.resolve("geckolib.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("geckolib", "4.9.3")))));
+
+        byte[] legacyGecko = forgeModJar("geckolib", "4.4.9", List.of(
+                dep("minecraft", "[1.20.1,)", true), dep("forge", "[47,)", true)));
+        Path source = writeSourceJar("native-preference.jar",
+                forgeModJar("alpha", "1.0.0", List.of(
+                        dep("minecraft", "[1.20.1,)", true),
+                        dep("forge", "[47,)", true),
+                        dep("geckolib", "[4.0,5.0)", true))),
+                Map.of(
+                        "META-INF/jarjar/metadata.json", bytes(jarJarMetadata(
+                                "META-INF/jarjar/geckolib-forge.jar", "software.bernie.geckolib",
+                                "geckolib-forge", "[4.0,5.0)", "4.4.9")),
+                        "META-INF/jarjar/geckolib-forge.jar", legacyGecko));
+        Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+        assertNotNull(info);
+
+        Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                source, info, List.of(mods), "1.21.1", "21.1.258");
+
+        var dependency = edge(graph, "geckolib");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_CANDIDATE,
+                dependency.status());
+        assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.MATCH, dependency.providerRangeStatus());
+        assertEquals(List.of("4.9.3"), dependency.providerVersions());
+        assertEquals(1, dependency.providerArchivePaths().size());
+        assertTrue(dependency.providerArchivePaths().getFirst().endsWith("geckolib.jar"));
+        assertTrue(graph.providers().stream().anyMatch(provider ->
+                provider.modId().equals("geckolib")
+                        && provider.providerKind() == Forge1201ArchiveGraph.ProviderKind.SOURCE_NESTED
+                        && provider.version().equals("4.4.9")));
+        assertTrue(graph.warnings().stream().anyMatch(warning ->
+                warning.contains("geckolib-forge.jar")
+                        && warning.contains("API or behavioral compatibility")));
+    }
+
+    @Test
+    void doesNotTreatOutOfRangeTargetNativeProviderAsCompatibleReplacement() throws IOException {
+        Path mods = Files.createDirectories(tempDir.resolve("native-range-mismatch-mods"));
+        Files.write(mods.resolve("geckolib.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("geckolib", "5.1.0")))));
+
+        byte[] legacyGecko = forgeModJar("geckolib", "4.4.9", List.of(
+                dep("minecraft", "[1.20.1,)", true), dep("forge", "[47,)", true)));
+        Path source = writeSourceJar("native-range-mismatch.jar",
+                forgeModJar("alpha", "1.0.0", List.of(
+                        dep("minecraft", "[1.20.1,)", true),
+                        dep("forge", "[47,)", true),
+                        dep("geckolib", "[4.0,5.0)", true))),
+                Map.of(
+                        "META-INF/jarjar/metadata.json", bytes(jarJarMetadata(
+                                "META-INF/jarjar/geckolib-forge.jar", "software.bernie.geckolib",
+                                "geckolib-forge", "[4.0,5.0)", "4.4.9")),
+                        "META-INF/jarjar/geckolib-forge.jar", legacyGecko));
+        Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+        assertNotNull(info);
+
+        Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                source, info, List.of(mods), "1.21.1", "21.1.258");
+
+        var dependency = edge(graph, "geckolib");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_RANGE_MISMATCH,
+                dependency.status());
+        assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.OUTSIDE_RANGE, dependency.providerRangeStatus());
+        assertEquals(List.of("5.1.0"), dependency.providerVersions());
+        assertTrue(dependency.providerArchivePaths().getFirst().endsWith("geckolib.jar"));
+        assertTrue(graph.providers().stream().anyMatch(provider ->
+                provider.modId().equals("geckolib")
+                        && provider.providerKind() == Forge1201ArchiveGraph.ProviderKind.SOURCE_NESTED
+                        && provider.version().equals("4.4.9")));
+        assertTrue(graph.warnings().stream().anyMatch(warning ->
+                warning.contains("no source-provider fallback is selected automatically")));
+    }
+
+    @Test
+    void leavesUnparseableTargetNativeVersionExplicitlyUnverified() throws IOException {
+        Path mods = Files.createDirectories(tempDir.resolve("native-unverified-mods"));
+        Files.write(mods.resolve("geckolib.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("geckolib", "4.9.3-beta")))));
+        Path source = writeSourceJar("native-unverified.jar",
+                forgeModJar("alpha", "1.0.0", List.of(
+                        dep("minecraft", "[1.20.1,)", true),
+                        dep("forge", "[47,)", true),
+                        dep("geckolib", "[4.0,5.0)", true))),
+                Map.of());
+        Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+        assertNotNull(info);
+
+        Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                source, info, List.of(mods), "1.21.1", "21.1.258");
+
+        var dependency = edge(graph, "geckolib");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.TARGET_NATIVE_PROVIDER_RANGE_UNVERIFIED,
+                dependency.status());
+        assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.UNPARSEABLE, dependency.providerRangeStatus());
+        assertEquals(List.of("4.9.3-beta"), dependency.providerVersions());
     }
 
     @Test

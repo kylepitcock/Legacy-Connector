@@ -31,7 +31,7 @@ public final class McMembers1201 {
         Map<String, String> m = lines.get();
         if (m != null) return m;
         m = new HashMap<>(16384);
-        try (InputStream raw = McMembers1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mc-members.index.gz")) {
+        try (InputStream raw = ForwardStage.D_1201.open("mc-members.index.gz")) {
             if (raw != null) {
                 BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(raw), StandardCharsets.UTF_8));
                 for (String l = r.readLine(); l != null; l = r.readLine()) {
@@ -84,7 +84,7 @@ public final class McMembers1201 {
         Map<String, Set<String>> m = statics.get();
         if (m == null) {
             m = new HashMap<>();
-            try (InputStream raw = McMembers1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mc-static.index.gz")) {
+            try (InputStream raw = ForwardStage.D_1201.open("mc-static.index.gz")) {
                 if (raw == null) return null;
                 BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(raw), StandardCharsets.UTF_8));
                 for (String l = r.readLine(); l != null; l = r.readLine()) {
@@ -108,7 +108,7 @@ public final class McMembers1201 {
         Map<String, Members> m = hiddenIndex.get();
         if (m == null) {
             m = new HashMap<>();
-            try (InputStream raw = McMembers1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mc-private.index.gz")) {
+            try (InputStream raw = ForwardStage.D_1201.open("mc-private.index.gz")) {
                 if (raw != null) {
                     BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(raw), StandardCharsets.UTF_8));
                     for (String l = r.readLine(); l != null; l = r.readLine()) {

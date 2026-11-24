@@ -160,6 +160,14 @@ public final class CheckJar {
             records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
         }
         jars.removeAll(otherBuilds125.keySet());
+        // built for a Minecraft release the layer has no obfuscation table for (1.6.2 ...): reported, not linked
+        for (var it = jars.iterator(); it.hasNext(); ) {
+            LegacyJar j = it.next();
+            if (j.otherVersionReason == null) continue;
+            System.out.println(j.fileName() + " [" + j.version.id() + "]: " + j.otherVersionReason);
+            records.add(record(j, "other-version", j.otherVersionReason, null, 0));
+            it.remove();
+        }
         org.kylepitcock.legacyconnector.loader.transform.Notch125To147.registerSet(jars);
         // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
         // (-Pbridges=false checks the legacy jars as plain mods instead).
@@ -191,6 +199,32 @@ public final class CheckJar {
             }
         }
         transformer.presentMods(jars.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
+        // -Pcoremods=true: the set's coremod class transformers run over every class of every jar, as in the game (a coremod that adds a field or an interface to
+        // another mod's class: the jar that uses the member links only with it)
+        String coremodFlag = LoaderFlags.CHECK_COREMODS.get();
+        if (coremodFlag != null && !coremodFlag.equalsIgnoreCase("false") && !coremodFlag.equals("unset") && !coremodFlag.isBlank()) {
+            // "true": an empty game directory; a path: that game directory (its config/ files decide what an opt-in coremod patches)
+            Path coremodDir = coremodFlag.equalsIgnoreCase("true") ? Files.createTempDirectory("legacyconnector-check-coremods") : Path.of(coremodFlag).toAbsolutePath();
+            // the shim's FML Loader (which a transformer asks whether a mod is loaded) reads the game directory
+            try {
+                net.neoforged.fml.loading.FMLPaths.loadAbsolutePaths(coremodDir);
+            } catch (RuntimeException | LinkageError e) {
+                System.out.println("  coremods: no game directory set up: " + e);
+            }
+            var loaded = new EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
+            List<LegacyJar> coremodJars = List.copyOf(jars);
+            transformer.patcher((jar, name, bytes) -> {
+                if (!org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.supports(jar.version)) return bytes;
+                LegacyVersion api = org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiFor(jar.version);
+                synchronized (loaded) {
+                    var t = loaded.computeIfAbsent(api, a -> org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.load(
+                            coremodJars, coremodDir, coremodDir, "CLIENT", null, a));
+                    byte[] result = t.apply(name, bytes);
+                    if (result != bytes) System.out.println("  coremod patched " + jar.fileName() + ": " + name);
+                    return result;
+                }
+            });
+        }
         Map<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.PeerClasses> peerSets = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : jars) {
             peerSets.computeIfAbsent(jar.version, v -> new org.kylepitcock.legacyconnector.loader.transform.PeerClasses()).add(transformer.scan(jar));
