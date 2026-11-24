@@ -96,3 +96,4 @@ saturn	1.20.1	Saturn	ModernFix + FerriteCore	memory patch; not applicable to 1.2
 connectivity	1.20.1	Connectivity	Connectivity	network disconnect fixes; install the native 1.21.1 version
 spark	1.20.1	spark	Spark	profiler; install the native 1.21.1 version
 betterfpsrender	1.20.1	Better FPS Render	Sodium / Embeddium	rendering performance patch; install a modern renderer
+maxpotidext	1.12.2	Max Potion ID Extender		potion ID limit extender (patches the 1.12 potion registry); 1.21.1 has no ID limits
