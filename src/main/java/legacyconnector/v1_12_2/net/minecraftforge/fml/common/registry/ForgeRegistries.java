@@ -18,4 +18,5 @@ public class ForgeRegistries {
     public static final IForgeRegistry<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = Registries1122.POTIONS;
     public static final IForgeRegistry<legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment> ENCHANTMENTS = Registries1122.ENCHANTMENTS;
     public static final IForgeRegistry<legacyconnector.v1_12_2.net.minecraft.util.SoundEvent> SOUND_EVENTS = Registries1122.SOUND_EVENTS;
+    public static final IForgeRegistry<legacyconnector.v1_12_2.net.minecraftforge.registries.DataSerializerEntry> DATA_SERIALIZERS = Registries1122.DATA_SERIALIZERS;
 }

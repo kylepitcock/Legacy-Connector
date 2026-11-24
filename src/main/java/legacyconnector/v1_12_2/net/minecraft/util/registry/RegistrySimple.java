@@ -6,7 +6,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class RegistrySimple<K, V> implements IRegistry<K, V> {
-    protected final Map<K, V> registryObjects = new LinkedHashMap<>();
+    protected final Map<K, V> registryObjects = createUnderlyingMap();
+
+    /** Vanilla hook: GregTech and others override it or cast the map ({@link RegistryNamespaced} answers a BiMap). Insertion ordered. */
+    protected Map<K, V> createUnderlyingMap() {
+        return new LinkedHashMap<>();
+    }
 
     @Override
     public V getObject(K name) {
