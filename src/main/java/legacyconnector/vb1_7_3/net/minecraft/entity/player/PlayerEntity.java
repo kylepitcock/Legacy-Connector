@@ -121,4 +121,34 @@ public abstract class PlayerEntity extends LivingEntity {
     public void dropItem(ItemStack stack, boolean scatter) {
         MenusB173.drop(this, stack, scatter);
     }
+    /** Beta's portal overlay state ({@code timeInPortal} family): kept for mods that read or drive it; the native portal overlay is separate. */
+    public boolean inTeleportationState;
+    public float screenDistortion, lastScreenDistortion;
+    public int portalCooldown;
+    /** Beta's {@code score}. */
+    public int score;
+    /** Beta's {@code getSpawnChunk}/{@code setSpawnChunk}: the bed respawn point of a server player. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i getSpawnPos() {
+        if (mcc$modern instanceof net.minecraft.server.level.ServerPlayer player && player.getRespawnPosition() != null) {
+            var pos = player.getRespawnPosition();
+            return new legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i(pos.getX(), pos.getY(), pos.getZ());
+        }
+        return null;
+    }
+    public void setSpawnPos(legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i pos) {
+        if (mcc$modern instanceof net.minecraft.server.level.ServerPlayer player) {
+            if (pos == null) player.setRespawnPosition(player.level().dimension(), null, 0.0F, false, false);
+            else player.setRespawnPosition(player.level().dimension(), new net.minecraft.core.BlockPos(pos.x, pos.y, pos.z), player.getYRot(), false, false);
+        }
+    }
+    /** Beta's static {@code func_25060_a}: where a player respawns at the bed position, the first free spot around it, or null when the bed is gone. */
+    public static legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i findRespawnPosition(World world, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i bed) {
+        if (world == null || bed == null || world.getBlockId(bed.x, bed.y, bed.z) != 26) return null;
+        for (int dy = 0; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
+            int x = bed.x + dx, y = bed.y + dy, z = bed.z + dz;
+            if (world.getMaterial(x, y - 1, z).isSolid() && !world.getMaterial(x, y, z).isSolid() && !world.getMaterial(x, y + 1, z).isSolid())
+                return new legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i(x, y, z);
+        }
+        return null;
+    }
 }

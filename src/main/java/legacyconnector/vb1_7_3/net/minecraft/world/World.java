@@ -566,6 +566,47 @@ public class World implements BlockView {
         return mcc$level == null ? 0 : mcc$level.getGameTime();
     }
 
+    /** Beta's {@code setWorldTime}: the world clock (also moves the modern day time). */
+    public void setTime(long time) { properties.setTime(time); }
+
+    /** Beta's {@code getSpawnPoint}. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i getSpawnPos() {
+        return new legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i(properties.getSpawnX(), properties.getSpawnY(), properties.getSpawnZ());
+    }
+    public void setSpawnPos(legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i pos) { properties.setSpawn(pos.x, pos.y, pos.z); }
+
+    /** Beta's {@code setSpawnLocation()}: the spawn goes to the first grass column near the origin (Beta searched a random walk; this is the ground at x=z=0). */
+    public void updateSpawnPosition() {
+        int x = 0, z = 0, y = 63;
+        while (y < 127 && !isAir(x, y + 1, z)) y++;
+        properties.setSpawn(x, y, z);
+    }
+
+    /** Beta's {@code setEntityDead}: removes an entity from the world. */
+    public void remove(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) { if (entity != null) entity.markDead(); }
+
+    /** Beta's {@code func_21114_a(hostile, peaceful)}: which mob groups may spawn (the flags are kept for mods that read them back). */
+    public boolean spawnHostileMobs = true, spawnPeacefulMobs = true;
+    public void allowSpawning(boolean hostile, boolean peaceful) { spawnHostileMobs = hostile; spawnPeacefulMobs = peaceful; }
+
+    /** Beta's {@code getBlockLightValue_do(x, y, z, useNeighbors)}: combined light at the position. */
+    public int getLightLevel(int x, int y, int z, boolean useNeighbors) { return getLightLevel(x, y, z); }
+
+    /** Beta's {@code getIChunkProvider}: a chunk source view of this world's loaded terrain. */
+    public legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource getChunkSource() {
+        World world = this;
+        return new legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource() {
+            @Override public boolean isChunkLoaded(int x, int z) { return world.mcc$level != null && world.mcc$level.hasChunk(x, z); }
+            @Override public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk getChunk(int x, int z) { return world.getChunk(x, z); }
+            @Override public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk loadChunk(int x, int z) { return world.getChunk(x, z); }
+            @Override public void decorate(legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource source, int x, int z) {}
+            @Override public boolean save(boolean force, legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.LoadingDisplay display) { return true; }
+            @Override public boolean tick() { return false; }
+            @Override public boolean canSave() { return false; }
+            @Override public String getDebugInfo() { return "LegacyChunkSource"; }
+        };
+    }
+
     public long getSeed() {
         return mcc$level instanceof net.minecraft.server.level.ServerLevel s ? s.getSeed() : 0;
     }
