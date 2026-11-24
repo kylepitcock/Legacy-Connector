@@ -118,7 +118,8 @@ public final class AlienEvoDimensionsProbe {
             if (!(result instanceof Collection<?> entries) || entries.isEmpty()) return "[]";
 
             Class<?> sizeAbilityClass = Class.forName("net.habb.alienevo.ability.AlienSizeAbility", true, loader);
-            Method getProperty = abilityType.getMethod("getProperty", propertyType);
+            Method getProperty = Class.forName("net.threetag.palladium.power.ability.AbilityInstance", true, loader)
+                    .getMethod("getProperty", propertyType);
             String[] properties = {
                     "SCALE", "HITBOX_WIDTH", "HITBOX_HEIGHT", "EYE_HEIGHT", "MODEL_WIDTH", "MODEL_HEIGHT"
             };
