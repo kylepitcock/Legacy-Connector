@@ -113,6 +113,121 @@ public final class CompatBufferBuilder implements VertexConsumer {
     /** {@code BufferBuilder.defaultColorSet}: 1.20.1 flag for {@code defaultColor}; the default colour is not applied here, so it stays false. */
     public boolean defaultColorSet;
 
+    // ---- raw element writers of 1.20.1 (putByte/putShort/putFloat/nextElement) ----------------------------------------------------
+    // 1.21.1's builder takes typed vertex calls only, so the raw bytes of one vertex are staged here and decoded into those calls when the last element
+    // of the vertex is passed (nextElement) or a whole buffer is handed over (putBulkData(ByteBuffer)). Elements other than position, colour, UV0, overlay,
+    // light and normal are dropped (APPROXIMATION).
+
+    /** The opaque sort state of 1.20.1's {@code getSortState()}: this builder keeps none (sorting happens on the mesh in 1.21.1). */
+    public static final class SortState {}
+
+    /** {@code getSortState()}: an empty state (quad sorting happens on the finished mesh, see {@link #drawWithRenderType}). */
+    public SortState getSortState() {
+        return new SortState();
+    }
+
+    /** {@code restoreSortState(state)}: nothing to restore. */
+    public void restoreSortState(SortState state) {}
+
+    private byte[] raw;
+    private int rawElement;
+    private int vertexCount;
+
+    private byte[] raw() {
+        int size = format.getVertexSize();
+        if (raw == null || raw.length != size) raw = new byte[size];
+        return raw;
+    }
+
+    /** {@code currentElement()}: the element the raw writers address. */
+    public com.mojang.blaze3d.vertex.VertexFormatElement currentElement() {
+        return format.getElements().get(rawElement);
+    }
+
+    /** {@code nextElement()}: moves to the next element of the vertex; after the last one the staged vertex is written. */
+    public void nextElement() {
+        rawElement++;
+        if (rawElement >= format.getElements().size()) {
+            rawElement = 0;
+            flushRaw(raw());
+        }
+    }
+
+    /** {@code isCurrentBatchEmpty()}: no vertex was written since {@code begin}. */
+    public boolean isCurrentBatchEmpty() {
+        return vertexCount == 0;
+    }
+
+    private int rawBase(int index) {
+        return format.getOffset(currentElement()) + index;
+    }
+
+    private java.nio.ByteBuffer rawView() {
+        return java.nio.ByteBuffer.wrap(raw()).order(java.nio.ByteOrder.nativeOrder());
+    }
+
+    public void putByte(int index, byte value) {
+        raw()[rawBase(index)] = value;
+    }
+
+    public void putShort(int index, short value) {
+        rawView().putShort(rawBase(index), value);
+    }
+
+    public void putFloat(int index, float value) {
+        rawView().putFloat(rawBase(index), value);
+    }
+
+    /** {@code uvShort(u, v, index)}: two shorts (overlay or light coordinates) at {@code index} bytes into the current element. */
+    public VertexConsumer uvShort(short u, short v, int index) {
+        putShort(index, u);
+        putShort(index + 2, v);
+        return this;
+    }
+
+    /** {@code putBulkData(ByteBuffer)}: whole vertices in this builder's format. */
+    public void putBulkData(java.nio.ByteBuffer buffer) {
+        int size = format.getVertexSize();
+        java.nio.ByteBuffer src = buffer.duplicate().order(java.nio.ByteOrder.nativeOrder());
+        byte[] one = new byte[size];
+        while (src.remaining() >= size) {
+            src.get(one);
+            flushRaw(one);
+        }
+    }
+
+    /** {@code putBulkData(pose, quad, brightness, r, g, b, lights, overlay, readAlpha)} of 1.20.1: 1.21.1 also takes the alpha (opaque here). */
+    public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float[] brightness,
+            float r, float g, float b, int[] lights, int overlay, boolean readAlpha) {
+        b().putBulkData(pose, quad, brightness, r, g, b, 1.0F, lights, overlay, readAlpha);
+    }
+
+    private void flushRaw(byte[] vertex) {
+        java.nio.ByteBuffer in = java.nio.ByteBuffer.wrap(vertex).order(java.nio.ByteOrder.nativeOrder());
+        java.util.List<com.mojang.blaze3d.vertex.VertexFormatElement> elements = format.getElements();
+        int pos = -1;
+        for (int i = 0; i < elements.size(); i++) if (elements.get(i) == com.mojang.blaze3d.vertex.VertexFormatElement.POSITION) pos = format.getOffset(elements.get(i));
+        if (pos < 0) return;
+        BufferBuilder out = b();
+        out.addVertex(in.getFloat(pos), in.getFloat(pos + 4), in.getFloat(pos + 8));
+        vertexCount++;
+        for (com.mojang.blaze3d.vertex.VertexFormatElement e : elements) {
+            int o = format.getOffset(e);
+            if (e == com.mojang.blaze3d.vertex.VertexFormatElement.COLOR) {
+                out.setColor(vertex[o] & 0xFF, vertex[o + 1] & 0xFF, vertex[o + 2] & 0xFF, vertex[o + 3] & 0xFF);
+            } else if (e == com.mojang.blaze3d.vertex.VertexFormatElement.UV0) {
+                out.setUv(in.getFloat(o), in.getFloat(o + 4));
+            } else if (e == com.mojang.blaze3d.vertex.VertexFormatElement.UV1) {
+                out.setUv1(in.getShort(o), in.getShort(o + 2));
+            } else if (e == com.mojang.blaze3d.vertex.VertexFormatElement.UV2) {
+                out.setUv2(in.getShort(o), in.getShort(o + 2));
+            } else if (e == com.mojang.blaze3d.vertex.VertexFormatElement.NORMAL) {
+                out.setNormal(vertex[o] / 127.0F, vertex[o + 1] / 127.0F, vertex[o + 2] / 127.0F);
+            }
+        }
+        java.util.Arrays.fill(vertex, (byte) 0);
+    }
+
     /** {@code putBulkData(pose, quad, r, g, b, light, overlay)} of 1.20.1: 1.21.1 also takes the alpha (opaque here). */
     public void putBulkData(com.mojang.blaze3d.vertex.PoseStack.Pose pose, net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, int light, int overlay) {
         putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
@@ -158,6 +273,8 @@ public final class CompatBufferBuilder implements VertexConsumer {
 
     public void begin(VertexFormat.Mode mode, VertexFormat format) {
         this.format = format;
+        this.rawElement = 0;
+        this.vertexCount = 0;
         if (real != null) throw new IllegalStateException("Already building!", beganAt);
         if (DIAG) beganAt = new Throwable("previous begin");
         real = tesselator != null ? tesselator.begin(mode, format) : new BufferBuilder(own, mode, format);
@@ -213,6 +330,7 @@ public final class CompatBufferBuilder implements VertexConsumer {
     // ---- 1.21.1 VertexConsumer ------------------------------------------------------------------------------------------------
     @Override
     public VertexConsumer addVertex(float x, float y, float z) {
+        vertexCount++;
         return b().addVertex(x, y, z);
     }
 

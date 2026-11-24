@@ -150,3 +150,8 @@ net/minecraft/client/gui/screens/controls/KeyBindsList$CategoryEntry	net/minecra
 net/minecraft/world/item/SimpleFoiledItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySimpleFoiledItem
 # --- round 15 client: DefaultedVertexConsumer (abstract VertexConsumer with a default colour) stand-in
 com/mojang/blaze3d/vertex/DefaultedVertexConsumer	org/kylepitcock/legacyconnector/v1_20_1/migrate/Round15ClientDefaultedVertexConsumer
+net/minecraft/world/item/enchantment/FireAspectEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFireAspectEnchantment
+net/minecraft/world/item/enchantment/KnockbackEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyKnockbackEnchantment
+net/minecraft/world/item/enchantment/TridentLoyaltyEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTridentLoyaltyEnchantment
+net/minecraft/world/item/crafting/SingleItemRecipe$Serializer$SingleItemMaker	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySingleItemMaker
+com/mojang/blaze3d/vertex/BufferBuilder$SortState	org/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder$SortState
