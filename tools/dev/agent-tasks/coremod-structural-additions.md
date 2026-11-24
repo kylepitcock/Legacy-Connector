@@ -83,12 +83,19 @@ What was missing (and is added):
    the 1.6.4 hierarchy data (empty class with the real supertypes: `IChatListener`) and serves a forward-renamed shim class under its old name
    (`net.minecraftforge.common.Configuration` from `config.Configuration`). A shim `CreativeTabs` built inside that loader no longer dies in the bridge's
    relocated signature.
+3. (second round) The coremod class loader gives untranslated 1.4.7-1.6.4 mod code the view translated mods get, as far as it can:
+   - the forward layer's class renames are applied to every class the loader defines (`forwardRenames`, `mcc$definer`; 1.6.4 `Configuration` is `config.Configuration`);
+   - a shim class served there gets the facade's instance methods (`addFacadeMethods`: each public static facade method taking the class first becomes an instance method, so `Configuration.getItem(String,int,String)` links; facade classes are served as `facade/...`);
+   - the shim's calls into the runtime's bridges whose descriptors name relocated shim types can never link in that loader (it serves the shim unrelocated), so they pop their operands and answer the default (`neutralizeBridgeCalls`; a game that is not running answers that way);
+   - ASM 4/5 coremods subclass `MethodNode`/`ClassNode` anonymously; ASM 9 throws `IllegalStateException` for the constructors without an API level. These classes get `CompatMethodNode`/`CompatClassNode` as superclass (`AsmNodeCompat`). This was also the BuildCraft `Pipe` and Thermal Expansion failure (`LogisticsClassTransformer$3`), and Binnie Patcher's on 1.7.10.
+   - LP patches TE only when its config says so (`TEPipeSupport=false` by default): `-Pcoremods=<game dir>` takes a game directory whose `config/LogisticsPipes.cfg` has `B:TEPipeSupport=true`.
+   Result 1.6.4 (LP 0.7.4.dev.294 + TE 3.0.0.2 + CoFHCore 2.0.0.b7 + BuildCraft A 4.2.2, TEPipeSupport on): TE `ConduitBase`, `ConduitItem`, `ItemRoute`, `TravelingItem` and BuildCraft `Pipe`, `PipeTransportItems` are patched; LP 1 -> 0 unresolved (`TravelingItem.routedLPInfo` resolved).
 
-Remaining for 1.6.4 (LP + Thermal Expansion 3.0.0.2 still shows `TravelingItem.routedLPInfo` unresolved with `-Pcoremods=true`): LP's transformer calls
-`Configs.load()` -> `LogisticsPipes.<clinit>` before it patches `ConduitBase`/`TravelingItem`. That runs UNTRANSLATED 1.6.4 mod code in the transformer's class
-loader, which serves the 1.7.10 shim, so a 1.6.4-only instance method (`Configuration.getItem(String,int)`, a facade call at translation) throws
-`NoSuchMethodError`, and BuildCraft `Pipe` fails with an `IllegalStateException` in the same environment. Fix candidates: (a) apply the forward layer's
-redirects (`ForwardCalls`/`ForwardRedirects`, facades) to the classes the coremod loader defines (the `mcc$definer` hook in `LegacyCoreModTransformers.load`),
-the general solution; (b) add the 1.6.4 overloads to the shim classes the transformers touch (`Configuration.getItem(String,int)`...), cheaper, one class at
-a time. Not started; once (a) is in, later calls (`Loader.isModLoaded`, `FMLCommonHandler`) may still fail and need a run to find out. Until then the
-TE/BuildCraft jars translate without LP's additions (LP's references become synthesized members, listed as unresolved, and fail at first use).
+### Coremods that still fail in the loader (offline `-Pcoremods=true` over the archive dirs, 2026-11-24, ranked by cost)
+
+1. **CodeChickenCore, NotEnoughItems (1.7.10 set without a CodeChickenLib jar)**: 5 transformers/plugins (`CC_ClassWriter`, `ASMInit`, `ClassHeirachyManager`, `ModularASMTransformer`: NoClassDefFoundError). The check replaces CCL with its bridge (the shim holds the API, not the jar's `codechicken.lib.asm`), and these classes need the real `codechicken.lib.asm.*`. Likely the same in the game without a CCL jar. Fix idea: serve `codechicken.lib.asm.*` to the coremod loader only.
+2. **LP 0.9.3.132 on Thermal Dynamics `RenderDuctItems`**: `ClassRenderDuctItemsHandler` finds nothing to patch in TD 1.2.1-172 and calls `exitJava` ("Legacy mod requested the game to exit"); LP's render hook for item ducts is not applied. Needs the TD build LP expects, or a look at the handler's pattern.
+3. **INpureCore** (1.7.10): the plugin reads FML's relaunch `Logger` (`FMLRelaunchLog`'s log4j logger is null: `addFilter` NPE); the coremod API has no logger behind it. 1 plugin.
+4. **Tropicraft 1.4.7 `RenderPlayerTransformer`** (2 classes) and **Starminer 1.6.4 `SMTransformer`**: the transformers name OBFUSCATED vanilla classes (`uk`, `c`) while the loader serves deobfuscated names only; fix: serve those names through `NotchNames` as bare classes.
+5. 1.5.2: no failures.
+

@@ -201,8 +201,10 @@ public final class CheckJar {
         transformer.presentMods(jars.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
         // -Pcoremods=true: the set's coremod class transformers run over every class of every jar, as in the game (a coremod that adds a field or an interface to
         // another mod's class: the jar that uses the member links only with it)
-        if ("true".equalsIgnoreCase(LoaderFlags.CHECK_COREMODS.get())) {
-            Path coremodDir = Files.createTempDirectory("legacyconnector-check-coremods");
+        String coremodFlag = LoaderFlags.CHECK_COREMODS.get();
+        if (coremodFlag != null && !coremodFlag.equalsIgnoreCase("false") && !coremodFlag.equals("unset") && !coremodFlag.isBlank()) {
+            // "true": an empty game directory; a path: that game directory (its config/ files decide what an opt-in coremod patches)
+            Path coremodDir = coremodFlag.equalsIgnoreCase("true") ? Files.createTempDirectory("legacyconnector-check-coremods") : Path.of(coremodFlag).toAbsolutePath();
             // the shim's FML Loader (which a transformer asks whether a mod is loaded) reads the game directory
             try {
                 net.neoforged.fml.loading.FMLPaths.loadAbsolutePaths(coremodDir);
