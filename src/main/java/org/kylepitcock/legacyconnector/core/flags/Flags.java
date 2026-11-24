@@ -150,6 +150,10 @@ public enum Flags implements Switch {
     DIRECT_MEMORY_GC_MB("legacyconnector.directMemoryGcMb", Type.LONG, "1024", Category.PERF, "Direct memory in MB above which the guard requests a garbage collection."),
     /** false turns off the render lock that item rendering forces (measurement switch). */
     ITEM_LOCK("legacyconnector.itemLock", Type.TOGGLE, "true", Category.PERF, "false turns off the render lock that item rendering forces (measurement switch)."),
+    /** false turns off baking legacy display lists into GPU meshes (every call replays the recorded draws again). */
+    DISPLAY_LIST_BAKE("legacyconnector.displayListBake", Type.TOGGLE, "true", Category.PERF, "false turns off baking legacy display lists into GPU meshes (every call replays the recorded draws again)."),
+    /** Megabytes of GPU geometry the baked display lists may hold in all (more lists are replayed). */
+    DISPLAY_LIST_BAKE_MB("legacyconnector.displayListBakeMb", Type.INT, "256", Category.PERF, "Megabytes of GPU geometry the baked display lists may hold in all (more lists are replayed)."),
     /** Keeps the legacy ore textures as they are instead of replacing their host rock pixels with the modern stone. */
     KEEP_LEGACY_ORE_BACKGROUNDS("legacyconnector.keepLegacyOreBackgrounds", Type.FLAG, "false", Category.COMPAT, "Keeps the legacy ore textures as they are instead of replacing their host rock pixels with the modern stone."),
     /** false turns off the guard that keeps legacy in-place generators (huts, towers, dungeons) out of modern structures. */

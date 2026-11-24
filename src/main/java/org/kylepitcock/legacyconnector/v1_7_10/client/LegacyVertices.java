@@ -281,7 +281,7 @@ public final class LegacyVertices {
     public static void emit(Snapshot s) {
         RenderContext.State st = RenderContext.state();
         // corners without a colour of their own take the current one (applied as they are written, see RenderContext.color)
-        st.drawColor = RenderContext.argb(st) & 0xFFFFFFFFL;
+        st.drawColor = RenderContext.argbQuiet(st) & 0xFFFFFFFFL;
         st.drawColorSet = true;
         st.inDraw = true;
         st.shadowCache = 0;

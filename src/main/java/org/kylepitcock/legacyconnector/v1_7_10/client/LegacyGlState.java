@@ -15,11 +15,14 @@ final class LegacyGlState {
             LOGIC_OP = 128, DEPTH_FUNC = 256, SCISSOR = 512, BLEND_EQUATION = 1024;
 
     private int saved;
+    /** Real GL changes legacy code announced so far (a display list that makes some cannot be baked: the changes would only happen once). */
+    int changes;
     private boolean depthTest, blend, cull, depthMask, polygonOffset, logicOp, scissor, red, green, blue, alpha;
     private int depthFunc, srcRgb, dstRgb, srcAlpha, dstAlpha;
 
     /** Remembers the current value of a part before legacy code changes it (once per context). */
     void save(int part) {
+        changes++;
         if ((saved & part) != 0) return;
         saved |= part;
         switch (part) {
