@@ -45,7 +45,7 @@ public class BiomeDictionary {
     public static synchronized BiomeGenBase[] getBiomesForType(Type type) {
         List<BiomeGenBase> out = new ArrayList<>();
         TYPES.forEach((b, set) -> {
-            if (set.contains(type)) out.add(b);
+            if (has(set, type)) out.add(b);
         });
         return out.toArray(new BiomeGenBase[0]);
     }
@@ -64,9 +64,30 @@ public class BiomeDictionary {
         return false;
     }
 
+    /** As Forge's: a biome nobody registered gets the heuristic guess on first use (mod biomes, biomes the layer maps from modern ones). */
     public static synchronized boolean isBiomeOfType(BiomeGenBase biome, Type type) {
+        if (biome == null) return false;
         EnumSet<Type> set = TYPES.get(biome);
-        return set != null && set.contains(type);
+        if (set == null) {
+            makeBestGuess(biome);
+            set = TYPES.get(biome);
+        }
+        return set != null && has(set, type);
+    }
+
+    /**
+     * Whether a type set holds {@code type}. The 1.6.4 types the 1.7.10 API dropped are derived from the 1.7.10 ones, so 1.6.4 mods
+     * (which test {@code DESERT}, {@code FROZEN}, {@code WATER}) find the biomes Forge 1.6.4 tagged with them: the vanilla ones are
+     * registered explicitly, other biomes (modern ones mapped in, mods') by what they are.
+     */
+    private static boolean has(EnumSet<Type> set, Type type) {
+        if (set.contains(type)) return true;
+        return switch (type) {
+            case WATER -> set.contains(Type.OCEAN) || set.contains(Type.RIVER);
+            case DESERT -> set.contains(Type.SANDY) && (set.contains(Type.HOT) || set.contains(Type.DRY)) && !set.contains(Type.MESA) && !set.contains(Type.BEACH);
+            case FROZEN -> set.contains(Type.SNOWY) && !set.contains(Type.FOREST) && !set.contains(Type.CONIFEROUS) && !set.contains(Type.BEACH);
+            default -> false;
+        };
     }
 
     public static synchronized boolean isBiomeRegistered(BiomeGenBase biome) {
@@ -105,7 +126,7 @@ public class BiomeDictionary {
     private static void registerVanilla() {
         registerBiomeType(BiomeGenBase.ocean, Type.OCEAN);
         registerBiomeType(BiomeGenBase.plains, Type.PLAINS);
-        registerBiomeType(BiomeGenBase.desert, Type.HOT, Type.DRY, Type.SANDY);
+        registerBiomeType(BiomeGenBase.desert, Type.HOT, Type.DRY, Type.SANDY, Type.DESERT);
         registerBiomeType(BiomeGenBase.extremeHills, Type.MOUNTAIN, Type.HILLS);
         registerBiomeType(BiomeGenBase.forest, Type.FOREST);
         registerBiomeType(BiomeGenBase.taiga, Type.COLD, Type.CONIFEROUS, Type.FOREST);
@@ -113,14 +134,14 @@ public class BiomeDictionary {
         registerBiomeType(BiomeGenBase.river, Type.RIVER);
         registerBiomeType(BiomeGenBase.hell, Type.NETHER, Type.HOT, Type.DRY);
         registerBiomeType(BiomeGenBase.sky, Type.END, Type.COLD, Type.DRY);
-        registerBiomeType(BiomeGenBase.frozenOcean, Type.COLD, Type.OCEAN, Type.SNOWY);
-        registerBiomeType(BiomeGenBase.frozenRiver, Type.COLD, Type.RIVER, Type.SNOWY);
-        registerBiomeType(BiomeGenBase.icePlains, Type.COLD, Type.SNOWY, Type.WASTELAND);
-        registerBiomeType(BiomeGenBase.iceMountains, Type.COLD, Type.SNOWY, Type.MOUNTAIN);
+        registerBiomeType(BiomeGenBase.frozenOcean, Type.COLD, Type.OCEAN, Type.SNOWY, Type.FROZEN);
+        registerBiomeType(BiomeGenBase.frozenRiver, Type.COLD, Type.RIVER, Type.SNOWY, Type.FROZEN);
+        registerBiomeType(BiomeGenBase.icePlains, Type.COLD, Type.SNOWY, Type.WASTELAND, Type.FROZEN);
+        registerBiomeType(BiomeGenBase.iceMountains, Type.COLD, Type.SNOWY, Type.MOUNTAIN, Type.FROZEN);
         registerBiomeType(BiomeGenBase.mushroomIsland, Type.MUSHROOM);
         registerBiomeType(BiomeGenBase.mushroomIslandShore, Type.MUSHROOM, Type.BEACH);
         registerBiomeType(BiomeGenBase.beach, Type.BEACH);
-        registerBiomeType(BiomeGenBase.desertHills, Type.HOT, Type.DRY, Type.SANDY, Type.HILLS);
+        registerBiomeType(BiomeGenBase.desertHills, Type.HOT, Type.DRY, Type.SANDY, Type.HILLS, Type.DESERT);
         registerBiomeType(BiomeGenBase.forestHills, Type.FOREST, Type.HILLS);
         registerBiomeType(BiomeGenBase.taigaHills, Type.COLD, Type.CONIFEROUS, Type.FOREST, Type.HILLS);
         registerBiomeType(BiomeGenBase.extremeHillsEdge, Type.MOUNTAIN);
