@@ -28,7 +28,8 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     protected List<SpawnListEntry> spawnableCreatureList = new ArrayList<>();
     protected List<SpawnListEntry> spawnableWaterCreatureList = new ArrayList<>();
     protected List<SpawnListEntry> spawnableCaveCreatureList = new ArrayList<>();
-    private final Map<EnumCreatureType, List<SpawnListEntry>> spawnLists = new EnumMap<>(EnumCreatureType.class);
+    /** Not an EnumMap: EnumHelper.addCreatureType appends constants after the map was built (AVP), which an EnumMap rejects with an index error. */
+    private final Map<EnumCreatureType, List<SpawnListEntry>> spawnLists = new java.util.concurrent.ConcurrentHashMap<>();
     private final String baseBiomeRegName;
     /** Forge: the flowers bonemeal and the decorator pick from. */
     protected List<Object> flowers = new ArrayList<>();
@@ -122,7 +123,7 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     public List<SpawnListEntry> getSpawnableList(EnumCreatureType creatureType) {
         // a 1.12 vanilla biome's lists start as its modern biome's spawns (area F)
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.ensureVanilla(this);
-        return spawnLists.getOrDefault(creatureType, new ArrayList<>());
+        return spawnLists.computeIfAbsent(creatureType, t -> new ArrayList<>());
     }
 
     public String getBiomeName() {

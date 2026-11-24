@@ -431,6 +431,8 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.JsonRecipes1122.load(); // Forge then loaded each mod's assets/<mod>/recipes JSON
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BIOMES));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENTITIES));
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.DATA_SERIALIZERS));
+        injectObjectHolders();
         // registries typed by classes only the synthesizer has; the events go out once the type is known
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122R.postSynthesized(Platform1122::post);
         for (var custom : late) postCustom(custom);
