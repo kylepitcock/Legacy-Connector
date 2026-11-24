@@ -89,6 +89,26 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         if (!plugins.isEmpty()) LOG.info("1.12.2 JEI plugins: {}", plugins.stream().map(p -> p.getClass().getName()).toList());
     }
 
+    /** The registration of a mod's own ingredient types, under both names JEI 4 gave it. */
+    private static final class ModIngredients implements legacyconnector.v1_12_2.mezz.jei.api.IModIngredientRegistration,
+            legacyconnector.v1_12_2.mezz.jei.api.ingredients.IModIngredientRegistration {
+        @Override
+        public legacyconnector.v1_12_2.mezz.jei.api.IJeiHelpers getJeiHelpers() {
+            return Helpers.INSTANCE;
+        }
+
+        @Override
+        public <V> void register(IIngredientType<V> type, java.util.Collection<V> all,
+                legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientHelper<V> helper,
+                legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer<V> renderer) {
+            if (type != null) Helpers.MOD_INGREDIENTS.put(type.getIngredientClass(), new Object[] {helper, renderer, all});
+        }
+    }
+
+    List<Jei1122Transfer.Entry> transfers() {
+        return registry.transfers;
+    }
+
     private static void guard(IModPlugin plugin, String what, Runnable run) {
         try {
             run.run();
@@ -112,7 +132,11 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         Helpers.modernGui = registration.getJeiHelpers().getGuiHelper();
         List<IRecipeCategory<?>> legacy = new ArrayList<>();
         for (IModPlugin p : plugins) {
-            guard(p, "registerIngredients", () -> p.registerIngredients(() -> Helpers.INSTANCE));
+            guard(p, "registerIngredients", () -> {
+                var modIngredients = new ModIngredients();
+                p.registerIngredients((legacyconnector.v1_12_2.mezz.jei.api.IModIngredientRegistration) modIngredients);
+                p.registerIngredients((legacyconnector.v1_12_2.mezz.jei.api.ingredients.IModIngredientRegistration) modIngredients);
+            });
             guard(p, "registerCategories", () -> p.registerCategories(new legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeCategoryRegistration() {
                 @Override
                 public void addRecipeCategories(IRecipeCategory<?>... recipeCategories) {
@@ -127,6 +151,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         }
         // JEI asks for catalysts before recipes; JEI 4 had both from register(), so it runs now
         for (IModPlugin p : plugins) guard(p, "register", () -> p.register(registry));
+        legacy.addAll(registry.extraCategories);
+        registry.resolvePending();
         java.util.Set<String> paths = new java.util.HashSet<>();
         for (IRecipeCategory<?> c : legacy) {
             try {
@@ -231,6 +257,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         for (Category c : categories) if (!c.recipes.isEmpty()) registration.addRecipes(c.type, c.recipes);
+        registerVanillaRecipes(registration);
         for (var info : registry.info) {
             Component[] lines = new Component[info.keys.length];
             for (int i = 0; i < lines.length; i++) lines[i] = Component.translatable(info.keys[i]);
@@ -247,6 +274,43 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                 LOG.debug("JEI refused 1.12.2 ingredient info: {}", e.toString());
             }
         }
+    }
+
+    /** Recipes a plugin added to the anvil or brewing category (built with the vanilla recipe factory) become the modern ones. */
+    private void registerVanillaRecipes(IRecipeRegistration registration) {
+        var factory = registration.getVanillaRecipeFactory();
+        List<mezz.jei.api.recipe.vanilla.IJeiAnvilRecipe> anvil = new ArrayList<>();
+        List<mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe> brewing = new ArrayList<>();
+        for (Object o : registry.recipes.getOrDefault(legacyconnector.v1_12_2.mezz.jei.api.recipe.VanillaRecipeCategoryUid.ANVIL, List.of())) {
+            try {
+                if (o instanceof VanillaRecipes.Anvil a) anvil.add(factory.createAnvilRecipe(Stacks1122.toModern(a.left()), modernStacks(a.rights()), modernStacks(a.outputs())));
+            } catch (RuntimeException e) {
+                LOG.debug("JEI refused a 1.12.2 anvil recipe: {}", e.toString());
+            }
+        }
+        for (Object o : registry.recipes.getOrDefault(legacyconnector.v1_12_2.mezz.jei.api.recipe.VanillaRecipeCategoryUid.BREWING, List.of())) {
+            try {
+                if (o instanceof VanillaRecipes.Brewing b) brewing.add(factory.createBrewingRecipe(modernStacks(b.ingredients()), Stacks1122.toModern(b.input()), Stacks1122.toModern(b.output())));
+            } catch (RuntimeException e) {
+                LOG.debug("JEI refused a 1.12.2 brewing recipe: {}", e.toString());
+            }
+        }
+        if (!anvil.isEmpty()) registration.addRecipes(RecipeTypes.ANVIL, anvil);
+        if (!brewing.isEmpty()) registration.addRecipes(RecipeTypes.BREWING, brewing);
+    }
+
+    private static List<net.minecraft.world.item.ItemStack> modernStacks(List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> in) {
+        List<net.minecraft.world.item.ItemStack> out = new ArrayList<>();
+        if (in != null) for (var s : in) if (s != null && !s.isEmpty()) out.add(Stacks1122.toModern(s));
+        return out;
+    }
+
+    @Override
+    public void registerRecipeTransferHandlers(mezz.jei.api.registration.IRecipeTransferRegistration registration) {
+        Jei1122Transfer.register(registration, registry.transfers, uid -> {
+            for (Category c : categories) if (c.uid.equals(uid)) return c;
+            return null;
+        });
     }
 
     @Override
@@ -328,8 +392,23 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         final List<ClickArea> clickAreas = new ArrayList<>();
         final List<Info> info = new ArrayList<>();
         final List<legacyconnector.v1_12_2.mezz.jei.api.gui.IAdvancedGuiHandler<?>> guiHandlers = new ArrayList<>();
+        /** Categories registered from register() (JEI 3 style) instead of registerCategories. */
+        final List<IRecipeCategory<?>> extraCategories = new ArrayList<>();
+        /** JEI 3 recipe handlers and the recipe objects waiting for them. */
+        final List<legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeHandler<?>> jei3Handlers = new ArrayList<>();
+        final List<Object> pendingRecipes = new ArrayList<>();
+        final List<Jei1122Transfer.Entry> transfers = new ArrayList<>();
+        final List<Object> recordedOnly = new ArrayList<>();
+        /** The wrapper made for a recipe object of a JEI 3 plugin, to take it away again. */
+        final Map<Object, IRecipeWrapper> wrapperOf = new java.util.IdentityHashMap<>();
 
         void clear() {
+            wrapperOf.clear();
+            extraCategories.clear();
+            jei3Handlers.clear();
+            pendingRecipes.clear();
+            transfers.clear();
+            recordedOnly.clear();
             recipes.clear();
             handlers.clear();
             catalysts.clear();
@@ -395,7 +474,63 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
 
         @Override
         public legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferRegistry getRecipeTransferRegistry() {
-            return (containerClass, uid, recipeSlotStart, recipeSlotCount, inventorySlotStart, inventorySlotCount) -> {};
+            return Jei1122Transfer.registry(transfers);
+        }
+
+        @Override
+        public void addRecipeCategories(IRecipeCategory<?>... categories) {
+            if (categories != null) for (var c : categories) if (c != null) extraCategories.add(c);
+        }
+
+        @Override
+        public void addRecipeHandlers(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeHandler<?>... handlers) {
+            if (handlers != null) for (var h : handlers) if (h != null) jei3Handlers.add(h);
+        }
+
+        @Override
+        public void addRecipes(java.util.Collection<?> list) {
+            if (list != null) pendingRecipes.addAll(list);
+        }
+
+        @Override
+        public void addRecipeRegistryPlugin(legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeRegistryPlugin plugin) {
+            if (plugin != null) recordedOnly.add(plugin);
+        }
+
+        @Override
+        public void addGhostIngredientHandler(Class<? extends legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen> guiClass, legacyconnector.v1_12_2.mezz.jei.api.gui.IGhostIngredientHandler<?> handler) {
+            if (handler != null) recordedOnly.add(handler);
+        }
+
+        /** The JEI 3 handler of a recipe object: the category and the wrapper, or null when no handler takes it. */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Map.Entry<String, IRecipeWrapper> handle(Object recipe) {
+            for (var h : jei3Handlers) {
+                if (!h.getRecipeClass().isInstance(recipe)) continue;
+                var handler = (legacyconnector.v1_12_2.mezz.jei.api.recipe.IRecipeHandler) h;
+                if (!handler.isRecipeValid(recipe)) return null;
+                String uid = handler.getRecipeCategoryUid(recipe);
+                IRecipeWrapper w = handler.getRecipeWrapper(recipe);
+                return uid == null || w == null ? null : Map.entry(uid, w);
+            }
+            return null;
+        }
+
+        /** Runs once the plugins have registered: recipe objects added without a category go through the handlers. */
+        void resolvePending() {
+            for (Object o : pendingRecipes) {
+                try {
+                    var e = handle(o);
+                    if (e != null) {
+                        recipes.computeIfAbsent(e.getKey(), k -> new ArrayList<>()).add(e.getValue());
+                        wrapperOf.put(o, e.getValue());
+                    }
+                    else if (o != null && FAILED.add(o.getClass())) LOG.warn("1.12.2 JEI recipe {} has no handler; dropped", o.getClass().getName());
+                } catch (RuntimeException | LinkageError ex) {
+                    if (o != null && FAILED.add(o.getClass())) LOG.warn("1.12.2 JEI recipe {} failed in its handler: {}", o.getClass().getName(), ex.toString());
+                }
+            }
+            pendingRecipes.clear();
         }
     }
 
@@ -447,10 +582,10 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             return icon;
         }
 
-        @Override
-        public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
+        /** The legacy layout of a recipe: the category's own code run on its wrapper. */
+        Layout layoutOf(Recipe recipe) {
             Ingredients ingredients = new Ingredients();
-            Layout layout = new Layout();
+            Layout layout = new Layout(legacy);
             try {
                 recipe.wrapper().getIngredients(ingredients);
                 if (recipe.wrapper() instanceof legacyconnector.v1_12_2.mezz.jei.api.recipe.wrapper.ICustomCraftingRecipeWrapper custom) {
@@ -461,7 +596,12 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             } catch (RuntimeException | LinkageError e) {
                 if (FAILED.add(legacy.getClass())) LOG.warn("1.12.2 JEI category {} failed to lay out a recipe", uid, e);
             }
-            layout.emit(builder);
+            return layout;
+        }
+
+        @Override
+        public void setRecipe(IRecipeLayoutBuilder builder, Recipe recipe, IFocusGroup focuses) {
+            layoutOf(recipe).emit(builder);
         }
 
         /** JEI 4 drew the background at the recipe's origin, then the category's extras and the wrapper's info, as legacy GUI drawing. */
@@ -560,6 +700,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
     static final class Slot<T> implements legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiIngredient<T> {
         final boolean input;
         final int x, y, w, h;
+        /** Where the ingredient sits inside the frame (an item one pixel in). */
+        int insetX, insetY;
         int capacity;
         boolean showCapacity;
         IDrawable overlay;
@@ -640,7 +782,18 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         /** Item slots: an 18-pixel frame at (x, y), the item one pixel in. */
         @Override
         public void init(int slot, boolean input, int x, int y) {
-            slots.put(slot, new Slot<>(input, x, y, 18, 18));
+            var s = new Slot<T>(input, x, y, 18, 18);
+            s.insetX = 1;
+            s.insetY = 1;
+            slots.put(slot, s);
+        }
+
+        @Override
+        public void init(int slot, boolean input, legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer<T> renderer, int x, int y, int width, int height, int insetX, int insetY) {
+            var s = new Slot<T>(input, x, y, width, height);
+            s.insetX = insetX;
+            s.insetY = insetY;
+            slots.put(slot, s);
         }
 
         @Override
@@ -677,7 +830,14 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
     static final class Layout implements legacyconnector.v1_12_2.mezz.jei.api.gui.IRecipeLayout {
         final ItemGroup items = new ItemGroup();
         final FluidGroup fluids = new FluidGroup();
+        final IRecipeCategory<?> category;
         boolean shapeless;
+
+        Layout(IRecipeCategory<?> category) {
+            this.category = category;
+        }
+
+        @Override public IRecipeCategory<?> getRecipeCategory() { return category; }
 
         @Override public legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiItemStackGroup getItemStacks() { return items; }
         @Override public legacyconnector.v1_12_2.mezz.jei.api.gui.IGuiFluidStackGroup getFluidStacks() { return fluids; }
@@ -704,7 +864,7 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             for (var e : items.slots.entrySet()) {
                 int index = e.getKey();
                 var s = e.getValue();
-                IRecipeSlotBuilder slot = builder.addSlot(s.input ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT, s.x + 1, s.y + 1);
+                IRecipeSlotBuilder slot = builder.addSlot(s.input ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT, s.x + s.insetX, s.y + s.insetY);
                 List<net.minecraft.world.item.ItemStack> stacks = new ArrayList<>();
                 // a slot of an ingredient type of the mod's own (Mekanism's gases) holds objects of that type: left out, not bridged
                 for (Object o : s.stacks) if (o instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemStack st && !st.isEmpty()) stacks.add(Stacks1122.toModern(st));
@@ -907,6 +1067,8 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             legacyconnector.v1_12_2.mezz.jei.api.recipe.IStackHelper, legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientBlacklist {
         static final Helpers INSTANCE = new Helpers();
         static final List<Object> BLACKLIST = new java.util.concurrent.CopyOnWriteArrayList<>();
+        /** Ingredient types of a mod's own (helper, renderer, all ingredients): recorded; the modern JEI does not show them. */
+        static final Map<Class<?>, Object[]> MOD_INGREDIENTS = new java.util.concurrent.ConcurrentHashMap<>();
         static volatile mezz.jei.api.helpers.IGuiHelper modernGui;
         static volatile IJeiRuntime runtime;
 
@@ -960,6 +1122,39 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             }
 
             @Override
+            public <V> void addIngredientsAtRuntime(Class<V> cls, List<V> list) {
+                var rt = runtime;
+                if (rt == null || cls == null || list == null) return;
+                try {
+                    if (legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class.isAssignableFrom(cls)) {
+                        List<net.minecraft.world.item.ItemStack> items = new ArrayList<>();
+                        for (V v : list) if (v instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemStack s && !s.isEmpty()) items.add(Stacks1122.toModern(s));
+                        if (!items.isEmpty()) rt.getIngredientManager().addIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK, items);
+                    } else if (legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack.class.isAssignableFrom(cls)) {
+                        List<net.neoforged.neoforge.fluids.FluidStack> fluids = new ArrayList<>();
+                        for (V v : list) if (v instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack f) fluids.add(FluidBridge1122.toModern(f));
+                        if (!fluids.isEmpty()) rt.getIngredientManager().addIngredientsAtRuntime(NeoForgeTypes.FLUID_STACK, fluids);
+                    }
+                } catch (RuntimeException e) {
+                    LOG.debug("JEI refused 1.12.2 ingredients added at runtime: {}", e.toString());
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public <V> legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientHelper<V> getIngredientHelper(Class<V> cls) {
+                Object[] o = MOD_INGREDIENTS.get(cls);
+                return o == null ? null : (legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientHelper<V>) o[0];
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public <V> legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer<V> getIngredientRenderer(Class<V> cls) {
+                Object[] o = MOD_INGREDIENTS.get(cls);
+                return o == null ? null : (legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientRenderer<V>) o[1];
+            }
+
+            @Override
             public boolean isFuel(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
                 return stack != null && !stack.isEmpty() && Stacks1122.toModern(stack).getBurnTime(null) > 0;
             }
@@ -981,6 +1176,71 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
                         Category c = category == null ? null : categoryOf(category.getUid());
                         if (c != null) for (Recipe r : c.recipes) out.add((T) r.wrapper());
                         return out;
+                    }
+
+                    @Override
+                    public IRecipeWrapper getRecipeWrapper(Object recipe, String uid) {
+                        var bridge = current;
+                        if (bridge == null || recipe == null) return null;
+                        try {
+                            var e = bridge.registry.handle(recipe);
+                            if (e != null && (uid == null || uid.equals(e.getKey()))) return e.getValue();
+                            for (var h : bridge.registry.handlers) {
+                                if (h.uid.equals(uid) && h.recipeClass.isInstance(recipe)) {
+                                    @SuppressWarnings("unchecked")
+                                    var factory = (IRecipeWrapperFactory<Object>) h.factory;
+                                    return factory.getRecipeWrapper(recipe);
+                                }
+                            }
+                        } catch (RuntimeException | LinkageError ex) {
+                            LOG.debug("1.12.2 JEI wrapper lookup failed: {}", ex.toString());
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public void addRecipe(Object recipe) {
+                        var bridge = current;
+                        var e = bridge == null || recipe == null ? null : bridge.registry.handle(recipe);
+                        if (e != null) {
+                            bridge.registry.wrapperOf.put(recipe, e.getValue());
+                            addRecipe(e.getValue(), e.getKey());
+                        }
+                    }
+
+                    @Override
+                    public void removeRecipe(Object recipe) {
+                        var bridge = current;
+                        if (bridge == null || recipe == null) return;
+                        IRecipeWrapper w = bridge.registry.wrapperOf.remove(recipe);
+                        if (w == null) return;
+                        for (Category c : bridge.categories) removeRecipe(w, c.uid);
+                    }
+
+                    @SuppressWarnings("rawtypes")
+                    @Override
+                    public List<IRecipeCategory> getRecipeCategories(List<String> uids) {
+                        List<IRecipeCategory> out = new ArrayList<>();
+                        for (String uid : uids == null ? List.<String>of() : uids) {
+                            Category c = categoryOf(uid);
+                            if (c != null) out.add(c.legacy);
+                        }
+                        return out;
+                    }
+
+                    @SuppressWarnings("rawtypes")
+                    @Override
+                    public List<IRecipeCategory> getRecipeCategories() {
+                        List<IRecipeCategory> out = new ArrayList<>();
+                        var bridge = current;
+                        if (bridge != null) for (Category c : bridge.categories) out.add(c.legacy);
+                        return out;
+                    }
+
+                    @SuppressWarnings("rawtypes")
+                    @Override
+                    public legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandler getRecipeTransferHandler(legacyconnector.v1_12_2.net.minecraft.inventory.Container container, IRecipeCategory category) {
+                        return Jei1122Transfer.handlerFor(container, category);
                     }
 
                     @Override
@@ -1032,6 +1292,72 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
 
                     @Override
                     public void showCategories(List<String> uids) {
+                        var rt = runtime;
+                        if (rt == null || uids == null) return;
+                        List<RecipeType<?>> types = new ArrayList<>();
+                        var bridge = current;
+                        for (String uid : uids) {
+                            RecipeType<?> t = bridge == null ? null : bridge.typeOf(uid);
+                            if (t != null) types.add(t);
+                        }
+                        if (!types.isEmpty()) rt.getRecipesGui().showTypes(types);
+                    }
+
+                    @Override
+                    public Object getIngredientUnderMouse() {
+                        var rt = runtime;
+                        if (rt == null) return null;
+                        return rt.getRecipesGui().getIngredientUnderMouse(mezz.jei.api.constants.VanillaTypes.ITEM_STACK).map(Stacks1122::fromModern).orElse(null);
+                    }
+                };
+            }
+
+            @Override
+            public legacyconnector.v1_12_2.mezz.jei.api.IIngredientListOverlay getIngredientListOverlay() {
+                return new legacyconnector.v1_12_2.mezz.jei.api.IIngredientListOverlay() {
+                    @Override
+                    public Object getIngredientUnderMouse() {
+                        var rt = runtime;
+                        if (rt == null) return null;
+                        var o = rt.getIngredientListOverlay().getIngredientUnderMouse(mezz.jei.api.constants.VanillaTypes.ITEM_STACK);
+                        return o == null ? null : Stacks1122.fromModern(o);
+                    }
+
+                    @Override
+                    public boolean isListDisplayed() {
+                        return runtime != null && runtime.getIngredientListOverlay().isListDisplayed();
+                    }
+                };
+            }
+
+            @Override
+            public legacyconnector.v1_12_2.mezz.jei.api.IItemListOverlay getItemListOverlay() {
+                return new legacyconnector.v1_12_2.mezz.jei.api.IItemListOverlay() {
+                    @Override
+                    public legacyconnector.v1_12_2.net.minecraft.item.ItemStack getStackUnderMouse() {
+                        var rt = runtime;
+                        if (rt == null) return null;
+                        var o = rt.getIngredientListOverlay().getIngredientUnderMouse(mezz.jei.api.constants.VanillaTypes.ITEM_STACK);
+                        return o == null ? null : Stacks1122.fromModern(o);
+                    }
+
+                    @Override
+                    public void setFilterText(String text) {
+                        if (runtime != null) runtime.getIngredientFilter().setFilterText(text == null ? "" : text);
+                    }
+
+                    @Override
+                    public String getFilterText() {
+                        return runtime == null ? "" : runtime.getIngredientFilter().getFilterText();
+                    }
+
+                    @Override
+                    public com.google.common.collect.ImmutableList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getVisibleStacks() {
+                        var rt = runtime;
+                        if (rt == null) return com.google.common.collect.ImmutableList.of();
+                        List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = new ArrayList<>();
+                        for (var s : rt.getIngredientListOverlay().getVisibleIngredients(mezz.jei.api.constants.VanillaTypes.ITEM_STACK)) out.add(Stacks1122.fromModern(s));
+                        return com.google.common.collect.ImmutableList.copyOf(out);
                     }
                 };
             }
@@ -1065,11 +1391,32 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
             @Override public Mode getMode() { return mode; }
         }
 
+        /** Plugins cast the stack helper to JEI's StackHelper class. */
+        private final legacyconnector.v1_12_2.mezz.jei.startup.StackHelper STACK_HELPER = new legacyconnector.v1_12_2.mezz.jei.startup.StackHelper() {
+            @Override public List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getSubtypes(legacyconnector.v1_12_2.net.minecraft.item.ItemStack s) { return Helpers.this.getSubtypes(s); }
+            @Override public List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getAllSubtypes(Iterable<?> s) { return Helpers.this.getAllSubtypes(s); }
+            @Override public List<List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> expandRecipeItemStackInputs(List<?> in) { return Helpers.this.expandRecipeItemStackInputs(in); }
+            @Override public List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> toItemStackList(Object o) { return Helpers.this.toItemStackList(o); }
+            @Override public boolean isEquivalent(legacyconnector.v1_12_2.net.minecraft.item.ItemStack a, legacyconnector.v1_12_2.net.minecraft.item.ItemStack b) { return Helpers.this.isEquivalent(a, b); }
+            @Override public String getUniqueIdentifierForStack(legacyconnector.v1_12_2.net.minecraft.item.ItemStack s) { return Helpers.this.getUniqueIdentifierForStack(s); }
+            @Override public legacyconnector.v1_12_2.net.minecraft.item.ItemStack containsAnyStack(Iterable<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> l, Iterable<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> r) { return Helpers.this.containsAnyStack(l, r); }
+        };
+
         // IJeiHelpers
         @Override public legacyconnector.v1_12_2.mezz.jei.api.IGuiHelper getGuiHelper() { return this; }
-        @Override public legacyconnector.v1_12_2.mezz.jei.api.recipe.IStackHelper getStackHelper() { return this; }
+        @Override public legacyconnector.v1_12_2.mezz.jei.api.recipe.IStackHelper getStackHelper() { return STACK_HELPER; }
         @Override public legacyconnector.v1_12_2.mezz.jei.api.ingredients.IIngredientBlacklist getIngredientBlacklist() { return this; }
-        @Override public legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper getRecipeTransferHandlerHelper() { return new legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper() {}; }
+        @Override public legacyconnector.v1_12_2.mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper getRecipeTransferHandlerHelper() { return Jei1122Transfer.HELPER; }
+        @Override public legacyconnector.v1_12_2.mezz.jei.api.recipe.IVanillaRecipeFactory getVanillaRecipeFactory() { return VanillaRecipes.FACTORY; }
+
+        @Override
+        public legacyconnector.v1_12_2.mezz.jei.api.IItemBlacklist getItemBlacklist() {
+            return new legacyconnector.v1_12_2.mezz.jei.api.IItemBlacklist() {
+                @Override public void addItemToBlacklist(legacyconnector.v1_12_2.net.minecraft.item.ItemStack s) { addIngredientToBlacklist(s); }
+                @Override public void removeItemFromBlacklist(legacyconnector.v1_12_2.net.minecraft.item.ItemStack s) { removeIngredientFromBlacklist(s); }
+                @Override public boolean isItemBlacklisted(legacyconnector.v1_12_2.net.minecraft.item.ItemStack s) { return isIngredientBlacklisted(s); }
+            };
+        }
 
         // IGuiHelper
         @Override
@@ -1085,6 +1432,11 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         @Override
         public IDrawableStatic createDrawable(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation rl, int u, int v, int w, int h, int pt, int pb, int pl, int pr) {
             return new TextureDrawable(rl, u, v, w, h, pt, pb, pl, pr, 256, 256);
+        }
+
+        @Override
+        public IDrawableStatic createDrawable(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation rl, int u, int v, int w, int h, int textureWidth, int textureHeight) {
+            return new TextureDrawable(rl, u, v, w, h, 0, 0, 0, 0, textureWidth, textureHeight);
         }
 
         @Override
@@ -1139,6 +1491,16 @@ public final class Jei1122Bridge implements mezz.jei.api.IModPlugin {
         }
 
         // IStackHelper
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.item.ItemStack containsAnyStack(Iterable<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> lhs, Iterable<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> rhs) {
+            if (lhs == null || rhs == null) return null;
+            for (var l : lhs) {
+                if (l == null || l.isEmpty()) continue;
+                for (var r : rhs) if (r != null && !r.isEmpty() && isEquivalent(l, r)) return l;
+            }
+            return null;
+        }
+
         @Override
         public List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getSubtypes(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
             List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = new ArrayList<>();

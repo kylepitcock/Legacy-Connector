@@ -384,9 +384,18 @@ because it asks for catalysts before recipes), and `onRuntimeAvailable`.
   the game's registries.
 - `addRecipeCatalyst` becomes a modern catalyst (also for the vanilla categories), `addRecipeClickArea` a clickable area of the
   mod's GUI, `IAdvancedGuiHandler.getGuiExtraAreas` an extra area JEI's overlay avoids, and `addIngredientInfo` an information page.
-- Not bridged: recipes a legacy plugin adds to the vanilla categories (the layer converts the mods' crafting recipes itself),
-  recipe transfer (`IRecipeTransferRegistry` accepts and ignores), mods' own ingredient types, and the subtype registry (the layer
-  gives every legacy item its own subtype interpreter).
+- JEI 3 style plugins work too: `addRecipeCategories`, `addRecipeHandlers` (`IRecipeHandler`: recipe class, category, wrapper) and `addRecipes(Collection)`
+  (resolved through the handlers once the plugins have registered), `IRecipeRegistry.addRecipe/removeRecipe/getRecipeWrapper`, `IItemListOverlay`,
+  `IItemBlacklist`, `BlankModPlugin`. Slots with their own inset (`IGuiIngredientGroup.init(..., renderer, x, y, w, h, insetX, insetY)`) and
+  `IGuiHelper.createDrawable(texture, u, v, w, h, textureWidth, textureHeight)` are supported.
+- Recipes of the anvil and brewing categories built with `IVanillaRecipeFactory` become the modern anvil and brewing recipes.
+- Recipe transfer (the plus button): a slot-range registration, a legacy `IRecipeTransferInfo` and JEI's `BasicRecipeTransferHandler`
+  run on the modern JEI's basic transfer over the legacy menu's slots; a plugin's own `IRecipeTransferHandler` runs against the
+  legacy layout rebuilt from the shown recipe (`IRecipeTransferHandlerHelper` errors become the modern ones; the universal handler is recorded only).
+- Not bridged: other recipes a legacy plugin adds to the vanilla categories (the layer converts the mods' crafting recipes itself),
+  mods' own ingredient types (recorded: `IModIngredientRegistration`, helper and renderer are kept for `IIngredientRegistry`), ghost ingredient
+  handlers and recipe registry plugins (recorded), JEI internals beyond a few tiny ones (`ListMultiMap`, `Translator`, `ErrorUtil`, `Log`,
+  `RecipeClickableArea`, `StackHelper`, `BasicRecipeTransfer*`), and the subtype registry (the layer gives every legacy item its own subtype interpreter).
 
 Example: Techguns registers 11 categories (ammo press, metal press, chemistry lab, fabricator, camo bench, charging station,
 reaction chamber, ore drill, blast furnace, grinder, upgrade bench), each with its machine as catalyst and its GUI's click areas.
