@@ -88,6 +88,68 @@ public final class VanillaNames {
      * through the legacy wrapper of that vanilla block/item, so it names the modern object the bridge maps the legacy one to.
      * Cheap for other keys (one map miss); resolved keys are cached.
      */
+    /** Generic names of vanilla blocks and items that come in variants ("" = none). */
+    private static final Map<String, String> GENERIC = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The name 1.4.7-1.7.10's lang file gave the variant-less key of a block that has variants: {@code tile.leaves.name} is "Leaves",
+     * not the oak leaves' name (a mod block that reuses the vanilla item name without subtypes, IC2's rubber leaves, showed "Oak
+     * Leaves"). Derived from the variants' own names: the words they all end with ("Oak Leaves", "Spruce Leaves" -> "Leaves"). Null
+     * when the key is not such a name, the variants share nothing, or the first variant's name is already the generic one.
+     */
+    public static String genericName(String key) {
+        if (key == null || key.length() < 11 || !key.endsWith(".name")) return null;
+        boolean tile = key.startsWith("tile.");
+        if (!tile && !key.startsWith("item.")) return null;
+        String name = key.substring(5, key.length() - 5);
+        if (name.indexOf('.') >= 0) return null;
+        java.util.List<String> regs = (tile ? BLOCKS_BY_NAME : ITEMS_BY_NAME).get(name);
+        if (regs == null) return null;
+        String cached = GENERIC.get(key);
+        if (cached != null) return cached.isEmpty() ? null : cached;
+        String result = "";
+        boolean ready = true;
+        String base = key.substring(0, key.length() - 5);
+        for (String reg : regs) {
+            String[] variants = VARIANTS.get(reg);
+            if (variants == null || variants.length < 2) continue;
+            java.util.List<String[]> names = new java.util.ArrayList<>();
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            for (String v : variants) {
+                String modern = modernKey(base + "." + v + ".name");
+                if (modern == null) {
+                    ready = false;
+                    break;
+                }
+                String text = net.minecraft.locale.Language.getInstance().getOrDefault(modern);
+                if (text.equals(modern)) {
+                    ready = false;
+                    break;
+                }
+                if (seen.add(text)) names.add(text.split(" "));
+            }
+            if (!ready || names.size() < 2) continue;
+            int common = 0;
+            outer:
+            while (true) {
+                String word = null;
+                for (String[] n : names) {
+                    if (n.length <= common) break outer;
+                    String w = n[n.length - 1 - common];
+                    if (word == null) word = w;
+                    else if (!word.equals(w)) break outer;
+                }
+                common++;
+            }
+            String[] first = names.get(0);
+            if (common == 0 || common == first.length) continue;
+            result = String.join(" ", java.util.Arrays.copyOfRange(first, first.length - common, first.length));
+            break;
+        }
+        if (ready) GENERIC.put(key, result);
+        return result.isEmpty() ? null : result;
+    }
+
     public static String modernKey(String key) {
         if (key == null || key.length() < 11 || !key.endsWith(".name")) return null;
         boolean tile = key.startsWith("tile.");
