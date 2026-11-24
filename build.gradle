@@ -243,6 +243,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
     testImplementation project(':loader') // SwitchRegistryTest: the loader's LoaderFlags go into the same documentation page as the runtime's Flags
+    testImplementation "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}" // Jei1122ApiTest: the bridge's classes link against the modern JEI API
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // Match the launcher's parser; Nashorn otherwise pulls ASM 7 into standalone tests (cannot read Java 21 fixtures).
     testRuntimeOnly "org.ow2.asm:asm:${asm_version}"

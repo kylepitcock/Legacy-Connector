@@ -5,4 +5,7 @@ public interface IJeiRuntime {
     legacyconnector.v1_12_2.mezz.jei.api.IRecipeRegistry getRecipeRegistry();
     legacyconnector.v1_12_2.mezz.jei.api.IRecipesGui getRecipesGui();
     legacyconnector.v1_12_2.mezz.jei.api.IIngredientFilter getIngredientFilter();
+    legacyconnector.v1_12_2.mezz.jei.api.IIngredientListOverlay getIngredientListOverlay();
+    /** JEI 3. */
+    legacyconnector.v1_12_2.mezz.jei.api.IItemListOverlay getItemListOverlay();
 }
