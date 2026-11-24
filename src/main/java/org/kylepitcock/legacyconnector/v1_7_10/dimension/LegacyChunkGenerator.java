@@ -41,15 +41,28 @@ public class LegacyChunkGenerator extends ChunkGenerator {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Dimensions");
     public static final MapCodec<LegacyChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.INT.fieldOf("dimension").forGetter(g -> g.dimension),
-            BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource)).apply(i, LegacyChunkGenerator::new));
+            BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource),
+            Codec.STRING.optionalFieldOf("world_type", "").forGetter(g -> g.worldType)).apply(i, LegacyChunkGenerator::new));
 
     private final int dimension;
+    /** Name of the legacy world type this generator is the overworld of ("" for a mod dimension; then {@code dimension} is its id, else 0). */
+    private final String worldType;
     private volatile IChunkProvider legacy;
     private boolean failed;
 
     public LegacyChunkGenerator(int dimension, BiomeSource biomeSource) {
+        this(dimension, biomeSource, "");
+    }
+
+    public LegacyChunkGenerator(int dimension, BiomeSource biomeSource, String worldType) {
         super(biomeSource);
         this.dimension = dimension;
+        this.worldType = worldType;
+    }
+
+    /** The legacy world type of a world preset whose overworld this generates ("" for a mod dimension). */
+    public String mcc$worldType() {
+        return worldType;
     }
 
     @Override

@@ -14,6 +14,7 @@ public final class Data1122 implements GeneratedPack.Contributor {
         if (type != PackType.SERVER_DATA) return;
         org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.generate(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyBiomes1122.contribute(out);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyWorldPresets1122.contribute(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.contribute(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Records1122.contribute(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.ToolTags1122.contribute(out);

@@ -1,34 +1,21 @@
 package org.kylepitcock.legacyconnector.v1_7_10.bridge;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 import legacyconnector.v1_7_10.net.minecraft.world.WorldType;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.fml.ModList;
-import org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldPresetPack;
 
 /**
  * Legacy mod world types (Biomes O' Plenty's "BIOMESOP", ...) as 1.21 world presets, listed on the Create World
- * screen's world type button. Each preset is the vanilla overworld with a {@link LegacyLayeredBiomeSource} (the world type's
- * biome layers over the vanilla multi-noise parameters) and its own copy of the noise settings, whose id identifies worlds created
- * with the type before it had its own biome source (kept so those saves still load).
+ * screen's world type button ({@link LegacyWorldPresetPack}). Each preset is the vanilla overworld with a {@link LegacyLayeredBiomeSource}
+ * (the world type's biome layers over the vanilla multi-noise parameters) and its own copy of the noise settings, whose id identifies
+ * worlds created with the type.
  */
 public final class LegacyWorldPresets {
-    private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Biomes");
-
     private LegacyWorldPresets() {}
 
     /** World types registered by legacy mods. */
@@ -43,78 +30,52 @@ public final class LegacyWorldPresets {
         return null;
     }
 
+    /** True when the type brings its own terrain generator ({@code getChunkGenerator} overridden): worlds of the type generate with the mod's. */
+    public static boolean hasOwnGenerator(WorldType t) {
+        try {
+            return t.getClass().getMethod("getChunkGenerator", legacyconnector.v1_7_10.net.minecraft.world.World.class, String.class)
+                    .getDeclaringClass() != WorldType.class;
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return false;
+        }
+    }
+
+    private static List<LegacyWorldPresetPack.Preset> presets() {
+        List<LegacyWorldPresetPack.Preset> out = new ArrayList<>();
+        for (WorldType t : modTypes()) {
+            JsonObject generator = new JsonObject();
+            if (hasOwnGenerator(t)) {
+                // The mod's terrain: the legacy chunk generator of the type's world provider (the machinery of mod dimensions, dimension 0 = the
+                // overworld), biomes from the type's own chunk manager.
+                JsonObject source = new JsonObject();
+                source.addProperty("type", "legacyconnector:legacy");
+                source.addProperty("dimension", 0);
+                com.google.gson.JsonArray biomes = new com.google.gson.JsonArray();
+                org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.allBiomeIds().forEach(biomes::add);
+                source.add("biomes", biomes);
+                generator.addProperty("type", "legacyconnector:legacy");
+                generator.addProperty("dimension", 0);
+                generator.addProperty("world_type", t.getWorldTypeName());
+                generator.add("biome_source", source);
+            } else {
+                // The world type's own biome source: the vanilla multi-noise parameters with its legacy biome layers choosing land biomes.
+                JsonObject source = new JsonObject();
+                source.addProperty("type", "legacyconnector:legacy_layers");
+                source.addProperty("preset", "minecraft:overworld");
+                source.addProperty("world_type", t.getWorldTypeName());
+                generator.add("biome_source", source);
+            }
+            out.add(new LegacyWorldPresetPack.Preset(t.mcc$presetId(), t.getWorldTypeName(), t.mcc$owner, t.getTranslateName(), generator));
+        }
+        return out;
+    }
+
     public static void contributeData(Map<String, Supplier<byte[]>> out) {
-        List<WorldType> types = modTypes();
-        if (types.isEmpty()) return;
-        JsonObject preset = vanilla("data/minecraft/worldgen/world_preset/normal.json");
-        JsonObject noise = vanilla("data/minecraft/worldgen/noise_settings/overworld.json");
-        if (preset == null || noise == null) {
-            LOG.warn("Vanilla world preset data not found; legacy world types are not offered");
-            return;
-        }
-        byte[] noiseBytes = noise.toString().getBytes(StandardCharsets.UTF_8);
-        JsonArray tag = new JsonArray();
-        for (WorldType t : types) {
-            ResourceLocation id = t.mcc$presetId();
-            JsonObject p = preset.deepCopy();
-            JsonObject generator = p.getAsJsonObject("dimensions").getAsJsonObject("minecraft:overworld").getAsJsonObject("generator");
-            generator.addProperty("settings", id.toString());
-            // The world type's own biome source: the vanilla multi-noise parameters with its legacy biome layers choosing land biomes.
-            JsonObject source = new JsonObject();
-            source.addProperty("type", "legacyconnector:legacy_layers");
-            source.addProperty("preset", "minecraft:overworld");
-            source.addProperty("world_type", t.getWorldTypeName());
-            generator.add("biome_source", source);
-            byte[] presetBytes = p.toString().getBytes(StandardCharsets.UTF_8);
-            out.put("data/" + id.getNamespace() + "/worldgen/world_preset/" + id.getPath() + ".json", () -> presetBytes);
-            out.put("data/" + id.getNamespace() + "/worldgen/noise_settings/" + id.getPath() + ".json", () -> noiseBytes);
-            tag.add(id.toString());
-        }
-        JsonObject tagJson = new JsonObject();
-        tagJson.addProperty("replace", false);
-        tagJson.add("values", tag);
-        byte[] tagBytes = tagJson.toString().getBytes(StandardCharsets.UTF_8);
-        out.put("data/minecraft/tags/worldgen/world_preset/normal.json", () -> tagBytes);
-        LOG.info("Offering {} legacy world type(s) as world presets", types.size());
+        LegacyWorldPresetPack.contribute(out, presets());
     }
 
     /** Display names: the mod's own translation of the legacy key (generator.BIOMESOP), else the type name. */
     public static void registerNames() {
-        for (WorldType t : modTypes()) {
-            ResourceLocation id = t.mcc$presetId();
-            String name = legacyTranslation(t.mcc$owner, t.getTranslateName());
-            GeneratedTranslations.put("en_us", "generator." + id.getNamespace() + "." + id.getPath(), name == null ? t.getWorldTypeName() : name);
-        }
-    }
-
-    private static String legacyTranslation(String modId, String key) {
-        var legacy = org.kylepitcock.legacyconnector.core.LegacyMods.find(modId);
-        var file = legacy != null ? legacy.container.getModInfo().getOwningFile() : ModList.get().getModFileById(modId);
-        if (file == null) return null;
-        Path assets = file.getFile().getSecureJar().getPath("assets");
-        if (!Files.isDirectory(assets)) return null;
-        try (Stream<Path> langs = Files.find(assets, 3, (p, a) -> p.getFileName() != null && p.getFileName().toString().equals("en_us.json"))) {
-            for (Path lang : (Iterable<Path>) langs::iterator) {
-                try (var r = Files.newBufferedReader(lang, StandardCharsets.UTF_8)) {
-                    JsonObject json = JsonParser.parseReader(r).getAsJsonObject();
-                    if (json.has(key)) return json.get(key).getAsString();
-                }
-            }
-        } catch (Exception e) {
-            LOG.debug("Could not read translations of {}: {}", modId, e.toString());
-        }
-        return null;
-    }
-
-    private static JsonObject vanilla(String path) {
-        for (ClassLoader cl : new ClassLoader[] {net.minecraft.world.level.biome.Biome.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
-            if (cl == null) continue;
-            try (InputStream in = cl.getResourceAsStream(path)) {
-                if (in != null) return JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
-            } catch (Exception ignored) {
-                // try the next loader
-            }
-        }
-        return null;
+        LegacyWorldPresetPack.registerNames(presets());
     }
 }
