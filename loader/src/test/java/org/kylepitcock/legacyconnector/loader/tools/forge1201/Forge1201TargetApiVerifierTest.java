@@ -213,6 +213,78 @@ final class Forge1201TargetApiVerifierTest {
     }
 
     @Test
+    void reportsConnectorShimReferencesAsNotCheckedWhenRuntimeDomainWasNotSupplied() throws Exception {
+        String sourceContext = "net/minecraftforge/network/NetworkEvent$Context";
+        String sourceDirection = "net/minecraftforge/network/NetworkDirection";
+        String targetContext = "legacyconnector/v1_20_1/net/minecraftforge/network/NetworkEvent$Context";
+
+        var analysis = analysis(
+                List.of(sourceContext, sourceDirection),
+                List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                        sourceContext, "getDirection",
+                        "()L" + sourceDirection + ";", 1)),
+                List.of());
+
+        Forge1201TargetApiVerifier.TargetIndex index = Forge1201TargetApiVerifier.createIndex(
+                internalName -> null,
+                java.util.Set.of("legacyconnector/v1_20_1/"));
+        var result = index.verify(analysis);
+
+        assertEquals(2, result.candidateClassCount());
+        assertEquals(0, result.verifiedClassCount());
+        assertTrue(result.missingTargetClasses().isEmpty());
+        assertEquals(1, result.uniqueMethodReferences());
+        assertEquals(0, result.verifiedMethodReferences());
+        assertEquals(1, result.methodIssues().size());
+        assertEquals(Forge1201TargetApiVerifier.MemberStatus.NOT_CHECKED_NO_CONNECTOR_RUNTIME_OUTPUT,
+                result.methodIssues().getFirst().status());
+        assertEquals(targetContext, result.methodIssues().getFirst().targetOwner());
+    }
+
+    @Test
+    void mapsOnlyDeferredRegisterRegisterReturnToDeferredHolder() throws Exception {
+        String sourceRegister = "net/minecraftforge/registries/DeferredRegister";
+        String sourceRegistryObject = "net/minecraftforge/registries/RegistryObject";
+        String targetRegister = "net/neoforged/neoforge/registries/DeferredRegister";
+        String targetHolder = "net/neoforged/neoforge/registries/DeferredHolder";
+        String supplier = "java/util/function/Supplier";
+        String sourceMethodDescriptor =
+                "(Ljava/lang/String;L" + supplier + ";)L" + sourceRegistryObject + ";";
+        String targetMethodDescriptor =
+                "(Ljava/lang/String;L" + supplier + ";)L" + targetHolder + ";";
+
+        ClassWriter registerWriter = new ClassWriter(0);
+        registerWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, targetRegister, null, "java/lang/Object", null);
+        registerWriter.visitMethod(Opcodes.ACC_PUBLIC, "register",
+                targetMethodDescriptor, null, null).visitEnd();
+        registerWriter.visitField(Opcodes.ACC_PUBLIC, "factory", "L" + supplier + ";", null, null).visitEnd();
+        registerWriter.visitEnd();
+
+        Map<String, byte[]> classes = Map.of(
+                targetRegister, registerWriter.toByteArray(),
+                targetHolder, targetEmptyClass(targetHolder, "java/lang/Object"),
+                supplier, targetEmptyClass(supplier, "java/lang/Object"));
+
+        var result = verify(
+                analysis(
+                        List.of(sourceRegister, sourceRegistryObject),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceRegister, "register", sourceMethodDescriptor, 1)),
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                sourceRegister, "factory", "L" + sourceRegistryObject + ";", 1))),
+                classes);
+
+        assertEquals(2, result.candidateClassCount());
+        assertEquals(2, result.verifiedClassCount());
+        assertEquals(1, result.verifiedMethodReferences());
+        assertEquals(targetMethodDescriptor, result.verifiedMethods().getFirst().targetDescriptor());
+        assertEquals("Ljava/util/function/Supplier;",
+                result.verifiedFields().getFirst().targetDescriptor());
+        assertTrue(result.methodIssues().isEmpty());
+        assertTrue(result.fieldIssues().isEmpty());
+    }
+
+    @Test
     void ignoresManualAdapterOwnersBecauseTheyAreNotTypeReplacements() throws Exception {
         Forge1201TargetApiVerifier.Result result = verify(
                 analysis(
