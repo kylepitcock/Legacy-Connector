@@ -47,3 +47,48 @@ hook class casts it to `IExtraChunkData` (server `ClassCastException: Chunk cann
   - For `Object`-typed hook parameters (as here) the hook's own `checkcast` is rewritten the same way, so the added hook call keeps working.
 - Run time: `CoremodSites1122`-style table is not needed; the list is read by the loader at translation, so only the side table class (`CoremodStructure`) is runtime code.
 - Open: what to do with added methods that call other added/hooked code; added static members; a transformer that adds a superclass change (not seen yet).
+
+## Structural additions to ANOTHER mod's classes (C2, 2026-11-24)
+
+Case: Logistics Pipes' transformer (`LogisticsClassTransformer`) extends classes of other jars of the set: 1.7.10 Thermal Dynamics `TileTDBase`,
+`TravelingItem` (`+ field lpRoutingInformation Object`, hook calls into `logisticspipes.asm.td.ThermalDynamicsHooks`), `RenderDuctItems`; 1.6.4 Thermal
+Expansion `ConduitBase`, `ConduitItem`, `ItemRoute`, `TravelingItem` (`+ field routedLPInfo ItemRoutingInformation`) and BuildCraft `Pipe`,
+`PipeTransportItems`. Other mods' classes are not "vanilla targets": `CoremodHookScan` (which shows the original Minecraft client jar to the transformers
+once) does not see them.
+
+Finding (the design answer; it needs no new application step):
+
+- **Discovery**: nothing has to be found first. The locator's patcher (`LegacyModLocator`, `transformer.patcher(...)`, called from
+  `LegacyJarTransformer.readPatched` for BOTH the peer scan and the translation) hands every class of every jar of a legacy version to that version's
+  transformers (`LegacyCoreModTransformers.apply`), as LaunchWrapper offered every class to every transformer. A transformer that matches
+  `cofh.thermaldynamics.duct.item.TravelingItem` by name therefore rewrites it when the Thermal Dynamics jar is read. `CoremodModTargets.scan` is the
+  same pass as a listing (before/after nodes per changed class; `CoremodHookProbe` prints it as "== mod classes: set"), and `addedReferences` names the
+  types an added member needs from another jar (the coremod jar's), for diagnostics.
+- **Application at translation of the target jar**: the changed class is what the translation, the link check and the `PeerClasses` of the set see, so the
+  member exists for the jar that uses it (Logistics Pipes reading `TravelingItem.lpRoutingInformation`) and the added hook calls link against the coremod's
+  jar like any cross-jar reference. Structural additions to Minecraft classes need the mixin route (`CoremodAdditionMixins`) because the shim class is
+  compiled; classes of other mods are real class files, so patching the bytes is the whole job.
+- **Cache key**: the translated jar of the TARGET depends on the coremod jar, so the key must contain it. It does: `LegacyModLocator.modSetDigests` hashes
+  EVERY legacy jar of a version into one digest used for every jar of that version (plus bridges, side, relocation inputs); adding, removing or updating
+  Logistics Pipes changes the digest of the Thermal Dynamics entry. `TRANSFORMER_VERSION` is 269.
+- **Visibility**: the locator logs once per jar "a legacy coremod of this mod set changes classes of X (first: Y)" (jars without a coremod of their own).
+
+What was missing (and is added):
+
+1. The offline check never ran coremods, so Logistics Pipes showed `TravelingItem.lpRoutingInformation` as 1 unresolved member against the unpatched jar.
+   `./gradlew checkLegacyMod -Pcoremods=true -PlegacyJar=...` now runs the set's transformers like the game (flag `legacyconnector.check.coremods`; it sets
+   `legacyconnector.runtimeClasses` and an FML game directory so the shim `Loader` initialises). Result 1.7.10 (LP 0.9.3.132 + TD + CoFHCore + CoFHLib +
+   BuildCraft + TE + CCC + NEI): LP 1 unresolved -> 0, "coremod patched ThermalDynamics: TileTDBase, TravelingItem"; LP's own `ModDependent*` stripping runs too.
+2. The 1.6.4 coremod class loader (`ShimLoader`) lacked classes that Forge 1.6 mod classes name while a transformer initialises them: it now also consults
+   the 1.6.4 hierarchy data (empty class with the real supertypes: `IChatListener`) and serves a forward-renamed shim class under its old name
+   (`net.minecraftforge.common.Configuration` from `config.Configuration`). A shim `CreativeTabs` built inside that loader no longer dies in the bridge's
+   relocated signature.
+
+Remaining for 1.6.4 (LP + Thermal Expansion 3.0.0.2 still shows `TravelingItem.routedLPInfo` unresolved with `-Pcoremods=true`): LP's transformer calls
+`Configs.load()` -> `LogisticsPipes.<clinit>` before it patches `ConduitBase`/`TravelingItem`. That runs UNTRANSLATED 1.6.4 mod code in the transformer's class
+loader, which serves the 1.7.10 shim, so a 1.6.4-only instance method (`Configuration.getItem(String,int)`, a facade call at translation) throws
+`NoSuchMethodError`, and BuildCraft `Pipe` fails with an `IllegalStateException` in the same environment. Fix candidates: (a) apply the forward layer's
+redirects (`ForwardCalls`/`ForwardRedirects`, facades) to the classes the coremod loader defines (the `mcc$definer` hook in `LegacyCoreModTransformers.load`),
+the general solution; (b) add the 1.6.4 overloads to the shim classes the transformers touch (`Configuration.getItem(String,int)`...), cheaper, one class at
+a time. Not started; once (a) is in, later calls (`Loader.isModLoaded`, `FMLCommonHandler`) may still fail and need a run to find out. Until then the
+TE/BuildCraft jars translate without LP's additions (LP's references become synthesized members, listed as unresolved, and fail at first use).
