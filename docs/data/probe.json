@@ -61006,6 +61006,606 @@
    }
   },
   {
+   "mc": "1.4.7",
+   "date": "2026-11-24",
+   "version": "",
+   "counts": {
+    "links": 82,
+    "soft": 0,
+    "stubs": 5,
+    "gap_shim": 0,
+    "gap_mod": 2,
+    "gap_lib": 0,
+    "obsolete": 0,
+    "native": 0,
+    "engine": 0
+   },
+   "env": {
+    "layer": "",
+    "jars": 107,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "dd86d0031212"
+   },
+   "mods": [
+    [
+     "AIBlock",
+     "v1.0",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Applied Energistics",
+     "rv.9.i",
+     "links",
+     ""
+    ],
+    [
+     "Ars Magica",
+     "Open Beta RC 5.36.040-Universal",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "Auto Third Person",
+     "2.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Autoutils",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "BC Builders",
+     "3.4.6.19",
+     "links",
+     ""
+    ],
+    [
+     "BiblioCraft",
+     "1.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Binnie Core",
+     "1.5.0.6",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Biomes O' Plenty",
+     "1.4.7",
+     "links",
+     ""
+    ],
+    [
+     "Block Helper",
+     "2.0.0-pre14",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "BucketCraft",
+     "V1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "BufferFix",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "CameraCraft",
+     "2.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CCTV",
+     "1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ChickenChunks",
+     "1.3.1.2",
+     "links",
+     ""
+    ],
+    [
+     "CoFH Core",
+     "1.0.0.0",
+     "links",
+     ""
+    ],
+    [
+     "ComputerCraft Turtles",
+     "1.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CraftPresence",
+     "2.7.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Customizable Player Models",
+     "0.6.27a",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CustomNpcs 1.4.5",
+     "0.8",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Dimensional Anchors",
+     "52.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Dirt Tools and Armor",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "DivineRPG",
+     "1.3.0.1",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "Dragon Mounts Forge (WIP)",
+     "0.93",
+     "links",
+     ""
+    ],
+    [
+     "Drogtor",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "EE2",
+     "Beta1.0",
+     "links",
+     ""
+    ],
+    [
+     "EnderStorage",
+     "1.4.1.5",
+     "links",
+     ""
+    ],
+    [
+     "Entity Detector",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Equivalent Exchange 3",
+     "pre1f",
+     "links",
+     ""
+    ],
+    [
+     "ExtraButtons",
+     "1.4.7.0",
+     "links",
+     ""
+    ],
+    [
+     "Factorization Miscellaneous Nonsense",
+     "0.7.21",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "Falling Meteors",
+     "2.9.2.1",
+     "links",
+     ""
+    ],
+    [
+     "Forestry for Minecraft",
+     "2.0.0.11",
+     "links",
+     ""
+    ],
+    [
+     "GraviGun",
+     "1.4.7.2",
+     "links",
+     ""
+    ],
+    [
+     "Grimoire of Gaia 2",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "GuiAPI",
+     "0.15.2",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Hats",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Hopper",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Immibis Core",
+     "52.4.6",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Microblocks (Check for incorrect installation)",
+     "52.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Peripherals",
+     "52.1.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "InfiniTubes",
+     "52.0.2",
+     "links",
+     ""
+    ],
+    [
+     "LAPI",
+     "for MC v1.3.2",
+     "gap_mod",
+     "CoroAI.componentAI.AIAgent.dipl_team:LCoroAI.entity.EnumTeam;"
+    ],
+    [
+     "Legacy Custom Publish",
+     "1.0",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "Legendary Item",
+     "24.10.09",
+     "links",
+     ""
+    ],
+    [
+     "Liquid XP",
+     "52.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Logistics Pipes",
+     "0.7.0.98",
+     "links",
+     ""
+    ],
+    [
+     "Mekanism",
+     "5.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MekanismGenerators",
+     "5.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MekanismTools",
+     "5.3.0",
+     "links",
+     ""
+    ],
+    [
+     "MiscPeripherals",
+     "3.1",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "mod_Allocator",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_BlockHelper",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_bspkrsCore",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_CuteMobModels",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_FCBetterThanWolves",
+     "0.0.0-legacy",
+     "stubs",
+     "159 synthesized stub(s)"
+    ],
+    [
+     "mod_Gibbing",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "mod_InvTweaks",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_moapi",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_ReiMinimap",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_SmartMoving",
+     "0.0.0-legacy",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "mod_SprintKey",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_TooManyItems",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "More Pistons",
+     "1.2.4 for [1.4.7]",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "MoreSwordMod",
+     "2.4.0",
+     "links",
+     ""
+    ],
+    [
+     "Mystcraft",
+     "0.10.1.00",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "NEI",
+     "2.1.6.0",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "OVM",
+     "0.6.1",
+     "links",
+     ""
+    ],
+    [
+     "PonySocks",
+     "0.3",
+     "links",
+     ""
+    ],
+    [
+     "Portal Gun",
+     "1.4.7.4",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "RawInput Mod",
+     "1.0",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "RedPower",
+     "2.0pr6",
+     "links",
+     ""
+    ],
+    [
+     "Resource Engineering",
+     "0.0.103",
+     "links",
+     ""
+    ],
+    [
+     "RP Compat",
+     "2.0pr6",
+     "links",
+     ""
+    ],
+    [
+     "RP Wiring",
+     "2.0pr6",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "RP World",
+     "2.0pr6",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "rpcDrive",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Sprintable",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Sprinting Key",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "The Rings of Power",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "The Twilight Forest",
+     "1.15.4",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Thermal Expansion",
+     "2.2.2.2",
+     "gap_mod",
+     "cofh.CoFHCore.clothFireproof:Llegacyconnector.v1_7_10.net.minecraft.block.material.Material;"
+    ],
+    [
+     "Timber!",
+     "1.4.6r1",
+     "links",
+     ""
+    ],
+    [
+     "TreeCapitator",
+     "Forge 1.4.6.r07",
+     "links",
+     ""
+    ],
+    [
+     "Tubestuff",
+     "52.3.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "UniLib",
+     "1.2.1",
+     "links",
+     ""
+    ],
+    [
+     "xCraft",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "XInput Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "§3XyCraft",
+     "@VERSION@",
+     "links",
+     "5 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 89,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-17",
+    "version": "",
+    "regressed": [],
+    "fixed": [
+     [
+      "CraftPresence",
+      "gap_mod",
+      "links"
+     ],
+     [
+      "CustomNpcs 1.4.5",
+      "stubs",
+      "links"
+     ],
+     [
+      "Factorization Miscellaneous Nonsense",
+      "stubs",
+      "links"
+     ],
+     [
+      "Mystcraft",
+      "stubs",
+      "links"
+     ],
+     [
+      "UniLib",
+      "gap_mod",
+      "links"
+     ]
+    ],
+    "regressedCount": 0,
+    "fixedCount": 5
+   }
+  },
+  {
    "mc": "1.5.2",
    "date": "2026-11-06",
    "version": "",
@@ -63021,6 +63621,464 @@
     ],
     "regressedCount": 0,
     "fixedCount": 2
+   }
+  },
+  {
+   "mc": "1.5.2",
+   "date": "2026-11-24",
+   "version": "",
+   "counts": {
+    "links": 61,
+    "soft": 0,
+    "stubs": 4,
+    "gap_shim": 0,
+    "gap_mod": 2,
+    "gap_lib": 0,
+    "obsolete": 0,
+    "native": 0,
+    "engine": 0
+   },
+   "env": {
+    "layer": "",
+    "jars": 87,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "dd86d0031212"
+   },
+   "mods": [
+    [
+     "AIBlock",
+     "v1.0",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Applied Energistics",
+     "rv14.dev2",
+     "gap_mod",
+     "buildcraft.BuildCraftTransport.facadeItem:Llegacyconnector.v1_7_10.net.minecraft.item.Item;"
+    ],
+    [
+     "Ars Magica",
+     "5.52.002",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "Backpacks!",
+     "1.5.2 - 1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "BC Builders",
+     "3.7.4.1",
+     "links",
+     ""
+    ],
+    [
+     "BCMod (Brad16840.Common mod)",
+     "1.5.2 - 1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "BiblioCraft",
+     "1.3.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Binnie Core",
+     "1.7.3b",
+     "links",
+     ""
+    ],
+    [
+     "bspkrsCore",
+     "v3.05(1.5.2)",
+     "links",
+     ""
+    ],
+    [
+     "Build Mod",
+     "v1.0",
+     "links",
+     ""
+    ],
+    [
+     "Carpenter's Blocks",
+     "v1.9.9",
+     "links",
+     ""
+    ],
+    [
+     "ChickenChunks",
+     "1.3.2.14",
+     "links",
+     ""
+    ],
+    [
+     "CoFHNetwork",
+     "1.5.2.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "ComputerCraft Turtles",
+     "1.53",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CoroAI",
+     "v1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CustomNpcs",
+     "0.8",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "DartCraft",
+     "Beta 0.1.18",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "Dimensional Anchors",
+     "55.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Dirt Tools and Armor",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Mounts Forge (WIP)",
+     "0.99.2",
+     "links",
+     ""
+    ],
+    [
+     "Enchanting Plus",
+     "1.15.6",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "EnderStorage",
+     "1.4.2.16",
+     "links",
+     ""
+    ],
+    [
+     "Equivalent Exchange 3",
+     "pre1h (build 16)",
+     "links",
+     ""
+    ],
+    [
+     "Extended Mod Config",
+     "v1.0",
+     "links",
+     ""
+    ],
+    [
+     "Extended Renderer",
+     "v1.0",
+     "links",
+     ""
+    ],
+    [
+     "Forestry for Minecraft",
+     "2.2.8.4",
+     "links",
+     ""
+    ],
+    [
+     "Forge Microblocks",
+     "1.0.0.149",
+     "links",
+     ""
+    ],
+    [
+     "Grimoire of Gaia 2",
+     "1.2.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "GuiAPI",
+     "0.15.6",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Hats",
+     "1.3.3",
+     "links",
+     ""
+    ],
+    [
+     "Immibis Core",
+     "55.1.6",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
+     "55.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Peripherals",
+     "55.0.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "InfiniTubes",
+     "55.0.6",
+     "links",
+     ""
+    ],
+    [
+     "Liquid XP",
+     "55.1.6",
+     "links",
+     ""
+    ],
+    [
+     "Logistics Pipes",
+     "0.7.3.7",
+     "gap_mod",
+     "buildcraft.core.TileBuffer.<init>()V"
+    ],
+    [
+     "Mekanism",
+     "5.5.6",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "MekanismGenerators",
+     "5.5.6",
+     "links",
+     ""
+    ],
+    [
+     "MekanismTools",
+     "5.5.6",
+     "links",
+     ""
+    ],
+    [
+     "MiscPeripherals",
+     "3.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "mod_Allocator",
+     "0.0.0-legacy",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "mod_BlockHelper",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_CreeperTrip",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_CuteMobModels",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_Gibbing",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "mod_MOAPI",
+     "0.0.0-legacy",
+     "stubs",
+     "13 synthesized stub(s)"
+    ],
+    [
+     "mod_MorePlayerModels",
+     "0.0.0-legacy",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "mod_ReiMinimap",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "mod_SmartMoving",
+     "0.0.0-legacy",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "mod_TooManyItems",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "More Pistons",
+     "1.3.2 for [1.5.2 Build Smeagol]",
+     "links",
+     ""
+    ],
+    [
+     "More Swords Mod",
+     "2.4.2",
+     "links",
+     ""
+    ],
+    [
+     "Multishot",
+     "3.1.0-a1",
+     "links",
+     ""
+    ],
+    [
+     "Mystcraft",
+     "0.10.5.00",
+     "links",
+     ""
+    ],
+    [
+     "Natura",
+     "2.1.5",
+     "links",
+     ""
+    ],
+    [
+     "PortalGun",
+     "1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "RedLogic",
+     "55.4.1",
+     "links",
+     ""
+    ],
+    [
+     "Resource Engineering",
+     "0.5.17",
+     "links",
+     ""
+    ],
+    [
+     "Sprintable",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "The Twilight Forest",
+     "1.18.2",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Thermal Expansion",
+     "2.4.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Timber!",
+     "1.5.2r1",
+     "links",
+     ""
+    ],
+    [
+     "Translocator",
+     "1.1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "TreeCapitator",
+     "Forge 1.5.2.r14",
+     "links",
+     ""
+    ],
+    [
+     "Tropicraft",
+     "v5.0a for MC 1.5.2",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Tubestuff",
+     "55.0.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "§3XyCraft",
+     "0.11.25",
+     "links",
+     "3 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 67,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-17",
+    "version": "",
+    "regressed": [],
+    "fixed": [
+     [
+      "CustomNpcs",
+      "stubs",
+      "links"
+     ],
+     [
+      "Forge Microblocks",
+      "gap_mod",
+      "links"
+     ],
+     [
+      "mod_MorePlayerModels",
+      "stubs",
+      "links"
+     ]
+    ],
+    "regressedCount": 0,
+    "fixedCount": 3
    }
   },
   {
@@ -66206,6 +67264,540 @@
     ],
     "regressedCount": 0,
     "fixedCount": 6
+   }
+  },
+  {
+   "mc": "1.6.4",
+   "date": "2026-11-24",
+   "version": "",
+   "counts": {
+    "links": 69,
+    "soft": 0,
+    "stubs": 2,
+    "gap_shim": 0,
+    "gap_mod": 6,
+    "gap_lib": 0,
+    "obsolete": 0,
+    "native": 0,
+    "engine": 0
+   },
+   "env": {
+    "layer": "",
+    "jars": 108,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "bbd10f1a215d"
+   },
+   "mods": [
+    [
+     "Advanced Genetics",
+     "v1.9 BETA",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Advanced Solar Panels",
+     "3.4.3",
+     "links",
+     ""
+    ],
+    [
+     "Aether II",
+     "Alpha 1.6.4-4.0",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "Applied Energistics",
+     "rv12.a",
+     "gap_mod",
+     "ic2.api.recipe.IMachineRecipeManager.addRecipe(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.Object;)V"
+    ],
+    [
+     "AtomicStryker Update Check Mod",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Backpacks!",
+     "3.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Battle Towers",
+     "1.4.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BC Builders",
+     "4.2.2",
+     "links",
+     ""
+    ],
+    [
+     "BD Lib",
+     "1.2.3.48",
+     "links",
+     ""
+    ],
+    [
+     "BiblioCraft",
+     "1.5.5",
+     "links",
+     ""
+    ],
+    [
+     "Binnie Core",
+     "1.8.0",
+     "links",
+     ""
+    ],
+    [
+     "Blood Magic: Alchemical Wizardry",
+     "v1.0.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "bspkrsCore",
+     "v5.3(1.6.4)",
+     "links",
+     ""
+    ],
+    [
+     "CakeIsALie Mod",
+     "1.6.2",
+     "links",
+     ""
+    ],
+    [
+     "Carpenter's Blocks",
+     "3.2.8.6",
+     "links",
+     ""
+    ],
+    [
+     "ChickenChunks",
+     "1.3.3.4",
+     "links",
+     ""
+    ],
+    [
+     "CoFH Core",
+     "2.0.0.b7",
+     "links",
+     ""
+    ],
+    [
+     "ComputerCraft",
+     "1.631pr9",
+     "links",
+     ""
+    ],
+    [
+     "CustomNpcs",
+     "1.6.4",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "DartCraft",
+     "Beta 0.2.07",
+     "gap_mod",
+     "buildcraft.core.utils.Utils.getPipeFloorOf(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)F"
+    ],
+    [
+     "DartPatch",
+     "2.3",
+     "links",
+     ""
+    ],
+    [
+     "DecoCraft",
+     "1.10",
+     "links",
+     ""
+    ],
+    [
+     "DrZhark's Mo'Creatures Mod",
+     "6.1.0",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Dynamic Lights",
+     "1.2.8",
+     "links",
+     ""
+    ],
+    [
+     "Ender IO",
+     "1.0.6",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "EnderStorage",
+     "1.4.3.6",
+     "links",
+     ""
+    ],
+    [
+     "Equivalent Exchange 3",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "Ex Nihilo",
+     "1.29e",
+     "links",
+     ""
+    ],
+    [
+     "ExtrabiomesXL",
+     "3.15.8",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Forestry for Minecraft",
+     "2.3.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Forge Essentials",
+     "1.3.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Forge Microblocks",
+     "1.0.1.268",
+     "links",
+     ""
+    ],
+    [
+     "GenDustry",
+     "1.1.3.fix1",
+     "links",
+     ""
+    ],
+    [
+     "Gollum Core Lib",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "GraviGun",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Hats",
+     "2.1.8",
+     "links",
+     ""
+    ],
+    [
+     "ICBM",
+     "1.4.2",
+     "links",
+     ""
+    ],
+    [
+     "iChunUtil",
+     "2.4.0",
+     "links",
+     ""
+    ],
+    [
+     "IndustrialCraft 2",
+     "2.0.397-experimental",
+     "links",
+     ""
+    ],
+    [
+     "Inventory Tweaks",
+     "1.56",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "JourneyMap",
+     "4.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Logistics Pipes",
+     "0.7.4.dev.294",
+     "gap_mod",
+     "thermalexpansion.part.conduit.PropsConduit.CONDUIT_OCCLUSION:[Lthermalexpansion.part.PartOcclusionTest;"
+    ],
+    [
+     "LomLib",
+     "1.2.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Lycanites Mobs",
+     "1.5.1h - MC 1.6.4",
+     "links",
+     ""
+    ],
+    [
+     "Magic Bees",
+     "2.1.13",
+     "links",
+     ""
+    ],
+    [
+     "Magic Clover",
+     "0.3.1",
+     "links",
+     ""
+    ],
+    [
+     "MagicWands",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Mekanism",
+     "6.0.3",
+     "links",
+     ""
+    ],
+    [
+     "MekanismGenerators",
+     "6.0.3",
+     "links",
+     ""
+    ],
+    [
+     "MekanismTools",
+     "6.0.3",
+     "links",
+     ""
+    ],
+    [
+     "MineChem",
+     "5.05.101",
+     "links",
+     ""
+    ],
+    [
+     "MineFactory Reloaded",
+     "1.6.2R2.7.0",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "MobAmputation",
+     "2.0.1",
+     "links",
+     ""
+    ],
+    [
+     "mod_SmartMoving",
+     "0.0.0-legacy",
+     "stubs",
+     "24 synthesized stub(s)"
+    ],
+    [
+     "mod_TooManyItems",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "Modular Turrets",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "More Pistons",
+     "1.5.0 [Build Smeagol]",
+     "links",
+     ""
+    ],
+    [
+     "MorePlayerModels",
+     "1.6.4",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Morph",
+     "0.7.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Mystcraft",
+     "0.10.13.01",
+     "links",
+     ""
+    ],
+    [
+     "Natura",
+     "2.1.14",
+     "links",
+     ""
+    ],
+    [
+     "NEI Addons",
+     "1.10.5.70",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "OpenBlocks",
+     "1.2.9",
+     "links",
+     ""
+    ],
+    [
+     "OpenMods",
+     "0.5.1",
+     "links",
+     ""
+    ],
+    [
+     "OpenPeripheralCore",
+     "0.4.1",
+     "gap_mod",
+     "cofh.api.item.IInventoryContainerItem.getInventoryContents(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)[Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;"
+    ],
+    [
+     "PortalGun",
+     "2.0.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Railcraft",
+     "8.4.0.0",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "ResonantEngine",
+     "@MAJOR@.@MINOR@.@REVIS@",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Simply Jetpacks",
+     "0.3.1.1",
+     "links",
+     ""
+    ],
+    [
+     "StarMiner",
+     "0.9.7",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "The Twilight Forest",
+     "1.20.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Thermal Expansion",
+     "3.0.0.2",
+     "gap_mod",
+     "cofh.network.PacketUtils.sendToAllPlayers(Llegacyconnector.v1_7_10.net.minecraft.network.Packet;Llegacyconnector.v1_7_10.net.minecraft.world.World;)V"
+    ],
+    [
+     "Tinkers' Construct",
+     "1.5.13EX",
+     "gap_mod",
+     "powercrystals.minefactoryreloaded.api.FactoryRegistry.registerLiquidDrinkHandler(Ljava.lang.String;Lpowercrystals.minefactoryreloaded.api.ILiquidDrinkHandler;)V"
+    ],
+    [
+     "Treecapitator",
+     "Forge 1.6.4.r06",
+     "links",
+     ""
+    ],
+    [
+     "Universal Electricity",
+     "3.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Witchery",
+     "0.20.5",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "§6MrCrayfish's Furniture Mod",
+     "3.3.2",
+     "links",
+     ""
+    ]
+   ],
+   "assets": {
+    "checked": 77,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-17",
+    "version": "",
+    "regressed": [
+     [
+      "Tinkers' Construct",
+      "links",
+      "gap_mod"
+     ]
+    ],
+    "fixed": [
+     [
+      "BD Lib",
+      "gap_mod",
+      "links"
+     ],
+     [
+      "CustomNpcs",
+      "stubs",
+      "links"
+     ],
+     [
+      "DrZhark's Mo'Creatures Mod",
+      "stubs",
+      "links"
+     ],
+     [
+      "Morph",
+      "gap_mod",
+      "links"
+     ],
+     [
+      "Witchery",
+      "stubs",
+      "links"
+     ]
+    ],
+    "regressedCount": 1,
+    "fixedCount": 5
    }
   },
   {
