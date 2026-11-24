@@ -157,7 +157,7 @@ public final class DataConverter1201 {
         Map<String, String> r = tagPairs;
         if (r != null) return r;
         r = new java.util.HashMap<>();
-        try (var in = DataConverter1201.class.getResourceAsStream("/legacyconnector/forward/1.20.1/forge-c-tag-pairs.tsv")) {
+        try (var in = org.kylepitcock.legacyconnector.loader.transform.ForwardStage.D_1201.open("forge-c-tag-pairs.tsv")) {
             if (in != null) {
                 for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
                     if (line.isBlank() || line.startsWith("#")) continue;
@@ -437,7 +437,7 @@ public final class DataConverter1201 {
         Set<String> r = neoForgeTags;
         if (r != null) return r;
         r = new java.util.HashSet<>();
-        try (var in = DataConverter1201.class.getResourceAsStream("/legacyconnector/forward/1.20.1/c-tags.txt")) {
+        try (var in = org.kylepitcock.legacyconnector.loader.transform.ForwardStage.D_1201.open("c-tags.txt")) {
             if (in != null) for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) if (!line.isBlank()) r.add(line.trim());
         } catch (java.io.IOException e) {
             // no list: every referenced tag gets an (empty) file, which merges with the real one

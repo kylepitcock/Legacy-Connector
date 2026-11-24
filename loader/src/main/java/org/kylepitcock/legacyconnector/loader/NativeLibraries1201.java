@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader;
 
+import org.kylepitcock.legacyconnector.loader.transform.ForwardStage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +41,7 @@ public final class NativeLibraries1201 {
         Map<String, Library> t = table;
         if (t == null) {
             Map<String, Library> m = new LinkedHashMap<>();
-            try (InputStream in = NativeLibraries1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/libraries.tsv")) {
+            try (InputStream in = ForwardStage.D_1201.open("libraries.tsv")) {
                 if (in != null) {
                     for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
                         if (l.isBlank() || l.startsWith("#")) continue;
