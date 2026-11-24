@@ -44,6 +44,8 @@ final class AlienEvoMixins1201 implements Opcodes {
         Objects.requireNonNull(node, "node");
         int diagnosticChanges = AlienEvoRuntimeDiagnostics1201.apply(node);
         int possessionChanges = AlienEvoPossessionAbility1201.apply(node);
+        int gruntMeleeChanges = AlienEvoGruntMeleeGoal1201.apply(node);
+        int possessionHandTraceChanges = AlienEvoPossessionHandDiagnostics1201.apply(node);
         int compatibilityChanges = switch (node.name) {
             case HUD -> migrateHudHotbar(node);
             case VIGNETTE -> migrateKineceleranVignette(node);
@@ -58,7 +60,8 @@ final class AlienEvoMixins1201 implements Opcodes {
             case MODEL_BAKERY -> migrateModelBakeryCrystal(node);
             default -> 0;
         };
-        return diagnosticChanges + possessionChanges + compatibilityChanges;
+        return diagnosticChanges + possessionChanges + gruntMeleeChanges
+                + possessionHandTraceChanges + compatibilityChanges;
     }
 
     private static int migrateHudHotbar(ClassNode node) {
