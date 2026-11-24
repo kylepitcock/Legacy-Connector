@@ -44,6 +44,16 @@ class IdsTest {
     }
 
     @Test
+    void savedStackNumbersOfBothFormatsResolveAgainstTheIdSpace() {
+        Item mod = new Item();
+        Ids.claimItem(mod, 7000 - 256); // new format: the number of the mod's own space
+        assertEquals(7000, Ids.claimedItemId(mod));
+        assertSame(mod, Ids.item(7000));
+        assertEquals(-1, Ids.claimedItemId(new Item())); // unclaimed: the writer keeps the host's bridge id (the old format)
+        assertNull(Ids.item(100)); // below 4096 and unclaimed: nothing (never the bridge)
+    }
+
+    @Test
     void aClaimedBlockIsAtItsRequestedIdInBothTables() {
         TestBlock b = new TestBlock();
         Ids.claimBlock(b, 500);

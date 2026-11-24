@@ -232,8 +232,15 @@ public final class Ids {
 
     public static Item item(int id) {
         Item own = ownItem(id);
-        // an item the host has but 1.4.7 to 1.6.4 do not: saved under its modern-only id (outside the lock: ItemBridge has its own)
-        return own == null && id >= 20000 ? ItemBridge.byId(id) : own;
+        if (own != null || id < 4096) return own;
+        // Saved stacks of two formats reach a numeric reader (Railcraft's new ItemStack(id, ...)): the id of this id space (found above) and
+        // the host's bridge id that 0.5.2 and earlier wrote (mod items 4096 and up, modern-only items 20000 and up); an id nobody
+        // claimed here is read as the bridge id, outside the lock (ItemBridge has its own)
+        try {
+            return ItemBridge.byId(id);
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
     }
 
     private static synchronized Item ownItem(int id) {
