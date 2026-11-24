@@ -9,6 +9,10 @@ public class EntityAIMoveTowardsRestriction extends GoalTask {
         this(mcc$creature(e), (double) speed);
     }
 
+    public EntityAIMoveTowardsRestriction(EntityCreature entity, float speed) {
+        this(entity, (double) speed);
+    }
+
     public EntityAIMoveTowardsRestriction(EntityCreature entity, double speed) {
         super(entity, 1, m -> new MoveTowardsRestrictionGoal(m, speed));
     }

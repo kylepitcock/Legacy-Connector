@@ -1,0 +1,25 @@
+# MineFactory Reloaded 2.8.1 (1.7.10, #268), second round: Liquicrafter, Steam Boiler, Fountain, Unifier, Auto-Spawner driven with power, fluids and items.
+# Each probe line writes what the tile answers to %TEMP%/mfr2-<name>.txt (TileProbe1710.run: "x y z fluid:name:amount item:slot:registry name:count").
+mods: 1.7.10 MineFactoryReloaded-[1.7.10]
+mods: 1.7.10 CoFHCore-[1.7.10]
+mods: 1.7.10 CodeChickenCore-1.7.10
+cmd /fill -12 148 -12 12 148 12 minecraft:stone
+cmd /fill -12 149 -12 12 160 12 minecraft:air
+cmd /tp @s 0.5 150 8.5
+wait 40
+cmd /setblock -8 149 0 minefactoryreloaded:machine.1_4
+cmd /setblock -4 149 0 minefactoryreloaded:machine.1_6
+cmd /setblock 0 149 0 minefactoryreloaded:machine.2_11
+cmd /setblock 4 149 0 minefactoryreloaded:machine.1_8
+cmd /setblock 8 149 0 minefactoryreloaded:machine.1_9
+wait 20
+expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710");var L=server.overworld();r=["-8 149 0","-4 149 0","0 149 0","4 149 0","8 149 0"].map(function(s){return T.run(L,s+" feed");}).join("\n");});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr2-a.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710");var L=server.overworld();r=[T.run(L,"-8 149 0 item:0:planks:1 item:1:planks:1 item:3:planks:1 item:4:planks:1 item:9:crafting_table:1 item:11:planks:16 fluid:water:2000"),T.run(L,"-4 149 0 item:0:coal_block:8 fluid:water:4000 feed"),T.run(L,"0 149 0 fluid:water:4000 feed"),T.run(L,"4 149 0 item:0:iron_ingot:4"),T.run(L,"4 149 0 ore:ingotIron ore:ingotCopper ore:logWood")].join("\n");});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr2-b.txt"),r);return "ok";})()
+cmd /setblock -8 150 0 minecraft:redstone_block
+wait 300
+expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710");var L=server.overworld();r=["-8 149 0 craftdiag field:recipe field:_lastRedstoneState field:_resourcesChangedSinceLastFailedCraft field:outputs","-4 149 0 field:_temp field:_totalBurningTime","0 149 0","4 149 0","8 149 0"].map(function(s){return T.run(L,s);}).join("\n");r+="\nwater blocks around fountain: "+[-1,0,1].map(function(d){return String(L.getBlockState(new (Java.type("net.minecraft.core.BlockPos"))(d,150,0)).getBlock());}).join(",");});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr2-c.txt"),r);return "ok";})()
+# Portaspawner: pick up a vanilla spawner and place it again (the probe clears the item's cooldown tag)
+cmd /setblock 2 149 6 minecraft:spawner{SpawnData:{entity:{id:"minecraft:zombie"}}}
+wait 20
+expect ok :: (function(){var r="";server.executeBlocking(function(){var T=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710");var P=Java.type("net.minecraft.core.BlockPos");r=T.useItemTwice(server.overworld(),server.getPlayerList().getPlayers().get(0),"portaspawner",new P(2,149,6),new P(-2,148,6));});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr2-porta.txt"),r);return "ok";})()
+shot mfr-machines2

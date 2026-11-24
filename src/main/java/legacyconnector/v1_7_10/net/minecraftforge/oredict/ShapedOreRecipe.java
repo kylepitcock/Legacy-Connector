@@ -107,8 +107,43 @@ public class ShapedOreRecipe implements IRecipe {
         return output;
     }
 
+    /**
+     * Forge's matching. The modern game never evaluates this object (a registered recipe becomes a data pack recipe), but legacy code that
+     * matches recipes itself does (MFR's Liquicrafter, auto-crafters, recipe-derived values), and used to find no ore-dictionary recipe at all.
+     */
     @Override
     public boolean matches(InventoryCrafting inv, World world) {
+        for (int x = 0; x <= 3 - width; x++) {
+            for (int y = 0; y <= 3 - height; y++) {
+                if (checkMatch(inv, x, y, false)) return true;
+                if (mirrored && checkMatch(inv, x, y, true)) return true;
+            }
+        }
         return false;
+    }
+
+    private boolean checkMatch(InventoryCrafting inv, int startX, int startY, boolean mirror) {
+        Object[] grid = getInput();
+        for (int x = 0; x < 3; x++) {
+            for (int y = 0; y < 3; y++) {
+                int subX = x - startX;
+                int subY = y - startY;
+                Object target = null;
+                if (subX >= 0 && subY >= 0 && subX < width && subY < height) {
+                    target = mirror ? grid[width - subX - 1 + subY * width] : grid[subX + subY * width];
+                }
+                ItemStack slot = inv.getStackInRowAndColumn(x, y);
+                if (target instanceof ItemStack want) {
+                    if (!OreDictionary.itemMatches(want, slot, false)) return false;
+                } else if (target instanceof java.util.List<?> options) {
+                    boolean matched = false;
+                    for (Object o : options) matched |= o instanceof ItemStack item && OreDictionary.itemMatches(item, slot, false);
+                    if (!matched) return false;
+                } else if (target == null && slot != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

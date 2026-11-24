@@ -79,7 +79,28 @@ public class MobSpawnerBaseLogic {
         if (type != null && host != null) host.setEntityId(type, RandomSource.create());
     }
 
+    /** The legacy name of the mob a vanilla spawner block (a view's host) is set to; null when it names none. */
+    private String hostEntityName() {
+        String id = host.getSpawner().save(new net.minecraft.nbt.CompoundTag()).getCompound("SpawnData").getCompound("entity").getString("id");
+        ResourceLocation rl = id.isEmpty() ? null : ResourceLocation.tryParse(id);
+        if (rl == null) return null;
+        if ("minecraft".equals(rl.getNamespace())) {
+            for (var e : VANILLA.entrySet()) if (e.getValue().equals(rl.getPath()) && !e.getKey().equals("Minecart")) return e.getKey();
+        }
+        for (var e : EntityList.stringToClassMapping.entrySet()) {
+            var info = LegacyHosts.info(e.getValue());
+            if (info != null && rl.equals(BuiltInRegistries.ENTITY_TYPE.getKey(info.type()))) return e.getKey();
+        }
+        return id;
+    }
+
     public String getEntityNameToSpawn() {
+        if (getRandomEntity() == null && host != null) {
+            // a vanilla spawner block: the mob is the block entity's (the view answered the default "Pig" for every spawner it was not told
+            // about, so a portable spawner picked any spawner up as a pig spawner)
+            String name = hostEntityName();
+            if (name != null) return name;
+        }
         if (getRandomEntity() == null) {
             if ("Minecart".equals(entityTypeName)) entityTypeName = "MinecartRideable";
             return entityTypeName;

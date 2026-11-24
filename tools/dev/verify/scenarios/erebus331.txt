@@ -1,0 +1,17 @@
+# The Erebus (1.7.10, #331): grass and puddle tint inside the dimension, and what drops items there (166 item entities after a minute).
+mods: 1.7.10 TheErebus
+cmd /gamemode creative
+cmd /effect give @s minecraft:night_vision infinite 0 true
+cmd /execute in legacyconnector:dim_66 run tp @s -38 32 24
+wait 600
+expect ok :: (function(){var r="";var it=server.getAllLevels().iterator();while(it.hasNext()){var L=it.next();if(String(L.dimension().location()).indexOf("dim_66")<0)continue;L.getAllEntities().forEach(function(e){var k=String(e.getType());if(k.indexOf("item")>=0&&k.indexOf("frame")<0){var p=e.blockPosition();r+=String(e.getItem().getItem())+" at "+p.getX()+","+p.getY()+","+p.getZ()+" below="+String(L.getBlockState(p.below()))+" in="+String(L.getBlockState(p).getBlock())+" age="+e.getAge()+"\n";}});r+="player y="+server.getPlayerList().getPlayers().get(0).blockPosition().getY()+" ground="+L.getHeight(Java.type("net.minecraft.world.level.levelgen.Heightmap$Types").WORLD_SURFACE,0,0)+"\n";}Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/erebus-items.txt"),r);return "ok";})()
+cmd /execute in legacyconnector:dim_66 run tp @s -38 32 24 0 40
+wait 100
+shot erebus-a
+cmd /execute in legacyconnector:dim_66 run tp @s -18 33 59 20 30
+wait 60
+shot erebus-b
+expect ok|none :: (function(){var res="none";server.executeBlocking(function(){var it=server.getAllLevels().iterator();while(it.hasNext()){var L=it.next();if(String(L.dimension().location()).indexOf("dim_66")<0)continue;var f=L.findClosestBiome3d(function(h){return String(h.unwrapKey().get().location()).indexOf("submerged_swamp")>=0;},mc.player.blockPosition(),4000,32,64);if(f!==null){var p=f.getFirst();L.getChunk(p);var y=100;while(y>10){var q=new (Java.type("net.minecraft.core.BlockPos"))(p.getX(),y,p.getZ());if(L.getBlockState(q).isAir()&&!L.getBlockState(q.below()).isAir()&&L.getBlockState(q.above()).isAir()&&String(L.getBlockState(q.below()).getBlock()).indexOf("leaves")<0)break;y--;}server.getCommands().performPrefixedCommand(server.createCommandSourceStack(),"execute in legacyconnector:dim_66 run tp "+server.getPlayerList().getPlayers().get(0).getName().getString()+" "+p.getX()+" "+(y+1)+" "+p.getZ());res="ok "+p;}}});return res;})()
+wait 200
+shot erebus-swamp
+expect ok :: (function(){var r="";var BR=Java.type("net.minecraft.core.registries.BuiltInRegistries").BLOCK;var P=mc.player.blockPosition();var bc=mc.getBlockColors();var it=BR.iterator();while(it.hasNext()){var b=it.next();var id=String(BR.getKey(b));if(id.indexOf("erebus:")!==0)continue;var s=b.defaultBlockState();var c;try{c=bc.getColor(s,mc.level,P,0);}catch(e){c="ERR "+e;}if(c===-1)r+=id+" untinted\n";else r+=id+" tint="+(typeof c==="number"?c.toString(16):c)+"\n";}Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/erebus-tints.txt"),r);return "ok";})()

@@ -786,7 +786,7 @@ public final class BlockBridge {
         var equivalent = VanillaEquivalents.block(block, meta);
         if (equivalent != null) return equivalent.defaultBlockState();
         if (block.mcc$modern instanceof LegacyBlockAdapter a) return a.stateForMeta(meta);
-        if (block.mcc$vanilla != null) return stateOfVanilla(block.mcc$vanilla, meta);
+        if (block.mcc$vanilla != null) return supported(stateOfVanilla(block.mcc$vanilla, meta));
         if (UNREGISTERED_WARNED.add(block)) LOG.warn("Legacy block {} used in the world before it was registered; placing air (logged once per block)", block);
         return Blocks.AIR.defaultBlockState();
     }
@@ -806,6 +806,20 @@ public final class BlockBridge {
         }
         if (modern.isEmpty()) return null;
         return legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(modern.copyWithCount(1));
+    }
+
+    /**
+     * A vanilla leaf block placed from legacy code (a world generator's trees, a mod's setBlock) must not start out as an unsupported leaf: the
+     * modern state's {@code distance} defaults to 7, and the block is then random ticking and decays within minutes (dropping saplings and sticks
+     * all over: Erebus's jungle trees). 1.7.10 leaves only decayed once no log was near, which the first neighbour update finds out again; the
+     * distance is recomputed by the leaves themselves from then on, as it is for vanilla's own trees.
+     */
+    private static BlockState supported(BlockState state) {
+        if (state.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock && state.hasProperty(net.minecraft.world.level.block.LeavesBlock.DISTANCE)
+                && state.getValue(net.minecraft.world.level.block.LeavesBlock.DISTANCE) == 7 && !state.getValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT)) {
+            return state.setValue(net.minecraft.world.level.block.LeavesBlock.DISTANCE, 1);
+        }
+        return state;
     }
 
     public static BlockState withMeta(BlockState current, int meta) {
