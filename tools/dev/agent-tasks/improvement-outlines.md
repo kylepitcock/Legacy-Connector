@@ -28,7 +28,7 @@ Read `BRIEF.md` and `issue-worker.md` first. Mark an outline `DONE <commit>` or 
 - Approach: optional `-Dlegacyconnector.sharedCache=<dir>` read-through cache; entries are immutable and keyed by the full key; write to a temp name, then atomic rename. Default off for players.
 - Verify: two worktrees run the same suite; the second skips translation (log line) and the metrics are identical.
 
-### T5. Two world loads in one JVM (M; also #113)
+### T5. Two world loads in one JVM (M; also #113) - AUDIT DONE 2026-11-24 (static_state_audit.py, WorldStateReset, wiki Development "State across world loads"); the client run of reload-twice and the jmap check are still open
 - Why: #113 crashed only after the second world load in one game session. Static state that survives a server stop (caches keyed by registry objects, per-world maps, holder sets) is a defect class.
 - Approach: a client scenario `tools/dev/verify/scenarios/reload-twice.txt`: create a world, quit to title, load it again, then do actions with enchanted and modded items. Also audit static maps in the shim, bridges and `core` that hold `Level`/`Holder`/`Registry` references; clear them on `ServerStoppedEvent`.
 - Verify: the scenario passes with 1.7.10 and 1.12.2 sets; `jmap -histo` shows no old `ServerLevel` after the second load.

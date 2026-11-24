@@ -306,6 +306,46 @@ parameter or `@Shadow` typed `Reference2ObjectArrayMap` crashed every pack with 
 Prefer injectors that need no such type (inject at `RETURN`/`NEW`, public accessors, MixinExtras `WrapOperation`) and check the table in the audit. The suite
 `atm9-1201-stable` carries FerriteCore as a guard, so a regression of this kind fails `tools/dev/verify.sh` without a manual pack test.
 
+## State across world loads
+
+A single-player session keeps its JVM when the player quits to the title and opens another world, so every static field of the layer and of the
+shim lives on into the next world. A static that holds, or was derived from, something of one world is wrong in the next. Issue 113 was one case:
+vanilla's component `EncoderCache` kept the failed encode of a holder of the first world's enchantment registry and served it for the equal, valid
+holder of the second. Server stops and client logouts are therefore the lifecycle points to reset at.
+
+**Rule.** A static (or a field of a singleton) must be (a) world-independent: registrations mods made while loading, built-in registry entries (items,
+blocks, mob effects, potions), names, resource keys, log throttles, scratch `ThreadLocal`s of one call; or (b) keyed weakly or per level/server and
+removed when that level unloads or that server stops (`LevelReleases.onLevelUnload`/`onServerStopped`, or a `LevelEvent.Unload` listener); or
+(c) reset by one `WorldStateReset` action. Holders of datapack registries (enchantments, biomes, dimension types, damage types, structures, features,
+trim materials, banner patterns, jukebox songs, painting variants), `RegistryAccess`/`HolderLookup` objects, ids derived from a running server's
+levels and anything caching a result computed from them are world-dependent. Do not scatter `ServerStoppedEvent` listeners:
+
+- `core/WorldStateReset`: `onServerStopped(Runnable)`, `onClientLogout(Runnable)`, `onWorldLeft(Runnable)` (both); register from the owner's static
+  initializer; actions run on the thread that fires the event, one failing action does not stop the others.
+- A `ThreadLocal` that holds world state (the render thread's copy cannot be cleared from the server thread) carries a generation counter bumped by
+  the reset and ignores older entries (`MigrateContext`).
+- Reset on stop/logout, not on server start: the data pack reload of an integrated server runs before `ServerAboutToStartEvent`, so state remembered
+  there belongs to the new world and a start-time clear would erase it.
+
+**Scanner.** `python tools/dev/static_state_audit.py [--summary]` reads the sources (no build needed, 6 s) and writes
+`tools/dev/agent-tasks/static-state-audit.tsv` (class, field, type, category, lifecycle, cleared-where) for every static whose type or name suggests
+per-world state (level, server, registry/holder, block entity, entity, player, storage, scoreboard, recipe, scheduler, item stack, dimension map,
+cache). `lifecycle` is `weak` (weak keys/values), `cleared` (some code clears or reassigns it: check it is a lifecycle point), `none` (never cleared) or
+`reviewed-<verdict>` from `tools/dev/agent-tasks/static-state-reviewed.tsv` (hand verdicts: ok, keyed, fixed, left, with the reason). After adding a
+static of these kinds, rerun it: a new `none` row is a decision to take (make it world-independent, key it, or add a reset) and a line in the reviewed file.
+Limits: it sees `static` fields only (not the instance fields of singletons held in a static), matches clears by name, and cannot tell a clear at
+the right moment from one in a method nobody calls on a stop.
+
+Audit of 2026-11-24 (267 candidates): 145 world-independent, 23 keyed per level/server with an unload or stop hook, 42 weak, 37 cleared in the owner (reviewed
+by hand), 10 fixed, 8 left. Fixed: the remembered registry access of `MigrateContext` (a fallback and the render thread's local both outlived the
+world), the dimension ids of the 1.12.2 `DimensionManager` (numbered in order of first sight, so a second world got other ids than after a restart),
+`EntityTracker.REMOVED` (returned the first world's entities by id), `VanillaVillageBuildings`/`VanillaOreGate`/`VanillaOreGate1122` caches (answers
+from the first world's data packs, an empty answer before any server cached for good), `ArrivalUnstick` and the 1.6.4 `ModLoader` command bookkeeping.
+Left: client statics that keep the old `ClientLevel` or player until the next client tick (Beta presentation classes; memory only, they compare by identity
+and reset on a change).
+Client check after a change here: scenario `reload-twice` (create a world, quit to title, open another, act with enchanted and modded items), plus a
+`jmap -histo:live` that shows no old `ServerLevel`/`ClientLevel`.
+
 ## Keeping the core mod-agnostic
 
 Fixes are generic first (see `CLAUDE.md`). `tools/dev/check_mod_specific.py` enforces it: it scans the Java sources (comments ignored) for the

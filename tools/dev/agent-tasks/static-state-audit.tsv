@@ -1,0 +1,268 @@
+class	field	type	category	lifecycle	cleared-where
+legacyconnector.v1_12_2.net.minecraft.advancements.CriteriaTriggers	REGISTRY	Map<ResourceLocation, ICriterionTrigger<?>>	cache?	reviewed-ok	 | registrations by mods
+legacyconnector.v1_12_2.net.minecraft.block.Block	HARVESTERS	ThreadLocal<legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer>	entity	cleared	Block:804;Block:805
+legacyconnector.v1_12_2.net.minecraft.block.Block	capturedDrops	ThreadLocal<legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>>	itemstack	reviewed-ok	 | ThreadLocal scratch of one harvest
+legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneTorch	toggles	Map<World, List<Toggle>>	level	weak	
+legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer	DETACHED	Map<MapData, Detached>	storage	weak	MapItemRenderer:119
+legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderHorse	LAYERED_LOCATION_CACHE	Map<String, ResourceLocation>	cache?	reviewed-ok	 | texture names
+legacyconnector.v1_12_2.net.minecraft.item.ItemFishFood	META_LOOKUP	Map<Integer, FishType>	cache?	reviewed-ok	 | constant table
+legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers	REGISTRY	List<DataSerializer<?>>	cache?	reviewed-ok	 | registrations by mods
+legacyconnector.v1_12_2.net.minecraft.network.datasync.EntityDataManager	NEXT_ID_MAP	Map<Class<? extends Entity>, Integer>	entity	reviewed-ok	 | per class counters of the shim
+legacyconnector.v1_12_2.net.minecraft.util.ChatAllowedCharacters	NETTY_LEAK_DETECTION	io.netty.util.ResourceLeakDetector.Level	level	reviewed-ok	 | netty enum
+legacyconnector.v1_12_2.net.minecraft.world.DimensionType	ALL	java.util.List<DimensionType>	level	reviewed-ok	 | legacy dimension types mods register once at load
+legacyconnector.v1_12_2.net.minecraft.world.DimensionType	NETHER	DimensionType	level	reviewed-ok	 | legacy dimension types mods register once at load
+legacyconnector.v1_12_2.net.minecraft.world.DimensionType	OVERWORLD	DimensionType	level	reviewed-ok	 | legacy dimension types mods register once at load
+legacyconnector.v1_12_2.net.minecraft.world.DimensionType	THE_END	DimensionType	level	reviewed-ok	 | legacy dimension types mods register once at load
+legacyconnector.v1_12_2.net.minecraft.world.World	GENERATED	ThreadLocal<java.util.ArrayDeque<net.minecraft.world.entity.Entity>>	entity	reviewed-ok	 | ThreadLocal scratch of one generation call
+legacyconnector.v1_12_2.net.minecraft.world.World	REGION	ThreadLocal<net.minecraft.world.level.WorldGenLevel>	level	cleared	World:172;World:180;World:183
+legacyconnector.v1_12_2.net.minecraft.world.biome.Biome	MCC_IDS	java.util.Map<Biome, Integer>	registry	reviewed-ok	 | ids of the mods' shim biomes
+legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider	allowedBiomes	List<Biome>	registry	cleared	BiomeManager:101
+legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenVillage	VILLAGE_SPAWN_BIOMES	java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome>	registry	reviewed-ok	 | shim biome lists
+legacyconnector.v1_12_2.net.minecraft.world.gen.structure.WoodlandMansion	ALLOWED_BIOMES	java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome>	registry	reviewed-ok	 | shim biome lists
+legacyconnector.v1_12_2.net.minecraft.world.storage.MapStorage	STORAGES	Map<DimensionDataStorage, MapStorage>	storage	weak	 | hooks:LevelReleases
+legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo	VIEWS	java.util.Map<net.minecraft.world.level.Level, WorldInfo>	level	weak	 | hooks:LevelReleases
+legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoaderRegistry	CACHE	Map<ResourceLocation, IModel>	cache?	cleared	ModelLoaderRegistry:164
+legacyconnector.v1_12_2.net.minecraftforge.common.BiomeDictionary	SETTLED	java.util.Set<Biome>	registry	reviewed-ok	 | registrations by mods
+legacyconnector.v1_12_2.net.minecraftforge.common.BiomeDictionary	TYPES	Map<Biome, Set<Type>>	registry	reviewed-ok	 | registrations by mods
+legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager	VILLAGE	List<Biome>	registry	reviewed-ok	BiomeManager:80 | biome lists mods fill at load
+legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager	oceanBiomes	List<Biome>	registry	reviewed-ok	 | biome lists mods fill at load
+legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager	strongHoldBiomes	ArrayList<Biome>	registry	reviewed-ok	BiomeManager:92 | biome lists mods fill at load
+legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager	strongHoldBiomesBlackList	ArrayList<Biome>	registry	reviewed-ok	BiomeManager:87 | biome lists mods fill at load
+legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager	DIMENSIONS	Map<Integer, DimensionType>	level	reviewed-ok	DimensionManager:35;DimensionManager:200 | registrations by mods at load
+legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager	MODERN_IDS	Map<net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level>, Integer>	level	reviewed-fixed	DimensionManager:85 | numbered in order of first sight from the running server's levels: the next world of a session got other ids than after a restart; cleared on stop and logout
+legacyconnector.v1_12_2.net.minecraftforge.common.ForgeChunkManager	TICKETS	Set<Ticket>	scheduler?	reviewed-keyed	ForgeChunkManager:171;ForgeChunkManager:247 | mcc$unloadWorld on level unload (WorldEvents1122)
+legacyconnector.v1_12_2.net.minecraftforge.common.ForgeHooks	CRAFTING_PLAYER	ThreadLocal<EntityPlayer>	entity	cleared	ForgeHooks:53
+legacyconnector.v1_12_2.net.minecraftforge.fml.client.config.GuiUtils	cachedTooltipStack	legacyconnector.v1_12_2.net.minecraft.item.ItemStack	itemstack	reviewed-left	 | one client stack until the next tooltip; memory only
+legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLInterModComms	QUEUE	Map<String, List<IMCMessage>>	scheduler?	cleared	FMLInterModComms:64;FMLInterModComms:69
+legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry	WORLD_GENERATORS	java.util.List<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator>	level?	reviewed-ok	 | world generators registered by mods at load
+legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry	WORLD_GENERATOR_WEIGHTS	java.util.Map<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator, Integer>	level?	reviewed-ok	 | world generators registered by mods at load
+legacyconnector.v1_12_2.net.minecraftforge.oredict.OreDictionary	idToStack	List<NonNullList<ItemStack>>	itemstack	reviewed-ok	 | registrations by mods
+legacyconnector.v1_20_1.compat.KubeJSKeybindCompat	PENDING	Map<Object, Map<String, PendingMapping>>	scheduler?	weak	KubeJSKeybindCompat:115
+legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper	PENDING_CONDITIONS	Map<ResourceLocation, com.mojang.serialization.MapCodec<? extends ICondition>>	scheduler?	cleared	CraftingHelper:154;CraftingHelper:155
+legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper	PENDING_TYPES	Map<ResourceLocation, net.neoforged.neoforge.common.crafting.IngredientType<?>>	scheduler?	cleared	CraftingHelper:113;CraftingHelper:114
+legacyconnector.v1_20_1.net.minecraftforge.network.PacketDistributor	DIMENSION	PacketDistributor<ResourceKey<Level>>	level	reviewed-ok	 | distributor singletons
+legacyconnector.v1_20_1.net.minecraftforge.network.PacketDistributor	TRACKING_CHUNK	PacketDistributor<LevelChunk>	level	reviewed-ok	 | distributor singletons
+legacyconnector.v1_20_1.net.minecraftforge.registries.ForgeRegistryWrapper	DEFERRED	Map<ResourceKey<?>, java.util.List<Object[]>>	scheduler?	cleared	ForgeRegistryWrapper:202
+legacyconnector.v1_6_4.facade.net.minecraft.entity.Entity	CLOAK_AND_SKIN	java.util.Map<legacyconnector.v1_7_10.net.minecraft.entity.Entity, String[]>	entity	weak	
+legacyconnector.v1_6_4.forward.EntitySounds164	BOUND	Map<Entity, List<Following>>	entity	weak	EntitySounds164:39
+legacyconnector.v1_6_4.net.minecraft.src.ModLoader	cfgLoggingLevel	java.util.logging.Level	level	reviewed-ok	 | java.util.logging level
+legacyconnector.v1_6_4.net.minecraft.src.ModLoader	commandsRegisteredOn	MinecraftServer	server	reviewed-fixed	ModLoader:327 | identity compare was already correct (new server, new command tree); now also released on stop
+legacyconnector.v1_6_4.net.minecraft.src.ModLoaderMp	STAGED	Map<legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer, legacyconnector.v1_7_10.net.minecraft.inventory.Container>	entity	weak	ModLoaderMp:164
+legacyconnector.v1_6_4.net.minecraft.src.forge.MinecraftForge	CARTS	Map<Class<?>, ItemStack>	itemstack	cleared	MinecraftForge:456
+legacyconnector.v1_6_4.net.minecraft.util.Ids	pendingItemBlocks	List<Integer>	scheduler?	cleared	Ids:31;Ids:309
+legacyconnector.v1_7_10.codechicken.nei.ItemList	items	List<ItemStack>	itemstack	reviewed-ok	 | stacks mods registered; no registry holder
+legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLInterModComms	QUEUE	Map<String, List<IMCMessage>>	scheduler?	cleared	FMLInterModComms:55;FMLInterModComms:60
+legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry	worldGenerators	java.util.Set<IWorldGenerator>	level?	reviewed-ok	 | world generators registered by mods at load
+legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneTorch	field_150112_b	Map<World, List<Toggle>>	level	weak	
+legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient	clientStorage	legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage	storage	reviewed-keyed	NetHandlerPlayClient:23;NetHandlerPlayClient:30 | mcc$connectionClosed on client logout
+legacyconnector.v1_7_10.net.minecraft.command.CommandHandler	PENDING	List<ICommand>	scheduler?	cleared	CommandHandler:39
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	BOOK_LIST	List<Enchantment>	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	aquaAffinity	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	baneOfArthropods	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	blastProtection	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	efficiency	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	enchantmentsBookList	Enchantment[]	registry	reviewed-ok	Enchantment:49 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	enchantmentsList	Enchantment[]	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	featherFalling	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	fireAspect	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	fireProtection	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	flame	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	fortune	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	infinity	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	knockback	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	looting	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	luckOfTheSea	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	lure	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	power	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	projectileProtection	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	protection	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	punch	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	respiration	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	sharpness	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	silkTouch	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	smite	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	thorns	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment	unbreaking	Enchantment	registry	reviewed-ok	 | legacy id tables of the shim: no Holder or registry reference, converted by name per call (StackHolders)
+legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker	REMOVED	Map<Integer, Entity>	entity	cleared	EntityTracker:53;EntityTracker:64
+legacyconnector.v1_7_10.net.minecraft.item.ItemMap	SCRATCH	Map<MapData, MapItemSavedData>	storage	weak	
+legacyconnector.v1_7_10.net.minecraft.item.crafting.CraftingManager	MODERN_LOOKUP	ThreadLocal<Boolean>	cache?	cleared	CraftingManager:99;CraftingManager:108
+legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper	potionColorCache	HashMap<Integer, Integer>	cache?	reviewed-ok	 | colour by effect id
+legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard	VIEWS	Map<net.minecraft.world.scores.Scoreboard, Scoreboard>	scoreboard	weak	 | hooks:LevelReleases
+legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer	VIEWS	Map<net.minecraft.server.MinecraftServer, MinecraftServer>	server	weak	 | hooks:LevelReleases
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	anvil	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	cactus	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	drown	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	explosion	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	fall	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	fallingBlock	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	generic	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	inFire	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	inWall	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	lava	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	magic	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	onFire	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	outOfWorld	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	starve	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.DamageSource	wither	DamageSource	registry	reviewed-ok	 | name-based statics; the modern source (mcc$original) is only set on wrapped instances, never on these
+legacyconnector.v1_7_10.net.minecraft.util.EnchantmentNameParts	instance	EnchantmentNameParts	registry	reviewed-ok	 | word list singleton
+legacyconnector.v1_7_10.net.minecraft.world.GameRules	BY_LEVEL	Map<Level, GameRules>	level	weak	 | hooks:LevelReleases
+legacyconnector.v1_7_10.net.minecraft.world.World	MCC_TEST_PLAYERS	java.util.Set<net.minecraft.server.level.ServerPlayer>	player	reviewed-ok	 | hooks:LevelReleases | self test only
+legacyconnector.v1_7_10.net.minecraft.world.World	REGION	ThreadLocal<LevelAccessor>	level	reviewed-ok	World:137;World:142;World:143 | hooks:LevelReleases | ThreadLocal scratch set and cleared around one generation call
+legacyconnector.v1_7_10.net.minecraft.world.World	REGION_VIEW	ThreadLocal<World>	level	reviewed-ok	World:260 | hooks:LevelReleases | ThreadLocal scratch set and cleared around one call
+legacyconnector.v1_7_10.net.minecraft.world.World	STORAGES	Map<Object, legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage>	storage	weak	 | hooks:LevelReleases
+legacyconnector.v1_7_10.net.minecraft.world.World	VIEWS	Map<LevelAccessor, World>	level	weak	 | hooks:LevelReleases
+legacyconnector.v1_7_10.net.minecraft.world.World	VIRTUAL_VIEWS	Map<LevelAccessor, java.lang.ref.WeakReference<World>>	level	weak	 | hooks:LevelReleases
+legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient	WORLD_PASS	ThreadLocal<int[]>	level?	reviewed-ok	 | ThreadLocal int scratch
+legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager	DIMENSIONS	Map<Integer, Integer>	dimension-map?	reviewed-ok	DimensionManager:122 | registrations by mods at load
+legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager	dimensionMap	java.util.BitSet	dimension-map?	reviewed-ok	DimensionManager:65;DimensionManager:68;DimensionManager:75 | registrations by mods at load
+legacyconnector.v1_7_10.net.minecraftforge.common.ForgeChunkManager	FORCED	Map<ServerLevel, SetMultimap<ChunkCoordIntPair, Ticket>>	level	reviewed-keyed	ForgeChunkManager:159 | hooks:LevelReleases | per ServerLevel, removed through LevelReleases.onLevelUnload (perf.releaseUnloadedLevels, default on)
+legacyconnector.v1_7_10.net.minecraftforge.common.ForgeChunkManager	STORES	Map<ServerLevel, Store>	level	reviewed-keyed	ForgeChunkManager:160 | hooks:LevelReleases | per ServerLevel, removed through LevelReleases.onLevelUnload (perf.releaseUnloadedLevels, default on)
+legacyconnector.v1_7_10.net.minecraftforge.common.ForgeChunkManager	ticketConstraints	Map<String, Integer>	scheduler?	reviewed-keyed	 | hooks:LevelReleases | per ServerLevel, removed through LevelReleases.onLevelUnload (perf.releaseUnloadedLevels, default on)
+legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary	EMPTY_LIST	ArrayList<ItemStack>	itemstack	reviewed-ok	 | registrations by mods
+legacyconnector.v1_7_10.net.minecraftforge.oredict.OreDictionary	idToStack	List<ArrayList<ItemStack>>	itemstack	reviewed-ok	 | registrations by mods
+legacyconnector.vb1_7_3.net.minecraft.client.Minecraft	PLAYER_OVERRIDE	ThreadLocal<legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity>	player?	cleared	Minecraft:40;Minecraft:42;Minecraft:44;Minecraft:109
+legacyconnector.vb1_7_3.net.minecraft.src.CanHarvest	LEVELS	Map<Block,BitSet>	level?	cleared	CanHarvest:14
+legacyconnector.vb1_7_3.net.minecraft.src.forge.ForgeHooks	toolHarvestLevels	HashMap<Object, Object>	level?	reviewed-ok	 | registrations by mods
+legacyconnector.vb1_7_3.net.minecraft.world.World	CLIENT_MIRROR	java.util.function.BiFunction<net.minecraft.server.level.ServerLevel,BlockPos,net.minecraft.world.level.block.entity.BlockEntity>	level+blockentity	reviewed-ok	 | function installed by the client; no level held
+legacyconnector.vb1_7_3.net.minecraft.world.World	ENTITY_VERSIONS	java.util.Map<Level,java.util.concurrent.atomic.AtomicLong>	level	weak	
+legacyconnector.vb1_7_3.net.minecraft.world.World	GENERATION	ThreadLocal<net.minecraft.server.level.WorldGenRegion>	level	cleared	World:99;World:100;World:111
+legacyconnector.vb1_7_3.net.minecraft.world.World	SERVER_READS	ThreadLocal<int[]>	server?	reviewed-ok	 | ThreadLocal int scratch
+legacyconnector.vb1_7_3.net.minecraft.world.World	VIEWS	Map<Level, World>	level	weak	World:83
+legacyconnector.vb1_7_3.org.lwjgl.input.Keyboard	QUEUE	ThreadLocal<java.util.ArrayDeque<int[]>>	scheduler?	reviewed-ok	 | input scratch
+org.kylepitcock.legacyconnector.compat.nei.NeiBridge	CATALYSTS	Map<String, List<ItemStack>>	itemstack	reviewed-ok	 | recipes and stacks registered by mods at load; no registry holder
+org.kylepitcock.legacyconnector.compat.nei.NeiBridge	HIDDEN	List<ItemStack>	itemstack	reviewed-ok	 | recipes and stacks registered by mods at load; no registry holder
+org.kylepitcock.legacyconnector.compat.nei.NeiBridge	HIDDEN_MODERN	List<net.minecraft.world.item.ItemStack>	itemstack	reviewed-ok	 | recipes and stacks registered by mods at load; no registry holder
+org.kylepitcock.legacyconnector.compat.nei.NeiBridge	LOOKUPS	Map<String, List<Recipe>>	recipe	reviewed-ok	 | recipes and stacks registered by mods at load; no registry holder
+org.kylepitcock.legacyconnector.compat.nei.NeiBridge	RAW_USAGE	Map<String, List<Recipe>>	recipe	reviewed-ok	 | recipes and stacks registered by mods at load; no registry holder
+org.kylepitcock.legacyconnector.compat.patchouli.PatchouliApi1122	PENDING	java.util.Map<net.minecraft.resources.ResourceLocation, IMultiblock>	scheduler?	cleared	PatchouliApi1122:161
+org.kylepitcock.legacyconnector.core.ArrivalUnstick	LAST	java.util.Map<java.util.UUID, net.minecraft.resources.ResourceKey<Level>>	level	reviewed-fixed	ArrivalUnstick:54;ArrivalUnstick:58 | LAST (player UUID to dimension) and PENDING (ServerPlayers) cleared on stop; the logout listener alone missed a crash and a stop without logout
+org.kylepitcock.legacyconnector.core.ArrivalUnstick	PENDING	List<Pending>	scheduler?	reviewed-fixed	ArrivalUnstick:61;ArrivalUnstick:69 | LAST (player UUID to dimension) and PENDING (ServerPlayers) cleared on stop; the logout listener alone missed a crash and a stop without logout
+org.kylepitcock.legacyconnector.core.LevelReleases	LEVEL_ACTIONS	List<Consumer<LevelAccessor>>	level	reviewed-ok	 | hooks:ServerStoppedEvent,LevelEvent.Unload,LevelReleases | registries of callbacks
+org.kylepitcock.legacyconnector.core.LevelReleases	SERVER_ACTIONS	List<Consumer<net.minecraft.server.MinecraftServer>>	server	reviewed-ok	 | hooks:ServerStoppedEvent,LevelEvent.Unload,LevelReleases | registries of callbacks
+org.kylepitcock.legacyconnector.core.StackHolders	encoderCache	com.google.common.cache.Cache<?, ?>	cache?	reviewed-fixed	 | issue 113: cleared on server start and stop
+org.kylepitcock.legacyconnector.core.ViewSweeper	CACHES	List<Entry<?>>	cache?	reviewed-ok	 | registrations of caches
+org.kylepitcock.legacyconnector.core.WorldStateReset	ON_SERVER_STOPPED	List<Runnable>	server?	reviewed-ok	 | hooks:ServerStoppedEvent,ClientPlayerNetworkEvent,LevelReleases,ClientLogout,LoggingOut | the reset hook itself (registrations of actions)
+org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement	nativeParameters	Climate.ParameterList<Holder<Biome>>	registry	reviewed-keyed	BiomePlacement:116;BiomePlacement:140;BiomePlacement:146;BiomePlacement:160 | bound per server at start and cleared by clearNative on stop; only returned for the exact bound source
+org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorStructures	NATURAL_CACHE	Map<Block, Boolean>	cache?	cleared	LegacyGeneratorStructures:86
+org.kylepitcock.legacyconnector.core.worldgen.LegacyStructureRegistry	LEVELS	Map<ChunkGenerator, ServerLevel>	level	reviewed-keyed	LegacyStructureRegistry:221 | hooks:ServerStoppedEvent | cleared on ServerStoppedEvent
+org.kylepitcock.legacyconnector.core.worldgen.LegacyStructureRegistry	SETS	Map<ServerLevel, Set<ResourceLocation>>	level	reviewed-keyed	LegacyStructureRegistry:222 | hooks:ServerStoppedEvent | cleared on ServerStoppedEvent
+org.kylepitcock.legacyconnector.v1_12_2.Platform1122	LOG_MODDED_HOLDERS	java.util.Set<String>	cache?	reviewed-ok	 | hooks:ServerStoppedEvent,ServerStoppingEvent,ServerAboutToStartEvent,ServerStartingEvent,FMLServerStoppedEvent,FMLServerStoppingEvent | log throttle (reset on stop already)
+org.kylepitcock.legacyconnector.v1_12_2.Platform1122	MISSING_HOLDERS	java.util.Set<String>	cache?	cleared	Platform1122:449 | hooks:ServerStoppedEvent,ServerStoppingEvent,ServerAboutToStartEvent,ServerStartingEvent,FMLServerStoppedEvent,FMLServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122	CACHE	Map<ResourceLocation, Biome>	registry	reviewed-ok	 | modern biome key to the mod's legacy Biome object; no holder is kept
+org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122	IN_WORLD_HOOK	ThreadLocal<Boolean>	level?	cleared	CoremodSites1122:573;CoremodSites1122:577
+org.kylepitcock.legacyconnector.v1_12_2.bridge.Dispensers1122	PENDING	Map<Item, IBehaviorDispenseItem>	scheduler?	cleared	Dispensers1122:70
+org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122	ENTITIES	Map<net.minecraft.world.entity.Entity, Entity>	entity	weak	 | hooks:ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122	VIEW_BINDING	ThreadLocal<net.minecraft.world.entity.Entity>	entity	cleared	EntityBridge1122:66;EntityBridge1122:96;EntityBridge1122:116;EntityBridge1122:117 | hooks:ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122	SWIMMERS	Map<net.minecraft.world.entity.Entity, Boolean>	entity	weak	FluidBridge1122:221
+org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyBiomes1122	byId	Map<ResourceLocation, Biome>	registry	reviewed-ok	 | built once from the mods' biome registrations
+org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122	RECIPES	List<IRecipe>	recipe	reviewed-ok	 | recipes mods registered; regenerated into the data pack per world
+org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122	BASELINE	Map<Biome, Map<EnumCreatureType, List<Entry>>>	registry	reviewed-ok	 | BASELINE is read from VanillaRegistries.createLookup() (the built-in bootstrap data), not from a world's registry
+org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122	vanillaBiomes	net.minecraft.core.HolderLookup.RegistryLookup<net.minecraft.world.level.biome.Biome>	registry	reviewed-ok	 | BASELINE is read from VanillaRegistries.createLookup() (the built-in bootstrap data), not from a world's registry
+org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122	TOUCHED	java.util.Set<ItemStack>	itemstack	cleared	Stacks1122:242
+org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122	VIEWS	java.util.Map<net.minecraft.world.item.ItemStack, ItemStack>	itemstack	weak	Stacks1122:187
+org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122	WEAK_VIEWS	java.util.Map<net.minecraft.world.item.ItemStack, java.lang.ref.WeakReference<ItemStack>>	itemstack	weak	
+org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122	BY_NAME	Map<String, Class<? extends TileEntity>>	blockentity	reviewed-ok	 | tile classes mods registered
+org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122	FACTORIES	java.util.List<java.util.function.Function<BlockEntity, TileEntity>>	blockentity	reviewed-ok	 | view factories registered at load
+org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122	VIEWS	Map<BlockEntity, TileEntity>	blockentity	weak	
+org.kylepitcock.legacyconnector.v1_12_2.bridge.VanillaOreGate1122	TYPES	Map<PlacedFeature, Optional<OreGenEvent.GenerateMinable.EventType>>	registry	reviewed-fixed	 | same as VanillaOreGate
+org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122	IDS	Map<net.minecraft.resources.ResourceKey<Level>, Integer>	level	reviewed-keyed	 | hooks:LevelReleases | IDS: dimension key to id (stable per key); views released through LevelReleases
+org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122	REGION_VIEW	ThreadLocal<World>	level	reviewed-keyed	WorldBridge1122:62;WorldBridge1122:68 | hooks:LevelReleases | IDS: dimension key to id (stable per key); views released through LevelReleases
+org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122	VIRTUAL_WORLDS	Map<Level, java.lang.ref.WeakReference<World>>	level	reviewed-keyed	 | hooks:LevelReleases | IDS: dimension key to id (stable per key); views released through LevelReleases
+org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122	WORLDS	Map<Level, World>	level	reviewed-keyed	 | hooks:LevelReleases | IDS: dimension key to id (stable per key); views released through LevelReleases
+org.kylepitcock.legacyconnector.v1_12_2.client.EffectIcons1122	VANILLA	Map<Integer, Holder<MobEffect>>	registry	reviewed-ok	 | built-in mob effect registry
+org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122	CACHE	Map<String, Field>	cache?	reviewed-ok	 | reflection cache
+org.kylepitcock.legacyconnector.v1_12_2.client.LegacyEntityRenderer1122	DRAWING	ThreadLocal<Entity>	entity	cleared	LegacyEntityRenderer1122:143;LegacyEntityRenderer1122:149
+org.kylepitcock.legacyconnector.v1_12_2.client.OrphanVariants1122	CACHE	Map<String, java.util.Optional<IBakedModel>>	cache?	cleared	OrphanVariants1122:29
+org.kylepitcock.legacyconnector.v1_12_2.client.PostShaders1122	CACHE	Map<String, Boolean>	cache?	reviewed-ok	 | resource existence by name
+org.kylepitcock.legacyconnector.v1_12_2.entity.Effects1122	EFFECTS	Map<Potion, Holder<MobEffect>>	registry	reviewed-ok	 | built-in mob effect registry
+org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122	LOGGED_TICK_FAILURES	Set<String>	scheduler?	reviewed-ok	 | log throttle
+org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122	SERVER	Map<Object, Map<Object, Entry>>	server?	reviewed-keyed	 | entries flushed and forgotten after every legacy call and tick (flushAll)
+org.kylepitcock.legacyconnector.v1_12_2.entity.MixedViews1122	VIEWS	Map<net.minecraft.world.entity.Entity, Entity>	entity	weak	 | hooks:ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_20_1.ObjectHolders1201	byType	Map<Class<?>, Registry<?>>	registry	reviewed-ok	 | built-in registries (items, blocks): identical in every world
+org.kylepitcock.legacyconnector.v1_20_1.ObjectHolders1201	pending	List<Holder>	registry	cleared	ObjectHolders1201:48
+org.kylepitcock.legacyconnector.v1_20_1.migrate.ArmorCompat	CACHE	Map<LegacyArmorMaterial, Holder<ArmorMaterial>>	registry	reviewed-ok	 | ArmorMaterial is a built-in registry
+org.kylepitcock.legacyconnector.v1_20_1.migrate.HolderCompat	lazyView	net.minecraft.core.Registry<Enchantment>	registry	reviewed-ok	 | a proxy that asks the current registry on every call
+org.kylepitcock.legacyconnector.v1_20_1.migrate.MigrateContext	last	HolderLookup.Provider	registry	reviewed-fixed	MigrateContext:37 | remembered registry access (datapack-registry holders) survived into the next world as a fallback and as the render thread's ThreadLocal; generation counter plus reset on stop and logout
+org.kylepitcock.legacyconnector.v1_20_1.migrate.MigrateContext	lastAccess	RegistryAccess	registry	reviewed-fixed	MigrateContext:38 | remembered registry access (datapack-registry holders) survived into the next world as a fallback and as the render thread's ThreadLocal; generation counter plus reset on stop and logout
+org.kylepitcock.legacyconnector.v1_20_1.migrate.Round11Compat	UNLOADED	Either<net.minecraft.world.level.chunk.ChunkAccess, Object>	level	reviewed-ok	 | constant Either of a marker
+org.kylepitcock.legacyconnector.v1_6_4.bridge.Liquids164	PENDING	List<LiquidContainerData>	scheduler?	cleared	Liquids164:117
+org.kylepitcock.legacyconnector.v1_6_4.bridge.Mc125Host	SINGLE_WORLD	java.util.Set<ClassLoader>	level?	reviewed-ok	 | class loaders
+org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter	PENDING	ThreadLocal<MemberSpec>	scheduler?	cleared	LegacyBlockAdapter:280;LegacyBlockAdapter:285
+org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockEntity	LIVE	java.util.Set<LegacyBlockEntity>	blockentity	cleared	LegacyBlockEntity:339;LegacyBlockEntity:346
+org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockAccessView	WORLD_LIGHTS	ThreadLocal<int[]>	level?	reviewed-ok	 | ThreadLocal int scratch
+org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710	VALUE	Map<Holder<Potion>, Integer>	registry	reviewed-ok	 | built-in potion registry
+org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710	VANILLA	Map<Integer, Holder<Potion>>	registry	reviewed-ok	 | built-in potion registry
+org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites	HANDLERS	Map<net.minecraft.world.entity.player.Player, legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer>	player	weak	 | hooks:ServerStartingEvent
+org.kylepitcock.legacyconnector.v1_7_10.bridge.CreativeTabBridge	ICONS	java.util.Map<CreativeTabs, net.minecraft.world.item.ItemStack>	itemstack	reviewed-ok	 | tab icons of the mods, rebuilt per lookup from registered items
+org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites	PENDING	Map<ServerLevel, Map<Long, Queue<Write>>>	level	reviewed-keyed	DeferredGenWrites:261 | hooks:LevelEvent.Unload | per ServerLevel, cleared on LevelEvent.Unload
+org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites	STATES	Map<ServerLevel, Map<BlockPos, BlockState>>	level	reviewed-keyed	DeferredGenWrites:259 | hooks:LevelEvent.Unload | per ServerLevel, cleared on LevelEvent.Unload
+org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites	TILES	Map<ServerLevel, Map<BlockPos, Object>>	level	reviewed-keyed	DeferredGenWrites:260 | hooks:LevelEvent.Unload | per ServerLevel, cleared on LevelEvent.Unload
+org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge	VIEWS	Map<net.minecraft.world.entity.Entity, Entity>	entity	weak	 | hooks:ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710	HURT_ACTIVE	ThreadLocal<java.util.IdentityHashMap<net.minecraft.world.entity.LivingEntity, Float>>	entity	reviewed-ok	 | hooks:ServerStoppedEvent,ServerStoppingEvent,ServerAboutToStartEvent,ServerStartingEvent,LevelEvent.Unload,ClientPlayerNetworkEvent,FMLServerStoppedEvent,FMLServerStoppingEvent,LevelEvent.Load,LoggingOut | scratch of one hurt call on the calling thread
+org.kylepitcock.legacyconnector.v1_7_10.bridge.GeneratorProviders1710	flat	IChunkProvider hell, end, overworld,	level	reviewed-ok	 | chunk provider singletons of the shim
+org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge	CUSTOM_STACKS	Map<String, ItemStack>	itemstack	reviewed-ok	 | stacks mods registered at load (legacy shim stacks, no components)
+org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomeLayers	KEEP	Set<ResourceKey<Biome>>	registry	reviewed-ok	 | hooks:ServerStoppedEvent,ServerAboutToStartEvent | resource keys only (also cleared on start and stop)
+org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomes	TAG_KEYS	List<net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>>	registry	reviewed-ok	 | tag keys only
+org.kylepitcock.legacyconnector.v1_7_10.bridge.PlainBaubles	BY_PLAYER	Map<EntityPlayer, PlainBaubles>	entity	weak	
+org.kylepitcock.legacyconnector.v1_7_10.bridge.PotionBridge	BY_ID	java.util.List<Holder<MobEffect>>	registry	reviewed-ok	 | built-in mob effect registry
+org.kylepitcock.legacyconnector.v1_7_10.bridge.PotionBridge	CUSTOM	Map<Integer, Holder<MobEffect>>	registry	reviewed-ok	 | built-in mob effect registry
+org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge	CUSTOM	List<IRecipe>	recipe	reviewed-ok	 | recipes mods registered; regenerated into the data pack per world
+org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge	BY_ID	Map<String, Class<? extends TileEntity>>	blockentity	reviewed-ok	 | tile classes and the block entity type mods registered
+org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge	VIEWS	Map<net.minecraft.world.level.block.entity.BlockEntity, TileEntity>	blockentity	reviewed-ok	 | tile classes and the block entity type mods registered
+org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge	type	BlockEntityType<LegacyBlockEntity>	blockentity	reviewed-ok	 | tile classes and the block entity type mods registered
+org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaOreGate	TYPES	Map<PlacedFeature, Optional<OreGenEvent.GenerateMinable.EventType>>	registry	reviewed-fixed	 | PlacedFeature keys and registry-key answers of one world's data packs; cleared on stop
+org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaRecipes1710	cached	List<IRecipe>	recipe	reviewed-ok	 | vanilla recipe table of the shim
+org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaVillageBuildings	CACHE	Map<String, Optional<Building>>	cache?	reviewed-fixed	 | templates of the first server's resources, and an empty answer from before any server, cached for the session; cleared on stop
+org.kylepitcock.legacyconnector.v1_7_10.bridge.WorldGenBridge	DUMMY	IChunkProvider	level	reviewed-ok	 | a provider with no world
+org.kylepitcock.legacyconnector.v1_7_10.client.AtlasUV	CACHE	Map<String, float[]>	cache?	cleared	AtlasUV:19;AtlasUV:32
+org.kylepitcock.legacyconnector.v1_7_10.client.ClasspathTextures	QUEUED	Set<ResourceLocation>	scheduler?	cleared	ClasspathTextures:67
+org.kylepitcock.legacyconnector.v1_7_10.client.LegacyBlockEntityRenderer	RETRY_AT	java.util.Map<LegacyBlockEntity, Long>	blockentity	weak	LegacyBlockEntityRenderer:42
+org.kylepitcock.legacyconnector.v1_7_10.client.VanillaModelIcons	CACHE	ConcurrentHashMap<Long, String>	cache?	reviewed-ok	 | texture names by id
+org.kylepitcock.legacyconnector.v1_7_10.client.VanillaModelIcons	ITEM_CACHE	ConcurrentHashMap<Long, String>	cache?	reviewed-ok	 | texture names by id
+org.kylepitcock.legacyconnector.v1_7_10.client.WorldScreenshotTest	QUEUE	Deque<Action>	scheduler?	reviewed-ok	 | test tool only
+org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest	DEATH	Map<Entity, String>	entity	reviewed-ok	 | hooks:ServerStoppingEvent | self test only, cleared on ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest	SPAWNED	List<Entity>	entity	reviewed-ok	 | hooks:ServerStoppingEvent | self test only, cleared on ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest	START	Map<Entity, net.minecraft.world.phys.Vec3>	entity	reviewed-ok	 | hooks:ServerStoppingEvent | self test only, cleared on ServerStoppingEvent
+org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts	LOGGED_TICK_FAILURES	Set<String>	scheduler?	reviewed-ok	 | log throttle
+org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnExtras	PROVIDERS	List<Function<Entity, IEntityAdditionalSpawnData>>	entity	reviewed-ok	 | providers registered at load
+org.kylepitcock.legacyconnector.v1_7_10.entity.PehkuiEntitySizes1710	EXPLICIT_EYE	Set<Entity>	entity	weak	PehkuiEntitySizes1710:38
+org.kylepitcock.legacyconnector.vb1_7_3.AnimalRenderStateB173	PENDING	java.util.Map<Object,java.util.Map<Slot,EntityReference>>	scheduler?	weak	AnimalRenderStateB173:113;AnimalRenderStateB173:134
+org.kylepitcock.legacyconnector.vb1_7_3.AssetsB173	WORLD_TEXTURES	Map<Block,Map<Integer,String>>	level?	reviewed-ok	 | asset names
+org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData	LIVE	Map<ServerLevel,BetaDeferredGenData>	level	reviewed-keyed	BetaDeferredGenData:91 | hooks:LevelEvent.Unload,LevelEvent.Load | per ServerLevel, Load/Unload hooks
+org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities	CURSORS	Map<ServerLevel,Long>	level	reviewed-keyed	BetaDeferredGenEntities:23 | hooks:LevelEvent.Unload | per ServerLevel, Unload hook
+org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities	FAILURES	Map<ServerLevel,Long>	level	reviewed-keyed	BetaDeferredGenEntities:23 | hooks:LevelEvent.Unload | per ServerLevel, Unload hook
+org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities	STAGED	ThreadLocal<Map<ServerLevel,List<Entity>>>	level+entity	reviewed-keyed	BetaDeferredGenEntities:31;BetaDeferredGenEntities:36 | hooks:LevelEvent.Unload | per ServerLevel, Unload hook
+org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173	CHEST_BASELINES	Map<BlockEntity,StackState[]>	blockentity	weak	BlockEntityViewsB173:38;BlockEntityViewsB173:70
+org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173	TOUCHED	ThreadLocal<Map<net.minecraft.world.level.block.entity.BlockEntity,BlockEntity>>	blockentity	weak	BlockEntityViewsB173:39;BlockEntityViewsB173:72
+org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173	ACTOR	ThreadLocal<Entity>	entity	weak	CombatTargetsB173:82;CombatTargetsB173:86;CombatTargetsB173:87 | hooks:ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173	CAPTURES	Map<Player,Capture>	player	weak	CombatTargetsB173:82;CombatTargetsB173:188;CombatTargetsB173:195;CombatTargetsB173:200 | hooks:ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173	NAVIGATION	Map<Entity,Navigation>	entity	weak	CombatTargetsB173:82;CombatTargetsB173:153;CombatTargetsB173:168;CombatTargetsB173:171 | hooks:ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173	RETALIATION	Map<Entity,WeakReference<Entity>>	entity	weak	CombatTargetsB173:82;CombatTargetsB173:135;CombatTargetsB173:163 | hooks:ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.ContentB173	TICK_HOOKS	Map<BaseMod, boolean[]>	scheduler?	reviewed-ok	 | per mod bookkeeping
+org.kylepitcock.legacyconnector.vb1_7_3.ContentB173	TICK_REVISIONS	Map<BaseMod,long[]>	scheduler?	reviewed-ok	 | per mod bookkeeping
+org.kylepitcock.legacyconnector.vb1_7_3.DimensionWeatherB173	RAINLESS	Map<ServerLevel, Boolean>	level	weak	
+org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173	TOUCHED	ThreadLocal<java.util.Map<net.minecraft.world.entity.Entity,Touched>>	entity	cleared	EntityViewsB173:145;EntityViewsB173:147;EntityViewsB173:360
+org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173	VIEWS	java.util.Map<net.minecraft.world.entity.Entity,Entity>	entity	weak	
+org.kylepitcock.legacyconnector.vb1_7_3.GuiSessionsB173	SENDER	ThreadLocal<java.util.function.BiConsumer<ServerPlayer,LegacyPayload>>	player	cleared	GuiSessionsB173:22
+org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Animal	TICK_FAILURES	java.util.Set<Class<?>>	scheduler?	reviewed-ok	 | log throttle by class
+org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block	SHAPE_LEVEL	ThreadLocal<BlockGetter>	level?	cleared	LegacyB173Block:190;LegacyB173Block:192
+org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity	LOADED	Map<Level, java.util.Set<LegacyB173BlockEntity>>	level	weak	
+org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity	TICKS	Map<Class<?>, Boolean>	scheduler?	weak	
+org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity	WORLD_TEXTURED	Map<Class<?>, Boolean>	level?	reviewed-ok	 | per class flag
+org.kylepitcock.legacyconnector.vb1_7_3.PaintingsB173	GENERATED	Map<net.minecraft.world.level.Level,List<Placed>>	level	weak	
+org.kylepitcock.legacyconnector.vb1_7_3.PlayerApiLifecycleB173	presentationSink	java.util.function.BiConsumer<ServerPlayer,PlayerViewB173>	player	reviewed-keyed	 | hooks:ServerStoppedEvent | sinks set per server and cleared on ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.PlayerApiLifecycleB173	snapshotSink	Consumer<ServerPlayer>	player	reviewed-keyed	 | hooks:ServerStoppedEvent | sinks set per server and cleared on ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.PlayerViewB173	VIEWS	Map<Player, PlayerViewB173>	player	weak	PlayerViewB173:71;PlayerViewB173:82
+org.kylepitcock.legacyconnector.vb1_7_3.ProjectileTexturesB173	SPRITES	Map<String,net.minecraft.world.item.ItemStack>	itemstack	reviewed-ok	 | sprites by name
+org.kylepitcock.legacyconnector.vb1_7_3.RecipesB173	RECIPES	List<Recipe>	recipe	reviewed-ok	 | same
+org.kylepitcock.legacyconnector.vb1_7_3.ServerGameHooksB173	frameSink	BiConsumer<ServerPlayer,CompoundTag>	player	reviewed-keyed	 | hooks:ServerStoppedEvent,LevelEvent.Unload | sink cleared on ServerStoppedEvent
+org.kylepitcock.legacyconnector.vb1_7_3.WorldStorageB173	client	Function<Level,Path>	level	reviewed-ok	 | client-installed function, evaluated per call
+org.kylepitcock.legacyconnector.vb1_7_3.client.DimensionClientB173	presentationLevel	net.minecraft.client.multiplayer.ClientLevel	level	reviewed-left	 | compared by identity with the current level and reset on a change; keeps the old ClientLevel until the next client tick (memory only)
+org.kylepitcock.legacyconnector.vb1_7_3.client.DimensionClientB173	presentationPlayer	net.minecraft.client.player.LocalPlayer	player	reviewed-left	 | compared by identity with the current level and reset on a change; keeps the old ClientLevel until the next client tick (memory only)
+org.kylepitcock.legacyconnector.vb1_7_3.client.ModTicksClientB173	previous	net.minecraft.world.level.Level	level	reviewed-left	 | identity compare with the current level; memory only
+org.kylepitcock.legacyconnector.vb1_7_3.client.ModTicksClientB173	remoteLevel	net.minecraft.world.level.Level	level	reviewed-left	ModTicksClientB173:40 | identity compare with the current level; memory only
+org.kylepitcock.legacyconnector.vb1_7_3.client.NativeIconsClientB173	CACHE	Map<Integer, ResourceLocation>	cache?	reviewed-ok	 | resource locations by id
+org.kylepitcock.legacyconnector.vb1_7_3.client.PlayerInventoryClientB173	previousPlayer	net.minecraft.world.entity.player.Player	player	reviewed-left	 | identity compare, released with the old player's view on change; keeps the old player until the next tick (memory only)
+org.kylepitcock.legacyconnector.vb1_7_3.client.PlayerPresentationClientB173	PENDING	Map<UUID,Pending>	scheduler?	reviewed-left	PlayerPresentationClientB173:40;PlayerPresentationClientB173:64 | identity compare with the current connection and level; memory only
+org.kylepitcock.legacyconnector.vb1_7_3.client.PlayerPresentationClientB173	ownerPlayer	Player	player	reviewed-left	 | identity compare with the current connection and level; memory only
+org.kylepitcock.legacyconnector.vb1_7_3.client.PlayerRendererClientB173	PENDING	Map<net.minecraft.world.entity.player.Player,Pending>	player	cleared	PlayerRendererClientB173:34;PlayerRendererClientB173:70;PlayerRendererClientB173:80
