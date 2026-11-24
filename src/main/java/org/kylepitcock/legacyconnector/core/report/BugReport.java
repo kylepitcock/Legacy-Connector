@@ -71,7 +71,8 @@ public final class BugReport {
             Path zip = BugReportBundle.write(logs, stamp, summary(game), files, BugReportBundle.Redactor.ofSystem(), BugReportBundle.DEFAULT_CAP);
             Component open = Component.translatable("legacyconnector.report.open_folder").withStyle(
                     Style.EMPTY.withUnderlined(true).withColor(net.minecraft.ChatFormatting.AQUA)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, logs.toAbsolutePath().toString())));
+                            // copy, not OPEN_FILE: the client refuses file actions in chat sent by a server (the integrated one included)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, zip.toAbsolutePath().toString())));
             src.sendSuccess(() -> Component.translatable("legacyconnector.report.written", zip.toAbsolutePath().toString()).append(" ").append(open), false);
             src.sendSuccess(() -> Component.translatable("legacyconnector.report.attach", zip.getFileName().toString()), false);
             return 1;

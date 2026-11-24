@@ -113,7 +113,7 @@
   "entity.legacyconnector.lightning_b1_7_3": "Lightning",
   "entity.legacyconnector.item_entity_b1_7_3": "Item",
   "legacyconnector.report.written": "Bug report bundle written: %s",
-  "legacyconnector.report.open_folder": "[open folder]",
+  "legacyconnector.report.open_folder": "[copy path]",
   "legacyconnector.report.attach": "Attach %s to your GitHub issue (home folder, user name and session tokens are removed from it).",
   "legacyconnector.report.failed": "Could not write the bug report bundle: %s"
 }

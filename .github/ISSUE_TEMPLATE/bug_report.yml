@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         ## Reports without logs usually cannot be fixed
-        **Easiest:** in the game (single player or as an operator on a server) run `/legacyconnector report`. It writes `logs/legacyconnector-bundle-<time>.zip` (latest.log, the Legacy Connector reports, the newest crash report of this session, versions and mod list; your user name, home folder and session tokens are removed). Attach that one zip to the first box below. Without the command, attach these files from your Minecraft folder (drag and drop them into the boxes below; zip them if they are too big):
+        **Easiest (nightly builds after 0.5.2, and the next release):** in the game (single player or as an operator on a server) run `/legacyconnector report`. It writes `logs/legacyconnector-bundle-<time>.zip` (latest.log, the Legacy Connector reports, the newest crash report of this session, versions and mod list; your user name, home folder and session tokens are removed). Attach that one zip to the first box below. Without the command, attach these files from your Minecraft folder (drag and drop them into the boxes below; zip them if they are too big):
         - **`logs/latest.log`** — always. It is overwritten on every launch, so copy it **before** you restart the game.
         - **`logs/legacyconnector-report.txt`** — the translation report.
         - the newest file in **`crash-reports/`** if the game crashed.

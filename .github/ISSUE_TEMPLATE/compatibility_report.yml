@@ -9,7 +9,7 @@ body:
         Thanks for testing! One report per mod (or per mod + its required libraries) keeps things easy to track.
 
         ## Reports without logs usually cannot be fixed
-        **Easiest:** in the game (single player or as an operator on a server) run `/legacyconnector report`, right after the problem happened. It writes `logs/legacyconnector-bundle-<time>.zip` (latest.log, the Legacy Connector reports, the newest crash report of this session, versions and mod list; your user name, home folder and session tokens are removed). Attach that one zip to the latest.log box at the bottom of this form. Without the command, attach these files from your Minecraft folder (drag and drop them into the boxes at the bottom of this form; if a file is too big, zip it first):
+        **Easiest (nightly builds after 0.5.2, and the next release):** in the game (single player or as an operator on a server) run `/legacyconnector report`, right after the problem happened. It writes `logs/legacyconnector-bundle-<time>.zip` (latest.log, the Legacy Connector reports, the newest crash report of this session, versions and mod list; your user name, home folder and session tokens are removed). Attach that one zip to the latest.log box at the bottom of this form. Without the command, attach these files from your Minecraft folder (drag and drop them into the boxes at the bottom of this form; if a file is too big, zip it first):
         - **`logs/latest.log`** — always, even if the game did not crash. It names missing textures, models and errors.
         - **`logs/legacyconnector-report.txt`** — the translation report.
         - the newest file in **`crash-reports/`** if the game crashed.
