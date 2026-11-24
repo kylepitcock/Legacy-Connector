@@ -611,8 +611,18 @@ public class World implements IBlockAccess {
      */
     private boolean unloaded(int x, int z) {
         if (lvl() instanceof net.minecraft.server.level.WorldGenRegion region) return !region.hasChunk(x >> 4, z >> 4);
-        return lvl() instanceof net.minecraft.server.level.ServerLevel sl && !sl.getChunkSource().hasChunk(x >> 4, z >> 4);
+        if (!(lvl() instanceof net.minecraft.server.level.ServerLevel sl) || sl.getChunkSource().hasChunk(x >> 4, z >> 4)) return false;
+        if (MCC_LOAD_ON_READ.get() == Boolean.TRUE && sl.getServer().isSameThread()) {
+            // inside a teleporter's placeInPortal: 1.7.10 loaded (and generated) the chunk a block read touched, which is how a portal search
+            // finds the portal of a dimension nobody has visited yet (Thaumcraft's Outer Lands entrance, found by scanning 128 blocks around)
+            sl.getChunk(x >> 4, z >> 4);
+            return false;
+        }
+        return true;
     }
+
+    /** Set while a legacy teleporter places an arriving entity: block reads load the chunks they touch, as they did in 1.7.10. */
+    public static final ThreadLocal<Boolean> MCC_LOAD_ON_READ = new ThreadLocal<>();
 
     /**
      * A block of a server level read from another thread (a world generator holding an entity of the real world, such as
