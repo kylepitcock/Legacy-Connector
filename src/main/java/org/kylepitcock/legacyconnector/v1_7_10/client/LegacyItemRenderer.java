@@ -75,6 +75,16 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
         pose.pushPose();
         RenderContext.beginItem(pose, buffers, light, overlay);
         try {
+            // 1.7.10's RenderItem / ItemRenderer bound the stack's sprite sheet (blocks or items atlas) before calling an IItemRenderer, so
+            // renderers that never bind one (CoFH's cells, tesseracts: RenderUtils.preItemRender only sets blend and light) drew on it. Without
+            // this they drew on whatever the thread's state still held: nothing at first, then the texture the previous item's renderer left
+            // bound (a Thermal Strongbox's, tinting every following item in the inventory, #293).
+            try {
+                var textures = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager();
+                textures.bindTexture(textures.getResourceLocation(view.getItemSpriteNumber()));
+            } catch (RuntimeException | LinkageError e) {
+                logOnce(renderer.getClass().getName() + "#bind", e);
+            }
             Object[] data;
             switch (type) {
                 case INVENTORY -> {
