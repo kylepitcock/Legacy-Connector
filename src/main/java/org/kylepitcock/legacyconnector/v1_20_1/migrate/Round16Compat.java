@@ -96,6 +96,76 @@ public final class Round16Compat {
         return 0.03F;
     }
 
+    // ------------------------------------------------------------------ structures
+
+    /** The pool aliases of a jigsaw structure built through the 1.20.1 constructor (there were none). */
+    public static java.util.List<net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding> poolAliases(
+            net.minecraft.world.level.levelgen.structure.Structure.StructureSettings settings) {
+        return java.util.List.of();
+    }
+
+    /** The dimension padding of a jigsaw structure built through the 1.20.1 constructor (none). */
+    public static net.minecraft.world.level.levelgen.structure.pools.DimensionPadding dimensionPadding(
+            net.minecraft.world.level.levelgen.structure.Structure.StructureSettings settings) {
+        return net.minecraft.world.level.levelgen.structure.pools.DimensionPadding.ZERO;
+    }
+
+    /** The liquid settings of a jigsaw structure built through the 1.20.1 constructor (waterlogging, as 1.20.1 did). */
+    public static net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings liquidSettings(
+            net.minecraft.world.level.levelgen.structure.Structure.StructureSettings settings) {
+        return net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING;
+    }
+
+    // ------------------------------------------------------------------ skeleton arrows, levers, armor trims, dispensers, enchantment protection
+
+    /** The weapon argument 1.21.1 added to {@code AbstractSkeleton.getArrow}: none known to a 1.20.1 caller. */
+    public static net.minecraft.world.item.ItemStack noWeapon(net.minecraft.world.item.ItemStack arrow) {
+        return null;
+    }
+
+    /** {@code LeverBlock.pull(state, level, pos)} (1.20.1 returned the new state; 1.21.1 takes the pulling player and returns nothing). */
+    public static net.minecraft.world.level.block.state.BlockState pullLever(net.minecraft.world.level.block.LeverBlock lever,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.Level level, BlockPos pos) {
+        lever.pull(state, level, pos, null);
+        return level.getBlockState(pos);
+    }
+
+    /** {@code ArmorTrim.setTrim(registries, stack, trim)}: the trim is a data component in 1.21.1; trimmable armor only, as 1.20.1 checked. */
+    public static boolean setTrim(net.minecraft.core.RegistryAccess registries, net.minecraft.world.item.ItemStack stack,
+            net.minecraft.world.item.armortrim.ArmorTrim trim) {
+        if (!stack.is(net.minecraft.tags.ItemTags.TRIMMABLE_ARMOR)) return false;
+        stack.set(net.minecraft.core.component.DataComponents.TRIM, trim);
+        return true;
+    }
+
+    private static boolean warnedProtection;
+
+    /**
+     * {@code EnchantmentHelper.getDamageProtection(armor, source)}: the protection of 1.20.1 enchantments is data in 1.21.1 and is computed for the victim,
+     * which this call never names. APPROXIMATION: 0 (logged once).
+     */
+    public static int damageProtection(Iterable<net.minecraft.world.item.ItemStack> stacks, net.minecraft.world.damagesource.DamageSource source) {
+        if (!warnedProtection) {
+            warnedProtection = true;
+            org.slf4j.LoggerFactory.getLogger("legacyconnector").warn("EnchantmentHelper.getDamageProtection(Iterable, DamageSource) has no 1.21.1 equivalent without the victim: answering 0 (APPROXIMATION)");
+        }
+        return 0;
+    }
+
+    /**
+     * {@code DispenseItemBehavior.setEntityPokingOutOfBlock(source, entity, direction)} (removed in 1.21.1): puts a spawned entity just outside the dispenser
+     * face it was dispensed from. APPROXIMATION of the removed vanilla helper (centre of the face, pushed out by half the entity's size).
+     */
+    public static void setEntityPokingOutOfBlock(net.minecraft.core.dispenser.BlockSource source, Entity entity, net.minecraft.core.Direction direction) {
+        BlockPos pos = source.pos();
+        double halfWidth = entity.getBbWidth() / 2.0;
+        double halfHeight = entity.getBbHeight() / 2.0;
+        double x = pos.getX() + 0.5 + direction.getStepX() * (0.5000099999997474 + (direction.getStepX() != 0 ? halfWidth : 0));
+        double y = pos.getY() + 0.5 + direction.getStepY() * (0.5000099999997474 + (direction.getStepY() != 0 ? halfHeight : 0)) - halfHeight;
+        double z = pos.getZ() + 0.5 + direction.getStepZ() * (0.5000099999997474 + (direction.getStepZ() != 0 ? halfWidth : 0));
+        entity.setPos(x, y, z);
+    }
+
     // ------------------------------------------------------------------ recipes
 
     /**
