@@ -45,7 +45,7 @@ public final class LegacyCraftingRecipe implements CraftingRecipe {
         return RecipeBridge.custom(index);
     }
 
-    private static InventoryCrafting view(CraftingInput input) {
+    static InventoryCrafting view(CraftingInput input) {
         var menu = new AbstractContainerMenu(null, 0) {
             @Override
             public ItemStack quickMoveStack(Player player, int slot) {
@@ -62,7 +62,7 @@ public final class LegacyCraftingRecipe implements CraftingRecipe {
         return new InventoryCrafting(new TransientCraftingContainer(menu, input.width(), input.height(), items));
     }
 
-    private static void failed(Throwable e) {
+    static void failed(Throwable e) {
         if (FAILURES.incrementAndGet() <= 5) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Recipes").warn("A custom legacy recipe failed: {}", e.toString());
     }
 

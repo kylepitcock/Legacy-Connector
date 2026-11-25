@@ -159,6 +159,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.vb1_7_3.BetaMetadataIngredient.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.core.recipe.OversizedCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyShapedCraftingRecipe.SERIALIZER.getId(); // class init registers the serializer
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.REGISTER.register(modBus);
         FEATURES.register(modBus);
         CHUNK_GENERATORS.register(modBus);

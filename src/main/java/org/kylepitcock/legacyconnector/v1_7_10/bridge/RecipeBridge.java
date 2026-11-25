@@ -55,7 +55,11 @@ public final class RecipeBridge {
     private sealed interface Spec permits Shaped, Shapeless, Smelting, Custom {}
 
     // source: the IRecipe in the legacy crafting list, or the input key in the legacy smelting list; the recipe lives while it is listed.
-    private record Shaped(String owner, Object source, ItemStack output, List<String> pattern, Map<Character, Object> key) implements Spec {}
+    private record Shaped(String owner, Object source, ItemStack output, List<String> pattern, Map<Character, Object> key, int live) implements Spec {
+        Shaped(String owner, Object source, ItemStack output, List<String> pattern, Map<Character, Object> key) {
+            this(owner, source, output, pattern, key, -1);
+        }
+    }
 
     private record Shapeless(String owner, Object source, ItemStack output, List<Object> inputs) implements Spec {}
 
@@ -158,12 +162,13 @@ public final class RecipeBridge {
     public static synchronized void addLegacyRecipe(IRecipe recipe) {
         if (recipe == null) return;
         if (recipe instanceof ShapedOreRecipe s) {
-            addShapedSpec(s, s.getRecipeOutput(), s.mcc$args);
+            addShapedSpec(s, s.getRecipeOutput(), s.mcc$args, overridesLogic(s, ShapedOreRecipe.class));
         } else if (recipe instanceof ShapelessOreRecipe s) {
             if (s.getRecipeOutput() != null && java.util.Arrays.stream(s.mcc$args).noneMatch(java.util.Objects::isNull)) {
                 RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<>(List.of(s.mcc$args))));
             }
         } else if (recipe instanceof ShapedRecipes s) {
+            int live = overridesLogic(s, ShapedRecipes.class) ? addCustom(s) : -1;
             List<String> pattern = new ArrayList<>();
             Map<Character, Object> key = new LinkedHashMap<>();
             Map<String, Character> symbols = new LinkedHashMap<>();
@@ -182,7 +187,7 @@ public final class RecipeBridge {
                 }
                 pattern.add(row.toString());
             }
-            if (s.getRecipeOutput() != null) RECIPES.add(new Shaped(owner(), s, s.getRecipeOutput().copy(), pattern, key));
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shaped(owner(), s, s.getRecipeOutput().copy(), pattern, key, live));
         } else if (recipe instanceof ShapelessRecipes s) {
             if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<Object>(s.recipeItems)));
         } else {
@@ -193,7 +198,24 @@ public final class RecipeBridge {
         }
     }
 
-    private static void addShapedSpec(IRecipe source, ItemStack output, Object[] params) {
+    /** True when a subclass of {@code base} supplies its own matching or result (NBT written into the result): it must stay a live legacy recipe. */
+    private static boolean overridesLogic(IRecipe recipe, Class<?> base) {
+        if (recipe.getClass() == base) return false;
+        try {
+            return recipe.getClass().getMethod("getCraftingResult", legacyconnector.v1_7_10.net.minecraft.inventory.InventoryCrafting.class).getDeclaringClass() != base
+                    || recipe.getClass().getMethod("matches", legacyconnector.v1_7_10.net.minecraft.inventory.InventoryCrafting.class,
+                            legacyconnector.v1_7_10.net.minecraft.world.World.class).getDeclaringClass() != base;
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return false;
+        }
+    }
+
+    private static int addCustom(IRecipe recipe) {
+        CUSTOM.add(recipe);
+        return CUSTOM.size() - 1;
+    }
+
+    private static void addShapedSpec(IRecipe source, ItemStack output, Object[] params, boolean live) {
         List<String> pattern = new ArrayList<>();
         Map<Character, Object> key = new LinkedHashMap<>();
         int i = 0;
@@ -207,7 +229,7 @@ public final class RecipeBridge {
             }
         }
         for (; i + 1 < params.length; i += 2) key.put((Character) params[i], params[i + 1]);
-        if (output != null && !pattern.isEmpty()) RECIPES.add(new Shaped(owner(), source, output.copy(), pattern, key));
+        if (output != null && !pattern.isEmpty()) RECIPES.add(new Shaped(owner(), source, output.copy(), pattern, key, live ? addCustom(source) : -1));
     }
 
     // ------------------------------------------------------------------ data pack generation
@@ -406,6 +428,10 @@ public final class RecipeBridge {
         }
         o.add("key", key);
         o.add("result", result(s.output));
+        if (s.live >= 0) {
+            o.addProperty("type", "legacyconnector:legacy_shaped_recipe");
+            o.addProperty("index", s.live);
+        }
         return o;
     }
 

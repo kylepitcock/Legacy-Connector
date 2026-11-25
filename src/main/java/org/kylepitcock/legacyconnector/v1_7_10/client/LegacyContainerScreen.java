@@ -53,9 +53,21 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         }
     }
 
+    /** Legacy GUIs move their slots at run time (CoFH's tabs slide the augment slots in and out): the modern slot only copied the position at creation. */
+    private void syncSlotPositions() {
+        for (var slot : menu.slots) {
+            if (slot instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacySlot ls) {
+                var l = ls.legacy();
+                if (ls.x != l.xDisplayPosition) ls.x = l.xDisplayPosition;
+                if (ls.y != l.yDisplayPosition) ls.y = l.yDisplayPosition;
+            }
+        }
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (legacy != null) {
+            syncSlotPositions();
             java.util.List<legacyconnector.v1_7_10.net.minecraft.inventory.Slot> dragged = new java.util.ArrayList<>();
             for (var slot : quickCraftSlots) {
                 if (slot instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacySlot ls) dragged.add(ls.legacy());
@@ -112,6 +124,7 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
+        if (legacy != null) syncSlotPositions();
         if (legacy != null && !failed) {
             boolean[] onButton = {false};
             failed = !ScreenGuard.run(this, () -> {
