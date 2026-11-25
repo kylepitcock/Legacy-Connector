@@ -220,7 +220,10 @@ public class LegacyMenu extends AbstractContainerMenu {
             if (!legacy.mcc$hasCrafter(listener)) legacy.addCraftingToCrafters(listener);
         }
         super.broadcastChanges();
-        legacy.detectAndSendChanges();
+        // A container whose mod registers the player itself (IC2's launchGui: openContainer = c, then addCraftingToCrafters) is hosted
+        // before that call: change detection with no listener cached the first values (a BatBox's energy) without sending them, and the
+        // mod sends a value again only when it changes, so the client showed 0 for a full, idle machine.
+        if (legacy.mcc$hasCrafters()) legacy.detectAndSendChanges();
     }
 
     @Override
