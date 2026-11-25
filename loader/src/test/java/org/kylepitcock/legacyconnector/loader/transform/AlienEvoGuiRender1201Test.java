@@ -35,7 +35,7 @@ class AlienEvoGuiRender1201Test implements Opcodes {
                 AlienEvoGuiRender1201.INVENTORY_COMPAT,
                 "renderEntityInInventoryFollowsMouse",
                 LEGACY_PREVIEW_DESC);
-        assertEquals(false, bridged == null);
+        assertTrue(bridged != null);
         assertFalse(hasCall(renderEntity, INVOKESTATIC,
                 AlienEvoGuiRender1201.INVENTORY_SCREEN,
                 "renderEntityInInventoryFollowsMouse",
@@ -104,7 +104,6 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         method.instructions.add(new VarInsnNode(ILOAD, 2));
         method.instructions.add(new VarInsnNode(ILOAD, 3));
         method.instructions.add(new VarInsnNode(ILOAD, 2));
-        method.instructions.add(new VarInsnNode(ILOAD, 3));
         method.instructions.add(new VarInsnNode(FLOAD, 4));
         method.instructions.add(new VarInsnNode(FLOAD, 5));
         method.instructions.add(new VarInsnNode(ALOAD, 7));
