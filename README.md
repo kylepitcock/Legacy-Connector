@@ -74,7 +74,7 @@ More detail:
 - Per-mod results: the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/).
 - Probe figures and known problems: [Compatibility and status](docs/wiki/Compatibility-and-Status.md).
 - Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md).
-- What changed recently: [release notes 0.5.2](docs/release-notes/0.5.2.md).
+- What changed recently: [release notes 0.5.3](docs/release-notes/0.5.3.md).
 
 ## Download
 
