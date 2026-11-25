@@ -61,8 +61,35 @@ public final class VertexCompat {
         return c.setNormal(v.x(), v.y(), v.z());
     }
 
-    /** A vertex is complete once the next one starts: nothing to do, except for the quad baker that emits a quad after its fourth. */
+    private static final java.util.Map<VertexConsumer, int[]> DEFAULT_COLORS = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static volatile boolean anyDefaultColor;
+
+    /** {@code defaultColor(r, g, b, a)} on a consumer: the colour for the vertices that write none, written by {@link #endVertex}. */
+    public static void defaultColor(VertexConsumer c, int r, int g, int b, int a) {
+        if (c instanceof CompatBufferBuilder cb) cb.defaultColor(r, g, b, a);
+        else if (c instanceof Round15ClientDefaultedVertexConsumer d) d.defaultColor(r, g, b, a);
+        else if (c != null) {
+            DEFAULT_COLORS.put(c, new int[] {r, g, b, a});
+            anyDefaultColor = true;
+        }
+    }
+
+    public static void unsetDefaultColor(VertexConsumer c) {
+        if (c instanceof CompatBufferBuilder cb) cb.unsetDefaultColor();
+        else if (c instanceof Round15ClientDefaultedVertexConsumer d) d.unsetDefaultColor();
+        else if (c != null) DEFAULT_COLORS.remove(c);
+    }
+
+    /**
+     * A vertex is complete once the next one starts: nothing to do, except for the quad baker that emits a quad after its fourth, and for a consumer with a
+     * {@link #defaultColor}: its colour is written now ({@code setColor} is ignored when the vertex has a colour already or the format has none; 1.21.1
+     * throws "Missing elements in vertex" for a colour that is never written).
+     */
     public static void endVertex(VertexConsumer c) {
+        if (anyDefaultColor) {
+            int[] d = DEFAULT_COLORS.get(c);
+            if (d != null) c.setColor(d[0], d[1], d[2], d[3]);
+        }
         if (c instanceof LegacyQuadBakingVertexConsumer q) q.endLegacyVertex();
         else if (c instanceof LegacyEndVertexConsumer legacy) legacy.legacyEndVertex();
     }

@@ -1,0 +1,30 @@
+# old class TAB reason: rows whose target has another shape than the old class (kind or most members) and were reviewed on 2026-11-24.
+# Each reason says why the difference does not break callers (call rows, record components, no ATM 9 reference). A new row must not need an entry.
+com/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer	MeshData: isEmpty/pointer/release rows in mc-calls and CompatBufferBuilder
+net/minecraft/network/FriendlyByteBuf$Writer	StreamEncoder: asOptional is a default 1.20.1 helper nobody calls (0 ATM 9 jars)
+net/minecraft/network/FriendlyByteBuf$Reader	StreamDecoder: asOptional is a default 1.20.1 helper nobody calls (0 ATM 9 jars)
+net/minecraft/world/level/chunk/ChunkStatus	1.21.1 split ChunkStatus (tasks moved to ChunkStep); only the constants and getters are used
+net/minecraft/core/BlockSource	1.20.1 interface became a record; every call (getPos, getLevel, x, y, z) has a mc-calls row to MiscCompat
+net/minecraft/advancements/FrameType	AdvancementType: getName/getTexture have mc-calls rows (getSerializedName, PalladiumFrameTypeCompat)
+net/minecraft/advancements/RequirementsStrategy	AdvancementRequirements$Strategy: constants only; createRequirements is a mc-calls row
+net/minecraft/world/entity/SpawnPlacements$Type	enum became the SpawnPlacementType interface; constants are mc-fields rows to MiscCompat, valueOf a mc-calls row
+net/minecraft/world/entity/animal/IronGolem$Crackiness	Crackiness$Level: byFraction/fraction/BY_DAMAGE are not used by mods; the constants LOW..HIGH exist (the Crackiness row of 2026-11-24)
+net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds	enum became a class of constants; TUTORIAL_HINT has a mc-members row
+net/minecraft/client/gui/screens/AccessibilityOptionsScreen	moved to options/: only the constructor is called
+net/minecraft/client/gui/screens/LanguageSelectScreen	moved to options/: only the constructor is called
+net/minecraft/client/gui/screens/OnlineOptionsScreen	moved to options/: only the constructor is called
+net/minecraft/client/gui/screens/SkinCustomizationScreen	moved to options/: only the constructor is called
+net/minecraft/client/gui/screens/controls/ControlsScreen	moved to options/controls: only the constructor is called
+net/minecraft/advancements/Advancement	AdvancementHolder: the data side (criteria, requirements) moved into Advancement; Datagen1201 and mc-calls rows cover the callers
+net/minecraft/world/level/storage/loot/LootDataResolver	HolderGetter$Provider: no ATM 9 jar calls it (0 references)
+net/minecraft/commands/CommandFunction	commands/functions/CommandFunction: getId/entries are record members now; mc-calls rows (CommandFunction1201Migration)
+net/minecraft/core/BlockSourceImpl	a BlockSource record now; calls go through the BlockSource rows
+net/minecraft/network/protocol/game/ServerboundCustomPayloadPacket	common packet with a payload record; the (ResourceLocation, FriendlyByteBuf) constructor has a mc-calls row
+net/minecraft/network/protocol/game/ClientboundCustomPayloadPacket	common packet with a payload record; the (ResourceLocation, FriendlyByteBuf) constructor has a mc-calls row
+net/minecraft/network/protocol/game/ServerboundClientInformationPacket	record ClientInformation now; the layer reads it through MiddleCompat.clientInfo
+net/minecraft/advancements/Advancement$Builder	Datagen1201/mc-calls rows (addCriterion, requirements, save); builder members are data generation only
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$CopyOperation	CopyCustomDataFunction: serialization helpers only (fromJson/toJson); no ATM 9 jar calls them
+net/minecraft/client/renderer/ChunkBufferBuilderPack	SectionBufferBuilderPack: builder/builders are not read by ATM 9 jars
+net/minecraft/client/gui/screens/inventory/BookViewScreen$WrittenBookAccess	BookAccess: page reading helpers; no ATM 9 jar calls getPageRaw/readPages
+net/minecraft/world/level/storage/loot/predicates/LootItemRandomChanceWithLootingCondition	..WithEnchantedBonusCondition: percent/lootingMultiplier are record components now
+com/mojang/blaze3d/vertex/BufferBuilder$DrawState	MeshData$DrawState: record; the index buffer fields are not read by ATM 9 jars

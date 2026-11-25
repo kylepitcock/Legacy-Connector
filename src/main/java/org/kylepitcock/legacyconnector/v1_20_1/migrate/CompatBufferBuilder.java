@@ -110,8 +110,9 @@ public final class CompatBufferBuilder implements VertexConsumer {
 
     /** {@code BufferBuilder.format} (a public-in-practice field of 1.20.1 that renderers read): the format of the last {@code begin}. */
     public VertexFormat format;
-    /** {@code BufferBuilder.defaultColorSet}: 1.20.1 flag for {@code defaultColor}; the default colour is not applied here, so it stays false. */
+    /** {@code BufferBuilder.defaultColorSet}: 1.20.1 flag for {@code defaultColor}: vertices that write no colour get {@link #defaultR} to {@link #defaultA} at {@link #endVertex}. */
     public boolean defaultColorSet;
+    private int defaultR = 255, defaultG = 255, defaultB = 255, defaultA = 255;
 
     // ---- raw element writers of 1.20.1 (putByte/putShort/putFloat/nextElement) ----------------------------------------------------
     // 1.21.1's builder takes typed vertex calls only, so the raw bytes of one vertex are staged here and decoded into those calls when the last element
@@ -409,7 +410,14 @@ public final class CompatBufferBuilder implements VertexConsumer {
         return b().setNormal(v.x(), v.y(), v.z());
     }
 
-    public void endVertex() {}
+    /**
+     * The 1.20.1 end of a vertex. 1.21.1 finishes a vertex with the next {@code addVertex}, and throws "Missing elements in vertex" for a colour that was
+     * never written, so the default colour of {@link #defaultColor} is written here: {@code setColor} is ignored when the vertex already has a colour (or
+     * the format has none), which is exactly "a colour for vertices that write none".
+     */
+    public void endVertex() {
+        if (defaultColorSet && real != null) real.setColor(defaultR, defaultG, defaultB, defaultA);
+    }
 
     /** {@code BufferBuilder.clear()}: drops what was written so far (the 1.21.1 builder cannot be reset; the memory is reused by the next {@code begin}). */
     public void clear() {
@@ -422,8 +430,16 @@ public final class CompatBufferBuilder implements VertexConsumer {
      */
     public void setQuadSorting(com.mojang.blaze3d.vertex.VertexSorting sorting) {}
 
-    /** {@code DefaultedVertexConsumer.defaultColor(r, g, b, a)}: a colour for vertices that write none (APPROXIMATION: ignored; mods set colours explicitly). */
-    public void defaultColor(int r, int g, int b, int a) {}
+    /** {@code DefaultedVertexConsumer.defaultColor(r, g, b, a)}: a colour for the vertices that write none (applied by {@link #endVertex}). */
+    public void defaultColor(int r, int g, int b, int a) {
+        defaultR = r;
+        defaultG = g;
+        defaultB = b;
+        defaultA = a;
+        defaultColorSet = true;
+    }
 
-    public void unsetDefaultColor() {}
+    public void unsetDefaultColor() {
+        defaultColorSet = false;
+    }
 }

@@ -80,7 +80,7 @@ net/minecraft/world/item/enchantment/ProtectionEnchantment$Type	org/kylepitcock/
 net/minecraft/world/item/enchantment/DamageEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDamageEnchantment
 net/minecraft/world/item/Vanishable	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyVanishable
 net/minecraft/world/item/DyeableArmorItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDyeableArmorItem
-net/minecraft/world/level/block/StemGrownBlock	net/minecraft/world/level/block/Block
+net/minecraft/world/level/block/StemGrownBlock	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyStemGrownBlock
 # --- round 4 batch 9
 net/minecraft/world/scores/Score	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore
 net/minecraft/world/item/crafting/SimpleCookingSerializer$CookieBaker	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker
@@ -155,3 +155,6 @@ net/minecraft/world/item/enchantment/KnockbackEnchantment	org/kylepitcock/legacy
 net/minecraft/world/item/enchantment/TridentLoyaltyEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTridentLoyaltyEnchantment
 net/minecraft/world/item/crafting/SingleItemRecipe$Serializer$SingleItemMaker	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySingleItemMaker
 com/mojang/blaze3d/vertex/BufferBuilder$SortState	org/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder$SortState
+# 2026-11-24 table audit (tools/dev/audit_1201_tables.py, loader Mc1201TablesAuditTest): classes the version index moved or renamed that ATM 9 jars name
+net/minecraft/client/resources/model/ModelBakery$BlockStateDefinitionException	net/minecraft/client/resources/model/BlockStateModelLoader$BlockStateDefinitionException
+net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$CompiledChunk	net/minecraft/client/renderer/chunk/SectionRenderDispatcher$CompiledSection

@@ -407,10 +407,14 @@ public final class MiscCompat {
         return out;
     }
 
-    /** {@code VertexConsumer.defaultColor(r, g, b, a)} is gone: vertices carry their own color; the call has no effect. */
-    public static void defaultColor(com.mojang.blaze3d.vertex.VertexConsumer consumer, int r, int g, int b, int a) {}
+    /** {@code VertexConsumer.defaultColor(r, g, b, a)} is gone: the colour is remembered per consumer and written by {@code endVertex} for vertices that wrote none ({@link VertexCompat}). */
+    public static void defaultColor(com.mojang.blaze3d.vertex.VertexConsumer consumer, int r, int g, int b, int a) {
+        VertexCompat.defaultColor(consumer, r, g, b, a);
+    }
 
-    public static void unsetDefaultColor(com.mojang.blaze3d.vertex.VertexConsumer consumer) {}
+    public static void unsetDefaultColor(com.mojang.blaze3d.vertex.VertexConsumer consumer) {
+        VertexCompat.unsetDefaultColor(consumer);
+    }
 
     // SpawnPlacements.Type became SpawnPlacementType with its constants in SpawnPlacementTypes
     public static net.minecraft.world.entity.SpawnPlacementType spawnOnGround() {
