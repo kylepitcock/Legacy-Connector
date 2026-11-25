@@ -17,7 +17,7 @@ net/minecraft/advancements/RequirementsStrategy	net/minecraft/advancements/Advan
 net/minecraft/world/entity/SpawnPlacements$Type	net/minecraft/world/entity/SpawnPlacementType
 net/minecraft/world/level/block/GlassBlock	net/minecraft/world/level/block/TransparentBlock
 net/minecraft/world/level/block/AbstractGlassBlock	net/minecraft/world/level/block/TransparentBlock
-net/minecraft/world/entity/animal/IronGolem$Crackiness	net/minecraft/world/entity/Crackiness
+net/minecraft/world/entity/animal/IronGolem$Crackiness	net/minecraft/world/entity/Crackiness$Level
 net/minecraft/world/inventory/RecipeHolder	net/minecraft/world/inventory/RecipeCraftingHolder
 net/minecraft/client/gui/components/toasts/SystemToast$SystemToastIds	net/minecraft/client/gui/components/toasts/SystemToast$SystemToastId
 net/minecraft/world/item/FireworkRocketItem$Shape	net/minecraft/world/item/component/FireworkExplosion$Shape

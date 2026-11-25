@@ -41,6 +41,7 @@ final class ProblemsClient {
 
     static void register(IEventBus modBus) {
         modBus.addListener(ProblemsClient::onBaked);
+        startLoadingWatchdog();
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingIn e) -> onJoin());
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ScreenEvent.Opening e) -> {
             if (!titleSummaryDone && e.getNewScreen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
@@ -48,6 +49,73 @@ final class ProblemsClient {
                 org.kylepitcock.legacyconnector.core.degraded.Degraded.finish("title screen");
             }
         });
+    }
+
+    /**
+     * Safety net for a resource reload that never completes (a hang that leaves no exception in latest.log): when the same loading overlay has
+     * been up for {@link #WATCHDOG_SECONDS}, log the render thread's stack, and the threads blocked in a mod or reload code, so the log names
+     * the listener or lock that does not return. Runs on a daemon thread that only reads two fields; it logs at most three times per overlay.
+     */
+    private static final int WATCHDOG_SECONDS = 60;
+
+    private static void startLoadingWatchdog() {
+        Thread t = new Thread(() -> {
+            Object lastOverlay = null;
+            long since = 0;
+            int logged = 0;
+            while (true) {
+                try {
+                    Thread.sleep(5000);
+                    net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                    Object overlay = mc == null ? null : mc.getOverlay();
+                    long now = System.currentTimeMillis();
+                    if (overlay == null || overlay != lastOverlay) {
+                        lastOverlay = overlay;
+                        since = now;
+                        logged = 0;
+                        continue;
+                    }
+                    if (logged < 3 && now - since >= (logged + 1L) * WATCHDOG_SECONDS * 1000L) {
+                        logged++;
+                        logStuck(overlay, (now - since) / 1000);
+                    }
+                } catch (InterruptedException e) {
+                    return;
+                } catch (Throwable ignored) {
+                    // a diagnostic must never break the game
+                }
+            }
+        }, "LegacyConnector-load-watchdog");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static void logStuck(Object overlay, long seconds) {
+        StringBuilder sb = new StringBuilder("the loading screen (" + overlay.getClass().getName() + ") has been up for " + seconds
+                + " s; if the game does not move on, the threads below hold it up:");
+        for (var e : Thread.getAllStackTraces().entrySet()) {
+            Thread th = e.getKey();
+            StackTraceElement[] st = e.getValue();
+            boolean render = th.getName().equals("Render thread");
+            boolean relevant = false;
+            if (!render && (th.getState() == Thread.State.BLOCKED || th.getState() == Thread.State.WAITING || th.getState() == Thread.State.TIMED_WAITING)) {
+                for (StackTraceElement f : st) {
+                    String c = f.getClassName();
+                    if (c.contains("ReloadInstance") || c.contains("ReloadListener") || c.contains("nonamecrackers") || c.startsWith("org.kylepitcock")) {
+                        relevant = true;
+                        break;
+                    }
+                }
+            }
+            if (!render && !relevant) continue;
+            sb.append("\n  ").append(th.getName()).append(" [").append(th.getState()).append("]");
+            int n = 0;
+            for (StackTraceElement f : st) {
+                if (n++ >= 25) break;
+                sb.append("\n    at ").append(f);
+            }
+        }
+        LOG.warn(sb.toString());
     }
 
     private static void onBaked(ModelEvent.BakingCompleted event) {
