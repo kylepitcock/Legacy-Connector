@@ -46,6 +46,7 @@ jobs:
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoMolang1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoOmnitrixDisplayResources1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoRenderLayerModel1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoMixins1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoSlimeDecalMesh1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.PalladiumResourceCompat1201Test' \
             --no-daemon --stacktrace

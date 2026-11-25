@@ -5,6 +5,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.IincInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
@@ -45,41 +46,168 @@ final class AlienEvoGeckoMixins1201 implements Opcodes {
     }
 
     private static int migrateStillClock(ClassNode node) {
-        final String name = "alienevo$poseStill";
-        MethodNode method = findNamed(node, name);
-        if (method == null) {
+        final String handlerName = "alienevo$poseStill";
+        MethodNode handler = findNamed(node, handlerName);
+        if (handler == null) {
             throw new IllegalStateException("AlienEvo GeckoStillClockMixin lost its poseStill handler");
         }
 
-        Type[] arguments = Type.getArgumentTypes(method.desc);
-        if (isStillClockDescriptor(arguments, true) && Type.VOID_TYPE.equals(Type.getReturnType(method.desc))) {
-            return 0;
-        }
-        if (!isStillClockDescriptor(arguments, false) || !Type.VOID_TYPE.equals(Type.getReturnType(method.desc))
-                || (method.access & ACC_STATIC) != 0) {
+        Type[] arguments = Type.getArgumentTypes(handler.desc);
+        boolean currentHandler = isStillClockDescriptor(arguments, true)
+                && Type.VOID_TYPE.equals(Type.getReturnType(handler.desc));
+        boolean legacyHandler = isStillClockDescriptor(arguments, false)
+                && Type.VOID_TYPE.equals(Type.getReturnType(handler.desc))
+                && (handler.access & ACC_STATIC) == 0;
+        if (!currentHandler && !legacyHandler) {
             throw new IllegalStateException("AlienEvo GeckoStillClockMixin has an unexpected poseStill descriptor: "
+                    + handler.desc);
+        }
+
+        // Inspect the method body before changing the handler descriptor. The
+        // descriptor rewrite and this call-site rewrite must fail as one unit.
+        StillClockCallSite callSite = inspectStillPoseCallSite(node);
+        boolean changed = false;
+
+        if (legacyHandler) {
+            // The source JAR's GeckoLib owners can be remapped before this adapter
+            // runs. Match the stable parameter roles rather than hardcoding those
+            // owners, then preserve the already-remapped types in the new descriptor.
+            Type[] migratedArguments = new Type[arguments.length + 1];
+            System.arraycopy(arguments, 0, migratedArguments, 0, arguments.length - 1);
+            migratedArguments[arguments.length - 1] = Type.FLOAT_TYPE;
+            migratedArguments[arguments.length] = arguments[arguments.length - 1];
+            String migratedDescriptor = Type.getMethodDescriptor(Type.VOID_TYPE, migratedArguments);
+
+            int callbackSlot = 1; // instance methods reserve slot zero for this
+            for (int i = 0; i < arguments.length - 1; i++) {
+                callbackSlot += arguments[i].getSize();
+            }
+            // GeckoLib's handler shape is (GeoAnimatable, long, AnimationState, CallbackInfo).
+            // The float occupies the old CallbackInfo slot, so move it and all later locals.
+            shiftLocals(handler, callbackSlot, 1);
+            handler.maxLocals = Math.max(handler.maxLocals + 1, callbackSlot + 2);
+            replaceDescriptor(handler, migratedDescriptor);
+            changed = true;
+        }
+
+        if (callSite.obsoleteGetter() != null) {
+            callSite.method().instructions.remove(callSite.obsoleteGetter());
+            callSite.preAnimationSetup().desc = callSite.currentDescriptor();
+            changed = true;
+        }
+        return changed ? 1 : 0;
+    }
+
+    private record StillClockCallSite(
+            MethodNode method,
+            MethodInsnNode preAnimationSetup,
+            MethodInsnNode obsoleteGetter,
+            String currentDescriptor) {}
+
+    /**
+     * Verifies and describes the exact legacy call sequence in alienevo$pose.
+     * The legacy call consumes AnimationState.getAnimatable(); GeckoLib 4.9
+     * instead consumes the AnimationState itself.
+     */
+    private static StillClockCallSite inspectStillPoseCallSite(ClassNode node) {
+        MethodNode method = findNamed(node, "alienevo$pose");
+        if (method == null) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin lost its pose helper");
+        }
+
+        Type[] arguments = Type.getArgumentTypes(method.desc);
+        if ((method.access & ACC_STATIC) != 0
+                || !Type.VOID_TYPE.equals(Type.getReturnType(method.desc))
+                || arguments.length != 5
+                || !hasSimpleObjectName(arguments[0], "GeoAnimatable")
+                || !hasSimpleObjectName(arguments[1], "AnimatableManager")
+                || !hasSimpleObjectName(arguments[2], "AnimationProcessor")
+                || !hasSimpleObjectName(arguments[3], "AnimationState")
+                || !arguments[4].equals(Type.DOUBLE_TYPE)) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin has an unexpected pose helper descriptor: "
                     + method.desc);
         }
 
-        // The source JAR's GeckoLib owners can be remapped before this adapter
-        // runs. Match the stable parameter roles rather than hardcoding those
-        // owners, then preserve the already-remapped types in the new descriptor.
-        Type[] migratedArguments = new Type[arguments.length + 1];
-        System.arraycopy(arguments, 0, migratedArguments, 0, arguments.length - 1);
-        migratedArguments[arguments.length - 1] = Type.FLOAT_TYPE;
-        migratedArguments[arguments.length] = arguments[arguments.length - 1];
-        String migratedDescriptor = Type.getMethodDescriptor(Type.VOID_TYPE, migratedArguments);
-
-        int callbackSlot = 1; // instance methods reserve slot zero for this
-        for (int i = 0; i < arguments.length - 1; i++) {
-            callbackSlot += arguments[i].getSize();
+        int processorSlot = parameterSlot(method, arguments, 2);
+        int stateSlot = parameterSlot(method, arguments, 3);
+        int tickSlot = parameterSlot(method, arguments, 4);
+        if (method.maxLocals < tickSlot + Type.DOUBLE_TYPE.getSize()) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin pose helper has insufficient locals");
         }
-        // GeckoLib's handler shape is (GeoAnimatable, long, AnimationState, CallbackInfo).
-        // The float occupies the old CallbackInfo slot, so move it and all later locals.
-        shiftLocals(method, callbackSlot, 1);
-        method.maxLocals = Math.max(method.maxLocals + 1, callbackSlot + 2);
-        replaceDescriptor(method, migratedDescriptor);
-        return 1;
+
+        MethodInsnNode setupCall = null;
+        int setupCalls = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode invocation
+                    && invocation.name.equals("preAnimationSetup")) {
+                setupCall = invocation;
+                setupCalls++;
+            }
+        }
+        if (setupCalls != 1 || setupCall == null) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin expected exactly one preAnimationSetup call, found "
+                    + setupCalls);
+        }
+        if (setupCall.getOpcode() != INVOKEVIRTUAL
+                || setupCall.itf
+                || !setupCall.owner.equals(arguments[2].getInternalName())) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin preAnimationSetup owner/opcode changed: "
+                    + setupCall.owner + "." + setupCall.name + setupCall.desc);
+        }
+
+        String legacyDescriptor = Type.getMethodDescriptor(Type.VOID_TYPE, arguments[0], Type.DOUBLE_TYPE);
+        String currentDescriptor = Type.getMethodDescriptor(Type.VOID_TYPE, arguments[3], Type.DOUBLE_TYPE);
+        AbstractInsnNode tickLoad = previousCodeInstruction(setupCall);
+        requireLoad(tickLoad, DLOAD, tickSlot, "animation tick");
+
+        if (setupCall.desc.equals(currentDescriptor)) {
+            AbstractInsnNode stateLoad = previousCodeInstruction(tickLoad);
+            AbstractInsnNode processorLoad = previousCodeInstruction(stateLoad);
+            requireLoad(stateLoad, ALOAD, stateSlot, "AnimationState");
+            requireLoad(processorLoad, ALOAD, processorSlot, "AnimationProcessor");
+            return new StillClockCallSite(method, setupCall, null, currentDescriptor);
+        }
+
+        if (!setupCall.desc.equals(legacyDescriptor)) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin preAnimationSetup descriptor changed: "
+                    + setupCall.desc);
+        }
+
+        AbstractInsnNode getterInstruction = previousCodeInstruction(tickLoad);
+        if (!(getterInstruction instanceof MethodInsnNode getter)
+                || getter.getOpcode() != INVOKEVIRTUAL
+                || getter.itf
+                || !getter.owner.equals(arguments[3].getInternalName())
+                || !getter.name.equals("getAnimatable")
+                || !getter.desc.equals(Type.getMethodDescriptor(arguments[0]))) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin has an unexpected getAnimatable call site");
+        }
+        AbstractInsnNode stateLoad = previousCodeInstruction(getterInstruction);
+        AbstractInsnNode processorLoad = previousCodeInstruction(stateLoad);
+        requireLoad(stateLoad, ALOAD, stateSlot, "AnimationState");
+        requireLoad(processorLoad, ALOAD, processorSlot, "AnimationProcessor");
+        return new StillClockCallSite(method, setupCall, getter, currentDescriptor);
+    }
+
+    private static int parameterSlot(MethodNode method, Type[] arguments, int parameterIndex) {
+        int slot = (method.access & ACC_STATIC) == 0 ? 1 : 0;
+        for (int i = 0; i < parameterIndex; i++) slot += arguments[i].getSize();
+        return slot;
+    }
+
+    private static AbstractInsnNode previousCodeInstruction(AbstractInsnNode instruction) {
+        AbstractInsnNode previous = instruction == null ? null : instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) previous = previous.getPrevious();
+        return previous;
+    }
+
+    private static void requireLoad(AbstractInsnNode instruction, int opcode, int slot, String role) {
+        if (!(instruction instanceof VarInsnNode variable)
+                || variable.getOpcode() != opcode
+                || variable.var != slot) {
+            throw new IllegalStateException("AlienEvo GeckoStillClockMixin has an unexpected " + role
+                    + " local load; expected opcode " + opcode + " from slot " + slot);
+        }
     }
 
     private static boolean isStillClockDescriptor(Type[] args, boolean withPartialTick) {
