@@ -225,6 +225,10 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertTrue(hasStringConstant(azureRegistration,
                 "net.habb.alienevo.compat.azurelib.bridge.MolangAzureRollSinceFunction"));
         assertTrue(hasStringConstant(azureRegistration, "registerFunction"));
+        assertTrue(hasClassLiteral(azureRegistration, "java/lang/String"));
+        assertTrue(hasClassLiteral(azureRegistration, "java/lang/Class"));
+        assertFalse(hasField(azureRegistration, GETSTATIC, "java/lang/String", "TYPE", "Ljava/lang/Class;"));
+        assertFalse(hasField(azureRegistration, GETSTATIC, "java/lang/Class", "TYPE", "Ljava/lang/Class;"));
 
         ClassNode azureFunction = read(generated, AlienEvoMolang1201.AZURELIB_ROLL_FUNCTION);
         assertEquals(AlienEvoMolang1201.AZURELIB_CONTEXT_FUNCTION, azureFunction.superName);
@@ -347,6 +351,15 @@ class AlienEvoMolang1201Test implements Opcodes {
     private static boolean hasStringConstant(MethodNode method, String value) {
         for (var instruction : method.instructions.toArray()) {
             if (instruction instanceof LdcInsnNode constant && value.equals(constant.cst)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasClassLiteral(MethodNode method, String internalName) {
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof LdcInsnNode constant
+                    && constant.cst instanceof Type type
+                    && type.equals(Type.getObjectType(internalName))) return true;
         }
         return false;
     }

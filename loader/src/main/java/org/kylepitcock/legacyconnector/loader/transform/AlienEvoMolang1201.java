@@ -655,13 +655,11 @@ final class AlienEvoMolang1201 implements Opcodes {
         azureRegister.instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Class"));
         azureRegister.instructions.add(new InsnNode(DUP));
         azureRegister.instructions.add(new InsnNode(ICONST_0));
-        azureRegister.instructions.add(new FieldInsnNode(GETSTATIC, "java/lang/String",
-                "TYPE", "Ljava/lang/Class;"));
+        azureRegister.instructions.add(new LdcInsnNode(Type.getObjectType("java/lang/String")));
         azureRegister.instructions.add(new InsnNode(AASTORE));
         azureRegister.instructions.add(new InsnNode(DUP));
         azureRegister.instructions.add(new InsnNode(ICONST_1));
-        azureRegister.instructions.add(new FieldInsnNode(GETSTATIC, "java/lang/Class",
-                "TYPE", "Ljava/lang/Class;"));
+        azureRegister.instructions.add(new LdcInsnNode(Type.getObjectType("java/lang/Class")));
         azureRegister.instructions.add(new InsnNode(AASTORE));
         azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Class",
                 "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false));
