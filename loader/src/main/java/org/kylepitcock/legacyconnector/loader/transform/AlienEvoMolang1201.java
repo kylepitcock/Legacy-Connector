@@ -28,7 +28,8 @@ import org.objectweb.asm.tree.IincInsnNode;
  * Migrates AlienEvo's GeckoLib 4.8 MolangParser calls to the GeckoLib 4.9
  * MathParser/Variable API. A small generated facade preserves the old
  * instance-shaped getVariable/setValue calls and registers AlienEvo's
- * roll_since function through the new MathFunction.Factory contract.
+ * roll_since function with both GeckoLib 4.9 and AzureLib's independent
+ * Molang parser when AzureLib is present.
  */
 final class AlienEvoMolang1201 implements Opcodes {
     static final String BOOTSTRAP = "net/habb/alienevo/compat/geckolib/MolangQueryBootstrap";
@@ -52,6 +53,16 @@ final class AlienEvoMolang1201 implements Opcodes {
     static final String ROLL_FACTORY = HELPER_PACKAGE + "MolangRollSinceFactory";
     static final String ROLL_MATH_FUNCTION = HELPER_PACKAGE + "MolangRollSinceFunction";
     static final String MEMOIZED_SUPPLIER = HELPER_PACKAGE + "MolangMemoizedDoubleSupplier";
+    static final String AZURELIB_PARSER = "mod/azure/azurelib/core/molang/MolangParser";
+    static final String AZURELIB_CONTEXT_FUNCTION =
+            "mod/azure/azurelib/core/molang/functions/query/ContextQueryFunction";
+    static final String AZURELIB_QUERY_CONTEXT = "mod/azure/azurelib/core/molang/MolangQueryContext";
+    static final String AZURELIB_ANIM_QUERY_CONTEXT =
+            "mod/azure/azurelib/common/animation/molang/AzMolangQueryContext";
+    static final String AZURELIB_ROLL_FUNCTION =
+            "net/habb/alienevo/compat/azurelib/bridge/MolangAzureRollSinceFunction";
+    static final String AZURELIB_ROLL_FUNCTION_CLASS =
+            "net.habb.alienevo.compat.azurelib.bridge.MolangAzureRollSinceFunction";
 
     private static final String DOUBLE_SUPPLIER = "Ljava/util/function/DoubleSupplier;";
     private static final String VARIABLE_DESC = "L" + VARIABLE + ";";
@@ -539,6 +550,7 @@ final class AlienEvoMolang1201 implements Opcodes {
         result.put(ROLL_FACTORY + ".class", write(rollSinceFactoryClass()));
         result.put(ROLL_MATH_FUNCTION + ".class", write(rollSinceMathFunctionClass()));
         result.put(MEMOIZED_SUPPLIER + ".class", write(memoizedSupplierClass()));
+        result.put(AZURELIB_ROLL_FUNCTION + ".class", write(azureLibRollSinceFunctionClass()));
         return result;
     }
 
@@ -595,11 +607,102 @@ final class AlienEvoMolang1201 implements Opcodes {
         register.instructions.add(new MethodInsnNode(INVOKESPECIAL, ROLL_FACTORY, "<init>", "()V", false));
         register.instructions.add(new MethodInsnNode(INVOKESTATIC, MATH_PARSER, "registerFunction",
                 "(Ljava/lang/String;L" + MATH_FACTORY + ";)V", false));
+        register.instructions.add(new MethodInsnNode(INVOKESTATIC, PARSER_COMPAT,
+                "registerAzureLibRollSince", "()V", false));
         register.instructions.add(new InsnNode(RETURN));
         register.maxLocals = 0;
         register.maxStack = 3;
         node.methods.add(register);
+
+        // AzureLib has an independent Molang parser. Register only when its
+        // 3.2.x context-function API is present, using reflection so AzureLib
+        // remains an optional runtime dependency for this translated jar.
+        MethodNode azureRegister = new MethodNode(ACC_PUBLIC | ACC_STATIC,
+                "registerAzureLibRollSince", "()V", null, null);
+        LabelNode tryStart = new LabelNode();
+        LabelNode tryEnd = new LabelNode();
+        LabelNode missingAzureLib = new LabelNode();
+        azureRegister.instructions.add(tryStart);
+        addClassForName(azureRegister.instructions, AZURELIB_PARSER.replace('/', '.'));
+        azureRegister.instructions.add(new VarInsnNode(ASTORE, 0));
+        addClassForName(azureRegister.instructions, AZURELIB_CONTEXT_FUNCTION.replace('/', '.'));
+        azureRegister.instructions.add(new InsnNode(POP));
+        addClassForName(azureRegister.instructions, AZURELIB_QUERY_CONTEXT.replace('/', '.'));
+        azureRegister.instructions.add(new InsnNode(POP));
+        addClassForName(azureRegister.instructions, AZURELIB_ANIM_QUERY_CONTEXT.replace('/', '.'));
+        azureRegister.instructions.add(new InsnNode(POP));
+        azureRegister.instructions.add(new LdcInsnNode(AZURELIB_ROLL_FUNCTION_CLASS));
+        azureRegister.instructions.add(new InsnNode(ICONST_1));
+        azureRegister.instructions.add(new LdcInsnNode(Type.getObjectType(PARSER_COMPAT)));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Class",
+                "getClassLoader", "()Ljava/lang/ClassLoader;", false));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Class", "forName",
+                "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false));
+        azureRegister.instructions.add(new VarInsnNode(ASTORE, 1));
+
+        azureRegister.instructions.add(new VarInsnNode(ALOAD, 0));
+        azureRegister.instructions.add(new LdcInsnNode("INSTANCE"));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Class",
+                "getField", "(Ljava/lang/String;)Ljava/lang/reflect/Field;", false));
+        azureRegister.instructions.add(new InsnNode(ACONST_NULL));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/reflect/Field",
+                "get", "(Ljava/lang/Object;)Ljava/lang/Object;", false));
+        azureRegister.instructions.add(new VarInsnNode(ASTORE, 2));
+
+        azureRegister.instructions.add(new VarInsnNode(ALOAD, 0));
+        azureRegister.instructions.add(new LdcInsnNode("registerFunction"));
+        azureRegister.instructions.add(new InsnNode(ICONST_2));
+        azureRegister.instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Class"));
+        azureRegister.instructions.add(new InsnNode(DUP));
+        azureRegister.instructions.add(new InsnNode(ICONST_0));
+        azureRegister.instructions.add(new FieldInsnNode(GETSTATIC, "java/lang/String",
+                "TYPE", "Ljava/lang/Class;"));
+        azureRegister.instructions.add(new InsnNode(AASTORE));
+        azureRegister.instructions.add(new InsnNode(DUP));
+        azureRegister.instructions.add(new InsnNode(ICONST_1));
+        azureRegister.instructions.add(new FieldInsnNode(GETSTATIC, "java/lang/Class",
+                "TYPE", "Ljava/lang/Class;"));
+        azureRegister.instructions.add(new InsnNode(AASTORE));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Class",
+                "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false));
+        azureRegister.instructions.add(new VarInsnNode(ASTORE, 3));
+
+        azureRegister.instructions.add(new VarInsnNode(ALOAD, 3));
+        azureRegister.instructions.add(new VarInsnNode(ALOAD, 2));
+        azureRegister.instructions.add(new InsnNode(ICONST_2));
+        azureRegister.instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
+        azureRegister.instructions.add(new InsnNode(DUP));
+        azureRegister.instructions.add(new InsnNode(ICONST_0));
+        azureRegister.instructions.add(new LdcInsnNode("alienevo.roll_since"));
+        azureRegister.instructions.add(new InsnNode(AASTORE));
+        azureRegister.instructions.add(new InsnNode(DUP));
+        azureRegister.instructions.add(new InsnNode(ICONST_1));
+        azureRegister.instructions.add(new VarInsnNode(ALOAD, 1));
+        azureRegister.instructions.add(new InsnNode(AASTORE));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/reflect/Method",
+                "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false));
+        azureRegister.instructions.add(new InsnNode(POP));
+        azureRegister.instructions.add(tryEnd);
+        azureRegister.instructions.add(new InsnNode(RETURN));
+        azureRegister.instructions.add(missingAzureLib);
+        azureRegister.instructions.add(new InsnNode(POP));
+        azureRegister.instructions.add(new InsnNode(RETURN));
+        azureRegister.tryCatchBlocks.add(new org.objectweb.asm.tree.TryCatchBlockNode(
+                tryStart, tryEnd, missingAzureLib, "java/lang/ClassNotFoundException"));
+        azureRegister.maxLocals = 4;
+        azureRegister.maxStack = 6;
+        node.methods.add(azureRegister);
         return node;
+    }
+
+    private static void addClassForName(InsnList code, String className) {
+        code.add(new LdcInsnNode(className));
+        code.add(new InsnNode(ICONST_1));
+        code.add(new LdcInsnNode(Type.getObjectType(PARSER_COMPAT)));
+        code.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Class", "getClassLoader",
+                "()Ljava/lang/ClassLoader;", false));
+        code.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Class", "forName",
+                "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", false));
     }
 
     private static MethodNode setter(String name) {
@@ -622,6 +725,73 @@ final class AlienEvoMolang1201 implements Opcodes {
         method.maxLocals = 3;
         method.maxStack = 4;
         return method;
+    }
+
+    /**
+     * Implements AzureLib 3.2.7's context-aware Molang function contract. The
+     * function reads the entity AzureLib bound for the currently animated actor,
+     * then delegates to AlienEvo's original roll-since calculation.
+     */
+    private static ClassNode azureLibRollSinceFunctionClass() {
+        String values = "[Lmod/azure/azurelib/core/math/IValue;";
+        String queryContextDesc = "(L" + AZURELIB_QUERY_CONTEXT + ";)D";
+        ClassNode node = baseClass(AZURELIB_ROLL_FUNCTION,
+                ACC_PUBLIC | ACC_FINAL | ACC_SUPER, AZURELIB_CONTEXT_FUNCTION);
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>",
+                "(" + values + "Ljava/lang/String;)V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 1));
+        constructor.instructions.add(new VarInsnNode(ALOAD, 2));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, AZURELIB_CONTEXT_FUNCTION,
+                "<init>", "(" + values + "Ljava/lang/String;)V", false));
+        constructor.instructions.add(new InsnNode(RETURN));
+        constructor.maxLocals = 3;
+        constructor.maxStack = 3;
+        node.methods.add(constructor);
+
+        MethodNode requiredArguments = new MethodNode(ACC_PUBLIC,
+                "getRequiredArguments", "()I", null, null);
+        requiredArguments.instructions.add(new InsnNode(ICONST_1));
+        requiredArguments.instructions.add(new InsnNode(IRETURN));
+        requiredArguments.maxLocals = 1;
+        requiredArguments.maxStack = 1;
+        node.methods.add(requiredArguments);
+
+        MethodNode evaluate = new MethodNode(ACC_PROTECTED, "evaluate",
+                queryContextDesc, null, null);
+        LabelNode hasAzureContext = new LabelNode();
+        LabelNode hasActor = new LabelNode();
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 1));
+        evaluate.instructions.add(new TypeInsnNode(INSTANCEOF, AZURELIB_ANIM_QUERY_CONTEXT));
+        evaluate.instructions.add(new JumpInsnNode(IFNE, hasAzureContext));
+        evaluate.instructions.add(new InsnNode(DCONST_0));
+        evaluate.instructions.add(new InsnNode(DRETURN));
+        evaluate.instructions.add(hasAzureContext);
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 1));
+        evaluate.instructions.add(new TypeInsnNode(CHECKCAST, AZURELIB_ANIM_QUERY_CONTEXT));
+        evaluate.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AZURELIB_ANIM_QUERY_CONTEXT,
+                "livingEntity", "()Lnet/minecraft/world/entity/LivingEntity;", false));
+        evaluate.instructions.add(new VarInsnNode(ASTORE, 2));
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 2));
+        evaluate.instructions.add(new JumpInsnNode(IFNONNULL, hasActor));
+        evaluate.instructions.add(new InsnNode(DCONST_0));
+        evaluate.instructions.add(new InsnNode(DRETURN));
+        evaluate.instructions.add(hasActor);
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 2));
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 0));
+        evaluate.instructions.add(new InsnNode(ICONST_0));
+        evaluate.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AZURELIB_CONTEXT_FUNCTION,
+                "getArg", "(I)D", false));
+        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation",
+                "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F", false));
+        evaluate.instructions.add(new InsnNode(F2D));
+        evaluate.instructions.add(new InsnNode(DRETURN));
+        evaluate.maxLocals = 3;
+        evaluate.maxStack = 4;
+        node.methods.add(evaluate);
+        return node;
     }
 
     private static ClassNode memoizedSupplierClass() {

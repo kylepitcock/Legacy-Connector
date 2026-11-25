@@ -165,7 +165,7 @@ class AlienEvoMolang1201Test implements Opcodes {
     @Test
     void generatedFacadeFactoryAndMathFunctionExposeTheGeckoLib49Contracts() {
         Map<String, byte[]> generated = AlienEvoMolang1201.generateHelperClasses();
-        assertEquals(5, generated.size());
+        assertEquals(6, generated.size());
 
         ClassNode parser = read(generated, AlienEvoMolang1201.PARSER_COMPAT);
         assertNotNull(parser.fields.stream().filter(f -> f.name.equals("INSTANCE")
@@ -209,6 +209,38 @@ class AlienEvoMolang1201Test implements Opcodes {
                 "net/habb/alienevo/compat/geckolib/MolangEvalContext", "get",
                 "()Lnet/minecraft/world/entity/LivingEntity;"));
         assertTrue(hasCall(compute, INVOKESTATIC,
+                "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation",
+                "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F"));
+
+        MethodNode dualRegistration = find(parser, "registerRollSince", "()V");
+        assertTrue(hasCall(dualRegistration, INVOKESTATIC, AlienEvoMolang1201.PARSER_COMPAT,
+                "registerAzureLibRollSince", "()V"));
+
+        MethodNode azureRegistration = find(parser, "registerAzureLibRollSince", "()V");
+        assertNotNull(azureRegistration);
+        assertTrue(azureRegistration.tryCatchBlocks.stream()
+                .anyMatch(block -> "java/lang/ClassNotFoundException".equals(block.type)),
+                "AzureLib must remain optional when its parser classes are absent");
+        assertTrue(hasStringConstant(azureRegistration, "mod.azure.azurelib.core.molang.MolangParser"));
+        assertTrue(hasStringConstant(azureRegistration,
+                "net.habb.alienevo.compat.azurelib.bridge.MolangAzureRollSinceFunction"));
+        assertTrue(hasStringConstant(azureRegistration, "registerFunction"));
+
+        ClassNode azureFunction = read(generated, AlienEvoMolang1201.AZURELIB_ROLL_FUNCTION);
+        assertEquals(AlienEvoMolang1201.AZURELIB_CONTEXT_FUNCTION, azureFunction.superName);
+        assertNotNull(find(azureFunction, "<init>",
+                "([Lmod/azure/azurelib/core/math/IValue;Ljava/lang/String;)V"));
+        MethodNode required = find(azureFunction, "getRequiredArguments", "()I");
+        assertNotNull(required);
+        assertEquals(ICONST_1, required.instructions.getFirst().getOpcode());
+        MethodNode evaluate = find(azureFunction, "evaluate",
+                "(L" + AlienEvoMolang1201.AZURELIB_QUERY_CONTEXT + ";)D");
+        assertNotNull(evaluate);
+        assertTrue(hasCall(evaluate, INVOKEVIRTUAL, AlienEvoMolang1201.AZURELIB_ANIM_QUERY_CONTEXT,
+                "livingEntity", "()Lnet/minecraft/world/entity/LivingEntity;"));
+        assertTrue(hasCall(evaluate, INVOKEVIRTUAL, AlienEvoMolang1201.AZURELIB_CONTEXT_FUNCTION,
+                "getArg", "(I)D"));
+        assertTrue(hasCall(evaluate, INVOKESTATIC,
                 "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation",
                 "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F"));
     }
