@@ -105,6 +105,8 @@ def log_hit(pattern, log_text):
 
 def step_timeout(step):
     """Seconds a step may take to answer: a minute plus the ticks it holds keys or waits."""
+    if step.line.startswith("reload"):
+        return 240
     m = re.match(r"(wait|holduse|walk|attack|sneak|jump)\s+(?:\w+\s+)?(\d+)", step.line)
     return 60 + (int(m.group(2)) / 10 if m else 0)
 
