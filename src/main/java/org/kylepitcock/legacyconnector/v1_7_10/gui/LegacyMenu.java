@@ -27,6 +27,8 @@ public class LegacyMenu extends AbstractContainerMenu {
     /** Whether the legacy container class overrides slotClick: every click then goes through it (it may swallow or rewrite them). */
     private final boolean overridesSlotClick;
     private boolean inSlotClick;
+    /** The container comes from a Minecraft 1.4.7 (or 1.2.5) mod: its slotClick knows only the click modes 0 to 3. */
+    private final boolean preDragEra;
 
     public LegacyMenu(MenuType<?> type, int windowId, Inventory playerInventory, Container legacy, Object clientGui) {
         super(type, windowId);
@@ -34,6 +36,7 @@ public class LegacyMenu extends AbstractContainerMenu {
         this.clientGui = clientGui;
         this.player = playerInventory.player;
         this.overridesSlotClick = org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(legacy, "slotClick", int.class, int.class, int.class, EntityPlayer.class);
+        this.preDragEra = isPreDragEra(org.kylepitcock.legacyconnector.api.internal.VersionLookup.of(legacy.getClass()).orElse(null));
         legacy.windowId = windowId;
         legacy.mcc$menu = this;
         for (Object o : legacy.inventorySlots) addSlot(new LegacySlot((legacyconnector.v1_7_10.net.minecraft.inventory.Slot) o));
@@ -43,7 +46,7 @@ public class LegacyMenu extends AbstractContainerMenu {
     public void clicked(int slotId, int button, ClickType type, Player player) {
         if (slotId >= 0 && slotId < slots.size() && getSlot(slotId) instanceof LegacySlot slot
                 && slot.isAm2SpellBook() && swapAm2SpellBook(slot, button, type, player)) return;
-        if (!overridesSlotClick || inSlotClick) {
+        if (!overridesSlotClick || inSlotClick || mustRunModern(preDragEra, type)) {
             super.clicked(slotId, button, type, player);
             return;
         }
@@ -53,6 +56,20 @@ public class LegacyMenu extends AbstractContainerMenu {
         } finally {
             inSlotClick = false;
         }
+    }
+
+    /** 1.4.7 and older containers have no click modes 4 (throw), 5 (drag split, arrived in 1.5) and 6 (collect). */
+    static boolean isPreDragEra(org.kylepitcock.legacyconnector.api.LegacyVersion version) {
+        return version == org.kylepitcock.legacyconnector.api.LegacyVersion.V1_4_7 || version == org.kylepitcock.legacyconnector.api.LegacyVersion.V1_2_5;
+    }
+
+    /**
+     * Whether a click is run by the modern algorithm instead of the mod's slotClick: a pre-1.5 override (Railcraft's) reads the drag packets
+     * (slot -999, the stage mask as the button) as plain clicks outside the window and drops the carried stack, so the drag is done by the
+     * host, through the legacy slots' isItemValid / stack limits.
+     */
+    static boolean mustRunModern(boolean preDragEra, ClickType type) {
+        return preDragEra && type.ordinal() >= 4;
     }
 
     private boolean swapAm2SpellBook(LegacySlot slot, int button, ClickType type, Player player) {
