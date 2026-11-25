@@ -147,7 +147,7 @@ Per version, some items differ; the notes in brackets say where.
 - **Containers and energy:** legacy tiles and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ), so hoppers, Create and modern cables work with them. Modern containers and items are visible to 1.12.2 mods
 - **Networking, commands, sounds, potions, creative tabs, dispensers, achievements and events**
 - **Villagers and villages:** modded professions and trades appear on villagers, and mods' village buildings (Witchery's shops and towers, AgriCraft's greenhouses) generate inside modern villages (1.7.10)
-- **World generation and dimensions:** mod biomes become real 1.21 biomes, mod world types appear on the Create World screen, ore generators, dungeons and structures run normally, and mod dimensions run their own terrain, biomes, fog, clouds and sky, with per-dimension gravity (Galacticraft's planets have low gravity and space is silent)
+- **World generation and dimensions:** mod biomes become real 1.21 biomes, mod world types appear on the Create World screen (1.12.2 ones from 0.5.3, with vanilla terrain for now), ore generators, dungeons and structures run normally, and mod dimensions run their own terrain, biomes, fog, clouds and sky, with per-dimension gravity (Galacticraft's planets have low gravity and space is silent)
 - **Deepslate ores:** legacy ores also generate below y=0 and get an automatic deepslate variant with the same drops and behaviour
 - **Block and item rendering:** custom block render handlers, tile entity renderers, item renderers, OBJ and Techne models and mods' own texture loaders (1.12.2: also blocks drawn through CodeChickenLib)
 - **Coremods that patch other mods** (CoFH, AE2, OpenMods and more) and **Scala mods** (1.7.10)
@@ -218,7 +218,7 @@ Every key (textures, ore backgrounds, world height, coremods, energy rates, perf
 
 **Does it work on Fabric or Forge?** No. It is a NeoForge 1.21.1 mod. (Fabric mods on NeoForge are what Sinytra Connector does; Legacy Connector is the equivalent for old Forge versions.)
 
-**Something broke. How do I report it?** Open a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues) and attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files (and the crash report if there is one). Please say the Legacy Connector version (for a nightly, the full version), the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author.
+**Something broke. How do I report it?** Run `/legacyconnector report` in the game (0.5.3 and later): it writes one zip with the logs and the mod list, with your user name and paths removed. Attach it to a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues). Without the command, attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files (and the crash report if there is one). Please say the Legacy Connector version (for a nightly, the full version), the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author.
 
 ## Troubleshooting
 
