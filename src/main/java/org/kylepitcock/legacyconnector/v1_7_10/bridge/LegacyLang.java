@@ -19,6 +19,8 @@ public final class LegacyLang {
         if (key == null) return null;
         String registered = GeneratedTranslations.get("en_US", key);
         if (registered != null) return registered;
+        String generic = VanillaNames.genericName(key);
+        if (generic != null) return generic;
         String modern = legacyconnector.v1_7_10.net.minecraft.util.StatCollector.mcc$modernKey(key);
         if (modern == null || modern.equals(key) || !lang.has(modern)) return null;
         return lang.getOrDefault(modern, key);

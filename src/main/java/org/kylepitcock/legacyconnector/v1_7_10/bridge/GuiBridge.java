@@ -147,10 +147,7 @@ public final class GuiBridge {
     }
 
     public static void sendProgressBar(ServerPlayer player, int windowId, int id, int value) {
-        ByteBuf buf = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.buffer().writeInt(windowId).writeInt(id).writeInt(value);
-        byte[] data = new byte[buf.readableBytes()];
-        buf.readBytes(data);
-        PacketDistributor.sendToPlayer(player, new LegacyPayload(FAMILY, "bar", 0, data));
+        PacketDistributor.sendToPlayer(player, new LegacyPayload(FAMILY, "bar", 0, ProgressBars.encode(windowId, id, value)));
     }
 
     private static void receive(LegacyPayload payload, IPayloadContext context) {
