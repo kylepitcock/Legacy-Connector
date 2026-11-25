@@ -17,7 +17,7 @@ if [ -z "$NOPERF" ] && [ -d run-perfmods ]; then
   # jars whose mandatory dependency is absent (Iris Veil Compat without Veil crashes every client) are skipped with a printed line
   while IFS= read -r j; do [ -f "$j" ] && cp -f "$j" "$GAME_DIR/mods/$(basename "$j")"; done < <(python tools/dev/perfmods_filter.py run-perfmods "$GAME_DIR/mods" | tr -d '\r')
 fi
-[ -n "$LEGACYCONNECTOR_SHARED_CACHE" ] && echo "shared translation cache: $LEGACYCONNECTOR_SHARED_CACHE"  # passed to the game as -Dlegacyconnector.sharedCache by build.gradle
+if [ -n "${LEGACYCONNECTOR_SHARED_CACHE:-}" ]; then echo "shared translation cache: $LEGACYCONNECTOR_SHARED_CACHE"; fi  # passed to the game as -Dlegacyconnector.sharedCache by build.gradle
 ./gradlew runScreenshotTest -q -PshotScenario="${SCENARIO:-full}" -PshotWorldType="${WORLD:-minecraft:flat}" -PshotTour="${TOUR:-0}" \
   -PshotRenderDistance="${RD:-4}" -PshotBlocksPerMod="${BLOCKS:-12}" -PshotItemsPerMod="${ITEMS:-12}" ${EXTRA:-} ${COMMANDS:+"-PshotCommands=$COMMANDS"} -PshotWidth="${WIDTH:-640}" -PshotHeight="${HEIGHT:-360}"
 echo "shots: $(ls run-screenshots/shots 2>/dev/null | wc -l) in run-screenshots/shots"

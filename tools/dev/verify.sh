@@ -113,7 +113,7 @@ for s in "${names[@]}"; do
   # Minecraft 1.2.5 is on by default; a dev build has no join table unless -Pmappings125 puts it on the classpath
   extra=(); for e in "${jars[@]}"; do [ "${e%%|*}" = "1.2.5" ] && extra=("-Pmappings125"); done
   glog="build/devtools/verify-$s-gradle.log"
-  [ -n "$LEGACYCONNECTOR_SHARED_CACHE" ] && echo "shared translation cache: $LEGACYCONNECTOR_SHARED_CACHE"  # passed to the game as -Dlegacyconnector.sharedCache by build.gradle
+  if [ -n "${LEGACYCONNECTOR_SHARED_CACHE:-}" ]; then echo "shared translation cache: $LEGACYCONNECTOR_SHARED_CACHE"; fi  # passed to the game as -Dlegacyconnector.sharedCache by build.gradle
   ./gradlew runServerSubTest "-PsubTestDir=$D" "-PautostopTicks=$AUTOSTOP" ${extra[@]+"${extra[@]}"} ${GRADLE_EXTRA:-} > "$glog" 2>&1 &
   gpid=$!
   start=$SECONDS; timedout=""
