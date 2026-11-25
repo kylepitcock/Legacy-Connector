@@ -1,0 +1,2 @@
+# level-type: legacyconnector:rwg
+1.7.10 RWG-alpha-master6

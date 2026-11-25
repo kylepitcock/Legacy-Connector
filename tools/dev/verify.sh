@@ -17,7 +17,7 @@ SUITES_DIR=tools/dev/verify/suites
 BASELINE=tools/dev/verify/baseline.json
 TIMEOUT="${SUITE_TIMEOUT:-900}"
 AUTOSTOP="${AUTOSTOP:-700}"
-SEARCH="test-mods-issues/298 test-mods-issues test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods run-screenshots/mods.aside-20261113 test-mods-mcarchive/b1.7.3 test-mods-mcarchive/1.2.5"
+SEARCH="test-mods-issues/344 test-mods-issues/298 test-mods-issues test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods run-screenshots/mods.aside-20261113 test-mods-mcarchive/b1.7.3 test-mods-mcarchive/1.2.5"
 # read-only jar folders outside the checkout (absolute): ATM 9 holds the 1.20.1 mods, ATM 10 the native 1.21.1 libraries a 1.20.1 mod needs (suite lines `lib <fragment>`)
 ATM9_MODS="${ATM9_MODS:-X:/Modded games/Prism Launcher/instances/ATM 9 20026/minecraft/mods}"
 ATM10_MODS="${ATM10_MODS:-X:/Modded games/Prism Launcher/instances/ATM10 2026/minecraft/mods}"
@@ -107,6 +107,9 @@ for s in "${names[@]}"; do
   else
     printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\n' $((${VERIFY_PORT_BASE:-25570}+idx)) > "$D/server.properties"
   fi
+  # a suite file may name the world type of its world: a line `# level-type: <preset id>` (world type suites, tools/dev/agent-tasks/world-types.md)
+  lt="$(grep -m1 -E '^# level-type:' "$file" | sed -e 's/^# level-type:[[:space:]]*//' -e 's/[[:space:]]*$//' | tr -d '\r')"
+  if [ -n "$lt" ]; then sed -i '/^level-type=/d' "$D/server.properties"; echo "level-type=${lt//:/\\:}" >> "$D/server.properties"; fi
   # the dimension self test of big packs blocks the main thread for longer than the 60 s watchdog: never let it kill the test run
   sed -i '/^max-tick-time=/d' "$D/server.properties"; echo "max-tick-time=-1" >> "$D/server.properties"
 
