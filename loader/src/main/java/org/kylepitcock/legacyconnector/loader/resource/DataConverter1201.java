@@ -217,6 +217,24 @@ public final class DataConverter1201 {
         return ATTRIBUTE_IDS.getOrDefault(id, id);
     }
 
+    /**
+     * 1.20.1 read textures with STB, which takes any image format whatever the file name says (a GIF or JPEG saved as {@code .png}, as mods
+     * ship them); 1.21.1 checks the PNG signature first and rejects the file ("Bad PNG Signature", missing texture). Such a file is re-encoded
+     * as a real PNG (first frame of a GIF). Returns the same array when it already is a PNG or cannot be decoded.
+     */
+    static byte[] asRealPng(byte[] data) {
+        if (data.length < 8 || (data[0] == (byte) 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G')) return data;
+        try {
+            java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(data));
+            if (img == null) return data;
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            if (!javax.imageio.ImageIO.write(img, "png", out)) return data;
+            return out.toByteArray();
+        } catch (java.io.IOException | RuntimeException e) {
+            return data;
+        }
+    }
+
     // ---- entry point ------------------------------------------------------------------------------------------------------------
 
     /** Converts one resource entry. Apart from binary structure NBT, entries other than data/assets JSON keep their bytes and mapped path. */
@@ -231,6 +249,13 @@ public final class DataConverter1201 {
         }
         if (!dataJson && !model) {
             if (!np.equals(path)) stats.add(pathCategory(path));
+            if (path.startsWith("assets/") && path.endsWith(".png")) {
+                byte[] png = asRealPng(data);
+                if (png != data) {
+                    stats.add("texture_not_png");
+                    return List.of(new Out(np, png));
+                }
+            }
             if (path.startsWith("data/") && path.endsWith(".nbt") && np.contains("/structure/")) {
                 StructureNbtConverter1201.Result converted = StructureNbtConverter1201.convert(data);
                 if (converted.changed()) stats.add("structure_nbt_attribute_ids");
