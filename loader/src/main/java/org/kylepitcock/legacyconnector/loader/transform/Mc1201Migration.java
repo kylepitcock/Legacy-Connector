@@ -13,6 +13,8 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -119,6 +121,7 @@ public final class Mc1201Migration {
         c.current = null;
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) {
             addBridges(node, h, t, c);
+            addScreenBackgroundGate(node, c);
             addRecipeSerializerCodecs(node, c);
             addTriggerCodec(node, c);
             addInstanceValidate(node, c);
@@ -148,6 +151,37 @@ public final class Mc1201Migration {
         }
         legacy.name = MODERN_WIDGET_NARRATION;
         counts.widgetNarrationOverrides++;
+    }
+
+    /**
+     * 1.20.1's {@code Screen.render} drew no background: a screen asked for one by calling {@code renderBackground(GuiGraphics)} itself, and a screen that
+     * did not (a custom main menu painting its own image first) got none. 1.21.1's {@code Screen.render} starts with {@code renderBackground}, which blurs
+     * everything drawn so far and dims the world, so the mod's own picture, logo and splash text came out blurred or gone. A direct subclass of
+     * {@code Screen} gets an override that only draws the background once the screen has asked for it (the explicit call, rewritten to
+     * {@code ClientCompat.renderBackground}, records the request).
+     */
+    private static void addScreenBackgroundGate(ClassNode node, Counts c) {
+        if (!"net/minecraft/client/gui/screens/Screen".equals(node.superName)) return;
+        String desc = "(Lnet/minecraft/client/gui/GuiGraphics;IIF)V";
+        if (declared(node, "renderBackground", desc) != null) return;
+        String compat = "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat";
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "renderBackground", desc, null, null);
+        LabelNode skip = new LabelNode();
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, compat, "backgroundRequested", "(Lnet/minecraft/client/gui/screens/Screen;)Z", false));
+        m.instructions.add(new JumpInsnNode(Opcodes.IFEQ, skip));
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        m.instructions.add(new VarInsnNode(Opcodes.ILOAD, 2));
+        m.instructions.add(new VarInsnNode(Opcodes.ILOAD, 3));
+        m.instructions.add(new VarInsnNode(Opcodes.FLOAD, 4));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/gui/screens/Screen", "renderBackground", desc, false));
+        m.instructions.add(skip);
+        m.instructions.add(new InsnNode(Opcodes.RETURN));
+        m.maxStack = 5;
+        m.maxLocals = 5;
+        node.methods.add(m);
+        c.bridges++;
     }
 
     /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */

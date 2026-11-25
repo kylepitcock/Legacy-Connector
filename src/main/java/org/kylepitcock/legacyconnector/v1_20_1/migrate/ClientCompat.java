@@ -159,6 +159,15 @@ public final class ClientCompat {
 
     /** {@code Screen.renderBackground(GuiGraphics)}: 1.21.1's screens draw their background themselves before {@code render}. */
     public static void renderBackground(net.minecraft.client.gui.screens.Screen screen, net.minecraft.client.gui.GuiGraphics graphics) {
+        BACKGROUND_REQUESTED.put(screen, Boolean.TRUE);
+    }
+
+    private static final java.util.Map<net.minecraft.client.gui.screens.Screen, Boolean> BACKGROUND_REQUESTED =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /** Whether the screen asked for its background this frame (see {@code Mc1201Migration.addScreenBackgroundGate}); the request is used up. */
+    public static boolean backgroundRequested(net.minecraft.client.gui.screens.Screen screen) {
+        return BACKGROUND_REQUESTED.remove(screen) != null;
     }
 
     public static net.minecraft.resources.ResourceLocation skinTexture(net.minecraft.client.player.AbstractClientPlayer player) {
