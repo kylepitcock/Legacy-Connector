@@ -1,4 +1,4 @@
 # #336 Galacticraft 1.12.2: spawn eggs in the creative tab, Space Race Manager button, Mars sky after teleport, reload on Mars keeps you there
 mods: 1.12.2 Galacticraft-1.12.2-4.0.6
 wait 20
-js var R = Java.type("net.minecraft.core.registries.BuiltInRegistries"); var o = []; R.ITEM.keySet().forEach(function (k) { var s = String(k); if (s.indexOf("egg") >= 0) o.push(s); }); log.info("GCEGGS " + o.join(",")); var d = []; server.levelKeys().forEach(function (k) { d.push(String(k.location())); }); log.info("GCDIMS " + d.join(","))
+expect ok :: (function(){server.executeBlocking(function(){try{var W=Java.type("micdoodle8.mods.galacticraft.core.util.WorldUtil");var ms=W.class.getMethods();var s="";for(var i=0;i<ms.length;i++){var n=ms[i].getName();if(n.indexOf("teleport")>=0||n.indexOf("Dimension")>=0||n.indexOf("Provider")>=0||n.indexOf("registerPlanet")>=0)s+=ms[i].toString().replace(/micdoodle8\.mods\.galacticraft\.|net\.minecraft\./g,"")+"; ";}log.info("GCWU "+s);}catch(e){log.info("GCWU-ERR "+e);}});return "ok";})()
