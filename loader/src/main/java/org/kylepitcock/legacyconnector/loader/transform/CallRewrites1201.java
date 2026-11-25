@@ -83,7 +83,9 @@ public final class CallRewrites1201 {
     /** owner.name+desc of an instance call to {helper name, helper descriptor (receiver first)}. */
     private static final Map<String, String[]> STATICS = Map.of(
             "net/neoforged/bus/api/IEventBus.post(Lnet/neoforged/bus/api/Event;)Z",
-            new String[] {"post", "(Lnet/neoforged/bus/api/IEventBus;Lnet/neoforged/bus/api/Event;)Z"});
+            new String[] {"post", "(Lnet/neoforged/bus/api/IEventBus;Lnet/neoforged/bus/api/Event;)Z"},
+            "net/minecraft/server/level/ServerPlayer.awardRecipesByKey([Lnet/minecraft/resources/ResourceLocation;)V",
+            new String[] {"awardRecipesByKey", "(Lnet/minecraft/server/level/ServerPlayer;[Lnet/minecraft/resources/ResourceLocation;)V"});
 
     private CallRewrites1201() {}
 

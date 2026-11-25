@@ -15,6 +15,11 @@ public final class Compat1201 {
         return event instanceof ICancellableEvent cancellable && cancellable.isCanceled();
     }
 
+    /** 1.20.1's {@code ServerPlayer.awardRecipesByKey(ResourceLocation[])} (unlocks recipes by id) takes a list in 1.21.1. */
+    public static void awardRecipesByKey(net.minecraft.server.level.ServerPlayer player, net.minecraft.resources.ResourceLocation[] ids) {
+        player.awardRecipesByKey(java.util.List.of(ids));
+    }
+
     /** {@code new CompoundIngredient(list) {}} (an anonymous subclass that opened the constructor): NeoForge's final class through its factory. */
     public static net.minecraft.world.item.crafting.Ingredient compoundIngredient(java.util.List<net.minecraft.world.item.crafting.Ingredient> children) {
         return net.neoforged.neoforge.common.crafting.CompoundIngredient.of(children.toArray(new net.minecraft.world.item.crafting.Ingredient[0]));
