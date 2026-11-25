@@ -104,6 +104,9 @@ public final class ItemStack {
     public ItemStack(Item item, int count, int meta) {
         this.mcc$item = item;
         this.mcc$stack = ItemBridge.toModern(item, count, Math.max(0, meta)); // 1.7.10 clamps a negative damage to 0 (Traincraft's NEI handler loops forever on a damage of -1)
+        // A stack of size 0 is the empty modern stack, which has no damage: mods that name their subtypes build "new ItemStack(block, 0, meta)" keys
+        // for LanguageRegistry.addName (Xycraft), and every subtype got the damage 0 name.
+        if (count <= 0 && meta > 0) mcc$emptiedMeta = meta;
         if (meta > 0 && mcc$stack.is(net.minecraft.world.item.Items.POTION)) {
             // a 1.7.10 potion is a damage value (the brewing bits): the modern potion with those effects
             var potion = org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710.stackOf(meta);

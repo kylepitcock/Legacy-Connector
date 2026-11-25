@@ -184,6 +184,16 @@ public final class ItemCallbacks {
             if (TOOLTIP_FAILURES.incrementAndGet() <= 5) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Items").warn("Name of {} failed: {}", legacy, e.toString());
             }
+            // A name that depends on stack data the stack lacks (an item whose name reads its NBT, shown without it) still has the
+            // item's own name: the stack-less key, as 1.4.7's getItemName() gave.
+            try {
+                String key = legacy.getUnlocalizedName() + ".name";
+                if (net.minecraft.locale.Language.getInstance().has(key)) return Component.translatable(key);
+                String translated = legacyconnector.v1_7_10.net.minecraft.util.StatCollector.translateToLocal(key);
+                if (translated != null && !translated.equals(key)) return LegacyText.literal(translated);
+            } catch (RuntimeException | LinkageError ignored) {
+                // falls through to the registry name
+            }
             return Component.literal(String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())));
         }
     }

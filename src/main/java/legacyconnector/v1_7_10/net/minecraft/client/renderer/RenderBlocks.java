@@ -223,12 +223,20 @@ public class RenderBlocks {
             // a tile index the block named in ITS sheet while the renderer bound another one: 1.4.7 read the index in the bound image (Railcraft's walls of
             // vanilla materials return /terrain.png indices, bind /terrain.png and draw with the wall block, whose own sheet is the mod's)
             java.util.regex.Matcher other = OTHER_SHEET_TILE.matcher(name);
-            if (!other.matches()) return icon;
-            try {
-                return mcc$tile(null, Integer.parseInt(other.group(1)));
-            } catch (NumberFormatException e) {
-                return icon;
+            if (other.matches()) {
+                try {
+                    return mcc$tile(null, Integer.parseInt(other.group(1)));
+                } catch (NumberFormatException e) {
+                    return icon;
+                }
             }
+            // a vanilla block's icon drawn with /terrain.png bound (a renderer drawing a block it copies, Xycraft's tank walls): the quads must carry the
+            // vanilla tile's position in the sheet, else IsbrhQuads reads the atlas UVs of the icon as a tile of the sheet and draws another block
+            if (org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet).equals(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.TERRAIN))) {
+                int index = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.terrainIndexOf(icon.getIconName());
+                if (index >= 0) return mcc$tile(null, index);
+            }
+            return icon;
         }
         try {
             return mcc$tile(null, Integer.parseInt(name.substring(at + slug.length())));

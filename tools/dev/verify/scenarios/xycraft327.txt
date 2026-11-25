@@ -1,0 +1,29 @@
+# #327 Xycraft 1.4.7: tank from bricks + interface formed by right click, forcefield overlay, GUI, valve fill
+mods: 1.4.7 xycraft-1.4.7
+wait 20
+cmd /fill -8 148 -8 8 148 8 minecraft:stone
+cmd /fill -8 149 -8 8 160 8 minecraft:air
+cmd /tp @s 1.5 150 6.5 180 10
+wait 20
+cmd /fill 0 149 0 2 151 2 minecraft:bricks hollow
+cmd /setblock 1 150 2 xycraftmachines:machines.blocks.multiinterface_1
+wait 40
+js var BHR = Java.type("net.minecraft.world.phys.BlockHitResult"); var V = Java.type("net.minecraft.world.phys.Vec3"); var P = Java.type("net.minecraft.core.BlockPos"); var D = Java.type("net.minecraft.core.Direction"); var H = Java.type("net.minecraft.world.InteractionHand"); log.info("XYUSE " + mc.gameMode.useItemOn(mc.player, H.MAIN_HAND, new BHR(new V(1.5, 150.5, 2.9), D.SOUTH, new P(1, 150, 2), false))); "ok"
+wait 40
+shot xy327-formed
+expect ok :: (function(){server.executeBlocking(function(){var P=Java.type("net.minecraft.core.BlockPos");for(var x=0;x<=2;x++){var p=new P(x,150,2);log.info("XYSTATE x="+x+" "+server.overworld().getBlockState(p));var be=server.overworld().getBlockEntity(p);var t=be==null?null:be.legacy();log.info("XYBE "+t+" id="+(t==null?"":t.storedBlockID)+" meta="+(t==null?"":t.storedMeta));}});return "ok";})()
+wait 5
+cmd /tp @s 0.5 149 5.5 180 0
+wait 30
+shot xy327-hover-early
+wait 80
+shot xy327-hover
+js var BHR = Java.type("net.minecraft.world.phys.BlockHitResult"); var V = Java.type("net.minecraft.world.phys.Vec3"); var P = Java.type("net.minecraft.core.BlockPos"); var D = Java.type("net.minecraft.core.Direction"); var H = Java.type("net.minecraft.world.InteractionHand"); log.info("XYGUI " + mc.gameMode.useItemOn(mc.player, H.MAIN_HAND, new BHR(new V(0.5, 150.5, 2.9), D.SOUTH, new P(0, 150, 2), false))); "ok"
+wait 40
+js log.info("XYSCREEN " + mc.screen); "ok"
+shot xy327-gui
+js var P = Java.type("net.minecraft.core.BlockPos"); var be = mc.level.getBlockEntity(new P(0,150,2)); var t = be == null ? null : be.legacy(); log.info("XYCLIENT " + t + " structures=" + (t == null ? "" : t.getComprisingStructures().size())); "ok"
+expect ok :: (function(){server.executeBlocking(function(){try{var P=Java.type("net.minecraft.core.BlockPos");var t=server.overworld().getBlockEntity(new P(0,150,2)).legacy();log.info("XYSRV structures="+t.getComprisingStructures().size());var cl=t.getClass().getClassLoader();var M=cl.loadClass("codechicken.xycraftcopy.core.world.WorldExtensionManager");var f=M.getDeclaredField("worldMap");f.setAccessible(true);var map=f.get(null);log.info("XYMAP size="+map.size()+" keys="+map.keySet());var W=Java.type("legacyconnector.v1_7_10.net.minecraft.world.World");log.info("XYWRAP "+W.mcc$wrap(server.overworld())+" same="+(W.mcc$wrap(server.overworld())===t.k));var it=map.values().iterator();while(it.hasNext()){var arr=it.next();for(var i=0;i<arr.length;i++){var ext=arr[i];var cm=ext.chunkMap;log.info("XYEXT "+ext+" chunks="+cm.size());var ci=cm.values().iterator();var n=0;while(ci.hasNext()&&n<100000){var ce=ci.next();var wf=ce.getClass().getSuperclass().getDeclaredField("watchedPlayers");wf.setAccessible(true);var ws=wf.get(ce);var mbf=ce.getClass().getDeclaredField("multiBlocks");mbf.setAccessible(true);if(mbf.get(ce).size()>0){var s="";var fl=["reqUpdatePacket","reqMultiUpdate","multiPacketUpdates","multiChangePackets"];for(var k=0;k<fl.length;k++){var ff=ce.getClass().getDeclaredField(fl[k]);ff.setAccessible(true);s+=fl[k]+"="+ff.get(ce)+" ";}log.info("XYMB ext="+ext+" watchers="+ws+" "+s);}n++;}}}}catch(e){log.info("XYERR "+e);}});return "ok";})()
+expect ok :: (function(){server.executeBlocking(function(){try{var P=Java.type("net.minecraft.core.BlockPos");var t=server.overworld().getBlockEntity(new P(0,150,2)).legacy();var mb=t.getComprisingStructures().get(0);var pk=mb.getDescriptionPacket();log.info("XYPKT "+pk+" "+(pk==null?"":pk.getClass().getName()));var M=t.getClass().getClassLoader().loadClass("codechicken.xycraftcopy.core.world.WorldExtensionManager");var f=M.getDeclaredField("worldMap");f.setAccessible(true);var it=f.get(null).values().iterator();while(it.hasNext()){var arr=it.next();for(var i=0;i<arr.length;i++){var ci=arr[i].chunkMap.values().iterator();while(ci.hasNext()){var ce=ci.next();var mbf=ce.getClass().getDeclaredField("multiBlocks");mbf.setAccessible(true);if(mbf.get(ce).size()>0){log.info("XYSEND before");ce.sendPacketToPlayers(pk);log.info("XYSEND after");}}}}}catch(e){log.info("XYERR2 "+e);}});return "ok";})()
+js log.info("XYTICKS " + Java.type("org.kylepitcock.legacyconnector.v1_6_4.bridge.Ticks164").summary()); "ok"
+logabsent Exception in legacy event handler

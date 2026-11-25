@@ -160,6 +160,21 @@ public final class Network164 {
 
     // ------------------------------------------------------------------ sending
 
+    /**
+     * Names the mod of a tiny packet that was built with the wire constructor ({@code new Packet131MapData(networkId, tag, data)}, as CodeChickenCore's
+     * PacketCustom does) rather than {@code getTinyPacket}: FML routed it by the network id in the packet. False when no mod has that id.
+     */
+    public static boolean resolveTinyMod(Packet131MapData packet) {
+        if (packet.mcc$modId != null) return true;
+        for (String id : TINY.keySet()) {
+            if (networkId(id) == (packet.itemID & 0x7FFF)) {
+                packet.mcc$modId = id;
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** A tiny packet for the mod (its instance or legacy id). */
     public static Packet131MapData tinyPacket(Object mod, short tag, byte[] data) {
         LegacyModRecord record = record(mod);

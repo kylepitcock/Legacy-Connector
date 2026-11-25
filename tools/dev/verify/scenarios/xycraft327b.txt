@@ -1,0 +1,27 @@
+# #327 Xycraft 1.4.7: lights with redstone placed later, fire basin, soil with vanilla crops and Henequen
+mods: 1.4.7 xycraft-1.4.7
+wait 20
+cmd /fill -8 148 -8 14 148 8 minecraft:stone
+cmd /fill -8 149 -8 14 160 8 minecraft:air
+cmd /tp @s 6.5 150 5.5 180 30
+wait 20
+cmd /setblock 3 149 0 xycraftmachines:machines.blocks.basicmachine_1
+cmd /setblock 4 149 0 xycraftmachines:machines.blocks.basicmachine_1
+cmd /setblock 5 149 0 xycraftmachines:machines.blocks.basicmachine_1
+cmd /setblock 3 150 0 minecraft:wheat
+cmd /setblock 4 150 0 xycraftworld:world.blocks.aesthetic.henequenplant
+cmd /setblock 5 150 0 minecraft:oak_sapling
+cmd /setblock 7 149 0 xycraftmachines:machines.blocks.basicmachine_2
+cmd /setblock 9 149 0 minecraft:netherrack
+cmd /setblock 7 150 0 minecraft:fire
+cmd /setblock 9 150 0 minecraft:fire
+cmd /setblock 11 149 0 xycraftworld:world.blocks.aesthetic.xylightinv
+wait 40
+js var P = Java.type("net.minecraft.core.BlockPos"); var LL = Java.type("net.minecraft.world.level.LightLayer"); var l = server.overworld(); var q = new P(11,149,0); log.info("XYLIGHT before emit=" + l.getBlockState(q).getLightEmission(l, q) + " at=" + l.getBrightness(LL.BLOCK, q) + " above=" + l.getBrightness(LL.BLOCK, new P(11,150,0))); "ok"
+cmd /setblock 12 149 0 minecraft:redstone_block
+wait 40
+js var P = Java.type("net.minecraft.core.BlockPos"); var LL = Java.type("net.minecraft.world.level.LightLayer"); var l = server.overworld(); var q = new P(11,149,0); log.info("XYLIGHT after emit=" + l.getBlockState(q).getLightEmission(l, q) + " at=" + l.getBrightness(LL.BLOCK, q) + " above=" + l.getBrightness(LL.BLOCK, new P(11,150,0))); "ok"
+shot xy327-lights-soil
+wait 300
+expect ok :: (function(){server.executeBlocking(function(){var P=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var xs=[3,4,5,7,9];for(var i=0;i<xs.length;i++){log.info("XYPLANT x="+xs[i]+" "+l.getBlockState(new P(xs[i],150,0)));}});return "ok";})()
+shot xy327-fire-soil
