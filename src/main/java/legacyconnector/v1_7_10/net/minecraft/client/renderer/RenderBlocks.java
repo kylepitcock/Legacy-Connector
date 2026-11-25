@@ -209,6 +209,8 @@ public class RenderBlocks {
      * cut sprite of the atlas, whose UVs are atlas coordinates; while a block's geometry is captured with such a sheet bound the icon of the same
      * tile in sheet space is used instead, and IsbrhQuads maps the quads back onto the cut tile (as it does for {@code renderFaceYPos(..., tile)}).
      */
+    private static final java.util.regex.Pattern OTHER_SHEET_TILE = java.util.regex.Pattern.compile("^legacy147:(?:blocks/)?[a-z0-9_]+/(\\d+)$");
+
     private static IIcon mcc$inSheet(IIcon icon) {
         if (icon == null || !org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) return icon;
         String sheet = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet();
@@ -217,7 +219,17 @@ public class RenderBlocks {
         if (name == null) return icon;
         String slug = "/" + org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.slug(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet)) + "/";
         int at = name.lastIndexOf(slug);
-        if (at < 0) return icon;
+        if (at < 0) {
+            // a tile index the block named in ITS sheet while the renderer bound another one: 1.4.7 read the index in the bound image (Railcraft's walls of
+            // vanilla materials return /terrain.png indices, bind /terrain.png and draw with the wall block, whose own sheet is the mod's)
+            java.util.regex.Matcher other = OTHER_SHEET_TILE.matcher(name);
+            if (!other.matches()) return icon;
+            try {
+                return mcc$tile(null, Integer.parseInt(other.group(1)));
+            } catch (NumberFormatException e) {
+                return icon;
+            }
+        }
         try {
             return mcc$tile(null, Integer.parseInt(name.substring(at + slug.length())));
         } catch (NumberFormatException e) {
