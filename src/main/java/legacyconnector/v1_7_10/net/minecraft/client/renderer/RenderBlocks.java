@@ -217,7 +217,15 @@ public class RenderBlocks {
         if (name == null) return icon;
         String slug = "/" + org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.slug(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet)) + "/";
         int at = name.lastIndexOf(slug);
-        if (at < 0) return icon;
+        if (at < 0) {
+            // a vanilla block's icon drawn with /terrain.png bound (a renderer drawing a block it copies, Xycraft's tank walls): the quads must carry the
+            // vanilla tile's position in the sheet, else IsbrhQuads reads the atlas UVs of the icon as a tile of the sheet and draws another block
+            if (org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet).equals(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.TERRAIN))) {
+                int index = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.terrainIndexOf(icon.getIconName());
+                if (index >= 0) return mcc$tile(null, index);
+            }
+            return icon;
+        }
         try {
             return mcc$tile(null, Integer.parseInt(name.substring(at + slug.length())));
         } catch (NumberFormatException e) {
