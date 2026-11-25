@@ -142,7 +142,10 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 || overrides(legacy, "getPickBlock", legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition.class, World.class, int.class, int.class, int.class,
                         EntityPlayer.class);
         this.fireSource = overrides(legacy, "isFireSource", World.class, int.class, int.class, int.class,
-                legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class);
+                legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class)
+                // the 1.4.7 to 1.6.4 shape with the metadata (Xycraft's Fire Basin)
+                || overrides(legacy, "isFireSource", World.class, int.class, int.class, int.class, int.class,
+                        legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class);
         this.entityDestroy = overrides(legacy, "canEntityDestroy", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
                 int.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
         this.customCanHarvest = overrides(legacy, "canHarvestBlock", EntityPlayer.class, int.class);
@@ -589,6 +592,9 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         } catch (RuntimeException | LinkageError e) {
             legacyFailure("onNeighborBlockChange", e);
         }
+        // A light that depends on its surroundings (Xycraft's lights follow the redstone around them) changes without its block state
+        // changing, and the light engine only re-reads a block's emission when the block is checked: relight after the neighbour update.
+        if (dynamicLight && level instanceof net.minecraft.server.level.ServerLevel server) server.getLightEngine().checkBlock(pos);
     }
 
     @Override
@@ -1032,9 +1038,15 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     @Override
     public net.neoforged.neoforge.common.util.TriState canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction facing,
             BlockState plant) {
-        if (!sustainsPlants || !(plant.getBlock() instanceof LegacyBlockAdapter adapter)
-                || !(adapter.legacy() instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable plantable)) {
-            return super.canSustainPlant(state, level, pos, facing, plant);
+        if (!sustainsPlants) return super.canSustainPlant(state, level, pos, facing, plant);
+        legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable plantable;
+        if (plant.getBlock() instanceof LegacyBlockAdapter adapter) {
+            if (!(adapter.legacy() instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable p)) return super.canSustainPlant(state, level, pos, facing, plant);
+            plantable = p;
+        } else {
+            // a modern plant (vanilla crops, saplings, flowers) on a legacy soil: the soil's rule answers for it as for a legacy plant of that kind
+            plantable = ModernPlant.of(plant);
+            if (plantable == null) return super.canSustainPlant(state, level, pos, facing, plant);
         }
         try {
             boolean ok = legacy.canSustainPlant(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(),
@@ -1043,6 +1055,46 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         } catch (RuntimeException | LinkageError e) {
             LegacyCall.failed("canSustainPlant", legacy, e, null);
             return net.neoforged.neoforge.common.util.TriState.DEFAULT;
+        }
+    }
+
+    /** A modern plant block seen as the legacy {@code IPlantable} a soil's {@code canSustainPlant} asks about. */
+    private static final class ModernPlant implements legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable {
+        private final BlockState plant;
+        private final legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType type;
+
+        private ModernPlant(BlockState plant, legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType type) {
+            this.plant = plant;
+            this.type = type;
+        }
+
+        static ModernPlant of(BlockState plant) {
+            var block = plant.getBlock();
+            if (block instanceof net.minecraft.world.level.block.NetherWartBlock) return new ModernPlant(plant, legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType.Nether);
+            if (block instanceof net.minecraft.world.level.block.CropBlock || block instanceof net.minecraft.world.level.block.StemBlock) {
+                return new ModernPlant(plant, legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType.Crop);
+            }
+            if (block instanceof net.minecraft.world.level.block.CactusBlock || block instanceof net.minecraft.world.level.block.DeadBushBlock) {
+                return new ModernPlant(plant, legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType.Desert);
+            }
+            if (block instanceof net.minecraft.world.level.block.SugarCaneBlock) return new ModernPlant(plant, legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType.Beach);
+            if (block instanceof net.minecraft.world.level.block.BushBlock) return new ModernPlant(plant, legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType.Plains);
+            return null;
+        }
+
+        @Override
+        public legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType getPlantType(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+            return type;
+        }
+
+        @Override
+        public legacyconnector.v1_7_10.net.minecraft.block.Block getPlant(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+            return BlockBridge.legacyBlock(plant);
+        }
+
+        @Override
+        public int getPlantMetadata(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+            return 0;
         }
     }
 

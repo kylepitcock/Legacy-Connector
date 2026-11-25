@@ -38,7 +38,19 @@ public class BlockBush extends legacyconnector.v1_7_10.net.minecraft.block.Block
 
     @Override
     public boolean canPlaceBlockAt(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
-        return super.canPlaceBlockAt(world, x, y, z) && canPlaceBlockOn(world.getBlock(x, y - 1, z));
+        return super.canPlaceBlockAt(world, x, y, z) && soilHolds(world, x, y, z);
+    }
+
+    /**
+     * Whether the block below holds this plant. Forge 1.4.7 to 1.6.4 asked the soil ({@code soil.canSustainPlant(world, x, y - 1, z, UP, this)}), so
+     * a mod's soil block can carry any crop and a mod's crop stands on it (Xycraft's Henequen on its Xychorium Soil); 1.7.10 asked the plant's own list.
+     */
+    private boolean soilHolds(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block soil = world.getBlock(x, y - 1, z);
+        if (NEEDS_LIGHT.get(getClass()) && soil != null) {
+            return soil.canSustainPlant(world, x, y - 1, z, legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.UP, this);
+        }
+        return canPlaceBlockOn(soil);
     }
 
     /** Plants of 1.6.4 and older mods (their BlockFlower needed light); computed per class. */
@@ -53,7 +65,7 @@ public class BlockBush extends legacyconnector.v1_7_10.net.minecraft.block.Block
     @Override
     public boolean canBlockStay(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
         if (NEEDS_LIGHT.get(getClass()) && world.getFullBlockLightValue(x, y, z) < 8 && !world.canBlockSeeTheSky(x, y, z)) return false;
-        return canPlaceBlockOn(world.getBlock(x, y - 1, z));
+        return soilHolds(world, x, y, z);
     }
 
     @Override
