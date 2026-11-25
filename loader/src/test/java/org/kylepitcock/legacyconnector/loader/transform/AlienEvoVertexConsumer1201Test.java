@@ -163,6 +163,53 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         return node;
     }
 
+    private static ClassNode plumberPrinted() {
+        ClassNode node = new ClassNode();
+        node.version = V17;
+        node.access = ACC_FINAL;
+        node.name = "net/habb/alienevo/client/plumber/scan/PlumberScanHologram$Printed";
+        node.superName = "java/lang/Object";
+        node.interfaces.add(VERTEX);
+
+        MethodNode position = new MethodNode(ACC_PUBLIC, "vertex", "(DDD)L" + VERTEX + ";", null, null);
+        position.instructions.add(new VarInsnNode(ALOAD, 0));
+        position.instructions.add(new InsnNode(ARETURN));
+        position.maxLocals = 7;
+        position.maxStack = 1;
+        node.methods.add(position);
+
+        MethodNode endVertex = new MethodNode(ACC_PUBLIC, "endVertex", "()V", null, null);
+        endVertex.instructions.add(new InsnNode(RETURN));
+        endVertex.maxLocals = 1;
+        endVertex.maxStack = 0;
+        node.methods.add(endVertex);
+
+        for (String[] method : new String[][] {
+                {"color", "(IIII)L" + VERTEX + ";"},
+                {"uv", "(FF)L" + VERTEX + ";"},
+                {"overlayCoords", "(II)L" + VERTEX + ";"},
+                {"uv2", "(II)L" + VERTEX + ";"},
+                {"normal", "(FFF)L" + VERTEX + ";"}
+        }) {
+            MethodNode setter = new MethodNode(ACC_PUBLIC, method[0], method[1], null, null);
+            setter.instructions.add(new VarInsnNode(ALOAD, 0));
+            setter.instructions.add(new InsnNode(ARETURN));
+            setter.maxLocals = 5;
+            setter.maxStack = 1;
+            node.methods.add(setter);
+        }
+
+        MethodNode emit = new MethodNode(0, "emit", "(L" + VERTEX + ";I)V", null, null);
+        emit.instructions.add(new VarInsnNode(ALOAD, 1));
+        emit.instructions.add(new MethodInsnNode(INVOKEINTERFACE, VERTEX, "vertex",
+                "(FFFFFFFFFIIFFF)V", true));
+        emit.instructions.add(new InsnNode(RETURN));
+        emit.maxLocals = 3;
+        emit.maxStack = 15;
+        node.methods.add(emit);
+        return node;
+    }
+
     @Test
     void flatConsumerBecomesAValidOneTwentyOneVertexConsumerShape() {
         ClassNode node = flat();
@@ -283,6 +330,59 @@ class AlienEvoVertexConsumer1201Test implements Opcodes {
         assertEquals(0, AlienEvoVertexConsumer1201.apply(node));
         assertNull(find(node, "addVertex", "(FFF)L" + VERTEX + ";"),
                 "do not install a partial adapter when the old normal setter is missing");
+    }
+
+    @Test
+    void plumberBadgePrintedPreservesBufferedQuadSemanticsOnOneTwentyOne() {
+        ClassNode node = plumberPrinted();
+
+        assertTrue(AlienEvoVertexConsumer1201.apply(node) > 0,
+                "the Badge Printed consumer should receive the 1.21.1 adapter");
+        assertTrue(node.interfaces.contains(VERTEX));
+
+        MethodNode addVertex = find(node, "addVertex", "(FFF)L" + VERTEX + ";");
+        assertNotNull(addVertex);
+        assertNotNull(findCall(addVertex, node.name, "vertex", "(DDD)L" + VERTEX + ";"));
+        assertEquals(3, java.util.Arrays.stream(addVertex.instructions.toArray())
+                .filter(instruction -> instruction.getOpcode() == F2D).count());
+        assertNull(findCall(addVertex, node.name, "endVertex", "()V"),
+                "addVertex only stores the position; it must not prematurely commit a partial quad");
+
+        for (String[] method : new String[][] {
+                {"setColor", "(IIII)L" + VERTEX + ";"},
+                {"setUv", "(FF)L" + VERTEX + ";"},
+                {"setUv1", "(II)L" + VERTEX + ";"},
+                {"setUv2", "(II)L" + VERTEX + ";"},
+                {"setNormal", "(FFF)L" + VERTEX + ";"}
+        }) {
+            assertNotNull(find(node, method[0], method[1]), "missing 1.21.1 setter " + method[0]);
+        }
+        assertNull(find(node, "normal", "(FFF)L" + VERTEX + ";"));
+        assertNotNull(findCall(find(node, "setNormal", "(FFF)L" + VERTEX + ";"),
+                node.name, "endVertex", "()V"),
+                "the old endVertex operation must run only after setNormal finishes the vertex");
+
+        MethodNode emit = find(node, "emit", "(L" + VERTEX + ";I)V");
+        assertNotNull(emit);
+        assertNotNull(findCall(emit, AlienEvoVertexConsumer1201.HELPER, "vertex",
+                "(L" + VERTEX + ";FFFFFFFFFIIFFF)V"));
+        assertNull(findCall(emit, VERTEX, "vertex", "(FFFFFFFFFIIFFF)V"));
+
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        node.accept(writer);
+        assertTrue(writer.toByteArray().length > 0);
+        assertEquals(0, AlienEvoVertexConsumer1201.apply(node),
+                "the Printed adapter must be idempotent");
+    }
+
+    @Test
+    void plumberBadgePrintedMigrationFailsClosedWhenItsLegacySetterSetIsIncomplete() {
+        ClassNode node = plumberPrinted();
+        node.methods.remove(find(node, "normal", "(FFF)L" + VERTEX + ";"));
+
+        assertEquals(0, AlienEvoVertexConsumer1201.apply(node));
+        assertNull(find(node, "addVertex", "(FFF)L" + VERTEX + ";"),
+                "do not install a partial Printed adapter");
     }
 
     private static MethodNode find(ClassNode node, String name, String desc) {
