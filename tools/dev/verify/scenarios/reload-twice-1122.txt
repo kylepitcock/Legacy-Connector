@@ -1,0 +1,45 @@
+# Issue 113 (Kindred Legacy, 1.12.2): an enchanted vanilla tool must still save after the world was left and opened again in the same game session
+# ("Element ... is not valid in current registry set": vanilla's EncoderCache served a failed encode of a stale holder for the valid one).
+# Steps: enchant a hoe, save, quit to the title, open the same world again (a new registry access), use and enchant again, save, check the log.
+mods: 1.12.2 Forgelin-1.8
+mods: 1.12.2 CoFHCore-1.12.2
+mods: 1.12.2 RedstoneFlux-1.12
+mods: 1.12.2 CodeChickenLib-1.12.2
+mods: 1.12.2 ThermalFoundation-1.12.2
+mods: 1.12.2 ThermalExpansion-1.12.2
+mods: 1.12.2 ThermalDynamics-1.12.2
+cmd /clear @s
+wait 5
+cmd /give @s minecraft:netherite_hoe
+slot 0
+wait 20
+cmd /enchant @s minecraft:unbreaking 3
+wait 10
+expect unbreaking :: String(server.getPlayerList().getPlayers().get(0).getMainHandItem().getEnchantments())
+expect ok :: (server.executeBlocking(function () { server.saveEverything(false, false, true); }), "ok")
+# remember the save folder, leave the world, wait for the title screen
+js java.lang.System.setProperty("lc.level", String(mc.getLevelSource().getBaseDir().toFile().list()[0]))
+js var G = Java.type("net.minecraft.client.gui.screens.GenericMessageScreen"); var C = Java.type("net.minecraft.network.chat.Component"); var T = Java.type("net.minecraft.client.gui.screens.TitleScreen"); mc.level.disconnect(); mc.disconnect(new G(C.translatable("menu.savingLevel"))); mc.setScreen(new T()); "left"
+expect true :: String(mc.level == null && mc.getSingleplayerServer() == null)
+wait 40
+# open the same world again
+js mc.createWorldOpenFlows().openWorld(String(java.lang.System.getProperty("lc.level")), function () {})
+expect Player :: mc.player == null ? "none" : "Player"
+wait 60
+expect 1 :: String(server.getPlayerList().getPlayers().get(0).getInventory().items.stream().filter(function (s) { return !s.isEmpty() && String(s.getEnchantments()).contains("unbreaking"); }).count())
+slot 0
+cmd /clear @s
+wait 5
+cmd /give @s minecraft:netherite_hoe
+wait 5
+cmd /enchant @s minecraft:unbreaking 3
+wait 10
+attack
+wait 10
+expect unbreaking :: String(server.getPlayerList().getPlayers().get(0).getMainHandItem().getEnchantments())
+expect ok :: (server.executeBlocking(function () { server.saveEverything(false, false, true); }), "ok")
+expect 1 :: String(server.getPlayerList().getPlayers().get(0).getInventory().items.stream().filter(function (s) { return !s.isEmpty() && String(s.getEnchantments()).contains("unbreaking"); }).count())
+logabsent not valid in current registry set
+logabsent Error saving
+logabsent StackHolders
+shot reload-twice
