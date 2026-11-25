@@ -1,0 +1,4 @@
+# #327 Xycraft 1.4.7: form the multiblock tank and break one block: no crash
+mods: 1.4.7 xycraft-1.4.7
+wait 20
+js var R = Java.type("net.minecraft.core.registries.BuiltInRegistries"); var IS = Java.type("net.minecraft.world.item.ItemStack"); var o = []; R.ITEM.keySet().forEach(function (k) { if (String(k.getNamespace()) != "minecraft") o.push(String(k) + "=" + String(new IS(R.ITEM.get(k)).getHoverName().getString())); }); log.info("XY147 " + o.length + " " + o.join("; "))

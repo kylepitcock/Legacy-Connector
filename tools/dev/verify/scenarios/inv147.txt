@@ -1,0 +1,53 @@
+# #248 / sheet-based item renderers 1.4.7: Thermal Expansion Machine Frame, BuildCraft pipe items and RedPower items draw their textures in the inventory
+mods: 1.4.7 CoFHCore-1.4.7
+mods: 1.4.7 ThermalExpansion-2
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+mods: 1.4.7 RedPowerCore
+mods: 1.4.7 RedPowerMechanical
+mods: 1.4.7 RedPowerDigital
+mods: 1.4.7 RedPowerCompat
+wait 20
+cmd /clear @s
+cmd /give @s thermalexpansion:component_32
+cmd /give @s thermalexpansion:component_128
+cmd /give @s thermalexpansion:component_64
+cmd /give @s thermalexpansion:component_96
+cmd /give @s thermalexpansion_factory:block.factory.machine_1
+cmd /give @s thermalexpansion_energy:block.energy.storage
+cmd /give @s thermalexpansion_transport:block.transport.conduit
+cmd /give @s thermalexpansion:material
+cmd /give @s thermalexpansion:material_32
+wait 20
+js mc.setScreen(new (Java.type("net.minecraft.client.gui.screens.inventory.InventoryScreen"))(mc.player)); "inv"
+wait 20
+shot te-inventory
+js mc.setScreen(null); "x"
+cmd /clear @s
+cmd /give @s buildcraft_transport:item.buildcraftpipe.pipeitemsclay
+cmd /give @s buildcraft_transport:item.buildcraftpipe.pipeitemsiron
+cmd /give @s buildcraft_transport:item.buildcraftpipe.pipeliquidsgold
+cmd /give @s buildcraft_transport:item.buildcraftpipe.pipepowerstone
+cmd /give @s buildcraft_core:irongearitem
+cmd /give @s buildcraft_core:pipewaterproof
+cmd /give @s buildcraft_energy:engineblock_1
+cmd /give @s buildcraft_core:redstonechipset_3
+cmd /give @s buildcraft_core:greenpipewire
+wait 20
+js mc.setScreen(new (Java.type("net.minecraft.client.gui.screens.inventory.InventoryScreen"))(mc.player)); "inv"
+wait 20
+shot bc-inventory
+js mc.setScreen(null); "x"
+cmd /clear @s
+cmd /give @s redpowercore:item9259_1
+cmd /give @s redpowercore:item9259_3
+cmd /give @s redpowercore:item9259_8
+cmd /give @s redpowercore:sicklestone
+cmd /give @s redpowercore:paintbrush.lime
+cmd /give @s redpowercore:paintcan.cyan
+cmd /give @s redpowermachine:frame
+cmd /give @s redpowerlighting:ilampon_14
+cmd /give @s redpowercore:rpbag
+wait 20
+js mc.setScreen(new (Java.type("net.minecraft.client.gui.screens.inventory.InventoryScreen"))(mc.player)); "inv"
+wait 20
+shot rp-inventory
