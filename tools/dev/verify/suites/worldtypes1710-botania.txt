@@ -1,0 +1,3 @@
+# level-type: botania:botania-skyblock
+1.7.10 Botania+r1.8
+1.7.10 GardenOfGlass

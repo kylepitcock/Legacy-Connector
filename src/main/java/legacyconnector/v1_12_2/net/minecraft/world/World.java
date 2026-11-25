@@ -267,10 +267,15 @@ public class World implements IBlockAccess {
 
     // ------------------------------------------------------------------ virtual fields
 
+    /** The provider whose {@code setWorld} is running on the thread holding this world's lock (see {@link #mcc$get$provider}). */
+    WorldProvider mcc$building;
+
     public static WorldProvider mcc$get$provider(World w) {
         WorldProvider p = w.mcc$provider;
         if (p != null) return p;
         synchronized (w) {
+            // the provider being built (same thread, the lock is held): a mod's init() and a world type's getBiomeProvider(world) read world.provider
+            if (w.mcc$provider == null && w.mcc$building != null) return w.mcc$building;
             if (w.mcc$provider == null) {
                 if (w.level == null) {
                     WorldProviderSurface surface = new WorldProviderSurface();
@@ -531,7 +536,11 @@ public class World implements IBlockAccess {
         return setBlockState(pos, state, 3);
     }
 
+    /** Set while a {@code ChunkEvent.Load} handler runs: block changes there send no neighbour updates (see WorldEvents1122). */
+    public static final ThreadLocal<Boolean> mcc$inChunkLoad = new ThreadLocal<>();
+
     public boolean setBlockState(BlockPos pos, IBlockState state, int flags) {
+        if (mcc$inChunkLoad.get() != null) flags = (flags & ~1) | 16; // no neighbour updates, no shape updates (both read the neighbouring chunks)
         var p = modern(pos);
         if (isOutsideBuildHeight(pos)) return false;
         if (outsideRegion(p)) {

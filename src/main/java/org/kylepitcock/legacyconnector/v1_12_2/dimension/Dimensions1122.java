@@ -36,6 +36,11 @@ public final class Dimensions1122 {
         return ResourceKey.create(Registries.DIMENSION, id(dimension));
     }
 
+    /** The level of a legacy dimension; dimension 0 is the overworld of a world created with a mod's world type that brings its own generator. */
+    public static net.minecraft.server.level.ServerLevel level(net.minecraft.server.MinecraftServer server, int dimension) {
+        return dimension == 0 ? server.overworld() : server.getLevel(levelKey(dimension));
+    }
+
     /** The legacy dimension id of a {@code legacyconnector:dim_<id>} location, or null. */
     public static Integer idOf(ResourceLocation location) {
         if (location == null || !NAMESPACE.equals(location.getNamespace()) || !location.getPath().startsWith(PREFIX)) return null;

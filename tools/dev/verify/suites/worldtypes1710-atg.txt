@@ -1,0 +1,3 @@
+# level-type: atg:atg
+# World type suite (own generator, 1.7.10); server.properties level-type from the line above.
+1.7.10 ATG-1.7.10

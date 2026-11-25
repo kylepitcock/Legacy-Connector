@@ -185,12 +185,17 @@ public final class Platform1122 implements LegacyPlatform {
             String cls = client ? sp.clientSide() : sp.serverSide();
             if (cls.isEmpty()) {
                 // Forge's default: the nested ClientProxy / ServerProxy class of the field type
-                String nested = f.getType().getName() + (client ? "$ClientProxy" : "$ServerProxy");
-                try {
-                    Class.forName(nested, false, loader);
-                    cls = nested;
-                } catch (ClassNotFoundException | LinkageError e) {
-                    cls = f.getType().getName();
+                // (RTG: the field has an abstract type, RTG$RTGProxy, and its ClientProxy/ServerProxy are nested in the class holding the field)
+                String suffix = client ? "$ClientProxy" : "$ServerProxy";
+                cls = f.getType().getName();
+                for (String nested : new String[] {f.getType().getName() + suffix, owner.getName() + suffix}) {
+                    try {
+                        Class.forName(nested, false, loader);
+                        cls = nested;
+                        break;
+                    } catch (ClassNotFoundException | LinkageError e) {
+                        // try the next candidate
+                    }
                 }
             }
             Object proxy;

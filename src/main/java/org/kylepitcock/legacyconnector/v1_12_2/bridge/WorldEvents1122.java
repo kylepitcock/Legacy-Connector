@@ -72,7 +72,14 @@ public final class WorldEvents1122 {
         });
         b.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
             if (!listens(ChunkEvent.Load.class) || !(e.getLevel() instanceof Level l)) return;
-            post(new ChunkEvent.Load(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world(l), e.getChunk())));
+            // 1.12 posted ChunkEvent.Load with only the chunk itself in hand: a handler's setBlockState that notifies neighbours must not make the
+            // modern game load the neighbouring chunks from inside this one's promotion (RTG's lighting fix hung the server thread that way)
+            legacyconnector.v1_12_2.net.minecraft.world.World.mcc$inChunkLoad.set(Boolean.TRUE);
+            try {
+                post(new ChunkEvent.Load(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world(l), e.getChunk())));
+            } finally {
+                legacyconnector.v1_12_2.net.minecraft.world.World.mcc$inChunkLoad.remove();
+            }
         });
         b.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
             if (!listens(ChunkEvent.Unload.class) || !(e.getLevel() instanceof Level l)) return;

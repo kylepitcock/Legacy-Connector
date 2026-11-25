@@ -169,6 +169,7 @@ public class WorldType {
         // a world created with a mod's world type: the overworld's noise settings are the type's preset (LegacyWorldPresetPack)
         if (full instanceof net.minecraft.server.level.ServerLevel s) {
             var overworld = s.getServer().overworld();
+            if (overworld == null && s.dimension() == net.minecraft.world.level.Level.OVERWORLD) overworld = s; // the overworld's own Load event: the server has not registered it yet
             WorldType own = overworld == null ? null : mcc$ofSettings(overworld.getChunkSource().getGenerator());
             if (own != null) return own;
         }
@@ -180,6 +181,13 @@ public class WorldType {
 
     /** The mod world type whose preset the generator was created from (its noise settings), or null. */
     public static WorldType mcc$ofSettings(net.minecraft.world.level.chunk.ChunkGenerator generator) {
+        if (generator instanceof org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyChunkGenerator1122 hosted) {
+            // the mod's own generator hosts the overworld of its type (LegacyWorldPresets1122)
+            String name = hosted.mcc$worldType();
+            if (name.isEmpty()) return null;
+            for (WorldType t : WORLD_TYPES) if (t != null && t.mcc$owner != null && name.equals(t.name)) return t;
+            return null;
+        }
         if (!(generator instanceof net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator noise)) return null;
         var key = noise.generatorSettings().unwrapKey();
         if (key.isEmpty() || "minecraft".equals(key.get().location().getNamespace())) return null;

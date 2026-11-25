@@ -105,7 +105,7 @@ public class LegacyBiomeSource1122 extends BiomeSource {
         BiomeProvider p = provider;
         if (p == null) {
             var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-            var level = server == null ? null : server.getLevel(Dimensions1122.levelKey(dimension));
+            var level = server == null ? null : Dimensions1122.level(server, dimension);
             if (level == null) return null;
             try {
                 p = World.mcc$get$provider(WorldBridge1122.wrap(level)).getBiomeProvider();

@@ -76,6 +76,16 @@ public class WorldProvider {
     }
 
     protected void registerWorldChunkManager() {
+        // 1.7.10: worldChunkMgr = terrainType.getChunkManager(worldObj). The overworld of a world type with its own terrain generator (ATG, Planetoid,
+        // ...) must have the type's manager (its generator casts it); the plain vanilla types keep the actual biomes of the world (WorldView).
+        if (terrainType != null && worldObj != null && worldChunkMgr == null
+                && org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyWorldPresets.hasOwnGenerator(terrainType)) {
+            try {
+                worldChunkMgr = terrainType.getChunkManager(worldObj);
+            } catch (RuntimeException | LinkageError e) {
+                // the type's manager could not be built: the world's biomes stay
+            }
+        }
     }
 
     /** 1.7.10's curve with no ambient light (the nether used 0.1); index 0 is the brightness of complete darkness. */

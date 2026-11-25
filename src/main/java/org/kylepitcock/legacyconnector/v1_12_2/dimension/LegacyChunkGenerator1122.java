@@ -40,16 +40,41 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Dimensions");
     public static final MapCodec<LegacyChunkGenerator1122> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.INT.fieldOf("dimension").forGetter(g -> g.dimension),
-            BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource)).apply(i, LegacyChunkGenerator1122::new));
+            BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource),
+            Codec.STRING.optionalFieldOf("world_type", "").forGetter(g -> g.worldType)).apply(i, LegacyChunkGenerator1122::new));
 
     private static final java.util.concurrent.atomic.AtomicInteger FAILURES = new java.util.concurrent.atomic.AtomicInteger();
     private final int dimension;
+    /** Name of the legacy world type this generator is the overworld of ("" for a mod dimension; then {@code dimension} is its id, else 0). */
+    private final String worldType;
     private volatile IChunkGenerator legacy;
+    private volatile net.minecraft.server.level.ServerLevel attached;
     private boolean failed;
 
     public LegacyChunkGenerator1122(int dimension, BiomeSource biomeSource) {
+        this(dimension, biomeSource, "");
+    }
+
+    public LegacyChunkGenerator1122(int dimension, BiomeSource biomeSource, String worldType) {
         super(biomeSource);
         this.dimension = dimension;
+        this.worldType = worldType;
+    }
+
+    /** The legacy world type of a world preset whose overworld this generates ("" for a mod dimension). */
+    public String mcc$worldType() {
+        return worldType;
+    }
+
+    /**
+     * Creates the mod's generator for the overworld of a world type with its own generator right when the level exists (before its
+     * {@code WorldEvent.Load}: RTG reads {@code world.getChunkProvider().chunkGenerator} there). No-op for other levels.
+     */
+    public static void attach(net.minecraft.server.level.ServerLevel level) {
+        if (level.getChunkSource().getGenerator() instanceof LegacyChunkGenerator1122 g && !g.worldType.isEmpty()) {
+            g.attached = level;
+            g.legacy();
+        }
     }
 
     @Override
@@ -61,7 +86,7 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
     private synchronized IChunkGenerator legacy() {
         if (legacy == null && !failed) {
             var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-            var level = server == null ? null : server.getLevel(Dimensions1122.levelKey(dimension));
+            var level = attached != null ? attached : server == null ? null : Dimensions1122.level(server, dimension);
             if (level != null) {
                 try {
                     World world = WorldBridge1122.wrap(level);
@@ -69,6 +94,9 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
                     if (legacy == null) {
                         LOG.warn("The world provider of 1.12.2 dimension {} has no chunk generator", dimension);
                         failed = true;
+                    } else if (!worldType.isEmpty()) {
+                        // 1.12: the overworld's ChunkProviderServer holds the generator of the world type (RTG, Lost Cities read it)
+                        world.mcc$serverChunkProvider().chunkGenerator = legacy;
                     }
                 } catch (RuntimeException | LinkageError e) {
                     LOG.error("The chunk generator of 1.12.2 dimension {} could not be created", dimension, e);

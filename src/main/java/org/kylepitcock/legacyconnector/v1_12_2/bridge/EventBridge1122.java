@@ -108,6 +108,14 @@ public final class EventBridge1122 {
             }
         });
         bus.addListener((net.neoforged.neoforge.event.level.LevelEvent.Load e) -> {
+            // a world type with its own generator: the mod's generator exists before the mods hear of the world (RTG's onWorldLoad reads it)
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel sl) {
+                try {
+                    org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyChunkGenerator1122.attach(sl);
+                } catch (RuntimeException | LinkageError ex) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/WorldTypes").error("The generator of the world type could not be created", ex);
+                }
+            }
             if (e.getLevel() instanceof net.minecraft.world.level.Level level && wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.WorldEvent.Load.class)) {
                 post(new legacyconnector.v1_12_2.net.minecraftforge.event.world.WorldEvent.Load(WorldBridge1122.wrap(level)));
             }
