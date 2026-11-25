@@ -196,6 +196,28 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
         return isPickable() && super.isAttackable();
     }
 
+    /**
+     * A legacy entity class the client cannot construct (no {@code (World)} constructor, as the mod's own update and render hook entities have) was
+     * never tracked in 1.4.7 either: only registered mod entities were sent. Sending it made the client fail to build it and log an error per spawn
+     * (Xycraft's multiblock hooks).
+     */
+    @Override
+    public boolean broadcastToPlayer(net.minecraft.server.level.ServerPlayer player) {
+        return (legacy == null || SPAWNABLE.get(legacy.getClass())) && super.broadcastToPlayer(player);
+    }
+
+    private static final ClassValue<Boolean> SPAWNABLE = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> cls) {
+            try {
+                cls.getDeclaredConstructor(legacyconnector.v1_7_10.net.minecraft.world.World.class);
+                return true;
+            } catch (NoSuchMethodException e) {
+                return false;
+            }
+        }
+    };
+
     @Override
     public boolean isPushable() {
         return legacy != null && legacy.canBePushed();
