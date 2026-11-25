@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -57,6 +58,13 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/infinity.js";
     static final String ALIEN_EVO_ROLLING_MECHANICS =
             "addon/alienevo/kubejs_scripts/rolling_mechanics.js";
+    static final String ALIEN_EVO_CANONBOLT_ANIMATION =
+            "assets/alienevo/animations/aliens/arburian_pelarota/arburian_pelarota.animation.json";
+    static final List<String> ALIEN_EVO_CANONBOLT_GEOMETRIES = List.of(
+            "assets/alienevo/geo/aliens/alien_11/arburian_pelarota_default.geo.json",
+            "assets/alienevo/geo/aliens/alien_11/arburian_pelarota_10k.geo.json",
+            "assets/alienevo/geo/aliens/alien_11/arburian_pelarota_ball.geo.json",
+            "assets/alienevo/geo/aliens/alien_11/arburian_pelarota_prototype.geo.json");
     private static final String LEGACY_ATTRIBUTE_OPERATION_HELPER = """
             function legacyConnectorAttributeOperation(operation) {
                 const key = String(operation);
@@ -269,6 +277,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
         removeDuplicateMalformedGeckoLibAnimation(resources);
+        repairCanonboltRollBoneHierarchy(resources);
         addMissingAlienEvoMachineScrollTag(resources);
 
         if (hasLegacyScriptResources) {
@@ -323,6 +332,169 @@ final class PalladiumResourceCompat1201 {
             }
         }
         return changedResources;
+    }
+
+
+    /**
+     * The dev.24 ball-form clips rotate a bone named {@code armorBall}, but the
+     * default, 10k, and ball geometries omit it. Their visible shell is rooted
+     * under {@code BALL}; the prototype geometry has an unused armorBall sibling
+     * of BALL. Add/reuse armorBall as a neutral parent at BALL's exact pivot so
+     * the existing query-driven roll rotation reaches the visible shell.
+     *
+     * Keep this fail-closed: only the inspected bone names, parent bones,
+     * pivots, empty prototype armorBall, and the three original roll clips are
+     * accepted. BALL's own position, rotation, scale, cubes, and descendants
+     * remain unchanged.
+     */
+    private static int repairCanonboltRollBoneHierarchy(Map<String, byte[]> resources) {
+        byte[] animationBytes = resources.get(ALIEN_EVO_CANONBOLT_ANIMATION);
+        if (animationBytes == null || !hasExpectedCanonboltRollClips(animationBytes)) return 0;
+
+        int changed = 0;
+        for (String path : ALIEN_EVO_CANONBOLT_GEOMETRIES) {
+            if (repairCanonboltGeometry(path, resources)) changed++;
+        }
+        return changed;
+    }
+
+    private static boolean hasExpectedCanonboltRollClips(byte[] bytes) {
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(bytes, StandardCharsets.UTF_8));
+            if (!parsed.isJsonObject()) return false;
+            JsonObject root = parsed.getAsJsonObject();
+            JsonObject animations = root.has("animations") && root.get("animations").isJsonObject()
+                    ? root.getAsJsonObject("animations") : null;
+            if (animations == null) return false;
+
+            for (String animationName : List.of(
+                    "animation.arburian_pelarota.ball_in",
+                    "animation.arburian_pelarota.ball_out",
+                    "animation.arburian_pelarota.ball_state")) {
+                JsonObject animation = animations.has(animationName)
+                        && animations.get(animationName).isJsonObject()
+                        ? animations.getAsJsonObject(animationName) : null;
+                JsonObject bones = animation != null && animation.has("bones")
+                        && animation.get("bones").isJsonObject()
+                        ? animation.getAsJsonObject("bones") : null;
+                JsonObject armorBall = bones != null && bones.has("armorBall")
+                        && bones.get("armorBall").isJsonObject()
+                        ? bones.getAsJsonObject("armorBall") : null;
+                JsonObject rotation = armorBall != null && armorBall.has("rotation")
+                        && armorBall.get("rotation").isJsonObject()
+                        ? armorBall.getAsJsonObject("rotation") : null;
+                if (rotation == null || !rotation.toString().contains("alienevo.roll_since(")) return false;
+            }
+            return true;
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
+    private static boolean repairCanonboltGeometry(String path, Map<String, byte[]> resources) {
+        byte[] original = resources.get(path);
+        if (original == null) return false;
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(original, StandardCharsets.UTF_8));
+            if (!parsed.isJsonObject()) return false;
+            JsonObject root = parsed.getAsJsonObject();
+            if (!root.has("minecraft:geometry") || !root.get("minecraft:geometry").isJsonArray()) return false;
+            JsonArray geometries = root.getAsJsonArray("minecraft:geometry");
+            if (geometries.size() != 1 || !geometries.get(0).isJsonObject()) return false;
+
+            JsonObject geometry = geometries.get(0).getAsJsonObject();
+            if (!geometry.has("bones") || !geometry.get("bones").isJsonArray()) return false;
+            JsonArray bones = geometry.getAsJsonArray("bones");
+            int ballIndex = uniqueBoneIndex(bones, "BALL");
+            int armorBallIndex = uniqueBoneIndex(bones, "armorBall");
+            if (ballIndex < 0 || armorBallIndex == -2) return false;
+
+            JsonObject ball = bones.get(ballIndex).getAsJsonObject();
+            String ballParent = boneParent(ball);
+            if (!"chest_upper".equals(ballParent) && !"armorBody".equals(ballParent)) return false;
+            if (!containsBone(bones, ballParent)
+                    || !ball.has("pivot") || !isNumericVector(ball.get("pivot"), 3)) return false;
+            JsonArray ballPivot = ball.getAsJsonArray("pivot");
+
+            JsonObject armorBall;
+            if (armorBallIndex >= 0) {
+                armorBall = bones.get(armorBallIndex).getAsJsonObject();
+                if (!"ROOT".equals(boneParent(armorBall))
+                        || !armorBall.has("pivot")
+                        || !ballPivot.equals(armorBall.get("pivot"))
+                        || armorBall.entrySet().size() != 3
+                        || hasBoneChild(bones, "armorBall")) return false;
+                armorBall.addProperty("parent", ballParent);
+            } else {
+                armorBall = new JsonObject();
+                armorBall.addProperty("name", "armorBall");
+                armorBall.addProperty("parent", ballParent);
+                armorBall.add("pivot", ballPivot.deepCopy());
+            }
+
+            ball.addProperty("parent", "armorBall");
+            JsonArray repairedBones = new JsonArray();
+            for (int i = 0; i < bones.size(); i++) {
+                if (i == armorBallIndex) continue;
+                if (i == ballIndex) repairedBones.add(armorBall);
+                repairedBones.add(bones.get(i));
+            }
+            geometry.add("bones", repairedBones);
+            resources.put(path, new GsonBuilder().setPrettyPrinting().create()
+                    .toJson(root).getBytes(StandardCharsets.UTF_8));
+            return true;
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
+    private static int uniqueBoneIndex(JsonArray bones, String name) {
+        int found = -1;
+        for (int i = 0; i < bones.size(); i++) {
+            if (!bones.get(i).isJsonObject()) return -1;
+            JsonObject bone = bones.get(i).getAsJsonObject();
+            if (!bone.has("name") || !bone.get("name").isJsonPrimitive()
+                    || !bone.get("name").getAsJsonPrimitive().isString()
+                    || !name.equals(bone.get("name").getAsString())) continue;
+            if (found >= 0) return -2;
+            found = i;
+        }
+        return found;
+    }
+
+    private static String boneParent(JsonObject bone) {
+        return bone.has("parent") && bone.get("parent").isJsonPrimitive()
+                && bone.get("parent").getAsJsonPrimitive().isString()
+                ? bone.get("parent").getAsString() : null;
+    }
+
+    private static boolean containsBone(JsonArray bones, String name) {
+        for (JsonElement element : bones) {
+            if (element.isJsonObject()) {
+                JsonObject bone = element.getAsJsonObject();
+                if (bone.has("name") && bone.get("name").isJsonPrimitive()
+                        && bone.get("name").getAsString().equals(name)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasBoneChild(JsonArray bones, String parent) {
+        for (JsonElement element : bones) {
+            if (!element.isJsonObject()) return true;
+            if (parent.equals(boneParent(element.getAsJsonObject()))) return true;
+        }
+        return false;
+    }
+
+    private static boolean isNumericVector(JsonElement value, int size) {
+        if (!value.isJsonArray()) return false;
+        JsonArray vector = value.getAsJsonArray();
+        if (vector.size() != size) return false;
+        for (JsonElement component : vector) {
+            if (!component.isJsonPrimitive() || !component.getAsJsonPrimitive().isNumber()) return false;
+        }
+        return true;
     }
 
     /**
