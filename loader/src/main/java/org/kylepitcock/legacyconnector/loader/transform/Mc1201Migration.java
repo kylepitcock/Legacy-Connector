@@ -533,6 +533,15 @@ public final class Mc1201Migration {
                 registryBufferLambda(d);
                 if (adaptLambda(d, t, c)) c.calls++;
                 redirectHandles(d, h, t, c);
+            } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETFIELD && f.owner.equals("net/minecraft/client/Minecraft")
+                    && (f.name.equals("gui") || f.name.equals("f_91065_")) && f.getNext() instanceof TypeInsnNode cast && cast.getOpcode() == Opcodes.CHECKCAST
+                    && cast.desc.endsWith("/gui/overlay/ForgeGui")) {
+                // Forge 1.20.1's Minecraft.gui IS a ForgeGui and mods cast it ((ForgeGui) mc.gui, for leftHeight or shouldDrawSurvivalElements); the plain Gui of 1.21.1
+                // is not one: the layer's ForgeGui (a Gui of its own, the instance overlays receive) stands in, the cast stays
+                m.instructions.insertBefore(f, new org.objectweb.asm.tree.InsnNode(Opcodes.POP));
+                m.instructions.set(f, new MethodInsnNode(Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/ForgeGui", "mcc$instance",
+                        "()Llegacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/ForgeGui;", false));
+                c.fields++;
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
                 // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
                 boolean get = f.getOpcode() == Opcodes.GETFIELD;
