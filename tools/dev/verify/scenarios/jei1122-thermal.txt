@@ -1,0 +1,15 @@
+# 1.12.2 JEI bridge: Thermal Expansion machine categories list recipes (JEI runtime asked for every category and its recipe count)
+mods: 1.12.2 Forgelin-1.8
+mods: 1.12.2 CoFHCore-1.12.2
+mods: 1.12.2 RedstoneFlux-1.12
+mods: 1.12.2 CodeChickenLib-1.12.2
+mods: 1.12.2 ThermalFoundation-1.12.2
+mods: 1.12.2 ThermalExpansion-1.12.2
+mods: . jei-1.21.1-neoforge-19.70
+wait 200
+expect ok :: (function(){var rt=Java.type("mezz.jei.common.Internal").getJeiRuntime();var cats=rt.getRecipeManager().createRecipeCategoryLookup().get().toList();var o=[];for(var i=0;i<cats.size();i++){var c=cats.get(i);var n=rt.getRecipeManager().createRecipeLookup(c.getRecipeType()).get().count();o.push(String(c.getTitle().getString())+"="+n);}log.info("JEICATS "+cats.size()+" "+o.join(" | "));return "ok";})()
+js mc.setScreen(new (Java.type("net.minecraft.client.gui.screens.inventory.InventoryScreen"))(mc.player)); "inv"
+wait 20
+js var rt = Java.type("mezz.jei.common.Internal").getJeiRuntime(); var cats = rt.getRecipeManager().createRecipeCategoryLookup().get().toList(); var pick = null; for (var i = 0; i < cats.size(); i++) { var t = String(cats.get(i).getTitle().getString()); if (t.indexOf("Pulverizer") >= 0) pick = cats.get(i); } log.info("JEIPICK " + (pick == null ? "none" : pick.getTitle().getString())); if (pick != null) rt.getRecipesGui().showTypes(java.util.List.of(pick.getRecipeType())); "ok"
+wait 40
+shot jei-thermal-pulverizer

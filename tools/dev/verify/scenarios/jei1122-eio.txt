@@ -1,0 +1,15 @@
+# 1.12.2 JEI bridge: Ender IO SAG Mill tab (+ transfer button), Mekanism gas slots drawn
+mods: 1.12.2 EnderCore-1.12.2-0.5.76.jar
+mods: 1.12.2 EnderIO-1.12.2-5.3.70
+mods: 1.12.2 Mekanism-1.12.2
+mods: . jei-1.21.1-neoforge-19.70
+wait 240
+expect ok :: (function(){var rt=Java.type("mezz.jei.common.Internal").getJeiRuntime();var cats=rt.getRecipeManager().createRecipeCategoryLookup().get().toList();var o=[];for(var i=0;i<cats.size();i++){var c=cats.get(i);var n=rt.getRecipeManager().createRecipeLookup(c.getRecipeType()).get().count();o.push(String(c.getTitle().getString())+"="+n);}log.info("JEICATS "+cats.size()+" "+o.join(" | "));return "ok";})()
+js mc.setScreen(new (Java.type("net.minecraft.client.gui.screens.inventory.InventoryScreen"))(mc.player)); "inv"
+wait 20
+js var rt = Java.type("mezz.jei.common.Internal").getJeiRuntime(); var cats = rt.getRecipeManager().createRecipeCategoryLookup().get().toList(); var pick = null; for (var i = 0; i < cats.size(); i++) { var t = String(cats.get(i).getTitle().getString()); if (t.indexOf("SAG") >= 0) pick = cats.get(i); } log.info("JEIPICK " + (pick == null ? "none" : pick.getTitle().getString())); if (pick != null) rt.getRecipesGui().showTypes(java.util.List.of(pick.getRecipeType())); "ok"
+wait 40
+shot jei-eio-sag
+js var rt = Java.type("mezz.jei.common.Internal").getJeiRuntime(); var cats = rt.getRecipeManager().createRecipeCategoryLookup().get().toList(); var pick = null; for (var i = 0; i < cats.size(); i++) { var t = String(cats.get(i).getTitle().getString()); if (t.indexOf("Chemical Infuser") >= 0 || t.indexOf("Electrolytic") >= 0 || t.indexOf("Gas") >= 0) pick = cats.get(i); } log.info("JEIPICK2 " + (pick == null ? "none" : pick.getTitle().getString())); if (pick != null) rt.getRecipesGui().showTypes(java.util.List.of(pick.getRecipeType())); "ok"
+wait 40
+shot jei-mek-gas
