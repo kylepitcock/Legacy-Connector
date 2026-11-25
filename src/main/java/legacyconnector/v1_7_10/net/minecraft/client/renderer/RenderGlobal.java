@@ -25,6 +25,28 @@ public class RenderGlobal {
     /** 1.7.10's chunk section renderers: the modern renderer has its own, so this is empty. */
     private WorldRenderer[] worldRenderers = new WorldRenderer[0];
     private java.util.List worldRenderersToUpdate = new java.util.ArrayList();
+    /** The client world the renderer draws ({@code RenderGlobal.theWorld}): a phantom field read through the game's current level, so a {@code DrawBlockHighlightEvent} handler can use {@code event.context.theWorld}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient theWorld;
+    /** {@code RenderGlobal.mc}: the game instance, as with {@code Minecraft.getMinecraft()}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc;
+
+    public static legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient mcc$get$theWorld(RenderGlobal self) {
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$theWorld(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft());
+    }
+
+    public static void mcc$set$theWorld(RenderGlobal self, legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient world) {
+        // the world is the game's current level; a mod's setWorldAndLoadRenderers call changes nothing
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.client.Minecraft mcc$get$mc(RenderGlobal self) {
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    public static void mcc$set$mc(RenderGlobal self, legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+    }
+
     public void markBlockForUpdate(int x, int y, int z) {
         markBlocksForUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
     }
