@@ -209,7 +209,8 @@ public final class MiddleClientCompat {
     public static void renderEntityInInventoryFollowsMouse(GuiGraphics g, int x, int y, int scale, float mouseX, float mouseY,
             net.minecraft.world.entity.LivingEntity entity) {
         int centerY = y - Math.round(entity.getBbHeight() * scale / 2.0F);
-        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, x - 1, centerY - 1, x + 1, centerY + 1, scale, 0.0625F,
+        int[] box = previewBox(x, centerY);
+        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, box[0], box[1], box[2], box[3], scale, 0.0625F,
                 x - mouseX, centerY - mouseY, entity);
     }
 
@@ -217,8 +218,20 @@ public final class MiddleClientCompat {
     public static void renderEntityInInventoryFollowsAngle(GuiGraphics g, int x, int y, int scale, float angleX, float angleY,
             net.minecraft.world.entity.LivingEntity entity) {
         int centerY = y - Math.round(entity.getBbHeight() * scale / 2.0F);
-        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsAngle(g, x - 1, centerY - 1, x + 1, centerY + 1, scale, 0.0625F,
+        int[] box = previewBox(x, centerY);
+        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsAngle(g, box[0], box[1], box[2], box[3], scale, 0.0625F,
                 angleX, angleY, entity);
+    }
+
+    /**
+     * 1.21.1's preview methods place the entity at the centre of a box AND scissor the drawing to that box (1.20.1 had a point and no scissor), so
+     * a box around the point alone clips the whole entity to a dot. The box is centred on the point and large enough to cover the whole screen.
+     */
+    private static int[] previewBox(int cx, int cy) {
+        var window = Minecraft.getInstance().getWindow();
+        int hw = Math.max(cx, window.getGuiScaledWidth() - cx) + 1;
+        int hh = Math.max(cy, window.getGuiScaledHeight() - cy) + 1;
+        return new int[] {cx - hw, cy - hh, cx + hw, cy + hh};
     }
 
     public static ResourceLocation getDefaultSkin() {
