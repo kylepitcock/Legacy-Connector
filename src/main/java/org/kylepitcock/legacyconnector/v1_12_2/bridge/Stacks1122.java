@@ -295,6 +295,7 @@ public final class Stacks1122 {
         var potion = stack.get(DataComponents.POTION_CONTENTS);
         if (potion != null && isPotionItem(stack.getItem())) potionFromModern(potion, out);
         if (standIn) keepComponents(stack, out);
+        out.mcc$capKey(stack);
         for (Hook hook : HOOKS) hook.fromModern(stack, out);
         return out;
     }
