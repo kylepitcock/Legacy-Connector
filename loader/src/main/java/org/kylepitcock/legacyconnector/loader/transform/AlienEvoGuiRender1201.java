@@ -23,6 +23,9 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             "net/minecraft/client/gui/screens/inventory/InventoryScreen";
     static final String INVENTORY_COMPAT =
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/InventoryScreenCompat1201";
+    // Mc1201Migration redirects this same legacy signature through its generic client helper first.
+    static final String MIDDLE_CLIENT_COMPAT =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiddleClientCompat";
     static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     static final String LIVING_ENTITY = "net/minecraft/world/entity/LivingEntity";
 
@@ -52,10 +55,10 @@ final class AlienEvoGuiRender1201 implements Opcodes {
 
     /**
      * AlienEvo 1.20.1 calls the seven-argument InventoryScreen preview API.
-     * Minecraft 1.21.1 replaced it with the rectangle-based ten-argument API.
-     * Keep the legacy call descriptor at the call site and route it through a
-     * small runtime helper that supplies a screen-sized clip rectangle centred
-     * on the original x/y anchor.
+     * The generic Minecraft migration may already have redirected this exact
+     * signature to MiddleClientCompat before this AlienEvo-specific pass runs.
+     * Accept that known static bridge as already adapted; otherwise route the
+     * untouched call through the AlienEvo-specific compatibility helper.
      */
     private static int adaptInventoryPreview(ClassNode node) {
         MethodNode renderEntity = findUniqueMethod(node, "renderEntity", PREVIEW_METHOD_DESC);
@@ -76,8 +79,10 @@ final class AlienEvoGuiRender1201 implements Opcodes {
                     && call.getOpcode() == INVOKESTATIC) {
                 legacy = call;
                 legacyCount++;
-            } else if (INVENTORY_COMPAT.equals(call.owner)
+            } else if ((INVENTORY_COMPAT.equals(call.owner)
+                    || MIDDLE_CLIENT_COMPAT.equals(call.owner))
                     && call.getOpcode() == INVOKESTATIC) {
+                // MiddleClientCompat is the earlier generic Mc1201Migration rewrite for this exact signature.
                 helperCount++;
             } else {
                 throw new IllegalStateException(
