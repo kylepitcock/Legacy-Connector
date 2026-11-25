@@ -267,7 +267,10 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glCullFace(int p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glCullFace(p0);
+        if (RenderSystem.isOnRenderThread()) {
+            org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0B45);
+            org.lwjgl.opengl.GL11.glCullFace(p0);
+        }
     }
 
     public static void glDeleteLists(int p0, int p1) {
@@ -441,7 +444,10 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glFrontFace(int p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFrontFace(p0);
+        if (RenderSystem.isOnRenderThread()) {
+            org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0B46);
+            org.lwjgl.opengl.GL11.glFrontFace(p0);
+        }
     }
 
     public static int glGenLists(int p0) {

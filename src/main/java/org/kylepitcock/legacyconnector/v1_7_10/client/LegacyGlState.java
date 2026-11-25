@@ -12,7 +12,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
  */
 final class LegacyGlState {
     static final int DEPTH_TEST = 1, BLEND = 2, CULL = 4, DEPTH_MASK = 8, COLOR_MASK = 16, BLEND_FUNC = 32, POLYGON_OFFSET = 64,
-            LOGIC_OP = 128, DEPTH_FUNC = 256, SCISSOR = 512, BLEND_EQUATION = 1024;
+            LOGIC_OP = 128, DEPTH_FUNC = 256, SCISSOR = 512, BLEND_EQUATION = 1024, CULL_FACE = 2048, FRONT_FACE = 4096;
 
     private int saved;
     /** Real GL changes legacy code announced so far (a display list that makes some cannot be baked: the changes would only happen once). */
@@ -46,6 +46,9 @@ final class LegacyGlState {
             case LOGIC_OP -> logicOp = GlStateManager.COLOR_LOGIC.enable.enabled;
             case DEPTH_FUNC -> depthFunc = GlStateManager.DEPTH.func;
             case SCISSOR -> scissor = GlStateManager.SCISSOR.mode.enabled;
+            case CULL_FACE, FRONT_FACE -> {
+                // not cached by GlStateManager: modern code runs with GL_BACK / GL_CCW, which is what is put back
+            }
             case BLEND_EQUATION -> {
                 // not cached by GlStateManager: modern code draws with GL_FUNC_ADD and only changes it around its own draws
             }
@@ -86,6 +89,8 @@ final class LegacyGlState {
             if (scissor) GlStateManager._enableScissorTest();
             else GlStateManager._disableScissorTest();
         }
+        if ((s & CULL_FACE) != 0) org.lwjgl.opengl.GL11.glCullFace(1029); // GL_BACK
+        if ((s & FRONT_FACE) != 0) org.lwjgl.opengl.GL11.glFrontFace(2305); // GL_CCW
         if ((s & BLEND_EQUATION) != 0) GlStateManager._blendEquation(32774); // GL_FUNC_ADD
     }
 

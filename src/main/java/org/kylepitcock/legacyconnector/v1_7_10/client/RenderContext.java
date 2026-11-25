@@ -423,6 +423,8 @@ public final class RenderContext {
             case 0x0BE1 -> LegacyGlState.BLEND_FUNC;
             case 0x0B74 -> LegacyGlState.DEPTH_FUNC;
             case 0x8009 -> LegacyGlState.BLEND_EQUATION;
+            case 0x0B45 -> LegacyGlState.CULL_FACE; // GL_CULL_FACE_MODE
+            case 0x0B46 -> LegacyGlState.FRONT_FACE;
             default -> 0;
         };
         if (part != 0) s.gl.save(part);
