@@ -34,9 +34,14 @@ public class ShapedOreRecipe implements IRecipe {
         Object[] args = recipe;
         if (args.length > 0 && args[0] instanceof Boolean b) {
             mirrored = b;
-            Object[] rest = new Object[args.length - 1];
-            System.arraycopy(args, 1, rest, 0, rest.length);
-            args = rest;
+            // Forge: the flag may be followed by the whole recipe as ONE array (Railcraft's steel tools, armor and carts pass it so)
+            if (args.length == 2 && args[1] instanceof Object[] nested && !(nested instanceof String[])) {
+                args = nested;
+            } else {
+                Object[] rest = new Object[args.length - 1];
+                System.arraycopy(args, 1, rest, 0, rest.length);
+                args = rest;
+            }
         }
         this.mcc$args = args;
         parseLayout(args);
