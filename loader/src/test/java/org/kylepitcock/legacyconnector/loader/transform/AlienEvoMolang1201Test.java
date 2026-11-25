@@ -165,7 +165,7 @@ class AlienEvoMolang1201Test implements Opcodes {
     @Test
     void generatedFacadeFactoryAndMathFunctionExposeTheGeckoLib49Contracts() {
         Map<String, byte[]> generated = AlienEvoMolang1201.generateHelperClasses();
-        assertEquals(6, generated.size());
+        assertEquals(7, generated.size());
 
         ClassNode parser = read(generated, AlienEvoMolang1201.PARSER_COMPAT);
         assertNotNull(parser.fields.stream().filter(f -> f.name.equals("INSTANCE")
@@ -224,11 +224,28 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertTrue(hasStringConstant(azureRegistration, "mod.azure.azurelib.core.molang.MolangParser"));
         assertTrue(hasStringConstant(azureRegistration,
                 "net.habb.alienevo.compat.azurelib.bridge.MolangAzureRollSinceFunction"));
+        assertTrue(hasStringConstant(azureRegistration,
+                "mod.azure.azurelib.core.molang.MolangVariableRef"));
+        assertTrue(hasStringConstant(azureRegistration,
+                "mod.azure.azurelib.core.molang.LazyVariable"));
         assertTrue(hasStringConstant(azureRegistration, "registerFunction"));
         assertTrue(hasClassLiteral(azureRegistration, "java/lang/String"));
         assertTrue(hasClassLiteral(azureRegistration, "java/lang/Class"));
         assertFalse(hasField(azureRegistration, GETSTATIC, "java/lang/String", "TYPE", "Ljava/lang/Class;"));
         assertFalse(hasField(azureRegistration, GETSTATIC, "java/lang/Class", "TYPE", "Ljava/lang/Class;"));
+
+        ClassNode timeContext = read(generated, AlienEvoMolang1201.AZURELIB_ROLL_TIME_CONTEXT);
+        assertNotNull(timeContext.fields.stream().filter(f -> f.name.equals("CURRENT")
+                && f.desc.equals("Ljava/lang/ThreadLocal;")).findFirst().orElse(null));
+        assertNotNull(find(timeContext, "push", "(D)Ljava/lang/Double;"));
+        assertNotNull(find(timeContext, "pop", "(Ljava/lang/Double;)V"));
+        MethodNode getAnimationTime = find(timeContext, "getAnimationTime", "()D");
+        assertNotNull(getAnimationTime);
+        assertTrue(hasCall(getAnimationTime, INVOKEVIRTUAL, AlienEvoMolang1201.PARSER_COMPAT,
+                "getVariable", "(Ljava/lang/String;)L" + AlienEvoMolang1201.VARIABLE_COMPAT + ";"),
+                "calls outside AzureLib must retain the Gecko parser fallback");
+        assertTrue(hasCall(getAnimationTime, INVOKEVIRTUAL,
+                AlienEvoMolang1201.VARIABLE_COMPAT, "get", "()D"));
 
         ClassNode azureFunction = read(generated, AlienEvoMolang1201.AZURELIB_ROLL_FUNCTION);
         assertEquals(AlienEvoMolang1201.AZURELIB_CONTEXT_FUNCTION, azureFunction.superName);
@@ -244,9 +261,49 @@ class AlienEvoMolang1201Test implements Opcodes {
                 "livingEntity", "()Lnet/minecraft/world/entity/LivingEntity;"));
         assertTrue(hasCall(evaluate, INVOKEVIRTUAL, AlienEvoMolang1201.AZURELIB_CONTEXT_FUNCTION,
                 "getArg", "(I)D"));
+        assertTrue(hasCall(evaluate, INVOKEVIRTUAL, AlienEvoMolang1201.AZURELIB_MOLANG_VARIABLE_REF,
+                "variable", "()L" + AlienEvoMolang1201.AZURELIB_LAZY_VARIABLE + ";"));
+        assertTrue(hasCall(evaluate, INVOKEVIRTUAL, AlienEvoMolang1201.AZURELIB_LAZY_VARIABLE, "get", "()D"));
+        assertTrue(hasCall(evaluate, INVOKESTATIC, AlienEvoMolang1201.AZURELIB_ROLL_TIME_CONTEXT,
+                "push", "(D)Ljava/lang/Double;"));
+        assertTrue(hasCall(evaluate, INVOKESTATIC, AlienEvoMolang1201.AZURELIB_ROLL_TIME_CONTEXT,
+                "pop", "(Ljava/lang/Double;)V"));
+        assertTrue(evaluate.tryCatchBlocks.stream()
+                .anyMatch(block -> "java/lang/Throwable".equals(block.type)),
+                "the scoped time must be restored even when the legacy roll method throws");
         assertTrue(hasCall(evaluate, INVOKESTATIC,
-                "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation",
+                AlienEvoMolang1201.CHEST_SPIN_ANIMATION,
                 "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F"));
+    }
+
+
+    @Test
+    void chestSpinRollSinceReadsTheScopedAzureAnimationTime() {
+        ClassNode node = node(AlienEvoMolang1201.CHEST_SPIN_ANIMATION);
+        MethodNode roll = method(node, ACC_PUBLIC | ACC_STATIC, "rollSinceKeyframe",
+                "(Lnet/minecraft/world/entity/LivingEntity;D)F");
+        roll.instructions.add(new FieldInsnNode(GETSTATIC, AlienEvoMolang1201.OLD_PARSER, "INSTANCE",
+                "L" + AlienEvoMolang1201.OLD_PARSER + ";"));
+        roll.instructions.add(new LdcInsnNode("query.anim_time"));
+        roll.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AlienEvoMolang1201.OLD_PARSER, "getVariable",
+                "(Ljava/lang/String;)L" + AlienEvoMolang1201.OLD_LAZY_VARIABLE + ";", false));
+        roll.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AlienEvoMolang1201.OLD_LAZY_VARIABLE,
+                "get", "()D", false));
+        roll.instructions.add(new InsnNode(POP2));
+        roll.instructions.add(new InsnNode(FCONST_0));
+        roll.instructions.add(new InsnNode(FRETURN));
+        roll.maxLocals = 3;
+        roll.maxStack = 2;
+
+        assertTrue(AlienEvoMolang1201.apply(node) > 0);
+        assertTrue(hasCall(roll, INVOKESTATIC, AlienEvoMolang1201.AZURELIB_ROLL_TIME_CONTEXT,
+                "getAnimationTime", "()D"));
+        assertFalse(hasCall(roll, INVOKEVIRTUAL, AlienEvoMolang1201.PARSER_COMPAT,
+                "getVariable", "(Ljava/lang/String;)L" + AlienEvoMolang1201.VARIABLE_COMPAT + ";"));
+        assertFalse(hasOwner(roll, AlienEvoMolang1201.OLD_PARSER));
+        assertFalse(hasOwner(roll, AlienEvoMolang1201.OLD_LAZY_VARIABLE));
+        assertEquals(0, AlienEvoMolang1201.apply(node));
+        assertClassCanBeSerialized(node);
     }
 
     @Test
