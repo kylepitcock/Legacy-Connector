@@ -1307,6 +1307,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/files/all?page=1&pageSize=20&version=1.12.2",
    "date": "2026-11-25",
    "open": true
+  },
+  {
+   "issue": 349,
+   "mod": "witherstormmod-1.20.1-4.2.1-all",
+   "mc": "1.20.1 (Forge)",
+   "status": "partial",
+   "details": "- Game Crashes Upon Spawning Witherstorm",
+   "lc": "legacyconnector-0.5.3",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/crackers-wither-storm-mod",
+   "date": "2026-11-25",
+   "open": true
   }
  ]
 }
