@@ -20,6 +20,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 final class AlienEvoVertexConsumer1201 implements Opcodes {
     static final String FLAT = "net/habb/alienevo/client/renderer/ModuleLootItemFx$Flat";
     static final String PLUMBER_COLLECTOR = "net/habb/alienevo/client/plumber/scan/ScanSlicer$Collector";
+    static final String PLUMBER_PRINTED = "net/habb/alienevo/client/plumber/scan/PlumberScanHologram$Printed";
     static final String DEFAULTED = "com/mojang/blaze3d/vertex/DefaultedVertexConsumer";
     static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
     static final String HELPER = "org/kylepitcock/legacyconnector/v1_20_1/migrate/VertexCompat";
@@ -31,10 +32,12 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
 
     /** Returns the number of structural and bytecode changes. */
     static int apply(ClassNode node) {
-        if (PLUMBER_COLLECTOR.equals(node.name)) return applyPlumberCollector(node);
-        if (!FLAT.equals(node.name) || !DEFAULTED.equals(node.superName)) return 0;
+        int guiChanges = AlienEvoGuiRender1201.apply(node);
+        if (PLUMBER_PRINTED.equals(node.name)) return guiChanges + applyPlumberPrinted(node);
+        if (PLUMBER_COLLECTOR.equals(node.name)) return guiChanges + applyPlumberCollector(node);
+        if (!FLAT.equals(node.name) || !DEFAULTED.equals(node.superName)) return guiChanges;
 
-        int changes = 0;
+        int changes = guiChanges;
         node.superName = "java/lang/Object";
         if (!node.interfaces.contains(VERTEX)) node.interfaces.add(VERTEX);
         if (!node.interfaces.contains(LEGACY_END)) node.interfaces.add(LEGACY_END);
@@ -141,6 +144,98 @@ final class AlienEvoVertexConsumer1201 implements Opcodes {
         if (flushAfterMethodReturn(node, "setNormal", "(FFF)L" + VERTEX + ";")) changes++;
 
         return changes;
+    }
+
+    /**
+     * Adapts the Badge portrait's Printed wrapper to the 1.21.1 VertexConsumer
+     * contract. Its old vertex/uv/normal sequence accumulates four vertices and
+     * commits one quad from endVertex(); preserve that ordering exactly.
+     */
+    private static int applyPlumberPrinted(ClassNode node) {
+        if (!node.interfaces.contains(VERTEX)
+                || find(node, "vertex", "(DDD)L" + VERTEX + ";") == null
+                || find(node, "endVertex", "()V") == null) {
+            return 0;
+        }
+
+        String[][] setters = {
+                {"color", "(IIII)L" + VERTEX + ";", "setColor"},
+                {"uv", "(FF)L" + VERTEX + ";", "setUv"},
+                {"overlayCoords", "(II)L" + VERTEX + ";", "setUv1"},
+                {"uv2", "(II)L" + VERTEX + ";", "setUv2"},
+                {"normal", "(FFF)L" + VERTEX + ";", "setNormal"}
+        };
+        for (String[] setter : setters) {
+            if (find(node, setter[0], setter[1]) == null
+                    && find(node, setter[2], setter[1]) == null) {
+                return 0;
+            }
+        }
+
+        MethodNode emit = find(node, "emit", "(L" + VERTEX + ";I)V");
+        if (emit == null) {
+            throw new IllegalStateException("PlumberScanHologram$Printed no longer has its inspected emit(VertexConsumer,int) method");
+        }
+
+        String legacyFullVertex = "(FFFFFFFFFIIFFF)V";
+        String compatFullVertex = "(L" + VERTEX + ";FFFFFFFFFIIFFF)V";
+        int legacyCalls = countCalls(emit, VERTEX, "vertex", legacyFullVertex);
+        int compatCalls = countCalls(emit, HELPER, "vertex", compatFullVertex);
+        if (!((legacyCalls == 1 && compatCalls == 0) || (legacyCalls == 0 && compatCalls == 1))) {
+            throw new IllegalStateException(
+                    "PlumberScanHologram$Printed emit expected exactly one legacy full-vertex call; found "
+                            + legacyCalls + " legacy and " + compatCalls + " adapted");
+        }
+
+        int changes = 0;
+        if (find(node, "addVertex", "(FFF)L" + VERTEX + ";") == null) {
+            node.methods.add(plumberAddVertexBridge(node.name));
+            changes++;
+        }
+        for (String[] setter : setters) {
+            changes += rename(node, setter[0], setter[1], setter[2]);
+        }
+        if (flushCollectorAfterSetNormal(node)) {
+            changes++;
+        }
+
+        if (legacyCalls == 1) {
+            MethodInsnNode oldCall = null;
+            for (AbstractInsnNode instruction : emit.instructions.toArray()) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.getOpcode() == INVOKEINTERFACE
+                        && VERTEX.equals(call.owner)
+                        && "vertex".equals(call.name)
+                        && legacyFullVertex.equals(call.desc)) {
+                    oldCall = call;
+                    break;
+                }
+            }
+            if (oldCall == null) {
+                throw new IllegalStateException("PlumberScanHologram$Printed full-vertex call opcode changed");
+            }
+            oldCall.setOpcode(INVOKESTATIC);
+            oldCall.owner = HELPER;
+            oldCall.name = "vertex";
+            oldCall.desc = compatFullVertex;
+            oldCall.itf = false;
+            changes++;
+        }
+
+        return changes;
+    }
+
+    private static int countCalls(MethodNode method, String owner, String name, String descriptor) {
+        int count = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && owner.equals(call.owner)
+                    && name.equals(call.name)
+                    && descriptor.equals(call.desc)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
