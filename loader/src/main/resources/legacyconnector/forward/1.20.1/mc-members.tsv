@@ -104,3 +104,8 @@ net/minecraft/world/level/storage/PlayerDataStorage	getPlayerDataFolder	*	getPla
 net/minecraft/client/gui/components/AbstractSelectionList	getLeft	*	getX
 net/minecraft/client/gui/components/AbstractSelectionList	getTop	*	getY
 net/minecraft/client/gui/components/AbstractSelectionList	renderList	*	renderListItems
+# 2026-11-24 table audit: enum constants 1.21.1 renamed (LootContext.EntityTarget and CopyNameFunction.NameSource lost the "killer" names)
+net/minecraft/world/level/storage/loot/LootContext$EntityTarget	DIRECT_KILLER	:*	DIRECT_ATTACKER
+net/minecraft/world/level/storage/loot/LootContext$EntityTarget	KILLER_PLAYER	:*	ATTACKING_PLAYER
+net/minecraft/world/level/storage/loot/functions/CopyNameFunction$NameSource	KILLER	:*	ATTACKING_ENTITY
+net/minecraft/world/level/storage/loot/functions/CopyNameFunction$NameSource	KILLER_PLAYER	:*	LAST_DAMAGE_PLAYER
