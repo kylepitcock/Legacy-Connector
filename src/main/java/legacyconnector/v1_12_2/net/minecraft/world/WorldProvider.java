@@ -37,8 +37,14 @@ public abstract class WorldProvider {
         this.world = world;
         this.terrainType = world.getWorldInfo().getTerrainType();
         this.generatorSettings = world.getWorldInfo().getGeneratorOptions();
-        init();
-        generateLightBrightnessTable();
+        World outer = world;
+        outer.mcc$building = this;
+        try {
+            init();
+            generateLightBrightnessTable();
+        } finally {
+            outer.mcc$building = null;
+        }
     }
 
     protected void generateLightBrightnessTable() {
@@ -51,6 +57,18 @@ public abstract class WorldProvider {
     protected void init() {
         this.hasSkyLight = true;
         this.biomeProvider = BiomeProvider.mcc$of(world);
+        // 1.12: biomeProvider = terrainType.getBiomeProvider(world). Only for the world types the layer hosts (their generator asks the provider's biomes);
+        // the plain ones keep the biomes of the world itself.
+        // (the base implementation answers world.getBiomeProvider(), i.e. this very provider's: only a type's own override counts)
+        if (org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyWorldPresets1122.hasOwnGenerator(terrainType)) {
+            try {
+                BiomeProvider own = org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyWorldPresets1122.hasOwnBiomeProvider(terrainType)
+                        ? terrainType.getBiomeProvider(world) : new BiomeProvider(world.getWorldInfo()); // 1.12's vanilla layers
+                if (own != null) this.biomeProvider = own;
+            } catch (RuntimeException | LinkageError e) {
+                // the type's provider could not be built: the world's biomes stay
+            }
+        }
     }
 
     /** The dimension's legacy chunk generator; null means the modern game generates it. */

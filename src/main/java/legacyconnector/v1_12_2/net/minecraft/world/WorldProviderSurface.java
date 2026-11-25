@@ -23,6 +23,10 @@ public class WorldProviderSurface extends WorldProvider {
      */
     @Override
     public legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator createChunkGenerator() {
+        if (mcc$generator == null && world != null && org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyWorldPresets1122.hasOwnGenerator(terrainType)) {
+            // a world created with a mod's world type that has its own generator: the type's (1.12: WorldProviderSurface asked terrainType)
+            mcc$generator = terrainType.getChunkGenerator(world, generatorSettings);
+        }
         if (mcc$generator == null && world != null) {
             var info = world.getWorldInfo();
             mcc$generator = new legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorOverworld(world, world.getSeed(),
