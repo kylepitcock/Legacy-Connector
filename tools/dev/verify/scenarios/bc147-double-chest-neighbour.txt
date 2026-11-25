@@ -1,0 +1,15 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): a single chest next to a double chest (modern placement allows it, 1.4.7 did not) must not be taken for the double chest's other half
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /tp @s 0.5 150 -3.5
+cmd /give @s minecraft:chest 8
+slot 0
+look 0 40
+useat 0 148 0
+wait 10
+useat 1 148 0
+wait 10
+useat 2 148 0
+wait 10
+wait 40
+expect sizes=54,54,27 :: (function(){var r="";server.executeBlocking(function(){var W=Java.type("legacyconnector.v1_7_10.net.minecraft.world.World").mcc$wrap(server.overworld());var L=Java.type("java.lang.Thread").currentThread().getContextClassLoader();var U=Java.type("java.lang.Class").forName("buildcraft.core.utils.Utils",true,L);var o=[];[0,1,2].forEach(function(x){var t=W.getTileEntity(x,149,0);var m=U.getMethods();var inv=null;for(var i=0;i<m.length;i++){if(m[i].getName()=="getInventory"&&m[i].getParameterCount()==1){inv=m[i].invoke(null,t);}}o.push(inv==null?"null":inv.getSizeInventory()+((inv.isPartOfLargeChest&&inv.isPartOfLargeChest(W.getTileEntity(2,149,0)))?"+c3":""));});r="sizes="+o.join(",");});return r;})()

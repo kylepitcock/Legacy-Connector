@@ -1,0 +1,13 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): below y=0, a quarry placed with a wrench-oriented stone engine builds its frame and digs (default 9x9 area, no landmarks)
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -14 -60 -14 14 -31 14 minecraft:stone
+cmd /tp @s 0.5 -26 -3.5
+cmd /setblock -1 -30 0 buildcraft_energy:engineblock[meta=1]
+cmd /setblock -1 -29 0 minecraft:redstone_block
+wait 20
+cmd /setblock 0 -30 0 buildcraft_core:machineblock
+wait 20
+expect orient=5 :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var e=l.getBlockEntity(new BP(-1,-30,0)).legacy();e.switchOrientation();var IS=Java.type("legacyconnector.v1_7_10.net.minecraft.item.ItemStack");var I=Java.type("legacyconnector.v1_7_10.net.minecraft.init.Items");e.setInventorySlotContents(0,new IS(I.coal,64));r="orient="+e.orientation+" kind="+e.getEngine().getClass().getName();});return r;})()
+wait 3000
+expect builderDone=true.*airBelow=[1-9] :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var q=l.getBlockEntity(new BP(0,-30,0)).legacy();var ks=[];["builderDone","headPosY"].forEach(function(fn){try{var fld=q.getClass().getDeclaredField(fn);fld.setAccessible(true);ks.push(fn+"="+fld.get(q));}catch(e){ks.push(fn+"=?");}});var f=0;for(var x=-14;x<=14;x++)for(var z=-14;z<=14;z++)for(var y=-36;y<=-24;y++){if(String(l.getBlockState(new BP(x,y,z)).getBlock().builtInRegistryHolder().key().location()).indexOf("frame")>=0)f++;}ks.push("frames="+f);var a=0;for(var x=-14;x<=14;x++)for(var z=-14;z<=14;z++)for(var y=-50;y<=-31;y++){if(l.getBlockState(new BP(x,y,z)).isAir())a++;}ks.push("airBelow="+a);var pp=q.getPowerProvider();r=ks.join(",")+" stored="+pp.getEnergyStored()+" min="+pp.getMinEnergyReceived()+" max="+pp.getMaxEnergyReceived();});return r;})()
+shot bc147-quarry-full-below-zero

@@ -235,6 +235,7 @@ time; no argument runs every scenario). Scenarios are `tools/dev/verify/scenario
 mods: 1.7.10 Thaumcraft-1.7.10        one line per jar: <version-folder> <jar fragment>, looked up like the server suites (SEARCH in verify/client.py)
 world: minecraft:flat                 optional (default flat)
 cmd /give @s thaumcraft:itemthaumonomicon   any RemoteControl verb as is (cmd, wait n, slot n, look yaw pitch, use, useitem, holduse n, ...)
+reload                                    saves, closes and opens the singleplayer world again (what quit and rejoin does to chunks, entities and block entities); the step waits until the player is back
 expect LegacyScreen :: mc.screen == null ? "none" : mc.screen.getClass().getName()
 shot tc4-book                         screenshot
 logabsent StackOverflowError          fails when logs/latest.log contains the pattern

@@ -42,6 +42,14 @@ public final class RemoteControl {
 
     /** Called every client tick. */
     public void tick(Minecraft mc) {
+        if (reloading) {
+            // after "reload": the world is open again and the player is in it
+            if (mc.level != null && mc.player != null && ++reloadTicks > 60) {
+                reloading = false;
+                finish("reloaded");
+            }
+            return;
+        }
         if (current != null) {
             if (pendingShot != null) {
                 if (--shotDelay > 0) return;
@@ -279,6 +287,16 @@ public final class RemoteControl {
                 }
                 waitTicks = 1;
             }
+            case "reload" -> {
+                // saves and closes the singleplayer world and opens it again (what a player's quit and rejoin does: chunks, entities and
+                // block entities go through their saved form)
+                String id = mc.getSingleplayerServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).normalize().getFileName().toString();
+                mc.level.disconnect();
+                mc.disconnect(new net.minecraft.client.gui.screens.GenericMessageScreen(net.minecraft.network.chat.Component.literal("reload")));
+                reloading = true;
+                reloadTicks = 0;
+                mc.createWorldOpenFlows().openWorld(id, () -> mc.setScreen(null));
+            }
             case "quit" -> {
                 finishLater("bye");
                 mc.stop();
@@ -287,6 +305,8 @@ public final class RemoteControl {
         }
     }
 
+    private boolean reloading;
+    private int reloadTicks;
     private String later;
 
     private void finishLater(String text) {

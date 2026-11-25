@@ -1,0 +1,15 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): the world is closed and opened again (verb reload); the client still has the arm with its moving parts. Finding: the client always also shows 4 parts of the server-side arm standing at the arm root (with or without reload)
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -14 100 -14 14 148 14 minecraft:stone
+cmd /tp @s 0.5 154 -3.5
+cmd /setblock -1 149 0 buildcraft_energy:engineblock[meta=1]
+cmd /setblock -1 150 0 minecraft:redstone_block
+wait 20
+cmd /setblock 0 149 0 buildcraft_core:machineblock
+wait 20
+expect orient=5 :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var e=l.getBlockEntity(new BP(-1,149,0)).legacy();e.switchOrientation();var IS=Java.type("legacyconnector.v1_7_10.net.minecraft.item.ItemStack");var I=Java.type("legacyconnector.v1_7_10.net.minecraft.init.Items");e.setInventorySlotContents(0,new IS(I.coal,64));r="orient="+e.orientation;});return r;})()
+wait 2400
+expect before: :: (function(){var r="";server.executeBlocking(function(){var n={};server.overworld().getAllEntities().forEach(function(e){var c=String(e.getClass().getSimpleName());if(e.mcc$legacy){c=String(e.mcc$legacy().getClass().getName()).replace(/.*\./,"");}n[c]=(n[c]||0)+1;});r="before: "+JSON.stringify(n);Java.type("java.lang.System").setProperty("bcbefore",r);});return r;})()
+reload
+wait 400
+expect CLIENT head= :: (function(){var r="";var BP=Java.type("net.minecraft.core.BlockPos");var l=mc.level;var be=l.getBlockEntity(new BP(0,149,0));var q=be.legacy();var C=q.getClass();var h=[];["headPosX","headPosY","headPosZ"].forEach(function(fn){var f=C.getDeclaredField(fn);f.setAccessible(true);h.push(Math.round(f.getDouble(q)*10)/10);});var af=C.getDeclaredField("arm");af.setAccessible(true);var arm=af.get(q);var o=[];l.entitiesForRendering().forEach(function(e){if(e.mcc$legacy){var n=String(e.mcc$legacy().getClass().getName());if(n.indexOf("EntityBlock")>=0||n.indexOf("MechanicalArm")>=0)o.push(n.replace(/.*\./,"")+"@"+Math.round(e.getX())+","+Math.round(e.getY())+","+Math.round(e.getZ()));}});r="CLIENT head="+h.join(",")+" tileArm="+(arm==null?"null":"set")+" "+o.join(" ");return r;})()

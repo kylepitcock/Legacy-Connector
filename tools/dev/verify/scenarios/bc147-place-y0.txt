@@ -1,0 +1,11 @@
+# BuildCraft 3.4.6 for 1.4.7 (#329): a BuildCraft block can be placed at y=0 (the legacy view answered bedrock for every air block at y=0, so placement and mining stopped there)
+mods: 1.4.7 buildcraft-A-1.4.7-3.4.6
+cmd /fill -6 -2 -6 6 -1 6 minecraft:stone
+cmd /fill -6 0 -6 6 6 6 minecraft:air
+cmd /tp @s 3.5 2 3.5
+cmd /give @s buildcraft_core:tankblock 4
+slot 0
+look 0 60
+useat 3 -1 3
+wait 20
+expect y0=buildcraft_core:tankblock :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();r="y0="+String(l.getBlockState(new BP(3,0,3)).getBlock().builtInRegistryHolder().key().location())+" origin="+String(l.getBlockState(new BP(0,0,0)).getBlock().builtInRegistryHolder().key().location());var W=Java.type("legacyconnector.v1_7_10.net.minecraft.world.World").mcc$wrap(l);r=r+" air(5,0,5)="+W.isAirBlock(5,0,5);});return r;})()
