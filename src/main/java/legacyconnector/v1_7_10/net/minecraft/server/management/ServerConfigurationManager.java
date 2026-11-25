@@ -72,11 +72,23 @@ public class ServerConfigurationManager {
         sp.teleportTo(target, x, y, z, yaw, sp.getXRot());
         if (teleporter != null) {
             try {
-                teleporter.placeInPortal(player, x, y, z, yaw);
+                mcc$place(teleporter, player, x, y, z, yaw);
             } catch (RuntimeException | LinkageError e) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Dimensions").error("The teleporter {} failed", teleporter.getClass().getName(), e);
             }
             mcc$syncPosition(sp);
+        }
+    }
+
+    /** Runs the teleporter with block reads loading the chunks they touch (1.7.10 generated them on demand: portal searches scan 128 blocks). */
+    private static void mcc$place(legacyconnector.v1_7_10.net.minecraft.world.Teleporter teleporter,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, double x, double y, double z, float yaw) {
+        Boolean before = legacyconnector.v1_7_10.net.minecraft.world.World.MCC_LOAD_ON_READ.get();
+        legacyconnector.v1_7_10.net.minecraft.world.World.MCC_LOAD_ON_READ.set(Boolean.TRUE);
+        try {
+            teleporter.placeInPortal(entity, x, y, z, yaw);
+        } finally {
+            legacyconnector.v1_7_10.net.minecraft.world.World.MCC_LOAD_ON_READ.set(before);
         }
     }
 
@@ -197,7 +209,7 @@ public class ServerConfigurationManager {
         }
         if (teleporter == null || moved == null) return;
         try {
-            teleporter.placeInPortal(moved, x, y, z, yaw);
+            mcc$place(teleporter, moved, x, y, z, yaw);
         } catch (RuntimeException | LinkageError e) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Dimensions").error("The teleporter {} failed", teleporter.getClass().getName(), e);
         }
