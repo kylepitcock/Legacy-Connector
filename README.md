@@ -181,6 +181,8 @@ Open a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues) an
 - `logs/legacyconnector-report.txt`
 - the crash report, if there is one
 
+In the game (0.5.3 and later) `/legacyconnector report` writes one zip with the logs and the mod list (user name and paths removed) that you can attach instead.
+
 Also say:
 - the Legacy Connector version (for a nightly, the full version)
 - the mod and its Minecraft version

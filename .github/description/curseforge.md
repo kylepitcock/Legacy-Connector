@@ -218,7 +218,7 @@ Every key (textures, ore backgrounds, world height, coremods, energy rates, perf
 
 **Does it work on Fabric or Forge?** No. It is a NeoForge 1.21.1 mod. (Fabric mods on NeoForge are what Sinytra Connector does; Legacy Connector is the equivalent for old Forge versions.)
 
-**Something broke. How do I report it?** Open a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues) and attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files (and the crash report if there is one). Please say the Legacy Connector version (for a nightly, the full version), the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author.
+**Something broke. How do I report it?** Run `/legacyconnector report` in the game (0.5.3 and later): it writes one zip with the logs and the mod list, with your user name and paths removed. Attach it to a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues). Without the command, attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files (and the crash report if there is one). Please say the Legacy Connector version (for a nightly, the full version), the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author.
 
 ## Troubleshooting
 

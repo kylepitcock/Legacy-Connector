@@ -44,6 +44,8 @@ New chunks of worlds made with older versions use the new placement, so biome bo
 
 ### Legacy world types
 
+Since 0.5.3 the world types of 1.12.2 mods are listed as well. For them the preset is vanilla terrain with the mod's biomes for now; the layered chain below is for 1.7.10.
+
 A world type a mod registers (BoP's "BIOMESOP") appears on the Create World screen's world type button; on a
 dedicated server use `level-type=<modid>:<type>` (e.g. `biomesoplenty:biomesop`). Its world preset brings its own biome
 source, `legacyconnector:legacy_layers` (`LegacyLayeredBiomeSource`, a multi-noise source of the vanilla parameter list, so
