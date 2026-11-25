@@ -51,11 +51,11 @@ public class Packet131MapData extends Packet {
 
     @Override
     public void mcc$send(ServerPlayer player) {
-        if (mcc$modId != null) org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(this).mcc$send(player);
+        if (org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.resolveTinyMod(this)) org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(this).mcc$send(player);
     }
 
     @Override
     public void mcc$sendToServer() {
-        if (mcc$modId != null) org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(this).mcc$sendToServer();
+        if (org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.resolveTinyMod(this)) org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.tiny(this).mcc$sendToServer();
     }
 }
