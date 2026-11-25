@@ -36,7 +36,7 @@ public class LegacyMenu extends AbstractContainerMenu {
         this.clientGui = clientGui;
         this.player = playerInventory.player;
         this.overridesSlotClick = org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(legacy, "slotClick", int.class, int.class, int.class, EntityPlayer.class);
-        this.preDragEra = isPreDragEra(org.kylepitcock.legacyconnector.api.internal.VersionLookup.of(legacy.getClass()).orElse(null));
+        this.preDragEra = isPreDragEra(versionOf(legacy.getClass()));
         legacy.windowId = windowId;
         legacy.mcc$menu = this;
         for (Object o : legacy.inventorySlots) addSlot(new LegacySlot((legacyconnector.v1_7_10.net.minecraft.inventory.Slot) o));
@@ -56,6 +56,19 @@ public class LegacyMenu extends AbstractContainerMenu {
         } finally {
             inSlotClick = false;
         }
+    }
+
+    /** The legacy version of the mod whose class loader defined the class (the hosted layer's version string of its record), else the shim package's. */
+    private static org.kylepitcock.legacyconnector.api.LegacyVersion versionOf(Class<?> cls) {
+        ClassLoader loader = cls.getClassLoader();
+        for (var r : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            if (r.mainClass == null || r.mainClass.getClassLoader() != loader) continue;
+            String v = r.metadata != null && r.metadata.has("sourceVersion") ? r.metadata.get("sourceVersion").getAsString() : r.version;
+            if ("1.2.5".equals(v)) return org.kylepitcock.legacyconnector.api.LegacyVersion.V1_2_5;
+            if ("1.4.7".equals(v)) return org.kylepitcock.legacyconnector.api.LegacyVersion.V1_4_7;
+            return null;
+        }
+        return org.kylepitcock.legacyconnector.api.internal.VersionLookup.of(cls).orElse(null);
     }
 
     /** 1.4.7 and older containers have no click modes 4 (throw), 5 (drag split, arrived in 1.5) and 6 (collect). */
