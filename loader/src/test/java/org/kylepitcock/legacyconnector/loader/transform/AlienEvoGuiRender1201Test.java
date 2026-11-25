@@ -46,6 +46,26 @@ class AlienEvoGuiRender1201Test implements Opcodes {
     }
 
     @Test
+    void acceptsPreviewCallAlreadyRedirectedByGenericMinecraftMigration() {
+        ClassNode node = previewWidget();
+        MethodNode renderEntity = find(node, "renderEntity", PREVIEW_METHOD_DESC);
+        MethodInsnNode redirected = findCall(renderEntity, INVOKESTATIC,
+                AlienEvoGuiRender1201.INVENTORY_SCREEN,
+                "renderEntityInInventoryFollowsMouse", LEGACY_PREVIEW_DESC);
+        assertTrue(redirected != null);
+
+        // Mc1201Migration's mc-calls.tsv row rewrites this owner to MiddleClientCompat first.
+        redirected.owner = AlienEvoGuiRender1201.MIDDLE_CLIENT_COMPAT;
+
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "the earlier generic migration has already adapted this call");
+        assertEquals(AlienEvoGuiRender1201.MIDDLE_CLIENT_COMPAT, redirected.owner);
+        assertEquals(INVOKESTATIC, redirected.getOpcode());
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "recognizing the generic bridge must remain idempotent");
+    }
+
+    @Test
     void removesOnlyTheBadgeLegacyBackgroundCallAndKeepsOtherRenderWork() {
         ClassNode node = badgeScreen();
 
