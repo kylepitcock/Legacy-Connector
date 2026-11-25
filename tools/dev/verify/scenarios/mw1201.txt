@@ -1,0 +1,18 @@
+# #335 Management Wanted (1.20.1): its title screen draws as the mod made it, vanilla screens keep their dimmed/blurred background
+mods: 1.20.1 management_wanted
+mods: . geckolib-neoforge-1.21.1
+wait 20
+js var S = Java.type("net.minecraft.client.gui.screens.PauseScreen"); mc.setScreen(new S(true)); "pause"
+wait 20
+shot mw-vanilla-pause
+js var S = Java.type("net.minecraft.client.gui.screens.options.OptionsScreen"); mc.setScreen(new S(mc.screen, mc.options)); "options"
+wait 20
+shot mw-vanilla-options
+js mc.setScreen(null); "x"
+js var G = Java.type("net.minecraft.client.gui.screens.GenericMessageScreen"); var C = Java.type("net.minecraft.network.chat.Component"); var T = Java.type("net.minecraft.client.gui.screens.TitleScreen"); mc.level.disconnect(); mc.disconnect(new G(C.translatable("menu.savingLevel"))); mc.setScreen(new T()); "left"
+wait 120
+js log.info("MWTITLE " + mc.screen.getClass().getName()); "ok"
+shot mw-title
+js var S = Java.type("net.minecraft.client.gui.screens.options.OptionsScreen"); mc.setScreen(new S(mc.screen, mc.options)); "options"
+wait 20
+shot mw-title-options
