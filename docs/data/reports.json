@@ -1319,6 +1319,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/crackers-wither-storm-mod",
    "date": "2026-11-25",
    "open": true
+  },
+  {
+   "issue": 350,
+   "mod": "sp-1.20.1-1.6.5",
+   "mc": "1.20.1 (Forge)",
+   "status": "partial",
+   "details": "- Mapper Does Not Allow Mapping First and Second Points - Placing a Camera Crashes The Game",
+   "lc": "legacyconnector-0.5.3",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/surveillance-package",
+   "date": "2026-11-25",
+   "open": true
   }
  ]
 }
