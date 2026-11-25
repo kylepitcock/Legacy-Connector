@@ -191,8 +191,16 @@ public final class RecipeBridge {
         } else if (recipe instanceof ShapelessRecipes s) {
             if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<Object>(s.recipeItems)));
         } else {
-            // NEI recipe wrappers (Thermal Expansion's NEIRecipeWrapper) are IRecipes only so NEI can list them; they never match
-            if (recipe.getClass().getName().contains(".nei.")) return;
+            // NEI recipe wrappers (Thermal Expansion's NEIRecipeWrapper) are IRecipes that make NEI's own crafting handlers skip a recipe; the
+            // wrapper still delegates matching and the result to the recipe it wraps, so it crafts like it (the machine frame recipes)
+            if (recipe.getClass().getName().contains(".nei.")) {
+                IRecipe inner = wrapped(recipe);
+                if (inner == null) return;
+                if (inner instanceof ShapedOreRecipe so) {
+                    addShapedSpec(recipe, so.getRecipeOutput(), so.mcc$args, true);
+                    return;
+                }
+            }
             RECIPES.add(new Custom(owner(), recipe, CUSTOM.size()));
             CUSTOM.add(recipe);
         }
@@ -207,6 +215,15 @@ public final class RecipeBridge {
                             legacyconnector.v1_7_10.net.minecraft.world.World.class).getDeclaringClass() != base;
         } catch (ReflectiveOperationException | LinkageError e) {
             return false;
+        }
+    }
+
+    /** The recipe a recipe-viewer wrapper delegates to ({@code getWrappedRecipe()}), or null. */
+    private static IRecipe wrapped(IRecipe wrapper) {
+        try {
+            return wrapper.getClass().getMethod("getWrappedRecipe").invoke(wrapper) instanceof IRecipe r ? r : null;
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return null;
         }
     }
 
