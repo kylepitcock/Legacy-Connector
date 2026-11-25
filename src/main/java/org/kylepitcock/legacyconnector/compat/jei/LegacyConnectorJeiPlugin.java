@@ -120,11 +120,8 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             @Override
             public <V> List<RecipeType<?>> getRecipeTypes(mezz.jei.api.recipe.IFocus<V> focus) {
                 List<RecipeType<?>> out = new ArrayList<>();
-                net.minecraft.world.item.ItemStack stack = stackOf(focus);
-                if (stack == null) return out;
-                boolean usage = focus.getRole() == RecipeIngredientRole.INPUT;
                 if (focus.getRole() != RecipeIngredientRole.INPUT && focus.getRole() != RecipeIngredientRole.OUTPUT) return out;
-                for (Category c : categories) if (!lookupBeyondRegistered(c, stack, usage).isEmpty()) out.add(c.type);
+                for (Category c : categories) if (!lookupFor(c, focus).isEmpty()) out.add(c.type);
                 return out;
             }
 
@@ -132,10 +129,8 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             @SuppressWarnings("unchecked")
             public <T, V> List<T> getRecipes(IRecipeCategory<T> category, mezz.jei.api.recipe.IFocus<V> focus) {
                 if (!(category instanceof Category c)) return List.of();
-                net.minecraft.world.item.ItemStack stack = stackOf(focus);
-                if (stack == null) return List.of();
                 if (focus.getRole() != RecipeIngredientRole.INPUT && focus.getRole() != RecipeIngredientRole.OUTPUT) return List.of();
-                return (List<T>) lookupBeyondRegistered(c, stack, focus.getRole() == RecipeIngredientRole.INPUT);
+                return (List<T>) lookupFor(c, focus);
             }
 
             @Override
@@ -143,6 +138,15 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
                 return List.of();
             }
         });
+    }
+
+    /** The handler's lookup for the focused item or fluid. */
+    private static List<NeiBridge.Recipe> lookupFor(Category c, mezz.jei.api.recipe.IFocus<?> focus) {
+        boolean usage = focus.getRole() == RecipeIngredientRole.INPUT;
+        Object value = focus.getTypedValue().getIngredient();
+        if (value instanceof net.neoforged.neoforge.fluids.FluidStack fluid) return NeiBridge.lookupFluid(c.handler, fluid, usage);
+        net.minecraft.world.item.ItemStack stack = stackOf(focus);
+        return stack == null ? List.of() : lookupBeyondRegistered(c, stack, usage);
     }
 
     /** The handler's item lookup minus the recipes JEI lists itself from the category's registered recipes (those would show twice). */

@@ -357,6 +357,42 @@ public final class NeiBridge {
         return out;
     }
 
+    private static final Map<String, List<Recipe>> FLUID_LOOKUPS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * NEI's lookup of a FLUID ({@code loadCraftingRecipes("liquid", FluidStack)} / {@code loadUsageRecipes("liquid", FluidStack)}), which fluid machines'
+     * handlers (Thermal Expansion's transposer, crucible...) answer: JEI asks it when the focus is a fluid, so "uses" of a fluid find them.
+     */
+    public static List<Recipe> lookupFluid(TemplateRecipeHandler handler, net.neoforged.neoforge.fluids.FluidStack fluid, boolean usage) {
+        if (fluid == null || fluid.isEmpty()) return List.of();
+        String key = handler.getClass().getName() + (usage ? "|use|" : "|make|") + net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fluid.getFluid());
+        List<Recipe> cached = FLUID_LOOKUPS.get(key);
+        if (cached != null) return cached;
+        List<Recipe> out = new ArrayList<>();
+        try {
+            var legacyFluid = org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.legacyOf(fluid.getFluid());
+            if (legacyFluid != null) {
+                legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack legacy = new legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack(legacyFluid, 1000);
+                TemplateRecipeHandler h = handler.newInstance();
+                if (usage) h.loadUsageRecipes("liquid", legacy);
+                else h.loadCraftingRecipes("liquid", legacy);
+                NeiRecipeIds recipeIds = new NeiRecipeIds(handler.getClass());
+                for (int i = 0; i < h.numRecipes(); i++) {
+                    try {
+                        PositionedStack result = h.getResultStack(i);
+                        out.add(promote(handler, new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i)).identifiedBy(recipeIds));
+                    } catch (RuntimeException | LinkageError e) {
+                        // skip a broken recipe
+                    }
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a handler that does not answer fluid lookups has no recipes for it
+        }
+        FLUID_LOOKUPS.put(key, out);
+        return out;
+    }
+
     // ------------------------------------------------------------------ how a handler is presented (JEI category)
 
     /**
