@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,12 +123,18 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
         return found;
     }
 
+    private static String stillClockHandlerDescriptor(
+            String animatable,
+            String animationState,
+            boolean withPartialTick) {
+        return "(" + animatable + "J" + animationState + (withPartialTick ? "F" : "") + CI + ")V";
+    }
+
     private static MethodNode stillClockHandler(ClassNode node, boolean withPartialTick) {
         String animatable = "Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;";
         String animationState = "Lsoftware/bernie/geckolib/core/animation/AnimationState;";
-        String oldDesc = "(" + animatable + "J" + animationState + CI + ")V";
-        String newDesc = "(" + animatable + "J" + animationState + "F" + CI + ")V";
-        return method(node, "alienevo$poseStill", withPartialTick ? newDesc : oldDesc, 8,
+        String descriptor = stillClockHandlerDescriptor(animatable, animationState, withPartialTick);
+        return method(node, "alienevo$poseStill", descriptor, 8,
                 ALOAD, withPartialTick ? 6 : 5, ALOAD, withPartialTick ? 7 : 6, ALOAD, withPartialTick ? 8 : 7);
     }
 
@@ -146,7 +151,9 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
                 false);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
-        assertTrue(isStillClockDescriptor(Type.getArgumentTypes(handler.desc), true));
+        assertEquals(stillClockHandlerDescriptor(
+                "Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;",
+                "Lsoftware/bernie/geckolib/core/animation/AnimationState;", true), handler.desc);
         assertEquals(List.of(6, 7, 8), localSlots(handler));
         assertEquals(9, handler.maxLocals);
         assertNull(handler.localVariables);
@@ -192,7 +199,9 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
                 false);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
-        assertTrue(isStillClockDescriptor(Type.getArgumentTypes(handler.desc), true));
+        assertEquals(stillClockHandlerDescriptor(
+                "Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;",
+                "Lsoftware/bernie/geckolib/core/animation/AnimationState;", true), handler.desc);
         assertEquals("(L" + core + "/animation/AnimationState;D)V", onlyCall(pose, "preAnimationSetup").desc);
         assertEquals(0, countCalls(pose, "getAnimatable"));
         assertEquals(0, AlienEvoGeckoMixins1201.apply(node));
@@ -221,18 +230,28 @@ class AlienEvoGeckoMixins1201Test implements Opcodes {
     @Test
     void stillClockPreservesOwnersAfterGeckoLibTypesWereRemapped() {
         ClassNode node = node(AlienEvoGeckoMixins1201.STILL_CLOCK);
-        String animatable = "Llegacyconnector/isolated/geckolib/GeoAnimatable;";
-        String animationState = "Llegacyconnector/isolated/geckolib/AnimationState;";
-        String oldDesc = "(" + animatable + "J" + animationState + CI + ")V";
-        String newDesc = "(" + animatable + "J" + animationState + "F" + CI + ")V";
-        MethodNode handler = method(node, "alienevo$poseStill", oldDesc, 8, ALOAD, 5, ALOAD, 6, ALOAD, 7);
+        String animatable = "legacyconnector/isolated/geckolib/GeoAnimatable";
+        String animationState = "legacyconnector/isolated/geckolib/AnimationState";
+        MethodNode handler = method(node, "alienevo$poseStill",
+                stillClockHandlerDescriptor("L" + animatable + ";", "L" + animationState + ";", false),
+                8, ALOAD, 5, ALOAD, 6, ALOAD, 7);
+        String isolated = "legacyconnector/isolated/geckolib";
+        MethodNode pose = addStillPoseMethod(node,
+                isolated + "/GeoAnimatable",
+                isolated + "/AnimatableManager",
+                isolated + "/AnimationProcessor",
+                isolated + "/AnimationState",
+                false);
 
         assertEquals(1, AlienEvoGeckoMixins1201.apply(node));
-        assertEquals(newDesc, handler.desc);
+        assertEquals(stillClockHandlerDescriptor("L" + animatable + ";", "L" + animationState + ";", true), handler.desc);
         assertEquals(List.of(6, 7, 8), localSlots(handler));
         assertEquals(9, handler.maxLocals);
         assertNull(handler.localVariables);
-        assertEquals(0, AlienEvoGeckoMixins1201.apply(node), "the descriptor rewrite must be idempotent");
+        assertEquals(List.of(3, 4, 5), localSlots(pose));
+        assertEquals(0, countCalls(pose, "getAnimatable"));
+        assertEquals("(L" + animationState + ";D)V", onlyCall(pose, "preAnimationSetup").desc);
+        assertEquals(0, AlienEvoGeckoMixins1201.apply(node), "the descriptor and call-site rewrite must be idempotent");
     }
 
     @Test
