@@ -120,6 +120,10 @@ public final class Vanilla1122 {
     public static synchronized Item standIn(net.minecraft.world.item.Item modern) {
         Item existing = STAND_INS.get(modern);
         if (existing != null) return existing;
+        // the same legacy object as the registered wrapper, once there is one: two objects for one modern item never compare equal
+        // (a Thermal furnace's output check, ItemStack.isItemEqual, compares Item identity)
+        Item registered = ITEM_REVERSE.get(modern);
+        if (registered != null) return registered;
         ensureLoaded();
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
         Item i = wrap(modern);
@@ -135,7 +139,8 @@ public final class Vanilla1122 {
         Item existing = ITEM_REVERSE.get(modern);
         if (existing != null) return existing;
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
-        Item i = wrap(modern);
+        Item stand = STAND_INS.get(modern);
+        Item i = stand != null ? stand : wrap(modern);
         i.setRegistryName(id.getNamespace(), id.getPath());
         i.mcc$modern = modern;
         i.mcc$vanillaModern = modern;
@@ -148,8 +153,10 @@ public final class Vanilla1122 {
         String legacy = legacyPath(field);
         ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, BLOCK_NAMES.getOrDefault(field, legacy)));
         var modern = id == null ? null : org.kylepitcock.legacyconnector.core.host.HostRegistries.get(BuiltInRegistries.ITEM, id);
-        Item i = wrap(modern);
-        i.setRegistryName("minecraft", legacy);
+        // a stand-in made earlier for this modern item (a stack converted before the name was looked up) is the wrapper: one object per item
+        Item stand = modern == null ? null : STAND_INS.get(modern);
+        Item i = stand != null ? stand : wrap(modern);
+        if (i.getRegistryName() == null) i.setRegistryName("minecraft", legacy);
         if (modern != null) {
             i.mcc$modern = modern;
             ITEM_REVERSE.putIfAbsent(modern, i);
