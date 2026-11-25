@@ -1,0 +1,36 @@
+# World types (#344), 1.12.2: BoP's and Lost Cities' world types appear on the Create World screen's world type button, one is created, spawned in and reloaded
+mods: 1.12.2 BiomesOPlenty-1.12.2-7.0.1.2445
+mods: 1.12.2 lostcities-1.12
+mods: 1.12.2 mcjtylib-1.12
+mods: 1.12.2 AutoRegLib-1.3
+wait 20
+js var G = Java.type("net.minecraft.client.gui.screens.GenericMessageScreen"); var C = Java.type("net.minecraft.network.chat.Component"); var T = Java.type("net.minecraft.client.gui.screens.TitleScreen"); mc.level.disconnect(); mc.disconnect(new G(C.translatable("menu.savingLevel"))); mc.setScreen(new T()); "left"
+wait 40
+js Java.type("net.minecraft.client.gui.screens.worldselection.CreateWorldScreen").openFresh(mc, new (Java.type("net.minecraft.client.gui.screens.TitleScreen"))()); "opened"
+wait 40
+js log.info("WT-NORMAL " + String(mc.screen.getUiState().getNormalPresetList().stream().map(function (e) { return e.describePreset().getString(); }).collect(Java.type("java.util.stream.Collectors").joining(" | "))))
+js log.info("WT-ALT " + String(mc.screen.getUiState().getAltPresetList().stream().map(function (e) { return e.describePreset().getString(); }).collect(Java.type("java.util.stream.Collectors").joining(" | "))))
+click 320 14
+wait 10
+shot wt-default
+js var st = mc.screen.getUiState(); var l = st.getNormalPresetList(); var n = l.size(); var i = 0; for (; i < n; i++) { if (String(l.get(i).describePreset().getString()).contains("Plenty")) { st.setWorldType(l.get(i)); break; } } log.info("WT-SELECTED " + String(st.getWorldType().describePreset().getString())); "sel"
+wait 20
+shot wt-bop-selected
+js var ch = mc.screen.children(); for (var k = 0; k < ch.size(); k++) { var c = ch.get(k); if (c instanceof Java.type("net.minecraft.client.gui.components.Button") && String(c.getMessage().getString()).contains("Create")) { c.onPress(); log.info("WT-PRESSED"); break; } } "pressed"
+wait 300
+expect Player :: mc.player == null ? "none" : "Player"
+wait 200
+expect true :: String(mc.player.onGround() || mc.player.getY() > -64)
+js log.info("WT-SPAWN " + mc.player.position() + " ground " + mc.player.onGround() + " biome " + mc.level.getBiome(mc.player.blockPosition()).unwrapKey().get().location())
+shot wt-bop-world
+js mc.setScreen(null); "x"
+wait 100
+shot wt-world2
+js java.lang.System.setProperty("lc.level", "New World"); var G = Java.type("net.minecraft.client.gui.screens.GenericMessageScreen"); var C = Java.type("net.minecraft.network.chat.Component"); var T = Java.type("net.minecraft.client.gui.screens.TitleScreen"); mc.level.disconnect(); mc.disconnect(new G(C.translatable("menu.savingLevel"))); mc.setScreen(new T()); "left"
+wait 60
+js mc.createWorldOpenFlows().openWorld(String(java.lang.System.getProperty("lc.level")), function () {}); "reopen"
+wait 300
+expect Player :: mc.player == null ? "none" : "Player"
+wait 100
+js log.info("WT-RELOAD " + mc.player.position() + " ground " + mc.player.onGround() + " biome " + mc.level.getBiome(mc.player.blockPosition()).unwrapKey().get().location())
+shot wt-reloaded

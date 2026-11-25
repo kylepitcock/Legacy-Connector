@@ -1,0 +1,10 @@
+# /legacyconnector report as the single-player owner WITHOUT cheats (permission 0): allowed, zip in logs/, no user name or token inside (checked by hand on the zip afterwards)
+mods: 1.7.10 Thaumcraft-1.7.10-4.2.3.5
+mods: 1.7.10 Baubles
+mods: 1.7.10 CodeChickenCore-1.7.10
+mods: 1.7.10 CodeChickenLib-1.7.10
+mods: 1.12.2 Forgelin-1.8
+wait 40
+expect ok :: (function(){var r="";server.executeBlocking(function(){var p=server.getPlayerList().getPlayers().get(0);server.getCommands().performPrefixedCommand(p.createCommandSourceStack().withPermission(0),"legacyconnector report");r="ok";});return r;})()
+wait 20
+shot report-bundle

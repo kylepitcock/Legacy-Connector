@@ -20,7 +20,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 JAR_ROOT = os.environ.get("JAR_ROOT", "Y:/Programming/Minecraft/Retrofit")
-SEARCH = ("test-mods-issues/268 test-mods-issues/331 test-mods-issues/284 test-mods-issues/298 test-mods-issues/311 test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a "
+SEARCH = ("test-mods-issues/113 test-mods-issues/328 test-mods-issues/329 test-mods-issues/310 test-mods-issues/335 test-mods-issues/327 test-mods-issues/248 test-mods-mcarchive/1.4.7 test-mods-issues/268 test-mods-issues/331 test-mods-issues/284 test-mods-issues/298 test-mods-issues/311 test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a "
           "test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods "
           "run-screenshots/mods.aside-20261113 run-subtest/mods-user").split()
 EXT = (".jar", ".zip", ".litemod")

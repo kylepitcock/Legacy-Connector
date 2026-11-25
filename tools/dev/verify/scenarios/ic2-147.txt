@@ -1,0 +1,40 @@
+# #328 IC2 1.4.7: BatBox GUI full and stays full, RE-Battery in its slot does not drain visually, three Geothermal Generators with fuel show active
+mods: 1.4.7 industrialcraft-2_1.115
+wait 20
+cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /fill -6 149 -6 6 156 6 minecraft:air
+cmd /tp @s 0.5 149 4.5 180 20
+wait 20
+cmd /setblock 0 149 0 ic2:blockelectric
+cmd /setblock 2 149 0 ic2:blockgenerator_1
+cmd /setblock -2 149 0 ic2:blockgenerator_1
+cmd /setblock 4 149 0 ic2:blockgenerator_1
+wait 20
+expect ok :: (function(){server.executeBlocking(function(){var P=Java.type("net.minecraft.core.BlockPos");[[0,149,0],[2,149,0],[-2,149,0],[4,149,0]].forEach(function(c){var h=server.overworld().getBlockEntity(new P(c[0],c[1],c[2]));var t=h.legacy();if(c[0]==0){t.energy=t.maxStorage;}else{t.fuel=20000;}log.info("IC2SET "+t.getClass().getSimpleName()+" energy="+(c[0]==0?t.energy:t.fuel));});});return "ok";})()
+wait 5
+expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E after-set "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()
+wait 60
+expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E 60t "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()
+shot ic2-world-active
+cmd /give @s ic2:itembatre_30242
+wait 10
+js log.info("IC2ITEM " + mc.player.getInventory().getItem(0).getHoverName().getString() + " / " + mc.player.getInventory().getItem(1).getHoverName().getString())
+js var BHR = Java.type("net.minecraft.world.phys.BlockHitResult"); var V = Java.type("net.minecraft.world.phys.Vec3"); var P = Java.type("net.minecraft.core.BlockPos"); var D = Java.type("net.minecraft.core.Direction"); var H = Java.type("net.minecraft.world.InteractionHand"); mc.gameMode.useItemOn(mc.player, H.MAIN_HAND, new BHR(new V(0.5, 149.5, 0.9), D.SOUTH, new P(0, 149, 0), false)); log.info("IC2OPEN " + mc.screen); "ok"
+wait 40
+expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E gui-open "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()
+shot ic2-batbox-gui-1
+wait 200
+expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E gui-200t "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()
+shot ic2-batbox-gui-2
+js var m = mc.player.containerMenu; var n = m.slots.size(); log.info("IC2MENU " + m.getClass().getName() + " slots=" + n); "ok"
+js var m = mc.player.containerMenu; var CT = Java.type("net.minecraft.world.inventory.ClickType"); mc.gameMode.handleInventoryMouseClick(m.containerId, m.slots.size() - 9, 0, CT.QUICK_MOVE, mc.player); "moved"
+wait 100
+shot ic2-batbox-battery-1
+wait 200
+expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E battery-200t "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()
+shot ic2-batbox-battery-2
+js log.info("IC2ENERGY " + Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(), new (Java.type("net.minecraft.core.BlockPos"))(0, 149, 0), false)); "ok"
+expect ok :: (function(){server.executeBlocking(function(){var P=Java.type("net.minecraft.core.BlockPos");[[2,149,0],[-2,149,0],[4,149,0]].forEach(function(c){var t=server.overworld().getBlockEntity(new P(c[0],c[1],c[2])).legacy();log.info("IC2GEO "+c[0]+" fuel="+t.fuel+" active="+t.active+" storage="+t.storage);});});return "ok";})()
+cmd /give @s ic2:rubberleaves
+wait 10
+js log.info("IC2LEAVES " + mc.player.getInventory().getItem(0).getHoverName().getString() + " / " + mc.player.getInventory().getItem(1).getHoverName().getString() + " / " + mc.player.getInventory().getItem(2).getHoverName().getString())

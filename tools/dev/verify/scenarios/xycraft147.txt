@@ -1,0 +1,26 @@
+# #327 Xycraft 1.4.7: form the multiblock tank and break one block: no crash (the tank is a hollow 3x3x3 of engineering bricks with a valve)
+mods: 1.4.7 xycraft-1.4.7
+wait 20
+cmd /fill -8 148 -8 8 148 8 minecraft:stone
+cmd /fill -8 149 -8 8 160 8 minecraft:air
+cmd /tp @s 0.5 149 6.5 180 25
+wait 20
+cmd /fill 0 149 0 4 153 4 xycraftmachines:machines.blocks.multibrick
+cmd /fill 1 150 1 3 152 3 minecraft:air
+cmd /setblock 2 149 4 xycraftmachines:machines.blocks.multiinterface_1
+wait 40
+shot xy-tank-built
+cmd /give @s xycraftmachines:machines.items.materialitems
+wait 5
+js var BHR = Java.type("net.minecraft.world.phys.BlockHitResult"); var V = Java.type("net.minecraft.world.phys.Vec3"); var P = Java.type("net.minecraft.core.BlockPos"); var D = Java.type("net.minecraft.core.Direction"); var H = Java.type("net.minecraft.world.InteractionHand"); log.info("XYUSE " + mc.gameMode.useItemOn(mc.player, H.MAIN_HAND, new BHR(new V(2.5, 149.5, 4.9), D.SOUTH, new P(2, 149, 4), false))); "ok"
+wait 40
+shot xy-tank-used
+expect ok :: (function(){server.executeBlocking(function(){var P=Java.type("net.minecraft.core.BlockPos");for(var y=149;y<=153;y++){log.info("XYSTATE y="+y+" "+server.overworld().getBlockState(new P(2,y,4)));}var be=server.overworld().getBlockEntity(new P(2,149,4));log.info("XYBE "+be);});return "ok";})()
+cmd /setblock 0 151 2 minecraft:air destroy
+wait 40
+cmd /setblock 2 149 4 minecraft:air destroy
+wait 40
+shot xy-tank-broken
+logabsent Exception in thread
+logabsent Ticking block entity
+logabsent Exception ticking
