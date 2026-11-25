@@ -148,18 +148,31 @@ public final class Round16Compat {
         return true;
     }
 
-    private static boolean warnedProtection;
-
     /**
      * {@code EnchantmentHelper.getDamageProtection(armor, source)}: the protection of 1.20.1 enchantments is data in 1.21.1 and is computed for the victim,
-     * which this call never names. APPROXIMATION: 0 (logged once).
+     * which this call never names. Each enchantment of the stacks is evaluated with {@code Enchantment.modifyDamageProtection} for a stand-in victim (the
+     * level's fake player: vanilla protection effects only read the damage source), so Protection, Fire/Blast/Projectile Protection and the like count as
+     * they did. The level is the damage source's, else the server's overworld; with no server running the answer is 0.
      */
     public static int damageProtection(Iterable<net.minecraft.world.item.ItemStack> stacks, net.minecraft.world.damagesource.DamageSource source) {
-        if (!warnedProtection) {
-            warnedProtection = true;
-            org.slf4j.LoggerFactory.getLogger("legacyconnector").warn("EnchantmentHelper.getDamageProtection(Iterable, DamageSource) has no 1.21.1 equivalent without the victim: answering 0 (APPROXIMATION)");
+        net.minecraft.server.level.ServerLevel level = null;
+        Entity attacker = source == null ? null : source.getEntity();
+        if (attacker != null && attacker.level() instanceof net.minecraft.server.level.ServerLevel sl) level = sl;
+        if (level == null) {
+            net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server != null) level = server.overworld();
         }
-        return 0;
+        if (level == null || stacks == null) return 0;
+        Entity victim = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
+        org.apache.commons.lang3.mutable.MutableFloat total = new org.apache.commons.lang3.mutable.MutableFloat();
+        for (net.minecraft.world.item.ItemStack stack : stacks) {
+            if (stack == null || stack.isEmpty()) continue;
+            for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment>> e
+                    : stack.getEnchantments().entrySet()) {
+                e.getKey().value().modifyDamageProtection(level, e.getIntValue(), stack, victim, source, total);
+            }
+        }
+        return (int) total.floatValue();
     }
 
     /**
