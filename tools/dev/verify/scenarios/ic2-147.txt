@@ -22,6 +22,7 @@ js log.info("IC2ITEM " + mc.player.getInventory().getItem(0).getHoverName().getS
 js var BHR = Java.type("net.minecraft.world.phys.BlockHitResult"); var V = Java.type("net.minecraft.world.phys.Vec3"); var P = Java.type("net.minecraft.core.BlockPos"); var D = Java.type("net.minecraft.core.Direction"); var H = Java.type("net.minecraft.world.InteractionHand"); mc.gameMode.useItemOn(mc.player, H.MAIN_HAND, new BHR(new V(0.5, 149.5, 0.9), D.SOUTH, new P(0, 149, 0), false)); log.info("IC2OPEN " + mc.screen); "ok"
 wait 40
 expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E gui-open "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()
+expect ^gui=40000$ :: "gui=" + mc.player.containerMenu.legacy().tileEntity.energy
 shot ic2-batbox-gui-1
 wait 200
 expect ok :: (function(){server.executeBlocking(function(){var h=server.overworld().getBlockEntity(new (Java.type("net.minecraft.core.BlockPos"))(0,149,0));log.info("IC2E gui-200t "+h.legacy().energy+" active="+h.legacy().active);});return "ok";})()

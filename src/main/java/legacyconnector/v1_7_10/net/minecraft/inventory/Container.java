@@ -46,6 +46,11 @@ public abstract class Container {
         detectAndSendChanges();
     }
 
+    /** Whether any listener is registered: change detection with none would cache the values nobody was told (see the menu host). */
+    public boolean mcc$hasCrafters() {
+        return !crafters.isEmpty();
+    }
+
     /** Whether {@code crafter} already listens (the layer's own menu host adds the player unless the container did it, as fake-player GUIs do). */
     public boolean mcc$hasCrafter(ICrafting crafter) {
         return crafters.contains(crafter);
