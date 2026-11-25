@@ -1649,13 +1649,16 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     /** Bit {@code flag} of the shared flags (0 burning, 1 sneaking, 3 sprinting, 5 invisible, 6 glowing, 7 elytra). */
     protected boolean getFlag(int flag) {
-        return switch (flag) {
-            case 0 -> isBurning();
-            case 1 -> isSneaking();
-            case 3 -> isSprinting();
-            case 5 -> isInvisible();
-            case 6 -> isGlowing();
-            case 7 -> mcc$entity instanceof net.minecraft.world.entity.LivingEntity l && l.isFallFlying();
+        // the modern state itself, never the legacy accessors: 1.12's isBurning()/isInvisible()... read this flag, and a mod that overrides them
+        // by calling getFlag (Electroblob's lightning wraith) would recurse forever
+        var m = mcc$entity;
+        return m != null && switch (flag) {
+            case 0 -> m.isOnFire();
+            case 1 -> m.isShiftKeyDown();
+            case 3 -> m.isSprinting();
+            case 5 -> m.isInvisible();
+            case 6 -> m.isCurrentlyGlowing();
+            case 7 -> m instanceof net.minecraft.world.entity.LivingEntity l && l.isFallFlying();
             default -> false;
         };
     }

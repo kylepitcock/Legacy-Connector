@@ -61,6 +61,7 @@ public final class ItemStack {
                 this.stackSize = tag.getByte("Count");
                 this.itemDamage = Math.max(0, tag.getShort("Damage"));
                 if (tag.hasKey("tag", 10)) this.stackTagCompound = tag.getCompoundTag("tag");
+                if (tag.hasKey("ForgeCaps", 10)) this.mcc$capNbt = tag.getCompoundTag("ForgeCaps");
             }
         }
     }
@@ -474,21 +475,77 @@ public final class ItemStack {
         return caps == null ? null : caps.getCapability(capability, facing);
     }
 
-    /** The provider {@code Item.initCapabilities} attaches to the stack, made once per stack as Forge did. */
+    /** A modern stack's capability providers, so every legacy object made for the same modern stack answers with the same instances (Forge: one ItemStack object). */
+    private static final java.util.Map<net.minecraft.world.item.ItemStack, Object[]> CAPS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /** The modern stack this legacy one stands for (weak: a throw-away legacy stack must not keep it alive); capabilities are keyed on it. */
+    private java.lang.ref.WeakReference<net.minecraft.world.item.ItemStack> mcc$capKey;
+    /** Capability data handed over by {@link #copy()} (Forge: copy = serialise + deserialise the capabilities). */
+    private NBTTagCompound mcc$capNbt;
+
+    public void mcc$capKey(net.minecraft.world.item.ItemStack modern) {
+        this.mcc$capKey = modern == null || modern.isEmpty() ? null : new java.lang.ref.WeakReference<>(modern);
+    }
+
+    /** The provider {@code Item.initCapabilities} and {@code AttachCapabilitiesEvent<ItemStack>} attach to the stack, made once per stack as Forge did. */
     private legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider mcc$capabilities() {
         if (!mcc$capabilitiesMade && !isEmpty()) {
             mcc$capabilitiesMade = true;
+            net.minecraft.world.item.ItemStack key = mcc$backing != null && !mcc$backing.isEmpty() ? mcc$backing : mcc$capKey == null ? null : mcc$capKey.get();
+            if (key != null) {
+                Object[] known = CAPS.get(key);
+                if (known != null) {
+                    if (known[0] == item) mcc$capabilities = (legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider) known[1];
+                    return mcc$capabilities;
+                }
+            }
             try {
                 NBTTagCompound tag = getTagCompound();
-                mcc$capabilities = item.initCapabilities(this, tag != null && tag.hasKey("ForgeCaps", 10) ? tag.getCompoundTag("ForgeCaps") : null);
+                NBTTagCompound capNbt = mcc$capNbt != null ? mcc$capNbt : tag != null && tag.hasKey("ForgeCaps", 10) ? tag.getCompoundTag("ForgeCaps") : null;
+                var provider = item.initCapabilities(this, capNbt);
                 // vanilla's buckets and the generated buckets had Forge's FluidBucketWrapper
-                if (mcc$capabilities == null) mcc$capabilities = legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidUtil.bucketCapabilities(this);
-                if (mcc$capabilities != null) org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.mcc$pin(this);
+                if (provider == null) provider = legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidUtil.bucketCapabilities(this);
+                var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+                java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider> attached = java.util.Map.of();
+                if (bus.mcc$hasListeners(legacyconnector.v1_12_2.net.minecraftforge.event.AttachCapabilitiesEvent.class)) {
+                    var event = new legacyconnector.v1_12_2.net.minecraftforge.event.AttachCapabilitiesEvent<>(ItemStack.class, this);
+                    bus.post(event);
+                    attached = event.getCapabilities();
+                }
+                if (!attached.isEmpty() || provider instanceof legacyconnector.v1_12_2.net.minecraftforge.common.util.INBTSerializable<?>) {
+                    var d = new legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityDispatcher(attached, provider);
+                    if (capNbt != null) {
+                        try {
+                            d.deserializeNBT(capNbt);
+                        } catch (RuntimeException | LinkageError e) {
+                            // the capabilities keep their defaults
+                        }
+                    }
+                    provider = d;
+                }
+                mcc$capabilities = provider;
+                if (provider != null) {
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.mcc$pin(this);
+                    if (key != null) CAPS.put(key, new Object[] {item, provider});
+                }
             } catch (RuntimeException | LinkageError e) {
                 mcc$capabilities = null;
             }
         }
         return mcc$capabilities;
+    }
+
+    /** The capability data of this stack as Forge saved it ({@code ForgeCaps}), null when none is serializable. */
+    private NBTTagCompound mcc$capsToNbt() {
+        var p = mcc$capabilitiesMade ? mcc$capabilities : null;
+        if (!(p instanceof legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityDispatcher d)) return null;
+        try {
+            NBTTagCompound c = d.serializeNBT();
+            return c != null && !c.getKeySet().isEmpty() ? c : null;
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
     }
 
     /** The display name as a translation key (display.LocName), translated where it is shown. */
@@ -525,6 +582,8 @@ public final class ItemStack {
         getItemDamage();
         ItemStack copy = new ItemStack(item, stackSize, itemDamage);
         if (stackTagCompound != null) copy.stackTagCompound = (NBTTagCompound) stackTagCompound.copy();
+        NBTTagCompound caps = mcc$capsToNbt();
+        if (caps != null) copy.mcc$capNbt = (NBTTagCompound) caps.copy();
         return copy;
     }
 
@@ -584,6 +643,8 @@ public final class ItemStack {
         tag.setByte("Count", (byte) stackSize);
         tag.setShort("Damage", (short) itemDamage);
         if (stackTagCompound != null) tag.setTag("tag", stackTagCompound);
+        NBTTagCompound caps = mcc$capsToNbt();
+        if (caps != null) tag.setTag("ForgeCaps", caps);
         return tag;
     }
 
