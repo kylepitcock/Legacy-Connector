@@ -219,6 +219,13 @@ public final class ClientCompat {
         return (net.minecraft.client.renderer.entity.LivingEntityRenderer) event.getSkin(skinModel(name));
     }
 
+    /** {@code EntityRenderDispatcher.getSkinMap()}: keyed by the model names "default" and "slim" in 1.20.1, by {@code PlayerSkin.Model} in 1.21.1 (a mod's lambda cast the key to String, #320). */
+    public static java.util.Map<String, net.minecraft.client.renderer.entity.EntityRenderer<? extends net.minecraft.world.entity.player.Player>> getSkinMap(net.minecraft.client.renderer.entity.EntityRenderDispatcher dispatcher) {
+        java.util.Map<String, net.minecraft.client.renderer.entity.EntityRenderer<? extends net.minecraft.world.entity.player.Player>> out = new java.util.LinkedHashMap<>();
+        for (var e : dispatcher.getSkinMap().entrySet()) out.put(e.getKey() == net.minecraft.client.resources.PlayerSkin.Model.SLIM ? "slim" : "default", e.getValue());
+        return out;
+    }
+
     /** {@code AddLayers.getSkins()} as it is in 1.21.1 (the models), for code that was adapted to read them. */
     public static java.util.Set<net.minecraft.client.resources.PlayerSkin.Model> getSkinModels(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event) {
         return event.getSkins();

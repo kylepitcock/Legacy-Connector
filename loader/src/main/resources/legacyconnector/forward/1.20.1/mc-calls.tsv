@@ -848,6 +848,7 @@ net/minecraft/world/item/DiggerItem	getAttackDamage	()F	MiscCompat	diggerDamage	
 net/minecraft/world/level/block/Blocks	woodenButton	(Lnet/minecraft/world/level/block/state/properties/BlockSetType;[Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/level/block/ButtonBlock;	Round5Compat	woodenButton	-
 net/minecraft/world/food/FoodProperties	isFastFood	()Z	MiscCompat	isFastFood	-
 net/neoforged/neoforge/client/event/EntityRenderersEvent$AddLayers	getSkins	()Ljava/util/Set;	ClientCompat	getSkins	-
+net/minecraft/client/renderer/entity/EntityRenderDispatcher	getSkinMap	()Ljava/util/Map;	ClientCompat	getSkinMap	-
 # model locations: legacy ResourceLocation subclass <-> 1.21.1 record (ModelLocationCompat)
 net/minecraft/client/resources/model/ModelManager	getModel	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;)Lnet/minecraft/client/resources/model/BakedModel;	ModelLocationCompat	getModel	-
 net/minecraft/client/resources/model/ModelManager	getModel	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/resources/model/BakedModel;	ModelLocationCompat	getModel	-
