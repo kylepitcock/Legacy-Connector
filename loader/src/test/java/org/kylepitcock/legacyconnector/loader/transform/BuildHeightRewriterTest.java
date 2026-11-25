@@ -95,6 +95,17 @@ class BuildHeightRewriterTest implements Opcodes {
     }
 
     @Test
+    void guiHandlerCoordinatesAreMarkersNotHeights() {
+        // Railcraft opens entity GUIs with x = entity id, y = -1 and tests y < 0 in getServerGuiElement
+        for (String name : new String[] {"getServerGuiElement", "getClientGuiElement"}) {
+            ClassNode n = node();
+            MethodNode m = zeroTest(n, IFGE);
+            m.name = name;
+            assertEquals(0, BuildHeightRewriter.apply(n, hierarchy(), LegacyVersion.V1_7_10), name);
+        }
+    }
+
+    @Test
     void equalityWithZeroIsLeftAlone() {
         ClassNode n = node();
         zeroTest(n, IFEQ);

@@ -53,6 +53,8 @@ public final class BuildHeightRewriter {
         int rewritten = 0;
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
+            // IGuiHandler's (id, player, world, x, y, z): y is a marker there, not a height (Railcraft's entity GUIs pass x = entity id, y = -1)
+            if (m.name.equals("getServerGuiElement") || m.name.equals("getClientGuiElement")) continue;
             int[] slots = slots(m, t -> worldLike.computeIfAbsent(t, n -> isWorldLike(n, world, access, hierarchy, 0)));
             if (slots == null) {
                 rewritten += tileLocals(m, world, helperArg);
