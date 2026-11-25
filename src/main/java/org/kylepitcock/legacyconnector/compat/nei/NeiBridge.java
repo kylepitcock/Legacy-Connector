@@ -124,6 +124,7 @@ public final class NeiBridge {
             }
         }
         org.kylepitcock.legacyconnector.compat.mods.buildcraft.AssemblyTableNei.register();
+        org.kylepitcock.legacyconnector.compat.mods.railcraft.RailcraftNei.register();
         LOG.info("Ran {} NEI plugin(s): {} recipe handler(s), {} hidden item(s)", n, CRAFTING.size(), HIDDEN.size());
     }
 
