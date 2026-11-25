@@ -86,6 +86,28 @@ public final class Mc1201Hierarchy {
         return mod.containsKey(name);
     }
 
+    /** Resolve a protected Entity data field without intercepting a hiding field declared by a mod. */
+    boolean inheritsEntityData(String owner, String name, String desc) {
+        while (owner != null) {
+            if (owner.equals("net/minecraft/world/entity/Entity")) return true;
+            ClassNode local = mod.get(owner);
+            if (local != null) {
+                if (local.fields.stream().anyMatch(field -> field.name.equals(name) && field.desc.equals(desc))) return false;
+                owner = local.superName;
+                continue;
+            }
+            var peer = peers.get(owner);
+            if (peer != null) {
+                if (peer.hasField(name, desc)) return false;
+                owner = peer.superName;
+                continue;
+            }
+            McClass vanilla = mc().get(owner);
+            owner = vanilla == null ? null : vanilla.superName();
+        }
+        return false;
+    }
+
     /** Direct supertypes (super class first). */
     public List<String> supers(String name) {
         List<String> out = new ArrayList<>(3);

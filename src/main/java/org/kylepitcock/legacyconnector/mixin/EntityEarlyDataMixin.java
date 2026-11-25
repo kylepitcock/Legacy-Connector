@@ -1,5 +1,7 @@
 package org.kylepitcock.legacyconnector.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
@@ -14,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * 1.20.1 created an entity's data holder before calling {@code defineSynchedData()}, so a mod could call {@code setNoGravity(true)} or {@code setSilent(true)} from it.
- * In 1.21.1 the holder is built from the builder after {@code defineSynchedData(Builder)}: those setters hit a null holder. While a bridged legacy
- * {@code defineSynchedData} is running (its builder is remembered in {@link MigrateContext}) they replace the default of the id in the builder instead.
+ * In 1.21.1 the holder is built after {@code defineSynchedData(Builder)}. Scope the builder to this invocation so translated field reads and the
+ * existing early-setter adapters can use it when a legacy override or injection runs.
  */
 @Mixin(Entity.class)
 public abstract class EntityEarlyDataMixin {
@@ -30,6 +32,12 @@ public abstract class EntityEarlyDataMixin {
     @Shadow
     @Final
     private static EntityDataAccessor<Boolean> DATA_CUSTOM_NAME_VISIBLE;
+
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target =
+            "Lnet/minecraft/world/entity/Entity;defineSynchedData(Lnet/minecraft/network/syncher/SynchedEntityData$Builder;)V"))
+    private void legacyconnector$scopeData(Entity entity, SynchedEntityData.Builder builder, Operation<Void> original) {
+        MigrateContext.withEntityData(entity, builder, () -> original.call(entity, builder));
+    }
 
     @Inject(method = "setNoGravity", at = @At("HEAD"), cancellable = true, require = 0)
     private void legacyconnector$earlyNoGravity(boolean value, CallbackInfo ci) {
@@ -48,7 +56,7 @@ public abstract class EntityEarlyDataMixin {
 
     private void early(EntityDataAccessor<Boolean> accessor, boolean value, CallbackInfo ci) {
         if (entityData != null) return;
-        SynchedEntityData.Builder b = MigrateContext.currentBuilder();
+        SynchedEntityData.Builder b = MigrateContext.currentBuilder((Entity) (Object) this);
         if (b instanceof OverridableBuilder o) {
             o.legacyconnector$overrideDefault(accessor, value);
             ci.cancel();

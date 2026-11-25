@@ -4,14 +4,14 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 /**
  * What 1.20.1 code could reach from anywhere and 1.21.1 hands over as a parameter: the registry access ({@code HolderLookup.Provider}) of
- * {@code load}/{@code save}/{@code getUpdateTag}, the {@code SynchedEntityData.Builder} of {@code defineSynchedData}. The bridge methods the loader
- * generates for these overrides call {@link #remember(Object)} with the real argument first, so the old-signature code (and the helpers it calls) find it
- * again; a call with nothing remembered falls back to the running server's, or on a client the connected level's, registry access.
+ * {@code load}/{@code save}/{@code getUpdateTag}. Generated bridges call {@link #remember(Object)} with the real provider first.
+ * Entity data construction has its own scoped context, shared by translated overrides and injection handlers.
  */
 public final class MigrateContext {
     /** A remembered provider and the world generation it belongs to (a ThreadLocal of another thread cannot be cleared from here). */
@@ -20,7 +20,20 @@ public final class MigrateContext {
     private static final ThreadLocal<Stamped> PROVIDER = new ThreadLocal<>();
     /** Bumped when a world is left: what was remembered before belongs to the registries of that world (issue 113's class of defect). */
     private static volatile int generation;
-    private static final ThreadLocal<SynchedEntityData.Builder> BUILDER = new ThreadLocal<>();
+    private static final ThreadLocal<EntityDataScope> ENTITY_DATA = new ThreadLocal<>();
+    private static final class EntityDataScope {
+        final Entity entity;
+        final SynchedEntityData.Builder builder;
+        final EntityDataScope parent;
+        SynchedEntityData view;
+        boolean legacy;
+
+        EntityDataScope(Entity entity, SynchedEntityData.Builder builder, EntityDataScope parent) {
+            this.entity = entity;
+            this.builder = builder;
+            this.parent = parent;
+        }
+    }
     private static volatile HolderLookup.Provider last;
     /** The last full registry access remembered (a later provider that only wraps registry lookups must not hide it). */
     private static volatile RegistryAccess lastAccess;
@@ -56,8 +69,9 @@ public final class MigrateContext {
             PROVIDER.set(new Stamped(p, generation));
             last = p;
             if (p instanceof RegistryAccess ra) lastAccess = ra;
-        } else if (o instanceof SynchedEntityData.Builder b) {
-            BUILDER.set(b);
+        } else if (o instanceof SynchedEntityData.Builder builder) {
+            EntityDataScope scope = ENTITY_DATA.get();
+            if (scope != null && scope.builder == builder) scope.legacy = true;
         }
     }
 
@@ -82,16 +96,51 @@ public final class MigrateContext {
         return remembered != null ? remembered : RegistryAccess.EMPTY;
     }
 
-    /** The builder of the {@code defineSynchedData} call in progress on this thread, or null outside one. */
-    public static SynchedEntityData.Builder currentBuilder() {
-        return BUILDER.get();
+    public static void withEntityData(Entity entity, SynchedEntityData.Builder builder, Runnable callback) {
+        EntityDataScope previous = ENTITY_DATA.get();
+        ENTITY_DATA.set(new EntityDataScope(entity, builder, previous));
+        try {
+            callback.run();
+        } finally {
+            if (previous == null) ENTITY_DATA.remove();
+            else ENTITY_DATA.set(previous);
+        }
     }
 
-    /** The builder of the {@code defineSynchedData} call in progress on this thread; a throwaway when called outside one. */
+    /** A live view over the slots already defined by this entity's builder. */
+    public static SynchedEntityData getEntityData(Entity entity) {
+        return entityData(entity, entity.getEntityData());
+    }
+
+    public static SynchedEntityData entityData(Entity entity, SynchedEntityData data) {
+        if (data != null || entity == null) return data;
+        for (EntityDataScope scope = ENTITY_DATA.get(); scope != null; scope = scope.parent) {
+            if (scope.entity != entity || !scope.legacy) continue;
+            if (scope.view == null) scope.view = ((OverridableBuilder) scope.builder).legacyconnector$view();
+            return scope.view;
+        }
+        return null;
+    }
+
+    static SynchedEntityData.Builder builderForView(SynchedEntityData view) {
+        for (EntityDataScope scope = ENTITY_DATA.get(); scope != null; scope = scope.parent) {
+            if (scope.view == view) return scope.builder;
+        }
+        return null;
+    }
+
+    public static SynchedEntityData.Builder currentBuilder(Entity entity) {
+        for (EntityDataScope scope = ENTITY_DATA.get(); scope != null; scope = scope.parent) {
+            if (scope.entity == entity && scope.legacy) return scope.builder;
+        }
+        return null;
+    }
+
+    /** The builder of the innermost {@code defineSynchedData} call on this thread. */
     public static SynchedEntityData.Builder builder() {
-        SynchedEntityData.Builder b = BUILDER.get();
-        if (b == null) throw new IllegalStateException("SynchedEntityData.define called outside defineSynchedData");
-        return b;
+        EntityDataScope scope = ENTITY_DATA.get();
+        if (scope == null || !scope.legacy) throw new IllegalStateException("No active legacy defineSynchedData callback");
+        return scope.builder;
     }
 
     /** Client-only classes stay out of this class's linkage. */
