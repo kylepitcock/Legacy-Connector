@@ -61,6 +61,14 @@ final class AlienEvoMolang1201 implements Opcodes {
             "mod/azure/azurelib/common/animation/molang/AzMolangQueryContext";
     static final String AZURELIB_ROLL_FUNCTION =
             "net/habb/alienevo/compat/azurelib/bridge/MolangAzureRollSinceFunction";
+    static final String CHEST_SPIN_ANIMATION =
+            "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation";
+    static final String AZURELIB_MOLANG_VARIABLE_REF =
+            "mod/azure/azurelib/core/molang/MolangVariableRef";
+    static final String AZURELIB_LAZY_VARIABLE =
+            "mod/azure/azurelib/core/molang/LazyVariable";
+    static final String AZURELIB_ROLL_TIME_CONTEXT =
+            HELPER_PACKAGE + "MolangAzureRollTimeContext";
     static final String AZURELIB_ROLL_FUNCTION_CLASS =
             "net.habb.alienevo.compat.azurelib.bridge.MolangAzureRollSinceFunction";
 
@@ -89,6 +97,9 @@ final class AlienEvoMolang1201 implements Opcodes {
             changes += migrateRollSinceRegistration(node);
         }
         changes += migrateLegacyParserCalls(node);
+        if (CHEST_SPIN_ANIMATION.equals(node.name)) {
+            changes += migrateAzureRollSinceAnimationTime(node);
+        }
         changes += migrateMclibKeyframeValues(node);
         changes += AlienEvoOmnitrixDisplayResources1201.apply(node);
         return changes;
@@ -352,6 +363,90 @@ final class AlienEvoMolang1201 implements Opcodes {
      * interface, so AlienEvo's negating lambda remains valid after its
      * invokedynamic descriptors and bootstrap handles are remapped.
      */
+
+    /**
+     * ChestSpinAnimation.rollSinceKeyframe reads query.anim_time from the
+     * legacy Gecko parser. AzureLib samples its own query.anim_time immediately
+     * before evaluating keyframe Molang, so bridge that scoped value for the
+     * duration of the roll_since call. The helper falls back to the legacy
+     * parser when no Azure context is active, preserving GeckoLib behavior.
+     */
+    private static int migrateAzureRollSinceAnimationTime(ClassNode node) {
+        MethodNode roll = find(node, "rollSinceKeyframe",
+                "(Lnet/minecraft/world/entity/LivingEntity;D)F");
+        if (roll == null) {
+            throw new IllegalStateException("AlienEvo ChestSpinAnimation no longer declares the inspected rollSinceKeyframe(LivingEntity,double) method");
+        }
+
+        int bridged = 0;
+        for (var instruction : roll.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && call.owner.equals(AZURELIB_ROLL_TIME_CONTEXT)
+                    && call.name.equals("getAnimationTime")
+                    && call.desc.equals("()D")) {
+                bridged++;
+            }
+        }
+        if (bridged == 1) return 0;
+        if (bridged != 0) {
+            throw new IllegalStateException("AlienEvo ChestSpinAnimation contains duplicate Azure animation-time bridge calls");
+        }
+
+        org.objectweb.asm.tree.AbstractInsnNode first = null;
+        org.objectweb.asm.tree.AbstractInsnNode second = null;
+        org.objectweb.asm.tree.AbstractInsnNode third = null;
+        org.objectweb.asm.tree.AbstractInsnNode fourth = null;
+        int matches = 0;
+        for (var instruction : roll.instructions.toArray()) {
+            if (!(instruction instanceof FieldInsnNode parser)
+                    || parser.getOpcode() != GETSTATIC
+                    || !parser.owner.equals(PARSER_COMPAT)
+                    || !parser.name.equals("INSTANCE")
+                    || !parser.desc.equals(PARSER_COMPAT_DESC)) continue;
+
+            var queryName = nextOpcode(parser);
+            var getVariable = nextOpcode(queryName);
+            var getValue = nextOpcode(getVariable);
+            if (queryName instanceof LdcInsnNode name
+                    && "query.anim_time".equals(name.cst)
+                    && getVariable instanceof MethodInsnNode variableCall
+                    && variableCall.getOpcode() == INVOKEVIRTUAL
+                    && variableCall.owner.equals(PARSER_COMPAT)
+                    && variableCall.name.equals("getVariable")
+                    && variableCall.desc.equals("(Ljava/lang/String;)" + VARIABLE_COMPAT_DESC)
+                    && getValue instanceof MethodInsnNode valueCall
+                    && valueCall.getOpcode() == INVOKEVIRTUAL
+                    && valueCall.owner.equals(VARIABLE_COMPAT)
+                    && valueCall.name.equals("get")
+                    && valueCall.desc.equals("()D")) {
+                matches++;
+                first = parser;
+                second = queryName;
+                third = getVariable;
+                fourth = getValue;
+            }
+        }
+
+        if (matches != 1) {
+            throw new IllegalStateException("AlienEvo ChestSpinAnimation rollSinceKeyframe no longer has exactly one inspected query.anim_time parser read");
+        }
+        roll.instructions.insertBefore(first,
+                new MethodInsnNode(INVOKESTATIC, AZURELIB_ROLL_TIME_CONTEXT, "getAnimationTime", "()D", false));
+        roll.instructions.remove(first);
+        roll.instructions.remove(second);
+        roll.instructions.remove(third);
+        roll.instructions.remove(fourth);
+        return 1;
+    }
+
+    private static org.objectweb.asm.tree.AbstractInsnNode nextOpcode(
+            org.objectweb.asm.tree.AbstractInsnNode instruction) {
+        org.objectweb.asm.tree.AbstractInsnNode next = instruction == null ? null : instruction.getNext();
+        while (next != null && next.getOpcode() < 0) next = next.getNext();
+        return next;
+    }
+
     private static int migrateMclibKeyframeValues(ClassNode node) {
         int changes = 0;
         if (node.superName != null) {
@@ -551,6 +646,7 @@ final class AlienEvoMolang1201 implements Opcodes {
         result.put(ROLL_MATH_FUNCTION + ".class", write(rollSinceMathFunctionClass()));
         result.put(MEMOIZED_SUPPLIER + ".class", write(memoizedSupplierClass()));
         result.put(AZURELIB_ROLL_FUNCTION + ".class", write(azureLibRollSinceFunctionClass()));
+        result.put(AZURELIB_ROLL_TIME_CONTEXT + ".class", write(azureRollTimeContextClass()));
         return result;
     }
 
@@ -630,6 +726,10 @@ final class AlienEvoMolang1201 implements Opcodes {
         addClassForName(azureRegister.instructions, AZURELIB_QUERY_CONTEXT.replace('/', '.'));
         azureRegister.instructions.add(new InsnNode(POP));
         addClassForName(azureRegister.instructions, AZURELIB_ANIM_QUERY_CONTEXT.replace('/', '.'));
+        azureRegister.instructions.add(new InsnNode(POP));
+        addClassForName(azureRegister.instructions, AZURELIB_MOLANG_VARIABLE_REF.replace('/', '.'));
+        azureRegister.instructions.add(new InsnNode(POP));
+        addClassForName(azureRegister.instructions, AZURELIB_LAZY_VARIABLE.replace('/', '.'));
         azureRegister.instructions.add(new InsnNode(POP));
         azureRegister.instructions.add(new LdcInsnNode(AZURELIB_ROLL_FUNCTION_CLASS));
         azureRegister.instructions.add(new InsnNode(ICONST_1));
@@ -760,6 +860,9 @@ final class AlienEvoMolang1201 implements Opcodes {
                 queryContextDesc, null, null);
         LabelNode hasAzureContext = new LabelNode();
         LabelNode hasActor = new LabelNode();
+        LabelNode tryStart = new LabelNode();
+        LabelNode tryEnd = new LabelNode();
+        LabelNode exceptionHandler = new LabelNode();
         evaluate.instructions.add(new VarInsnNode(ALOAD, 1));
         evaluate.instructions.add(new TypeInsnNode(INSTANCEOF, AZURELIB_ANIM_QUERY_CONTEXT));
         evaluate.instructions.add(new JumpInsnNode(IFNE, hasAzureContext));
@@ -776,19 +879,151 @@ final class AlienEvoMolang1201 implements Opcodes {
         evaluate.instructions.add(new InsnNode(DCONST_0));
         evaluate.instructions.add(new InsnNode(DRETURN));
         evaluate.instructions.add(hasActor);
+        // AzKeyframeExecutor and AzKeyframeTransitioner bind this variable to
+        // the currently sampled animation time before evaluating keyframes.
+        evaluate.instructions.add(new TypeInsnNode(NEW, AZURELIB_MOLANG_VARIABLE_REF));
+        evaluate.instructions.add(new InsnNode(DUP));
+        evaluate.instructions.add(new LdcInsnNode("query.anim_time"));
+        evaluate.instructions.add(new MethodInsnNode(INVOKESPECIAL, AZURELIB_MOLANG_VARIABLE_REF,
+                "<init>", "(Ljava/lang/String;)V", false));
+        evaluate.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AZURELIB_MOLANG_VARIABLE_REF,
+                "variable", "()L" + AZURELIB_LAZY_VARIABLE + ";", false));
+        evaluate.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AZURELIB_LAZY_VARIABLE, "get", "()D", false));
+        evaluate.instructions.add(new VarInsnNode(DSTORE, 3));
+        evaluate.instructions.add(new VarInsnNode(DLOAD, 3));
+        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "push", "(D)Ljava/lang/Double;", false));
+        evaluate.instructions.add(new VarInsnNode(ASTORE, 5));
+        evaluate.instructions.add(tryStart);
         evaluate.instructions.add(new VarInsnNode(ALOAD, 2));
         evaluate.instructions.add(new VarInsnNode(ALOAD, 0));
         evaluate.instructions.add(new InsnNode(ICONST_0));
         evaluate.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AZURELIB_CONTEXT_FUNCTION,
                 "getArg", "(I)D", false));
-        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC,
-                "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation",
+        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, CHEST_SPIN_ANIMATION,
                 "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F", false));
+        evaluate.instructions.add(new VarInsnNode(FSTORE, 6));
+        evaluate.instructions.add(tryEnd);
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 5));
+        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "pop", "(Ljava/lang/Double;)V", false));
+        evaluate.instructions.add(new VarInsnNode(FLOAD, 6));
         evaluate.instructions.add(new InsnNode(F2D));
         evaluate.instructions.add(new InsnNode(DRETURN));
-        evaluate.maxLocals = 3;
-        evaluate.maxStack = 4;
+        evaluate.instructions.add(exceptionHandler);
+        evaluate.instructions.add(new VarInsnNode(ASTORE, 7));
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 5));
+        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "pop", "(Ljava/lang/Double;)V", false));
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 7));
+        evaluate.instructions.add(new InsnNode(ATHROW));
+        evaluate.tryCatchBlocks.add(new org.objectweb.asm.tree.TryCatchBlockNode(
+                tryStart, tryEnd, exceptionHandler, "java/lang/Throwable"));
+        evaluate.maxLocals = 8;
+        evaluate.maxStack = 5;
         node.methods.add(evaluate);
+        return node;
+    }
+
+
+    /**
+     * Scoped thread-local override for the animation-time read performed by
+     * AlienEvo's original ChestSpinAnimation method. A nested call restores its
+     * previous time, while calls outside AzureLib fall back to Gecko's query.
+     */
+    private static ClassNode azureRollTimeContextClass() {
+        ClassNode node = baseClass(AZURELIB_ROLL_TIME_CONTEXT,
+                ACC_PUBLIC | ACC_FINAL | ACC_SUPER, "java/lang/Object");
+        node.fields.add(new FieldNode(ACC_PRIVATE | ACC_STATIC | ACC_FINAL,
+                "CURRENT", "Ljava/lang/ThreadLocal;", null, null));
+
+        MethodNode constructor = new MethodNode(ACC_PRIVATE, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL,
+                "java/lang/Object", "<init>", "()V", false));
+        constructor.instructions.add(new InsnNode(RETURN));
+        constructor.maxLocals = 1;
+        constructor.maxStack = 1;
+        node.methods.add(constructor);
+
+        MethodNode clinit = new MethodNode(ACC_STATIC, "<clinit>", "()V", null, null);
+        clinit.instructions.add(new TypeInsnNode(NEW, "java/lang/ThreadLocal"));
+        clinit.instructions.add(new InsnNode(DUP));
+        clinit.instructions.add(new MethodInsnNode(INVOKESPECIAL,
+                "java/lang/ThreadLocal", "<init>", "()V", false));
+        clinit.instructions.add(new FieldInsnNode(PUTSTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "CURRENT", "Ljava/lang/ThreadLocal;"));
+        clinit.instructions.add(new InsnNode(RETURN));
+        clinit.maxLocals = 0;
+        clinit.maxStack = 2;
+        node.methods.add(clinit);
+
+        MethodNode push = new MethodNode(ACC_PUBLIC | ACC_STATIC, "push",
+                "(D)Ljava/lang/Double;", null, null);
+        push.instructions.add(new FieldInsnNode(GETSTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "CURRENT", "Ljava/lang/ThreadLocal;"));
+        push.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/ThreadLocal",
+                "get", "()Ljava/lang/Object;", false));
+        push.instructions.add(new TypeInsnNode(CHECKCAST, "java/lang/Double"));
+        push.instructions.add(new VarInsnNode(ASTORE, 2));
+        push.instructions.add(new FieldInsnNode(GETSTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "CURRENT", "Ljava/lang/ThreadLocal;"));
+        push.instructions.add(new VarInsnNode(DLOAD, 0));
+        push.instructions.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Double",
+                "valueOf", "(D)Ljava/lang/Double;", false));
+        push.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/ThreadLocal",
+                "set", "(Ljava/lang/Object;)V", false));
+        push.instructions.add(new VarInsnNode(ALOAD, 2));
+        push.instructions.add(new InsnNode(ARETURN));
+        push.maxLocals = 3;
+        push.maxStack = 3;
+        node.methods.add(push);
+
+        MethodNode pop = new MethodNode(ACC_PUBLIC | ACC_STATIC, "pop",
+                "(Ljava/lang/Double;)V", null, null);
+        LabelNode restore = new LabelNode();
+        pop.instructions.add(new VarInsnNode(ALOAD, 0));
+        pop.instructions.add(new JumpInsnNode(IFNONNULL, restore));
+        pop.instructions.add(new FieldInsnNode(GETSTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "CURRENT", "Ljava/lang/ThreadLocal;"));
+        pop.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/ThreadLocal",
+                "remove", "()V", false));
+        pop.instructions.add(new InsnNode(RETURN));
+        pop.instructions.add(restore);
+        pop.instructions.add(new FieldInsnNode(GETSTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "CURRENT", "Ljava/lang/ThreadLocal;"));
+        pop.instructions.add(new VarInsnNode(ALOAD, 0));
+        pop.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/ThreadLocal",
+                "set", "(Ljava/lang/Object;)V", false));
+        pop.instructions.add(new InsnNode(RETURN));
+        pop.maxLocals = 1;
+        pop.maxStack = 2;
+        node.methods.add(pop);
+
+        MethodNode get = new MethodNode(ACC_PUBLIC | ACC_STATIC, "getAnimationTime", "()D", null, null);
+        LabelNode useLegacyParser = new LabelNode();
+        get.instructions.add(new FieldInsnNode(GETSTATIC, AZURELIB_ROLL_TIME_CONTEXT,
+                "CURRENT", "Ljava/lang/ThreadLocal;"));
+        get.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/ThreadLocal",
+                "get", "()Ljava/lang/Object;", false));
+        get.instructions.add(new TypeInsnNode(CHECKCAST, "java/lang/Double"));
+        get.instructions.add(new VarInsnNode(ASTORE, 0));
+        get.instructions.add(new VarInsnNode(ALOAD, 0));
+        get.instructions.add(new JumpInsnNode(IFNULL, useLegacyParser));
+        get.instructions.add(new VarInsnNode(ALOAD, 0));
+        get.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Double",
+                "doubleValue", "()D", false));
+        get.instructions.add(new InsnNode(DRETURN));
+        get.instructions.add(useLegacyParser);
+        get.instructions.add(new FieldInsnNode(GETSTATIC, PARSER_COMPAT, "INSTANCE", PARSER_COMPAT_DESC));
+        get.instructions.add(new LdcInsnNode("query.anim_time"));
+        get.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, PARSER_COMPAT,
+                "getVariable", "(Ljava/lang/String;)" + VARIABLE_COMPAT_DESC, false));
+        get.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, VARIABLE_COMPAT, "get", "()D", false));
+        get.instructions.add(new InsnNode(DRETURN));
+        get.maxLocals = 1;
+        get.maxStack = 2;
+        node.methods.add(get);
         return node;
     }
 
