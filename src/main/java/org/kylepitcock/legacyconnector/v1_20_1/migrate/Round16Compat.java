@@ -155,9 +155,19 @@ public final class Round16Compat {
      * they did. The level is the damage source's, else the server's overworld; with no server running the answer is 0.
      */
     public static int damageProtection(Iterable<net.minecraft.world.item.ItemStack> stacks, net.minecraft.world.damagesource.DamageSource source) {
+        if (stacks == null) return 0;
+        try {
+            return damageProtection0(stacks, source);
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
+    private static int damageProtection0(Iterable<net.minecraft.world.item.ItemStack> stacks, net.minecraft.world.damagesource.DamageSource source) {
         net.minecraft.server.level.ServerLevel level = null;
         Entity attacker = source == null ? null : source.getEntity();
         if (attacker != null && attacker.level() instanceof net.minecraft.server.level.ServerLevel sl) level = sl;
+        if (attacker != null && attacker.level().isClientSide) return 0;
         if (level == null) {
             net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
             if (server != null) level = server.overworld();

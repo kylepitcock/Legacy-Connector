@@ -68,7 +68,8 @@ public final class VertexCompat {
     public static void defaultColor(VertexConsumer c, int r, int g, int b, int a) {
         if (c instanceof CompatBufferBuilder cb) cb.defaultColor(r, g, b, a);
         else if (c instanceof Round15ClientDefaultedVertexConsumer d) d.defaultColor(r, g, b, a);
-        else if (c != null) {
+        else if (c instanceof com.mojang.blaze3d.vertex.BufferBuilder) {
+            // only real buffer builders: a wrapper's setColor may overwrite a colour the mod wrote (1.21.1 BufferBuilder ignores a second colour)
             DEFAULT_COLORS.put(c, new int[] {r, g, b, a});
             anyDefaultColor = true;
         }
@@ -88,7 +89,13 @@ public final class VertexCompat {
     public static void endVertex(VertexConsumer c) {
         if (anyDefaultColor) {
             int[] d = DEFAULT_COLORS.get(c);
-            if (d != null) c.setColor(d[0], d[1], d[2], d[3]);
+            if (d != null) {
+                try {
+                    c.setColor(d[0], d[1], d[2], d[3]);
+                } catch (RuntimeException ignored) {
+                    // no vertex started (BufferBuilder.beginElement: "Not currently building vertex"): nothing to colour
+                }
+            }
         }
         if (c instanceof LegacyQuadBakingVertexConsumer q) q.endLegacyVertex();
         else if (c instanceof LegacyEndVertexConsumer legacy) legacy.legacyEndVertex();

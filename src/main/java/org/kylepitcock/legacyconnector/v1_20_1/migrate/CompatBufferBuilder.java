@@ -416,7 +416,13 @@ public final class CompatBufferBuilder implements VertexConsumer {
      * the format has none), which is exactly "a colour for vertices that write none".
      */
     public void endVertex() {
-        if (defaultColorSet && real != null) real.setColor(defaultR, defaultG, defaultB, defaultA);
+        if (defaultColorSet && real != null) {
+            try {
+                real.setColor(defaultR, defaultG, defaultB, defaultA);
+            } catch (RuntimeException ignored) {
+                // no vertex started: nothing to colour
+            }
+        }
     }
 
     /** {@code BufferBuilder.clear()}: drops what was written so far (the 1.21.1 builder cannot be reset; the memory is reused by the next {@code begin}). */
