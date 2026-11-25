@@ -23,6 +23,9 @@ import org.kylepitcock.legacyconnector.compat.nei.NeiBridge;
 public final class RailcraftNei {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/NEI");
 
+    /** The mod's manager class, found when the NEI plugins load (the loader the handlers are asked on later is not the mod's). */
+    private static volatile Class<?> MANAGER;
+
     private RailcraftNei() {}
 
     /** Called once when the NEI plugins load. */
@@ -30,9 +33,10 @@ public final class RailcraftNei {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             Class<?> manager = Class.forName("railcraft.common.api.crafting.RailcraftCraftingManager", true, cl);
+            MANAGER = manager;
             Class<?> machines = Class.forName("railcraft.common.blocks.machine.alpha.EnumMachineAlpha", true, cl);
-            if (manager.getField("rockCrusher").get(null) != null) add(new RockCrusher(manager), machines, "ROCK_CRUSHER");
-            if (manager.getField("rollingMachine").get(null) != null) add(new RollingMachine(manager), machines, "ROLLING_MACHINE");
+            if (manager.getField("rockCrusher").get(null) != null) add(new RockCrusher(), machines, "ROCK_CRUSHER");
+            if (manager.getField("rollingMachine").get(null) != null) add(new RollingMachine(), machines, "ROLLING_MACHINE");
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             // Railcraft is not loaded
         }
@@ -76,20 +80,18 @@ public final class RailcraftNei {
     }
 
     /** The shared part: a handler over one of the mod's recipe lists. */
-    private abstract static class ListHandler extends TemplateRecipeHandler {
-        private final Class<?> manager;
+    public abstract static class ListHandler extends TemplateRecipeHandler {
         private final String field;
         private final String method;
 
-        ListHandler(Class<?> manager, String field, String method) {
-            this.manager = manager;
+        ListHandler(String field, String method) {
             this.field = field;
             this.method = method;
         }
 
         final List<?> recipes() {
             try {
-                Object m = manager.getField(field).get(null);
+                Object m = MANAGER.getField(field).get(null);
                 return new ArrayList<>((List<?>) m.getClass().getMethod(method).invoke(m));
             } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
                 return List.of();
@@ -146,9 +148,9 @@ public final class RailcraftNei {
     }
 
     /** Rock Crusher: one entry per input and possible output. */
-    private static final class RockCrusher extends ListHandler {
-        RockCrusher(Class<?> manager) {
-            super(manager, "rockCrusher", "getRecipes");
+    public static final class RockCrusher extends ListHandler {
+        public RockCrusher() {
+            super("rockCrusher", "getRecipes");
         }
 
         @Override
@@ -182,9 +184,9 @@ public final class RailcraftNei {
     }
 
     /** Rolling Machine: the shaped / shapeless recipes of its list, laid out as a 3x3 grid. */
-    private static final class RollingMachine extends ListHandler {
-        RollingMachine(Class<?> manager) {
-            super(manager, "rollingMachine", "getRecipeList");
+    public static final class RollingMachine extends ListHandler {
+        public RollingMachine() {
+            super("rollingMachine", "getRecipeList");
         }
 
         @Override
