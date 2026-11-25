@@ -1295,6 +1295,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/candy-world",
    "date": "2026-11-25",
    "open": true
+  },
+  {
+   "issue": 348,
+   "mod": "Thaumcraft_1.12.2_6.1.BETA26",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "Thaumonomicon GUI, item textures and bunch of other stuff are broken. <img width=\"410\" height=\"569\" alt=\"image\" src=\"https://github.com/user-attachments/assets/717a6ca8-df16-45e3-b2b1-2c2ff8813f28\" /> Thaumonomicon GUI missing icons and got error background texture <img width=\"410\" height=\"569\" alt=\"image\" src=\"https://github.com/user-attachments/assets/7f144987-bbc4-4e92-9118-d36e0ca3eaf7\" /> Ar…",
+   "lc": "0.5.3",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/files/all?page=1&pageSize=20&version=1.12.2",
+   "date": "2026-11-25",
+   "open": true
   }
  ]
 }
