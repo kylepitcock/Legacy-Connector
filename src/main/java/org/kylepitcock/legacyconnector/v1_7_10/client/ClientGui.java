@@ -144,6 +144,7 @@ public final class ClientGui {
         if (mc.player != null && mc.screen instanceof LegacyContainerScreen cs && cs.getMenu().mcc$detached() && cs.getMenu().mcc$setWindowId(windowId)) {
             cs.getMenu().mcc$setDetached(false);
             mc.player.containerMenu = cs.getMenu();
+            replayBars(cs.getMenu(), windowId);
             return;
         }
         // no screen to take the menu (the mod's packet failed): tell the server so that its menu does not swallow the inventory clicks
@@ -190,11 +191,32 @@ public final class ClientGui {
         if (gui instanceof GuiScreen screen) display(screen);
     }
 
+    /**
+     * Progress bar values that arrived before their container was the player's open menu (IC2 sends its first values when it adds the
+     * player as a listener, and sends a value again only when it changes: a dropped first value left a full BatBox showing 0).
+     */
+    private static final java.util.ArrayDeque<int[]> PENDING_BARS = new java.util.ArrayDeque<>();
+
     public static void progressBar(int windowId, int id, int value) {
         var p = Minecraft.getInstance().player;
         if (p != null && p.containerMenu instanceof LegacyMenu menu && menu.containerId == windowId) {
             menu.legacy().updateProgressBar(id, value);
+            return;
         }
+        synchronized (PENDING_BARS) {
+            if (PENDING_BARS.size() >= 256) PENDING_BARS.removeFirst();
+            PENDING_BARS.addLast(new int[] {windowId, id, value});
+        }
+    }
+
+    /** The menu with {@code windowId} is now the open one: values that came before it, in their order. */
+    private static void replayBars(LegacyMenu menu, int windowId) {
+        int[][] all;
+        synchronized (PENDING_BARS) {
+            all = PENDING_BARS.toArray(new int[0][]);
+            PENDING_BARS.clear();
+        }
+        for (int[] bar : all) if (bar[0] == windowId) menu.legacy().updateProgressBar(bar[1], bar[2]);
     }
 
     /** True if a class below the shim overrides the named method. */
