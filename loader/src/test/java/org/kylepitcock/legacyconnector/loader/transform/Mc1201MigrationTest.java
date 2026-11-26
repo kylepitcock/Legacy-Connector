@@ -210,6 +210,26 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacyEditBoxMoveCursorToEndUsesTheUnselectedTargetApi() {
+        String editBox = "net/minecraft/client/gui/components/EditBox";
+        ClassNode caller = cls("test/PlaylistNameEditor", "java/lang/Object");
+        MethodNode enterNameEdit = method(caller, ACC_PUBLIC | ACC_STATIC, "enterNameEdit", "(L" + editBox + ";)V");
+        enterNameEdit.instructions.add(new VarInsnNode(ALOAD, 0));
+        MethodInsnNode legacy = new MethodInsnNode(INVOKEVIRTUAL, editBox, "moveCursorToEnd", "()V", false);
+        enterNameEdit.instructions.add(legacy);
+        enterNameEdit.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(caller);
+        assertEquals(1, counts.calls, "the legacy EditBox cursor call must be redirected before soft-linking");
+        MethodInsnNode adapted = find(enterNameEdit, MIGRATE + "MiddleClientCompat", "moveCursorToEnd");
+        assertNotNull(adapted);
+        assertEquals(INVOKESTATIC, adapted.getOpcode());
+        assertEquals("(L" + editBox + ";)V", adapted.desc);
+        assertFalse(enterNameEdit.instructions.contains(legacy));
+        verify(caller);
+    }
+
+    @Test
     void legacySelectionListSetLeftPosCallsUseTheWidgetXSetter() {
         String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
         ClassNode list = cls("test/MySelectionList", selectionList);

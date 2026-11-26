@@ -551,6 +551,7 @@ net/minecraft/client/gui/screens/inventory/InventoryScreen	renderEntityInInvento
 net/minecraft/client/resources/DefaultPlayerSkin	getDefaultSkin	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getDefaultSkin
 net/minecraft/client/resources/DefaultPlayerSkin	getSkinModelName	(Ljava/util/UUID;)Ljava/lang/String;	MiddleClientCompat	getSkinModelName
 net/minecraft/client/gui/components/EditBox	moveCursorToStart	()V	MiddleClientCompat	moveCursorToStart
+net/minecraft/client/gui/components/EditBox	moveCursorToEnd	()V	MiddleClientCompat	moveCursorToEnd
 net/minecraft/client/multiplayer/ClientLevel	putNonPlayerEntity	(ILnet/minecraft/world/entity/Entity;)V	MiddleClientCompat	putNonPlayerEntity
 net/minecraft/client/multiplayer/ClientPacketListener	registryAccess	()Lnet/minecraft/core/RegistryAccess;	MiddleClientCompat	registryAccess
 net/minecraft/client/resources/model/ModelResourceLocation	getNamespace	()Ljava/lang/String;	MiddleClientCompat	modelNamespace

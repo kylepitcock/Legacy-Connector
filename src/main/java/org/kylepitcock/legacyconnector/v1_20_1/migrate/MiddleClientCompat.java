@@ -256,6 +256,15 @@ public final class MiddleClientCompat {
         box.moveCursorToStart(false);
     }
 
+    /**
+     * Adapts the 1.20.1 no-argument cursor-to-end call to 1.21.1's
+     * selection-aware API. Passing false moves the caret without extending
+     * the current selection, matching the legacy behavior.
+     */
+    public static void moveCursorToEnd(net.minecraft.client.gui.components.EditBox box) {
+        box.moveCursorToEnd(false);
+    }
+
     private static final org.slf4j.Logger PLAYER_EFFECT_DIAGNOSTICS =
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/PlayerEffectDiagnostics");
 
