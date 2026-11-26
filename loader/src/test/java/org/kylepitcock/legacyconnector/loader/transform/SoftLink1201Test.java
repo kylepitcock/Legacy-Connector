@@ -38,12 +38,14 @@ class SoftLink1201Test implements Opcodes {
         Mc1201Hierarchy.setMinecraftForTests(Map.of(
                 BASE, new String[] {"java/lang/Object"},
                 SUB, new String[] {BASE},
-                RENDER_STATE_SHARD, new String[] {"java/lang/Object"}));
+                RENDER_STATE_SHARD, new String[] {"java/lang/Object"},
+                RENDER_STATE_SHARD + "$ShaderStateShard", new String[] {"java/lang/Object"}));
         McMembers1201.setForTests(Map.of(
                 BASE, new McMembers1201.Members(Set.of("<init>()V", "present()I", "tick()V"), Set.of("count:I")),
                 SUB, new McMembers1201.Members(Set.of("<init>()V"), Set.of()),
                 RENDER_STATE_SHARD, new McMembers1201.Members(Set.of("<init>()V"),
-                        Set.of("POSITION_COLOR_SHADER:" + POSITION_COLOR_TEX_SHADER_DESC))));
+                        Set.of("POSITION_COLOR_SHADER:" + POSITION_COLOR_TEX_SHADER_DESC)),
+                RENDER_STATE_SHARD + "$ShaderStateShard", new McMembers1201.Members(Set.of("<init>(Ljava/util/function/Supplier;)V"), Set.of()))));
     }
 
     @AfterAll
