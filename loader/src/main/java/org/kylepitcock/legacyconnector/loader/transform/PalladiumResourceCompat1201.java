@@ -331,6 +331,9 @@ final class PalladiumResourceCompat1201 {
         for (String path : changedPaths) {
             byte[] before = original.get(path);
             byte[] after = resources.get(path);
+            // This pack-discovery marker is metadata, not a migrated source resource;
+            // keep it out of the compatibility rewrite count and existing diagnostics.
+            if (AlienEvoResourceCompat1201.ADDON_RESOURCE_ROOT_MARKER.equals(path)) continue;
             // Count additions, in-place edits, and removals exactly once per resource path.
             if (!java.util.Arrays.equals(before, after)) {
                 changedResources++;
