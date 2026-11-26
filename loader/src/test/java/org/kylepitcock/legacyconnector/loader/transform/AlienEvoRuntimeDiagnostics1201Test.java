@@ -195,6 +195,41 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
     }
 
     @Test
+    void tracesMobPortraitFitBoundsForBadgeDiagnostics() throws AnalyzerException {
+        ClassNode node = new ClassNode();
+        node.name = "net/habb/alienevo/client/screen/MobPortrait";
+        String drawDesc = "(Lnet/minecraft/client/gui/GuiGraphics;"
+                + "Lnet/minecraft/world/entity/LivingEntity;FFFFLjava/lang/Object;Z)V";
+        String fitDesc = "(Lnet/minecraft/client/gui/GuiGraphics;[FFFF"
+                + "Lnet/habb/alienevo/client/screen/MobPortrait$Painter;)V";
+        MethodNode draw = new MethodNode(ACC_PUBLIC | ACC_STATIC, "draw", drawDesc, null, null);
+        draw.instructions.add(new VarInsnNode(ALOAD, 0));
+        draw.instructions.add(new VarInsnNode(ALOAD, 8));
+        draw.instructions.add(new VarInsnNode(FLOAD, 2));
+        draw.instructions.add(new VarInsnNode(FLOAD, 3));
+        draw.instructions.add(new VarInsnNode(FLOAD, 4));
+        draw.instructions.add(new VarInsnNode(FLOAD, 5));
+        draw.instructions.add(new InsnNode(ACONST_NULL));
+        MethodInsnNode fit = new MethodInsnNode(INVOKESTATIC,
+                node.name, "fit", fitDesc, false);
+        draw.instructions.add(fit);
+        draw.instructions.add(new InsnNode(RETURN));
+        draw.maxLocals = 9;
+        draw.maxStack = 7;
+        node.methods.add(draw);
+
+        assertEquals(1, AlienEvoRuntimeDiagnostics1201.apply(node));
+        MethodInsnNode trace = findCall(draw, "traceBadgePortraitDraw");
+        assertEquals("(Ljava/lang/Object;Ljava/lang/Object;[FFFFZ)V", trace.desc);
+        assertEquals(INVOKESTATIC, trace.getOpcode());
+        assertEquals(trace, fit.getPrevious().getPrevious().getPrevious().getPrevious()
+                .getPrevious().getPrevious().getPrevious().getPrevious());
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, draw);
+        assertTrue(draw.maxStack >= 16);
+        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
+    }
+
+    @Test
     void leavesUnrelatedClassesUntouched() {
         ClassNode node = new ClassNode();
         node.name = "example/UnrelatedRenderer";

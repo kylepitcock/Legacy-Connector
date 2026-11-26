@@ -30,6 +30,13 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
     private static final String BONE_ANCHORS = "net/habb/alienevo/client/BoneAnchors";
     private static final String CHEST_SPIN_ANIMATION =
             "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation";
+    private static final String MOB_PORTRAIT =
+            "net/habb/alienevo/client/screen/MobPortrait";
+    private static final String MOB_PORTRAIT_DRAW_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/LivingEntity;"
+                    + "FFFFLjava/lang/Object;Z)V";
+    private static final String MOB_PORTRAIT_FIT_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;[FFFFLnet/habb/alienevo/client/screen/MobPortrait$Painter;)V";
     private static final String ABILITY_UTIL = "net/threetag/palladium/power/ability/AbilityUtil";
     private static final String ABILITY_ENABLED_DESC =
             "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;)Z";
@@ -54,8 +61,56 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             case CANCEL_FIRST_PERSON_SWING -> traceVanillaSwing(node);
             case BONE_ANCHORS -> traceBoneWorld(node);
             case CHEST_SPIN_ANIMATION -> traceCannonboltSpinGate(node);
+            case MOB_PORTRAIT -> traceBadgePortraitDraw(node);
             default -> 0;
         };
+    }
+
+    /**
+     * Traces the off-screen MobPortrait fit call used by the Badge player image.
+     * Local slots are from the audited static draw(GuiGraphics, LivingEntity,
+     * x, y, size, depthScale, probeKey, hologram) method.
+     */
+    private static int traceBadgePortraitDraw(ClassNode node) {
+        MethodNode draw = find(node, "draw", MOB_PORTRAIT_DRAW_DESC);
+        if (draw == null || draw.instructions == null) return 0;
+
+        int existingTraces = countCalls(draw, "traceBadgePortraitDraw");
+        if (existingTraces == 1) return 0;
+        if (existingTraces != 0) return 0;
+
+        MethodInsnNode fit = null;
+        int fitCount = 0;
+        for (AbstractInsnNode instruction : draw.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && MOB_PORTRAIT.equals(call.owner)
+                    && "fit".equals(call.name)
+                    && MOB_PORTRAIT_FIT_DESC.equals(call.desc)) {
+                fit = call;
+                fitCount++;
+            }
+        }
+        // A bytecode shape change must skip optional diagnostics rather than
+        // destabilize startup or alter the actual third-party render method.
+        if (fitCount != 1 || fit == null) return 0;
+
+        InsnList trace = new InsnList();
+        trace.add(new VarInsnNode(ALOAD, 1)); // LivingEntity
+        trace.add(new VarInsnNode(ALOAD, 6)); // Badge/portrait probe key
+        trace.add(new VarInsnNode(ALOAD, 8)); // measured or freshly computed outline
+        trace.add(new VarInsnNode(FLOAD, 2)); // legacy fit origin X
+        trace.add(new VarInsnNode(FLOAD, 3)); // legacy fit origin Y
+        trace.add(new VarInsnNode(FLOAD, 4)); // square fit size
+        trace.add(new VarInsnNode(FLOAD, 5)); // depth scale
+        trace.add(new VarInsnNode(ILOAD, 7)); // hologram painter selection
+        trace.add(new MethodInsnNode(INVOKESTATIC, HELPER, "traceBadgePortraitDraw",
+                "(Ljava/lang/Object;Ljava/lang/Object;[FFFFZ)V", false));
+        draw.instructions.insertBefore(fit, trace);
+        // The fit invocation already has seven argument slots on the operand
+        // stack when the eight-slot diagnostic call is inserted ahead of it.
+        draw.maxStack = Math.max(draw.maxStack, 16);
+        return 1;
     }
 
     private static int traceCannonboltSpinGate(ClassNode node) {

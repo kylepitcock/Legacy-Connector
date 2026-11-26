@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.Minecraft;
@@ -106,6 +107,81 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
                             + "reason=GeckoModelStorage returned null or its 250ms capture expired",
                     entityId, boneName, firstPerson);
         }
+    }
+
+    /**
+     * Captures the exact bounds and fit inputs used by AlienEvo's off-screen Badge
+     * portrait renderer. This is observational and disabled unless the runtime
+     * diagnostics system property is enabled.
+     */
+    public static void traceBadgePortraitDraw(
+            Object entity,
+            Object probeKey,
+            float[] outline,
+            float x,
+            float y,
+            float size,
+            float depthScale,
+            boolean hologram) {
+        if (!isEnabled() || entity == null) return;
+        try {
+            String uuid = String.valueOf(invokeNoArgs(entity, "getUUID"));
+            String key = "badge-portrait:" + uuid + ":" 
+                    + (probeKey == null ? "null" : probeKey.getClass().getName());
+            if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
+            LOGGER.info("[AlienEvoRuntimeTrace] badgePortraitDraw entity={} probeKey={} hologram={} "
+                            + "fitOrigin=({}, {}) size={} depthScale={} outline[minX,maxX,minY,maxY]={} "
+                            + "entityState={}",
+                    uuid, probeKey, hologram, x, y, size, depthScale,
+                    Arrays.toString(outline), describePortraitEntity(entity));
+        } catch (Throwable ignored) {
+            // Portrait diagnostics must never interrupt a GUI render.
+        }
+    }
+
+    /**
+     * Captures the legacy anchor/cursor contract and the 1.21.1 clipping rectangle
+     * used by the regular Omnitrix Power Screen preview.
+     */
+    public static void traceOmnitrixPowerPreview(
+            Object entity,
+            int anchorX,
+            int anchorY,
+            int scale,
+            int guiWidth,
+            int guiHeight,
+            float legacyMouseX,
+            float legacyMouseY,
+            float absoluteMouseX,
+            float absoluteMouseY,
+            int left,
+            int top,
+            int right,
+            int bottom) {
+        if (!isEnabled() || entity == null) return;
+        try {
+            String uuid = String.valueOf(invokeNoArgs(entity, "getUUID"));
+            if (!shouldLog("omnitrix-preview:" + uuid, DEFAULT_INTERVAL_NANOS)) return;
+            LOGGER.info("[AlienEvoRuntimeTrace] omnitrixPowerPreview entity={} anchor=({}, {}) scale={} "
+                            + "gui={}x{} legacyMouseDelta=({}, {}) absoluteMouse=({}, {}) "
+                            + "viewport=[{},{}..{},{}] entityState={}",
+                    uuid, anchorX, anchorY, scale, guiWidth, guiHeight,
+                    legacyMouseX, legacyMouseY, absoluteMouseX, absoluteMouseY,
+                    left, top, right, bottom, describePortraitEntity(entity));
+        } catch (Throwable ignored) {
+            // Preview diagnostics must never interrupt a GUI render.
+        }
+    }
+
+    private static String describePortraitEntity(Object entity) {
+        return "type=" + invokeNoArgs(entity, "getType")
+                + ",pose=" + invokeNoArgs(entity, "getPose")
+                + ",bbox=" + invokeNoArgs(entity, "getBoundingBox")
+                + ",width=" + invokeNoArgs(entity, "getBbWidth")
+                + ",height=" + invokeNoArgs(entity, "getBbHeight")
+                + ",eyeHeight=" + invokeNoArgs(entity, "getEyeHeight")
+                + ",position=(" + invokeNoArgs(entity, "getX") + ","
+                + invokeNoArgs(entity, "getY") + "," + invokeNoArgs(entity, "getZ") + ")";
     }
 
     public static void traceKineceleranRun(Object builder, Object player, Object firstPersonContext) {

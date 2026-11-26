@@ -33,20 +33,24 @@ public final class InventoryScreenCompat1201 {
             float mouseX,
             float mouseY,
             LivingEntity entity) {
-        int halfWidth = Math.max(1, graphics.guiWidth());
-        int halfHeight = Math.max(1, graphics.guiHeight());
+        int guiWidth = graphics.guiWidth();
+        int guiHeight = graphics.guiHeight();
+        int halfWidth = Math.max(1, guiWidth);
+        int halfHeight = Math.max(1, guiHeight);
+        int left = x - halfWidth;
+        int top = y - halfHeight;
+        int right = x + halfWidth;
+        int bottom = y + halfHeight;
+        float absoluteMouseX = absoluteMouseCoordinate(x, mouseX);
+        float absoluteMouseY = absoluteMouseCoordinate(y, mouseY);
+
+        AlienEvoRuntimeDiagnostics1201Runtime.traceOmnitrixPowerPreview(
+                entity, x, y, scale, guiWidth, guiHeight, mouseX, mouseY,
+                absoluteMouseX, absoluteMouseY, left, top, right, bottom);
 
         InventoryScreen.renderEntityInInventoryFollowsMouse(
-                graphics,
-                x - halfWidth,
-                y - halfHeight,
-                x + halfWidth,
-                y + halfHeight,
-                scale,
-                0.0F,
-                absoluteMouseCoordinate(x, mouseX),
-                absoluteMouseCoordinate(y, mouseY),
-                entity);
+                graphics, left, top, right, bottom, scale, 0.0F,
+                absoluteMouseX, absoluteMouseY, entity);
     }
 
     static float absoluteMouseCoordinate(float anchor, float legacyDelta) {
