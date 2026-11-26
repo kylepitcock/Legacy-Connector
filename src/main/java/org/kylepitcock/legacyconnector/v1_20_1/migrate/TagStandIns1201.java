@@ -87,7 +87,9 @@ public final class TagStandIns1201 {
     /**
      * The field-by-name rows ({@code none-name} in {@code mc-fields.tsv}): the field name of Forge's {@code Tags.Items/Blocks/Biomes} constant that
      * 1.21.1 lacks, as the {@code c:} convention tag the loader's data conversion spells the same Forge tag as. The tags of the colours, panes, quartz
-     * blocks and armour pieces are filled by the layer's own data ({@code data/c/tags}), the rest stay empty unless a pack defines them.
+     * blocks and armour pieces are filled by the layer's own data ({@code data/c/tags}); the armour tags list the vanilla pieces explicitly instead of
+     * referencing {@code #minecraft:*_armor}, because another mod (Goety, issue #351) injects those {@code c:armors/*} tags back into the vanilla armour
+     * tags and the cycle makes TagLoader drop both sides. The rest stay empty unless a pack defines them.
      */
     public static TagKey itemTag(String field) {
         return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", path(field)));
