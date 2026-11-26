@@ -105,7 +105,7 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
         trace.add(new VarInsnNode(FLOAD, 5)); // depth scale
         trace.add(new VarInsnNode(ILOAD, 7)); // hologram painter selection
         trace.add(new MethodInsnNode(INVOKESTATIC, HELPER, "traceBadgePortraitDraw",
-                "(Ljava/lang/Object;Ljava/lang/Object;[FFFFZ)V", false));
+                "(Ljava/lang/Object;Ljava/lang/Object;[FFFFFZ)V", false));
         draw.instructions.insertBefore(fit, trace);
         // The fit invocation already has seven argument slots on the operand
         // stack when the eight-slot diagnostic call is inserted ahead of it.
