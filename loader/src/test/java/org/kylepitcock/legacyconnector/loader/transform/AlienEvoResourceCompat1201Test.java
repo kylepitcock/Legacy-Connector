@@ -380,7 +380,8 @@ class AlienEvoResourceCompat1201Test {
 
         resources.put("addon/alienevo/items/marker_probe.json", "{}".getBytes(StandardCharsets.UTF_8));
 
-        assertEquals(13, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+        // The added addon root marker is counted by this repair helper as one new resource entry.
+        assertEquals(14, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
         assertEquals(0, resources.get(AlienEvoResourceCompat1201.ADDON_RESOURCE_ROOT_MARKER).length);
 
         JsonObject loot = parse(resources, "data/alienevo/loot_tables/archaeology/codes_rare.json");
