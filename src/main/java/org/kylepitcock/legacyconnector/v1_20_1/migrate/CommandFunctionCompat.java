@@ -2,15 +2,19 @@ package org.kylepitcock.legacyconnector.v1_20_1.migrate;
 
 import java.util.List;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerFunctionManager;
+import org.slf4j.Logger;
 
 /**
  * 1.20.1 command-function calls whose signatures changed in 1.21.1.
  */
 public final class CommandFunctionCompat {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private CommandFunctionCompat() {}
 
     /**
@@ -23,7 +27,19 @@ public final class CommandFunctionCompat {
             CommandDispatcher<CommandSourceStack> dispatcher,
             CommandSourceStack source,
             List<String> lines) {
-        return CommandFunction.fromLines(id, dispatcher, source, lines);
+        try {
+            return CommandFunction.fromLines(id, dispatcher, source, lines);
+        } catch (IllegalArgumentException failure) {
+            // Palladium logs the Brigadier error position but drops the source line.
+            // Preserve the original exception while recording enough context to
+            // identify a legacy command that no longer parses under 1.21.1.
+            LOGGER.error(
+                    "Failed to parse legacy command function {}. Source command lines: {}",
+                    id,
+                    lines,
+                    failure);
+            throw failure;
+        }
     }
 
     /**
