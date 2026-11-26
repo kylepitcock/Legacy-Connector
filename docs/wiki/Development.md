@@ -159,6 +159,16 @@ the sub-test directory, and `-PcoremodReport` to list the places without equival
 `gate: FAILED (<stage>)`, and exits non-zero on failure. Pipes hide exit codes (`bash tools/dev/gate.sh | tail -3 && next` runs `next` even when the
 gate failed): check the last line, do not chain after a pipe (or use `set -o pipefail`).
 
+## Headless NeoForge server smoke test
+
+The `Check` workflow runs a separate **NeoForge Server Smoke Test** job for pull requests. It launches a dedicated NeoForge 1.21.1
+development server with Legacy Connector, generates a fresh flat world, runs 100 ticks, and checks that the server saves and exits.
+It needs no legacy mod jars. On failure, the workflow uploads the Gradle log, server log, and any crash reports.
+
+To run the same check locally with JDK 21, review the [Minecraft EULA](https://aka.ms/MinecraftEULA) and, if you accept it, run
+`MINECRAFT_EULA=true bash tools/dev/server-smoke.sh`. Each run keeps its world and logs in a fresh directory under
+`build/devtools/server-smoke/`. Use the regression suites below to verify individual legacy mods.
+
 ## Regression suites
 
 `tools/dev/verify.sh [--update] [suite ...]` runs the headless server self test unattended over named jar sets and compares the result with a

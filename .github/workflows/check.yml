@@ -2,7 +2,7 @@ name: Check
 
 # The merge gate in CI (tools/dev/gate.sh): compile, shim index, and `check` (the unit tests of the runtime and the loader, the shim
 # member check, the mod-specific code check) on every pull request and every push to master. The regression suites
-# (tools/dev/verify.sh) need mod jars that cannot be redistributed, so they stay a local step; this job is the part that needs none.
+# (tools/dev/verify.sh) need mod jars that cannot be redistributed, so they stay a local step.
 on:
   pull_request:
   push:
@@ -50,4 +50,36 @@ jobs:
             build/devtools/gate.log
             build/reports/tests
             loader/build/reports/tests
+          if-no-files-found: ignore
+
+  server-smoke:
+    name: NeoForge Server Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Start, tick, and stop the headless server
+        env:
+          MINECRAFT_EULA: 'true'
+        run: bash tools/dev/server-smoke.sh
+
+      - name: Upload server logs and crash reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-smoke-reports
+          path: |
+            build/devtools/server-smoke/*/gradle.log
+            build/devtools/server-smoke/*/logs/latest.log
+            build/devtools/server-smoke/*/crash-reports/
           if-no-files-found: ignore
