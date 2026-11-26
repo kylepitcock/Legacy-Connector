@@ -36,7 +36,7 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             "(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/LivingEntity;"
                     + "FFFFLjava/lang/Object;Z)V";
     private static final String MOB_PORTRAIT_FIT_DESC =
-            "(Lnet/minecraft/client/gui/GuiGraphics;[FFFFLnet/habb/alienevo/client/screen/MobPortrait$Painter;)V";
+            "(Lnet/minecraft/client/gui/GuiGraphics;[FFFFFLnet/habb/alienevo/client/screen/MobPortrait$Painter;)V";
     private static final String ABILITY_UTIL = "net/threetag/palladium/power/ability/AbilityUtil";
     private static final String ABILITY_ENABLED_DESC =
             "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;)Z";

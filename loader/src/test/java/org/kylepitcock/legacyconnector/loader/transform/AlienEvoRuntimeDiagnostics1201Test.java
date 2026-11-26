@@ -220,10 +220,9 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
 
         assertEquals(1, AlienEvoRuntimeDiagnostics1201.apply(node));
         MethodInsnNode trace = findCall(draw, "traceBadgePortraitDraw");
-        assertEquals("(Ljava/lang/Object;Ljava/lang/Object;[FFFFZ)V", trace.desc);
+        assertEquals("(Ljava/lang/Object;Ljava/lang/Object;[FFFFFZ)V", trace.desc);
         assertEquals(INVOKESTATIC, trace.getOpcode());
-        assertEquals(trace, fit.getPrevious().getPrevious().getPrevious().getPrevious()
-                .getPrevious().getPrevious().getPrevious().getPrevious());
+        assertEquals(trace, fit.getPrevious(), "trace must run immediately before the original fit call");
         new Analyzer<>(new BasicVerifier()).analyze(node.name, draw);
         assertTrue(draw.maxStack >= 16);
         assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
