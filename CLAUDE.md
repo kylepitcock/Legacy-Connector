@@ -143,7 +143,7 @@ Two channels (since 2026-11-13):
   `-Pmod_version=<ver>` (nothing is committed: master is protected against pushes without a pull request, so `mod_version` in
   `gradle.properties` is only the local default; bump it by hand after a release), creates tag `v<ver>` and the GitHub release (notes + commit list since the last release) and starts
   `publish.yml` (Modrinth, CurseForge; skips pre-releases) and `probe.yml`.
-  By hand, if ever needed: set `mod_version` BEFORE building and committing, `./gradlew bundleJar`, copy
-  `build/dist/legacyconnector-<ver>*.jar` to `legacyconnector-<ver>.jar`, `gh release create v<ver> <jar>`.
+  By hand, if ever needed: run `./gradlew bundleJar -Pmod_version=<ver>` and use `build/dist/legacyconnector-<ver>.jar`
+  with `gh release create v<ver> <jar>`. Without the version argument, local builds use a UTC timestamped snapshot.
 
 License: MIT.

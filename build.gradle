@@ -1,3 +1,7 @@
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
 plugins {
     id 'java-library'
     id 'idea'
@@ -7,10 +11,15 @@ plugins {
 // The root project is the *runtime* half of MC Compatibility: a normal NeoForge mod that contains the
 // re-implemented legacy APIs (the "shim", packages legacyconnector.v1_7_10 / legacyconnector.v1_12_2) and the bridges
 // that connect them to NeoForge. The :loader project is the service-layer half that translates jars.
-evaluationDependsOn(':loader')
-
 version = mod_version
+// Release and nightly builds pass their full version on the command line.
+if (!gradle.startParameter.projectProperties.containsKey('mod_version')) {
+    def timestamp = DateTimeFormatter.ofPattern("uuuuMMdd'T'HHmmss'Z'", Locale.ROOT)
+            .withZone(ZoneOffset.UTC).format(Instant.now())
+    version = "${mod_version}-snapshot.${timestamp}"
+}
 group = mod_group_id
+evaluationDependsOn(':loader')
 
 repositories {
     mavenLocal()
@@ -287,7 +296,7 @@ tasks.register('apiJar', Jar) {
     description = 'Builds the jar addons compile against (only org.kylepitcock.legacyconnector.api, without api.internal).'
     dependsOn tasks.named('classes')
     archiveBaseName = 'legacyconnector-api'
-    archiveVersion = project.version
+    archiveVersion = mod_version
     destinationDirectory = layout.buildDirectory.dir('dist')
     from(sourceSets.main.output.classesDirs) {
         include 'org/kylepitcock/legacyconnector/api/**'
@@ -671,7 +680,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
                              mod_id                 : mod_id,
                              mod_name               : mod_name,
                              mod_license            : mod_license,
-                             mod_version            : mod_version,
+                             mod_version            : project.version.toString(),
                              mod_authors            : mod_authors,
                              mod_description        : mod_description]
     inputs.properties replaceProperties
