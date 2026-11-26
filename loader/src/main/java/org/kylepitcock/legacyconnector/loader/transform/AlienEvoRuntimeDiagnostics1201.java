@@ -28,6 +28,11 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
     private static final String CANCEL_FIRST_PERSON_SWING =
             "net/habb/alienevo/mixin/client/CancelFirstPersonSwingMixin";
     private static final String BONE_ANCHORS = "net/habb/alienevo/client/BoneAnchors";
+    private static final String CHEST_SPIN_ANIMATION =
+            "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation";
+    private static final String ABILITY_UTIL = "net/threetag/palladium/power/ability/AbilityUtil";
+    private static final String ABILITY_ENABLED_DESC =
+            "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;)Z";
 
     private static final String ANIMATE_DESC =
             "(Lnet/threetag/palladium/client/model/animation/PalladiumAnimation$Builder;"
@@ -48,8 +53,64 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             case FIRST_PERSON_ARM -> traceFirstPersonArm(node);
             case CANCEL_FIRST_PERSON_SWING -> traceVanillaSwing(node);
             case BONE_ANCHORS -> traceBoneWorld(node);
+            case CHEST_SPIN_ANIMATION -> traceCannonboltSpinGate(node);
             default -> 0;
         };
+    }
+
+    private static int traceCannonboltSpinGate(ClassNode node) {
+        MethodNode animate = find(node, "animate", ANIMATE_DESC);
+        if (animate == null || animate.instructions == null) {
+            throw new IllegalStateException("AlienEvo ChestSpinAnimation.animate has an unexpected method shape");
+        }
+
+        int existingTraces = countCalls(animate, "traceCannonboltSpinGate");
+        if (existingTraces == 1) return 0;
+        if (existingTraces != 0) {
+            throw new IllegalStateException("AlienEvo ChestSpinAnimation has a partial Cannonbolt roll-gate trace");
+        }
+
+        MethodInsnNode abilityCheck = null;
+        VarInsnNode enabledStore = null;
+        int matches = 0;
+        for (AbstractInsnNode instruction : animate.instructions.toArray()) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || call.getOpcode() != INVOKESTATIC
+                    || !ABILITY_UTIL.equals(call.owner)
+                    || !"isEnabled".equals(call.name)
+                    || !ABILITY_ENABLED_DESC.equals(call.desc)) continue;
+            AbstractInsnNode next = nextMeaningful(call);
+            if (!(next instanceof VarInsnNode store)
+                    || store.getOpcode() != ISTORE || store.var != 7) {
+                throw new IllegalStateException(
+                        "AlienEvo ChestSpinAnimation ball_roll gate no longer stores its result in local 7");
+            }
+            abilityCheck = call;
+            enabledStore = store;
+            matches++;
+        }
+
+        if (matches != 1 || abilityCheck == null || enabledStore == null) {
+            throw new IllegalStateException(
+                    "AlienEvo ChestSpinAnimation expected exactly one Palladium ball_roll ability gate; found "
+                            + matches);
+        }
+
+        InsnList trace = new InsnList();
+        trace.add(new VarInsnNode(ALOAD, 2)); // player
+        trace.add(new VarInsnNode(ILOAD, 7)); // AbilityUtil.isEnabled result
+        trace.add(new VarInsnNode(ALOAD, 6)); // ChestSpinAnimation.State
+        trace.add(new MethodInsnNode(INVOKESTATIC, HELPER, "traceCannonboltSpinGate",
+                "(Ljava/lang/Object;ZLjava/lang/Object;)V", false));
+        animate.instructions.insert(enabledStore, trace);
+        animate.maxStack = Math.max(animate.maxStack, 3);
+        return 1;
+    }
+
+    private static AbstractInsnNode nextMeaningful(AbstractInsnNode instruction) {
+        AbstractInsnNode value = instruction == null ? null : instruction.getNext();
+        while (value != null && value.getOpcode() < 0) value = value.getNext();
+        return value;
     }
 
     private static int traceKineceleranRun(ClassNode node) {
