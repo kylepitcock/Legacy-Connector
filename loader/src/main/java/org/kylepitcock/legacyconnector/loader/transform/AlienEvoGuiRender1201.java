@@ -26,6 +26,8 @@ final class AlienEvoGuiRender1201 implements Opcodes {
     // Mc1201Migration redirects this same legacy signature through its generic client helper first.
     static final String MIDDLE_CLIENT_COMPAT =
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiddleClientCompat";
+    static final String CLIENT_COMPAT =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat";
     static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     static final String LIVING_ENTITY = "net/minecraft/world/entity/LivingEntity";
 
@@ -35,6 +37,8 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             "(L" + GUI_GRAPHICS + ";IIFFFL" + LIVING_ENTITY + ";FZ)V";
     static final String LEGACY_BACKGROUND_DESC =
             "(L" + GUI_GRAPHICS + ";)V";
+    static final String MIGRATED_BACKGROUND_DESC =
+            "(Lnet/minecraft/client/gui/screens/Screen;L" + GUI_GRAPHICS + ";)V";
     static final String MODERN_BACKGROUND_DESC =
             "(L" + GUI_GRAPHICS + ";IIF)V";
     static final String BADGE_RENDER_DESC =
@@ -67,8 +71,10 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         }
 
         MethodInsnNode legacy = null;
+        MethodInsnNode genericBridge = null;
         int legacyCount = 0;
-        int helperCount = 0;
+        int inventoryCompatCount = 0;
+        int middleClientCompatCount = 0;
         for (AbstractInsnNode instruction : renderEntity.instructions.toArray()) {
             if (!(instruction instanceof MethodInsnNode call)
                     || !call.name.equals("renderEntityInInventoryFollowsMouse")
@@ -79,30 +85,43 @@ final class AlienEvoGuiRender1201 implements Opcodes {
                     && call.getOpcode() == INVOKESTATIC) {
                 legacy = call;
                 legacyCount++;
-            } else if ((INVENTORY_COMPAT.equals(call.owner)
-                    || MIDDLE_CLIENT_COMPAT.equals(call.owner))
+            } else if (INVENTORY_COMPAT.equals(call.owner)
                     && call.getOpcode() == INVOKESTATIC) {
-                // MiddleClientCompat is the earlier generic Mc1201Migration rewrite for this exact signature.
-                helperCount++;
+                inventoryCompatCount++;
+            } else if (MIDDLE_CLIENT_COMPAT.equals(call.owner)
+                    && call.getOpcode() == INVOKESTATIC) {
+                // The generic bridge's 2x2 viewport is suitable for its original
+                // tiny anchor contract, but clips AlienEvo's much larger model preview.
+                genericBridge = call;
+                middleClientCompatCount++;
             } else {
                 throw new IllegalStateException(
                         "AlienEvo preview has an unexpected InventoryScreen preview invocation owner/opcode");
             }
         }
 
-        if (legacyCount == 0 && helperCount == 1) {
-            return 0; // Already adapted.
+        if (legacyCount == 0 && inventoryCompatCount == 1 && middleClientCompatCount == 0) {
+            return 0; // Already using the AlienEvo-sized viewport bridge.
         }
-        if (legacyCount != 1 || helperCount != 0 || legacy == null) {
-            throw new IllegalStateException(
-                    "AlienEvo AlienPreviewWidget expected exactly one legacy InventoryScreen preview call; found "
-                            + legacyCount + " legacy and " + helperCount + " adapted");
+        if (legacyCount == 0 && inventoryCompatCount == 0
+                && middleClientCompatCount == 1 && genericBridge != null) {
+            genericBridge.owner = INVENTORY_COMPAT;
+            genericBridge.setOpcode(INVOKESTATIC);
+            genericBridge.itf = false;
+            return 1;
+        }
+        if (legacyCount == 1 && inventoryCompatCount == 0
+                && middleClientCompatCount == 0 && legacy != null) {
+            legacy.owner = INVENTORY_COMPAT;
+            legacy.setOpcode(INVOKESTATIC);
+            legacy.itf = false;
+            return 1;
         }
 
-        legacy.owner = INVENTORY_COMPAT;
-        legacy.setOpcode(INVOKESTATIC);
-        legacy.itf = false;
-        return 1;
+        throw new IllegalStateException(
+                "AlienEvo AlienPreviewWidget expected exactly one legacy, generic or AlienEvo preview call; found "
+                        + legacyCount + " legacy, " + middleClientCompatCount + " generic and "
+                        + inventoryCompatCount + " AlienEvo helpers");
     }
 
     /**
@@ -121,6 +140,7 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         MethodInsnNode legacy = null;
         int legacyCount = 0;
         int modernCount = 0;
+        int migratedNoopCount = 0;
         for (AbstractInsnNode instruction : render.instructions.toArray()) {
             if (!(instruction instanceof MethodInsnNode call)
                     || !call.name.equals("renderBackground")) {
@@ -136,18 +156,28 @@ final class AlienEvoGuiRender1201 implements Opcodes {
                 }
                 legacy = call;
                 legacyCount++;
+            } else if (MIGRATED_BACKGROUND_DESC.equals(call.desc)
+                    && CLIENT_COMPAT.equals(call.owner)
+                    && call.getOpcode() == INVOKESTATIC) {
+                // Mc1201Migration already redirected Screen.renderBackground to
+                // ClientCompat's intentionally empty 1.21.1 compatibility hook.
+                migratedNoopCount++;
             } else if (MODERN_BACKGROUND_DESC.equals(call.desc)) {
                 modernCount++;
+            } else {
+                throw new IllegalStateException(
+                        "AlienEvo PlumberBadgeScreen has an unexpected background compatibility invocation");
             }
         }
 
-        if (legacyCount == 0 && modernCount == 0) {
-            return 0; // Already removed.
+        if (legacyCount == 0 && modernCount == 0 && migratedNoopCount <= 1) {
+            return 0; // Already removed or migrated to the no-op helper.
         }
-        if (legacyCount != 1 || modernCount != 0 || legacy == null) {
+        if (legacyCount != 1 || modernCount != 0 || migratedNoopCount != 0 || legacy == null) {
             throw new IllegalStateException(
                     "AlienEvo PlumberBadgeScreen expected one legacy background call; found "
-                            + legacyCount + " legacy and " + modernCount + " modern");
+                            + legacyCount + " legacy, " + migratedNoopCount + " no-op compat and "
+                            + modernCount + " modern");
         }
 
         AbstractInsnNode graphicsLoad = previousMeaningful(legacy);

@@ -57,19 +57,20 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         // Mc1201Migration's mc-calls.tsv row rewrites this owner to MiddleClientCompat first.
         redirected.owner = AlienEvoGuiRender1201.MIDDLE_CLIENT_COMPAT;
 
-        assertEquals(0, AlienEvoGuiRender1201.apply(node),
-                "the earlier generic migration has already adapted this call");
-        assertEquals(AlienEvoGuiRender1201.MIDDLE_CLIENT_COMPAT, redirected.owner);
+        assertEquals(1, AlienEvoMolang1201.apply(node),
+                "the active post-Minecraft pass must replace the too-small generic viewport");
+        assertEquals(AlienEvoGuiRender1201.INVENTORY_COMPAT, redirected.owner);
         assertEquals(INVOKESTATIC, redirected.getOpcode());
-        assertEquals(0, AlienEvoGuiRender1201.apply(node),
-                "recognizing the generic bridge must remain idempotent");
+        assertEquals(0, AlienEvoMolang1201.apply(node),
+                "the active preview adapter must remain idempotent");
     }
 
     @Test
     void removesOnlyTheBadgeLegacyBackgroundCallAndKeepsOtherRenderWork() {
         ClassNode node = badgeScreen();
 
-        assertEquals(1, AlienEvoGuiRender1201.apply(node));
+        assertEquals(1, AlienEvoMolang1201.apply(node),
+                "the active per-class pass must remove the Badge backdrop call");
 
         MethodNode render = find(node, "render", RENDER_DESC);
         assertFalse(hasCall(render, INVOKEVIRTUAL, node.name, "renderBackground", BACKGROUND_DESC));
@@ -81,6 +82,26 @@ class AlienEvoGuiRender1201Test implements Opcodes {
 
         assertEquals(0, AlienEvoGuiRender1201.apply(node),
                 "the Badge background removal must be idempotent");
+    }
+
+    @Test
+    void acceptsBadgeBackgroundAlreadyRedirectedToClientCompatNoOp() {
+        ClassNode node = badgeScreen();
+        MethodNode render = find(node, "render", RENDER_DESC);
+        MethodInsnNode legacy = findCall(render, INVOKEVIRTUAL, node.name, "renderBackground", BACKGROUND_DESC);
+        assertTrue(legacy != null);
+        render.instructions.set(legacy, new MethodInsnNode(INVOKESTATIC,
+                AlienEvoGuiRender1201.CLIENT_COMPAT,
+                "renderBackground",
+                AlienEvoGuiRender1201.MIGRATED_BACKGROUND_DESC,
+                false));
+
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "the generic helper already suppresses the inherited 1.20.1 blur background");
+        assertTrue(hasCall(render, INVOKESTATIC,
+                AlienEvoGuiRender1201.CLIENT_COMPAT,
+                "renderBackground",
+                AlienEvoGuiRender1201.MIGRATED_BACKGROUND_DESC));
     }
 
     @Test

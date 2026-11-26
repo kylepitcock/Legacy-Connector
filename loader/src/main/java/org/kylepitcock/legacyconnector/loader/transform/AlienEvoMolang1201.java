@@ -99,8 +99,10 @@ final class AlienEvoMolang1201 implements Opcodes {
             changes += migrateRollSinceRegistration(node);
         }
         changes += migrateLegacyParserCalls(node);
-        // The main transformer already visits this adapter for every AlienEvo class.
-        // Keep all opt-in runtime probes on this active path instead of a dead side pass.
+        // Forge1201Transformer invokes this pass for every class after Mc1201Migration.
+        // Dispatch GUI fixes here so their post-Minecraft-migration call shapes are visible.
+        changes += AlienEvoGuiRender1201.apply(node);
+        // Keep opt-in runtime probes on this same active per-class path.
         changes += AlienEvoRuntimeDiagnostics1201.apply(node);
         if (CHEST_SPIN_ANIMATION.equals(node.name)) {
             changes += migrateAzureRollSinceAnimationTime(node);
