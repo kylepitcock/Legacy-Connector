@@ -245,9 +245,13 @@ final class AlienEvoResourceCompat1201 {
      * discovering it as a resource namespace.
      */
     static boolean ensureAddonResourceRootMarker(Map<String, byte[]> resources) {
-        boolean hasAddonRoot = resources.keySet().stream()
-                .anyMatch(path -> path.startsWith("addon/") && !path.equals(ADDON_RESOURCE_ROOT_MARKER));
-        if (!hasAddonRoot || resources.containsKey(ADDON_RESOURCE_ROOT_MARKER)) return false;
+        // The marker belongs to AlienEvo's two inspected addon namespaces only.
+        // Do not add it just because an unrelated legacy mod has an addon/ folder.
+        boolean hasAlienEvoAddonRoot = resources.keySet().stream()
+                .anyMatch(path -> (path.startsWith("addon/alienevo/")
+                        || path.startsWith("addon/afomni/"))
+                        && !path.equals(ADDON_RESOURCE_ROOT_MARKER));
+        if (!hasAlienEvoAddonRoot || resources.containsKey(ADDON_RESOURCE_ROOT_MARKER)) return false;
         resources.put(ADDON_RESOURCE_ROOT_MARKER, new byte[0]);
         return true;
     }
