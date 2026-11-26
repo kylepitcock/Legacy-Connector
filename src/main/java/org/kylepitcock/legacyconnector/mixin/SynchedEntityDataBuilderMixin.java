@@ -26,6 +26,11 @@ public abstract class SynchedEntityDataBuilderMixin implements org.kylepitcock.l
         LegacyEntityData.fillHoles(entity, itemsById, (SynchedEntityData.Builder) (Object) this);
     }
 
+    @Override
+    public SynchedEntityData legacyconnector$view() {
+        return new SynchedEntityData(entity, itemsById);
+    }
+
     /** Replaces the default of an id that is already defined (a 1.20.1 mod setting a vanilla value inside its defineSynchedData). */
     @Override
     public <T> void legacyconnector$overrideDefault(net.minecraft.network.syncher.EntityDataAccessor<T> accessor, T value) {

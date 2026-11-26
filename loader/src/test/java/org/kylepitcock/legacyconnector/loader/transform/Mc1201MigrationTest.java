@@ -77,6 +77,30 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void restoresEntityDataReadsInLegacyHelpersWithoutRewritingHiddenFields() {
+        String entity = "net/minecraft/world/entity/Entity";
+        String data = "Lnet/minecraft/network/syncher/SynchedEntityData;";
+        ClassNode legacy = cls("test/LegacyEntity", "net/minecraft/world/entity/animal/Pig");
+        ClassNode hiding = cls("test/HidingEntity", legacy.name);
+        hiding.fields.add(new org.objectweb.asm.tree.FieldNode(ACC_PRIVATE, "entityData", data, null, null));
+        for (ClassNode node : List.of(legacy, hiding)) {
+            MethodNode read = method(node, ACC_PUBLIC, "readData", "()" + data);
+            read.instructions.add(new VarInsnNode(ALOAD, 0));
+            read.instructions.add(new FieldInsnNode(GETFIELD, node.name, "entityData", data));
+            read.instructions.add(new InsnNode(ARETURN));
+        }
+        MethodNode getter = method(legacy, ACC_PUBLIC, "readViaGetter", "()" + data);
+        getter.instructions.add(new VarInsnNode(ALOAD, 0));
+        getter.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, entity, "getEntityData", "()" + data, false));
+        getter.instructions.add(new InsnNode(ARETURN));
+
+        apply(legacy, hiding);
+        assertNotNull(find(legacy.methods.getFirst(), MIGRATE + "MigrateContext", "entityData"));
+        assertNull(find(hiding.methods.getFirst(), MIGRATE + "MigrateContext", "entityData"));
+        assertNotNull(find(getter, MIGRATE + "MigrateContext", "getEntityData"));
+    }
+
+    @Test
     void constructorBecomesFactoryCall() {
         ClassNode c = cls("test/Mod", "java/lang/Object");
         MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", "(L" + ME + ";)L" + MEI + ";");

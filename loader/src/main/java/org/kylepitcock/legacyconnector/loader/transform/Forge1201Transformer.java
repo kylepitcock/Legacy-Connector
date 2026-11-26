@@ -329,7 +329,7 @@ public final class Forge1201Transformer {
     /**
      * Structure of a jar's classes for the translation of the OTHER jars of the set ({@link Mc1201Hierarchy#peers}): class names after the Forge renames,
      * supertypes, and the declared methods whose name a migration table mentions (the old-signature overrides a subclass in another jar may call or override).
-     * Cheap: method bodies are skipped, everything else is dropped.
+     * Keep declarations of the entity data field too, to distinguish inherited access from a hiding field. Method bodies are skipped.
      */
     public List<org.kylepitcock.legacyconnector.loader.shim.ClassInfo> scan(LegacyJar jar) throws IOException {
         Set<String> watched = Mc1201Tables.get().watchedMethodNames();
@@ -350,6 +350,7 @@ public final class Forge1201Transformer {
                     new ClassReader(in.readAllBytes()).accept(new ClassRemapper(node, mapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                     var info = new org.kylepitcock.legacyconnector.loader.shim.ClassInfo(node.name, node.superName, List.copyOf(node.interfaces), node.access);
                     for (MethodNode m : node.methods) if (watched.contains(m.name) || m.name.equals("getCapability")) info.methods.put(m.name + m.desc, m.access);
+                    for (var f : node.fields) if (f.name.equals("entityData")) info.fields.put(f.name + ":" + f.desc, f.access);
                     out.add(info);
                 } catch (RuntimeException ex) {
                     // reported when the jar itself is translated

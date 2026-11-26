@@ -542,6 +542,15 @@ public final class Mc1201Migration {
                 m.instructions.set(f, new MethodInsnNode(Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/ForgeGui", "mcc$instance",
                         "()Llegacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/ForgeGui;", false));
                 c.fields++;
+            } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETFIELD
+                    && f.name.equals("entityData") && f.desc.equals("Lnet/minecraft/network/syncher/SynchedEntityData;")
+                    && h.inheritsEntityData(f.owner, f.name, f.desc)) {
+                // Keep the protected field access and substitute a view only while its owner is initializing.
+                m.instructions.insertBefore(f, new InsnNode(Opcodes.DUP));
+                m.instructions.insert(f, new MethodInsnNode(Opcodes.INVOKESTATIC, CONTEXT, "entityData",
+                        "(Lnet/minecraft/world/entity/Entity;" + f.desc + ")" + f.desc, false));
+                m.maxStack++;
+                c.fields++;
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
                 // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
                 boolean get = f.getOpcode() == Opcodes.GETFIELD;
