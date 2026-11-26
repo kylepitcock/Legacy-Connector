@@ -22,6 +22,7 @@ import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoStepHeigh
 import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoSuperheroFlightController1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoVertexConsumer1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.AlienEvoWorldGen1201;
+import org.kylepitcock.legacyconnector.loader.transform.compat.IllageAndSpillageRagno1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.PalladiumAccessoryScreen1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.PalladiumAddonPackCheckbox1201;
 import org.kylepitcock.legacyconnector.loader.transform.compat.PalladiumAddonPackManager1201;
@@ -454,6 +455,7 @@ public final class Forge1201Transformer {
         int palladiumPowersScreenChanges = 0;
         int palladiumSelectionListChanges = 0;
         int palladiumSuitStandChanges = 0;
+        int illageAndSpillageRagnoChanges = 0;
         int palladiumRendererRotationChanges = 0;
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
@@ -518,6 +520,7 @@ public final class Forge1201Transformer {
             viaCalls += alienEvoGeckoRenderLayerModelChange;
             int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
             palladiumSuitStandChanges += palladiumSuitStandChange;
+            illageAndSpillageRagnoChanges += IllageAndSpillageRagno1201.apply(node);
             int palladiumRendererRotationChange = PalladiumRendererRotation1201.apply(node);
             palladiumRendererRotationChanges += palladiumRendererRotationChange;
             int palladiumTailoringScreenChange = PalladiumTailoringScreen1201.apply(node);
@@ -926,6 +929,10 @@ public final class Forge1201Transformer {
         if (palladiumSuitStandChanges > 0) {
             result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData.Builder lifecycle; DATA_CLIENT_FLAGS setup deferred until after the ArmorStand constructor: "
                     + palladiumSuitStandChanges + " entity class(es)");
+        }
+        if (illageAndSpillageRagnoChanges > 0) {
+            result.notes.add("Illage and Spillage RagnoEntity initial stun health uses the legacy CRAZY=false value during SynchedEntityData builder initialization: "
+                    + illageAndSpillageRagnoChanges + " entity class(es)");
         }
         if (palladiumRendererRotationChanges > 0) {
             result.notes.add("Palladium SuitStand/TrailSegment renderer setupRotations overrides and calls migrated to the 1.21.1 four-float signature with the legacy default scale: "
