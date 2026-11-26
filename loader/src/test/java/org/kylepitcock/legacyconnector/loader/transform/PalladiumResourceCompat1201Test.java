@@ -1877,4 +1877,20 @@ class PalladiumResourceCompat1201Test {
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertFalse(resources.containsKey(PalladiumResourceCompat1201.ALIEN_EVO_QUICK_CHANGE));
     }
+
+    @Test
+    void invokesDev24DataRepairsThroughTheExistingPalladiumResourceAdapter() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "data/alienevo/recipes/prototype_omnitrix.json",
+                "{\"type\":\"alienevo:core_omnitrix\",\"result\":{\"item\":\"alienevo:prototype_omnitrix\",\"count\":1}}");
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String repaired = get(resources, "data/alienevo/recipes/prototype_omnitrix.json");
+        assertTrue(repaired.contains("\"id\":\"alienevo:prototype_omnitrix\""));
+        assertFalse(repaired.contains("\"item\":\"alienevo:prototype_omnitrix\""));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+
 }

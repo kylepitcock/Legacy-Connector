@@ -318,6 +318,11 @@ final class PalladiumResourceCompat1201 {
             rewriteAlienEvoSetSecondsOnFire(resources);
         }
 
+        // Keep the dev.24 resource repairs in this existing, unprotected resource
+        // adapter. Forge1201Transformer.java is also the user's protected local
+        // WorldGen integration file, so do not add repair hooks there.
+        AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources);
+
         // A single resource can receive more than one independent rewrite.
         // Report distinct changed resource paths, including resources removed by a migration.
         int changedResources = 0;
