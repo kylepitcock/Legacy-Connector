@@ -34,6 +34,9 @@ tools/dev/survey.sh <namespace> <name>         # places every block of a mod on 
                                 # generate + JVM-verify the synthesized API (no game launch)
 ```
 
+Local builds use `<base>-snapshot.<UTC timestamp>` for the distributable JAR and the NeoForge mod version, for example
+`legacyconnector-0.5.2-snapshot.20261126T061500Z.jar`. Pass `-Pmod_version=0.5.2` to `bundleJar` to use that exact version.
+
 Normal `test`, `check` and `build` exclude JUnit tests tagged `actual-mod`. These checks run only through
 `actualModTest`; unavailable local fixtures are reported as skipped. This task deliberately does not cache results because
 it discovers developer-supplied archives and translated jars dynamically.
