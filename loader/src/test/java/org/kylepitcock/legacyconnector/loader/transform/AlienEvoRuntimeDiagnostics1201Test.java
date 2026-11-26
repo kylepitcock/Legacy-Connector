@@ -45,6 +45,46 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
     }
 
     @Test
+    void tracesCannonboltSpinGateAfterThePalladiumAbilityCheckAndIsIdempotent() throws AnalyzerException {
+        ClassNode node = new ClassNode();
+        node.name = "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation";
+        MethodNode animate = new MethodNode(ACC_PUBLIC, "animate",
+                "(Lnet/threetag/palladium/client/model/animation/PalladiumAnimation$Builder;"
+                        + "Lnet/minecraft/client/player/AbstractClientPlayer;"
+                        + "Lnet/minecraft/client/model/HumanoidModel;"
+                        + "Lnet/threetag/palladium/client/model/animation/PalladiumAnimation$FirstPersonContext;F)V",
+                null, null);
+        animate.instructions.add(new InsnNode(ACONST_NULL));
+        animate.instructions.add(new VarInsnNode(ASTORE, 6)); // animation state
+        animate.instructions.add(new VarInsnNode(ALOAD, 2));
+        animate.instructions.add(new InsnNode(ACONST_NULL)); // ability superpower id
+        animate.instructions.add(new org.objectweb.asm.tree.LdcInsnNode("ball_roll"));
+        animate.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                "net/threetag/palladium/power/ability/AbilityUtil", "isEnabled",
+                "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;)Z",
+                false));
+        animate.instructions.add(new VarInsnNode(ISTORE, 7));
+        animate.instructions.add(new VarInsnNode(ILOAD, 7));
+        animate.instructions.add(new InsnNode(POP));
+        animate.instructions.add(new InsnNode(RETURN));
+        animate.maxLocals = 8;
+        animate.maxStack = 3;
+        node.methods.add(animate);
+
+        assertEquals(1, AlienEvoRuntimeDiagnostics1201.apply(node));
+        MethodInsnNode trace = findCall(animate, "traceCannonboltSpinGate");
+        assertEquals("(Ljava/lang/Object;ZLjava/lang/Object;)V", trace.desc);
+        assertEquals(ALOAD, trace.getPrevious().getOpcode());
+        assertEquals(6, ((VarInsnNode) trace.getPrevious()).var);
+        assertEquals(ILOAD, trace.getPrevious().getPrevious().getOpcode());
+        assertEquals(7, ((VarInsnNode) trace.getPrevious().getPrevious()).var);
+        assertEquals(ALOAD, trace.getPrevious().getPrevious().getPrevious().getOpcode());
+        assertEquals(2, ((VarInsnNode) trace.getPrevious().getPrevious().getPrevious()).var);
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, animate);
+        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
+    }
+
+    @Test
     void tracesTheAppliedFirstPersonArmPoseAfterTheModelPartIsUpdated() throws AnalyzerException {
         ClassNode node = new ClassNode();
         node.name = "net/habb/alienevo/client/model/animation/FirstPersonArmAnimator";
