@@ -45,7 +45,7 @@ class SoftLink1201Test implements Opcodes {
                 SUB, new McMembers1201.Members(Set.of("<init>()V"), Set.of()),
                 RENDER_STATE_SHARD, new McMembers1201.Members(Set.of("<init>()V"),
                         Set.of("POSITION_COLOR_SHADER:" + POSITION_COLOR_TEX_SHADER_DESC)),
-                RENDER_STATE_SHARD + "$ShaderStateShard", new McMembers1201.Members(Set.of("<init>(Ljava/util/function/Supplier;)V"), Set.of()))));
+                RENDER_STATE_SHARD + "$ShaderStateShard", new McMembers1201.Members(Set.of("<init>(Ljava/util/function/Supplier;)V"), Set.of())));
     }
 
     @AfterAll
