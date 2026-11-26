@@ -486,8 +486,8 @@ class AlienEvoResourceCompat1201Test {
                 for (int layers = 1; layers <= 8; layers++) {
                     String variantKey = "facing=" + facing + ",layers=" + layers;
                     String modelId = variants.getAsJsonObject(variantKey).get("model").getAsString();
-                    String modelPath = "assets/" + modelId.substring(modelId.indexOf(':') + 1)
-                            .replace("block/", "models/block/") + ".json";
+                    String modelPath = "assets/alienevo/models/"
+                            + modelId.substring(modelId.indexOf(':') + 1) + ".json";
                     assertTrue(resources.containsKey(modelPath), modelPath);
                     JsonObject model = parse(resources, modelPath);
                     JsonObject element = model.getAsJsonArray("elements").get(0).getAsJsonObject();
