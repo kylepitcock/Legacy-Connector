@@ -69,6 +69,8 @@ final class AlienEvoMolang1201 implements Opcodes {
             "mod/azure/azurelib/core/molang/LazyVariable";
     static final String AZURELIB_ROLL_TIME_CONTEXT =
             HELPER_PACKAGE + "MolangAzureRollTimeContext";
+    static final String RUNTIME_DIAGNOSTICS =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoRuntimeDiagnostics1201Runtime";
     static final String AZURELIB_ROLL_FUNCTION_CLASS =
             "net.habb.alienevo.compat.azurelib.bridge.MolangAzureRollSinceFunction";
 
@@ -97,6 +99,9 @@ final class AlienEvoMolang1201 implements Opcodes {
             changes += migrateRollSinceRegistration(node);
         }
         changes += migrateLegacyParserCalls(node);
+        // The main transformer already visits this adapter for every AlienEvo class.
+        // Keep all opt-in runtime probes on this active path instead of a dead side pass.
+        changes += AlienEvoRuntimeDiagnostics1201.apply(node);
         if (CHEST_SPIN_ANIMATION.equals(node.name)) {
             changes += migrateAzureRollSinceAnimationTime(node);
         }
@@ -703,6 +708,11 @@ final class AlienEvoMolang1201 implements Opcodes {
         register.instructions.add(new MethodInsnNode(INVOKESPECIAL, ROLL_FACTORY, "<init>", "()V", false));
         register.instructions.add(new MethodInsnNode(INVOKESTATIC, MATH_PARSER, "registerFunction",
                 "(Ljava/lang/String;L" + MATH_FACTORY + ";)V", false));
+        register.instructions.add(new LdcInsnNode("GeckoLib"));
+        register.instructions.add(new InsnNode(ICONST_1));
+        register.instructions.add(new LdcInsnNode("MathParser.registerFunction"));
+        register.instructions.add(new MethodInsnNode(INVOKESTATIC, RUNTIME_DIAGNOSTICS,
+                "traceRollSinceRegistration", "(Ljava/lang/String;ZLjava/lang/String;)V", false));
         register.instructions.add(new MethodInsnNode(INVOKESTATIC, PARSER_COMPAT,
                 "registerAzureLibRollSince", "()V", false));
         register.instructions.add(new InsnNode(RETURN));
@@ -780,10 +790,20 @@ final class AlienEvoMolang1201 implements Opcodes {
         azureRegister.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/reflect/Method",
                 "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false));
         azureRegister.instructions.add(new InsnNode(POP));
+        azureRegister.instructions.add(new LdcInsnNode("AzureLib"));
+        azureRegister.instructions.add(new InsnNode(ICONST_1));
+        azureRegister.instructions.add(new LdcInsnNode("MolangParser.registerFunction"));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKESTATIC, RUNTIME_DIAGNOSTICS,
+                "traceRollSinceRegistration", "(Ljava/lang/String;ZLjava/lang/String;)V", false));
         azureRegister.instructions.add(tryEnd);
         azureRegister.instructions.add(new InsnNode(RETURN));
         azureRegister.instructions.add(missingAzureLib);
         azureRegister.instructions.add(new InsnNode(POP));
+        azureRegister.instructions.add(new LdcInsnNode("AzureLib"));
+        azureRegister.instructions.add(new InsnNode(ICONST_0));
+        azureRegister.instructions.add(new LdcInsnNode("optional AzureLib API class not found"));
+        azureRegister.instructions.add(new MethodInsnNode(INVOKESTATIC, RUNTIME_DIAGNOSTICS,
+                "traceRollSinceRegistration", "(Ljava/lang/String;ZLjava/lang/String;)V", false));
         azureRegister.instructions.add(new InsnNode(RETURN));
         azureRegister.tryCatchBlocks.add(new org.objectweb.asm.tree.TryCatchBlockNode(
                 tryStart, tryEnd, missingAzureLib, "java/lang/ClassNotFoundException"));
@@ -895,11 +915,13 @@ final class AlienEvoMolang1201 implements Opcodes {
                 "push", "(D)Ljava/lang/Double;", false));
         evaluate.instructions.add(new VarInsnNode(ASTORE, 5));
         evaluate.instructions.add(tryStart);
-        evaluate.instructions.add(new VarInsnNode(ALOAD, 2));
         evaluate.instructions.add(new VarInsnNode(ALOAD, 0));
         evaluate.instructions.add(new InsnNode(ICONST_0));
         evaluate.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AZURELIB_CONTEXT_FUNCTION,
                 "getArg", "(I)D", false));
+        evaluate.instructions.add(new VarInsnNode(DSTORE, 8));
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 2));
+        evaluate.instructions.add(new VarInsnNode(DLOAD, 8));
         evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, CHEST_SPIN_ANIMATION,
                 "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F", false));
         evaluate.instructions.add(new VarInsnNode(FSTORE, 6));
@@ -907,6 +929,12 @@ final class AlienEvoMolang1201 implements Opcodes {
         evaluate.instructions.add(new VarInsnNode(ALOAD, 5));
         evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, AZURELIB_ROLL_TIME_CONTEXT,
                 "pop", "(Ljava/lang/Double;)V", false));
+        evaluate.instructions.add(new VarInsnNode(ALOAD, 2));
+        evaluate.instructions.add(new VarInsnNode(DLOAD, 3));
+        evaluate.instructions.add(new VarInsnNode(DLOAD, 8));
+        evaluate.instructions.add(new VarInsnNode(FLOAD, 6));
+        evaluate.instructions.add(new MethodInsnNode(INVOKESTATIC, RUNTIME_DIAGNOSTICS,
+                "traceAzureRollSince", "(Ljava/lang/Object;DDF)V", false));
         evaluate.instructions.add(new VarInsnNode(FLOAD, 6));
         evaluate.instructions.add(new InsnNode(F2D));
         evaluate.instructions.add(new InsnNode(DRETURN));
@@ -919,8 +947,8 @@ final class AlienEvoMolang1201 implements Opcodes {
         evaluate.instructions.add(new InsnNode(ATHROW));
         evaluate.tryCatchBlocks.add(new org.objectweb.asm.tree.TryCatchBlockNode(
                 tryStart, tryEnd, exceptionHandler, "java/lang/Throwable"));
-        evaluate.maxLocals = 8;
-        evaluate.maxStack = 5;
+        evaluate.maxLocals = 10;
+        evaluate.maxStack = 6;
         node.methods.add(evaluate);
         return node;
     }
