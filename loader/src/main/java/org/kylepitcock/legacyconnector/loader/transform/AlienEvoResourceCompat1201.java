@@ -251,6 +251,329 @@ final class AlienEvoResourceCompat1201 {
         return true;
     }
 
+
+
+    /**
+     * Repairs resource identifiers and schemas verified against AlienEvo dev.24
+     * and Palladium 4.5.10. This is intentionally scoped to the exact files and
+     * bytecode-era identifiers observed in the 2026-11-26 runtime diagnostics.
+     *
+     * <p>Some dev.24 power types are referenced by JSON but are not registered by
+     * the supplied AlienEvo JAR. Those individual ability entries are removed
+     * rather than mapped to unrelated implementations that would change their
+     * behavior silently.</p>
+     */
+    static int repairDev24ResourceErrors(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += repairCodeTabletLoot(resources);
+        changed += repairPrototypeCoreTag(resources);
+        changed += repairPrototypeOmnitrixRecipe(resources);
+        changed += repairAerophibianWatchConditions(resources);
+        changed += repairUnsupportedPowerTypes(resources);
+        changed += repairLegacyIceFunctions(resources);
+        changed += repairPyroniteNovaFunction(resources);
+        return changed;
+    }
+
+    private static int repairCodeTabletLoot(Map<String, byte[]> resources) {
+        String path = "data/alienevo/loot_tables/archaeology/codes_rare.json";
+        JsonObject root = parseObject(resources.get(path));
+        if (root == null || !root.has("pools") || !root.get("pools").isJsonArray()) return 0;
+        JsonArray pools = root.getAsJsonArray("pools");
+        boolean changed = false;
+        for (JsonElement poolElement : pools) {
+            if (!poolElement.isJsonObject()) continue;
+            JsonObject pool = poolElement.getAsJsonObject();
+            if (!pool.has("entries") || !pool.get("entries").isJsonArray()) continue;
+            JsonArray entries = pool.getAsJsonArray("entries");
+            JsonArray repaired = new JsonArray();
+            boolean replaced = false;
+            for (JsonElement entryElement : entries) {
+                if (entryElement.isJsonObject()) {
+                    JsonObject entry = entryElement.getAsJsonObject();
+                    if ("minecraft:item".equals(string(entry, "type"))
+                            && "alienevo:code_tablet".equals(string(entry, "name"))) {
+                        for (String item : new String[] {
+                                "alienevo:code_tablet_mastercontrol_on",
+                                "alienevo:code_tablet_mastercontrol_off",
+                                "alienevo:code_tablet_selfdestruct_on",
+                                "alienevo:code_tablet_selfdestruct_off"
+                        }) {
+                            JsonObject replacement = new JsonObject();
+                            replacement.addProperty("type", "minecraft:item");
+                            replacement.addProperty("name", item);
+                            repaired.add(replacement);
+                        }
+                        replaced = true;
+                        changed = true;
+                        continue;
+                    }
+                }
+                repaired.add(entryElement.deepCopy());
+            }
+            if (replaced) pool.add("entries", repaired);
+        }
+        if (!changed) return 0;
+        resources.put(path, root.toString().getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private static int repairPrototypeCoreTag(Map<String, byte[]> resources) {
+        String path = "data/alienevo/tags/items/prototype_cores.json";
+        JsonObject root = parseObject(resources.get(path));
+        if (root == null || !root.has("values") || !root.get("values").isJsonArray()) return 0;
+        JsonArray values = root.getAsJsonArray("values");
+        boolean changed = false;
+        for (int i = 0; i < values.size(); i++) {
+            JsonElement value = values.get(i);
+            if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()
+                    && "alienevo:prototype_core".equals(value.getAsString())) {
+                values.set(i, new JsonPrimitive("alienevo:prototype_omnitrix_core"));
+                changed = true;
+            }
+        }
+        if (!changed) return 0;
+        resources.put(path, root.toString().getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private static int repairPrototypeOmnitrixRecipe(Map<String, byte[]> resources) {
+        String path = "data/alienevo/recipes/prototype_omnitrix.json";
+        JsonObject root = parseObject(resources.get(path));
+        if (root == null || !root.has("result") || !root.get("result").isJsonObject()) return 0;
+        JsonObject result = root.getAsJsonObject("result");
+        if (result.has("id") || !result.has("item")
+                || !"alienevo:prototype_omnitrix".equals(string(result, "item"))) return 0;
+        result.add("id", result.remove("item"));
+        resources.put(path, root.toString().getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * The JAR has watch_state (enum values DEFAULT/RECALIBRATED), not watch_type.
+     * The prototype-only base layer becomes the unconditional fallback; the AF
+     * texture and glow layer use the actual RECALIBRATED watch state.
+     */
+    private static int repairAerophibianWatchConditions(Map<String, byte[]> resources) {
+        String path = "assets/alienevo/palladium/render_layers/aliens/alien_34/aerophibian.json";
+        JsonObject root = parseObject(resources.get(path));
+        if (root == null || !root.has("layers") || !root.get("layers").isJsonArray()) return 0;
+        JsonArray layers = root.getAsJsonArray("layers");
+        if (layers.size() != 3) return 0;
+        boolean changed = false;
+        for (int i = 0; i < layers.size(); i++) {
+            if (!layers.get(i).isJsonObject()) return 0;
+            JsonObject layer = layers.get(i).getAsJsonObject();
+            if (!layer.has("conditions") || !layer.get("conditions").isJsonArray()) return 0;
+            JsonArray conditions = layer.getAsJsonArray("conditions");
+            if (conditions.size() != 1 || !conditions.get(0).isJsonObject()) return 0;
+            JsonObject condition = conditions.get(0).getAsJsonObject();
+            if (!"alienevo:watch_type".equals(string(condition, "type"))) return 0;
+            String value = string(condition, "value");
+            if (i == 0 && "prototype".equals(value)) {
+                layer.remove("conditions");
+                changed = true;
+            } else if ((i == 1 || i == 2) && "recal".equals(value)) {
+                condition.addProperty("type", "alienevo:watch_state");
+                condition.addProperty("value", "RECALIBRATED");
+                changed = true;
+            } else {
+                return 0;
+            }
+        }
+        if (!changed) return 0;
+        resources.put(path, root.toString().getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private static int repairUnsupportedPowerTypes(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += repairPower(resources,
+                "data/alienevo_aliens/palladium/powers/dragonoid.json",
+                Map.of("infinity", "alienevo:infinity"));
+        changed += repairPower(resources,
+                "data/alienevo_aliens/palladium/powers/vaxasaurian.json",
+                Map.of("leap", "afomni:vax_leap"));
+        changed += repairPower(resources,
+                "data/alienevo_aliens/palladium/powers/astrobot.json",
+                Map.of(
+                        "laser_jump", "alienevo:astrojump",
+                        "astro_laser_damage", "alienevo:astro_laser_damage",
+                        "punch_ability_ground", "alienevo:astro_punch_damage",
+                        "punch_ability_air", "alienevo:astro_punch_air_damage",
+                        "testanim", "alienevo:astro_chargepunch"));
+        changed += repairPower(resources,
+                "data/alienevo_aliens/palladium/powers/kryptonian.json", Map.of());
+        changed += repairPower(resources,
+                "data/alienevo/palladium/powers/galaxy_aurora.json",
+                Map.of("infinity", "alienevo:infinity"));
+        return changed;
+    }
+
+    private static int repairPower(Map<String, byte[]> resources, String path,
+                                   Map<String, String> unsupportedAbilities) {
+        JsonObject root = parseObject(resources.get(path));
+        if (root == null || !root.has("abilities") || !root.get("abilities").isJsonObject()) return 0;
+        String before = root.toString();
+        rewritePowerIdentifiers(root);
+        JsonObject abilities = root.getAsJsonObject("abilities");
+        for (Map.Entry<String, String> unsupported : unsupportedAbilities.entrySet()) {
+            JsonElement candidate = abilities.get(unsupported.getKey());
+            if (candidate != null && candidate.isJsonObject()
+                    && unsupported.getValue().equals(string(candidate.getAsJsonObject(), "type"))) {
+                abilities.remove(unsupported.getKey());
+            }
+        }
+        if (path.endsWith("/galaxy_aurora.json")) {
+            replaceUnsupportedEntityDamageWithCommand(abilities);
+        }
+        String after = root.toString();
+        if (before.equals(after)) return 0;
+        resources.put(path, after.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /** Namespace aliases confirmed by the AlienEvo dev.24 registries. */
+    private static void rewritePowerIdentifiers(JsonElement element) {
+        if (element == null) return;
+        if (element.isJsonObject()) {
+            JsonObject object = element.getAsJsonObject();
+            for (String key : new java.util.ArrayList<>(object.keySet())) {
+                JsonElement value = object.get(key);
+                if (value != null && value.isJsonPrimitive()
+                        && value.getAsJsonPrimitive().isString()) {
+                    String source = value.getAsString();
+                    String mapped = switch (source) {
+                        case "afomni:is_mainhand" -> "alienevo:is_mainhand";
+                        case "afomni:aoe_damage" -> "alienevo:aoe_damage";
+                        case "alienevo:screenshake" -> "alienevo:screen_shake";
+                        default -> source;
+                    };
+                    if (!mapped.equals(source)) object.addProperty(key, mapped);
+                } else {
+                    rewritePowerIdentifiers(value);
+                }
+            }
+        } else if (element.isJsonArray()) {
+            JsonArray array = element.getAsJsonArray();
+            for (int i = 0; i < array.size(); i++) {
+                JsonElement value = array.get(i);
+                if (value != null && value.isJsonPrimitive()
+                        && value.getAsJsonPrimitive().isString()) {
+                    String source = value.getAsString();
+                    String mapped = switch (source) {
+                        case "afomni:is_mainhand" -> "alienevo:is_mainhand";
+                        case "afomni:aoe_damage" -> "alienevo:aoe_damage";
+                        case "alienevo:screenshake" -> "alienevo:screen_shake";
+                        default -> source;
+                    };
+                    if (!mapped.equals(source)) array.set(i, new JsonPrimitive(mapped));
+                } else {
+                    rewritePowerIdentifiers(value);
+                }
+            }
+        }
+    }
+
+    /**
+     * The referenced AFOmni entity_damage ability is absent from this AlienEvo
+     * JAR. Preserve the heal key and its enabling condition using Palladium's
+     * server-side CommandAbility to renew the same regeneration effect while
+     * the source ability remains enabled.
+     */
+    private static void replaceUnsupportedEntityDamageWithCommand(JsonObject abilities) {
+        JsonElement current = abilities.get("heal_regen");
+        if (current == null || !current.isJsonObject()) return;
+        JsonObject old = current.getAsJsonObject();
+        if (!"alienevo:entity_damage".equals(string(old, "type"))) return;
+        JsonObject replacement = new JsonObject();
+        replacement.addProperty("type", "palladium:command");
+        for (String key : new String[] {
+                "hidden", "hidden_in_bar", "list_index", "gui_position",
+                "title", "icon", "description", "conditions"
+        }) {
+            if (old.has(key)) replacement.add(key, old.get(key).deepCopy());
+        }
+        JsonArray commands = new JsonArray();
+        commands.add("effect give @s minecraft:regeneration 5 5 true");
+        replacement.add("commands", commands);
+        abilities.add("heal_regen", replacement);
+    }
+
+    private static int repairLegacyIceFunctions(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewriteTextResource(resources,
+                "data/afomni/functions/creation/upgrade_fade.mcfunction",
+                new String[][] {
+                        {"afomni:packed_ice", "alienevo:packed_ice_layer"},
+                        {"afomni:blue_ice", "alienevo:blue_ice_layer"},
+                        {"afomni:ice", "alienevo:ice_layer"}
+                });
+        changed += rewriteTextResource(resources,
+                "data/afomni/functions/creation/place_ice_fade.mcfunction",
+                new String[][] {
+                        {"afomni:blue_ice", "alienevo:blue_ice_layer"},
+                        {"afomni:ice", "alienevo:ice_layer"}
+                });
+        changed += rewriteTextResource(resources,
+                "data/alienevo/functions/abilities/stack_ice.mcfunction",
+                new String[][] {
+                        {"alienevo:ice_block", "alienevo:ice_layer[layers=8]"},
+                        {"alienevo:ice14", "alienevo:ice_layer[layers=7]"},
+                        {"alienevo:ice12", "alienevo:ice_layer[layers=6]"},
+                        {"alienevo:ice10", "alienevo:ice_layer[layers=5]"},
+                        {"alienevo:ice8", "alienevo:ice_layer[layers=4]"},
+                        {"alienevo:ice6", "alienevo:ice_layer[layers=3]"},
+                        {"alienevo:ice4", "alienevo:ice_layer[layers=2]"},
+                        {"alienevo:ice", "alienevo:ice_layer[layers=1]"}
+                });
+        return changed;
+    }
+
+    private static int repairPyroniteNovaFunction(Map<String, byte[]> resources) {
+        return rewriteTextResource(resources,
+                "data/alienevo/functions/abilities/pyronite_nova.mcfunction",
+                new String[][] {
+                        {
+                                "execute if score @s Pyronite.Nova matches 35 run fireparticle ^ ^2 ^ 6500 0 0 0 0.3",
+                                "execute if score @s Pyronite.Nova matches 35 run particle minecraft:flame ^ ^2 ^ 0 0 0 0.3 6500"
+                        },
+                        {
+                                "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0",
+                                "execute if score @s Pyronite.Nova matches 40 run alienevo energy set alienevo_aliens:pyronite 0 @s"
+                        }
+                });
+    }
+
+    private static int rewriteTextResource(Map<String, byte[]> resources, String path, String[][] replacements) {
+        byte[] original = resources.get(path);
+        if (original == null) return 0;
+        String source = new String(original, StandardCharsets.UTF_8);
+        String result = source;
+        for (String[] pair : replacements) {
+            if (pair.length != 2) continue;
+            result = result.replace(pair[0], pair[1]);
+        }
+        if (result.equals(source)) return 0;
+        resources.put(path, result.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private static JsonObject parseObject(byte[] data) {
+        if (data == null) return null;
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+            return parsed.isJsonObject() ? parsed.getAsJsonObject() : null;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private static String string(JsonObject object, String key) {
+        if (object == null || !object.has(key) || !object.get(key).isJsonPrimitive()) return null;
+        return object.get(key).getAsString();
+    }
+
     private static String abilityType(JsonObject abilities, String id) {
         if (!abilities.has(id) || !abilities.get(id).isJsonObject()) return null;
         JsonObject ability = abilities.getAsJsonObject(id);

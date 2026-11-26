@@ -294,4 +294,152 @@ class AlienEvoResourceCompat1201Test {
         assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(duplicateUniform));
     }
 
+
+    @Test
+    void repairsTheObservedDev24ResourceParseErrorsAndIsIdempotent() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put("data/alienevo/loot_tables/archaeology/codes_rare.json", """
+                {"pools":[{"rolls":1.0,"entries":[{"type":"minecraft:item","name":"alienevo:code_tablet"}]}]}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo/tags/items/prototype_cores.json", """
+                {"replace":false,"values":["alienevo:prototype_core"]}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo/recipes/prototype_omnitrix.json", """
+                {"type":"alienevo:core_omnitrix","result":{"item":"alienevo:prototype_omnitrix","count":1}}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("assets/alienevo/palladium/render_layers/aliens/alien_34/aerophibian.json", """
+                {"type":"palladium:compound","layers":[
+                  {"type":"geckolib:default","conditions":[{"type":"alienevo:watch_type","value":"prototype"}]},
+                  {"type":"geckolib:default","conditions":[{"type":"alienevo:watch_type","value":"recal"}]},
+                  {"type":"geckolib:default","conditions":[{"type":"alienevo:watch_type","value":"recal"}]}
+                ]}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo_aliens/palladium/powers/dragonoid.json", """
+                {"abilities":{
+                  "screen_shake":{"type":"alienevo:screenshake"},
+                  "infinity":{"type":"alienevo:infinity"}
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo_aliens/palladium/powers/vaxasaurian.json", """
+                {"abilities":{
+                  "punch":{"type":"palladium:animation_timer","conditions":{"enabling":[{"type":"afomni:is_mainhand"}]}},
+                  "leap":{"type":"afomni:vax_leap"},
+                  "tail_spin_damage":{"type":"afomni:aoe_damage"}
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo_aliens/palladium/powers/astrobot.json", """
+                {"abilities":{
+                  "laser_jump":{"type":"alienevo:astrojump"},
+                  "astro_laser_damage":{"type":"alienevo:astro_laser_damage"},
+                  "punch_ability_ground":{"type":"alienevo:astro_punch_damage"},
+                  "punch_ability_air":{"type":"alienevo:astro_punch_air_damage"},
+                  "testanim":{"type":"alienevo:astro_chargepunch"},
+                  "astrobot_loop":{"type":"palladium:command"}
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo_aliens/palladium/powers/kryptonian.json", """
+                {"abilities":{
+                  "punch":{"type":"palladium:animation_timer","conditions":{"enabling":[{"type":"afomni:is_mainhand"}]}},
+                  "flight_damage":{"type":"afomni:aoe_damage"}
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo/palladium/powers/galaxy_aurora.json", """
+                {"abilities":{
+                  "infinity":{"type":"alienevo:infinity"},
+                  "tetramand_spin_damage":{"type":"afomni:aoe_damage"},
+                  "heal_regen":{"type":"alienevo:entity_damage","effect":"minecraft:regeneration","conditions":{"enabling":[{"type":"palladium:ability_enabled","ability":"heal"}]}}
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("data/afomni/functions/creation/upgrade_fade.mcfunction",
+                "execute if block ~ ~ ~ afomni:packed_ice run setblock ~ ~ ~ afomni:blue_ice\n".getBytes(StandardCharsets.UTF_8));
+        resources.put("data/afomni/functions/creation/place_ice_fade.mcfunction",
+                "execute if block ~ ~ ~ afomni:ice run setblock ~ ~ ~ afomni:blue_ice\n".getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo/functions/abilities/stack_ice.mcfunction",
+                "execute if block ~ ~ ~ alienevo:ice14 run setblock ~ ~ ~ alienevo:ice_block replace\n"
+                        .getBytes(StandardCharsets.UTF_8));
+        resources.put("data/alienevo/functions/abilities/pyronite_nova.mcfunction",
+                "execute if score @s Pyronite.Nova matches 35 run fireparticle ^ ^2 ^ 6500 0 0 0 0.3\n"
+                        + "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0\n"
+                        .getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(10, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+
+        JsonObject loot = parse(resources, "data/alienevo/loot_tables/archaeology/codes_rare.json");
+        JsonArray entries = loot.getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries");
+        assertEquals(4, entries.size());
+        assertTrue(entries.toString().contains("code_tablet_mastercontrol_on"));
+        assertTrue(entries.toString().contains("code_tablet_selfdestruct_off"));
+
+        JsonObject tag = parse(resources, "data/alienevo/tags/items/prototype_cores.json");
+        assertEquals("alienevo:prototype_omnitrix_core",
+                tag.getAsJsonArray("values").get(0).getAsString());
+
+        JsonObject recipe = parse(resources, "data/alienevo/recipes/prototype_omnitrix.json");
+        assertEquals("alienevo:prototype_omnitrix",
+                recipe.getAsJsonObject("result").get("id").getAsString());
+        assertFalse(recipe.getAsJsonObject("result").has("item"));
+
+        JsonObject layer = parse(resources,
+                "assets/alienevo/palladium/render_layers/aliens/alien_34/aerophibian.json");
+        JsonArray layers = layer.getAsJsonArray("layers");
+        assertFalse(layers.get(0).getAsJsonObject().has("conditions"));
+        assertEquals("alienevo:watch_state", layers.get(1).getAsJsonObject()
+                .getAsJsonArray("conditions").get(0).getAsJsonObject().get("type").getAsString());
+        assertEquals("RECALIBRATED", layers.get(2).getAsJsonObject()
+                .getAsJsonArray("conditions").get(0).getAsJsonObject().get("value").getAsString());
+
+        JsonObject dragonoid = parse(resources, "data/alienevo_aliens/palladium/powers/dragonoid.json");
+        assertFalse(dragonoid.getAsJsonObject("abilities").has("infinity"));
+        assertEquals("alienevo:screen_shake", dragonoid.getAsJsonObject("abilities")
+                .getAsJsonObject("screen_shake").get("type").getAsString());
+
+        JsonObject vaxasaurian = parse(resources, "data/alienevo_aliens/palladium/powers/vaxasaurian.json");
+        assertFalse(vaxasaurian.getAsJsonObject("abilities").has("leap"));
+        assertEquals("alienevo:is_mainhand", vaxasaurian.getAsJsonObject("abilities")
+                .getAsJsonObject("punch").getAsJsonObject("conditions").getAsJsonArray("enabling")
+                .get(0).getAsJsonObject().get("type").getAsString());
+        assertEquals("alienevo:aoe_damage", vaxasaurian.getAsJsonObject("abilities")
+                .getAsJsonObject("tail_spin_damage").get("type").getAsString());
+
+        JsonObject astrobot = parse(resources, "data/alienevo_aliens/palladium/powers/astrobot.json");
+        assertEquals(1, astrobot.getAsJsonObject("abilities").size());
+        assertTrue(astrobot.getAsJsonObject("abilities").has("astrobot_loop"));
+
+        JsonObject kryptonian = parse(resources, "data/alienevo_aliens/palladium/powers/kryptonian.json");
+        assertEquals("alienevo:is_mainhand", kryptonian.getAsJsonObject("abilities")
+                .getAsJsonObject("punch").getAsJsonObject("conditions").getAsJsonArray("enabling")
+                .get(0).getAsJsonObject().get("type").getAsString());
+        assertEquals("alienevo:aoe_damage", kryptonian.getAsJsonObject("abilities")
+                .getAsJsonObject("flight_damage").get("type").getAsString());
+
+        JsonObject aurora = parse(resources, "data/alienevo/palladium/powers/galaxy_aurora.json");
+        assertFalse(aurora.getAsJsonObject("abilities").has("infinity"));
+        assertEquals("palladium:command", aurora.getAsJsonObject("abilities")
+                .getAsJsonObject("heal_regen").get("type").getAsString());
+        assertTrue(aurora.getAsJsonObject("abilities").getAsJsonObject("heal_regen")
+                .getAsJsonArray("commands").get(0).getAsString().contains("minecraft:regeneration"));
+
+        assertTrue(text(resources, "data/afomni/functions/creation/upgrade_fade.mcfunction")
+                .contains("alienevo:packed_ice_layer"));
+        assertTrue(text(resources, "data/afomni/functions/creation/place_ice_fade.mcfunction")
+                .contains("alienevo:ice_layer"));
+        assertTrue(text(resources, "data/alienevo/functions/abilities/stack_ice.mcfunction")
+                .contains("alienevo:ice_layer[layers=7]"));
+        assertTrue(text(resources, "data/alienevo/functions/abilities/stack_ice.mcfunction")
+                .contains("alienevo:ice_layer[layers=8]"));
+        String pyronite = text(resources, "data/alienevo/functions/abilities/pyronite_nova.mcfunction");
+        assertTrue(pyronite.contains("particle minecraft:flame"));
+        assertTrue(pyronite.contains("alienevo energy set alienevo_aliens:pyronite 0 @s"));
+
+        assertEquals(0, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+    }
+
+    private static JsonObject parse(Map<String, byte[]> resources, String path) {
+        return JsonParser.parseString(text(resources, path)).getAsJsonObject();
+    }
+
+    private static String text(Map<String, byte[]> resources, String path) {
+        return new String(resources.get(path), StandardCharsets.UTF_8);
+    }
+
 }
