@@ -1343,6 +1343,18 @@
    "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
    "date": "2026-11-26",
    "open": true
+  },
+  {
+   "issue": 359,
+   "mod": "Applied Energistics",
+   "mc": "1.4.7 (planned)",
+   "status": "partial",
+   "details": "No worldgen Quartz Crystal the name for Certus Quartz Ore in this version does not generate in the overworld <img width=\"1920\" height=\"1009\" alt=\"2026-11-26_15 45 34\" src=\"https://github.com/user-attachments/assets/3ef0f600-2d31-449e-ba53-60dfe00c61b5\" /> <img width=\"1920\" height=\"1009\" alt=\"2026-11-26_15 45 37\" src=\"https://github.com/user-attachments/assets/dc6e9e66-19ca-4fd2-8fc2-c34835de4e93\"…",
+   "lc": "0.5.3-nightly.162.3bfc558",
+   "neoforge": "21.1.265",
+   "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-26",
+   "open": true
   }
  ]
 }
