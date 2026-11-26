@@ -1,5 +1,9 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -362,7 +366,7 @@ class AlienEvoResourceCompat1201Test {
                         + "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0\n"
                         .getBytes(StandardCharsets.UTF_8));
 
-        assertEquals(10, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+        assertEquals(13, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
 
         JsonObject loot = parse(resources, "data/alienevo/loot_tables/archaeology/codes_rare.json");
         JsonArray entries = loot.getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries");

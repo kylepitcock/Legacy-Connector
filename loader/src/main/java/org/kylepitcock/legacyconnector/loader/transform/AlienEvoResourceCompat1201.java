@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -552,7 +553,13 @@ final class AlienEvoResourceCompat1201 {
         String result = source;
         for (String[] pair : replacements) {
             if (pair.length != 2) continue;
-            result = result.replace(pair[0], pair[1]);
+            // Match a complete resource ID only; e.g. rewriting alienevo:ice must
+            // not corrupt the generated alienevo:ice_layer[state] identifiers.
+            String expression = java.util.regex.Pattern.quote(pair[0])
+                    + "(?![a-zA-Z0-9_./-])";
+            result = java.util.regex.Pattern.compile(expression)
+                    .matcher(result)
+                    .replaceAll(java.util.regex.Matcher.quoteReplacement(pair[1]));
         }
         if (result.equals(source)) return 0;
         resources.put(path, result.getBytes(StandardCharsets.UTF_8));
