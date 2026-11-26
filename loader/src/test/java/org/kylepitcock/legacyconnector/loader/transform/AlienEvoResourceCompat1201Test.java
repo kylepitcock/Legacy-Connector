@@ -390,7 +390,7 @@ class AlienEvoResourceCompat1201Test {
         assertEquals("alienevo:watch_state", layers.get(1).getAsJsonObject()
                 .getAsJsonArray("conditions").get(0).getAsJsonObject().get("type").getAsString());
         assertEquals("RECALIBRATED", layers.get(2).getAsJsonObject()
-                .getAsJsonArray("conditions").get(0).getAsJsonObject().get("value").getAsString());
+                .getAsJsonArray("conditions").get(0).getAsJsonObject().get("state").getAsString());
 
         JsonObject dragonoid = parse(resources, "data/alienevo_aliens/palladium/powers/dragonoid.json");
         assertFalse(dragonoid.getAsJsonObject("abilities").has("infinity"));

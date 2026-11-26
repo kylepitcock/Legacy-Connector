@@ -376,7 +376,8 @@ final class AlienEvoResourceCompat1201 {
                 changed = true;
             } else if ((i == 1 || i == 2) && "recal".equals(value)) {
                 condition.addProperty("type", "alienevo:watch_state");
-                condition.addProperty("value", "RECALIBRATED");
+                condition.remove("value");
+                condition.addProperty("state", "RECALIBRATED");
                 changed = true;
             } else {
                 return 0;
