@@ -273,6 +273,7 @@ final class AlienEvoResourceCompat1201 {
         changed += repairUnsupportedPowerTypes(resources);
         changed += repairLegacyIceFunctions(resources);
         changed += repairPyroniteNovaFunction(resources);
+        changed += repairMissingVisualResourceAssets(resources);
         return changed;
     }
 
@@ -392,7 +393,9 @@ final class AlienEvoResourceCompat1201 {
         int changed = 0;
         changed += repairPower(resources,
                 "data/alienevo_aliens/palladium/powers/dragonoid.json",
-                Map.of("infinity", "alienevo:infinity"));
+                Map.of(
+                        "infinity", "alienevo:infinity",
+                        "fire_shield_particle", "alienevo:particle_ring"));
         changed += repairPower(resources,
                 "data/alienevo_aliens/palladium/powers/vaxasaurian.json",
                 Map.of("leap", "afomni:vax_leap"));
@@ -542,7 +545,7 @@ final class AlienEvoResourceCompat1201 {
                         },
                         {
                                 "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0",
-                                "execute if score @s Pyronite.Nova matches 40 run alienevo energy set alienevo_aliens:pyronite 0 @s"
+                                "execute if score @s Pyronite.Nova matches 40 run alienevo energy set pyronite 0"
                         }
                 });
     }
@@ -564,6 +567,254 @@ final class AlienEvoResourceCompat1201 {
         }
         if (result.equals(source)) return 0;
         resources.put(path, result.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+
+
+    /**
+     * Repairs missing dev.24 visual assets only when the inspected AlienEvo
+     * crystal models are present. The layer block geometry mirrors IceLayerBlock
+     * exactly: one 2*layers/16 slab on the side named by its FACING state.
+     */
+    static int repairMissingVisualResourceAssets(Map<String, byte[]> resources) {
+        if (!resources.containsKey("assets/alienevo/models/block/crystal.json")
+                || !resources.containsKey("assets/alienevo/models/block/crystal_smooth.json")) {
+            return 0;
+        }
+
+        int changed = 0;
+        changed += repairIceLayerModels(resources);
+        changed += repairCrystalBlockTextures(resources);
+        changed += addMissingParticleTextureAliases(resources);
+        changed += addMissingPrototypeSwitchSound(resources);
+        changed += addMissingDiamondBlockItemModel(resources);
+        return changed;
+    }
+
+    private static int repairIceLayerModels(Map<String, byte[]> resources) {
+        String[][] blocks = {
+                {"ice_layer", "minecraft:block/ice"},
+                {"packed_ice_layer", "minecraft:block/packed_ice"},
+                {"blue_ice_layer", "minecraft:block/blue_ice"}
+        };
+        String[] facings = {"down", "up", "north", "south", "east", "west"};
+        String[] faces = {"north", "east", "south", "west", "up", "down"};
+        int changed = 0;
+
+        for (String[] block : blocks) {
+            String blockName = block[0];
+            String texture = block[1];
+            String statePath = "assets/alienevo/blockstates/" + blockName + ".json";
+            JsonObject stateRoot = parseObject(resources.get(statePath));
+            if (stateRoot == null) stateRoot = new JsonObject();
+            if (stateRoot.has("multipart")) continue;
+
+            JsonObject variants;
+            if (stateRoot.has("variants")) {
+                if (!stateRoot.get("variants").isJsonObject()) continue;
+                variants = stateRoot.getAsJsonObject("variants");
+            } else {
+                variants = new JsonObject();
+            }
+            boolean stateChanged = false;
+
+            for (String facing : facings) {
+                for (int layers = 1; layers <= 8; layers++) {
+                    String variantKey = "facing=" + facing + ",layers=" + layers;
+                    String modelId = "alienevo:block/" + blockName + "/" + facing + "_" + layers;
+                    if (!variants.has(variantKey)) {
+                        JsonObject variant = new JsonObject();
+                        variant.addProperty("model", modelId);
+                        variants.add(variantKey, variant);
+                        stateChanged = true;
+                    }
+
+                    String modelPath = "assets/alienevo/models/block/" + blockName
+                            + "/" + facing + "_" + layers + ".json";
+                    if (!resources.containsKey(modelPath)) {
+                        resources.put(modelPath, iceLayerModel(texture, facing, layers, faces)
+                                .toString().getBytes(StandardCharsets.UTF_8));
+                        changed++;
+                    }
+                }
+            }
+
+            if (stateChanged) {
+                stateRoot.add("variants", variants);
+                resources.put(statePath, stateRoot.toString().getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+
+            String itemPath = "assets/alienevo/models/item/" + blockName + ".json";
+            if (!resources.containsKey(itemPath)) {
+                JsonObject item = new JsonObject();
+                item.addProperty("parent", "alienevo:block/" + blockName + "/up_8");
+                resources.put(itemPath, item.toString().getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+        }
+        return changed;
+    }
+
+    private static JsonObject iceLayerModel(
+            String texture, String facing, int layers, String[] faces) {
+        int thickness = layers * 2;
+        int[] from;
+        int[] to;
+        switch (facing) {
+            case "up" -> {
+                from = new int[] {0, 0, 0};
+                to = new int[] {16, thickness, 16};
+            }
+            case "down" -> {
+                from = new int[] {0, 16 - thickness, 0};
+                to = new int[] {16, 16, 16};
+            }
+            case "south" -> {
+                from = new int[] {0, 0, 0};
+                to = new int[] {16, 16, thickness};
+            }
+            case "north" -> {
+                from = new int[] {0, 0, 16 - thickness};
+                to = new int[] {16, 16, 16};
+            }
+            case "east" -> {
+                from = new int[] {0, 0, 0};
+                to = new int[] {thickness, 16, 16};
+            }
+            case "west" -> {
+                from = new int[] {16 - thickness, 0, 0};
+                to = new int[] {16, 16, 16};
+            }
+            default -> throw new IllegalArgumentException("Unknown ice-layer facing: " + facing);
+        }
+
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/block");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("all", texture);
+        textures.addProperty("particle", texture);
+        model.add("textures", textures);
+
+        JsonObject element = new JsonObject();
+        element.add("from", jsonVector(from));
+        element.add("to", jsonVector(to));
+        JsonObject modelFaces = new JsonObject();
+        for (String faceName : faces) {
+            JsonObject face = new JsonObject();
+            face.add("uv", jsonVector(new int[] {0, 0, 16, 16}));
+            face.addProperty("texture", "#all");
+            if (iceLayerFaceTouchesBlockBoundary(facing, layers, faceName)) {
+                face.addProperty("cullface", faceName);
+            }
+            modelFaces.add(faceName, face);
+        }
+        element.add("faces", modelFaces);
+        JsonArray elements = new JsonArray();
+        elements.add(element);
+        model.add("elements", elements);
+        return model;
+    }
+
+    private static JsonArray jsonVector(int[] values) {
+        JsonArray array = new JsonArray();
+        for (int value : values) array.add(value);
+        return array;
+    }
+
+    private static boolean iceLayerFaceTouchesBlockBoundary(String facing, int layers, String face) {
+        return switch (facing) {
+            case "up" -> "down".equals(face) || (layers == 8 && "up".equals(face));
+            case "down" -> "up".equals(face) || (layers == 8 && "down".equals(face));
+            case "south" -> "north".equals(face) || (layers == 8 && "south".equals(face));
+            case "north" -> "south".equals(face) || (layers == 8 && "north".equals(face));
+            case "east" -> "west".equals(face) || (layers == 8 && "east".equals(face));
+            case "west" -> "east".equals(face) || (layers == 8 && "west".equals(face));
+            default -> false;
+        };
+    }
+
+    private static int repairCrystalBlockTextures(Map<String, byte[]> resources) {
+        int changed = 0;
+        String[][] models = {
+                {"assets/alienevo/models/block/crystal.json", "normal"},
+                {"assets/alienevo/models/block/crystal_smooth.json", "smooth"}
+        };
+        for (String[] model : models) {
+            String path = model[0];
+            JsonObject root = parseObject(resources.get(path));
+            if (root == null || !root.has("textures") || !root.get("textures").isJsonObject()) continue;
+            JsonObject textures = root.getAsJsonObject("textures");
+            boolean modified = false;
+            for (String key : new java.util.ArrayList<>(textures.keySet())) {
+                JsonElement value = textures.get(key);
+                if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) continue;
+                String original = value.getAsString();
+                String replacement = null;
+                if (original.startsWith("alienevo:block/diamond/side")) {
+                    replacement = "alienevo:block/diamond_block_2";
+                } else if (original.startsWith("alienevo:block/diamond/up_")) {
+                    replacement = "alienevo:block/diamond_block_up";
+                } else if ("alienevo:block/diamond/diamond_block".equals(original)) {
+                    replacement = "alienevo:block/diamond_block";
+                }
+                if (replacement != null
+                        && resources.containsKey("assets/" + replacement.substring(0, replacement.indexOf(':'))
+                        + "/textures/" + replacement.substring(replacement.indexOf(':') + 1) + ".png")) {
+                    textures.addProperty(key, replacement);
+                    modified = true;
+                }
+            }
+            if (modified) {
+                resources.put(path, root.toString().getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+        }
+        return changed;
+    }
+
+    private static int addMissingParticleTextureAliases(Map<String, byte[]> resources) {
+        int changed = 0;
+        for (int i = 0; i < 5; i++) {
+            String index = Integer.toString(i);
+            changed += copyResourceIfMissing(resources,
+                    "assets/afomni/textures/particle/sonic_boom_" + index + ".png",
+                    "assets/afomni/textures/particle/blast_" + index + ".png");
+        }
+        for (int i = 0; i < 14; i++) {
+            String index = String.format(java.util.Locale.ROOT, "%02d", i);
+            changed += copyResourceIfMissing(resources,
+                    "assets/alienevo/textures/particle/flames_" + index + ".png",
+                    "assets/alienevo/textures/particle/hb_flames_" + index + ".png");
+        }
+        return changed;
+    }
+
+    private static int addMissingPrototypeSwitchSound(Map<String, byte[]> resources) {
+        return copyResourceIfMissing(resources,
+                "assets/alienevo/sounds/prototype_switch3.ogg",
+                "assets/alienevo/sounds/prototype_switch1.ogg");
+    }
+
+    private static int addMissingDiamondBlockItemModel(Map<String, byte[]> resources) {
+        String path = "assets/alienevo/models/item/diamond_block.json";
+        if (resources.containsKey(path)) return 0;
+        JsonObject item = new JsonObject();
+        item.addProperty("parent", "minecraft:block/cube_all");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("all", "alienevo:block/diamond_block");
+        item.add("textures", textures);
+        resources.put(path, item.toString().getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private static int copyResourceIfMissing(
+            Map<String, byte[]> resources, String sourcePath, String targetPath) {
+        if (resources.containsKey(targetPath)) return 0;
+        byte[] source = resources.get(sourcePath);
+        if (source == null) return 0;
+        resources.put(targetPath, source.clone());
         return 1;
     }
 

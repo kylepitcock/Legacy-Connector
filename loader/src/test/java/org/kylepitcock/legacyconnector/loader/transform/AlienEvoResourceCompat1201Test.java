@@ -322,7 +322,8 @@ class AlienEvoResourceCompat1201Test {
         resources.put("data/alienevo_aliens/palladium/powers/dragonoid.json", """
                 {"abilities":{
                   "screen_shake":{"type":"alienevo:screenshake"},
-                  "infinity":{"type":"alienevo:infinity"}
+                  "infinity":{"type":"alienevo:infinity"},
+                  "fire_shield_particle":{"type":"alienevo:particle_ring"}
                 }}
                 """.getBytes(StandardCharsets.UTF_8));
         resources.put("data/alienevo_aliens/palladium/powers/vaxasaurian.json", """
@@ -395,6 +396,7 @@ class AlienEvoResourceCompat1201Test {
 
         JsonObject dragonoid = parse(resources, "data/alienevo_aliens/palladium/powers/dragonoid.json");
         assertFalse(dragonoid.getAsJsonObject("abilities").has("infinity"));
+        assertFalse(dragonoid.getAsJsonObject("abilities").has("fire_shield_particle"));
         assertEquals("alienevo:screen_shake", dragonoid.getAsJsonObject("abilities")
                 .getAsJsonObject("screen_shake").get("type").getAsString());
 
@@ -434,9 +436,96 @@ class AlienEvoResourceCompat1201Test {
                 .contains("alienevo:ice_layer[layers=8]"));
         String pyronite = text(resources, "data/alienevo/functions/abilities/pyronite_nova.mcfunction");
         assertTrue(pyronite.contains("particle minecraft:flame"));
-        assertTrue(pyronite.contains("alienevo energy set alienevo_aliens:pyronite 0 @s"));
+        assertTrue(pyronite.contains("alienevo energy set pyronite 0"));
+        assertFalse(pyronite.contains("alienevo energy set alienevo_aliens:pyronite 0 @s"));
 
         assertEquals(0, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+    }
+
+
+
+    @Test
+    void generatesCompleteIceLayerModelsAndRepairsBrokenCrystalTextureReferences() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put("assets/alienevo/models/block/crystal.json", """
+                {"textures":{
+                  "0":"alienevo:block/diamond/side_0",
+                  "6":"alienevo:block/diamond/up_0",
+                  "12":"alienevo:block/diamond/diamond_block",
+                  "particle":"alienevo:block/diamond/diamond_block"
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("assets/alienevo/models/block/crystal_smooth.json", """
+                {"textures":{
+                  "0":"alienevo:block/diamond/side_smooth_0",
+                  "6":"alienevo:block/diamond/up_0",
+                  "12":"alienevo:block/diamond/diamond_block"
+                }}
+                """.getBytes(StandardCharsets.UTF_8));
+        resources.put("assets/alienevo/textures/block/diamond_block.png", new byte[] {1});
+        resources.put("assets/alienevo/textures/block/diamond_block_2.png", new byte[] {2});
+        resources.put("assets/alienevo/textures/block/diamond_block_up.png", new byte[] {3});
+        for (int i = 0; i < 5; i++) {
+            resources.put("assets/afomni/textures/particle/sonic_boom_" + i + ".png",
+                    new byte[] {(byte) (10 + i)});
+        }
+        for (int i = 0; i < 14; i++) {
+            String index = String.format(java.util.Locale.ROOT, "%02d", i);
+            resources.put("assets/alienevo/textures/particle/flames_" + index + ".png",
+                    new byte[] {(byte) (30 + i)});
+        }
+        resources.put("assets/alienevo/sounds/prototype_switch3.ogg", new byte[] {99});
+
+        assertEquals(173, AlienEvoResourceCompat1201.repairMissingVisualResourceAssets(resources));
+
+        for (String block : new String[] {"ice_layer", "packed_ice_layer", "blue_ice_layer"}) {
+            JsonObject state = parse(resources, "assets/alienevo/blockstates/" + block + ".json");
+            JsonObject variants = state.getAsJsonObject("variants");
+            assertEquals(48, variants.size(), block);
+            for (String facing : new String[] {"down", "up", "north", "south", "east", "west"}) {
+                for (int layers = 1; layers <= 8; layers++) {
+                    String variantKey = "facing=" + facing + ",layers=" + layers;
+                    String modelId = variants.getAsJsonObject(variantKey).get("model").getAsString();
+                    String modelPath = "assets/" + modelId.substring(modelId.indexOf(':') + 1)
+                            .replace("block/", "models/block/") + ".json";
+                    assertTrue(resources.containsKey(modelPath), modelPath);
+                    JsonObject model = parse(resources, modelPath);
+                    JsonObject element = model.getAsJsonArray("elements").get(0).getAsJsonObject();
+                    JsonArray from = element.getAsJsonArray("from");
+                    JsonArray to = element.getAsJsonArray("to");
+                    assertEquals(3, from.size());
+                    assertEquals(3, to.size());
+                    assertEquals(6, element.getAsJsonObject("faces").size());
+                }
+            }
+            assertTrue(resources.containsKey("assets/alienevo/models/item/" + block + ".json"));
+        }
+
+        assertEquals("alienevo:block/diamond_block_2",
+                parse(resources, "assets/alienevo/models/block/crystal.json")
+                        .getAsJsonObject("textures").get("0").getAsString());
+        assertEquals("alienevo:block/diamond_block_up",
+                parse(resources, "assets/alienevo/models/block/crystal_smooth.json")
+                        .getAsJsonObject("textures").get("6").getAsString());
+        assertTrue(resources.containsKey("assets/alienevo/models/item/diamond_block.json"));
+        assertTrue(java.util.Arrays.equals(
+                resources.get("assets/afomni/textures/particle/sonic_boom_4.png"),
+                resources.get("assets/afomni/textures/particle/blast_4.png")));
+        assertTrue(java.util.Arrays.equals(
+                resources.get("assets/alienevo/textures/particle/flames_13.png"),
+                resources.get("assets/alienevo/textures/particle/hb_flames_13.png")));
+        assertTrue(java.util.Arrays.equals(
+                resources.get("assets/alienevo/sounds/prototype_switch3.ogg"),
+                resources.get("assets/alienevo/sounds/prototype_switch1.ogg")));
+        assertEquals(0, AlienEvoResourceCompat1201.repairMissingVisualResourceAssets(resources));
+    }
+
+    @Test
+    void skipsVisualFallbacksWhenTheAlienEvoCrystalAssetsAreNotPresent() {
+        Map<String, byte[]> unrelated = new LinkedHashMap<>();
+        unrelated.put("assets/example/models/block/example.json", "{}".getBytes(StandardCharsets.UTF_8));
+        assertEquals(0, AlienEvoResourceCompat1201.repairMissingVisualResourceAssets(unrelated));
+        assertFalse(unrelated.containsKey("assets/alienevo/blockstates/ice_layer.json"));
     }
 
     private static JsonObject parse(Map<String, byte[]> resources, String path) {
