@@ -363,8 +363,8 @@ class AlienEvoResourceCompat1201Test {
                 "execute if block ~ ~ ~ alienevo:ice14 run setblock ~ ~ ~ alienevo:ice_block replace\n"
                         .getBytes(StandardCharsets.UTF_8));
         resources.put("data/alienevo/functions/abilities/pyronite_nova.mcfunction",
-                "execute if score @s Pyronite.Nova matches 35 run fireparticle ^ ^2 ^ 6500 0 0 0 0.3\n"
-                        + "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0\n"
+                ("execute if score @s Pyronite.Nova matches 35 run fireparticle ^ ^2 ^ 6500 0 0 0 0.3\n"
+                        + "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0\n")
                         .getBytes(StandardCharsets.UTF_8));
 
         assertEquals(13, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
