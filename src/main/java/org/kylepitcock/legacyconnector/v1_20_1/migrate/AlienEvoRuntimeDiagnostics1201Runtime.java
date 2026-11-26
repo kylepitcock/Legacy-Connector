@@ -28,6 +28,54 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
         return Boolean.getBoolean(DEBUG_PROPERTY);
     }
 
+    public static void traceRollSinceRegistration(String parser, boolean registered, String detail) {
+        if (!isEnabled()) return;
+        String key = "roll-since-registration:" + parser + ":" + registered;
+        if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
+        if (registered) {
+            LOGGER.info("[AlienEvoRuntimeTrace] rollSinceRegistration parser={} registered=true detail={}",
+                    parser, detail);
+        } else {
+            LOGGER.warn("[AlienEvoRuntimeTrace] rollSinceRegistration parser={} registered=false detail={}",
+                    parser, detail);
+        }
+    }
+
+    public static void traceAzureRollSince(Object entity, double animationTime, double keyframeSeconds, float result) {
+        if (!isEnabled() || entity == null) return;
+        try {
+            String uuid = String.valueOf(invokeNoArgs(entity, "getUUID"));
+            String key = "azure-roll-since:" + uuid;
+            if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
+            LOGGER.info("[AlienEvoRuntimeTrace] rollSinceEvaluate parser=AzureLib entity={} animationTime={} "
+                            + "keyframeSeconds={} result={}",
+                    uuid, animationTime, keyframeSeconds, result);
+        } catch (Throwable ignored) {
+            // Diagnostics must never change the animation result.
+        }
+    }
+
+    public static void traceCannonboltSpinGate(Object player, boolean enabled, Object state) {
+        if (!isEnabled() || player == null) return;
+        try {
+            String uuid = String.valueOf(invokeNoArgs(player, "getUUID"));
+            String key = "cannonbolt-spin-gate:" + uuid + ":" + enabled;
+            if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
+            Object anchors = readField(state, "rollAnchors");
+            int anchorCount = anchors instanceof Map<?, ?> map ? map.size() : -1;
+            LOGGER.info("[AlienEvoRuntimeTrace] cannonboltSpinGate enabled={} player={} state={}",
+                    enabled, playerSnapshot(player),
+                    "lastTick=" + readField(state, "lastTick")
+                            + ",ticksSinceEnable=" + readField(state, "ticksSinceEnable")
+                            + ",phasePrev=" + readField(state, "phasePrev")
+                            + ",phaseCurr=" + readField(state, "phaseCurr")
+                            + ",justStartedSpinning=" + readField(state, "justStartedSpinning")
+                            + ",rollAnchorCount=" + anchorCount);
+        } catch (Throwable ignored) {
+            // The probe is observational only and must not interrupt rendering.
+        }
+    }
+
     public static void traceBeamAnchor(
             int entityId,
             String boneName,
