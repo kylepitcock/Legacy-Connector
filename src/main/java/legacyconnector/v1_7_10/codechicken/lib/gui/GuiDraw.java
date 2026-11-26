@@ -2,6 +2,7 @@ package legacyconnector.v1_7_10.codechicken.lib.gui;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.function.Supplier;
 import legacyconnector.v1_7_10.net.minecraft.client.Minecraft;
 import legacyconnector.v1_7_10.net.minecraft.client.gui.FontRenderer;
 import legacyconnector.v1_7_10.net.minecraft.client.gui.Gui;
@@ -38,6 +39,7 @@ public class GuiDraw {
     public static TextureManager renderEngine = TextureManager.INSTANCE;
 
     private static final java.util.List<ITooltipLineHandler> TIP_LINES = new java.util.ArrayList<>();
+    private static final ThreadLocal<Point> MOUSE_OVERRIDE = new ThreadLocal<>();
 
     public static Dimension displaySize() {
         ScaledResolution r = new ScaledResolution(Minecraft.getMinecraft(), 0, 0);
@@ -49,10 +51,24 @@ public class GuiDraw {
     }
 
     public static Point getMousePosition() {
+        Point mouse = MOUSE_OVERRIDE.get();
+        if (mouse != null) return new Point(mouse);
         Dimension d = displaySize();
         int w = Math.max(1, Minecraft.mcc$get$displayWidth(Minecraft.getMinecraft()));
         int h = Math.max(1, Minecraft.mcc$get$displayHeight(Minecraft.getMinecraft()));
         return new Point(Mouse.getX() * d.width / w, d.height - Mouse.getY() * d.height / h - 1);
+    }
+
+    /** Supplies the mouse in a synthetic GUI's frame while running its legacy callback. */
+    public static <T> T mcc$withMousePosition(Point mouse, Supplier<T> callback) {
+        Point previous = MOUSE_OVERRIDE.get();
+        MOUSE_OVERRIDE.set(new Point(mouse));
+        try {
+            return callback.get();
+        } finally {
+            if (previous == null) MOUSE_OVERRIDE.remove();
+            else MOUSE_OVERRIDE.set(previous);
+        }
     }
 
     /** x, y, width, height (not corners, unlike {@link Gui#drawRect}). */
