@@ -368,7 +368,10 @@ class AlienEvoResourceCompat1201Test {
                         + "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0\n")
                         .getBytes(StandardCharsets.UTF_8));
 
+        resources.put("addon/alienevo/items/marker_probe.json", "{}".getBytes(StandardCharsets.UTF_8));
+
         assertEquals(13, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+        assertEquals(0, resources.get(AlienEvoResourceCompat1201.ADDON_RESOURCE_ROOT_MARKER).length);
 
         JsonObject loot = parse(resources, "data/alienevo/loot_tables/archaeology/codes_rare.json");
         JsonArray entries = loot.getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries");
@@ -436,8 +439,11 @@ class AlienEvoResourceCompat1201Test {
                 .contains("alienevo:ice_layer[layers=8]"));
         String pyronite = text(resources, "data/alienevo/functions/abilities/pyronite_nova.mcfunction");
         assertTrue(pyronite.contains("particle minecraft:flame"));
-        assertTrue(pyronite.contains("alienevo energy set pyronite 0"));
-        assertFalse(pyronite.contains("alienevo energy set alienevo_aliens:pyronite 0 @s"));
+        // Palladium 4.5.10 registers energybar value set <entity> <power> <bar> <value>.
+        // Preserve AlienEvo's original, valid command rather than substituting an unregistered root.
+        assertTrue(pyronite.contains(
+                "energybar value set @s alienevo_aliens:pyronite chroma_energy 0"));
+        assertFalse(pyronite.contains("alienevo energy set"));
 
         assertEquals(0, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
     }
