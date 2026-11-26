@@ -215,6 +215,8 @@ class AlienEvoMolang1201Test implements Opcodes {
         MethodNode dualRegistration = find(parser, "registerRollSince", "()V");
         assertTrue(hasCall(dualRegistration, INVOKESTATIC, AlienEvoMolang1201.PARSER_COMPAT,
                 "registerAzureLibRollSince", "()V"));
+        assertTrue(hasCall(dualRegistration, INVOKESTATIC, AlienEvoMolang1201.RUNTIME_DIAGNOSTICS,
+                "traceRollSinceRegistration", "(Ljava/lang/String;ZLjava/lang/String;)V"));
 
         MethodNode azureRegistration = find(parser, "registerAzureLibRollSince", "()V");
         assertNotNull(azureRegistration);
@@ -229,6 +231,8 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertTrue(hasStringConstant(azureRegistration,
                 "mod.azure.azurelib.core.molang.LazyVariable"));
         assertTrue(hasStringConstant(azureRegistration, "registerFunction"));
+        assertTrue(hasCall(azureRegistration, INVOKESTATIC, AlienEvoMolang1201.RUNTIME_DIAGNOSTICS,
+                "traceRollSinceRegistration", "(Ljava/lang/String;ZLjava/lang/String;)V"));
         assertTrue(hasClassLiteral(azureRegistration, "java/lang/String"));
         assertTrue(hasClassLiteral(azureRegistration, "java/lang/Class"));
         assertFalse(hasField(azureRegistration, GETSTATIC, "java/lang/String", "TYPE", "Ljava/lang/Class;"));
@@ -274,6 +278,8 @@ class AlienEvoMolang1201Test implements Opcodes {
         assertTrue(hasCall(evaluate, INVOKESTATIC,
                 AlienEvoMolang1201.CHEST_SPIN_ANIMATION,
                 "rollSinceKeyframe", "(Lnet/minecraft/world/entity/LivingEntity;D)F"));
+        assertTrue(hasCall(evaluate, INVOKESTATIC, AlienEvoMolang1201.RUNTIME_DIAGNOSTICS,
+                "traceAzureRollSince", "(Ljava/lang/Object;DDF)V"));
     }
 
 
@@ -295,6 +301,27 @@ class AlienEvoMolang1201Test implements Opcodes {
         roll.maxLocals = 3;
         roll.maxStack = 2;
 
+        MethodNode animate = method(node, ACC_PUBLIC, "animate",
+                "(Lnet/threetag/palladium/client/model/animation/PalladiumAnimation$Builder;"
+                        + "Lnet/minecraft/client/player/AbstractClientPlayer;"
+                        + "Lnet/minecraft/client/model/HumanoidModel;"
+                        + "Lnet/threetag/palladium/client/model/animation/PalladiumAnimation$FirstPersonContext;F)V");
+        animate.instructions.add(new InsnNode(ACONST_NULL));
+        animate.instructions.add(new VarInsnNode(ASTORE, 6));
+        animate.instructions.add(new VarInsnNode(ALOAD, 2));
+        animate.instructions.add(new InsnNode(ACONST_NULL));
+        animate.instructions.add(new LdcInsnNode("ball_roll"));
+        animate.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                "net/threetag/palladium/power/ability/AbilityUtil", "isEnabled",
+                "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;)Z",
+                false));
+        animate.instructions.add(new VarInsnNode(ISTORE, 7));
+        animate.instructions.add(new VarInsnNode(ILOAD, 7));
+        animate.instructions.add(new InsnNode(POP));
+        animate.instructions.add(new InsnNode(RETURN));
+        animate.maxLocals = 8;
+        animate.maxStack = 3;
+
         assertTrue(AlienEvoMolang1201.apply(node) > 0);
         assertTrue(hasCall(roll, INVOKESTATIC, AlienEvoMolang1201.AZURELIB_ROLL_TIME_CONTEXT,
                 "getAnimationTime", "()D"));
@@ -302,6 +329,8 @@ class AlienEvoMolang1201Test implements Opcodes {
                 "getVariable", "(Ljava/lang/String;)L" + AlienEvoMolang1201.VARIABLE_COMPAT + ";"));
         assertFalse(hasOwner(roll, AlienEvoMolang1201.OLD_PARSER));
         assertFalse(hasOwner(roll, AlienEvoMolang1201.OLD_LAZY_VARIABLE));
+        assertTrue(hasCall(animate, INVOKESTATIC, AlienEvoMolang1201.RUNTIME_DIAGNOSTICS,
+                "traceCannonboltSpinGate", "(Ljava/lang/Object;ZLjava/lang/Object;)V"));
         assertEquals(0, AlienEvoMolang1201.apply(node));
         assertClassCanBeSerialized(node);
     }
