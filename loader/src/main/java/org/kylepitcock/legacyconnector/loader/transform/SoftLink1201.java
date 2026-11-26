@@ -47,12 +47,19 @@ final class SoftLink1201 implements Opcodes {
     private static final Set<String> OBJECT_METHODS = Set.of("equals(Ljava/lang/Object;)Z", "hashCode()I", "toString()Ljava/lang/String;",
             "getClass()Ljava/lang/Class;", "notify()V", "notifyAll()V", "wait()V", "wait(J)V", "wait(JI)V", "clone()Ljava/lang/Object;", "finalize()V");
     private static final String MIXIN = "Lorg/spongepowered/asm/mixin/Mixin;";
+    private static final String ALIEN_EVO_RENDER_TYPES =
+            "net/habb/alienevo/client/renderer/AlienEvoRenderTypes";
+    private static final String POSITION_COLOR_TEX_SHADER_DESC =
+            "Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;";
+    private static final String ALIEN_EVO_RENDER_STATE_COMPAT =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoRenderStateCompat1201";
 
     /** What was replaced, for the report. */
     static final class Stats {
         final Set<String> missingClasses = new TreeSet<>();
         final Set<String> missingMethods = new TreeSet<>();
         final Set<String> missingFields = new TreeSet<>();
+        final Set<String> fieldAliases = new TreeSet<>();
         int sites;
 
         int symbols() {
@@ -65,6 +72,8 @@ final class SoftLink1201 implements Opcodes {
             for (String c : missingClasses) out.add("Soft link: class " + c.replace('/', '.') + " does not exist in 1.21.1; stand-in throws when used");
             for (String m : missingMethods) out.add("Soft link: method " + m.replace('/', '.') + " does not exist in 1.21.1; stand-in returns the receiver (fluent methods), does nothing (void or primitive results during construction or registration) or throws when called");
             for (String f : missingFields) out.add("Soft link: field " + f.replace('/', '.') + " does not exist in 1.21.1; reads give the default value");
+            for (String f : fieldAliases) out.add("Soft link: field alias " + f.replace('/', '.')
+                    + " -> AlienEvoRenderStateCompat1201.positionColorTexShader()");
             return out;
         }
 
@@ -240,7 +249,12 @@ final class SoftLink1201 implements Opcodes {
             } else if (in instanceof FieldInsnNode fi) {
                 boolean cls = missingClass(fi.owner) || missingType(Type.getType(fi.desc));
                 if (cls) stats.missingClasses.add(missingClass(fi.owner) ? fi.owner : element(Type.getType(fi.desc)));
-                if (cls || (hostOrMod(fi.owner) && fieldMissing(fi.owner, fi.name, fi.desc))) {
+                if (!cls && isAlienEvoPositionColorTexShader(fi)) {
+                    // This legacy field is gone in 1.21.1. Recreate its exact
+                    // position/color/texture shader-state contract instead of null.
+                    stats.fieldAliases.add(fi.owner + "." + fi.name + ":" + fi.desc);
+                    repl = field(fi);
+                } else if (cls || (hostOrMod(fi.owner) && fieldMissing(fi.owner, fi.name, fi.desc))) {
                     if (!cls) stats.missingFields.add(fi.owner + "." + fi.name + ":" + fi.desc);
                     repl = field(fi);
                 }
@@ -405,9 +419,21 @@ final class SoftLink1201 implements Opcodes {
         return l;
     }
 
+    private static boolean isAlienEvoPositionColorTexShader(FieldInsnNode fi) {
+        return fi.getOpcode() == GETSTATIC
+                && ALIEN_EVO_RENDER_TYPES.equals(fi.owner)
+                && "POSITION_COLOR_TEX_SHADER".equals(fi.name)
+                && POSITION_COLOR_TEX_SHADER_DESC.equals(fi.desc);
+    }
+
     /** A missing field: a read leaves the default value, a write is dropped (receiver and value popped). */
     private static InsnList field(FieldInsnNode fi) {
         InsnList l = new InsnList();
+        if (isAlienEvoPositionColorTexShader(fi)) {
+            l.add(new MethodInsnNode(INVOKESTATIC, ALIEN_EVO_RENDER_STATE_COMPAT,
+                    "positionColorTexShader", "()" + POSITION_COLOR_TEX_SHADER_DESC, false));
+            return l;
+        }
         Type t = Type.getType(fi.desc);
         int size = t.getSize();
         switch (fi.getOpcode()) {

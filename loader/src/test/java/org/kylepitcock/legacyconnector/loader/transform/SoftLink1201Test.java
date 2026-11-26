@@ -28,15 +28,22 @@ class SoftLink1201Test implements Opcodes {
     private static final String SUB = "net/minecraft/world/Sub";
     private static final String GONE = "net/minecraft/world/Removed";
     private static final String OTHER = "othermod/api/Thing";
+    private static final String RENDER_STATE_SHARD = "net/minecraft/client/renderer/RenderStateShard";
+    private static final String ALIEN_EVO_RENDER_TYPES = "net/habb/alienevo/client/renderer/AlienEvoRenderTypes";
+    private static final String POSITION_COLOR_TEX_SHADER_DESC =
+            "Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;";
 
     @BeforeAll
     static void index() {
         Mc1201Hierarchy.setMinecraftForTests(Map.of(
                 BASE, new String[] {"java/lang/Object"},
-                SUB, new String[] {BASE}));
+                SUB, new String[] {BASE},
+                RENDER_STATE_SHARD, new String[] {"java/lang/Object"}));
         McMembers1201.setForTests(Map.of(
                 BASE, new McMembers1201.Members(Set.of("<init>()V", "present()I", "tick()V"), Set.of("count:I")),
-                SUB, new McMembers1201.Members(Set.of("<init>()V"), Set.of())));
+                SUB, new McMembers1201.Members(Set.of("<init>()V"), Set.of()),
+                RENDER_STATE_SHARD, new McMembers1201.Members(Set.of("<init>()V"),
+                        Set.of("POSITION_COLOR_SHADER:" + POSITION_COLOR_TEX_SHADER_DESC))));
     }
 
     @AfterAll
@@ -142,6 +149,36 @@ class SoftLink1201Test implements Opcodes {
         SoftLink1201 s = link(c);
         s.apply(c);
         assertTrue(has(m, INVOKESTATIC, "fail"));
+    }
+
+    @Test
+    void alienevoScanBandShaderUsesTheNonNull1211ShaderStateBridge() {
+        ClassNode owner = cls(ALIEN_EVO_RENDER_TYPES, RENDER_STATE_SHARD);
+        MethodNode method = new MethodNode(ACC_PUBLIC | ACC_STATIC, "createScanBand", "()V", null, null);
+        owner.methods.add(method);
+        method.visitFieldInsn(GETSTATIC, ALIEN_EVO_RENDER_TYPES, "POSITION_COLOR_TEX_SHADER",
+                POSITION_COLOR_TEX_SHADER_DESC);
+        method.visitInsn(POP);
+        method.visitInsn(RETURN);
+
+        SoftLink1201 s = link(owner);
+        assertEquals(1, s.apply(owner));
+        assertTrue(s.stats.missingFields.isEmpty());
+        assertTrue(s.stats.fieldAliases.contains(
+                ALIEN_EVO_RENDER_TYPES + ".POSITION_COLOR_TEX_SHADER:" + POSITION_COLOR_TEX_SHADER_DESC));
+
+        boolean bridged = false;
+        for (AbstractInsnNode instruction : method.instructions) {
+            assertFalse(instruction instanceof FieldInsnNode);
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && call.owner.equals("org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoRenderStateCompat1201")
+                    && call.name.equals("positionColorTexShader")
+                    && call.desc.equals("()" + POSITION_COLOR_TEX_SHADER_DESC)) {
+                bridged = true;
+            }
+        }
+        assertTrue(bridged);
     }
 
     @Test
