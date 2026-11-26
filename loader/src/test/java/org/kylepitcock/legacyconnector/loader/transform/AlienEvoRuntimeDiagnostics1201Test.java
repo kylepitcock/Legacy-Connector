@@ -203,6 +203,9 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
         String fitDesc = "(Lnet/minecraft/client/gui/GuiGraphics;[FFFFF"
                 + "Lnet/habb/alienevo/client/screen/MobPortrait$Painter;)V";
         MethodNode draw = new MethodNode(ACC_PUBLIC | ACC_STATIC, "draw", drawDesc, null, null);
+        // The original method computes/stores its outline in local 8 before fitting.
+        draw.instructions.add(new InsnNode(ACONST_NULL));
+        draw.instructions.add(new VarInsnNode(ASTORE, 8));
         draw.instructions.add(new VarInsnNode(ALOAD, 0));
         draw.instructions.add(new VarInsnNode(ALOAD, 8));
         draw.instructions.add(new VarInsnNode(FLOAD, 2));
