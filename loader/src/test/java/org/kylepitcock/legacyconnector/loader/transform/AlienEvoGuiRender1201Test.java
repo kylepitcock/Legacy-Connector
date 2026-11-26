@@ -69,8 +69,8 @@ class AlienEvoGuiRender1201Test implements Opcodes {
     void removesOnlyTheBadgeLegacyBackgroundCallAndKeepsOtherRenderWork() {
         ClassNode node = badgeScreen();
 
-        assertEquals(1, AlienEvoVertexConsumer1201.apply(node),
-                "the existing active per-class adapter must remove the Badge backdrop call");
+        assertEquals(2, AlienEvoVertexConsumer1201.apply(node),
+                "the active adapter must remove the legacy call and suppress Screen.render's modern blur hook");
 
         MethodNode render = find(node, "render", RENDER_DESC);
         assertFalse(hasCall(render, INVOKEVIRTUAL, node.name, "renderBackground", BACKGROUND_DESC));
@@ -79,6 +79,7 @@ class AlienEvoGuiRender1201Test implements Opcodes {
                 "the inherited widget pass must remain");
         assertTrue(hasCall(render, INVOKESTATIC, "example/BadgeBackdrop", "draw", "()V"),
                 "the Badge's own backdrop must remain");
+        assertBadgeModernBackgroundIsNoop(node);
 
         assertEquals(0, AlienEvoGuiRender1201.apply(node),
                 "the Badge background removal must be idempotent");
@@ -96,12 +97,44 @@ class AlienEvoGuiRender1201Test implements Opcodes {
                 AlienEvoGuiRender1201.MIGRATED_BACKGROUND_DESC,
                 false));
 
-        assertEquals(0, AlienEvoGuiRender1201.apply(node),
-                "the generic helper already suppresses the inherited 1.20.1 blur background");
+        assertEquals(1, AlienEvoGuiRender1201.apply(node),
+                "the modern inherited Screen.render background hook must also be suppressed");
         assertTrue(hasCall(render, INVOKESTATIC,
                 AlienEvoGuiRender1201.CLIENT_COMPAT,
                 "renderBackground",
                 AlienEvoGuiRender1201.MIGRATED_BACKGROUND_DESC));
+        assertBadgeModernBackgroundIsNoop(node);
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "the modern no-op override must be idempotent");
+    }
+
+    @Test
+    void preservesAnExistingNoopModernBadgeBackgroundOverride() {
+        ClassNode node = badgeScreen();
+        MethodNode background = new MethodNode(ACC_PUBLIC, "renderBackground",
+                AlienEvoGuiRender1201.MODERN_BACKGROUND_DESC, null, null);
+        background.instructions.add(new InsnNode(RETURN));
+        background.maxLocals = 5;
+        node.methods.add(background);
+
+        assertEquals(1, AlienEvoVertexConsumer1201.apply(node),
+                "only the remaining legacy call should be removed");
+        assertBadgeModernBackgroundIsNoop(node);
+        assertEquals(0, AlienEvoGuiRender1201.apply(node));
+    }
+
+    @Test
+    void rejectsAnUnexpectedModernBadgeBackgroundOverrideBody() {
+        ClassNode node = badgeScreen();
+        MethodNode background = new MethodNode(ACC_PUBLIC, "renderBackground",
+                AlienEvoGuiRender1201.MODERN_BACKGROUND_DESC, null, null);
+        background.instructions.add(new InsnNode(ICONST_0));
+        background.instructions.add(new InsnNode(POP));
+        background.instructions.add(new InsnNode(RETURN));
+        background.maxLocals = 5;
+        node.methods.add(background);
+
+        assertThrows(IllegalStateException.class, () -> AlienEvoGuiRender1201.apply(node));
     }
 
     @Test
@@ -131,6 +164,19 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         assertTrue(call != null);
         call.owner = "example/OtherInventoryScreen";
         assertThrows(IllegalStateException.class, () -> AlienEvoGuiRender1201.apply(node));
+    }
+
+    private static void assertBadgeModernBackgroundIsNoop(ClassNode node) {
+        MethodNode background = find(node, "renderBackground", AlienEvoGuiRender1201.MODERN_BACKGROUND_DESC);
+        assertTrue(background != null, "Badge must override the modern Screen background hook");
+        assertTrue((background.access & ACC_PUBLIC) != 0, "Screen background hook override must be public");
+        int executable = 0;
+        for (var instruction : background.instructions.toArray()) {
+            if (instruction.getOpcode() < 0) continue;
+            assertEquals(RETURN, instruction.getOpcode(), "modern Badge background hook must be a no-op");
+            executable++;
+        }
+        assertEquals(1, executable, "modern Badge background hook must contain only RETURN");
     }
 
     private static ClassNode previewWidget() {
