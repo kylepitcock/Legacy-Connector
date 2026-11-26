@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -171,7 +172,10 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         }
 
         if (legacyCount == 0 && modernCount == 0 && migratedNoopCount <= 1) {
-            return 0; // Already removed or migrated to the no-op helper.
+            // Screen.render() in 1.21.1 calls the new four-argument virtual
+            // renderBackground hook. Removing the old one-argument call is not
+            // enough: without this override, super.render() still applies blur.
+            return ensureNoopModernBackground(node);
         }
         if (legacyCount != 1 || modernCount != 0 || migratedNoopCount != 0 || legacy == null) {
             throw new IllegalStateException(
@@ -193,6 +197,41 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         render.instructions.remove(screenLoad);
         render.instructions.remove(graphicsLoad);
         render.instructions.remove(legacy);
+        return 1 + ensureNoopModernBackground(node);
+    }
+
+    /**
+     * Screen.render() dispatches this modern hook virtually after the Badge's
+     * own render body calls super.render(). Override it with an empty body so
+     * vanilla's 1.21.1 in-world blur is suppressed without skipping widgets.
+     */
+    private static int ensureNoopModernBackground(ClassNode node) {
+        MethodNode existing = findUniqueMethod(node, "renderBackground", MODERN_BACKGROUND_DESC);
+        if (existing != null) {
+            if ((existing.access & ACC_PUBLIC) == 0 || existing.instructions == null) {
+                throw new IllegalStateException(
+                        "AlienEvo PlumberBadgeScreen has an incompatible modern background override");
+            }
+            int executable = 0;
+            for (AbstractInsnNode instruction : existing.instructions.toArray()) {
+                if (instruction.getOpcode() < 0) continue;
+                if (instruction.getOpcode() != RETURN) {
+                    throw new IllegalStateException(
+                            "AlienEvo PlumberBadgeScreen modern background override is not a no-op");
+                }
+                executable++;
+            }
+            if (executable != 1) {
+                throw new IllegalStateException(
+                        "AlienEvo PlumberBadgeScreen modern background override has an unexpected body");
+            }
+            return 0;
+        }
+
+        MethodNode noOp = new MethodNode(ACC_PUBLIC, "renderBackground", MODERN_BACKGROUND_DESC, null, null);
+        noOp.instructions.add(new InsnNode(RETURN));
+        noOp.maxLocals = 5;
+        node.methods.add(noOp);
         return 1;
     }
 
