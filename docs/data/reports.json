@@ -1331,6 +1331,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/surveillance-package",
    "date": "2026-11-25",
    "open": true
+  },
+  {
+   "issue": 357,
+   "mod": "ExtrabiomesXL 3.11.0",
+   "mc": "1.4.7 (planned)",
+   "status": "partial",
+   "details": "The Biomes, trees, plants and blocks spawn The modded biomes seem small and in long thin bands but that's a hard thing to check <img width=\"1920\" height=\"1009\" alt=\"ExtrabiomesXL Alpine\" src=\"https://github.com/user-attachments/assets/97af043d-2fb2-4f22-8164-d0c46257c784\" /> <img width=\"1920\" height=\"1009\" alt=\"ExtrabiomesXL Autumn Woods\" src=\"https://github.com/user-attachments/assets/21e7ceae-d…",
+   "lc": "0.5.3-nightly.162.3bfc558",
+   "neoforge": "21.1.265",
+   "link": "https://www.feed-the-beast.com/modpacks/70-direwolf20-147/mods",
+   "date": "2026-11-26",
+   "open": true
   }
  ]
 }
