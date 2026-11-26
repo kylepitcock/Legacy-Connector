@@ -14,7 +14,12 @@ public final class InventoryScreenCompat1201 {
 
     /**
      * Compatibility signature used by AlienEvo's original bytecode:
-     * graphics, centre X/Y, model scale, mouse X/Y and entity.
+     * graphics, centre X/Y, model scale, mouse deltas and entity.
+     *
+     * <p>AlienEvo passes {@code anchor - cursor} for both mouse arguments,
+     * while Minecraft 1.21.1 expects absolute GUI cursor coordinates. Recover
+     * the original cursor position before delegating; forwarding the deltas
+     * unchanged makes the preview rotate around the wrong point.
      *
      * <p>The 1.21.1 overload requires a clipping rectangle. Use a screen-sized
      * rectangle centred on the legacy anchor so that it does not introduce a
@@ -39,8 +44,12 @@ public final class InventoryScreenCompat1201 {
                 y + halfHeight,
                 scale,
                 0.0F,
-                mouseX,
-                mouseY,
+                absoluteMouseCoordinate(x, mouseX),
+                absoluteMouseCoordinate(y, mouseY),
                 entity);
+    }
+
+    static float absoluteMouseCoordinate(float anchor, float legacyDelta) {
+        return anchor - legacyDelta;
     }
 }
