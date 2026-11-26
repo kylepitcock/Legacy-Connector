@@ -21,6 +21,7 @@ class AlienEvoGuiRender1201Test implements Opcodes {
     private static final String PREVIEW_METHOD_DESC =
             "(L" + GUI_GRAPHICS + ";IIFFFLnet/minecraft/world/entity/LivingEntity;FZ)V";
     private static final String BACKGROUND_DESC = "(L" + GUI_GRAPHICS + ";)V";
+    private static final String PREVIEW_DRAG_DESC = "(DDI)Z";
     private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
 
     @Test
@@ -164,6 +165,52 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         assertTrue(call != null);
         call.owner = "example/OtherInventoryScreen";
         assertThrows(IllegalStateException.class, () -> AlienEvoGuiRender1201.apply(node));
+    }
+
+
+    @Test
+    void allowsDraggingThePreviewOnEveryPreviewTab() {
+        ClassNode node = powerScreen();
+        MethodNode dragStart = find(node, "handlePreviewDragStart", PREVIEW_DRAG_DESC);
+        MethodInsnNode gate = findCall(dragStart, INVOKEVIRTUAL,
+                AlienEvoGuiRender1201.POWER_SCREEN, "isColorTab", "()Z");
+        assertTrue(gate != null);
+
+        assertEquals(1, AlienEvoGuiRender1201.apply(node));
+        assertEquals("isPreviewTab", gate.name,
+                "the visible preview is rendered on preview tabs, not just the Color tab");
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "preview drag gate adaptation must be idempotent");
+    }
+
+    @Test
+    void rejectsUnexpectedOmnitrixPreviewDragGateShape() {
+        ClassNode node = powerScreen();
+        MethodNode dragStart = find(node, "handlePreviewDragStart", PREVIEW_DRAG_DESC);
+        MethodInsnNode gate = findCall(dragStart, INVOKEVIRTUAL,
+                AlienEvoGuiRender1201.POWER_SCREEN, "isColorTab", "()Z");
+        assertTrue(gate != null);
+        gate.name = "isSkillsTab";
+        assertThrows(IllegalStateException.class, () -> AlienEvoGuiRender1201.apply(node));
+    }
+
+    private static ClassNode powerScreen() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = AlienEvoGuiRender1201.POWER_SCREEN;
+        node.superName = "java/lang/Object";
+
+        MethodNode dragStart = new MethodNode(ACC_PRIVATE, "handlePreviewDragStart",
+                PREVIEW_DRAG_DESC, null, null);
+        dragStart.instructions.add(new VarInsnNode(ALOAD, 0));
+        dragStart.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                AlienEvoGuiRender1201.POWER_SCREEN, "isColorTab", "()Z", false));
+        dragStart.instructions.add(new InsnNode(IRETURN));
+        dragStart.maxLocals = 4;
+        dragStart.maxStack = 1;
+        node.methods.add(dragStart);
+        return node;
     }
 
     private static void assertBadgeModernBackgroundIsNoop(ClassNode node) {

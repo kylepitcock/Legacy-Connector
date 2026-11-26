@@ -17,6 +17,8 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             "net/habb/alienevo/client/screen/power/AlienPreviewWidget";
     static final String BADGE_SCREEN =
             "net/habb/alienevo/client/screen/badge/PlumberBadgeScreen";
+    static final String POWER_SCREEN =
+            "net/habb/alienevo/client/screen/OmnitrixPowerScreen";
     static final String SCALED_SCREEN =
             "net/habb/alienevo/client/screen/ScaledScreen";
     static final String SCREEN = "net/minecraft/client/gui/screens/Screen";
@@ -51,6 +53,9 @@ final class AlienEvoGuiRender1201 implements Opcodes {
     static int apply(ClassNode node) {
         if (PREVIEW_WIDGET.equals(node.name)) {
             return adaptInventoryPreview(node);
+        }
+        if (POWER_SCREEN.equals(node.name)) {
+            return adaptPreviewDragTabGate(node);
         }
         if (BADGE_SCREEN.equals(node.name)) {
             return removeLegacyBadgeBackground(node);
@@ -232,6 +237,49 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         noOp.instructions.add(new InsnNode(RETURN));
         noOp.maxLocals = 5;
         node.methods.add(noOp);
+        return 1;
+    }
+
+
+    /**
+     * AlienEvo renders the shared model preview on each preview tab, but its
+     * drag-start handler only permits dragging while the Color tab is active.
+     * Route that gate through isPreviewTab instead, so the visible player/alien
+     * preview can be rotated from the other tabs as well.
+     */
+    private static int adaptPreviewDragTabGate(ClassNode node) {
+        MethodNode dragStart = findUniqueMethod(node, "handlePreviewDragStart", "(DDI)Z");
+        if (dragStart == null) {
+            throw new IllegalStateException("AlienEvo OmnitrixPowerScreen preview drag method shape changed");
+        }
+
+        MethodInsnNode colorTab = null;
+        int colorTabCount = 0;
+        int previewTabCount = 0;
+        for (AbstractInsnNode instruction : dragStart.instructions.toArray()) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !node.name.equals(call.owner)
+                    || !"()Z".equals(call.desc)
+                    || call.getOpcode() != INVOKEVIRTUAL) {
+                continue;
+            }
+            if ("isColorTab".equals(call.name)) {
+                colorTab = call;
+                colorTabCount++;
+            } else if ("isPreviewTab".equals(call.name)) {
+                previewTabCount++;
+            }
+        }
+
+        if (colorTabCount == 0 && previewTabCount == 1) {
+            return 0; // Already adapted.
+        }
+        if (colorTabCount != 1 || previewTabCount != 0 || colorTab == null) {
+            throw new IllegalStateException(
+                    "AlienEvo preview drag gate expected one isColorTab() or isPreviewTab() invocation; found "
+                            + colorTabCount + " color-tab and " + previewTabCount + " preview-tab calls");
+        }
+        colorTab.name = "isPreviewTab";
         return 1;
     }
 
