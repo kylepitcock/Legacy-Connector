@@ -196,11 +196,21 @@ class AlienEvoResourceCompat1201Test {
     }
 
     @Test
-    void doesNotCreateAnAddonMarkerForOrdinaryAssetsOrAnEmptyResourceSet() {
+    void doesNotCreateAnAddonMarkerForOrdinaryAssetsOrAnUnrelatedAddonNamespace() {
         Map<String, byte[]> resources = new LinkedHashMap<>();
         resources.put("assets/alienevo/textures/example.png", new byte[] {1});
         assertFalse(AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(resources));
+        resources.put("addon/example/kubejs_scripts/example.js", new byte[] {2});
+        assertFalse(AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(resources));
         assertFalse(resources.containsKey(AlienEvoResourceCompat1201.ADDON_RESOURCE_ROOT_MARKER));
+    }
+
+    @Test
+    void addsTheVanillaAddonRootMarkerForAfOmniAddonAssets() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put("addon/afomni/textures/example.png", new byte[] {1});
+        assertTrue(AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(resources));
+        assertTrue(resources.containsKey(AlienEvoResourceCompat1201.ADDON_RESOURCE_ROOT_MARKER));
     }
 
     @Test
