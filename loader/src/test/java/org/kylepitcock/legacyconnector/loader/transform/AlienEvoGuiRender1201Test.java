@@ -57,8 +57,8 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         // Mc1201Migration's mc-calls.tsv row rewrites this owner to MiddleClientCompat first.
         redirected.owner = AlienEvoGuiRender1201.MIDDLE_CLIENT_COMPAT;
 
-        assertEquals(1, AlienEvoMolang1201.apply(node),
-                "the active post-Minecraft pass must replace the too-small generic viewport");
+        assertEquals(1, AlienEvoVertexConsumer1201.apply(node),
+                "the existing active per-class adapter must replace the too-small generic viewport");
         assertEquals(AlienEvoGuiRender1201.INVENTORY_COMPAT, redirected.owner);
         assertEquals(INVOKESTATIC, redirected.getOpcode());
         assertEquals(0, AlienEvoMolang1201.apply(node),
@@ -69,8 +69,8 @@ class AlienEvoGuiRender1201Test implements Opcodes {
     void removesOnlyTheBadgeLegacyBackgroundCallAndKeepsOtherRenderWork() {
         ClassNode node = badgeScreen();
 
-        assertEquals(1, AlienEvoMolang1201.apply(node),
-                "the active per-class pass must remove the Badge backdrop call");
+        assertEquals(1, AlienEvoVertexConsumer1201.apply(node),
+                "the existing active per-class adapter must remove the Badge backdrop call");
 
         MethodNode render = find(node, "render", RENDER_DESC);
         assertFalse(hasCall(render, INVOKEVIRTUAL, node.name, "renderBackground", BACKGROUND_DESC));
