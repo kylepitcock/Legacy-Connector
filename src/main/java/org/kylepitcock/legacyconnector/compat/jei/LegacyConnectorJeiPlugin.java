@@ -215,7 +215,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             TemplateRecipeHandler h = recipe.handler();
             if (h == null) return List.of();
             try {
-                List<String> tips = h.handleTooltip(new RecipeScreen(h, (int) mouseX, (int) mouseY), new ArrayList<>(), recipe.index());
+                List<String> tips = new RecipeScreen(h, (int) Math.floor(mouseX), (int) Math.floor(mouseY)).getTooltip(h, recipe.index());
                 if (tips == null || tips.isEmpty()) return List.of();
                 List<Component> out = new ArrayList<>(tips.size());
                 for (String line : tips) out.add(Component.literal(line));

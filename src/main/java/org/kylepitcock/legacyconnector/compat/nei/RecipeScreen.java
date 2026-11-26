@@ -1,6 +1,9 @@
 package org.kylepitcock.legacyconnector.compat.nei;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
+import legacyconnector.v1_7_10.codechicken.lib.gui.GuiDraw;
 import legacyconnector.v1_7_10.codechicken.nei.forge.GuiContainerManager;
 import legacyconnector.v1_7_10.codechicken.nei.recipe.GuiRecipe;
 import legacyconnector.v1_7_10.codechicken.nei.recipe.TemplateRecipeHandler;
@@ -9,7 +12,8 @@ import legacyconnector.v1_7_10.codechicken.nei.recipe.TemplateRecipeHandler;
  * The stand-in for NEI's recipe screen that a handler gets in {@code handleTooltip(gui, tip, recipe)}: JEI draws the recipe, so this holds the
  * recipe's own frame. The screen is as wide and high as its GUI (no margin, so {@code (width - xSize) / 2} is 0 as the 1.4.7 / 1.5.2 handlers
  * compute their screen offset), the recipe's origin is NEI's (5, 16), and {@code manager.getMousePosition()} is the mouse in that frame:
- * the position JEI reports inside the recipe plus the origin.
+ * the position JEI reports inside the recipe plus the origin. The static {@code GuiDraw.getMousePosition()} uses the same
+ * frame while the handler runs.
  */
 public final class RecipeScreen extends GuiRecipe {
     private static final Point ORIGIN = new Point(5, 16);
@@ -27,6 +31,11 @@ public final class RecipeScreen extends GuiRecipe {
     @Override
     public Point getRecipePosition(int recipe) {
         return new Point(ORIGIN);
+    }
+
+    public List<String> getTooltip(TemplateRecipeHandler handler, int recipe) {
+        return GuiDraw.mcc$withMousePosition(mcc$manager.getMousePosition(),
+                () -> handler.handleTooltip(this, new ArrayList<>(), recipe));
     }
 
     @Override
