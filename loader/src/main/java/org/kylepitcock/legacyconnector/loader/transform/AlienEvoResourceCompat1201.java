@@ -274,6 +274,9 @@ final class AlienEvoResourceCompat1201 {
         changed += repairLegacyIceFunctions(resources);
         changed += repairPyroniteNovaFunction(resources);
         changed += repairMissingVisualResourceAssets(resources);
+        // Vanilla 1.21.1 discovers resources below the nonstandard addon/ root
+        // only when the root marker is present in the translated resource pack.
+        changed += ensureAddonResourceRootMarker(resources) ? 1 : 0;
         return changed;
     }
 
@@ -543,10 +546,7 @@ final class AlienEvoResourceCompat1201 {
                                 "execute if score @s Pyronite.Nova matches 35 run fireparticle ^ ^2 ^ 6500 0 0 0 0.3",
                                 "execute if score @s Pyronite.Nova matches 35 run particle minecraft:flame ^ ^2 ^ 0 0 0 0.3 6500"
                         },
-                        {
-                                "execute if score @s Pyronite.Nova matches 40 run energybar value set @s alienevo_aliens:pyronite chroma_energy 0",
-                                "execute if score @s Pyronite.Nova matches 40 run alienevo energy set pyronite 0"
-                        }
+
                 });
     }
 
