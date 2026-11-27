@@ -30,7 +30,9 @@ public abstract class CreativeTabDuplicateMixin {
         ci.cancel();
         String key = ((BuildCreativeModeTabContentsEvent) (Object) this).getTabKey().location() + " " + BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (LEGACYCONNECTOR$REPORTED.add(key)) {
-            LEGACYCONNECTOR$LOG.warn("Creative tab {}: a duplicate of {} was skipped (the mod added an equal stack twice)", key.split(" ")[0], key.split(" ")[1]);
+            // Skipping an equal duplicate is the compatibility behavior of this mixin, not a failure.
+            LEGACYCONNECTOR$LOG.debug("Creative tab {}: skipped an equal duplicate stack for {}",
+                    key.split(" ")[0], key.split(" ")[1]);
         }
     }
 }
