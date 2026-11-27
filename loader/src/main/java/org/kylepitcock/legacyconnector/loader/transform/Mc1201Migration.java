@@ -99,6 +99,7 @@ public final class Mc1201Migration {
         Counts c = new Counts();
         renameWidgetNarrationOverride(node, h, c);
         renameOverrides(node, h, t, c);
+        migratePoseEyeHeight(node, h, c);
         swapMobBucketSuper(node);
         swapPathPackSuper(node);
         swapItemPredicateSuper(node, c);
@@ -420,17 +421,81 @@ public final class Mc1201Migration {
         }
     }
 
-    /**
-     * A mod method that overrides a method which is final in 1.21.1 ({@code LivingEntity.getDimensions(Pose)}, the point to override moved to
-     * {@code getDefaultDimensions}) is renamed to the new override point, with its {@code super} and own-class calls; with no replacement it is disabled.
-     */
+    private static final String ENTITY = "net/minecraft/world/entity/Entity";
+    private static final String LIVING_ENTITY = "net/minecraft/world/entity/LivingEntity";
+    private static final String POSE_ARG = "(Lnet/minecraft/world/entity/Pose;)";
+    private static final String ENTITY_DIMENSIONS = "net/minecraft/world/entity/EntityDimensions";
+    private static final String LEGACY_POSE_EYE_HEIGHT = "mcc$legacyPoseEyeHeight";
+
+    /** The pose getter is final on the host and reads eye height from the dimensions override. */
+    private static void migratePoseEyeHeight(ClassNode node, Mc1201Hierarchy h, Counts c) {
+        if (!h.isSubclassOf(node.name, ENTITY)) return;
+        String eyeDesc = POSE_ARG + "F";
+        String dimensionsDesc = POSE_ARG + "L" + ENTITY_DIMENSIONS + ";";
+        String dimensionsName = h.isSubclassOf(node.name, LIVING_ENTITY) ? "getDefaultDimensions" : "getDimensions";
+        MethodNode eyeHeight = declared(node, "getEyeHeight", eyeDesc);
+        if (eyeHeight != null && (eyeHeight.access & Opcodes.ACC_STATIC) == 0) {
+            eyeHeight.name = LEGACY_POSE_EYE_HEIGHT;
+        } else {
+            eyeHeight = null;
+        }
+        // A legacy super call must bypass this class's dimensions override to avoid recursion.
+        for (MethodNode method : node.methods) {
+            for (AbstractInsnNode insn : method.instructions.toArray()) {
+                if (!(insn instanceof MethodInsnNode call) || call.getOpcode() != Opcodes.INVOKESPECIAL
+                        || !call.name.equals("getEyeHeight") || !call.desc.equals(eyeDesc)
+                        || !h.isSubclassOf(call.owner, ENTITY)) continue;
+                if (h.declaredIn(call.owner, LEGACY_POSE_EYE_HEIGHT, eyeDesc) == Origin.MOD
+                        || h.declaredIn(call.owner, call.name, eyeDesc) == Origin.MOD) {
+                    call.name = LEGACY_POSE_EYE_HEIGHT;
+                } else {
+                    call.name = dimensionsName;
+                    call.desc = dimensionsDesc;
+                    method.instructions.insert(call, new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                            ENTITY_DIMENSIONS, "eyeHeight", "()F", false));
+                }
+            }
+        }
+        if (eyeHeight == null || (eyeHeight.access & Opcodes.ACC_ABSTRACT) != 0) return;
+        MethodNode dimensions = declared(node, dimensionsName, dimensionsDesc);
+        if (dimensions == null) {
+            dimensions = new MethodNode(Opcodes.ACC_SYNTHETIC | (dimensionsName.equals("getDimensions")
+                    ? Opcodes.ACC_PUBLIC : Opcodes.ACC_PROTECTED), dimensionsName, dimensionsDesc, null, null);
+            dimensions.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            dimensions.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+            dimensions.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, node.superName, dimensionsName, dimensionsDesc, false));
+            dimensions.instructions.add(new InsnNode(Opcodes.ARETURN));
+            dimensions.maxLocals = 2;
+            node.methods.add(dimensions);
+        }
+        for (AbstractInsnNode insn : dimensions.instructions.toArray()) {
+            if (insn.getOpcode() != Opcodes.ARETURN) continue;
+            InsnList adapt = new InsnList();
+            adapt.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            adapt.add(new VarInsnNode(Opcodes.ALOAD, 1));
+            adapt.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, node.name, LEGACY_POSE_EYE_HEIGHT, eyeDesc, false));
+            adapt.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ENTITY_DIMENSIONS, "withEyeHeight", "(F)L" + ENTITY_DIMENSIONS + ";", false));
+            dimensions.instructions.insertBefore(insn, adapt);
+        }
+        dimensions.maxStack = Math.max(3, dimensions.maxStack + 2);
+        c.bridges++;
+    }
+
+    /** Renames a legacy override of a now-final method, including its super and own-class calls, or disables it if no replacement exists. */
     private static void renameOverrides(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         for (String[] row : t.overrides) {
             MethodNode decl = declared(node, row[1], row[2]);
             if (decl == null || (decl.access & Opcodes.ACC_STATIC) != 0 || !h.isSubclassOf(node.name, row[0])) continue;
             boolean disable = row[3].equals("-");
             String newName = disable ? "mcc$disabled$" + row[1] : row[3];
-            if (declared(node, newName, row[2]) != null) continue;
+            MethodNode hook = declared(node, newName, row[2]);
+            if (hook != null) {
+                if (row[0].equals(ABSTRACT_WIDGET) && row[1].equals("render")) {
+                    migrateWidgetRenderPair(node, h, decl, hook);
+                    c.bridges++;
+                }
+                continue;
+            }
             decl.name = newName;
             c.bridges++;
             if (disable) continue;
@@ -442,6 +507,30 @@ public final class Mc1201Migration {
                                     : call.getOpcode() == Opcodes.INVOKEVIRTUAL && call.owner.equals(node.name))) {
                         call.name = newName;
                     }
+                }
+            }
+        }
+    }
+
+    private static void migrateWidgetRenderPair(ClassNode node, Mc1201Hierarchy h, MethodNode render, MethodNode hook) {
+        String originalRender = render.name;
+        String originalHook = hook.name;
+        String draw = "mcc$legacy$renderWidget";
+        while (declared(node, draw, hook.desc) != null) draw += "$";
+        render.name = originalHook;
+        hook.name = draw;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode in : method.instructions) {
+                if (!(in instanceof MethodInsnNode call) || !call.desc.equals(render.desc)) continue;
+                if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals(originalRender)
+                        && !call.owner.equals(node.name) && h.isSubclassOf(call.owner, ABSTRACT_WIDGET)) {
+                    // Vanilla render now wraps this hook. Calling it here would enter the same hook again.
+                    call.setOpcode(Opcodes.INVOKEVIRTUAL);
+                    call.owner = node.name;
+                    call.name = draw;
+                } else if (call.owner.equals(node.name) && call.name.equals(originalHook)) {
+                    call.name = draw;
                 }
             }
         }
@@ -530,6 +619,7 @@ public final class Mc1201Migration {
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
+                if (holderSetFactoryLambda(m, d)) c.calls++;
                 registryBufferLambda(d);
                 if (adaptLambda(d, t, c)) c.calls++;
                 redirectHandles(d, h, t, c);
@@ -670,6 +760,19 @@ public final class Mc1201Migration {
      * {@code (id, inv, buf) -> ...} for {@code IContainerFactory}: the lambda method keeps taking the {@code FriendlyByteBuf} (a supertype), but the
      * metafactory's own method types must name the {@code RegistryFriendlyByteBuf} of the interface.
      */
+    private static boolean holderSetFactoryLambda(MethodNode method, org.objectweb.asm.tree.InvokeDynamicInsnNode indy) {
+        String target = "Lnet/neoforged/neoforge/registries/holdersets/HolderSetType;";
+        String compat = Mc1201Tables.HELPER_PACKAGE + "HolderSetTypeCompat";
+        String factory = "L" + compat + "$Factory;";
+        Type legacySam = Type.getMethodType("(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Z)Lcom/mojang/serialization/Codec;");
+        if (!indy.desc.endsWith(")" + target) || !indy.name.equals("makeCodec")
+                || !indy.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory")
+                || indy.bsmArgs.length < 3 || !legacySam.equals(indy.bsmArgs[0])) return false;
+        indy.desc = indy.desc.substring(0, indy.desc.length() - target.length()) + factory;
+        method.instructions.insert(indy, new MethodInsnNode(Opcodes.INVOKESTATIC, compat, "adapt", "(" + factory + ")" + target, false));
+        return true;
+    }
+
     private static void registryBufferLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
         if (!d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3) return;
         if (!REGISTRY_BUFFER_INTERFACES.contains(Type.getReturnType(d.desc).getInternalName())) return;

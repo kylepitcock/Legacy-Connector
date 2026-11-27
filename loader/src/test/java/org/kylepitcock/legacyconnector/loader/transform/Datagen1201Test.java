@@ -74,6 +74,22 @@ class Datagen1201Test implements Opcodes {
     }
 
     @Test
+    void queryingDatagenModeDoesNotEmptyRuntimeFactory() {
+        ClassNode mod = cls("m/RegistryFactory", "java/lang/Object");
+        MethodNode factory = new MethodNode(ACC_PUBLIC | ACC_STATIC, "create", "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+        MethodInsnNode query = new MethodInsnNode(INVOKESTATIC, "net/neoforged/neoforge/data/loading/DatagenModLoader", "isRunningDataGen", "()Z", false);
+        factory.instructions.add(query);
+        factory.instructions.add(new InsnNode(POP));
+        factory.instructions.add(new org.objectweb.asm.tree.VarInsnNode(ALOAD, 0));
+        factory.instructions.add(new InsnNode(ARETURN));
+        mod.methods.add(factory);
+
+        assertEquals(0, Datagen1201.apply(List.of(mod)).methods);
+        assertEquals(4, factory.instructions.size());
+        assertTrue(factory.instructions.contains(query));
+    }
+
+    @Test
     void helpersUsingLootDataIdAreEmptiedWithDatagenOnlyMethods() {
         ClassNode mod = cls("m/PalladiumLootDataHelper", "java/lang/Object");
         MethodNode helper = method(mod, ACC_PUBLIC | ACC_STATIC, "validateLoot",

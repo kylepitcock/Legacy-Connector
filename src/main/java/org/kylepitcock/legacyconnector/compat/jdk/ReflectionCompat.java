@@ -44,6 +44,7 @@ public final class ReflectionCompat {
             throws IllegalAccessException, java.lang.reflect.InvocationTargetException {
         // the stand-in for LaunchWrapper's runTransformers handed out by getDeclaredMethod: nothing is left to transform
         if (method.equals(RUN_TRANSFORMERS) && !(method.getDeclaringClass().isInstance(target))) return args[2];
+        args = adaptResourceLocationToResourceKey(method, args);
         try {
             return method.invoke(target, args);
         } catch (java.lang.reflect.InvocationTargetException e) {
@@ -64,6 +65,34 @@ public final class ReflectionCompat {
             }
             throw e;
         }
+    }
+
+    /** A reflected legacy call may still pass an id where the modern method now accepts its registry key. */
+    private static Object[] adaptResourceLocationToResourceKey(java.lang.reflect.Method method, Object[] args) {
+        if (args == null || args.length == 0) return args;
+        Class<?>[] parameters = method.getParameterTypes();
+        if (parameters.length != args.length) return args;
+        java.lang.reflect.Type[] genericParameters = null;
+        Object[] adapted = null;
+        for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i] != net.minecraft.resources.ResourceKey.class || !(args[i] instanceof net.minecraft.resources.ResourceLocation id)) continue;
+            if (genericParameters == null) genericParameters = method.getGenericParameterTypes();
+            java.lang.reflect.Type generic = genericParameters[i];
+            if (!(generic instanceof java.lang.reflect.ParameterizedType parameterized)
+                    || parameterized.getActualTypeArguments().length != 1
+                    || !(parameterized.getActualTypeArguments()[0] instanceof Class<?> registryType)) continue;
+            net.minecraft.resources.ResourceKey<?> key = registryKey(registryType, id);
+            if (key == null) continue;
+            if (adapted == null) adapted = args.clone();
+            adapted[i] = key;
+        }
+        return adapted == null ? args : adapted;
+    }
+
+    private static net.minecraft.resources.ResourceKey<?> registryKey(Class<?> registryType, net.minecraft.resources.ResourceLocation id) {
+        if (registryType == net.minecraft.world.level.storage.loot.LootTable.class)
+            return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, id);
+        return null;
     }
 
     private static final java.lang.reflect.Method RUN_TRANSFORMERS = runTransformers();

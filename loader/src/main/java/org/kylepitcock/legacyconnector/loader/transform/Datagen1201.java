@@ -49,6 +49,7 @@ final class Datagen1201 {
             "net/minecraft/data/tags/", "net/minecraft/data/info/", "net/minecraft/data/structures/", "net/minecraft/data/registries/",
             "net/neoforged/neoforge/client/model/generators/", "net/neoforged/neoforge/common/data/", "net/neoforged/neoforge/data/",
     };
+    private static final String DATAGEN_LOADER = "net/neoforged/neoforge/data/loading/DatagenModLoader";
     private static final Set<String> DATAGEN_CLASSES = Set.of(
             "net/minecraft/data/DataProvider", "net/minecraft/data/DataGenerator", "net/minecraft/data/CachedOutput", "net/minecraft/data/HashCache",
             "net/minecraft/data/PackOutput", "net/minecraft/data/PackOutput$Target", "net/minecraft/data/BlockFamilies", "net/minecraft/data/BlockFamily",
@@ -291,6 +292,9 @@ final class Datagen1201 {
 
     private static boolean usesDatagenOnly(MethodNode m, Set<String> jar, Set<String> datagenClasses) {
         for (AbstractInsnNode in : m.instructions) {
+            // Runtime initialization may query this mode before doing optional datagen bookkeeping.
+            if (in instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESTATIC
+                    && DATAGEN_LOADER.equals(call.owner) && "isRunningDataGen".equals(call.name) && "()Z".equals(call.desc)) continue;
             String owner = null;
             if (in instanceof MethodInsnNode mi) owner = mi.owner;
             else if (in instanceof FieldInsnNode fi) owner = fi.owner;

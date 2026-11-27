@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -74,6 +75,62 @@ class Mc1201MigrationTest implements Opcodes {
         Mc1201Migration.Counts total = new Mc1201Migration.Counts();
         for (ClassNode n : nodes) total.add(Mc1201Migration.apply(n, h));
         return total;
+    }
+
+    @Test
+    void adaptsLegacyHolderSetFactoryLambdaWithoutReplacingItsCallback() {
+        String owner = "test/Registry";
+        String target = "Lnet/neoforged/neoforge/registries/holdersets/HolderSetType;";
+        String compat = MIGRATE + "HolderSetTypeCompat";
+        String signature = "(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Z)Lcom/mojang/serialization/Codec;";
+        Type sam = Type.getMethodType(signature);
+        Handle implementation = new Handle(H_INVOKESTATIC, owner, "codec", signature, false);
+        Handle bootstrap = new Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false);
+        ClassNode node = cls(owner, "java/lang/Object");
+        MethodNode make = method(node, ACC_STATIC, "make", "()" + target);
+        InvokeDynamicInsnNode factory = new InvokeDynamicInsnNode("makeCodec", make.desc, bootstrap, sam, implementation, sam);
+        make.instructions.add(factory);
+        make.instructions.add(new InsnNode(ARETURN));
+
+        apply(node);
+        assertEquals("()L" + compat + "$Factory;", factory.desc);
+        assertEquals(implementation, factory.bsmArgs[1]);
+        assertEquals("(L" + compat + "$Factory;)" + target, find(make, compat, "adapt").desc);
+    }
+
+    @Test
+    void migratesFinalPoseEyeHeightThroughTheDimensionsOverride() {
+        String base = "net/minecraft/world/entity/ambient/AmbientCreature";
+        String dimensions = "net/minecraft/world/entity/EntityDimensions";
+        String pose = "(Lnet/minecraft/world/entity/Pose;)";
+        String size = pose + "L" + dimensions + ";";
+        ClassNode parent = cls("test/LegacyCreature", base);
+        ClassNode child = cls("test/ChildCreature", parent.name);
+        for (ClassNode node : List.of(parent, child)) {
+            MethodNode old = method(node, ACC_PUBLIC, "getEyeHeight", pose + "F");
+            old.instructions.add(new VarInsnNode(ALOAD, 0));
+            old.instructions.add(new VarInsnNode(ALOAD, 1));
+            old.instructions.add(new MethodInsnNode(INVOKESPECIAL, node.superName, old.name, old.desc, false));
+            old.instructions.add(new InsnNode(FRETURN));
+        }
+        MethodNode oldSize = method(child, ACC_PUBLIC, "getDimensions", size);
+        oldSize.instructions.add(new VarInsnNode(ALOAD, 0));
+        oldSize.instructions.add(new VarInsnNode(ALOAD, 1));
+        oldSize.instructions.add(new MethodInsnNode(INVOKESPECIAL, parent.name, oldSize.name, size, false));
+        oldSize.instructions.add(new InsnNode(ARETURN));
+
+        apply(child, parent);
+        for (ClassNode node : List.of(parent, child)) {
+            assertNull(findDeclared(node, "getEyeHeight", pose + "F"));
+            MethodNode modern = findDeclared(node, "getDefaultDimensions", size);
+            assertNotNull(modern);
+            assertNotNull(find(modern, node.name, "mcc$legacyPoseEyeHeight"));
+            assertNotNull(find(modern, dimensions, "withEyeHeight"));
+        }
+        assertEquals("getDefaultDimensions", oldSize.name);
+        assertNotNull(find(findDeclared(parent, "mcc$legacyPoseEyeHeight", pose + "F"), dimensions, "eyeHeight"));
+        assertNotNull(find(findDeclared(child, "mcc$legacyPoseEyeHeight", pose + "F"), parent.name, "mcc$legacyPoseEyeHeight"));
     }
 
     @Test
@@ -1064,6 +1121,33 @@ class Mc1201MigrationTest implements Opcodes {
         MethodInsnNode call = find(m, block, "playerWillDestroy");
         assertEquals("(L" + level + ";L" + pos + ";L" + state + ";L" + player + ";)L" + state + ";", call.desc);
         assertEquals(POP, call.getNext().getOpcode());
+    }
+
+    @Test
+    void widgetWithBothRenderOverridesKeepsThePreludeAndItsOwnDrawingWithoutRecursion() {
+        String button = "net/minecraft/client/gui/components/Button";
+        String desc = "(Lnet/minecraft/client/gui/GuiGraphics;IIF)V";
+        ClassNode node = cls("test/InventoryTab", button);
+        MethodNode render = method(node, ACC_PUBLIC, "render", desc);
+        render.instructions.add(new VarInsnNode(ALOAD, 0));
+        render.instructions.add(new VarInsnNode(ALOAD, 1));
+        render.instructions.add(new VarInsnNode(ILOAD, 2));
+        render.instructions.add(new VarInsnNode(ILOAD, 3));
+        render.instructions.add(new VarInsnNode(FLOAD, 4));
+        render.instructions.add(new MethodInsnNode(INVOKESPECIAL, button, "render", desc, false));
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = render.maxLocals = 5;
+        MethodNode draw = method(node, ACC_PUBLIC, "renderWidget", desc);
+        draw.instructions.add(new InsnNode(RETURN));
+        draw.maxLocals = 5;
+
+        apply(node);
+
+        assertNull(findDeclared(node, "render", desc));
+        assertSame(render, findDeclared(node, "renderWidget", desc));
+        assertSame(draw, findDeclared(node, "mcc$legacy$renderWidget", desc));
+        assertEquals(INVOKEVIRTUAL, find(render, node.name, draw.name).getOpcode());
+        assertNull(find(render, button, "render"));
     }
 
     @Test
