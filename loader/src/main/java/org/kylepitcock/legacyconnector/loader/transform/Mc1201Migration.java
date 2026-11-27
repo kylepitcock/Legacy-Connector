@@ -588,6 +588,7 @@ public final class Mc1201Migration {
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
+                if (holderSetFactoryLambda(m, d)) c.calls++;
                 registryBufferLambda(d);
                 if (adaptLambda(d, t, c)) c.calls++;
                 redirectHandles(d, h, t, c);
@@ -728,6 +729,19 @@ public final class Mc1201Migration {
      * {@code (id, inv, buf) -> ...} for {@code IContainerFactory}: the lambda method keeps taking the {@code FriendlyByteBuf} (a supertype), but the
      * metafactory's own method types must name the {@code RegistryFriendlyByteBuf} of the interface.
      */
+    private static boolean holderSetFactoryLambda(MethodNode method, org.objectweb.asm.tree.InvokeDynamicInsnNode indy) {
+        String target = "Lnet/neoforged/neoforge/registries/holdersets/HolderSetType;";
+        String compat = Mc1201Tables.HELPER_PACKAGE + "HolderSetTypeCompat";
+        String factory = "L" + compat + "$Factory;";
+        Type legacySam = Type.getMethodType("(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Z)Lcom/mojang/serialization/Codec;");
+        if (!indy.desc.endsWith(")" + target) || !indy.name.equals("makeCodec")
+                || !indy.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory")
+                || indy.bsmArgs.length < 3 || !legacySam.equals(indy.bsmArgs[0])) return false;
+        indy.desc = indy.desc.substring(0, indy.desc.length() - target.length()) + factory;
+        method.instructions.insert(indy, new MethodInsnNode(Opcodes.INVOKESTATIC, compat, "adapt", "(" + factory + ")" + target, false));
+        return true;
+    }
+
     private static void registryBufferLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
         if (!d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3) return;
         if (!REGISTRY_BUFFER_INTERFACES.contains(Type.getReturnType(d.desc).getInternalName())) return;

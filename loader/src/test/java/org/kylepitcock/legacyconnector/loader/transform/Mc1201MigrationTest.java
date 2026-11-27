@@ -77,6 +77,28 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void adaptsLegacyHolderSetFactoryLambdaWithoutReplacingItsCallback() {
+        String owner = "test/Registry";
+        String target = "Lnet/neoforged/neoforge/registries/holdersets/HolderSetType;";
+        String compat = MIGRATE + "HolderSetTypeCompat";
+        String signature = "(Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Z)Lcom/mojang/serialization/Codec;";
+        Type sam = Type.getMethodType(signature);
+        Handle implementation = new Handle(H_INVOKESTATIC, owner, "codec", signature, false);
+        Handle bootstrap = new Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false);
+        ClassNode node = cls(owner, "java/lang/Object");
+        MethodNode make = method(node, ACC_STATIC, "make", "()" + target);
+        InvokeDynamicInsnNode factory = new InvokeDynamicInsnNode("makeCodec", make.desc, bootstrap, sam, implementation, sam);
+        make.instructions.add(factory);
+        make.instructions.add(new InsnNode(ARETURN));
+
+        apply(node);
+        assertEquals("()L" + compat + "$Factory;", factory.desc);
+        assertEquals(implementation, factory.bsmArgs[1]);
+        assertEquals("(L" + compat + "$Factory;)" + target, find(make, compat, "adapt").desc);
+    }
+
+    @Test
     void migratesFinalPoseEyeHeightThroughTheDimensionsOverride() {
         String base = "net/minecraft/world/entity/ambient/AmbientCreature";
         String dimensions = "net/minecraft/world/entity/EntityDimensions";
