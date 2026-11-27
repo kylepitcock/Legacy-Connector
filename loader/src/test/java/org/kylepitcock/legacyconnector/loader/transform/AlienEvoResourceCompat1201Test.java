@@ -313,14 +313,13 @@ class AlienEvoResourceCompat1201Test {
         assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(duplicateUniform));
 
         Map<String, byte[]> unexpectedLight = unshadedShaderResources();
-        byte[] originalLightJson = unexpectedLight.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON).clone();
         String invalidLight = UNSHADED_JSON.replace(
                 "{\"name\":\"Light0_Direction\",\"type\":\"float\",\"count\":3,",
                 "{\"name\":\"Light0_Direction\",\"type\":\"matrix3x3\",\"count\":9,");
-        unexpectedLight.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
-                invalidLight.getBytes(StandardCharsets.UTF_8));
+        byte[] invalidLightJson = invalidLight.getBytes(StandardCharsets.UTF_8);
+        unexpectedLight.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON, invalidLightJson);
         assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(unexpectedLight));
-        assertTrue(java.util.Arrays.equals(originalLightJson,
+        assertTrue(java.util.Arrays.equals(invalidLightJson,
                 unexpectedLight.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON)));
     }
 
