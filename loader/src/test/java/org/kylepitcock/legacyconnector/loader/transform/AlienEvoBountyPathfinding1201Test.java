@@ -140,8 +140,10 @@ class AlienEvoBountyPathfinding1201Test implements Opcodes {
 
         assertEquals(1, AlienEvoBountyPathfinding1201.apply(planner));
 
-        MethodNode plan = planner.methods.get(1);
-        MethodNode scramble = planner.methods.get(2);
+        MethodNode plan = planner.methods.stream().filter(method -> "plan".equals(method.name))
+                .findFirst().orElseThrow();
+        MethodNode scramble = planner.methods.stream().filter(method -> "scramble".equals(method.name))
+                .findFirst().orElseThrow();
         MethodInsnNode planFloor = onlyCall(plan, AlienEvoBountyPathfinding1201.TERRAIN, "floor",
                 AlienEvoBountyPathfinding1201.FLOOR_WITH_MOB_DESC);
         MethodInsnNode scrambleFloor = onlyCall(scramble, AlienEvoBountyPathfinding1201.TERRAIN, "floor",
@@ -162,7 +164,9 @@ class AlienEvoBountyPathfinding1201Test implements Opcodes {
     @Test
     void failsClosedIfEitherPlannerCallSiteDisappears() {
         ClassNode planner = plannerFixture();
-        planner.methods.get(2).instructions.remove(planner.methods.get(2).instructions.getFirst());
+        MethodNode scramble = planner.methods.stream().filter(method -> "scramble".equals(method.name))
+                .findFirst().orElseThrow();
+        scramble.instructions.remove(scramble.instructions.getFirst());
 
         assertThrows(IllegalStateException.class, () -> AlienEvoBountyPathfinding1201.apply(planner));
     }
