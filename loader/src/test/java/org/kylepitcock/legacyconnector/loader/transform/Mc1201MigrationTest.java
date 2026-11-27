@@ -149,6 +149,36 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void entityDataDefineIdStaysOnMinecraftMethodForMixinCallerIdentity() {
+        String data = "net/minecraft/network/syncher/SynchedEntityData";
+        String serializer = "net/minecraft/network/syncher/EntityDataSerializer";
+        String accessor = "net/minecraft/network/syncher/EntityDataAccessor";
+        String desc = "(Ljava/lang/Class;L" + serializer + ";)L" + accessor + ";";
+
+        // The Mixin is merged into the target entity class before this call executes.
+        // Keep the invocation direct so 1.21.1 sees the transformed target as caller;
+        // SynchedEntityDataDefineIdMixin records the returned accessor independently.
+        ClassNode c = cls("net/habb/alienevo/mixin/EntityDataMixin", "java/lang/Object");
+        MethodNode define = method(c, ACC_PUBLIC | ACC_STATIC, "makeAccessor", desc);
+        define.instructions.add(new VarInsnNode(ALOAD, 0));
+        define.instructions.add(new VarInsnNode(ALOAD, 1));
+        define.instructions.add(new MethodInsnNode(INVOKESTATIC, data, "defineId", desc, false));
+        define.instructions.add(new InsnNode(ARETURN));
+        define.maxStack = 2;
+        define.maxLocals = 2;
+
+        Mc1201Migration.Counts counts = apply(c);
+        assertEquals(0, counts.calls,
+                "defineId must not route through LegacyEntityData and obscure the merged Mixin caller");
+        MethodInsnNode call = find(define, data, "defineId");
+        assertNotNull(call, "the original SynchedEntityData.defineId invocation must remain direct");
+        assertNull(find(define, MIGRATE + "LegacyEntityData", "defineId"));
+        assertEquals(INVOKESTATIC, call.getOpcode());
+        assertEquals(desc, call.desc);
+        verify(c);
+    }
+
+    @Test
     void itemStackNbtCallsGoToTheHelper() {
         ClassNode c = cls("test/Mod", "java/lang/Object");
         MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "tag", "(L" + STACK + ";)L" + CT + ";");
