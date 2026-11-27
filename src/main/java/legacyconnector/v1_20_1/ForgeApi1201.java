@@ -330,6 +330,24 @@ public final class ForgeApi1201 {
         });
     }
 
+    /** RegisterEvent also accepts legacy codecs for host registries whose entries became map codecs. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void registerEventValue(RegisterEvent event, net.minecraft.resources.ResourceKey key, ResourceLocation id, Supplier supplier) {
+        event.register(key, id, () -> {
+            Object value = supplier.get();
+            if (!(value instanceof com.mojang.serialization.Codec<?> codec)) return value;
+            if (key.equals(net.minecraft.core.registries.Registries.BIOME_SOURCE)
+                    || key.equals(net.minecraft.core.registries.Registries.CHUNK_GENERATOR)
+                    || key.equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS)
+                    || key.equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.STRUCTURE_MODIFIER_SERIALIZERS)
+                    || key.equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS)) {
+                return codec instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> wrapped
+                        ? wrapped.codec() : com.mojang.serialization.MapCodec.assumeMapUnsafe(codec);
+            }
+            return value;
+        });
+    }
+
     /** {@code IConfigSpec.self()}: the spec itself (Forge's generic self-type accessor). */
     public static net.neoforged.fml.config.IConfigSpec configSelf(net.neoforged.fml.config.IConfigSpec spec) {
         return spec;
