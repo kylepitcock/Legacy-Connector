@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Restores the old contract: a null entity is the empty context.
  */
 @Mixin(CollisionContext.class)
-public abstract class CollisionContextOfNullMixin {
+public interface CollisionContextOfNullMixin {
     @Inject(method = "of(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/phys/shapes/CollisionContext;",
             at = @At("HEAD"), cancellable = true, require = 0)
     private static void legacyconnector$nullEntityIsEmpty(Entity entity, CallbackInfoReturnable<CollisionContext> cir) {
