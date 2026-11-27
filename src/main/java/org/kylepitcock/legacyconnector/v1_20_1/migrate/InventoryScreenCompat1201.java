@@ -46,7 +46,7 @@ public final class InventoryScreenCompat1201 {
 
         AlienEvoRuntimeDiagnostics1201Runtime.traceOmnitrixPowerPreview(
                 entity, x, y, scale, guiWidth, guiHeight, mouseX, mouseY,
-                absoluteMouseX, absoluteMouseY, left, top, right, bottom);
+                absoluteMouseX, absoluteMouseY, left, top, right, bottom, guiPoseSnapshot(graphics));
 
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 graphics, left, top, right, bottom, scale, 0.0F,
@@ -56,4 +56,14 @@ public final class InventoryScreenCompat1201 {
     static float absoluteMouseCoordinate(float anchor, float legacyDelta) {
         return anchor - legacyDelta;
     }
+
+    private static String guiPoseSnapshot(GuiGraphics graphics) {
+        try {
+            var pose = graphics.pose().last();
+            return "pose=" + pose.pose() + ",normal=" + pose.normal();
+        } catch (Throwable unavailable) {
+            return "unavailable:" + unavailable.getClass().getSimpleName();
+        }
+    }
+
 }

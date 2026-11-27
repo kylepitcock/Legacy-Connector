@@ -232,6 +232,31 @@ class AlienEvoRuntimeDiagnostics1201Test implements Opcodes {
     }
 
     @Test
+    void tracesConcreteBadgePagePreparationAndBehindRendering() throws AnalyzerException {
+        ClassNode node = new ClassNode();
+        node.name = "net/habb/alienevo/client/screen/badge/DataPage";
+        String pageDesc = "(Lnet/minecraft/client/gui/GuiGraphics;II)V";
+        MethodNode prepare = new MethodNode(ACC_PUBLIC, "prepare", pageDesc, null, null);
+        prepare.instructions.add(new InsnNode(RETURN));
+        prepare.maxLocals = 4;
+        MethodNode renderBehind = new MethodNode(ACC_PUBLIC, "renderBehind", pageDesc, null, null);
+        renderBehind.instructions.add(new InsnNode(RETURN));
+        renderBehind.maxLocals = 4;
+        node.methods.add(prepare);
+        node.methods.add(renderBehind);
+
+        assertEquals(2, AlienEvoRuntimeDiagnostics1201.apply(node));
+        assertEquals(1, countCalls(prepare, "traceBadgePageRender"));
+        assertEquals(1, countCalls(renderBehind, "traceBadgePageRender"));
+        MethodInsnNode trace = findCall(prepare, "traceBadgePageRender");
+        assertEquals("(Ljava/lang/Object;Ljava/lang/Object;IILjava/lang/String;)V", trace.desc);
+        assertEquals("prepare", ((org.objectweb.asm.tree.LdcInsnNode) trace.getPrevious()).cst);
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, prepare);
+        new Analyzer<>(new BasicVerifier()).analyze(node.name, renderBehind);
+        assertEquals(0, AlienEvoRuntimeDiagnostics1201.apply(node));
+    }
+
+    @Test
     void leavesUnrelatedClassesUntouched() {
         ClassNode node = new ClassNode();
         node.name = "example/UnrelatedRenderer";

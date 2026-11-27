@@ -155,7 +155,8 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
         try {
             Object player = Minecraft.getInstance().player;
             String playerId = player == null ? "none" : String.valueOf(invokeNoArgs(player, "getUUID"));
-            String key = "badge-screen-render:" + System.identityHashCode(screen);
+            Object activeTab = readField(screen, "tab");
+            String key = "badge-screen-render:" + System.identityHashCode(screen) + ":" + activeTab;
             if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
             LOGGER.info("[AlienEvoRuntimeTrace] badgeScreenRender screenClass={} player={} "
                             + "gui={}x{} mouse=({}, {}) partialTick={} screenFields={} callSites={}",
@@ -166,6 +167,47 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
         } catch (Throwable ignored) {
             // Badge diagnostics must never interrupt GUI rendering.
         }
+    }
+
+    /** Logs each concrete Badge page as it enters its own rendering hooks. */
+    public static void traceBadgePageRender(
+            Object page, Object graphics, int mouseX, int mouseY, String phase) {
+        if (!isEnabled() || page == null) return;
+        try {
+            String key = "badge-page-render:" + System.identityHashCode(page) + ":" + phase;
+            if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
+            LOGGER.info("[AlienEvoRuntimeTrace] badgePageRender pageClass={} phase={} gui={}x{} "
+                            + "mouse=({}, {}) pageFields={}",
+                    page.getClass().getName(), phase,
+                    invokeNoArgs(graphics, "guiWidth"), invokeNoArgs(graphics, "guiHeight"),
+                    mouseX, mouseY, describeBadgePageFields(page));
+        } catch (Throwable ignored) {
+            // A page diagnostic must never alter the page's rendering behavior.
+        }
+    }
+
+    private static String describeBadgePageFields(Object page) {
+        StringBuilder fields = new StringBuilder();
+        for (Class<?> type = page.getClass();
+                type != null && type != Object.class && !type.getName().startsWith("net.minecraft.");
+                type = type.getSuperclass()) {
+            for (Field field : type.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                if (fields.length() >= 1500) {
+                    fields.append(" ...");
+                    return fields.toString();
+                }
+                if (fields.length() > 0) fields.append(", ");
+                fields.append(type.getSimpleName()).append('.').append(field.getName()).append('=');
+                try {
+                    field.setAccessible(true);
+                    fields.append(summarizeBadgeField(field.get(page)));
+                } catch (Throwable inaccessible) {
+                    fields.append("unavailable:").append(inaccessible.getClass().getSimpleName());
+                }
+            }
+        }
+        return fields.length() == 0 ? "none" : fields.toString();
     }
 
     private static String describeBadgeScreenFields(Object screen) {
@@ -200,7 +242,21 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
                 || value.getClass().isEnum()) {
             return String.valueOf(value);
         }
-        if (value instanceof Map<?, ?> map) return value.getClass().getSimpleName() + "(size=" + map.size() + ")";
+        if (value instanceof Map<?, ?> map) {
+            StringBuilder entries = new StringBuilder();
+            int count = 0;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (count == 6) {
+                    entries.append(",...");
+                    break;
+                }
+                if (count++ > 0) entries.append(',');
+                Object mapped = entry.getValue();
+                entries.append(entry.getKey()).append('=')
+                        .append(mapped == null ? "null" : mapped.getClass().getName());
+            }
+            return value.getClass().getSimpleName() + "(size=" + map.size() + ",entries=[" + entries + "])";
+        }
         if (value instanceof java.util.Collection<?> collection) {
             Object first = collection.isEmpty() ? null : collection.iterator().next();
             return collection.getClass().getSimpleName() + "(size=" + collection.size()
@@ -231,17 +287,18 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
             int left,
             int top,
             int right,
-            int bottom) {
+            int bottom,
+            String parentGuiPose) {
         if (!isEnabled() || entity == null) return;
         try {
             String uuid = String.valueOf(invokeNoArgs(entity, "getUUID"));
             if (!shouldLog("omnitrix-preview:" + uuid, DEFAULT_INTERVAL_NANOS)) return;
             LOGGER.info("[AlienEvoRuntimeTrace] omnitrixPowerPreview entity={} anchor=({}, {}) scale={} "
                             + "gui={}x{} legacyMouseDelta=({}, {}) absoluteMouse=({}, {}) "
-                            + "viewport=[{},{}..{},{}] entityState={}",
+                            + "viewport=[{},{}..{},{}] parentGuiPose={} entityState={}",
                     uuid, anchorX, anchorY, scale, guiWidth, guiHeight,
                     legacyMouseX, legacyMouseY, absoluteMouseX, absoluteMouseY,
-                    left, top, right, bottom, describePortraitEntity(entity));
+                    left, top, right, bottom, parentGuiPose, describePortraitEntity(entity));
         } catch (Throwable ignored) {
             // Preview diagnostics must never interrupt a GUI render.
         }
@@ -254,6 +311,10 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
                 + ",width=" + invokeNoArgs(entity, "getBbWidth")
                 + ",height=" + invokeNoArgs(entity, "getBbHeight")
                 + ",eyeHeight=" + invokeNoArgs(entity, "getEyeHeight")
+                + ",yaw=" + invokeNoArgs(entity, "getYRot")
+                + ",pitch=" + invokeNoArgs(entity, "getXRot")
+                + ",headYaw=" + invokeNoArgs(entity, "getYHeadRot")
+                + ",bodyYaw=" + readField(entity, "yBodyRot")
                 + ",position=(" + invokeNoArgs(entity, "getX") + ","
                 + invokeNoArgs(entity, "getY") + "," + invokeNoArgs(entity, "getZ") + ")";
     }

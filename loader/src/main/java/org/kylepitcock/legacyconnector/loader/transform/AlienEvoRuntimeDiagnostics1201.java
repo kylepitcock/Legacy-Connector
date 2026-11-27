@@ -32,6 +32,10 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             "net/habb/alienevo/client/model/animation/aliens/arburian_pelarota/ChestSpinAnimation";
     private static final String MOB_PORTRAIT =
             "net/habb/alienevo/client/screen/MobPortrait";
+    private static final String BADGE_PAGE_PREFIX =
+            "net/habb/alienevo/client/screen/badge/";
+    private static final String BADGE_PAGE_METHOD_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;II)V";
     private static final String MOB_PORTRAIT_DRAW_DESC =
             "(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/LivingEntity;"
                     + "FFFFLjava/lang/Object;Z)V";
@@ -62,7 +66,7 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
             case BONE_ANCHORS -> traceBoneWorld(node);
             case CHEST_SPIN_ANIMATION -> traceCannonboltSpinGate(node);
             case MOB_PORTRAIT -> traceBadgePortraitDraw(node);
-            default -> 0;
+            default -> node.name.startsWith(BADGE_PAGE_PREFIX) ? traceBadgePageMethods(node) : 0;
         };
     }
 
@@ -110,6 +114,55 @@ final class AlienEvoRuntimeDiagnostics1201 implements Opcodes {
         // The fit invocation already has seven argument slots on the operand
         // stack when the eight-slot diagnostic call is inserted ahead of it.
         draw.maxStack = Math.max(draw.maxStack, 16);
+        return 1;
+    }
+
+    /**
+     * Traces the actual per-tab BadgePage rendering hooks. MobPortrait.draw was
+     * not reached in the latest session, so observe concrete Badge pages and
+     * their fields before changing the player's portrait crop or framing.
+     */
+    private static int traceBadgePageMethods(ClassNode node) {
+        return traceBadgePageMethod(node, "prepare")
+                + traceBadgePageMethod(node, "renderBehind");
+    }
+
+    private static int traceBadgePageMethod(ClassNode node, String methodName) {
+        MethodNode method = find(node, methodName, BADGE_PAGE_METHOD_DESC);
+        if (method == null || method.instructions == null || method.instructions.size() == 0) return 0;
+        if ((method.access & ACC_STATIC) != 0) {
+            throw new IllegalStateException("AlienEvo BadgePage." + methodName + " unexpectedly became static");
+        }
+
+        int existing = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !HELPER.equals(call.owner)
+                    || !"traceBadgePageRender".equals(call.name)) continue;
+            existing++;
+            if (call.getOpcode() != INVOKESTATIC
+                    || !"(Ljava/lang/Object;Ljava/lang/Object;IILjava/lang/String;)V".equals(call.desc)) {
+                throw new IllegalStateException(
+                        "AlienEvo BadgePage." + methodName + " has an incompatible page diagnostic call");
+            }
+        }
+        if (existing == 1) return 0;
+        if (existing != 0) {
+            throw new IllegalStateException("AlienEvo BadgePage." + methodName + " has duplicate page diagnostics");
+        }
+
+        AbstractInsnNode first = method.instructions.getFirst();
+        if (first == null) return 0;
+        InsnList trace = new InsnList();
+        trace.add(new VarInsnNode(ALOAD, 0));
+        trace.add(new VarInsnNode(ALOAD, 1));
+        trace.add(new VarInsnNode(ILOAD, 2));
+        trace.add(new VarInsnNode(ILOAD, 3));
+        trace.add(new org.objectweb.asm.tree.LdcInsnNode(methodName));
+        trace.add(new MethodInsnNode(INVOKESTATIC, HELPER, "traceBadgePageRender",
+                "(Ljava/lang/Object;Ljava/lang/Object;IILjava/lang/String;)V", false));
+        method.instructions.insertBefore(first, trace);
+        method.maxStack = Math.max(method.maxStack, 5);
         return 1;
     }
 
