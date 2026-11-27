@@ -99,6 +99,7 @@ public final class Mc1201Migration {
         Counts c = new Counts();
         renameWidgetNarrationOverride(node, h, c);
         renameOverrides(node, h, t, c);
+        migratePoseEyeHeight(node, h, c);
         swapMobBucketSuper(node);
         swapPathPackSuper(node);
         swapItemPredicateSuper(node, c);
@@ -420,10 +421,67 @@ public final class Mc1201Migration {
         }
     }
 
-    /**
-     * A mod method that overrides a method which is final in 1.21.1 ({@code LivingEntity.getDimensions(Pose)}, the point to override moved to
-     * {@code getDefaultDimensions}) is renamed to the new override point, with its {@code super} and own-class calls; with no replacement it is disabled.
-     */
+    private static final String ENTITY = "net/minecraft/world/entity/Entity";
+    private static final String LIVING_ENTITY = "net/minecraft/world/entity/LivingEntity";
+    private static final String POSE_ARG = "(Lnet/minecraft/world/entity/Pose;)";
+    private static final String ENTITY_DIMENSIONS = "net/minecraft/world/entity/EntityDimensions";
+    private static final String LEGACY_POSE_EYE_HEIGHT = "mcc$legacyPoseEyeHeight";
+
+    /** The pose getter is final on the host and reads eye height from the dimensions override. */
+    private static void migratePoseEyeHeight(ClassNode node, Mc1201Hierarchy h, Counts c) {
+        if (!h.isSubclassOf(node.name, ENTITY)) return;
+        String eyeDesc = POSE_ARG + "F";
+        String dimensionsDesc = POSE_ARG + "L" + ENTITY_DIMENSIONS + ";";
+        String dimensionsName = h.isSubclassOf(node.name, LIVING_ENTITY) ? "getDefaultDimensions" : "getDimensions";
+        MethodNode eyeHeight = declared(node, "getEyeHeight", eyeDesc);
+        if (eyeHeight != null && (eyeHeight.access & Opcodes.ACC_STATIC) == 0) {
+            eyeHeight.name = LEGACY_POSE_EYE_HEIGHT;
+        } else {
+            eyeHeight = null;
+        }
+        // A legacy super call must bypass this class's dimensions override to avoid recursion.
+        for (MethodNode method : node.methods) {
+            for (AbstractInsnNode insn : method.instructions.toArray()) {
+                if (!(insn instanceof MethodInsnNode call) || call.getOpcode() != Opcodes.INVOKESPECIAL
+                        || !call.name.equals("getEyeHeight") || !call.desc.equals(eyeDesc)
+                        || !h.isSubclassOf(call.owner, ENTITY)) continue;
+                if (h.declaredIn(call.owner, LEGACY_POSE_EYE_HEIGHT, eyeDesc) == Origin.MOD
+                        || h.declaredIn(call.owner, call.name, eyeDesc) == Origin.MOD) {
+                    call.name = LEGACY_POSE_EYE_HEIGHT;
+                } else {
+                    call.name = dimensionsName;
+                    call.desc = dimensionsDesc;
+                    method.instructions.insert(call, new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                            ENTITY_DIMENSIONS, "eyeHeight", "()F", false));
+                }
+            }
+        }
+        if (eyeHeight == null || (eyeHeight.access & Opcodes.ACC_ABSTRACT) != 0) return;
+        MethodNode dimensions = declared(node, dimensionsName, dimensionsDesc);
+        if (dimensions == null) {
+            dimensions = new MethodNode(Opcodes.ACC_SYNTHETIC | (dimensionsName.equals("getDimensions")
+                    ? Opcodes.ACC_PUBLIC : Opcodes.ACC_PROTECTED), dimensionsName, dimensionsDesc, null, null);
+            dimensions.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            dimensions.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+            dimensions.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, node.superName, dimensionsName, dimensionsDesc, false));
+            dimensions.instructions.add(new InsnNode(Opcodes.ARETURN));
+            dimensions.maxLocals = 2;
+            node.methods.add(dimensions);
+        }
+        for (AbstractInsnNode insn : dimensions.instructions.toArray()) {
+            if (insn.getOpcode() != Opcodes.ARETURN) continue;
+            InsnList adapt = new InsnList();
+            adapt.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            adapt.add(new VarInsnNode(Opcodes.ALOAD, 1));
+            adapt.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, node.name, LEGACY_POSE_EYE_HEIGHT, eyeDesc, false));
+            adapt.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ENTITY_DIMENSIONS, "withEyeHeight", "(F)L" + ENTITY_DIMENSIONS + ";", false));
+            dimensions.instructions.insertBefore(insn, adapt);
+        }
+        dimensions.maxStack = Math.max(3, dimensions.maxStack + 2);
+        c.bridges++;
+    }
+
+    /** Renames a legacy override of a now-final method, including its super and own-class calls, or disables it if no replacement exists. */
     private static void renameOverrides(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         for (String[] row : t.overrides) {
             MethodNode decl = declared(node, row[1], row[2]);

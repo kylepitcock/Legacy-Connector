@@ -77,6 +77,40 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void migratesFinalPoseEyeHeightThroughTheDimensionsOverride() {
+        String base = "net/minecraft/world/entity/ambient/AmbientCreature";
+        String dimensions = "net/minecraft/world/entity/EntityDimensions";
+        String pose = "(Lnet/minecraft/world/entity/Pose;)";
+        String size = pose + "L" + dimensions + ";";
+        ClassNode parent = cls("test/LegacyCreature", base);
+        ClassNode child = cls("test/ChildCreature", parent.name);
+        for (ClassNode node : List.of(parent, child)) {
+            MethodNode old = method(node, ACC_PUBLIC, "getEyeHeight", pose + "F");
+            old.instructions.add(new VarInsnNode(ALOAD, 0));
+            old.instructions.add(new VarInsnNode(ALOAD, 1));
+            old.instructions.add(new MethodInsnNode(INVOKESPECIAL, node.superName, old.name, old.desc, false));
+            old.instructions.add(new InsnNode(FRETURN));
+        }
+        MethodNode oldSize = method(child, ACC_PUBLIC, "getDimensions", size);
+        oldSize.instructions.add(new VarInsnNode(ALOAD, 0));
+        oldSize.instructions.add(new VarInsnNode(ALOAD, 1));
+        oldSize.instructions.add(new MethodInsnNode(INVOKESPECIAL, parent.name, oldSize.name, size, false));
+        oldSize.instructions.add(new InsnNode(ARETURN));
+
+        apply(child, parent);
+        for (ClassNode node : List.of(parent, child)) {
+            assertNull(findDeclared(node, "getEyeHeight", pose + "F"));
+            MethodNode modern = findDeclared(node, "getDefaultDimensions", size);
+            assertNotNull(modern);
+            assertNotNull(find(modern, node.name, "mcc$legacyPoseEyeHeight"));
+            assertNotNull(find(modern, dimensions, "withEyeHeight"));
+        }
+        assertEquals("getDefaultDimensions", oldSize.name);
+        assertNotNull(find(findDeclared(parent, "mcc$legacyPoseEyeHeight", pose + "F"), dimensions, "eyeHeight"));
+        assertNotNull(find(findDeclared(child, "mcc$legacyPoseEyeHeight", pose + "F"), parent.name, "mcc$legacyPoseEyeHeight"));
+    }
+
+    @Test
     void restoresEntityDataReadsInLegacyHelpersWithoutRewritingHiddenFields() {
         String entity = "net/minecraft/world/entity/Entity";
         String data = "Lnet/minecraft/network/syncher/SynchedEntityData;";
