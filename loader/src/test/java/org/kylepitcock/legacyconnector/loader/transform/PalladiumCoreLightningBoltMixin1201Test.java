@@ -76,6 +76,16 @@ class PalladiumCoreLightningBoltMixin1201Test implements Opcodes {
     }
 
     @Test
+    void adaptsTheSameMixinWhenItsPackageWasRelocated() {
+        ClassNode node = fixture("legacyconnector_relocated/sbs_1_20_1/" + PalladiumCoreLightningBoltMixin1201.MIXIN);
+
+        assertEquals(1, PalladiumCoreLightningBoltMixin1201.apply(node));
+        assertEquals(1, value(targetInject(node), "maxShiftBy"));
+        assertEquals(null, value(targetAt(node), "maxShiftBy"));
+        assertEquals(0, PalladiumCoreLightningBoltMixin1201.apply(node));
+    }
+
+    @Test
     void leavesOtherClassesUntouched() {
         ClassNode node = fixture("example/UnrelatedMixin");
 
