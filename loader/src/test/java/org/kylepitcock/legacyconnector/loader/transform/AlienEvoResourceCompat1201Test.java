@@ -325,6 +325,44 @@ class AlienEvoResourceCompat1201Test {
 
 
     @Test
+    void rewritesDeprecatedUnderWaterConditionOnlyInsidePalladiumPowerJson() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        String powerPath = "data/alienevo_aliens/palladium/powers/aerophibian.json";
+        resources.put(powerPath, """
+                {
+                  "description": "palladium:under_water",
+                  "abilities": {
+                    "swim": {
+                      "type": "palladium:command",
+                      "conditions": {
+                        "enabling": [
+                          {"type": "palladium:under_water"},
+                          {"type": "palladium:crouching"}
+                        ]
+                      }
+                    }
+                  }
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+        String unrelatedPath = "data/alienevo/tags/test_condition.json";
+        byte[] unrelatedBytes = "{\"type\":\"palladium:under_water\"}".getBytes(StandardCharsets.UTF_8);
+        resources.put(unrelatedPath, unrelatedBytes);
+
+        assertEquals(1, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+
+        JsonObject power = parse(resources, powerPath);
+        JsonObject swim = power.getAsJsonObject("abilities").getAsJsonObject("swim");
+        JsonArray enabling = swim.getAsJsonObject("conditions").getAsJsonArray("enabling");
+        assertEquals("palladium:is_under_water",
+                enabling.get(0).getAsJsonObject().get("type").getAsString());
+        assertEquals("palladium:crouching",
+                enabling.get(1).getAsJsonObject().get("type").getAsString());
+        assertEquals("palladium:under_water", power.get("description").getAsString());
+        assertTrue(java.util.Arrays.equals(unrelatedBytes, resources.get(unrelatedPath)));
+        assertEquals(0, AlienEvoResourceCompat1201.repairDev24ResourceErrors(resources));
+    }
+
+    @Test
     void repairsTheObservedDev24ResourceParseErrorsAndIsIdempotent() {
         Map<String, byte[]> resources = new LinkedHashMap<>();
         resources.put("data/alienevo/loot_tables/archaeology/codes_rare.json", """

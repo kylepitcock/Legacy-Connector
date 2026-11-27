@@ -305,9 +305,53 @@ final class AlienEvoResourceCompat1201 {
         changed += repairLegacyIceFunctions(resources);
         changed += repairPyroniteNovaFunction(resources);
         changed += repairMissingVisualResourceAssets(resources);
+        changed += rewriteDeprecatedPalladiumUnderWaterConditions(resources);
         // Vanilla 1.21.1 discovers resources below the nonstandard addon/ root
         // only when the root marker is present in the translated resource pack.
         changed += ensureAddonResourceRootMarker(resources) ? 1 : 0;
+        return changed;
+    }
+
+    /**
+     * Palladium 4.5.10 retains the old palladium:under_water condition as a
+     * deprecated alias. AlienEvo's power JSON should use the equivalent
+     * palladium:is_under_water ID. Restrict the rewrite to condition objects
+     * in Palladium power JSON; descriptions, commands, other resources, and
+     * unrelated type fields are not text-replaced.
+     */
+    static int rewriteDeprecatedPalladiumUnderWaterConditions(Map<String, byte[]> resources) {
+        int changed = 0;
+        for (String path : new java.util.ArrayList<>(resources.keySet())) {
+            if (!path.startsWith("data/") || !path.contains("/palladium/powers/") || !path.endsWith(".json")) {
+                continue;
+            }
+            JsonObject root = parseObject(resources.get(path));
+            if (root == null || !rewriteDeprecatedPalladiumUnderWaterCondition(root)) continue;
+            resources.put(path, root.toString().getBytes(StandardCharsets.UTF_8));
+            changed++;
+        }
+        return changed;
+    }
+
+    private static boolean rewriteDeprecatedPalladiumUnderWaterCondition(JsonElement element) {
+        if (element == null) return false;
+        boolean changed = false;
+        if (element.isJsonObject()) {
+            JsonObject object = element.getAsJsonObject();
+            JsonElement type = object.get("type");
+            if (type != null && type.isJsonPrimitive() && type.getAsJsonPrimitive().isString()
+                    && "palladium:under_water".equals(type.getAsString())) {
+                object.addProperty("type", "palladium:is_under_water");
+                changed = true;
+            }
+            for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                changed |= rewriteDeprecatedPalladiumUnderWaterCondition(entry.getValue());
+            }
+        } else if (element.isJsonArray()) {
+            for (JsonElement child : element.getAsJsonArray()) {
+                changed |= rewriteDeprecatedPalladiumUnderWaterCondition(child);
+            }
+        }
         return changed;
     }
 
