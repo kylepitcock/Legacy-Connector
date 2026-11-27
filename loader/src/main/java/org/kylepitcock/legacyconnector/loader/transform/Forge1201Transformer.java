@@ -412,6 +412,8 @@ public final class Forge1201Transformer {
             // Replace the removed SkinTextureCallback API before the generic soft-link pass.
             int palladiumPlayerSkinFetcherChange = PalladiumPlayerSkinFetcher1201.apply(node);
             palladiumPlayerSkinFetcherChanges += palladiumPlayerSkinFetcherChange;
+            // Migrate the nested PalladiumCore mixin annotation before generic mixin member-name rewriting.
+            // Its @At target is validated against the original dev.24/PalladiumCore bytecode contract.
             // Adapt before Mc1201Migration redirects AddLayers.getSkin(String) to ClientCompat.getSkin.
             // The PalladiumCore adapter must see and retarget the original lookup before that generic pass.
             int palladiumPlayerSkinChange = PalladiumCorePlayerSkin1201.apply(node);
@@ -531,8 +533,8 @@ public final class Forge1201Transformer {
                     + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumFlightStateTraceChange
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
-                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoBountyPathfindingChange
-                    + alienEvoForgeEventChange
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange
+                    + alienEvoBountyPathfindingChange + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
                     + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange
                     + alienEvoDynamicColorParticleRenderTypeChange + alienEvoBoneAnchorsChange
