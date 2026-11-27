@@ -9,7 +9,40 @@ import net.minecraft.world.entity.LivingEntity;
  * Minecraft 1.21.1's rectangle-based InventoryScreen preview API.
  */
 public final class InventoryScreenCompat1201 {
+    private static final ThreadLocal<Viewport> ACTIVE_VIEWPORT = new ThreadLocal<>();
+
     private InventoryScreenCompat1201() {
+    }
+
+    /** Supplies the active screen's actual preview-panel clip rectangle. */
+    public static void setViewportFromBounds(int left, int top, int right, int bottom) {
+        if (right <= left || bottom <= top) {
+            throw new IllegalArgumentException("AlienEvo preview viewport must have positive width and height");
+        }
+        ACTIVE_VIEWPORT.set(new Viewport(left, top, right, bottom));
+    }
+
+    /**
+     * Supplies the exact StatsPage portrait band bounds in screen coordinates.
+     * This mirrors the original dev.24 canvas/scissor math.
+     */
+    public static void setBadgeViewport(float originX, float originY, float scale, int bottom) {
+        int[] bounds = badgeViewportBounds(originX, originY, scale, bottom);
+        setViewportFromBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+    }
+
+    /** Clears the per-render viewport on both normal and exceptional exits. */
+    public static void clearViewport() {
+        ACTIVE_VIEWPORT.remove();
+    }
+
+    static int[] badgeViewportBounds(float originX, float originY, float scale, int bottom) {
+        return new int[] {
+                Math.round(originX + 130.0F * scale),
+                Math.round(originY + 80.0F * scale),
+                Math.round(originX + 320.0F * scale),
+                Math.round(originY + bottom * scale)
+        };
     }
 
     /**
@@ -21,9 +54,9 @@ public final class InventoryScreenCompat1201 {
      * the original cursor position before delegating; forwarding the deltas
      * unchanged makes the preview rotate around the wrong point.
      *
-     * <p>The 1.21.1 overload requires a clipping rectangle. Use a screen-sized
-     * rectangle centred on the legacy anchor so that it does not introduce a
-     * smaller crop than the old centre-anchored renderer.
+     * <p>The new API requires a clip rectangle. For Omnitrix and Badge screens,
+     * use their actual panel bounds. Retain the large fallback only for an
+     * uninstrumented legacy call site.
      */
     public static void renderEntityInInventoryFollowsMouse(
             GuiGraphics graphics,
@@ -35,12 +68,11 @@ public final class InventoryScreenCompat1201 {
             LivingEntity entity) {
         int guiWidth = graphics.guiWidth();
         int guiHeight = graphics.guiHeight();
-        int halfWidth = Math.max(1, guiWidth);
-        int halfHeight = Math.max(1, guiHeight);
-        int left = x - halfWidth;
-        int top = y - halfHeight;
-        int right = x + halfWidth;
-        int bottom = y + halfHeight;
+        Viewport viewport = ACTIVE_VIEWPORT.get();
+        int left = viewport == null ? x - Math.max(1, guiWidth) : viewport.left();
+        int top = viewport == null ? y - Math.max(1, guiHeight) : viewport.top();
+        int right = viewport == null ? x + Math.max(1, guiWidth) : viewport.right();
+        int bottom = viewport == null ? y + Math.max(1, guiHeight) : viewport.bottom();
         float absoluteMouseX = absoluteMouseCoordinate(x, mouseX);
         float absoluteMouseY = absoluteMouseCoordinate(y, mouseY);
 
@@ -66,4 +98,6 @@ public final class InventoryScreenCompat1201 {
         }
     }
 
+    private record Viewport(int left, int top, int right, int bottom) {
+    }
 }

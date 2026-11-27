@@ -45,6 +45,7 @@ jobs:
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoRuntimeDiagnostics1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoMolang1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoOmnitrixDisplayResources1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGuiRender1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoRenderLayerModel1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGeckoMixins1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoSlimeDecalMesh1201Test' \
@@ -60,6 +61,7 @@ jobs:
             --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoBufferRefresh1201Test' \
             --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoGruntMeleeGoal1201RuntimeTest' \
             --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.AlienEvoCameraRotation1201RuntimeTest' \
+            --tests 'org.kylepitcock.legacyconnector.v1_20_1.migrate.InventoryScreenCompat1201Test' \
             --no-daemon --stacktrace
 
       - name: Run shared AlienEvo size and dimensions regression tests

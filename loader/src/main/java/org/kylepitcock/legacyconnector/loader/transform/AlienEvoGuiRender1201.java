@@ -19,6 +19,8 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             "net/habb/alienevo/client/screen/power/AlienPreviewWidget";
     static final String BADGE_SCREEN =
             "net/habb/alienevo/client/screen/badge/PlumberBadgeScreen";
+    static final String STATS_PAGE =
+            "net/habb/alienevo/client/screen/badge/StatsPage";
     static final String POWER_SCREEN =
             "net/habb/alienevo/client/screen/OmnitrixPowerScreen";
     static final String SCALED_SCREEN =
@@ -52,6 +54,15 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             "(L" + GUI_GRAPHICS + ";IIF)V";
     static final String BADGE_RENDER_DESC =
             "(L" + GUI_GRAPHICS + ";IIF)V";
+    static final String BADGE_RENDER_BEHIND_DESC =
+            "(L" + GUI_GRAPHICS + ";II)V";
+    static final String BADGE_RENDER_MUGSHOT_DESC =
+            "(L" + GUI_GRAPHICS + ";IIFFFF)V";
+    static final String BADGE_DRAW_BAND_DESC =
+            "(L" + GUI_GRAPHICS + ";IIFFFIZ)V";
+    static final String SET_VIEWPORT_BOUNDS_DESC = "(IIII)V";
+    static final String SET_BADGE_VIEWPORT_DESC = "(FFFI)V";
+    static final String CLEAR_VIEWPORT_DESC = "()V";
 
     private AlienEvoGuiRender1201() {
     }
@@ -61,7 +72,10 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             return adaptInventoryPreview(node);
         }
         if (POWER_SCREEN.equals(node.name)) {
-            return adaptPreviewDragTabGate(node);
+            return adaptPreviewDragTabGate(node) + adaptOmnitrixPreviewViewport(node);
+        }
+        if (STATS_PAGE.equals(node.name)) {
+            return adaptBadgePreviewViewport(node);
         }
         if (BADGE_SCREEN.equals(node.name)) {
             return removeLegacyBadgeBackground(node);
@@ -307,6 +321,187 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         return 1;
     }
 
+
+    /**
+     * Reuse the actual preview-panel scissor from OmnitrixPowerScreen.render.
+     * The 1.20.1 widget anchor remains the legacy model anchor; the 1.21.1
+     * rectangle is the panel clip, not a fabricated screen-sized viewport.
+     */
+    private static int adaptOmnitrixPreviewViewport(ClassNode node) {
+        MethodNode render = findUniqueMethod(node, "render", BADGE_RENDER_DESC);
+        if (render == null) {
+            throw new IllegalStateException("AlienEvo OmnitrixPowerScreen.render method shape changed");
+        }
+
+        int setCount = countCalls(render, INVENTORY_COMPAT,
+                "setViewportFromBounds", SET_VIEWPORT_BOUNDS_DESC);
+        int clearCount = countCalls(render, INVENTORY_COMPAT, "clearViewport", CLEAR_VIEWPORT_DESC);
+        int throwCount = countOpcode(render, ATHROW);
+        int enableCount = countCalls(render, GUI_GRAPHICS, "enableScissor", "(IIII)V");
+        int disableCount = countCalls(render, GUI_GRAPHICS, "disableScissor", "()V");
+
+        if (setCount == 1 && clearCount == disableCount + throwCount
+                && enableCount == 1 && disableCount == 1) {
+            return 0;
+        }
+        if (setCount != 0 || clearCount != 0) {
+            throw new IllegalStateException("AlienEvo Omnitrix preview viewport adapter is only partially applied");
+        }
+        if (enableCount != 1 || disableCount != 1) {
+            throw new IllegalStateException(
+                    "AlienEvo Omnitrix preview expected one panel enableScissor/disableScissor pair; found "
+                            + enableCount + " enable and " + disableCount + " disable calls");
+        }
+
+        MethodInsnNode enable = findUniqueCall(render, GUI_GRAPHICS, "enableScissor", "(IIII)V");
+        MethodInsnNode disable = findUniqueCall(render, GUI_GRAPHICS, "disableScissor", "()V");
+        AbstractInsnNode cursor = previousMeaningful(enable);
+        int[] slots = {17, 16, 15, 14};
+        for (int slot : slots) {
+            if (!isLocal(cursor, ILOAD, slot)) {
+                throw new IllegalStateException(
+                        "AlienEvo Omnitrix preview scissor no longer uses clipX0/clipY0/clipX1/clipY1 locals 14-17");
+            }
+            cursor = previousMeaningful(cursor);
+        }
+        if (!isLocal(cursor, ALOAD, 1)) {
+            throw new IllegalStateException(
+                    "AlienEvo Omnitrix preview scissor no longer targets its render GuiGraphics argument");
+        }
+
+        InsnList viewport = new InsnList();
+        viewport.add(new VarInsnNode(ILOAD, 14));
+        viewport.add(new VarInsnNode(ILOAD, 15));
+        viewport.add(new VarInsnNode(ILOAD, 16));
+        viewport.add(new VarInsnNode(ILOAD, 17));
+        viewport.add(new MethodInsnNode(INVOKESTATIC, INVENTORY_COMPAT,
+                "setViewportFromBounds", SET_VIEWPORT_BOUNDS_DESC, false));
+        render.instructions.insert(enable, viewport);
+
+        render.instructions.insertBefore(disable, clearViewportCall());
+        for (AbstractInsnNode instruction : render.instructions.toArray()) {
+            if (instruction.getOpcode() == ATHROW) {
+                render.instructions.insertBefore(instruction, clearViewportCall());
+            }
+        }
+        render.maxStack = Math.max(render.maxStack, 4);
+        return 1;
+    }
+
+    /**
+     * StatsPage uses the same canvas-derived portrait band for its direct
+     * fallback and off-screen hologram path. Scope those exact bounds around
+     * both calls into AlienPreviewWidget so its shared bridge receives the
+     * correct rectangle regardless of which Badge render path is active.
+     */
+    private static int adaptBadgePreviewViewport(ClassNode node) {
+        MethodNode renderBehind = findUniqueMethod(node, "renderBehind", BADGE_RENDER_BEHIND_DESC);
+        if (renderBehind == null) {
+            throw new IllegalStateException("AlienEvo StatsPage.renderBehind method shape changed");
+        }
+
+        int setCount = countCalls(renderBehind, INVENTORY_COMPAT,
+                "setBadgeViewport", SET_BADGE_VIEWPORT_DESC);
+        int clearCount = countCalls(renderBehind, INVENTORY_COMPAT, "clearViewport", CLEAR_VIEWPORT_DESC);
+        int throwCount = countOpcode(renderBehind, ATHROW);
+        if (setCount == 2 && clearCount == 2 + throwCount) {
+            return 0;
+        }
+        if (setCount != 0 || clearCount != 0) {
+            throw new IllegalStateException("AlienEvo StatsPage viewport adapter is only partially applied");
+        }
+
+        MethodInsnNode drawBand = findUniqueCall(node, renderBehind,
+                node.name, "drawPortraitBand", BADGE_DRAW_BAND_DESC);
+        MethodInsnNode renderMugshot = findUniqueCall(node, renderBehind,
+                PREVIEW_WIDGET, "renderMugshot", BADGE_RENDER_MUGSHOT_DESC);
+        if ((drawBand.getOpcode() != INVOKEVIRTUAL && drawBand.getOpcode() != INVOKESPECIAL)
+                || renderMugshot.getOpcode() != INVOKEVIRTUAL) {
+            throw new IllegalStateException("AlienEvo StatsPage portrait render invocation opcode changed");
+        }
+
+        insertBadgeViewportAroundCall(renderBehind, drawBand);
+        insertBadgeViewportAroundCall(renderBehind, renderMugshot);
+        for (AbstractInsnNode instruction : renderBehind.instructions.toArray()) {
+            if (instruction.getOpcode() == ATHROW) {
+                renderBehind.instructions.insertBefore(instruction, clearViewportCall());
+            }
+        }
+        renderBehind.maxStack = Math.max(renderBehind.maxStack, 16);
+        return 1;
+    }
+
+    private static void insertBadgeViewportAroundCall(MethodNode method, MethodInsnNode target) {
+        InsnList set = new InsnList();
+        // renderBehind locals: scale=5, canvas origin X=6, origin Y=7, scroll bottom=10.
+        set.add(new VarInsnNode(FLOAD, 6));
+        set.add(new VarInsnNode(FLOAD, 7));
+        set.add(new VarInsnNode(FLOAD, 5));
+        set.add(new VarInsnNode(ILOAD, 10));
+        set.add(new MethodInsnNode(INVOKESTATIC, INVENTORY_COMPAT,
+                "setBadgeViewport", SET_BADGE_VIEWPORT_DESC, false));
+        method.instructions.insertBefore(target, set);
+        method.instructions.insert(target, clearViewportCall());
+    }
+
+    private static MethodInsnNode clearViewportCall() {
+        return new MethodInsnNode(INVOKESTATIC, INVENTORY_COMPAT,
+                "clearViewport", CLEAR_VIEWPORT_DESC, false);
+    }
+
+    private static MethodInsnNode findUniqueCall(
+            ClassNode node, MethodNode method, String owner, String name, String descriptor) {
+        MethodInsnNode found = findUniqueCall(method, owner, name, descriptor);
+        if (found == null) {
+            throw new IllegalStateException(
+                    "AlienEvo " + node.name + " is missing expected call " + owner + "#" + name + descriptor);
+        }
+        return found;
+    }
+
+    private static MethodInsnNode findUniqueCall(
+            MethodNode method, String owner, String name, String descriptor) {
+        MethodInsnNode found = null;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !owner.equals(call.owner)
+                    || !name.equals(call.name)
+                    || !descriptor.equals(call.desc)) {
+                continue;
+            }
+            if (found != null) {
+                throw new IllegalStateException("Duplicate call " + owner + "#" + name + descriptor);
+            }
+            found = call;
+        }
+        return found;
+    }
+
+    private static int countCalls(MethodNode method, String owner, String name, String descriptor) {
+        int count = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && owner.equals(call.owner)
+                    && name.equals(call.name)
+                    && descriptor.equals(call.desc)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static int countOpcode(MethodNode method, int opcode) {
+        int count = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction.getOpcode() == opcode) count++;
+        }
+        return count;
+    }
+
+    private static boolean isLocal(AbstractInsnNode instruction, int opcode, int slot) {
+        return instruction instanceof VarInsnNode variable
+                && variable.getOpcode() == opcode && variable.var == slot;
+    }
 
     /**
      * AlienEvo renders the shared model preview on each preview tab, but its

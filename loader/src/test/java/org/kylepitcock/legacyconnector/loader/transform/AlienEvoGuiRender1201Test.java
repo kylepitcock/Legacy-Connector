@@ -24,6 +24,9 @@ class AlienEvoGuiRender1201Test implements Opcodes {
     private static final String BACKGROUND_DESC = "(L" + GUI_GRAPHICS + ";)V";
     private static final String PREVIEW_DRAG_DESC = "(DDI)Z";
     private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
+    private static final String RENDER_BEHIND_DESC = "(L" + GUI_GRAPHICS + ";II)V";
+    private static final String RENDER_MUGSHOT_DESC = "(L" + GUI_GRAPHICS + ";IIFFFF)V";
+    private static final String DRAW_BAND_DESC = "(L" + GUI_GRAPHICS + ";IIFFFIZ)V";
 
     @Test
     void sharedInventoryPreviewCallUsesTheTwentyOneCompatBridge() {
@@ -180,11 +183,42 @@ class AlienEvoGuiRender1201Test implements Opcodes {
                 AlienEvoGuiRender1201.POWER_SCREEN, "isColorTab", "()Z");
         assertTrue(gate != null);
 
-        assertEquals(1, AlienEvoGuiRender1201.apply(node));
+        assertEquals(2, AlienEvoGuiRender1201.apply(node));
         assertEquals("isPreviewTab", gate.name,
                 "the visible preview is rendered on preview tabs, not just the Color tab");
         assertEquals(0, AlienEvoGuiRender1201.apply(node),
                 "preview drag gate adaptation must be idempotent");
+    }
+
+    @Test
+    void omnitrixPreviewUsesItsActualPanelScissorAndClearsTheViewport() {
+        ClassNode node = powerScreen();
+        MethodNode render = find(node, "render", RENDER_DESC);
+
+        assertEquals(2, AlienEvoGuiRender1201.apply(node));
+        assertTrue(hasCall(render, INVOKESTATIC,
+                AlienEvoGuiRender1201.INVENTORY_COMPAT,
+                "setViewportFromBounds", "(IIII)V"));
+        assertEquals(2, countCalls(render, INVOKESTATIC,
+                AlienEvoGuiRender1201.INVENTORY_COMPAT, "clearViewport", "()V"),
+                "clear once after the scissor closes and once on the exceptional exit");
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "the drag gate and preview viewport adapters must be idempotent");
+    }
+
+    @Test
+    void badgeStatsPageUsesItsPanelBoundsForBothPortraitRenderRoutes() {
+        ClassNode node = statsPage();
+        MethodNode renderBehind = find(node, "renderBehind", RENDER_BEHIND_DESC);
+
+        assertEquals(1, AlienEvoGuiRender1201.apply(node));
+        assertEquals(2, countCalls(renderBehind, INVOKESTATIC,
+                AlienEvoGuiRender1201.INVENTORY_COMPAT, "setBadgeViewport", "(FFFI)V"));
+        assertEquals(3, countCalls(renderBehind, INVOKESTATIC,
+                AlienEvoGuiRender1201.INVENTORY_COMPAT, "clearViewport", "()V"),
+                "clear after both portrait routes and on exceptional exit");
+        assertEquals(0, AlienEvoGuiRender1201.apply(node),
+                "the two Badge portrait routes must be instrumented exactly once");
     }
 
     @Test
@@ -214,6 +248,64 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         dragStart.maxLocals = 4;
         dragStart.maxStack = 1;
         node.methods.add(dragStart);
+
+        MethodNode render = new MethodNode(ACC_PUBLIC, "render", RENDER_DESC, null, null);
+        render.instructions.add(new VarInsnNode(ALOAD, 1));
+        render.instructions.add(new VarInsnNode(ILOAD, 14));
+        render.instructions.add(new VarInsnNode(ILOAD, 15));
+        render.instructions.add(new VarInsnNode(ILOAD, 16));
+        render.instructions.add(new VarInsnNode(ILOAD, 17));
+        render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AlienEvoGuiRender1201.GUI_GRAPHICS,
+                "enableScissor", "(IIII)V", false));
+        render.instructions.add(new VarInsnNode(ALOAD, 1));
+        render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AlienEvoGuiRender1201.GUI_GRAPHICS,
+                "disableScissor", "()V", false));
+        render.instructions.add(new InsnNode(ACONST_NULL));
+        render.instructions.add(new InsnNode(ATHROW));
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxLocals = 18;
+        render.maxStack = 5;
+        node.methods.add(render);
+        return node;
+    }
+
+    private static ClassNode statsPage() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_FINAL;
+        node.name = "net/habb/alienevo/client/screen/badge/StatsPage";
+        node.superName = "java/lang/Object";
+
+        MethodNode renderBehind = new MethodNode(ACC_PRIVATE, "renderBehind",
+                RENDER_BEHIND_DESC, null, null);
+        renderBehind.instructions.add(new VarInsnNode(ALOAD, 0));
+        renderBehind.instructions.add(new VarInsnNode(ALOAD, 1));
+        renderBehind.instructions.add(new VarInsnNode(ILOAD, 2));
+        renderBehind.instructions.add(new VarInsnNode(ILOAD, 3));
+        renderBehind.instructions.add(new VarInsnNode(FLOAD, 5));
+        renderBehind.instructions.add(new VarInsnNode(FLOAD, 6));
+        renderBehind.instructions.add(new VarInsnNode(FLOAD, 7));
+        renderBehind.instructions.add(new VarInsnNode(ILOAD, 10));
+        renderBehind.instructions.add(new InsnNode(ICONST_0));
+        renderBehind.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, node.name,
+                "drawPortraitBand", DRAW_BAND_DESC, false));
+
+        renderBehind.instructions.add(new InsnNode(ACONST_NULL));
+        renderBehind.instructions.add(new VarInsnNode(ALOAD, 1));
+        renderBehind.instructions.add(new VarInsnNode(ILOAD, 2));
+        renderBehind.instructions.add(new VarInsnNode(ILOAD, 3));
+        renderBehind.instructions.add(new VarInsnNode(FLOAD, 5));
+        renderBehind.instructions.add(new VarInsnNode(FLOAD, 6));
+        renderBehind.instructions.add(new VarInsnNode(FLOAD, 7));
+        renderBehind.instructions.add(new InsnNode(FCONST_1));
+        renderBehind.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, AlienEvoGuiRender1201.PREVIEW_WIDGET,
+                "renderMugshot", RENDER_MUGSHOT_DESC, false));
+        renderBehind.instructions.add(new InsnNode(ACONST_NULL));
+        renderBehind.instructions.add(new InsnNode(ATHROW));
+        renderBehind.instructions.add(new InsnNode(RETURN));
+        renderBehind.maxLocals = 11;
+        renderBehind.maxStack = 10;
+        node.methods.add(renderBehind);
         return node;
     }
 
@@ -304,6 +396,21 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         render.maxStack = 5;
         node.methods.add(render);
         return node;
+    }
+
+    private static int countCalls(
+            MethodNode method, int opcode, String owner, String name, String descriptor) {
+        int count = 0;
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == opcode
+                    && owner.equals(call.owner)
+                    && name.equals(call.name)
+                    && descriptor.equals(call.desc)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static MethodNode find(ClassNode node, String name, String descriptor) {
