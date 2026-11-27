@@ -488,7 +488,14 @@ public final class Mc1201Migration {
             if (decl == null || (decl.access & Opcodes.ACC_STATIC) != 0 || !h.isSubclassOf(node.name, row[0])) continue;
             boolean disable = row[3].equals("-");
             String newName = disable ? "mcc$disabled$" + row[1] : row[3];
-            if (declared(node, newName, row[2]) != null) continue;
+            MethodNode hook = declared(node, newName, row[2]);
+            if (hook != null) {
+                if (row[0].equals(ABSTRACT_WIDGET) && row[1].equals("render")) {
+                    migrateWidgetRenderPair(node, h, decl, hook);
+                    c.bridges++;
+                }
+                continue;
+            }
             decl.name = newName;
             c.bridges++;
             if (disable) continue;
@@ -500,6 +507,30 @@ public final class Mc1201Migration {
                                     : call.getOpcode() == Opcodes.INVOKEVIRTUAL && call.owner.equals(node.name))) {
                         call.name = newName;
                     }
+                }
+            }
+        }
+    }
+
+    private static void migrateWidgetRenderPair(ClassNode node, Mc1201Hierarchy h, MethodNode render, MethodNode hook) {
+        String originalRender = render.name;
+        String originalHook = hook.name;
+        String draw = "mcc$legacy$renderWidget";
+        while (declared(node, draw, hook.desc) != null) draw += "$";
+        render.name = originalHook;
+        hook.name = draw;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode in : method.instructions) {
+                if (!(in instanceof MethodInsnNode call) || !call.desc.equals(render.desc)) continue;
+                if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals(originalRender)
+                        && !call.owner.equals(node.name) && h.isSubclassOf(call.owner, ABSTRACT_WIDGET)) {
+                    // Vanilla render now wraps this hook. Calling it here would enter the same hook again.
+                    call.setOpcode(Opcodes.INVOKEVIRTUAL);
+                    call.owner = node.name;
+                    call.name = draw;
+                } else if (call.owner.equals(node.name) && call.name.equals(originalHook)) {
+                    call.name = draw;
                 }
             }
         }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -1120,6 +1121,33 @@ class Mc1201MigrationTest implements Opcodes {
         MethodInsnNode call = find(m, block, "playerWillDestroy");
         assertEquals("(L" + level + ";L" + pos + ";L" + state + ";L" + player + ";)L" + state + ";", call.desc);
         assertEquals(POP, call.getNext().getOpcode());
+    }
+
+    @Test
+    void widgetWithBothRenderOverridesKeepsThePreludeAndItsOwnDrawingWithoutRecursion() {
+        String button = "net/minecraft/client/gui/components/Button";
+        String desc = "(Lnet/minecraft/client/gui/GuiGraphics;IIF)V";
+        ClassNode node = cls("test/InventoryTab", button);
+        MethodNode render = method(node, ACC_PUBLIC, "render", desc);
+        render.instructions.add(new VarInsnNode(ALOAD, 0));
+        render.instructions.add(new VarInsnNode(ALOAD, 1));
+        render.instructions.add(new VarInsnNode(ILOAD, 2));
+        render.instructions.add(new VarInsnNode(ILOAD, 3));
+        render.instructions.add(new VarInsnNode(FLOAD, 4));
+        render.instructions.add(new MethodInsnNode(INVOKESPECIAL, button, "render", desc, false));
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = render.maxLocals = 5;
+        MethodNode draw = method(node, ACC_PUBLIC, "renderWidget", desc);
+        draw.instructions.add(new InsnNode(RETURN));
+        draw.maxLocals = 5;
+
+        apply(node);
+
+        assertNull(findDeclared(node, "render", desc));
+        assertSame(render, findDeclared(node, "renderWidget", desc));
+        assertSame(draw, findDeclared(node, "mcc$legacy$renderWidget", desc));
+        assertEquals(INVOKEVIRTUAL, find(render, node.name, draw.name).getOpcode());
+        assertNull(find(render, button, "render"));
     }
 
     @Test
