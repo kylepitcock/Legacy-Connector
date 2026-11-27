@@ -118,7 +118,8 @@
     "perf.EntitySlotMixin",
     "perf.ItemSlotMixin",
     "perf.LevelChunkStaticTickerMixin",
-    "BowItemLegacyLooseMixin"
+    "BowItemLegacyLooseMixin",
+    "CollisionContextOfNullMixin"
   ],
   "client": [
     "InventoryScreenLegacyLayoutMixin",
