@@ -23,14 +23,14 @@ class AddonResourceRootExtractorTest {
     }
 
     @Test
-    void extractsOnlyMarkerBearingAddonRootsFromFinalTranslatedJars() throws Exception {
+    void extractsMarkerBearingAddonRootsAndIgnoresUnrelatedTranslatedJars() throws Exception {
         Path withMarker = temporaryDirectory.resolve("alienevo-translated.jar");
         writeJar(withMarker, true, "addon/alienevo/kubejs_scripts/quick_change.js", "quick-change");
-        Path withoutMarker = temporaryDirectory.resolve("unrelated-translated.jar");
-        writeJar(withoutMarker, false, "addon/unrelated/ignored.txt", "ignore-me");
+        Path unrelated = temporaryDirectory.resolve("unrelated-translated.jar");
+        writeJar(unrelated, false, "assets/unrelated/ignored.txt", "ignore-me");
 
         List<Path> roots = AddonResourceRootExtractor.extract(
-                temporaryDirectory.resolve("cache"), List.of(withoutMarker, withMarker));
+                temporaryDirectory.resolve("cache"), List.of(unrelated, withMarker));
 
         assertEquals(1, roots.size());
         Path addonRoot = roots.get(0);
@@ -39,6 +39,35 @@ class AddonResourceRootExtractorTest {
                 Files.readString(addonRoot.resolve("alienevo/kubejs_scripts/quick_change.js")));
         assertFalse(Files.exists(addonRoot.resolve("unrelated/ignored.txt")));
         assertEquals(addonRoot.toString(), System.getProperty(AddonResourceRootExtractor.ROOTS_PROPERTY));
+    }
+
+    @Test
+    void synthesizesMarkerForAddonPayloadThatOmitsTheClasspathMarker() throws Exception {
+        Path markerless = temporaryDirectory.resolve("markerless-addon-translated.jar");
+        writeJar(markerless, false, "addon/alienevo/kubejs_scripts/quick_change.js", "quick-change");
+
+        List<Path> roots = AddonResourceRootExtractor.extract(
+                temporaryDirectory.resolve("cache"), List.of(markerless));
+
+        assertEquals(1, roots.size());
+        Path addonRoot = roots.get(0);
+        assertTrue(Files.isRegularFile(addonRoot.resolve(".mcassetsroot")));
+        assertEquals(0L, Files.size(addonRoot.resolve(".mcassetsroot")));
+        assertEquals("quick-change",
+                Files.readString(addonRoot.resolve("alienevo/kubejs_scripts/quick_change.js")));
+        assertEquals(addonRoot.toString(), System.getProperty(AddonResourceRootExtractor.ROOTS_PROPERTY));
+    }
+
+    @Test
+    void doesNotRegisterAnEmptyRootWhenNoAddonPayloadExists() throws Exception {
+        Path unrelated = temporaryDirectory.resolve("no-addon-translated.jar");
+        writeJar(unrelated, false, "assets/alienevo/ignored.txt", "ignore-me");
+
+        List<Path> roots = AddonResourceRootExtractor.extract(
+                temporaryDirectory.resolve("cache"), List.of(unrelated));
+
+        assertTrue(roots.isEmpty());
+        assertFalse(System.getProperties().containsKey(AddonResourceRootExtractor.ROOTS_PROPERTY));
     }
 
     @Test
