@@ -416,6 +416,8 @@ public final class Forge1201Transformer {
             // Its @At target is validated against the original dev.24/PalladiumCore bytecode contract.
             // Adapt before Mc1201Migration redirects AddLayers.getSkin(String) to ClientCompat.getSkin.
             // The PalladiumCore adapter must see and retarget the original lookup before that generic pass.
+            int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
+            palladiumCoreLightningMixinChanges += palladiumCoreLightningMixinChange;
             int palladiumPlayerSkinChange = PalladiumCorePlayerSkin1201.apply(node);
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
@@ -454,8 +456,6 @@ public final class Forge1201Transformer {
             palladiumCustomProjectileRendererChanges += palladiumCustomProjectileRendererChange;
             int palladiumCoreOverlayChange = PalladiumCoreOverlay1201.apply(node);
             palladiumCoreOverlayChanges += palladiumCoreOverlayChange;
-            int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
-            palladiumCoreLightningMixinChanges += palladiumCoreLightningMixinChange;
             // The generic rule above should cover this call shape. Palladium 4.5.10's command abilities
             // and energy-beam hit handlers are guarded explicitly as well, so a missed site cannot leave
             // its input/action path silently calling the removed synchronous API.
