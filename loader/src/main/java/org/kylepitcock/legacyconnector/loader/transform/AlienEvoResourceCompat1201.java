@@ -188,23 +188,45 @@ final class AlienEvoResourceCompat1201 {
 
         JsonArray uniforms = shaderJson.getAsJsonArray("uniforms");
         int viewRotationIndex = -1;
+        int light0DirectionIndex = -1;
+        int light1DirectionIndex = -1;
         for (int i = 0; i < uniforms.size(); i++) {
             JsonElement element = uniforms.get(i);
             if (!element.isJsonObject()) continue;
             JsonObject uniform = element.getAsJsonObject();
-            if (!uniform.has("name") || !uniform.get("name").isJsonPrimitive()
-                    || !"IViewRotMat".equals(uniform.get("name").getAsString())) {
+            if (!uniform.has("name") || !uniform.get("name").isJsonPrimitive()) {
                 continue;
             }
-            if (viewRotationIndex >= 0
-                    || !uniform.has("type") || !uniform.get("type").isJsonPrimitive()
-                    || !"matrix3x3".equals(uniform.get("type").getAsString())
-                    || !uniform.has("count") || !uniform.get("count").isJsonPrimitive()
-                    || !uniform.get("count").getAsJsonPrimitive().isNumber()
-                    || uniform.get("count").getAsInt() != 9) {
-                return false;
+            String uniformName = uniform.get("name").getAsString();
+            if ("IViewRotMat".equals(uniformName)) {
+                if (viewRotationIndex >= 0
+                        || !uniform.has("type") || !uniform.get("type").isJsonPrimitive()
+                        || !"matrix3x3".equals(uniform.get("type").getAsString())
+                        || !uniform.has("count") || !uniform.get("count").isJsonPrimitive()
+                        || !uniform.get("count").getAsJsonPrimitive().isNumber()
+                        || uniform.get("count").getAsInt() != 9) {
+                    return false;
+                }
+                viewRotationIndex = i;
+            } else if ("Light0_Direction".equals(uniformName) || "Light1_Direction".equals(uniformName)) {
+                // The 1.21.1 unshaded program does not expose the legacy entity-light
+                // direction uniforms. ShaderInstance warns when this old JSON still
+                // asks it to bind them, even though the unshaded shader has no use
+                // for those values. Remove only the exact unbound vec3 declarations.
+                boolean validDirection = uniform.has("type") && uniform.get("type").isJsonPrimitive()
+                        && "float".equals(uniform.get("type").getAsString())
+                        && uniform.has("count") && uniform.get("count").isJsonPrimitive()
+                        && uniform.get("count").getAsJsonPrimitive().isNumber()
+                        && uniform.get("count").getAsInt() == 3;
+                if (!validDirection) return false;
+                if ("Light0_Direction".equals(uniformName)) {
+                    if (light0DirectionIndex >= 0) return false;
+                    light0DirectionIndex = i;
+                } else {
+                    if (light1DirectionIndex >= 0) return false;
+                    light1DirectionIndex = i;
+                }
             }
-            viewRotationIndex = i;
         }
         if (viewRotationIndex < 0) return false;
 
@@ -216,7 +238,12 @@ final class AlienEvoResourceCompat1201 {
             return false;
         }
 
-        uniforms.remove(viewRotationIndex);
+        // Remove from the end so all original indices remain valid.
+        for (int i = uniforms.size() - 1; i >= 0; i--) {
+            if (i == viewRotationIndex || i == light0DirectionIndex || i == light1DirectionIndex) {
+                uniforms.remove(i);
+            }
+        }
         resources.put(UNSHADED_ENTITY_SHADER_JSON,
                 shaderJson.toString().getBytes(StandardCharsets.UTF_8));
         resources.put(UNSHADED_ENTITY_SHADER_VERTEX,

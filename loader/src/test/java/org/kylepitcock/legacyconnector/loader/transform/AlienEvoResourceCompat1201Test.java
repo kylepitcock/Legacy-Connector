@@ -47,6 +47,8 @@ class AlienEvoResourceCompat1201Test {
               "uniforms": [
                 {"name":"ModelViewMat","type":"matrix4x4","count":16,"values":[]},
                 {"name":"IViewRotMat","type":"matrix3x3","count":9,"values":[]},
+                {"name":"Light0_Direction","type":"float","count":3,"values":[0.2,1.0,-0.7]},
+                {"name":"Light1_Direction","type":"float","count":3,"values":[-0.2,1.0,0.7]},
                 {"name":"FogShape","type":"int","count":1,"values":[0]}
               ]
             }
@@ -249,6 +251,8 @@ class AlienEvoResourceCompat1201Test {
         String json = new String(resources.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON),
                 StandardCharsets.UTF_8);
         assertFalse(json.contains("IViewRotMat"), json);
+        assertFalse(json.contains("Light0_Direction"), json);
+        assertFalse(json.contains("Light1_Direction"), json);
         assertTrue(json.contains("ModelViewMat"), json);
         assertTrue(json.contains("FogShape"), json);
 
@@ -307,6 +311,17 @@ class AlienEvoResourceCompat1201Test {
         duplicateUniform.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
                 duplicated.getBytes(StandardCharsets.UTF_8));
         assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(duplicateUniform));
+
+        Map<String, byte[]> unexpectedLight = unshadedShaderResources();
+        byte[] originalLightJson = unexpectedLight.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON).clone();
+        String invalidLight = UNSHADED_JSON.replace(
+                "{\"name\":\"Light0_Direction\",\"type\":\"float\",\"count\":3,",
+                "{\"name\":\"Light0_Direction\",\"type\":\"matrix3x3\",\"count\":9,");
+        unexpectedLight.put(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON,
+                invalidLight.getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.repairUnshadedEntityShaderFor121(unexpectedLight));
+        assertTrue(java.util.Arrays.equals(originalLightJson,
+                unexpectedLight.get(AlienEvoResourceCompat1201.UNSHADED_ENTITY_SHADER_JSON)));
     }
 
 
