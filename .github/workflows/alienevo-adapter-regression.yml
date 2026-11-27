@@ -39,6 +39,8 @@ jobs:
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoPossessionAbility1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoSwimmingController1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoGruntMeleeGoal1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBountyPathfinding1201Test' \
+            --tests 'org.kylepitcock.legacyconnector.loader.transform.PalladiumCoreLightningBoltMixin1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoPossessionHandDiagnostics1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoBoneAnchors1201Test' \
             --tests 'org.kylepitcock.legacyconnector.loader.transform.AlienEvoCameraRotationCallers1201Test' \
