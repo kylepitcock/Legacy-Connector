@@ -346,6 +346,7 @@ public final class Forge1201Transformer {
         int palladiumCustomProjectileRendererChanges = 0;
         int palladiumCoreOverlayChanges = 0;
         int palladiumCoreLightningMixinChanges = 0;
+        int alienEvoBountyPathfindingChanges = 0;
         int alienEvoForgeEventChanges = 0;
         int alienEvoMixinChanges = 0;
         int alienEvoGeckoMixinChanges = 0;
@@ -417,6 +418,9 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int alienEvoBountyPathfindingChange = AlienEvoBountyPathfinding1201.apply(node);
+            alienEvoBountyPathfindingChanges += alienEvoBountyPathfindingChange;
+            viaCalls += alienEvoBountyPathfindingChange;
             int palladiumAddonPackCheckboxChange = PalladiumAddonPackCheckbox1201.apply(node);
             palladiumAddonPackCheckboxChanges += palladiumAddonPackCheckboxChange;
             int alienEvoMixinChange = AlienEvoMixins1201.apply(node);
@@ -527,7 +531,8 @@ public final class Forge1201Transformer {
                     + palladiumFlightHandlerChange + palladiumFlightTakeoffGraceChange + palladiumFlightStateTraceChange
                     + palladiumFlightInputTraceChange + palladiumCustomProjectileChange
                     + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
-                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoForgeEventChange
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange + alienEvoBountyPathfindingChange
+                    + alienEvoForgeEventChange
                     + alienEvoStepHeightChange + alienEvoMixinChange + alienEvoLegacyMixinChange + alienEvoVertexConsumerChange
                     + alienEvoBufferingGlowConsumerChange + alienEvoNoopRenderBufferChange
                     + alienEvoDynamicColorParticleRenderTypeChange + alienEvoBoneAnchorsChange
@@ -686,6 +691,11 @@ public final class Forge1201Transformer {
         if (palladiumCoreLightningMixinChanges > 0) {
             result.notes.add("PalladiumCore LightningBoltMixin declares maxShiftBy=1 for its verified one-instruction "
                     + "INVOKE_ASSIGN shift after the second Level.getEntities call");
+        }
+        if (alienEvoBountyPathfindingChanges > 0) {
+            result.notes.add("AlienEvo dev.24 bounty terrain queries now carry the route planner's real Mob into "
+                    + "the 1.21.1 Mob-aware getPathTypeStatic API: " + alienEvoBountyPathfindingChanges
+                    + " bounty class(es) adapted");
         }
         if (palladiumLootChanges > 0) {
             result.notes.add("Palladium loot-pool Gson deserialization migrated to NeoForge 1.21.1 loot codecs: "
