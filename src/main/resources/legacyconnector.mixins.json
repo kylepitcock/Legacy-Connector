@@ -24,6 +24,7 @@
     "LivingEntityTravelMixin",
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
+    "VanillaPackResourcesAddonRootMixin",
     "CreativeTabDuplicateMixin",
     "ItemStackLegacyNbtMixin",
     "JigsawStructureLegacyVillageMixin",

@@ -503,6 +503,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
 
             SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir, ownerKeeping);
+            List<Path> addonResourceRoots = AddonResourceRootExtractor.extract(cacheDir, split.jars());
+            if (!addonResourceRoots.isEmpty()) {
+                LOG.info("Legacy Connector: prepared {} addon resource root(s) for vanilla pack discovery",
+                        addonResourceRoots.size());
+            }
             if (split.sharedLibrary() != null) {
                 LOG.info("Legacy Connector: {} packages shipped by several legacy jars were merged into {}",
                         split.sharedPackages().size(), split.sharedLibrary().getFileName());
