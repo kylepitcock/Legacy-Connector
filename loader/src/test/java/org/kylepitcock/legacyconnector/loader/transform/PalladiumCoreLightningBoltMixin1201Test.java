@@ -36,17 +36,42 @@ class PalladiumCoreLightningBoltMixin1201Test implements Opcodes {
         return node;
     }
 
+    private static AnnotationNode targetInject(ClassNode node) {
+        return node.methods.get(0).visibleAnnotations.get(0);
+    }
+
     private static AnnotationNode targetAt(ClassNode node) {
-        AnnotationNode inject = node.methods.get(0).visibleAnnotations.get(0);
+        AnnotationNode inject = targetInject(node);
         return assertInstanceOf(AnnotationNode.class, ((List<?>) inject.values.get(3)).get(0));
     }
 
+    private static Object value(AnnotationNode annotation, String name) {
+        if (annotation.values == null) return null;
+        for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+            if (name.equals(annotation.values.get(i))) return annotation.values.get(i + 1);
+        }
+        return null;
+    }
+
     @Test
-    void declaresTheVerifiedOneInstructionShiftAndIsIdempotent() {
+    void declaresMaxShiftByOnInjectAndIsIdempotent() {
         ClassNode node = fixture(PalladiumCoreLightningBoltMixin1201.MIXIN);
 
         assertEquals(1, PalladiumCoreLightningBoltMixin1201.apply(node));
-        assertEquals(1, targetAt(node).values.get(targetAt(node).values.indexOf("maxShiftBy") + 1));
+        assertEquals(1, value(targetInject(node), "maxShiftBy"));
+        assertEquals(null, value(targetAt(node), "maxShiftBy"));
+        assertEquals(0, PalladiumCoreLightningBoltMixin1201.apply(node));
+    }
+
+    @Test
+    void migratesThePreviouslyMisplacedNestedMaxShiftByValue() {
+        ClassNode node = fixture(PalladiumCoreLightningBoltMixin1201.MIXIN);
+        targetAt(node).values.add("maxShiftBy");
+        targetAt(node).values.add(1);
+
+        assertEquals(2, PalladiumCoreLightningBoltMixin1201.apply(node));
+        assertEquals(1, value(targetInject(node), "maxShiftBy"));
+        assertEquals(null, value(targetAt(node), "maxShiftBy"));
         assertEquals(0, PalladiumCoreLightningBoltMixin1201.apply(node));
     }
 
@@ -55,6 +80,7 @@ class PalladiumCoreLightningBoltMixin1201Test implements Opcodes {
         ClassNode node = fixture("example/UnrelatedMixin");
 
         assertEquals(0, PalladiumCoreLightningBoltMixin1201.apply(node));
-        assertEquals(-1, targetAt(node).values.indexOf("maxShiftBy"));
+        assertEquals(null, value(targetInject(node), "maxShiftBy"));
+        assertEquals(null, value(targetAt(node), "maxShiftBy"));
     }
 }

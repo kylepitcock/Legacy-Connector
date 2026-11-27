@@ -33,15 +33,29 @@ final class PalladiumCoreLightningBoltMixin1201 implements Opcodes {
                 for (Object candidate : ats) {
                     if (!(candidate instanceof AnnotationNode at) || !matchesLightningStrikeAt(at)) continue;
                     matchingSites++;
-                    Object maximum = value(at, "maxShiftBy");
+
+                    // Mixin's maxShiftBy belongs to @Inject, not its nested @At.
+                    // Migrate the misplaced value emitted by older Connector builds,
+                    // then set the contract on the enclosing injection annotation.
+                    Object misplacedMaximum = value(at, "maxShiftBy");
+                    if (misplacedMaximum != null) {
+                        if (!(misplacedMaximum instanceof Integer max) || max != 1) {
+                            throw new IllegalStateException(
+                                    "PalladiumCore LightningBoltMixin has an unexpected nested maxShiftBy value: "
+                                            + misplacedMaximum);
+                        }
+                        removeValue(at, "maxShiftBy");
+                        changed++;
+                    }
+
+                    Object maximum = value(inject, "maxShiftBy");
                     if (maximum == null) {
-                        if (at.values == null) at.values = new java.util.ArrayList<>();
-                        at.values.add("maxShiftBy");
-                        at.values.add(1);
+                        putValue(inject, "maxShiftBy", 1);
                         changed++;
                     } else if (!(maximum instanceof Integer max) || max != 1) {
-                        throw new IllegalStateException("PalladiumCore LightningBoltMixin has an unexpected maxShiftBy value: "
-                                + maximum);
+                        throw new IllegalStateException(
+                                "PalladiumCore LightningBoltMixin has an unexpected @Inject maxShiftBy value: "
+                                        + maximum);
                     }
                 }
             }
@@ -66,6 +80,23 @@ final class PalladiumCoreLightningBoltMixin1201 implements Opcodes {
             if (name.equals(annotation.values.get(i))) return annotation.values.get(i + 1);
         }
         return null;
+    }
+
+    private static void putValue(AnnotationNode annotation, String name, Object value) {
+        if (annotation.values == null) annotation.values = new java.util.ArrayList<>();
+        annotation.values.add(name);
+        annotation.values.add(value);
+    }
+
+    private static void removeValue(AnnotationNode annotation, String name) {
+        if (annotation.values == null) return;
+        for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+            if (name.equals(annotation.values.get(i))) {
+                annotation.values.remove(i + 1);
+                annotation.values.remove(i);
+                return;
+            }
+        }
     }
 
     private static boolean matchesLightningStrikeAt(AnnotationNode at) {
