@@ -19,7 +19,7 @@ final class PalladiumCoreLightningBoltMixin1201 implements Opcodes {
     private PalladiumCoreLightningBoltMixin1201() {}
 
     static int apply(ClassNode node) {
-        if (!MIXIN.equals(node.name)) return 0;
+        if (!MIXIN.equals(node.name) && !node.name.endsWith("/" + MIXIN)) return 0;
 
         int matchingSites = 0;
         int changed = 0;
