@@ -338,6 +338,9 @@ public final class ForgeApi1201 {
             if (!(value instanceof com.mojang.serialization.Codec<?> codec)) return value;
             if (key.equals(net.minecraft.core.registries.Registries.BIOME_SOURCE)
                     || key.equals(net.minecraft.core.registries.Registries.CHUNK_GENERATOR)
+                    || key.equals(net.minecraft.core.registries.Registries.MATERIAL_CONDITION)
+                    || key.equals(net.minecraft.core.registries.Registries.MATERIAL_RULE)
+                    || key.equals(net.minecraft.core.registries.Registries.DENSITY_FUNCTION_TYPE)
                     || key.equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS)
                     || key.equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.STRUCTURE_MODIFIER_SERIALIZERS)
                     || key.equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS)) {
