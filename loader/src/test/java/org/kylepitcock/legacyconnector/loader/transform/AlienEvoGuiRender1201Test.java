@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -70,8 +71,8 @@ class AlienEvoGuiRender1201Test implements Opcodes {
     void removesOnlyTheBadgeLegacyBackgroundCallAndKeepsOtherRenderWork() {
         ClassNode node = badgeScreen();
 
-        assertEquals(2, AlienEvoVertexConsumer1201.apply(node),
-                "the active adapter must remove the legacy call and suppress Screen.render's modern blur hook");
+        assertEquals(3, AlienEvoVertexConsumer1201.apply(node),
+                "the active adapter must remove the legacy call, suppress Screen.render's modern blur hook, and add the opt-in Badge trace");
 
         MethodNode render = find(node, "render", RENDER_DESC);
         assertFalse(hasCall(render, INVOKEVIRTUAL, node.name, "renderBackground", BACKGROUND_DESC));
@@ -81,6 +82,7 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         assertTrue(hasCall(render, INVOKESTATIC, "example/BadgeBackdrop", "draw", "()V"),
                 "the Badge's own backdrop must remain");
         assertBadgeModernBackgroundIsNoop(node);
+        assertBadgeScreenRenderTraceIsPresent(node);
 
         assertEquals(0, AlienEvoGuiRender1201.apply(node),
                 "the Badge background removal must be idempotent");
@@ -98,13 +100,14 @@ class AlienEvoGuiRender1201Test implements Opcodes {
                 AlienEvoGuiRender1201.MIGRATED_BACKGROUND_DESC,
                 false));
 
-        assertEquals(1, AlienEvoGuiRender1201.apply(node),
-                "the modern inherited Screen.render background hook must also be suppressed");
+        assertEquals(2, AlienEvoGuiRender1201.apply(node),
+                "the modern inherited Screen.render hook must be suppressed and the opt-in Badge trace added");
         assertTrue(hasCall(render, INVOKESTATIC,
                 AlienEvoGuiRender1201.CLIENT_COMPAT,
                 "renderBackground",
                 AlienEvoGuiRender1201.MIGRATED_BACKGROUND_DESC));
         assertBadgeModernBackgroundIsNoop(node);
+        assertBadgeScreenRenderTraceIsPresent(node);
         assertEquals(0, AlienEvoGuiRender1201.apply(node),
                 "the modern no-op override must be idempotent");
     }
@@ -118,9 +121,10 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         background.maxLocals = 5;
         node.methods.add(background);
 
-        assertEquals(1, AlienEvoVertexConsumer1201.apply(node),
-                "only the remaining legacy call should be removed");
+        assertEquals(2, AlienEvoVertexConsumer1201.apply(node),
+                "the legacy call should be removed and the opt-in Badge render trace added");
         assertBadgeModernBackgroundIsNoop(node);
+        assertBadgeScreenRenderTraceIsPresent(node);
         assertEquals(0, AlienEvoGuiRender1201.apply(node));
     }
 
@@ -211,6 +215,27 @@ class AlienEvoGuiRender1201Test implements Opcodes {
         dragStart.maxStack = 1;
         node.methods.add(dragStart);
         return node;
+    }
+
+    private static void assertBadgeScreenRenderTraceIsPresent(ClassNode node) {
+        MethodNode render = find(node, "render", RENDER_DESC);
+        MethodInsnNode trace = findCall(render, INVOKESTATIC,
+                AlienEvoGuiRender1201.RUNTIME_DIAGNOSTICS,
+                "traceBadgeScreenRender",
+                AlienEvoGuiRender1201.BADGE_RENDER_TRACE_DESC);
+        assertTrue(trace != null,
+                "Badge render must report its screen state and direct call sites when diagnostics are enabled");
+
+        boolean includesBackdrop = false;
+        for (var instruction : render.instructions.toArray()) {
+            if (instruction instanceof LdcInsnNode literal
+                    && literal.cst instanceof String value
+                    && value.contains("example/BadgeBackdrop#draw()V")) {
+                includesBackdrop = true;
+                break;
+            }
+        }
+        assertTrue(includesBackdrop, "the trace must include the Badge render call-site summary");
     }
 
     private static void assertBadgeModernBackgroundIsNoop(ClassNode node) {

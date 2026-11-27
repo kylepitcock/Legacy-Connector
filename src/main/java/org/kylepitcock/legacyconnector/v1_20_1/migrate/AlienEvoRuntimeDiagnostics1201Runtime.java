@@ -140,6 +140,80 @@ public final class AlienEvoRuntimeDiagnostics1201Runtime {
     }
 
     /**
+     * Captures the real Badge screen render boundary, including page/widget
+     * fields and direct call sites. This helps identify the self-portrait path
+     * when the lower-level MobPortrait probe is not reached.
+     */
+    public static void traceBadgeScreenRender(
+            Object screen,
+            Object graphics,
+            int mouseX,
+            int mouseY,
+            float partialTick,
+            String callSites) {
+        if (!isEnabled() || screen == null) return;
+        try {
+            Object player = Minecraft.getInstance().player;
+            String playerId = player == null ? "none" : String.valueOf(invokeNoArgs(player, "getUUID"));
+            String key = "badge-screen-render:" + System.identityHashCode(screen);
+            if (!shouldLog(key, DEFAULT_INTERVAL_NANOS)) return;
+            LOGGER.info("[AlienEvoRuntimeTrace] badgeScreenRender screenClass={} player={} "
+                            + "gui={}x{} mouse=({}, {}) partialTick={} screenFields={} callSites={}",
+                    screen.getClass().getName(), playerId,
+                    invokeNoArgs(graphics, "guiWidth"), invokeNoArgs(graphics, "guiHeight"),
+                    mouseX, mouseY, partialTick,
+                    describeBadgeScreenFields(screen), callSites);
+        } catch (Throwable ignored) {
+            // Badge diagnostics must never interrupt GUI rendering.
+        }
+    }
+
+    private static String describeBadgeScreenFields(Object screen) {
+        StringBuilder fields = new StringBuilder();
+        for (Class<?> type = screen.getClass();
+                type != null && type != Object.class && !type.getName().startsWith("net.minecraft.");
+                type = type.getSuperclass()) {
+            for (Field field : type.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                if (fields.length() >= 2400) {
+                    fields.append(" ...");
+                    return fields.toString();
+                }
+                if (fields.length() > 0) fields.append(", ");
+                fields.append(type.getSimpleName()).append('.').append(field.getName()).append('=');
+                try {
+                    field.setAccessible(true);
+                    fields.append(summarizeBadgeField(field.get(screen)));
+                } catch (Throwable inaccessible) {
+                    fields.append("unavailable:").append(inaccessible.getClass().getSimpleName());
+                }
+            }
+        }
+        return fields.length() == 0 ? "none" : fields.toString();
+    }
+
+    private static String summarizeBadgeField(Object value) {
+        if (value == null
+                || value instanceof CharSequence
+                || value instanceof Number
+                || value instanceof Boolean
+                || value.getClass().isEnum()) {
+            return String.valueOf(value);
+        }
+        if (value instanceof Map<?, ?> map) return value.getClass().getSimpleName() + "(size=" + map.size() + ")";
+        if (value instanceof java.util.Collection<?> collection) {
+            Object first = collection.isEmpty() ? null : collection.iterator().next();
+            return collection.getClass().getSimpleName() + "(size=" + collection.size()
+                    + ",first=" + (first == null ? "none" : first.getClass().getName()) + ")";
+        }
+        if (value instanceof net.minecraft.world.entity.Entity entity) {
+            return value.getClass().getName() + "(" + entity.getUUID() + ",type=" + entity.getType()
+                    + ",bounds=" + entity.getBoundingBox() + ")";
+        }
+        return value.getClass().getName();
+    }
+
+    /**
      * Captures the legacy anchor/cursor contract and the 1.21.1 clipping rectangle
      * used by the regular Omnitrix Power Screen preview.
      */

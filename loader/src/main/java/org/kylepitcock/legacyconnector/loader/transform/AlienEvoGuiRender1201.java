@@ -3,7 +3,9 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -31,6 +33,10 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiddleClientCompat";
     static final String CLIENT_COMPAT =
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat";
+    static final String RUNTIME_DIAGNOSTICS =
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/AlienEvoRuntimeDiagnostics1201Runtime";
+    static final String BADGE_RENDER_TRACE_DESC =
+            "(Ljava/lang/Object;Ljava/lang/Object;IIFLjava/lang/String;)V";
     static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     static final String LIVING_ENTITY = "net/minecraft/world/entity/LivingEntity";
 
@@ -180,7 +186,7 @@ final class AlienEvoGuiRender1201 implements Opcodes {
             // Screen.render() in 1.21.1 calls the new four-argument virtual
             // renderBackground hook. Removing the old one-argument call is not
             // enough: without this override, super.render() still applies blur.
-            return ensureNoopModernBackground(node);
+            return ensureNoopModernBackground(node) + ensureBadgeScreenRenderTrace(node, render);
         }
         if (legacyCount != 1 || modernCount != 0 || migratedNoopCount != 0 || legacy == null) {
             throw new IllegalStateException(
@@ -202,7 +208,68 @@ final class AlienEvoGuiRender1201 implements Opcodes {
         render.instructions.remove(screenLoad);
         render.instructions.remove(graphicsLoad);
         render.instructions.remove(legacy);
-        return 1 + ensureNoopModernBackground(node);
+        return 1 + ensureNoopModernBackground(node) + ensureBadgeScreenRenderTrace(node, render);
+    }
+
+    /**
+     * Adds an opt-in trace at the actual Badge screen render boundary. The old
+     * MobPortrait.draw probe did not fire in the user's latest run, so capture
+     * the screen's fields and its direct render call sites before assuming which
+     * widget/page owns the missing self-portrait. The trace helper is disabled
+     * unless legacyconnector.debug.alienevoRuntime is enabled.
+     */
+    private static int ensureBadgeScreenRenderTrace(ClassNode node, MethodNode render) {
+        int existing = 0;
+        for (AbstractInsnNode instruction : render.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && RUNTIME_DIAGNOSTICS.equals(call.owner)
+                    && "traceBadgeScreenRender".equals(call.name)) {
+                existing++;
+                if (call.getOpcode() != INVOKESTATIC || !BADGE_RENDER_TRACE_DESC.equals(call.desc)) {
+                    throw new IllegalStateException(
+                            "AlienEvo PlumberBadgeScreen has an incompatible render diagnostic call");
+                }
+            }
+        }
+        if (existing == 1) return 0;
+        if (existing != 0) {
+            throw new IllegalStateException("AlienEvo PlumberBadgeScreen has duplicate render diagnostic calls");
+        }
+
+        AbstractInsnNode first = render.instructions.getFirst();
+        if (first == null) {
+            throw new IllegalStateException("AlienEvo PlumberBadgeScreen.render has no instructions to instrument");
+        }
+
+        InsnList trace = new InsnList();
+        trace.add(new VarInsnNode(ALOAD, 0));
+        trace.add(new VarInsnNode(ALOAD, 1));
+        trace.add(new VarInsnNode(ILOAD, 2));
+        trace.add(new VarInsnNode(ILOAD, 3));
+        trace.add(new VarInsnNode(FLOAD, 4));
+        trace.add(new LdcInsnNode(renderCallSites(render)));
+        trace.add(new MethodInsnNode(INVOKESTATIC, RUNTIME_DIAGNOSTICS, "traceBadgeScreenRender",
+                BADGE_RENDER_TRACE_DESC, false));
+        render.instructions.insertBefore(first, trace);
+        render.maxStack = Math.max(render.maxStack, 6);
+        return 1;
+    }
+
+    /** Captures a bounded, stable summary of direct invocation sites in render(). */
+    private static String renderCallSites(MethodNode render) {
+        StringBuilder calls = new StringBuilder();
+        int count = 0;
+        for (AbstractInsnNode instruction : render.instructions.toArray()) {
+            if (!(instruction instanceof MethodInsnNode call)) continue;
+            if (count > 0) calls.append(" | ");
+            calls.append(call.owner).append('#').append(call.name).append(call.desc);
+            count++;
+            if (count == 48) {
+                calls.append(" | ...");
+                break;
+            }
+        }
+        return calls.length() == 0 ? "none" : calls.toString();
     }
 
     /**
