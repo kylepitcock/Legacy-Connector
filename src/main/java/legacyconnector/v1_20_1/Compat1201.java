@@ -3,6 +3,7 @@ package legacyconnector.v1_20_1;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 
 /** Static replacements for Forge 1.20.1 calls whose meaning changed; the 1.20.1 translator redirects the call sites here ({@code CallRewrites1201}). */
 public final class Compat1201 {
@@ -13,6 +14,11 @@ public final class Compat1201 {
     public static boolean post(IEventBus bus, Event event) {
         bus.post(event);
         return event instanceof ICancellableEvent cancellable && cancellable.isCanceled();
+    }
+
+    /** Forge's SKIP_ENTITY ignores an entity collision; a block hit keeps its normal handling and existing cancellation. */
+    public static void skipProjectileEntityImpact(ProjectileImpactEvent event) {
+        if (event.getRayTraceResult().getType() == net.minecraft.world.phys.HitResult.Type.ENTITY) event.setCanceled(true);
     }
 
     /** 1.20.1's {@code ServerPlayer.awardRecipesByKey(ResourceLocation[])} (unlocks recipes by id) takes a list in 1.21.1. */

@@ -24,6 +24,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  *       becomes {@code args, INVOKESTATIC factory};</li>
  *   <li>instance calls that need other semantics ({@code IEventBus.post} returned whether the event was cancelled) to a static helper in
  *       {@link #HELPERS} taking the receiver first;</li>
+ *   <li>Forge 1.20.1 projectile impact results to NeoForge 1.21.1's cancellable impact event;</li>
  *   <li>Minecraft 1.21.1's {@code AmethystClusterBlock} dimensions are floats, so legacy integer arguments are widened at their producers;</li>
  *   <li>Minecraft 1.21.1's {@code ArmorMaterials} constants are {@code Holder<ArmorMaterial>} values, unwrapped at legacy enum-field reads;</li>
  *   <li>Palladium 4.5.x's addon-pack repository constructor is redirected through the game-root symlink validator;</li>
@@ -63,6 +64,9 @@ public final class CallRewrites1201 {
             "net/threetag/palladiumcore/registry/client/forge/EntityRendererRegistryImpl";
     private static final String ENTITY_RENDERERS_ADD_LAYERS =
             "net/neoforged/neoforge/client/event/EntityRenderersEvent$AddLayers";
+    private static final String PROJECTILE_IMPACT_EVENT = "net/neoforged/neoforge/event/entity/ProjectileImpactEvent";
+    private static final String PROJECTILE_IMPACT_RESULT = PROJECTILE_IMPACT_EVENT + "$ImpactResult";
+    private static final String PROJECTILE_IMPACT_RESULT_DESC = "L" + PROJECTILE_IMPACT_RESULT + ";";
     private static final String ADD_LAYERS_GET_RENDERER_1201_DESC =
             "(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;";
     private static final String ADD_LAYERS_GET_RENDERER_1211_DESC =
@@ -319,7 +323,8 @@ public final class CallRewrites1201 {
         int n = rewritePalladiumPackMetadata(node)
                 + rewriteAmethystClusterConstructors(node)
                 + rewritePalladiumCoreRendererLookup(node)
-                + rewriteInventoryEntityPreview(node);
+                + rewriteInventoryEntityPreview(node)
+                + rewriteProjectileImpactResult(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             Deque<TypeInsnNode> news = new ArrayDeque<>();
@@ -424,5 +429,46 @@ public final class CallRewrites1201 {
             }
         }
         return n;
+    }
+
+    /**
+     * Forge 1.20.1's impact event used an enum result; NeoForge 1.21.1 uses cancellation for the common skip-current-hit case.
+     * Adapt direct SKIP_ENTITY setter calls; other results also change arrow piercing and need a separate bridge.
+     */
+    private static int rewriteProjectileImpactResult(ClassNode node) {
+        int rewritten = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null || method.instructions.size() == 0) continue;
+            for (AbstractInsnNode instruction = method.instructions.getFirst(); instruction != null; ) {
+                AbstractInsnNode next = instruction.getNext();
+                if (!(instruction instanceof MethodInsnNode call)
+                        || call.getOpcode() != Opcodes.INVOKEVIRTUAL
+                        || !call.owner.equals(PROJECTILE_IMPACT_EVENT)
+                        || !call.name.equals("setImpactResult")
+                        || !call.desc.equals("(" + PROJECTILE_IMPACT_RESULT_DESC + ")V")) {
+                    instruction = next;
+                    continue;
+                }
+
+                // A label/frame between the constant and call may merge other enum producers onto the stack.
+                AbstractInsnNode result = call.getPrevious();
+                if (result instanceof FieldInsnNode constant
+                        && constant.getOpcode() == Opcodes.GETSTATIC
+                        && constant.owner.equals(PROJECTILE_IMPACT_RESULT)
+                        && constant.desc.equals(PROJECTILE_IMPACT_RESULT_DESC)
+                        && constant.name.equals("SKIP_ENTITY")) {
+                    method.instructions.remove(constant);
+                    method.instructions.set(call, new MethodInsnNode(
+                            Opcodes.INVOKESTATIC,
+                            HELPERS,
+                            "skipProjectileEntityImpact",
+                            "(L" + PROJECTILE_IMPACT_EVENT + ";)V",
+                            false));
+                    rewritten++;
+                }
+                instruction = next;
+            }
+        }
+        return rewritten;
     }
 }
