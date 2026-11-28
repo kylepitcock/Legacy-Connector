@@ -17,6 +17,8 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 /** Regression tests for Minecraft 1.20.1 -> 1.21.1 call-site and field-shape migrations. */
@@ -39,6 +41,8 @@ class CallRewrites1201Test {
             "net/threetag/palladiumcore/registry/client/forge/EntityRendererRegistryImpl";
     private static final String ADD_LAYERS_EVENT =
             "net/neoforged/neoforge/client/event/EntityRenderersEvent$AddLayers";
+    private static final String PROJECTILE_IMPACT_EVENT = "net/neoforged/neoforge/event/entity/ProjectileImpactEvent";
+    private static final String PROJECTILE_IMPACT_RESULT = PROJECTILE_IMPACT_EVENT + "$ImpactResult";
     private static final String ADD_LAYERS_GET_RENDERER_1201_DESC =
             "(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;";
     private static final String ADD_LAYERS_GET_RENDERER_1211_DESC =
@@ -175,6 +179,78 @@ class CallRewrites1201Test {
         assertEquals(oldCall, instructions[27]);
         assertEquals(Opcodes.RETURN, instructions[28].getOpcode());
         assertTrue(method.maxStack >= 10);
+    }
+
+    @Test
+    void projectileImpactSkipEntityUsesNeoForgeCancellation() {
+        String resultDesc = "L" + PROJECTILE_IMPACT_RESULT + ";";
+        MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+                "deflect", "(L" + PROJECTILE_IMPACT_EVENT + ";)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(Opcodes.GETSTATIC, PROJECTILE_IMPACT_RESULT, "SKIP_ENTITY", resultDesc));
+        method.instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, PROJECTILE_IMPACT_EVENT,
+                "setImpactResult", "(" + resultDesc + ")V", false));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        ClassNode node = node("example/ProjectileDeflection", method);
+
+        assertEquals(1, CallRewrites1201.apply(node));
+
+        AbstractInsnNode[] instructions = method.instructions.toArray();
+        assertEquals(Opcodes.ALOAD, instructions[0].getOpcode());
+        MethodInsnNode adapted = (MethodInsnNode) instructions[1];
+        assertEquals(Opcodes.INVOKESTATIC, adapted.getOpcode());
+        assertEquals(CallRewrites1201.HELPERS, adapted.owner);
+        assertEquals("skipProjectileEntityImpact", adapted.name);
+        assertEquals("(L" + PROJECTILE_IMPACT_EVENT + ";)V", adapted.desc);
+        assertEquals(Opcodes.RETURN, instructions[2].getOpcode());
+    }
+
+    @Test
+    void projectileImpactRewritesEverySupportedCallAndKeepsPiercingResults() {
+        String resultDesc = "L" + PROJECTILE_IMPACT_RESULT + ";";
+        MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+                "impact", "(L" + PROJECTILE_IMPACT_EVENT + ";)V", null, null);
+        for (String result : List.of("SKIP_ENTITY", "SKIP_ENTITY", "DEFAULT", "STOP_AT_CURRENT", "STOP_AT_CURRENT_NO_DAMAGE")) {
+            method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            method.instructions.add(new FieldInsnNode(Opcodes.GETSTATIC, PROJECTILE_IMPACT_RESULT, result, resultDesc));
+            method.instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, PROJECTILE_IMPACT_EVENT,
+                    "setImpactResult", "(" + resultDesc + ")V", false));
+        }
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        ClassNode node = node("example/ProjectileResults", method);
+
+        assertEquals(2, CallRewrites1201.apply(node));
+
+        List<String> remaining = new ArrayList<>();
+        int helpers = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof FieldInsnNode field) remaining.add(field.name);
+            if (instruction instanceof MethodInsnNode call && call.name.equals("skipProjectileEntityImpact")) helpers++;
+        }
+        assertEquals(2, helpers);
+        assertEquals(List.of("DEFAULT", "STOP_AT_CURRENT", "STOP_AT_CURRENT_NO_DAMAGE"), remaining);
+    }
+
+    @Test
+    void projectileImpactConditionalResultIsNotRewrittenAcrossAJoin() {
+        String resultDesc = "L" + PROJECTILE_IMPACT_RESULT + ";";
+        MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+                "impact", "(L" + PROJECTILE_IMPACT_EVENT + ";Z)V", null, null);
+        LabelNode skip = new LabelNode();
+        LabelNode join = new LabelNode();
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+        method.instructions.add(new JumpInsnNode(Opcodes.IFEQ, skip));
+        method.instructions.add(new FieldInsnNode(Opcodes.GETSTATIC, PROJECTILE_IMPACT_RESULT, "DEFAULT", resultDesc));
+        method.instructions.add(new JumpInsnNode(Opcodes.GOTO, join));
+        method.instructions.add(skip);
+        method.instructions.add(new FieldInsnNode(Opcodes.GETSTATIC, PROJECTILE_IMPACT_RESULT, "SKIP_ENTITY", resultDesc));
+        method.instructions.add(join);
+        method.instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, PROJECTILE_IMPACT_EVENT,
+                "setImpactResult", "(" + resultDesc + ")V", false));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+
+        assertEquals(0, CallRewrites1201.apply(node("example/ConditionalProjectileResult", method)));
     }
 
     @Test
